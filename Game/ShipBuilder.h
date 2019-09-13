@@ -324,12 +324,22 @@ private:
         ImageSize const & structureImageSize);
 
     static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
-        std::vector<SpringInfo> & springInfos1,
-        size_t vertexCount);
+        std::vector<SpringInfo> const & springInfos1,
+        size_t pointCount);
 
-    static std::vector<TriangleInfo> ReorderTrianglesSpringsOptimally_TomForsyth(
-        std::vector<TriangleInfo> & triangleInfos1,
-        size_t vertexCount);
+    static std::vector<TriangleInfo> ReorderTrianglesOptimally_ReuseOptimization(
+        std::vector<TriangleInfo> const & triangleInfos1,
+        size_t pointCount);
+
+    static std::vector<TriangleInfo> ReorderTrianglesOptimally_TomForsyth(
+        std::vector<TriangleInfo> const & triangleInfos1,
+        size_t pointCount);
+
+    static float CalculateACMR(std::vector<SpringInfo> const & springInfos);
+
+    static float CalculateACMR(std::vector<TriangleInfo> const & triangleInfos);
+
+    static float CalculateVertexMissRatio(std::vector<TriangleInfo> const & triangleInfos);
 
 private:
 
@@ -375,10 +385,6 @@ private:
         std::vector<VertexData> & vertexData,
         std::vector<ElementData> & elementData);
 
-
-    static float CalculateACMR(std::vector<SpringInfo> const & springInfos);
-
-    static float CalculateACMR(std::vector<TriangleInfo> const & triangleInfos);
 
     static void AddVertexToCache(
         size_t vertexIndex,

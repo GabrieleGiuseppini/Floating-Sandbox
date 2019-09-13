@@ -207,15 +207,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     float originalSpringACMR = CalculateACMR(springInfos);
 
-    /* TODOTEST
-    // Block algorithm
-    auto[pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Blocks(
-        pointInfos,
-        springInfos,
-        pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size);
-    */
-
     // Tiling algorithm
     auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
         pointInfos,
@@ -229,8 +220,22 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
 
     //
-    // TODO: Triangles
+    // Optimize order of Triangles
     //
+
+    float originalACMR = CalculateACMR(triangleInfos);
+    float originalVMR = CalculateVertexMissRatio(triangleInfos);
+
+    // TODOTEST
+    //triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos.size());
+    //triangleInfos = ReorderTrianglesOptimally_ReuseOptimization(triangleInfos, pointInfos.size());
+
+    float optimizedACMR = CalculateACMR(triangleInfos);
+    float optimizedVMR = CalculateVertexMissRatio(triangleInfos);
+
+    LogMessage("Triangles ACMR: original=", originalACMR, ", optimized=", optimizedACMR);
+    LogMessage("Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
+
 
     // TODOHERE: REUSE IF STILL APPLIES: Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
@@ -1491,10 +1496,10 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
 }
 
 std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_TomForsyth(
-    std::vector<SpringInfo> & springInfos1,
-    size_t vertexCount)
+    std::vector<SpringInfo> const & springInfos1,
+    size_t pointCount)
 {
-    std::vector<VertexData> vertexData(vertexCount);
+    std::vector<VertexData> vertexData(pointCount);
     std::vector<ElementData> elementData(springInfos1.size());
 
     // Fill-in cross-references between vertices and springs
@@ -1523,11 +1528,95 @@ std::vector<ShipBuilder::SpringInfo> ShipBuilder::ReorderSpringsOptimally_TomFor
     return springInfos2;
 }
 
-std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesSpringsOptimally_TomForsyth(
-    std::vector<TriangleInfo> & triangleInfos1,
-    size_t vertexCount)
+std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesOptimally_ReuseOptimization(
+    std::vector<TriangleInfo> const & triangleInfos1,
+    size_t /*pointCount*/)
 {
-    std::vector<VertexData> vertexData(vertexCount);
+    std::vector<TriangleInfo> triangleInfos2;
+    triangleInfos2.reserve(triangleInfos1.size());
+
+    std::array<ElementIndex, 3> previousVertices;
+
+    std::vector<bool> reorderedTriangles(triangleInfos1.size(), false);
+
+
+    //
+    // 1) Add triangles that have in common 2 vertices with the previous one
+    //
+
+    assert(triangleInfos1.size() > 0);
+
+    triangleInfos2.push_back(triangleInfos1[0]);
+    reorderedTriangles[0] = true;
+    std::copy(
+        triangleInfos1[0].PointIndices1.cbegin(),
+        triangleInfos1[0].PointIndices1.cend(),
+        previousVertices.begin());
+
+    for (size_t t = 1; t < triangleInfos1.size(); ++t)
+    {
+        std::optional<ElementIndex> chosenTriangle;
+        std::optional<ElementIndex> spareTriangle;
+        for (size_t t2 = 1; t2 < triangleInfos1.size(); ++t2)
+        {
+            if (!reorderedTriangles[t2])
+            {
+                size_t commonVertices = std::count_if(
+                    triangleInfos1[t2].PointIndices1.cbegin(),
+                    triangleInfos1[t2].PointIndices1.cend(),
+                    [&previousVertices](ElementIndex v)
+                    {
+                        return std::any_of(
+                            previousVertices.cbegin(),
+                            previousVertices.cend(),
+                            [v](ElementIndex v2)
+                            {
+                                return v2 == v;
+                            });
+                    });
+
+                if (commonVertices == 2)
+                {
+                    chosenTriangle = static_cast<ElementIndex>(t2);
+                    break;
+                }
+
+                // Remember first spare
+                if (!spareTriangle)
+                    spareTriangle = static_cast<ElementIndex>(t2);
+            }
+        }
+
+        if (!chosenTriangle)
+        {
+            // Choose first non-reordeded triangle
+            assert(!!spareTriangle);
+            chosenTriangle = spareTriangle;
+        }
+
+        //
+        // Use this triangle
+        //
+
+        triangleInfos2.push_back(triangleInfos1[*chosenTriangle]);
+        reorderedTriangles[*chosenTriangle] = true;
+
+        std::copy(
+            triangleInfos1[*chosenTriangle].PointIndices1.cbegin(),
+            triangleInfos1[*chosenTriangle].PointIndices1.cend(),
+            previousVertices.begin());
+    }
+
+    assert(triangleInfos2.size() == triangleInfos1.size());
+
+    return triangleInfos2;
+}
+
+std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesOptimally_TomForsyth(
+    std::vector<TriangleInfo> const & triangleInfos1,
+    size_t pointCount)
+{
+    std::vector<VertexData> vertexData(pointCount);
     std::vector<ElementData> elementData(triangleInfos1.size());
 
     // Fill-in cross-references between vertices and triangles
@@ -1556,6 +1645,126 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesSpringsOptim
     }
 
     return triangleInfos2;
+}
+
+float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
+{
+    size_t constexpr IntervalReportingSamples = 1000;
+
+    //
+    // Calculate the average cache miss ratio
+    //
+
+    if (springInfos.empty())
+    {
+        return 0.0f;
+    }
+
+    TestLRUVertexCache<VertexCacheSize> cache;
+
+    float cacheMisses = 0.0f;
+    float intervalCacheMisses = 0.0f;
+
+    for (size_t s = 0; s < springInfos.size(); ++s)
+    {
+        if (!cache.UseVertex(springInfos[s].PointAIndex1))
+        {
+            cacheMisses += 1.0f;
+            intervalCacheMisses += 1.0f;
+        }
+
+        if (!cache.UseVertex(springInfos[s].PointBIndex1))
+        {
+            cacheMisses += 1.0f;
+            intervalCacheMisses += 1.0f;
+        }
+
+        if (s < 6 + 5 + 5)
+            LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
+
+        if (s > 0 && 0 == (s % IntervalReportingSamples))
+        {
+            LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
+                " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
+            intervalCacheMisses = 0.0f;
+        }
+    }
+
+    return cacheMisses / static_cast<float>(springInfos.size());
+}
+
+float ShipBuilder::CalculateACMR(std::vector<TriangleInfo> const & triangleInfos)
+{
+    //
+    // Calculate the average cache miss ratio
+    //
+
+    if (triangleInfos.empty())
+    {
+        return 0.0f;
+    }
+
+    TestLRUVertexCache<VertexCacheSize> cache;
+
+    float cacheMisses = 0.0f;
+
+    for (auto const & triangleInfo : triangleInfos)
+    {
+        if (!cache.UseVertex(triangleInfo.PointIndices1[0]))
+        {
+            cacheMisses += 1.0f;
+        }
+
+        if (!cache.UseVertex(triangleInfo.PointIndices1[1]))
+        {
+            cacheMisses += 1.0f;
+        }
+
+        if (!cache.UseVertex(triangleInfo.PointIndices1[2]))
+        {
+            cacheMisses += 1.0f;
+        }
+    }
+
+    return cacheMisses / static_cast<float>(triangleInfos.size());
+}
+
+float ShipBuilder::CalculateVertexMissRatio(std::vector<TriangleInfo> const & triangleInfos)
+{
+    //
+    // Ratio == 0 iff all triangles have two vertices in common with the previous triangle
+    //
+
+    std::array<ElementIndex, 3> previousVertices{ triangleInfos[0].PointIndices1 };
+
+    float sumMisses = 0.0f;
+    for (size_t t = 1; t < triangleInfos.size(); ++t)
+    {
+        auto commonVertices = std::count_if(
+            triangleInfos[t].PointIndices1.cbegin(),
+            triangleInfos[t].PointIndices1.cend(),
+            [&previousVertices](ElementIndex v)
+            {
+                return std::any_of(
+                    previousVertices.cbegin(),
+                    previousVertices.cend(),
+                    [v](ElementIndex v2)
+                    {
+                        return v2 == v;
+                    });
+            });
+
+        assert(commonVertices <= 2.0f);
+
+        sumMisses += 2.0f - static_cast<float>(commonVertices);
+
+        std::copy(
+            triangleInfos[t].PointIndices1.cbegin(),
+            triangleInfos[t].PointIndices1.cend(),
+            previousVertices.begin());
+    }
+
+    return sumMisses / (2.0f * static_cast<float>(triangleInfos.size()));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1690,88 +1899,6 @@ std::vector<size_t> ShipBuilder::ReorderOptimally(
     }
 
     return optimalElementIndices;
-}
-
-float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
-{
-    size_t constexpr IntervalReportingSamples = 1000;
-
-    //
-    // Calculate the average cache miss ratio
-    //
-
-    if (springInfos.empty())
-    {
-        return 0.0f;
-    }
-
-    TestLRUVertexCache<VertexCacheSize> cache;
-
-    float cacheMisses = 0.0f;
-    float intervalCacheMisses = 0.0f;
-
-    for (size_t s = 0; s < springInfos.size(); ++s)
-    {
-        if (!cache.UseVertex(springInfos[s].PointAIndex1))
-        {
-            cacheMisses += 1.0f;
-            intervalCacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(springInfos[s].PointBIndex1))
-        {
-            cacheMisses += 1.0f;
-            intervalCacheMisses += 1.0f;
-        }
-
-        if (s < 6 + 5 + 5)
-            LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
-        
-        if (s > 0 && 0 == (s % IntervalReportingSamples))
-        {
-            LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
-                " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
-            intervalCacheMisses = 0.0f;
-        }
-    }
-
-    return cacheMisses / static_cast<float>(springInfos.size());
-}
-
-float ShipBuilder::CalculateACMR(std::vector<TriangleInfo> const & triangleInfos)
-{
-    //
-    // Calculate the average cache miss ratio
-    //
-
-    if (triangleInfos.empty())
-    {
-        return 0.0f;
-    }
-
-    TestLRUVertexCache<VertexCacheSize> cache;
-
-    float cacheMisses = 0.0f;
-
-    for (auto const & triangleInfo : triangleInfos)
-    {
-        if (!cache.UseVertex(triangleInfo.PointIndices1[0]))
-        {
-            cacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(triangleInfo.PointIndices1[1]))
-        {
-            cacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(triangleInfo.PointIndices1[2]))
-        {
-            cacheMisses += 1.0f;
-        }
-    }
-
-    return cacheMisses / static_cast<float>(triangleInfos.size());
 }
 
 void ShipBuilder::AddVertexToCache(
