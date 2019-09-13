@@ -533,6 +533,7 @@ Render:
 		+ Triangles: optimize reuse of 2 vertices
 			+ Starting ACMR: 1.01986 VMR: 0.49888
 			+ Ending ACMR: 1.00672 VMR: 0.101436
+			+ Test to decide whether to keep or not: NO KEEP
 
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 

@@ -223,23 +223,21 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Optimize order of Triangles
     //
 
-    float originalACMR = CalculateACMR(triangleInfos);
-    float originalVMR = CalculateVertexMissRatio(triangleInfos);
-
-    // TODOTEST
-    //triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos.size());
-    //triangleInfos = ReorderTrianglesOptimally_ReuseOptimization(triangleInfos, pointInfos.size());
-
-    float optimizedACMR = CalculateACMR(triangleInfos);
-    float optimizedVMR = CalculateVertexMissRatio(triangleInfos);
-
-    LogMessage("Triangles ACMR: original=", originalACMR, ", optimized=", optimizedACMR);
-    LogMessage("Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
-
-
-    // TODOHERE: REUSE IF STILL APPLIES: Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
+    // Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
-    // that higher elements in the ship cover lower elements when they are semi-detached
+    // that higher elements in the ship cover lower elements when they are semi-detached.
+
+    ////float originalACMR = CalculateACMR(triangleInfos);
+    ////float originalVMR = CalculateVertexMissRatio(triangleInfos);
+
+    ////triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos.size());
+
+    ////float optimizedACMR = CalculateACMR(triangleInfos);
+    ////float optimizedVMR = CalculateVertexMissRatio(triangleInfos);
+
+    ////LogMessage("Triangles ACMR: original=", originalACMR, ", optimized=", optimizedACMR);
+    ////LogMessage("Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
+
 
 
     //
