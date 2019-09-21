@@ -5,66 +5,68 @@
 ***************************************************************************************/
 #pragma once
 
-#include <cassert>
+#include "GameTypes.h"
 
-class ElementIndexRangeIterator
+#include <cassert>
+#include <iterator>
+
+struct element_index_range_iterator
 {
 public:
 
-    ElementIndexRangeIterator(
+    typedef std::input_iterator_tag iterator_category;
+
+public:
+
+    explicit element_index_range_iterator(ElementIndex current) noexcept
+        : mCurrent(current)
+    {}
+
+    inline bool operator==(element_index_range_iterator const & other) const noexcept
+    {
+        return mCurrent == other.mCurrent;
+    }
+
+    inline bool operator!=(element_index_range_iterator const & other) const noexcept
+    {
+        return !(mCurrent == other.mCurrent);
+    }
+
+    inline void operator++() noexcept
+    {
+        ++mCurrent;
+    }
+
+    inline ElementIndex operator*() noexcept
+    {
+        return mCurrent;
+    }
+
+private:
+
+    ElementIndex mCurrent;
+};
+
+
+class ElementIndexRangeIterable
+{
+public:
+
+    ElementIndexRangeIterable(
         ElementIndex startIndex,
         ElementIndex endIndex /*excluded*/)
         : mStartIndex(startIndex)
         , mEndIndex(endIndex)
     {}
 
-    struct iterator
+    inline element_index_range_iterator begin() const noexcept
     {
-    public:
-
-        typedef std::input_iterator_tag iterator_category;
-
-    public:
-
-        inline bool operator==(iterator const & other) const noexcept
-        {
-            return mCurrent == other.mCurrent;
-        }
-
-        inline bool operator!=(iterator const & other) const noexcept
-        {
-            return !(mCurrent == other.mCurrent);
-        }
-
-        inline void operator++() noexcept
-        {
-            ++mCurrent;
-        }
-
-        inline ElementIndex operator*() noexcept
-        {
-            return mCurrent;
-        }
-
-    private:
-
-        friend class ElementIndexRangeIterator;
-
-        explicit iterator(ElementIndex current) noexcept
-            : mCurrent(current)
-        {}
-
-        ElementIndex mCurrent;
-    };
-
-    inline iterator begin() const noexcept
-    {
-        return iterator(mStartIndex);
+        return element_index_range_iterator(mStartIndex);
     }
 
-    inline iterator end() const noexcept
+    inline element_index_range_iterator end() const noexcept
     {
-        return iterator(mEndIndex);
+        return element_index_range_iterator(mEndIndex);
     }
 
 private:
@@ -73,64 +75,62 @@ private:
     ElementIndex const mEndIndex;
 };
 
-class ElementIndexReverseRangeIterator
+struct element_index_reverse_range_iterator
 {
 public:
 
-    ElementIndexReverseRangeIterator(
+    typedef std::input_iterator_tag iterator_category;
+
+public:
+
+    explicit element_index_reverse_range_iterator(ElementIndex current) noexcept
+        : mCurrent(current)
+    {}
+
+    inline bool operator==(element_index_reverse_range_iterator const & other) const noexcept
+    {
+        return mCurrent == other.mCurrent;
+    }
+
+    inline bool operator!=(element_index_reverse_range_iterator const & other) const noexcept
+    {
+        return !(mCurrent == other.mCurrent);
+    }
+
+    inline void operator++() noexcept
+    {
+        --mCurrent;
+    }
+
+    inline ElementIndex operator*() noexcept
+    {
+        return mCurrent;
+    }
+
+private:
+
+    ElementIndex mCurrent;
+};
+
+class ElementIndexReverseRangeIterable
+{
+public:
+
+    ElementIndexReverseRangeIterable(
         ElementIndex startIndex,
         ElementIndex endIndex /*excluded*/)
         : mStartIndex(startIndex)
         , mEndIndex(endIndex)
     {}
 
-    struct iterator
+    inline element_index_reverse_range_iterator begin() const noexcept
     {
-    public:
-
-        typedef std::input_iterator_tag iterator_category;
-
-    public:
-
-        inline bool operator==(iterator const & other) const noexcept
-        {
-            return mCurrent == other.mCurrent;
-        }
-
-        inline bool operator!=(iterator const & other) const noexcept
-        {
-            return !(mCurrent == other.mCurrent);
-        }
-
-        inline void operator++() noexcept
-        {
-            --mCurrent;
-        }
-
-        inline ElementIndex operator*() noexcept
-        {
-            return mCurrent;
-        }
-
-    private:
-
-        friend class ElementIndexReverseRangeIterator;
-
-        explicit iterator(ElementIndex current) noexcept
-            : mCurrent(current)
-        {}
-
-        ElementIndex mCurrent;
-    };
-
-    inline iterator begin() const noexcept
-    {
-        return iterator(mEndIndex - 1);
+        return element_index_reverse_range_iterator(mEndIndex - 1);
     }
 
-    inline iterator end() const noexcept
+    inline element_index_reverse_range_iterator end() const noexcept
     {
-        return iterator(mStartIndex - 1);
+        return element_index_reverse_range_iterator(mStartIndex - 1);
     }
 
 private:

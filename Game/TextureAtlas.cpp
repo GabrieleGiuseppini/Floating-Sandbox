@@ -6,7 +6,7 @@
 #include "TextureAtlas.h"
 
 #include <GameCore/GameException.h>
-#include <GameCore/GameMath.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <algorithm>
 #include <cstring>
@@ -109,8 +109,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
     for (auto const & ti : sortedTextureInfos)
     {
         // Verify tile dimensions are powers of two
-        if (ti.Size.Width != CeilPowerOfTwo(ti.Size.Width)
-            || ti.Size.Height != CeilPowerOfTwo(ti.Size.Height))
+        if (ti.Size.Width != ceil_power_of_two(ti.Size.Width)
+            || ti.Size.Height != ceil_power_of_two(ti.Size.Height))
         {
             throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" are not a power of two");
         }
@@ -119,7 +119,7 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
     }
 
     // Square root of area, floor'd to next power of two, minimized
-    int const atlasSide = CeilPowerOfTwo(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
+    int const atlasSide = ceil_power_of_two(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
     int atlasWidth = atlasSide;
     int atlasHeight = atlasSide;
 
@@ -155,7 +155,7 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
 
             if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
                 || positionStack.size() == 1                    // We can't backtrack
-                || (CeilPowerOfTwo(currentPosition.x + t.Size.Width) - atlasWidth) <= (CeilPowerOfTwo(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
+                || (ceil_power_of_two(currentPosition.x + t.Size.Width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
             {
                 // Put it at the current location
                 texturePositions.emplace_back(
@@ -182,8 +182,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
                 positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
 
                 // Adjust atlas dimensions
-                atlasWidth = CeilPowerOfTwo(std::max(atlasWidth, currentPosition.x + t.Size.Width));
-                atlasHeight = CeilPowerOfTwo(std::max(atlasHeight, currentPosition.y + t.Size.Height));
+                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.Width));
+                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.Height));
 
                 // We are done with this tile
                 break;
@@ -202,8 +202,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
     // Round final size
     //
 
-    atlasWidth = CeilPowerOfTwo(atlasWidth);
-    atlasHeight = CeilPowerOfTwo(atlasHeight);
+    atlasWidth = ceil_power_of_two(atlasWidth);
+    atlasHeight = ceil_power_of_two(atlasHeight);
 
 
     //

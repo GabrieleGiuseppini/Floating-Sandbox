@@ -28,6 +28,19 @@
         <Property Id="ACTION_TEXT_DOING" Value="TO_BE_SET" />
         <Property Id="ACTION_TEXT_DONE" Value="TO_BE_SET" />
 
+        <Property Id="ShortApplicationName" Value="$(var.ShortApplicationName)" />
+        <Property Id="FloatingSandboxVersion" Value="$(var.FloatingSandboxVersion)" />
+
+        <!-- Conditional text -->
+        <!-- UNUSED!
+        <SetProperty Action="SetInstallOrUpgrade0" Id="InstallOrUpgradeLabel" Value="Install" After="FindRelatedProducts">NOT WIX_UPGRADE_DETECTED</SetProperty>
+        <SetProperty Action="SetInstallOrUpgrade1" Id="InstallOrUpgradeLabel" Value="Upgrade" After="FindRelatedProducts">WIX_UPGRADE_DETECTED</SetProperty>
+        <SetProperty Action="SetInstallingOrUpgrading0" Id="InstallingOrUpgradingLabel" Value="Installing" After="FindRelatedProducts">NOT WIX_UPGRADE_DETECTED</SetProperty>
+        <SetProperty Action="SetInstallingOrUpgrading1" Id="InstallingOrUpgradingLabel" Value="Upgrading" After="FindRelatedProducts">WIX_UPGRADE_DETECTED</SetProperty>
+        <SetProperty Action="SetInstalledOrUpgraded0" Id="InstalledOrUpgradedLabel" Value="Installed" After="FindRelatedProducts">NOT WIX_UPGRADE_DETECTED</SetProperty>
+        <SetProperty Action="SetInstalledOrUpgraded1" Id="InstalledOrUpgradedLabel" Value="Upgraded" After="FindRelatedProducts">WIX_UPGRADE_DETECTED</SetProperty>
+        -->
+
         <UI Id="FloatingSandboxUI">
 
             <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
@@ -39,22 +52,29 @@
             <Dialog Id="FSStarterDlg" Width="370" Height="270" Title="[ProductName] Setup" TrackDiskSpace="no">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
 
+                <Control Id="InstallText" Type="Text" X="106" Y="88" Width="250" Height="17" Hidden="yes" Text="Ready to install [ProductName]!">
+                    <Condition Action="show">NOT WIX_UPGRADE_DETECTED AND NOT Installed</Condition>
+                </Control>
+                <Control Id="UpgradeText" Type="Text" X="98" Y="88" Width="250" Height="17" Hidden="yes" Text="Ready to upgrade to [ProductName]!">
+                    <Condition Action="show">WIX_UPGRADE_DETECTED AND NOT Installed</Condition>
+                </Control>
+
                 <!-- Install actions -->
-                <Control Id="Folder" Type="PathEdit" X="5" Y="95" Width="300" Height="18" Hidden="yes" Property="WIXUI_INSTALLDIR" Indirect="yes">
+                <Control Id="Folder" Type="PathEdit" X="5" Y="105" Width="300" Height="18" Hidden="yes" Property="WIXUI_INSTALLDIR" Indirect="yes">
                     <Condition Action="show">NOT Installed</Condition>
                 </Control>
-                <Control Id="ChangeFolder" Type="PushButton" X="310" Y="95" Width="56" Height="17" Hidden="yes" Text="&amp;Change...">
+                <Control Id="ChangeFolder" Type="PushButton" X="310" Y="105" Width="56" Height="17" Hidden="yes" Text="&amp;Change...">
                     <Publish Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
                     <Publish Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
                     <Condition Action="show">NOT Installed</Condition>
                 </Control>
-                <!--
-                <Control Id="InstallText" Type="Text" X="75" Y="110" Width="320" Height="10" Hidden="no" Text="Are you ready to go?" />
-                -->
-                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Hidden="yes" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Install" Text="[InstallControlContent]">
+
+                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Hidden="yes" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Install/Upgrade" Text="[InstallControlContent]">
                     <Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
-                    <Publish Property="ACTION_TEXT_DOING" Value="Installing" Order="2">1</Publish>
-                    <Publish Property="ACTION_TEXT_DONE" Value="Installed" Order="3">1</Publish>
+                    <Publish Property="ACTION_TEXT_DOING" Value="Installing" Order="2">NOT WIX_UPGRADE_DETECTED</Publish>
+                    <Publish Property="ACTION_TEXT_DOING" Value="Upgrading" Order="2">WIX_UPGRADE_DETECTED</Publish>
+                    <Publish Property="ACTION_TEXT_DONE" Value="Installed" Order="3">NOT WIX_UPGRADE_DETECTED</Publish>
+                    <Publish Property="ACTION_TEXT_DONE" Value="Upgraded" Order="3">WIX_UPGRADE_DETECTED</Publish>
                     <Publish Event="DoAction" Value="WixUIValidatePath" Order="4">1</Publish>
                     <Publish Event="SpawnDialog" Value="InvalidDirDlg" Order="5"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
                     <Publish Event="EndDialog" Value="Return" Order="6">WIXUI_INSTALLDIR_VALID="1"</Publish>
@@ -94,7 +114,10 @@
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
 
                 <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] gets installed...">
-                    <Condition Action="show">NOT Installed</Condition>
+                    <Condition Action="show">NOT Installed AND NOT WIX_UPGRADE_DETECTED</Condition>
+                </Control>
+                <Control Id="TextUpgrading" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ShortApplicationName] gets upgraded to version [FloatingSandboxVersion]...">
+                    <Condition Action="show">NOT Installed AND WIX_UPGRADE_DETECTED</Condition>
                 </Control>
 
                 <Control Id="TextRepairing" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] is repaired...">
@@ -122,7 +145,10 @@
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
 
                 <Control Id="CompletedText_Installed" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="yes" Text="[ProductName] has been successfully installed!">
-                    <Condition Action="show">NOT Installed</Condition>
+                    <Condition Action="show">NOT Installed and NOT WIX_UPGRADE_DETECTED</Condition>
+                </Control>
+                <Control Id="CompletedText_Upgraded" Type="Text" X="70" Y="120" Width="320" Height="10" Hidden="yes" Text="[ShortApplicationName] has been successfully upgraded to version [FloatingSandboxVersion]!">
+                    <Condition Action="show">NOT Installed and WIX_UPGRADE_DETECTED</Condition>
                 </Control>
 
                 <Control Id="CompletedText_Repaired" Type="Text" X="75" Y="120" Width="320" Height="10" Hidden="yes" Text="[ProductName] has been successfully repaired!">

@@ -1,6 +1,10 @@
 =================================================
 Current perf:
 =================================================
+1.12
+- fps: 29.1/29.5/30.1
+- UR: 221/227
+=================================================
 - fps: 29.2/29.4 (Samsung w/Krafting: 17.0) 
 - UR: 210/220 (Samsung w/Krafting: 690%)
 - GameController::InternalUpdate: 62.0%
@@ -218,36 +222,107 @@ Render:
 
 - Roadmap:
 
-	- 1.13.0
-
-		- Refresh current perf
-
-		- Windows installer: rethink strategy, go for upgrades
-			- Do own Heat in python
-
-		- Cache layout optimization for points and springs (*)
-
-		- Add those 2 Lava textures
-			- Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
-				- Make "Caraibic" version the default
-
-		- Version overhaul
+	= 1.13.0
+		+ Refresh current perf
+		+ Add those 2 Lava textures
+			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
+				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
+				+ Transparency: 0.8125
+				+ Make "Caraibic" version the default
+			+ Add two lava
+		+ Version overhaul
 			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
-				- See if may also appear in installer
-			- Version class:
-				- No build number but beta instead, with beta=X always < beta=0
-			- RC file:
-				- Fields that may contain "Beta foo":
-					- ProductVersion
-					+ NOT FileVersion
-			- Windows Installer
-				- See if may take version as X.Y.Z; if not, do hardcoded version string in include (same include as GUIDs)
+			+ Version class:
+				+ No build number but beta instead, with beta=X always < beta=0
+				+ Unit tests
+			+ RC file
+				+ Test with both FileVersion,ProductVersion having the same (w/"beta")
+					+ Beta 1
+					+ Beta 0
+			+ Revert all changes:
+				! We are happy to release 1.13.0.592
+				+ No beta's needed, revert to 4 components, just rename them (patch, build)
+		+ Windows installer: rethink strategy, go for upgrades
+			+ Make UpgradeCode fixed value, that is, the one from 1.12.0
+			+ ProductCode changes for each release
+				+ It's the only one that changes
+			+ Move back component GUIDs from vars to hardcoded attributes, using same as in 1.12.0
+			+ Change HeatPerUser.xslt: "todo" comments for 1.12 fixed
+				! Ideal would be to have version-agnostic reg key as keypath (a new one), but then 1.12.0 components would not seem
+				  to be installed
+			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
+				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			+ Try changing keypaths (folder & reg key)
+				+ Rethink their values					
+			+ Tests:
+				! To verify:
+					! Final result
+					! Text of dialogs
+				+ Clean install
+				+ Upgrade
+				+ Maintenance->Repair
+				+ Maintenance->Uninstall
+				+ Upgrade when Ships folder contains additional ship files
+			+ Add to changes.txt
+		+ ShipLoadDialog: Crack ShowModal() puzzle
+			+ ShowModal()
+			+ Try:
+				+ PollQueue: consume 10 events at a time
+				+ Pre-created ShipLoadDialog member
+			+ Cleanup:
+				+ GameController::Pause:
+					+ Move GameWallClock pause here from MainFrame
+				+ Make MainFrame::SetPaused(bool) with content of pause menu handler
+					+ MainFrame has "stack" (counter)
+					+ Invoked by:
+						+ Pause menu handler
+						+ ShipLoad cycle
+				+ Remove "todo" Log's at ShipLoadDialog
+		+ Run with AppVerifier to detect cause of crash at reload
+		+ Make sure we don't copy Temperature buffer twice
+			+ Make Buffer::swap(Buffer<T> & other)
+			+ Pre: 28.1/28.8
+			+ One copy only
+			+ Post: 28.5/28.7
+			+ Do also at Water
+			+ Post: 28.9/29.1
+		+ ShipLoadDialog:
+			! Do own paint, no controls
+			+ Replace paint with overriding OnDraw(), // https://docs.wxwidgets.org/3.0/classwx_scrolled.html
+			  which provides scrolled coords
+				+ But we have to deal with mouse events anyway
+			+ See if we need the mem DC and/or double-buffering 
+				+ Try with double-buffering off
+			+ Mouse events
+				+ Calc tile based off mouse coords, panel position, and vscroll
+				+ Single-click
+				+ Double-click
+			+ Try making panel a wxWindow instead (as it doesn't have child controls)
+			+ Nuke old code and rename ShipPreviewPanel 
+			+ Fix empty bitmap/exception
+			+ Search:
+				+ Test adding author
+				+ Button for "next"
+					+ Do icon
+					+ Functionality				
+					+ Do enable state machine
+			+ Remove TODO Log's
+			+ Fix SS Arizona
+			+ Test:
+				+ Dir changes
+					+ With tree
+					+ With dropdown
+					+ With Home
+			+ Merge into 1.13
+			+ Update changes.txt
+		+ Lava textures
+			+ Update changes.txt
+		+ Benchmark vectorized spring lengths (see Moleskine)
+			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
+		+ Cache layout optimization for points and springs (*)
 
-		- ShipLoadDialog:
-			- Ship preview database/cache
-			- Search: button for "next"
+		= Unix build break
 
-		- Points' buffer perf improvement (*)
 
 		- Lights perf improvement (*)
 
@@ -307,8 +382,8 @@ Render:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Graza's from awesomeyorkie
-				- Asked Antonia vs Antonio
-				- Asked if ropes of abandoned are cut on purpose
+				+ Asked if ropes of abandoned are cut on purpose: yes
+				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
 		- To take:
@@ -384,7 +459,6 @@ Render:
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc")
 
-	- Add "beta/foo" to versions
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
@@ -395,6 +469,8 @@ Render:
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
+		- Reasons:
+			- Anti-virus complains of saving
 		- Buy certificate
 			- https://comodosslstore.com/code-signing/microsoft-authenticode
 			- https://comodosslstore.com/codesigning.aspx
@@ -411,17 +487,22 @@ Render:
 
 - Simulation Optimizations:
 
-	- Lights: (*)
-		- Try with pre-calculated luminiscence function, for each light, as a function of square distance
+	- Lights perf improvement (*)
+		- Try with pre-calculated luminiscence function, as a function of square distance
+			- Function only depends on game parameters; lives at ElectricalElements and is re-calc'd by
+			  ElectricalElements at each ElectricalElements::UpdateGameParameters() when params differ
 			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
+		- Additional: see if making vector of lamp positions first - reused for each point - helps even further
 
-	- Ship::Update: cache quantities that are currently re-calculated multiple times (*)
+	- Cached quantities (*)
+		! Ship::Update: cache quantities that are currently re-calculated multiple times 
 		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
 		- Cache quantities in Update loop that comes first or last
 			- Make it clear that the Update function calculates them: TBD
 			- Alternatively, use lambda
 				- Verify with assembly that there's no overhead with empty lambda
+			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
@@ -435,19 +516,16 @@ Render:
 				- Valid as long as points don't move
 				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
 	
-	- Retry cache layout optimization, new strategy: (*)
-		- Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
-		- Springs in those 2x2 blocks, advancing one column - and then row - at a time
-
 	- Forces rearc (*):
-		- Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
+		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
 			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
 			- Then populates PointForces with force fields
-			- Then populates PointForces with gravity/buoyancy/water drag (this one might "set" rather than "add")
+			- Then populates PointForces with gravity/buoyancy/water drag (this is the one that might "set" rather than "add",
+			  so we save the PointForces' reset step)
 			- Then ...propulsion, etc..... all PointForces
 			- Then does spring loop:
 				- Spring forces
@@ -460,6 +538,9 @@ Render:
 		- Test:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
+		- Cleanup:
+			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
+			  might get rid of force fields
 
 	- Try with SpringRelaxation updating only positions (*)
 		- Still runs N times, but only updates positions (does a local "integration" based on "forces")
@@ -665,17 +746,8 @@ Render:
 
 - Gfx optimizations:
 
-	- Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer (*)
-		- Changes to Buffer:
-			- static size_t CalculateByteSize(size_t alignedElementCount)
-			- cctor that takes shader_ptr<uint8_t *>, byte offset, et al
-			- Add UTs
-		- Replace Points' individual buffers with:
-			- 0: mAlignedElementCount = SysSpecifics::align_element_count // based on float
-			- 1: mAttributesBuffer == shared_ptr<uint8_t *> SysSpecifics::aligned_alloc_shared(byte size) // alignment is of # of floats in AVX-512
-				- Uses AlignedMemoryDeleter in SysSpecifics.h
-			- 2: bounded vectors offseted to three portions, using Buffer::CalculateByteSize(.) for previous
-		- Then do a single upload
+	- Try interleaving Update's with Render's
+		- First, quick and dirty: do at stars, clouds, ocean
 					
 	- Lights on the GPU with instanced drawing (*)
 		- We begin with doing light at vertex (Gouraud)
@@ -955,6 +1027,7 @@ Render:
 				- Interactive switch: controlled by user
 				- Water sensing switch: controlled by water (w/constant low and high watermark thresholds)
 					- Check done at low-frequency step in ElectricalUpdate()
+				- TODO: consider third type: electrically-controlled switches (aka logic gates)
 			- Color trick like ropes to have unique and deterministic IDs for switches
 				- One material (base structural color) for initially on and another one for initially off
 			- New electrical property: ConductsElectricity, bool - used at connectivity visit
@@ -1221,6 +1294,12 @@ Render:
 		- How to Guide
 
 - UI:
+	- Adjustable zoom increments
+		- Under UIPreferences
+		- See if can use Smoothstep for...smoothing
+			- @ Controls
+			- @ Smoothed params
+
 	- SettingsDialog: make slider textboxes editable
 
 	- Ship descriptions: use Mike's drawings
@@ -1228,17 +1307,34 @@ Render:
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
-				- Where "defaults" is hardcoded name
+				- Where "defaults" is hardcoded name for default settings
 			- Game also comes with own "themes" settings
 				- Under Data\Themes
-				- Managed by SettingsDialog
-				- Read-only (marked as "system" settings)
-			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before mangled name),
+				- Managed by SettingsDialog (not by SettingsManager)
+				- Read-only (marked as "system" settings to avoid overwriting)
+			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before FS-mangled name),
 			  and a description
-				- User may overwrite non-system saved settings
-					- TBD: how does UI look like?
-			- Saved settings do not have necessarily all settings (e.g. to allow for graphical themes, which only specify certain render properties)
-			- Review the below based on this (named settings)
+				- Names are unique
+					- Prefix is only to avoid filenames conflicts after FS-mangling
+				- User may overwrite non-system saved settings only
+			- Saved settings do not have necessarily all settings 
+			  (e.g. to allow for graphical themes, which only specify certain render properties)
+				- But unless we track individual settings' dirtyness, users may not save subsets of settings
+			- Ocean floor is just another setting
+				- GameController only exposes ocean floor as float buffer
+				- GameController::cctor takes it
+				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)
+				- SettingsManager saves it in binary file (possible shared w/other buffer settings) next to user settings' json file,
+				  w/same name but different extension
+			- Saved settings are thus:
+				- prefix_mangledname.json
+				- prefix_mangledname.dat
+			- Changing settings in the GUI puts them in effect immediately
+				- ...and GameController will smooth them
+			- Loaded settings go to GameController
+				- ...and GameController will smooth them
+
+			- TODO: Now review the below based on this 
 
 			- SettingsManager (@FloatingSandbox):
 				- Has GameController, SoundController, etc.
@@ -1332,6 +1428,7 @@ Render:
 					- Enables/Disabled buttons and menus
 
 	- Save ocean floor terrain and load it at startup
+		- TODO: might become pointless if we take care of this at SettingsManager as spec'dabove
 		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
 			- Loads (optional) data at startup (if exists)
 			- Saves data at dctor
@@ -1340,6 +1437,9 @@ Render:
 				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
 				- When reset -> GameController::ResetOceanFloorTerranToDefault
 					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
+
+	- ShipLoadDialog:
+		- Ship preview database/cache
 
 - Sounds:
 
@@ -1820,6 +1920,34 @@ IF WX:
 		+ Final FPS test
 	+ See if can avoid other IsDeleted checks, via zero'ing of coefficients
 		+ UpdateSpringForces()
+	+ Retry cache layout optimization, new strategy: (*)
+		+ Starting point:
+			! ReorderSpringsOptimally_Tiling<2>
+			! ReorderPointsOptimally_FollowingSprings
+			! No Triangles reordering
+			+ ACMR: 0.516807 ->  0.389524
+			+ FPS: 28.5/28.8
+		+ 1:
+			+ Points in 2x2 blocks (with any point optional), advancing one column - and then row - at a time
+			+ Springs in those 2x2 blocks, advancing one column - and then row - at a time
+			+ ACMR: 0.516807 ->  0.508228
+		+ 2:
+			+ Do w/vertical streak of 2,3,4,5,6,7,8
+			+ ACMR: 
+				+ Tiling<2>: FPS: 28.5 U/R: 213
+				+ 2: 0.516807 -> 0.515553 FPS: 28.6  U/R: 210
+				+ 3: 0.516807 -> 0.388722 FPS: 28.6  U/R: 213
+				+ 4: 0.516807 -> 0.345725 FPS: 28.6  U/R: 213
+				+ 5: 0.516807 -> 0.325507 FPS: 28.6  U/R: 213
+				+ 6: 0.516807 -> 0.313153 FPS: TODO  U/R: 213
+				- 7: 0.516807 -> 0.307245 FPS: TODO  U/R: TODO
+				+ 8: 0.516807 -> 0.300773 FPS: 28.6  U/R: 210/215
+		+ 3: Do final check w/Forsyth's triangles optimization
+			+ FPS: 28.1 U/R: 206
+		+ Triangles: optimize reuse of 2 vertices
+			+ Starting ACMR: 1.01986 VMR: 0.49888
+			+ Ending ACMR: 1.00672 VMR: 0.101436
+			+ Test to decide whether to keep or not: NO KEEP
 
 
 + Fix 4 BPP images
@@ -3347,6 +3475,33 @@ IF WX:
 				+ U/R: 193%
 			+ Commit
 		+ Do perf analysis
+	+ Points' buffer perf improvement
+		! Test perf: allocate (and thus upload) Points' mutable attributes in one single buffer 
+		+ Changes to Buffer:
+			+ Hierarchy with two Buffers:
+				+ 1: 
+					+ static size_t CalculateByteSize(size_t elements)
+						+ Also use at UTs
+					+ cctor that takes shader_ptr<uint8_t *>, byte offset, et al
+					+ No swap(.)
+					+ Add UTs
+				+ 2:
+					+ Like now (makes and owns own buffer)
+					+ Yes swap(.)
+						+ Add UT
+		+ Replace Points' individual buffers with:
+			+ 0: ElementContainer(SysSpecifics::make_aligned_float_element_count(.))
+				+ Move logic out of ElementContainer
+			+ Undo changes to containers
+			+ ElementContainer:
+				+ See if iterator could be the range iterator
+					+ If so, add one for buffer
+					+ If so, use the one for buffer @ 2 places in Ship_Interactions.cpp
+			+ 1: mMutableAttributesBuffer == unique_aligned_buffer, SysSpecifics::make_unique_aligned_buffer...(byte size)
+				+ Calc total byte size via Buffer<T>::CalculateByteSize(size_t elements)
+			+ 2: Buffers offseted to three portions, using sums of Buffer::CalculateByteSize(.) for previous
+		+ Then do a single upload
+		+ Perf: has decreased!
 
 + Dynamics
 	+ Try half of the relaxation iterations

@@ -68,12 +68,13 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Preview
 
-        mShipPreviewPanel = new ShipPreviewPanel(this, resourceLoader);
+        mShipPreviewWindow = new ShipPreviewWindow(this, resourceLoader);
 
-        mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-        mShipPreviewPanel->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+        mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
+        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
-        hSizer1->Add(mShipPreviewPanel, 1, wxALIGN_TOP | wxEXPAND);
+        hSizer1->Add(mShipPreviewWindow, 1, wxALIGN_TOP | wxEXPAND);
 
 
         vSizer->Add(hSizer1, 1, wxEXPAND);
@@ -88,8 +89,8 @@ ShipLoadDialog::ShipLoadDialog(
     //
 
     {
-        // |  | Label       |   | Label   | |
-        // |  | Combo, Home |   | TextBox | |
+        // |  | Label       |   | Label          | |
+        // |  | Combo, Home |   | TextBox [Next] | |
 
         wxFlexGridSizer * gridSizer = new wxFlexGridSizer(2, 5, 0, 0);
 
@@ -138,7 +139,8 @@ ShipLoadDialog::ShipLoadDialog(
                 emptyComboChoices,
                 wxCB_DROPDOWN | wxCB_READONLY);
             mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
-            hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxEXPAND);
+
+            hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxALIGN_CENTRE_VERTICAL);
 
             hComboSizer->AddSpacer(4);
 
@@ -148,14 +150,17 @@ ShipLoadDialog::ShipLoadDialog(
             wxBitmap homeBitmap(resourceLoader.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
             homeDirButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&ShipLoadDialog::OnHomeDirButtonClicked, this);
-            hComboSizer->Add(homeDirButton, 0, 0);
 
-            gridSizer->Add(hComboSizer, 4, wxALIGN_LEFT | wxEXPAND | wxALL);
+            hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
+
+            gridSizer->Add(hComboSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
 
         {
+            wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+
             // Search TextCtrl
 
             mShipSearchTextCtrl = new wxTextCtrl(
@@ -169,7 +174,16 @@ ShipLoadDialog::ShipLoadDialog(
             mShipSearchTextCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchTextCtrlText, this);
             mShipSearchTextCtrl->Bind(wxEVT_TEXT_ENTER, &ShipLoadDialog::OnShipSearchTextCtrlTextEnter, this);
 
-            gridSizer->Add(mShipSearchTextCtrl, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
+            hSearchSizer->Add(mShipSearchTextCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+
+            mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
+            wxBitmap searchNextBitmap(resourceLoader.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+            mSearchNextButton->SetBitmap(searchNextBitmap);
+            mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
+
+            hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
+
+            gridSizer->Add(hSearchSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
@@ -223,9 +237,8 @@ ShipLoadDialog::ShipLoadDialog(
 
     SetSizerAndFit(vSizer);
 
-    // Size so that we have 3 columns of previews right away
-    constexpr int Width = MinDirCtrlWidth + ShipPreviewPanel::MinPreviewWidth * 3 + 20;
-    SetSize(wxSize(Width, 600 * Width / 800));
+    int const TotalWidth = MinDirCtrlWidth + mShipPreviewWindow->GetMinWidth() + 10;
+    SetSize(wxSize(TotalWidth, 600 * TotalWidth / 800));
 
     Centre();
 }
@@ -234,52 +247,52 @@ ShipLoadDialog::~ShipLoadDialog()
 {
 }
 
-void ShipLoadDialog::Open()
+int ShipLoadDialog::ShowModal()
 {
-    if (!IsShown())
+    // Reset our current ship selection
+    mSelectedShipMetadata.reset();
+    mSelectedShipFilepath.reset();
+    mChosenShipFilepath.reset();
+
+    // Disable controls
+    mInfoButton->Enable(false);
+    mLoadButton->Enable(false);
+
+    // Clear search
+    mShipSearchTextCtrl->Clear();
+    mSearchNextButton->Enable(false);
+
+
+    //
+    // Load settings from preferences, if needed
+    //
+
+    if (mRecentDirectoriesComboBox->GetCount() == 0)
     {
-        // Reset our current ship selection
-        mSelectedShipMetadata.reset();
-        mSelectedShipFilepath.reset();
+        RepopulateRecentDirectoriesComboBox();
 
-        // Disable controls
-        mInfoButton->Enable(false);
-        mLoadButton->Enable(false);
+        assert(mRecentDirectoriesComboBox->GetCount() > 0);
 
-        // Clear search
-        mShipSearchTextCtrl->Clear();
-
-
-        //
-        // Load settings from preferences, if needed
-        //
-
-        if (mRecentDirectoriesComboBox->GetCount() == 0)
-        {
-            RepopulateRecentDirectoriesComboBox();
-
-            assert(mRecentDirectoriesComboBox->GetCount() > 0);
-
-            // Set the first one everywhere
-            auto dir = mRecentDirectoriesComboBox->GetStrings().front();
-            mDirCtrl->SetPath(dir);
-            mRecentDirectoriesComboBox->SetValue(dir);
-            mShipPreviewPanel->SetDirectory(dir.ToStdString());
-        }
-
-
-        //
-        // Open dialog
-        //
-
-        mShipPreviewPanel->OnOpen();
-
-        auto selectedPath = mDirCtrl->GetPath();
-        if (!selectedPath.IsEmpty())
-            mShipPreviewPanel->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
-
-        Show(true);
+        // Set the first one everywhere
+        auto dir = mRecentDirectoriesComboBox->GetStrings().front();
+        mDirCtrl->SetPath(dir);
+        mRecentDirectoriesComboBox->SetValue(dir);
+        mShipPreviewWindow->SetDirectory(dir.ToStdString());
     }
+
+
+    //
+    // Initialize preview panel
+    //
+
+    mShipPreviewWindow->OnOpen();
+
+    auto selectedPath = mDirCtrl->GetPath();
+    if (!selectedPath.IsEmpty())
+        mShipPreviewWindow->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
+
+    // Run modal
+    return wxDialog::ShowModal();
 }
 
 void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
@@ -301,9 +314,6 @@ void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
     // Enable buttons
     mInfoButton->Enable(!!(event.GetShipMetadata()) && !!(event.GetShipMetadata()->Description));
     mLoadButton->Enable(true);
-
-    // Continue processing
-    event.Skip();
 }
 
 void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
@@ -322,14 +332,30 @@ void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & event)
+void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & /*event*/)
 {
-    mShipPreviewPanel->Search(event.GetString().ToStdString());
+    bool found = false;
+
+    auto searchString = mShipSearchTextCtrl->GetValue();
+    if (!searchString.IsEmpty())
+    {
+        found = mShipPreviewWindow->Search(searchString.ToStdString());
+    }
+
+    mSearchNextButton->Enable(found);
+}
+
+void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
+{
+    auto searchString = mShipSearchTextCtrl->GetValue();
+    assert(!searchString.IsEmpty());
+
+    mShipPreviewWindow->Search(searchString.ToStdString());
 }
 
 void ShipLoadDialog::OnShipSearchTextCtrlTextEnter(wxCommandEvent & /*event*/)
 {
-    mShipPreviewPanel->ChooseSearched();
+    mShipPreviewWindow->ChooseSelected();
 }
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
@@ -369,12 +395,14 @@ void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    Close();
+    EndModal(wxID_CANCEL);
 }
 
 void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
 {
-    Close();
+    // Invoked when the user has tried to close a frame or dialog box
+    // using the window manager (X) or system menu (Windows); it can also be invoked by the application itself
+    EndModal(wxID_CANCEL);
 }
 
 void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
@@ -389,17 +417,15 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
 
     // Clear search
     mShipSearchTextCtrl->Clear();
+    mSearchNextButton->Enable(false);
 
     // Propagate to preview panel
-    mShipPreviewPanel->SetDirectory(directoryPath);
+    mShipPreviewWindow->SetDirectory(directoryPath);
 }
 
 void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 {
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
-
-    // Close ourselves
-    Close();
 
     // Store directory in preferences
     auto dir = shipFilepath.parent_path();
@@ -411,21 +437,22 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
     // Select this directory in the combo box
     mRecentDirectoriesComboBox->SetValue(dir.string());
 
-    // Fire select event
-    auto event = fsShipFileChosenEvent(
-        fsEVT_SHIP_FILE_CHOSEN,
-        this->GetId(),
-        shipFilepath);
+    // Store path
+    mChosenShipFilepath = shipFilepath;
 
-    ProcessWindowEvent(event);
+    // End modal dialog
+    EndModal(wxID_OK);
 }
 
-void ShipLoadDialog::Close()
-{
-    mShipPreviewPanel->OnClose();
+////////////////////////////////////////////////////////////////////////////
 
-    // We just hide ourselves, so we can re-show ourselves again
-    this->Hide();
+void ShipLoadDialog::EndModal(int retCode)
+{
+    LogMessage("ShipLoadDialog::EndModal(", retCode, ")");
+
+    mShipPreviewWindow->OnClose();
+
+    wxDialog::EndModal(retCode);
 }
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()

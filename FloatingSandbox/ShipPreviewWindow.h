@@ -1,11 +1,9 @@
 /***************************************************************************************
 * Original Author:		Gabriele Giuseppini
-* Created:				2019-01-26
+* Created:				2019-09-03
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
-
-#include "ShipPreviewControl.h"
 
 #include <Game/ResourceLoader.h>
 #include <Game/ShipPreview.h>
@@ -25,70 +23,280 @@
 #include <vector>
 
 /*
- * This panel populates itself with previews of all ships found in a directory.
- * The search for ships and extraction of previews is done by a separate thread,
- * so to not interfere with the UI message pump.
+ * Event fired when a ship file has been selected.
  */
-class ShipPreviewPanel : public wxScrolled<wxPanel>
+class fsShipFileSelectedEvent : public wxEvent
 {
 public:
 
-    static constexpr int MinPreviewHGap = 5;
-    static constexpr int MinPreviewWidth = ShipPreviewControl::Width + 2 * MinPreviewHGap;
-    static constexpr int PreviewVGap = 8;
+    fsShipFileSelectedEvent(
+        wxEventType eventType,
+        int winid,
+        size_t shipIndex,
+        std::optional<ShipMetadata> const & shipMetadata,
+        std::filesystem::path const & shipFilepath)
+        : wxEvent(winid, eventType)
+        , mShipIndex(shipIndex)
+        , mShipMetadata(shipMetadata)
+        , mShipFilepath(shipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
+        : wxEvent(other)
+        , mShipIndex(other.mShipIndex)
+        , mShipMetadata(other.mShipMetadata)
+        , mShipFilepath(other.mShipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsShipFileSelectedEvent(*this);
+    }
+
+    size_t GetShipIndex() const
+    {
+        return mShipIndex;
+    }
+
+    std::optional<ShipMetadata> const & GetShipMetadata() const
+    {
+        return mShipMetadata;
+    }
+
+    std::filesystem::path const & GetShipFilepath() const
+    {
+        return mShipFilepath;
+    }
+
+private:
+
+    size_t const mShipIndex;
+    std::optional<ShipMetadata> const mShipMetadata;
+    std::filesystem::path const mShipFilepath;
+};
+
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
+
+/*
+ * Event fired when a ship file has been chosen.
+ */
+class fsShipFileChosenEvent : public wxEvent
+{
+public:
+
+    fsShipFileChosenEvent(
+        wxEventType eventType,
+        int winid,
+        std::filesystem::path const & shipFilepath)
+        : wxEvent(winid, eventType)
+        , mShipFilepath(shipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    fsShipFileChosenEvent(fsShipFileChosenEvent const & other)
+        : wxEvent(other)
+        , mShipFilepath(other.mShipFilepath)
+    {
+        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+    }
+
+    virtual wxEvent *Clone() const override
+    {
+        return new fsShipFileChosenEvent(*this);
+    }
+
+    std::filesystem::path const GetShipFilepath() const
+    {
+        return mShipFilepath;
+    }
+
+private:
+    std::filesystem::path const mShipFilepath;
+};
+
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
+
+/*
+ * This window populates itself with previews of all ships found in a directory.
+ * The search for ships and extraction of previews is done by a separate thread,
+ * so to not interfere with the UI message pump.
+ */
+class ShipPreviewWindow : public wxScrolled<wxWindow>
+{
+public:
+
+    //
+    // InfoTile components
+    //
+
+    static int constexpr InfoTileInset = 4; // For selection
+
+    static int constexpr PreviewImageWidth = 200;
+    static int constexpr PreviewImageHeight = 150;
+
+    static int constexpr PreviewImageBottomMargin = 9;
+
+    static int constexpr DescriptionLabel1Height = 7;
+    static int constexpr DescriptionLabel1BottomMargin = 6;
+    static int constexpr DescriptionLabel2Height = 7;
+    static int constexpr DescriptionLabel2BottomMargin = 12;
+    static int constexpr FilenameLabelHeight = 7;
+    static int constexpr FilenameLabelBottomMargin = 0;
+
+
+    //
+    // InfoTile
+    //
+
+    static int constexpr InfoTileWidth = InfoTileInset + PreviewImageWidth + InfoTileInset;
+    static int constexpr InfoTileHeight =
+        InfoTileInset
+        + PreviewImageHeight
+        + PreviewImageBottomMargin
+        + DescriptionLabel1Height
+        + DescriptionLabel1BottomMargin
+        + DescriptionLabel2Height
+        + DescriptionLabel2BottomMargin
+        + FilenameLabelHeight
+        + FilenameLabelBottomMargin
+        + InfoTileInset;
+
+    static int constexpr HorizontalMarginMin = 4;
+    static int constexpr VerticalMargin = 8;
+
+
+    //
+    // Grid
+    //
+
+    static int constexpr ColumnWidthMin = InfoTileWidth + HorizontalMarginMin;
+    static int constexpr RowHeight = InfoTileHeight + VerticalMargin;
+
+    // Minimum width to ensure one info tile == one column width
+    static int constexpr PanelWidthMin = ColumnWidthMin;
+
+    static int constexpr CalculateMinWidthForColumns(int nCols)
+    {
+        return
+            HorizontalMarginMin / 2
+            + nCols * InfoTileWidth
+            + (nCols - 1) * HorizontalMarginMin
+            + HorizontalMarginMin / 2;
+    }
 
 public:
 
-    ShipPreviewPanel(
+    ShipPreviewWindow(
         wxWindow* parent,
         ResourceLoader const & resourceLoader);
 
-	virtual ~ShipPreviewPanel();
+	virtual ~ShipPreviewWindow();
 
     void OnOpen();
     void OnClose();
 
     void SetDirectory(std::filesystem::path const & directoryPath);
 
-    void Search(std::string const & shipName);
-    void ChooseSearched();
+    bool Search(std::string const & shipName);
+    void ChooseSelected();
 
 private:
 
+    void OnPaint(wxPaintEvent & event);
     void OnResized(wxSizeEvent & event);
+    void OnMouseSingleClick(wxMouseEvent & event);
+    void OnMouseDoubleClick(wxMouseEvent & event);
     void OnPollQueueTimer(wxTimerEvent & event);
-    void OnShipFileSelected(fsShipFileSelectedEvent & event);
 
 private:
 
-    void OnDirScanCompleted(std::vector<std::filesystem::path> const & scannedShipFilepaths);
-    // TODO: others
+    void Select(size_t infoTileIndex);
 
-    int CalculateTileColumns();
+    void Choose(size_t infoTileIndex);
+
+    wxBitmap MakeBitmap(ShipPreview const & shipPreview) const;
+
+    void RecalculateGeometry(
+        wxSize clientSize,
+        int nPreviews);
+
+    size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
+
+    wxRect GetVisibleRectVirtual() const;
+
+    std::tuple<wxString, wxSize> CalculateTextSizeWithCurrentFont(
+        wxDC & dc,
+        std::string const & text);
+
+    void Render(wxDC & dc);
+
+    wxSize mClientSize;
+    int mVirtualHeight;
+    int mCols;
+    int mRows;
+    int mColumnWidth;
+    int mExpandedHorizontalMargin;
+
+    wxPen mSelectionPen;
+    wxFont mDescriptionFont;
+    wxFont mFilenameFont;
+
+    wxBitmap mWaitBitmap;
+    wxBitmap mErrorBitmap;
+
+private:
+
     void ShutdownPreviewThread();
-
-private:
-
-    int mWidth;
-    int mHeight;
-
-    wxPanel * mPreviewPanel;
-    wxGridSizer * mPreviewPanelSizer;
-    std::vector<ShipPreviewControl *> mPreviewControls;
-    std::optional<size_t> mSelectedPreview;
 
     std::unique_ptr<wxTimer> mPollQueueTimer;
 
-    RgbaImageData mWaitImage;
-    RgbaImageData mErrorImage;
+    struct InfoTile
+    {
+        wxBitmap Bitmap;
+        std::string OriginalDescription1;
+        std::string OriginalDescription2;
+        std::filesystem::path ShipFilepath;
 
-private:
+        wxString Description1;
+        std::optional<wxSize> Description1Size;
+        wxString Description2;
+        std::optional<wxSize> Description2Size;
+        wxString Filename;
+        std::optional<wxSize> FilenameSize;
+
+        int Col;
+        int Row;
+        wxRect RectVirtual;
+
+        std::optional<ShipMetadata> Metadata;
+
+        std::vector<std::string> SearchStrings;
+
+        InfoTile(
+            wxBitmap bitmap,
+            std::string const & description1,
+            std::string const & description2,
+            std::filesystem::path const & shipFilepath)
+            : Bitmap(bitmap)
+            , OriginalDescription1(description1)
+            , OriginalDescription2(description2)
+            , ShipFilepath(shipFilepath)
+        {}
+    };
+
+    // The info tiles currently populated
+    std::vector<InfoTile> mInfoTiles;
+
+    // The currently-selected info tile
+    std::optional<size_t> mSelectedInfoTileIndex;
 
     // When set, indicates that the preview of this directory is completed
     std::optional<std::filesystem::path> mCurrentlyCompletedDirectory;
-
-    // Ship name (lcase) to preview index, used when searching for a ship by name
-    std::vector<std::string> mShipNameToPreviewIndex;
 
     ////////////////////////////////////////////////
     // Preview Thread

@@ -17,7 +17,9 @@ set_property(
 #
 
 set (UNIT_TEST_SOURCES
+	AlgorithmsTests.cpp
 	BoundedVectorTests.cpp
+	BufferTests.cpp
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
@@ -27,6 +29,7 @@ set (UNIT_TEST_SOURCES
 	SegmentTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
+	SysSpecificsTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp
 	TruncatedPriorityQueueTests.cpp
@@ -36,12 +39,6 @@ set (UNIT_TEST_SOURCES
 	VectorsTests.cpp
 	VersionTests.cpp
 )
-
-if (MSVC)
-	# We only use intrinsics when in MSVC
-	list(APPEND UNIT_TEST_SOURCES
-		LibSimdPpTests.cpp)
-endif (MSVC)
 
 source_group(" " FILES ${UNIT_TEST_SOURCES})
 

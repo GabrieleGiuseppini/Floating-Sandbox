@@ -448,7 +448,7 @@ public:
      */
     inline auto const NonEphemeralPoints() const
     {
-        return ElementIndexRangeIterator(0, mShipPointCount);
+        return ElementIndexRangeIterable(0, mShipPointCount);
     }
 
     size_t const GetShipPointCount() const
@@ -461,7 +461,7 @@ public:
      */
     inline auto const NonEphemeralPointsReverse() const
     {
-        return ElementIndexReverseRangeIterator(0, mShipPointCount);
+        return ElementIndexReverseRangeIterable(0, mShipPointCount);
     }
 
     /*
@@ -469,7 +469,7 @@ public:
      */
     inline auto const EphemeralPoints() const
     {
-        return ElementIndexRangeIterator(mShipPointCount, mAllPointCount);
+        return ElementIndexRangeIterable(mShipPointCount, mAllPointCount);
     }
 
     /*

@@ -24,7 +24,7 @@ AboutDialog::AboutDialog(
     Create(
         mParent,
         wxID_ANY,
-        _("About " + GetVersionInfo(VersionFormat::Long)),
+        _("About " + std::string(APPLICATION_NAME_WITH_SHORT_VERSION)),
         wxDefaultPosition,
         wxSize(780, 620),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
@@ -42,7 +42,7 @@ AboutDialog::AboutDialog(
     //
 
     wxStaticText * titleLabel = new wxStaticText(this, wxID_ANY, _(""));
-    titleLabel->SetLabelText(GetVersionInfo(VersionFormat::LongWithDate));
+    titleLabel->SetLabelText(std::string(APPLICATION_NAME_WITH_LONG_VERSION " (" __DATE__ ")"));
     titleLabel->SetFont(wxFont(wxFontInfo(14).Family(wxFONTFAMILY_MODERN)));
     mainSizer->Add(titleLabel, 0, wxALIGN_CENTRE);
 
@@ -139,6 +139,9 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },
         {"\t\t\t\t", "The_SamminAter - https://discordapp.com/" },
         {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
+        {"\t\t\t\t", "Wreno - https://discordapp.com/" },
+        {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
+        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
 
         {"Webmaster:\t\t", "Maximord - https://discordapp.com/" },
 

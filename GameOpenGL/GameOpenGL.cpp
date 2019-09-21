@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "GameOpenGL.h"
 
-#include <GameCore/GameMath.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <algorithm>
 #include <memory>
@@ -262,8 +262,8 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
     RgbaImageData baseTexture,
     int maxDimension)
 {
-    assert(baseTexture.Size.Width == CeilPowerOfTwo(baseTexture.Size.Width));
-    assert(baseTexture.Size.Height == CeilPowerOfTwo(baseTexture.Size.Height));
+    assert(baseTexture.Size.Width == ceil_power_of_two(baseTexture.Size.Width));
+    assert(baseTexture.Size.Height == ceil_power_of_two(baseTexture.Size.Height));
 
 
     //

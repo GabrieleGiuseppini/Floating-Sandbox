@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipPreviewPanel.h"
+#include "ShipPreviewWindow.h"
 #include "UIPreferencesManager.h"
 
 #include <Game/ResourceLoader.h>
@@ -30,7 +30,13 @@ public:
 
 	virtual ~ShipLoadDialog();
 
-    void Open();
+    virtual int ShowModal() override;
+
+    std::filesystem::path GetChosenShipFilepath() const
+    {
+        assert(!!mChosenShipFilepath);
+        return *mChosenShipFilepath;
+    }
 
 private:
 
@@ -39,6 +45,7 @@ private:
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
     void OnShipSearchTextCtrlText(wxCommandEvent & event);
+    void OnSearchNextButtonClicked(wxCommandEvent & event);
     void OnShipSearchTextCtrlTextEnter(wxCommandEvent & event);
     void OnHomeDirButtonClicked(wxCommandEvent & event);
     void OnInfoButtonClicked(wxCommandEvent & event);
@@ -51,7 +58,8 @@ private:
 
 private:
 
-    void Close();
+    virtual void EndModal(int retCode) override;
+
     void RepopulateRecentDirectoriesComboBox();
 
 private:
@@ -60,14 +68,16 @@ private:
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
 
     wxGenericDirCtrl * mDirCtrl;
-    ShipPreviewPanel * mShipPreviewPanel;
+    ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
     wxTextCtrl * mShipSearchTextCtrl;
     wxButton * mInfoButton;
     wxButton * mLoadButton;
+    wxButton * mSearchNextButton;
 
 private:
 
     std::optional<ShipMetadata> mSelectedShipMetadata;
     std::optional<std::filesystem::path> mSelectedShipFilepath;
+    std::optional<std::filesystem::path> mChosenShipFilepath;
 };

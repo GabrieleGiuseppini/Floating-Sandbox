@@ -181,40 +181,96 @@
 	"groupName": "Ocean",
 	"hasOwnAmbientLight": false,
 	"frames":[
+
 		{	
 			"index": 0,
+			"worldWidth": 64.0,
+			"worldHeight": 32.0,
+			"filename": "ocean_caribbean_0",
+			"name": "Wavy Clear Thin"
+		},
+		{	
+			"index": 1,
 			"worldWidth": 64.0,
 			"worldHeight": 32.0,
 			"filename": "ocean_0",
 			"name": "Wavy Thin"
 		},
+
 		{	
-			"index": 1,
+			"index": 2,
+			"worldWidth": 64.0,
+			"worldHeight": 64.0,
+			"filename": "ocean_caribbean_0",
+			"name": "Wavy Clear Wide"
+		},
+		{	
+			"index": 3,
 			"worldWidth": 64.0,
 			"worldHeight": 64.0,
 			"filename": "ocean_0",
 			"name": "Wavy Wide"
 		},
+
 		{	
-			"index": 2,
-			"worldWidth": 50.0,
-			"worldHeight": 50.0,
+			"index": 4,
+			"worldWidth": 25.0,
+			"worldHeight": 25.0,
+			"filename": "ocean_caribbean_1",
+			"name": "Crystalline Clear"
+		},
+		{	
+			"index": 5,
+			"worldWidth": 25.0,
+			"worldHeight": 25.0,
 			"filename": "ocean_1",
 			"name": "Crystalline"
 		},
+
 		{	
-			"index": 3,
+			"index": 6,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_caribbean_2",
+			"name": "Murky Clear"
+		},
+		{	
+			"index": 7,
 			"worldWidth": 100.0,
 			"worldHeight": 100.0,
 			"filename": "ocean_2",
 			"name": "Murky"
 		},
+
 		{	
-			"index": 4,
+			"index": 8,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_caribbean_3",
+			"name": "Crisp Clear"
+		},
+		{	
+			"index": 9,
 			"worldWidth": 100.0,
 			"worldHeight": 100.0,
 			"filename": "ocean_3",
 			"name": "Crisp"
+		},
+
+		{	
+			"index": 10,
+			"worldWidth": 150.0,
+			"worldHeight": 150.0,
+			"filename": "ocean_lava_0",
+			"name": "Hot Lava"
+		},
+
+		{	
+			"index": 11,
+			"worldWidth": 150.0,
+			"worldHeight": 150.0,
+			"filename": "ocean_lava_1",
+			"name": "Warm Lava"
 		}
 	]
 },

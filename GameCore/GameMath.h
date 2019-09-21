@@ -13,21 +13,6 @@
 template<typename T>
 constexpr T Pi = T(3.1415926535897932385);
 
-template<typename T>
-inline T CeilPowerOfTwo(T value)
-{
-    if (value <= 0)
-        return 1;
-
-    // Check if immediately a power of 2
-    if (!(value & (value - 1)))
-        return value;
-
-    T result = 2;
-    while (value >>= 1) result <<= 1;
-    return result;
-}
-
 /*
  * Converts the floating-point value to a 32-bit integer, truncating it down
  *
@@ -131,12 +116,13 @@ inline float Clamp(
     return std::min(std::max(lLimit, x), rLimit);
 }
 
-inline float Mix(
-    float val1,
-    float val2,
-    float x)
+template<typename T>
+inline T Mix(
+    T val1,
+    T val2,
+    float x) noexcept
 {
-    return (1.0f - x) * val1 + x * val2;
+    return val1 * (1.0f - x) + val2 * x;
 }
 
 inline float SmoothStep(

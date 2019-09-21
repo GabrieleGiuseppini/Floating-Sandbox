@@ -15,60 +15,26 @@
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define APPLICATION_VERSION_MAJOR               1
-#define APPLICATION_VERSION_MINOR               12
-#define APPLICATION_VERSION_REVISION            0
-#define APPLICATION_VERSION_BUILD               0
+#define APPLICATION_VERSION_MINOR               13
+#define APPLICATION_VERSION_PATCH               0
+#define APPLICATION_VERSION_BUILD               1
 
 #define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
-                                        "." STRINGIZE(APPLICATION_VERSION_REVISION) \
+                                        "." STRINGIZE(APPLICATION_VERSION_PATCH)    \
                                         "." STRINGIZE(APPLICATION_VERSION_BUILD)
 
 #define APPLICATION_VERSION_SHORT_STR   STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
-                                        "." STRINGIZE(APPLICATION_VERSION_REVISION)
+                                        "." STRINGIZE(APPLICATION_VERSION_PATCH)
 
-#define APPLICATION_NAME                "Floating Sandbox"
-#define APPLICATION_NAME_WITH_VERSION   APPLICATION_NAME " " APPLICATION_VERSION_SHORT_STR
+#define APPLICATION_NAME                     "Floating Sandbox"
+#define APPLICATION_NAME_WITH_SHORT_VERSION  APPLICATION_NAME " " APPLICATION_VERSION_SHORT_STR
+#define APPLICATION_NAME_WITH_LONG_VERSION   APPLICATION_NAME " " APPLICATION_VERSION_LONG_STR
 
 #define APPLICATION_DOWNLOAD_URL        "https://gamejolt.com/games/floating-sandbox/353572"
 
 inline std::string ApplicationName = APPLICATION_NAME;
-inline std::string ApplicationNameWithVersion = APPLICATION_NAME_WITH_VERSION;
-
-enum class VersionFormat
-{
-    Short,
-    Long,
-    LongWithDate
-};
-
-inline std::string GetVersionInfo(VersionFormat versionFormat)
-{
-    switch (versionFormat)
-    {
-        case VersionFormat::Short:
-        {
-            return std::string(APPLICATION_VERSION_LONG_STR);
-        }
-
-        case VersionFormat::Long:
-        {
-            return std::string(APPLICATION_NAME_WITH_VERSION);
-        }
-
-        case VersionFormat::LongWithDate:
-        {
-            return std::string(APPLICATION_NAME_WITH_VERSION " (" __DATE__ ")");
-        }
-
-        default:
-        {
-            assert(false);
-            return "";
-        }
-    }
-}
 
 //////////////////////////////////////////////////////////////
 
@@ -81,18 +47,18 @@ public:
         return Version(
             APPLICATION_VERSION_MAJOR,
             APPLICATION_VERSION_MINOR,
-            APPLICATION_VERSION_REVISION,
+            APPLICATION_VERSION_PATCH,
             APPLICATION_VERSION_BUILD);
     }
 
     Version(
         int major,
         int minor,
-        int revision,
+        int patch,
         int build)
         : mMajor(major)
         , mMinor(minor)
-        , mRevision(revision)
+        , mPatch(patch)
         , mBuild(build)
     {}
 
@@ -106,7 +72,7 @@ public:
     {
         return l.mMajor == r.mMajor
             && l.mMinor == r.mMinor
-            && l.mRevision == r.mRevision
+            && l.mPatch == r.mPatch
             && l.mBuild == r.mBuild;
     }
 
@@ -117,8 +83,8 @@ public:
 
     friend inline bool operator<(Version const & l, Version const & r)
     {
-        return std::tie(l.mMajor, l.mMinor, l.mRevision, l.mBuild)
-            < std::tie(r.mMajor, r.mMinor, r.mRevision, r.mBuild);
+        return std::tie(l.mMajor, l.mMinor, l.mPatch, l.mBuild)
+            < std::tie(r.mMajor, r.mMinor, r.mPatch, r.mBuild);
     }
 
     friend inline bool operator>(Version const & l, Version const & r)
@@ -146,12 +112,12 @@ public:
 
             int major = std::stoi(versionMatch[1].str());
             int minor = std::stoi(versionMatch[2].str());
-            int revision = std::stoi(versionMatch[3].str());
+            int patch = std::stoi(versionMatch[3].str());
             int build = (versionMatch[4].matched)
                 ? std::stoi(versionMatch[4].str())
                 : 0;
 
-            return Version(major, minor, revision, build);
+            return Version(major, minor, patch, build);
         }
         else
         {
@@ -166,7 +132,7 @@ public:
         ss
             << mMajor << "."
             << mMinor << "."
-            << mRevision << "."
+            << mPatch << "."
             << mBuild;
 
         return ss.str();
@@ -176,6 +142,6 @@ private:
 
     int mMajor;
     int mMinor;
-    int mRevision;
+    int mPatch;
     int mBuild;
 };

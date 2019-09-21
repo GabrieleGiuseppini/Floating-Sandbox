@@ -90,12 +90,12 @@ private:
     // Dialogs
     //
 
-    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
-    std::unique_ptr<LoggingDialog> mLoggingDialog;
-    std::unique_ptr<SettingsDialog> mSettingsDialog;
-    std::unique_ptr<PreferencesDialog> mPreferencesDialog;
-    std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<AboutDialog> mAboutDialog;
+    std::unique_ptr<HelpDialog> mHelpDialog;
+    std::unique_ptr<LoggingDialog> mLoggingDialog;
+    std::unique_ptr<PreferencesDialog> mPreferencesDialog;
+    std::unique_ptr<SettingsDialog> mSettingsDialog;
+    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
 
     //
     // Timers
@@ -122,7 +122,6 @@ private:
     void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
     void OnCheckUpdateTimerTrigger(wxTimerEvent & event);
     void OnIdle(wxIdleEvent & event);
-    void OnShipFileChosen(fsShipFileChosenEvent & event);
 
     // Main GL canvas
     void OnMainGLCanvasResize(wxSizeEvent& event);
@@ -281,6 +280,8 @@ private:
 
     void StartLowFrequencyTimer();
 
+    void SetPaused(bool isPaused);
+
 private:
 
     wxApp * const mMainApp;
@@ -303,6 +304,7 @@ private:
 
     bool mHasWindowBeenShown;
     bool mHasStartupTipBeenChecked;
+    int mPauseCount;
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;

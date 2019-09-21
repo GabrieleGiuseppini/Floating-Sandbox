@@ -103,8 +103,7 @@ void Ship::MoveBy(
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
 
-    size_t const count = mPoints.GetBufferElementCount();
-    for (size_t p = 0; p < count; ++p)
+    for (auto p : mPoints.BufferElements())
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = actualInertialVelocity;
@@ -172,8 +171,7 @@ void Ship::RotateBy(
     vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
 
-    size_t const count = mPoints.GetBufferElementCount();
-    for (size_t p = 0; p < count; ++p)
+    for (auto p : mPoints.BufferElements())
     {
         vec2f const centeredPos = positionBuffer[p] - center;
 

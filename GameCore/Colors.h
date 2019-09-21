@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
 #include "Vectors.h"
 
 #include <cstdint>
@@ -188,9 +189,7 @@ public:
         rgbColor const & otherColor,
         float alpha) const noexcept
     {
-        vec3f const result =
-            this->toVec3f() * (1.0f - alpha)
-            + otherColor.toVec3f() * alpha;
+        vec3f const result = Mix(this->toVec3f(), otherColor.toVec3f(), alpha);
 
         return rgbaColor(result, this->a);
     }

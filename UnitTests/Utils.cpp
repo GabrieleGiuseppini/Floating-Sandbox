@@ -1,9 +1,5 @@
 #include "Utils.h"
 
-void DoSomething(simdpp::float32<4> const & /*v*/)
-{
-}
-
 ::testing::AssertionResult ApproxEquals(float a, float b, float tolerance)
 {
     if (abs(a - b) < tolerance)

@@ -2151,7 +2151,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 oceanRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
                 {
-                    wxGridBagSizer * oceanRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * oceanRenderModeBoxSizer2 = new wxGridBagSizer(3, 3);
 
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -2160,7 +2160,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBox, wxID_ANY, wxEmptyString,
-                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                        wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_READONLY);
                     for (auto const & entry : mGameController->GetTextureOceanAvailableThumbnails())
                     {
                         mTextureOceanComboBox->Append(
@@ -2169,7 +2169,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     }
                     mTextureOceanComboBox->SetToolTip("Sets the texture to use for the ocean.");
                     mTextureOceanComboBox->Bind(wxEVT_COMBOBOX, &SettingsDialog::OnTextureOceanChanged, this);
-                    oceanRenderModeBoxSizer2->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
+                    oceanRenderModeBoxSizer2->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL | wxEXPAND, 0);
 
                     //
 

@@ -5,8 +5,7 @@
                 xmlns="http://schemas.microsoft.com/wix/2006/wi"
                 exclude-result-prefixes="xsl wix">
 
-    <!-- Change with each release! -->
-    <xsl:variable name="ProductRegistryKey" select="'Software\Gabriele Giuseppini\Floating Sandbox 1.12.0.0'" />
+    <xsl:variable name="ProductRegistryKey" select="'Software\Gabriele Giuseppini\Floating Sandbox V1'" />
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 

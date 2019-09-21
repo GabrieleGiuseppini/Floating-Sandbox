@@ -11,6 +11,7 @@
 #include "RenderContext.h"
 
 #include <GameCore/CircularList.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <functional>
@@ -238,7 +239,7 @@ private:
     CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
 
     // The next bomb ID value
-    typename LocalBombId mNextLocalBombId;
+    LocalBombId mNextLocalBombId;
 };
 
 }

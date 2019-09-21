@@ -77,7 +77,7 @@ public:
     {
         assert(interval.count() != 0);
 
-        return ElapsedAsFloat(previousTimePoint).count()
+        return ElapsedAsFloat(previousTimePoint)
             / std::chrono::duration_cast<std::chrono::duration<float>>(interval).count();
     }
 

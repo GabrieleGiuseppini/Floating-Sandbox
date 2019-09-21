@@ -411,6 +411,10 @@ void GameController::Render()
 
 void GameController::SetPaused(bool isPaused)
 {
+    // Freeze time
+    GameWallClock::GetInstance().SetPaused(isPaused);
+
+    // Change state
     mIsPaused = isPaused;
 }
 
