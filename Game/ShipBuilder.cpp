@@ -208,7 +208,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     float originalSpringACMR = CalculateACMR(springInfos);
 
     // Tiling algorithm
-    auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
+    //auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
+    auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Stripes<4>(
         pointInfos,
         springInfos,
         pointIndexMatrix,
@@ -1177,6 +1178,205 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 // Reordering
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+template <int StripeLength>
+ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes(
+    std::vector<PointInfo> const & pointInfos1,
+    std::vector<SpringInfo> const & springInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize)
+{
+    //
+    // 1. Build Edge -> Spring table
+    //
+
+    std::unordered_map<Edge, ElementIndex, Edge::Hasher> edgeToSpringIndex1Map;
+
+    for (ElementIndex s = 0; s < springInfos1.size(); ++s)
+    {
+        edgeToSpringIndex1Map.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(springInfos1[s].PointAIndex1, springInfos1[s].PointBIndex1),
+            std::forward_as_tuple(s));
+    }
+
+
+    //
+    // 2. Visit the point matrix by all rows, from top to bottom
+    //
+
+    std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
+    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
+
+    std::vector<PointInfo> pointInfos2;
+    pointInfos2.reserve(pointInfos1.size());
+
+    std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
+
+    std::vector<SpringInfo> springInfos2;
+    springInfos2.reserve(springInfos1.size());
+
+    // From top to bottom, starting at second row from top (i.e. first real row)
+    for (int y = structureImageSize.Height; y >= 1; y -= (StripeLength - 1))
+    {
+        ReorderPointsAndSpringsOptimally_Stripes_Stripe<StripeLength>(
+            y,
+            pointInfos1,
+            reorderedPointInfos1,
+            springInfos1,
+            reorderedSpringInfos1,
+            pointIndexMatrix,
+            structureImageSize,
+            edgeToSpringIndex1Map,
+            pointInfos2,
+            pointIndexRemap,
+            springInfos2);
+    }
+
+
+    //
+    // 3. Add/Sort leftovers
+    //
+    // At this moment leftovers are:
+    //  - Points: rope endpoints (because unreachable via matrix)
+    //  - Springs: spring connecting points on left edge of ship with points SW of those points, and rope springs
+    //
+
+    // LogMessage(" Leftover points: ", pointInfos1.size() - pointInfos2.size() , " springs: ", springInfos1.size() - springInfos2.size());
+
+    // Here we use a greedy algorithm: for each not-yet-reordered point we add 
+    // all of its connected springs that are still not reordered
+    for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
+    {
+        if (!reorderedPointInfos1[pointIndex1])
+        {
+            // Add/sort point
+            pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+            pointInfos2.push_back(pointInfos1[pointIndex1]);
+
+            // Visit all connected not-yet-reordered springs
+            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
+            {
+                if (!reorderedSpringInfos1[springIndex1])
+                {
+                    // Add/sort spring
+                    springInfos2.push_back(springInfos1[springIndex1]);
+
+                    // Don't reorder this spring again
+                    reorderedSpringInfos1[springIndex1] = true;
+                }
+            }
+        }
+    }
+
+    // Finally add all not-yet-reordered springs
+    for (size_t springIndex1 = 0; springIndex1 < springInfos1.size(); ++springIndex1)
+    {
+        if (!reorderedSpringInfos1[springIndex1])
+        {
+            // Add/sort spring
+            springInfos2.push_back(springInfos1[springIndex1]);
+        }
+    }
+
+    //
+    // 4. Return results
+    //
+
+    assert(pointInfos2.size() == pointInfos1.size());
+    assert(pointIndexRemap.size() == pointInfos1.size());
+    assert(springInfos2.size() == springInfos1.size());
+
+    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2);
+}
+
+template <int StripeLength>
+void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
+    int y,
+    std::vector<PointInfo> const & pointInfos1,
+    std::vector<bool> & reorderedPointInfos1,
+    std::vector<SpringInfo> const & springInfos1,
+    std::vector<bool> & reorderedSpringInfos1,
+    std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+    std::vector<PointInfo> & pointInfos2,
+    std::vector<ElementIndex> & pointIndexRemap,
+    std::vector<SpringInfo> & springInfos2)
+{
+    //
+    // Collect points in a vertical stripe - 2 cols wide, StripeLength high
+    //
+
+    std::vector<ElementIndex> stripePointIndices1;
+
+    // From left to right, start at first real col
+    for (int x1 = 1; x1 <= structureImageSize.Width; ++x1)
+    {
+        //
+        // 1. Build sets of indices of points left and right of the stripe
+        //
+
+        stripePointIndices1.clear();
+
+        // From top to bottom
+        for (int y1 = y; y1 > y - StripeLength && y1 >= 1; --y1)
+        {
+            // Check if left exists
+            if (!!pointIndexMatrix[x1][y1])
+            {
+                stripePointIndices1.push_back(*(pointIndexMatrix[x1][y1]));
+            }
+
+            // Check if right exists
+            if (!!pointIndexMatrix[x1 + 1][y1])
+            {
+                stripePointIndices1.push_back(*(pointIndexMatrix[x1 + 1][y1]));
+            }
+        }
+
+
+        //
+        // 2. Add/sort all not yet reordered springs connecting all points among themselves
+        //
+
+        for (int i1 = 0; i1 < static_cast<int>(stripePointIndices1.size()) - 1; ++i1)
+        {
+            for (int i2 = i1 + 1; i2 < static_cast<int>(stripePointIndices1.size()); ++i2)
+            {
+                auto const springIndexIt = edgeToSpringIndex1Map.find({ stripePointIndices1[i1], stripePointIndices1[i2] });
+                if (springIndexIt != edgeToSpringIndex1Map.end())
+                {
+                    ElementIndex const springIndex1 = springIndexIt->second;
+                    if (!reorderedSpringInfos1[springIndex1])
+                    {
+                        springInfos2.push_back(springInfos1[springIndex1]);
+
+                        // Don't reorder this spring again
+                        reorderedSpringInfos1[springIndex1] = true;
+                    }
+                }
+            }
+        }
+
+
+        //
+        // 3. Add/sort all not yet reordered points among all these points
+        // 
+
+        for (ElementIndex pointIndex1 : stripePointIndices1)
+        {
+            if (!reorderedPointInfos1[pointIndex1])
+            {
+                pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
+                pointInfos2.push_back(pointInfos1[pointIndex1]);
+
+                // Don't reorder this point again
+                reorderedPointInfos1[pointIndex1] = true;
+            }
+        }
+    }
+}
+
 ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks(
     std::vector<PointInfo> const & pointInfos1,
     std::vector<SpringInfo> const & springInfos1,
@@ -1647,7 +1847,7 @@ std::vector<ShipBuilder::TriangleInfo> ShipBuilder::ReorderTrianglesOptimally_To
 
 float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
 {
-    size_t constexpr IntervalReportingSamples = 1000;
+    //size_t constexpr IntervalReportingSamples = 1000;
 
     //
     // Calculate the average cache miss ratio
@@ -1661,31 +1861,31 @@ float ShipBuilder::CalculateACMR(std::vector<SpringInfo> const & springInfos)
     TestLRUVertexCache<VertexCacheSize> cache;
 
     float cacheMisses = 0.0f;
-    float intervalCacheMisses = 0.0f;
+    //float intervalCacheMisses = 0.0f;
 
     for (size_t s = 0; s < springInfos.size(); ++s)
     {
         if (!cache.UseVertex(springInfos[s].PointAIndex1))
         {
             cacheMisses += 1.0f;
-            intervalCacheMisses += 1.0f;
+            //intervalCacheMisses += 1.0f;
         }
 
         if (!cache.UseVertex(springInfos[s].PointBIndex1))
         {
             cacheMisses += 1.0f;
-            intervalCacheMisses += 1.0f;
+            //intervalCacheMisses += 1.0f;
         }
 
-        if (s < 6 + 5 + 5)
-            LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
+        ////if (s < 6 + 5 + 5)
+        ////    LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
 
-        if (s > 0 && 0 == (s % IntervalReportingSamples))
-        {
-            LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
-                " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
-            intervalCacheMisses = 0.0f;
-        }
+        ////if (s > 0 && 0 == (s % IntervalReportingSamples))
+        ////{
+        ////    LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
+        ////        " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
+        ////    intervalCacheMisses = 0.0f;
+        ////}
     }
 
     return cacheMisses / static_cast<float>(springInfos.size());

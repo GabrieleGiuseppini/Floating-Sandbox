@@ -297,6 +297,27 @@ private:
     // Reordering
     //
 
+    template <int StripeLength>
+    static ReorderingResults ReorderPointsAndSpringsOptimally_Stripes(
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<SpringInfo> const & springInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize);
+
+    template <int StripeLength>
+    static void ReorderPointsAndSpringsOptimally_Stripes_Stripe(
+        int y,
+        std::vector<PointInfo> const & pointInfos1,
+        std::vector<bool> & reorderedPointInfos1,
+        std::vector<SpringInfo> const & springInfos1,
+        std::vector<bool> & reorderedSpringInfos1,
+        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+        std::vector<PointInfo> & pointInfos2,
+        std::vector<ElementIndex> & pointIndexRemap,
+        std::vector<SpringInfo> & springInfos2);
+
     static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
         std::vector<PointInfo> const & pointInfos1,
         std::vector<SpringInfo> const & springInfos1,
