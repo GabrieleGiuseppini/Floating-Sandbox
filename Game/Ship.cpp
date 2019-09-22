@@ -1288,7 +1288,50 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
     // Diffuse light from each lamp to all points on the same or lower plane ID,
-    // inverse-proportionally to the nth power of the distance, where n is the spread
+    // inverse-proportionally to the lamp-point distance
+    //
+
+
+    //
+    // 1. Prepare lamp data
+    //
+
+    // TODO: these should become all pre-allocated members of ElectricalElements, 
+    // and lampLightSpreadMaxDistanceBuffer and part of distanceCoeffBuffer may even be 
+    // pre-calcd and updated only at GameParams updated
+    
+    std::vector<vec2f> lampPositionBuffer;
+    lampPositionBuffer.reserve(mElectricalElements.Lamps().size());
+    std::vector<PlaneId> lampPlaneIdBuffer;
+    lampPlaneIdBuffer.reserve(mElectricalElements.Lamps().size());
+    std::vector<float> distanceCoeffBuffer; // effectiveLampLight / lampLightSpreadMaxDistance
+    distanceCoeffBuffer.reserve(mElectricalElements.Lamps().size());
+    std::vector<float> lampLightSpreadMaxDistanceBuffer;
+    lampLightSpreadMaxDistanceBuffer.reserve(mElectricalElements.Lamps().size());
+
+    for (auto lampIndex : mElectricalElements.Lamps())
+    {
+        lampPositionBuffer.push_back(mPoints.GetPosition(mElectricalElements.GetPointIndex(lampIndex)));
+
+        lampPlaneIdBuffer.push_back(mPoints.GetPlaneId(mElectricalElements.GetPointIndex(lampIndex)));
+
+        auto const lampLightSpreadMaxDistance =
+            mElectricalElements.GetLightSpread(lampIndex)
+            * gameParameters.LightSpreadAdjustment
+            + 0.5f; // To ensure spread=0 => lamp is lighted        
+
+        distanceCoeffBuffer.push_back(
+            mElectricalElements.GetAvailableLight(lampIndex)
+            * mElectricalElements.GetLuminiscence(lampIndex)
+            * gameParameters.LuminiscenceAdjustment
+            / lampLightSpreadMaxDistance);
+
+        lampLightSpreadMaxDistanceBuffer.push_back(lampLightSpreadMaxDistance);
+    }
+
+
+    //
+    // 2. Visit all points
     //
 
     for (auto pointIndex : mPoints)
@@ -1300,42 +1343,15 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 
         // Go through all lamps;
         // can safely visit deleted lamps as their current will always be zero
-        for (auto lampIndex : mElectricalElements.Lamps())
+        for (size_t l = 0; l < mElectricalElements.Lamps().size(); ++l)
         {            
-            auto const lampPointIndex = mElectricalElements.GetPointIndex(lampIndex);
-
-            if (pointPlane <= mPoints.GetPlaneId(lampPointIndex))
+            if (pointPlane <= lampPlaneIdBuffer[l])
             {
-                // TODOTEST
-                ////float const effectiveLampLight =
-                ////    gameParameters.LuminiscenceAdjustment >= 1.0f
-                ////    ? FastPow( // TODO: room for linearity by changing adjustment
-                ////        mElectricalElements.GetAvailableLight(lampIndex)
-                ////        * mElectricalElements.GetLuminiscence(lampIndex),
-                ////        1.0f / gameParameters.LuminiscenceAdjustment)
-                ////    : mElectricalElements.GetAvailableLight(lampIndex)
-                ////      * mElectricalElements.GetLuminiscence(lampIndex)
-                ////      * gameParameters.LuminiscenceAdjustment;
-
-                float const effectiveLampLight =
-                    mElectricalElements.GetAvailableLight(lampIndex)
-                    * mElectricalElements.GetLuminiscence(lampIndex)
-                    * gameParameters.LuminiscenceAdjustment;
-
-                float const lampLightSpreadMaxDistance =
-                    mElectricalElements.GetLightSpread(lampIndex)
-                    * gameParameters.LightSpreadAdjustment
-                    + 0.5f; // To ensure spread=0 => lamp is lighted
-
-                vec2f const & lampPosition = mPoints.GetPosition(lampPointIndex);
-
-                float const distance = (pointPosition - lampPosition).length();
+                float const distance = (pointPosition - lampPositionBuffer[l]).length();
 
                 float const newLight =
                     std::min(
-                        effectiveLampLight
-                        * std::max(lampLightSpreadMaxDistance - distance, 0.0f)
-                        / lampLightSpreadMaxDistance,
+                        distanceCoeffBuffer[l] * std::max(lampLightSpreadMaxDistanceBuffer[l] - distance, 0.0f),
                         1.0f);
 
                 // Point's light is just max, to avoid having to normalize everything to 1.0
