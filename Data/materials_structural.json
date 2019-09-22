@@ -3873,12 +3873,15 @@
         "water_retention": 0.0, 
         "water_volume_fill": 0.003
     }, 
+
+
     {
         "color_key": "#FFFF00", 
         "combustion_type": "Combustion", 
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
         "ignition_temperature": 1000000.0, 
         "is_hull": false, 
+	"is_legacy_electrical": true,
         "mass": {
             "density": 0.275, 
             "nominal_mass": 30
@@ -3905,6 +3908,7 @@
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
         "ignition_temperature": 1000000.0, 
         "is_hull": false, 
+	"is_legacy_electrical": true,
         "mass": {
             "density": 0.275, 
             "nominal_mass": 30
@@ -3931,6 +3935,7 @@
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
         "ignition_temperature": 1000000.0, 
         "is_hull": false, 
+	"is_legacy_electrical": true,
         "mass": {
             "density": 0.275, 
             "nominal_mass": 900
@@ -3957,6 +3962,7 @@
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
         "ignition_temperature": 689.15, 
         "is_hull": true, 
+	"is_legacy_electrical": true,
         "mass": {
             "density": 0.275, 
             "nominal_mass": 30
@@ -3983,6 +3989,7 @@
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
         "ignition_temperature": 689.15, 
         "is_hull": false, 
+	"is_legacy_electrical": true,
         "mass": {
             "density": 0.275, 
             "nominal_mass": 30

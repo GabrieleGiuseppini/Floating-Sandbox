@@ -74,6 +74,7 @@ public:
 
     // Misc
     float WindReceptivity;
+    bool IsLegacyElectrical;
 
 public:
 
@@ -128,7 +129,8 @@ public:
         float specificHeat,
         MaterialCombustionType combustionType,
         // Misc
-        float windReceptivity)
+        float windReceptivity,
+        bool isLegacyElectrical)
         : Name(name)
         , Strength(strength)
         , NominalMass(nominalMass)
@@ -149,6 +151,7 @@ public:
         , SpecificHeat(specificHeat)
         , CombustionType(combustionType)
         , WindReceptivity(windReceptivity)
+        , IsLegacyElectrical(isLegacyElectrical)
     {}
 };
 

@@ -323,8 +323,7 @@ Render:
 
 		= Unix build break
 
-
-		- Lights perf improvement (*)
+		= Lights perf improvement (*)
 
 		- Cached quantities (*)
 		
@@ -487,7 +486,12 @@ Render:
 
 - Simulation Optimizations:
 
-	- Lights perf improvement (*)
+	= Lights perf improvement (*)
+		+ Start: FPS=9.9 U/R=508/510 (Dorik 2)
+		+ 1: Add IsLegacyElectrical to structural materials
+		- 2: Make spread linear, == max distance
+		- 3: Vectorize
+		- OLD:
 		- Try with pre-calculated luminiscence function, as a function of square distance
 			- Function only depends on game parameters; lives at ElectricalElements and is re-calc'd by
 			  ElectricalElements at each ElectricalElements::UpdateGameParameters() when params differ

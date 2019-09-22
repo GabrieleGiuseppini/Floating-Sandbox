@@ -57,6 +57,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         // Misc
 
         float const windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
+        bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
 
         return StructuralMaterial(
             name,
@@ -80,7 +81,8 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             specificHeat,
             combustionType,
             // Misc
-            windReceptivity);
+            windReceptivity,
+            isLegacyElectrical);
     }
     catch (GameException const & ex)
     {

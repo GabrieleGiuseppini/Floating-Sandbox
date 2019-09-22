@@ -160,6 +160,24 @@ public:
                     material));
         }
 
+
+        //
+        // Make sure there are no structural materials whose key appears
+        // in electrical materials, with the exception for"legacy" electrical
+        // materials
+        //
+
+        for (auto const & kv : structuralMaterialsMap)
+        {
+            if (!kv.second.IsLegacyElectrical
+                && 0 != electricalMaterialsMap.count(kv.first))
+            {
+                throw GameException("color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
+            }
+        }
+
+
+
         return MaterialDatabase(
             std::move(structuralMaterialsMap),
             std::move(electricalMaterialsMap),
