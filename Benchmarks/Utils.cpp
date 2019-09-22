@@ -36,6 +36,19 @@ std::vector<float> MakeFloats(size_t count)
     return floats;
 }
 
+std::vector<PlaneId> MakePlaneIds(size_t count)
+{
+    std::vector<PlaneId> planeIds;
+    planeIds.reserve(count);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        planeIds.push_back(static_cast<PlaneId>(i % 100));
+    }
+
+    return planeIds;
+}
+
 std::vector<float> MakeFloats(size_t count, float value)
 {
     std::vector<float> floats(count, value);

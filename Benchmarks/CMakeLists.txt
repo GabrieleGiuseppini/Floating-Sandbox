@@ -1,4 +1,5 @@
 set (BENCHMARK_SOURCES
+	DiffuseLight.cpp
 	DivisionByZero.cpp
 	GameMath.cpp
 	Logarithm.cpp

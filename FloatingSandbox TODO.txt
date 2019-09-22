@@ -499,7 +499,10 @@ Render:
 		+ Now: FPS=13.4 U/R=335/342
 		+ 6: Invert loop and optimize
 		+ Now: FPS=15.8 U/R=272
-		- 7: Vectorize
+		= 7: Vectorize
+			+ Make unit tests
+			= Make benchmark
+			- Vectorize
 		- Now: FPS= U/R=
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)

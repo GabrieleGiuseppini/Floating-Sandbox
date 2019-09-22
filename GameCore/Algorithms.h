@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameTypes.h"
 #include "SysSpecifics.h"
 #include "Vectors.h"
 
@@ -12,8 +13,8 @@ namespace Algorithms {
 
 template<typename EndpointStruct>
 inline void CalculateVectorDirsAndReciprocalLengths(
-    vec2f const * restrict pointPositions,
-    EndpointStruct const * restrict endpoints,
+    vec2f const * pointPositions,
+    EndpointStruct const * endpoints,
     vec2f * restrict outDirs,
     float * restrict outReciprocalLengths,
     size_t const elementCount)
@@ -68,6 +69,50 @@ inline void CalculateVectorDirsAndReciprocalLengths(
 
         _mm_store_ps(reinterpret_cast<float * restrict>(outDirs + s), s01);
         _mm_store_ps(reinterpret_cast<float * restrict>(outDirs + s + 2), s23);
+    }
+}
+
+inline void DiffuseLight(
+    vec2f const * pointPositions,
+    PlaneId const * pointPlaneIds,
+    ElementIndex const pointCount,
+    vec2f const * lampPositions,
+    PlaneId const * lampPlaneIds,
+    float const * lampDistanceCoeffs,
+    float const * lampSpreadMaxDistances,
+    ElementIndex const lampCount,
+    float * restrict outLightBuffer)
+{
+    // TODOHERE: this is the original implementation
+
+    for (ElementIndex p = 0; p < pointCount; ++p)
+    {
+        auto const pointPosition = pointPositions[p];
+        auto const pointPlane = pointPlaneIds[p];
+
+        float pointLight = 0.0f;
+
+        // Go through all lamps;
+        // can safely visit deleted lamps as their current will always be zero
+        for (ElementIndex l = 0; l < lampCount; ++l)
+        {
+            if (pointPlane <= lampPlaneIds[l])
+            {
+                float const distance = (pointPosition - lampPositions[l]).length();
+
+                float const newLight =
+                    std::min(
+                        lampDistanceCoeffs[l] * std::max(lampSpreadMaxDistances[l] - distance, 0.0f),
+                        1.0f);
+
+                // Point's light is just max, to avoid having to normalize everything to 1.0
+                pointLight = std::max(
+                    newLight,
+                    pointLight);
+            }
+        }
+
+        outLightBuffer[p] = pointLight;
     }
 }
 

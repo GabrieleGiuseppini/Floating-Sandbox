@@ -39,7 +39,9 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         1.0f,
         StructuralMaterial::MaterialCombustionType::Combustion,
-        1.0f);
+        // Misc
+        1.0f,
+        false);
 }
 
 /////////////////////////////////////////////////////////////////

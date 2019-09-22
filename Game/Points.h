@@ -938,14 +938,14 @@ public:
     // Heat dynamics
     //
 
-    float * restrict GetTemperatureBufferAsFloat()
-    {
-        return mTemperatureBuffer.data();
-    }
-
     float GetTemperature(ElementIndex pointElementIndex) const
     {
         return mTemperatureBuffer[pointElementIndex];
+    }
+
+    float * restrict GetTemperatureBufferAsFloat()
+    {
+        return mTemperatureBuffer.data();
     }
 
     void SetTemperature(
@@ -1026,6 +1026,11 @@ public:
     float GetLight(ElementIndex pointElementIndex) const
     {
         return mLightBuffer[pointElementIndex];
+    }
+
+    float *restrict GetLightBufferAsFloat()
+    {
+        return mLightBuffer.data();
     }
 
     inline void SetLight(
@@ -1201,6 +1206,11 @@ public:
     PlaneId GetPlaneId(ElementIndex pointElementIndex) const
     {
         return mPlaneIdBuffer[pointElementIndex];
+    }
+
+    PlaneId * restrict GetPlaneIdBufferAsPlaneId()
+    {
+        return mPlaneIdBuffer.data();
     }
 
     void SetPlaneId(
