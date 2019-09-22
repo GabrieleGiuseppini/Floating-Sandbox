@@ -1,3 +1,4 @@
+
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
 * Created:              2018-01-19
@@ -289,12 +290,12 @@ struct GameParameters
     static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
     float LuminiscenceAdjustment;
-    static float constexpr MinLuminiscenceAdjustment = 0.1f;
-    static float constexpr MaxLuminiscenceAdjustment = 10.0f;
+    static float constexpr MinLuminiscenceAdjustment = 0.0f;
+    static float constexpr MaxLuminiscenceAdjustment = 4.0f;
 
     float LightSpreadAdjustment;
     static float constexpr MinLightSpreadAdjustment = 0.0f;
-    static float constexpr MaxLightSpreadAdjustment = 5.0f;
+    static float constexpr MaxLightSpreadAdjustment = 10.0f;
 
     size_t NumberOfStars;
     static constexpr size_t MinNumberOfStars = 0;

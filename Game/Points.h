@@ -1028,9 +1028,11 @@ public:
         return mLightBuffer[pointElementIndex];
     }
 
-    float & GetLight(ElementIndex pointElementIndex)
+    inline void SetLight(
+        ElementIndex pointElementIndex,
+        float light)
     {
-        return mLightBuffer[pointElementIndex];
+        mLightBuffer[pointElementIndex] = light;
     }
 
     //

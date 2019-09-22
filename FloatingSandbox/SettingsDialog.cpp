@@ -609,8 +609,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinLuminiscenceAdjustment(),
+                        1.0f,
                         mGameController->GetMaxLuminiscenceAdjustment()));
 
                 lightsSizer->Add(

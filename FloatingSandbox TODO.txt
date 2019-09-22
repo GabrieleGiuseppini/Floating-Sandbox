@@ -489,8 +489,20 @@ Render:
 	= Lights perf improvement (*)
 		+ Start: FPS=9.9 U/R=508/510 (Dorik 2)
 		+ 1: Add IsLegacyElectrical to structural materials
-		- 2: Make spread linear, == max distance
-		- 3: Vectorize
+		+ 2: Make spread linear, == max distance
+			+ Update materials' DB
+			+ Remove mapping and take spread as-is
+		+ 3: Adjust spread adjustment:
+			+ Min/Max = 0.0/20.0, linear
+		+ 4: Adjust luminiscence adjustment:
+			+ Min/Max = 0.0/4.0, exp
+		+ Now: FPS=13.4 U/R=335/342
+		- 6: Invert loop
+		- Now: FPS= U/R=
+		- 7: Vectorize
+		- Now: FPS= U/R=
+		- Adjust ships:
+			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
 		- OLD:
 		- Try with pre-calculated luminiscence function, as a function of square distance
 			- Function only depends on game parameters; lives at ElectricalElements and is re-calc'd by
