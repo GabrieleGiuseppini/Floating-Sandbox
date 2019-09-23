@@ -72,7 +72,7 @@ inline void CalculateVectorDirsAndReciprocalLengths(
     }
 }
 
-inline void DiffuseLight(
+inline void DiffuseLight_Naive(
     vec2f const * pointPositions,
     PlaneId const * pointPlaneIds,
     ElementIndex const pointCount,
@@ -83,8 +83,6 @@ inline void DiffuseLight(
     ElementIndex const lampCount,
     float * restrict outLightBuffer)
 {
-    // TODOHERE: this is the original implementation
-
     for (ElementIndex p = 0; p < pointCount; ++p)
     {
         auto const pointPosition = pointPositions[p];
@@ -101,9 +99,8 @@ inline void DiffuseLight(
                 float const distance = (pointPosition - lampPositions[l]).length();
 
                 float const newLight =
-                    std::min(
-                        lampDistanceCoeffs[l] * std::max(lampSpreadMaxDistances[l] - distance, 0.0f),
-                        1.0f);
+                    lampDistanceCoeffs[l]
+                    * (lampSpreadMaxDistances[l] - distance); // If negative, max(.) below will clamp down to 0.0
 
                 // Point's light is just max, to avoid having to normalize everything to 1.0
                 pointLight = std::max(
@@ -112,8 +109,33 @@ inline void DiffuseLight(
             }
         }
 
-        outLightBuffer[p] = pointLight;
+        outLightBuffer[p] = std::min(1.0f, pointLight);
     }
 }
+
+inline void DiffuseLight_Vectorized(
+    vec2f const * pointPositions,
+    PlaneId const * pointPlaneIds,
+    ElementIndex const pointCount,
+    vec2f const * lampPositions,
+    PlaneId const * lampPlaneIds,
+    float const * lampDistanceCoeffs,
+    float const * lampSpreadMaxDistances,
+    ElementIndex const lampCount,
+    float * restrict outLightBuffer)
+{
+    // TODOHERE
+    DiffuseLight_Naive(
+        pointPositions,
+        pointPlaneIds,
+        pointCount,
+        lampPositions,
+        lampPlaneIds,
+        lampDistanceCoeffs,
+        lampSpreadMaxDistances,
+        lampCount,
+        outLightBuffer);
+}
+
 
 }

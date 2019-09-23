@@ -1334,7 +1334,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // 2. Diffuse light
     //
 
-    Algorithms::DiffuseLight(
+    Algorithms::DiffuseLight_Vectorized(
         mPoints.GetPositionBufferAsVec2(),
         mPoints.GetPlaneIdBufferAsPlaneId(),
         mPoints.GetElementCount(),

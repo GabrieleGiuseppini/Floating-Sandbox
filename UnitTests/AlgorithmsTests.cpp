@@ -47,7 +47,51 @@ TEST(AlgorithmsTests, CalculateVectorDirsAndReciprocalLengths)
     EXPECT_TRUE(ApproxEquals(-1.0f / std::sqrt(50.0f), outDirs[3].y, Tolerance));
 }
 
-TEST(AlgorithmsTests, DiffuseLight)
+TEST(AlgorithmsTests, DiffuseLight_1Lamp)
+{
+    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+
+    vec2f lampPositions[] = { { 4.0f, 2.0f} };
+    PlaneId lampPlaneIds[] = { 3 };
+    float lampDistanceCoeffs[] = { 0.1f };
+    float lampSpreadMaxDistances[] = { 4.0f };
+
+    float outLightBuffer[4];
+
+    Algorithms::DiffuseLight_Vectorized(
+        pointPositions,
+        pointPlaneIds,
+        4,
+        lampPositions,
+        lampPlaneIds,
+        lampDistanceCoeffs,
+        lampSpreadMaxDistances,
+        1,
+        outLightBuffer);
+
+    // Point1:
+    //  - Lamp1: D=3 NewLight=0.1*(4-3) = 0.1
+
+    EXPECT_FLOAT_EQ(0.1f, outLightBuffer[0]);
+
+    // Point2:
+    //  - Lamp1: D=sqrt(8) NewLight=0.1*(4-sqrt(8)) = 0.1171573
+
+    EXPECT_FLOAT_EQ(0.1171573f, outLightBuffer[1]);
+
+    // Point3:
+    //  - Lamp1: D=sqrt(45) NewLight=0.1*(4-sqrt(45)) = 0.0
+
+    EXPECT_FLOAT_EQ(0.0f, outLightBuffer[2]);
+
+    // Point4:
+    //  - Lamp1: D=sqrt(5) NewLight=0.1*(4-sqrt(5)) = 0.17639320225
+
+    EXPECT_FLOAT_EQ(0.17639320225f, outLightBuffer[3]);
+}
+
+TEST(AlgorithmsTests, DiffuseLight_4Lamps)
 {
     vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
     PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
@@ -59,7 +103,7 @@ TEST(AlgorithmsTests, DiffuseLight)
 
     float outLightBuffer[4];
 
-    Algorithms::DiffuseLight(
+    Algorithms::DiffuseLight_Vectorized(
         pointPositions,
         pointPlaneIds,
         4,
@@ -77,8 +121,8 @@ TEST(AlgorithmsTests, DiffuseLight)
     EXPECT_FLOAT_EQ(1.0f, outLightBuffer[0]);
 
     // Point2:
-    //  - Lamp1: D=sqrt(8) NewLight=0.1*(4-sqrt(8)) = 0.11715
-    //  - Lamp2: D=sqrt(5) NewLight=0.2*(6-sqrt(5)) = 0.75278
+    //  - Lamp1: D=sqrt(8) NewLight=0.1*(4-sqrt(8)) = 0.1171573
+    //  - Lamp2: D=sqrt(5) NewLight=0.2*(6-sqrt(5)) = 0.7527864
 
     EXPECT_FLOAT_EQ(0.7527864f, outLightBuffer[1]);
 

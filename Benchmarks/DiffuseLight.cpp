@@ -9,52 +9,6 @@
 
 static constexpr size_t SampleSize = 20000000;
 
-namespace Algorithms {
-
-inline void DiffuseLight_Naive(
-    vec2f const * pointPositions,
-    PlaneId const * pointPlaneIds,
-    ElementIndex const pointCount,
-    vec2f const * lampPositions,
-    PlaneId const * lampPlaneIds,
-    float const * lampDistanceCoeffs,
-    float const * lampSpreadMaxDistances,
-    ElementIndex const lampCount,
-    float * restrict outLightBuffer)
-{
-    for (ElementIndex p = 0; p < pointCount; ++p)
-    {
-        auto const pointPosition = pointPositions[p];
-        auto const pointPlane = pointPlaneIds[p];
-
-        float pointLight = 0.0f;
-
-        // Go through all lamps;
-        // can safely visit deleted lamps as their current will always be zero
-        for (ElementIndex l = 0; l < lampCount; ++l)
-        {
-            if (pointPlane <= lampPlaneIds[l])
-            {
-                float const distance = (pointPosition - lampPositions[l]).length();
-
-                float const newLight =
-                    std::min(
-                        lampDistanceCoeffs[l] * std::max(lampSpreadMaxDistances[l] - distance, 0.0f),
-                        1.0f);
-
-                // Point's light is just max, to avoid having to normalize everything to 1.0
-                pointLight = std::max(
-                    newLight,
-                    pointLight);
-            }
-        }
-
-        outLightBuffer[p] = pointLight;
-    }
-}
-
-}
-
 static void DiffuseLight_Naive(benchmark::State& state)
 {
     auto const pointsSize = MakeSize(SampleSize);
@@ -103,7 +57,7 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
 
     for (auto _ : state)
     {
-        Algorithms::DiffuseLight(
+        Algorithms::DiffuseLight_Vectorized(
             pointPositions.data(),
             pointPlaneIds.data(),
             pointsSize,
