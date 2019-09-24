@@ -159,12 +159,14 @@ inline void DiffuseLight_Vectorized(
 
     for (ElementIndex p = 0; p < pointCount; ++p)
     {   
-        // Point position, repeated 4 times        
-        __m128 const pointPosX_4 = _mm_load_ps1(reinterpret_cast<float const *>(pointPositions + p)); // x0,x0,x0,x0
-        __m128 const pointPosY_4 = _mm_load_ps1(reinterpret_cast<float const *>(pointPositions + p) + 1); // y0,y0,y0,y0
+        // Point position, repeated 4 times
+        auto const pointPosition = pointPositions[p];
+        __m128 const pointPosX_4 = _mm_load_ps1(reinterpret_cast<float const *>(&pointPosition)); // x0,x0,x0,x0
+        __m128 const pointPosY_4 = _mm_load_ps1(reinterpret_cast<float const *>(&pointPosition) + 1); // y0,y0,y0,y0
 
         // Point plane, repeated 4 times
-        __m128i const pointPlaneId_4 = _mm_castps_si128(_mm_load_ps1(reinterpret_cast<float const *>(pointPlaneIds + p)));
+        auto const pointPlaneId = pointPlaneIds[p];
+        __m128i const pointPlaneId_4 = _mm_castps_si128(_mm_load_ps1(reinterpret_cast<float const *>(&pointPlaneId)));
 
         // Resultant point light
         __m128 pointLight_4 = _mm_setzero_ps();
@@ -206,10 +208,10 @@ inline void DiffuseLight_Vectorized(
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
         }
 
-        // TODO: see if may merge this with the scalar point light below
-        __m128 pointLightTmp = _mm_max_ss(pointLight_4, _mm_shuffle_ps(pointLight_4, pointLight_4, _MM_SHUFFLE(0, 0, 0, 1)));
-        pointLightTmp = _mm_max_ss(pointLightTmp, _mm_shuffle_ps(pointLight_4, pointLight_4, _MM_SHUFFLE(0, 0, 0, 2)));
-        pointLightTmp = _mm_max_ss(pointLightTmp, _mm_shuffle_ps(pointLight_4, pointLight_4, _MM_SHUFFLE(0, 0, 0, 3)));
+        __m128 pointLightTmp = _mm_max_ps(
+            pointLight_4, 
+            _mm_movehl_ps(pointLight_4, pointLight_4)); // max(abcd, cdcd) -> (max(a,c), max(b,d), ...)
+        pointLightTmp = _mm_max_ss(pointLightTmp, _mm_movehdup_ps(pointLightTmp));
 
         float pointLight_1;
         _mm_store_ss(&pointLight_1, pointLightTmp);
@@ -217,9 +219,9 @@ inline void DiffuseLight_Vectorized(
         // Go through all remaining lamps, individually
         for (; l < lampCount; ++l)
         {
-            if (pointPlaneIds[p] <= lampPlaneIds[l])
+            if (pointPlaneId <= lampPlaneIds[l])
             {
-                float const distance = (pointPositions[p] - lampPositions[l]).length();
+                float const distance = (pointPosition - lampPositions[l]).length();
 
                 float const newLight =
                     lampDistanceCoeffs[l]

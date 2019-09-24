@@ -511,6 +511,10 @@ Render:
 				+ @ UnitTests
 					+ Use new sys_specifics #define, aligning for AVX is fine for now
 				+ @ Benchmarks
+			DiffuseLight_Naive/10        500697583 ns  475803050 ns          2
+			DiffuseLight_Naive/100      7974034991 ns 7612848800 ns          1
+			DiffuseLight_Vectorized/10   899963837 ns  858005500 ns          1
+			DiffuseLight_Vectorized/100 3916405326 ns 3681623600 ns          1
 		- Now: FPS= U/R=
 		- Commit
 		- Try with exploding lamp's positions into x & y
