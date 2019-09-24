@@ -8,62 +8,66 @@ size_t MakeSize(size_t count)
         return count + 16 - (count % 16);
 }
 
-std::vector<float> MakeFloats(size_t count)
+unique_aligned_buffer<float> MakeFloats(size_t count)
 {
-    std::vector<float> floats;
-    floats.reserve(count);
+    auto floats = make_unique_buffer_aligned_to_vectorization_word<float>(count);
+
+    size_t j = 0;
 
     for (size_t i = 0; i < count / 4; ++i)
     {
-        floats.push_back(static_cast<float>(i));
+        floats[j++] = static_cast<float>(i);
     }
 
     for (size_t i = 0; i < count / 4; ++i)
     {
-        floats.push_back(static_cast<float>(i) / 1000000.0f);
+        floats[j++] = (static_cast<float>(i) / 1000000.0f);
     }
 
     for (size_t i = 0; i < count / 4; ++i)
     {
-        floats.push_back(static_cast<float>(i) / 0.000001f);
+        floats[j++] = (static_cast<float>(i) / 0.000001f);
     }
 
     for (size_t i = 0; i < count / 4; ++i)
     {
-        floats.push_back(25.0f / (static_cast<float>(i) + 1));
+        floats[j++] = (25.0f / (static_cast<float>(i) + 1));
     }
 
     return floats;
 }
 
-std::vector<PlaneId> MakePlaneIds(size_t count)
+unique_aligned_buffer<float> MakeFloats(size_t count, float value)
 {
-    std::vector<PlaneId> planeIds;
-    planeIds.reserve(count);
+    auto floats = make_unique_buffer_aligned_to_vectorization_word<float>(count);
 
     for (size_t i = 0; i < count; ++i)
     {
-        planeIds.push_back(static_cast<PlaneId>(i % 100));
+        floats[i] = value;
+    }
+
+    return floats;
+}
+
+unique_aligned_buffer<PlaneId> MakePlaneIds(size_t count)
+{
+    auto planeIds = make_unique_buffer_aligned_to_vectorization_word<PlaneId>(count);
+    
+    for (size_t i = 0; i < count; ++i)
+    {
+        planeIds[i] = static_cast<PlaneId>(i % 100);
     }
 
     return planeIds;
 }
 
-std::vector<float> MakeFloats(size_t count, float value)
+unique_aligned_buffer<vec2f> MakeVectors(size_t count)
 {
-    std::vector<float> floats(count, value);
-
-    return floats;
-}
-
-std::vector<vec2f> MakeVectors(size_t count)
-{
-    std::vector<vec2f> vectors;
-    vectors.reserve(count);
+    auto vectors = make_unique_buffer_aligned_to_vectorization_word<vec2f>(count);
 
     for (size_t i = 0; i < count; ++i)
     {
-        vectors.emplace_back(static_cast<float>(i), static_cast<float>(i) / 5.0f);
+        vectors[i] = vec2f(static_cast<float>(i), static_cast<float>(i) / 5.0f);
     }
 
     return vectors;

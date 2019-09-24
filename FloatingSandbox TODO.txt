@@ -503,9 +503,25 @@ Render:
 			+ Make unit tests
 			+ Make benchmark
 			+ Test if pointLight can be clipped to 1.0 (NO)
-			- Vectorize
+			= Vectorize
+				- See why unaligned instructions (e.g. movups) are generated
+				- Check whole assembly
+			- Make aligned inputs:
+				- @ Ship
+				+ @ UnitTests
+					+ Use new sys_specifics #define, aligning for AVX is fine for now
+				+ @ Benchmarks
 		- Now: FPS= U/R=
+		- Commit
+		- Try with exploding lamp's positions into x & y
+			- @ Ship
+			- @ UnitTests
+			- @ Benchmarks
+			- Check assembly for vector for lonely lamps
+			- Now: FPS= U/R=
+			- Decide whether to keep or not
 		- Precalc lamp buffers and maintain w/GameParameters' changes
+			- And make them aligned
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
 		- OLD:

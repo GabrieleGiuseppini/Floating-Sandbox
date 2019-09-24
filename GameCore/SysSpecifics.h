@@ -45,7 +45,7 @@ inline constexpr T ceil_power_of_two(T value)
 
 // The number of floats we want to be able to compute in a single vectorization step.
 // Dictates alignment of buffers.
-// Targeting AVX-256 (though at the moment we might be compiling for a lower fp arch)
+// Targeting AVX-256 (though at the moment we are compiling for SSE)
 
 template <typename T>
 static constexpr T vectorization_float_count = 8; // A.k.a. the vectorization word size
@@ -94,6 +94,12 @@ inline constexpr bool is_aligned_to_float_element_count(T element_count) noexcep
 }
 
 /*
+ * Pre-cooked align-as for our vectorization size.
+ */
+
+#define aligned_to_vword alignas(vectorization_byte_count<size_t>)
+
+/*
  * Allocates a buffer of bytes aligned to the vectorization float
  * byte count.
  */
@@ -124,30 +130,35 @@ inline void free_aligned(void * ptr)
 #endif
 }
 
+template<typename TElement>
 struct aligned_buffer_deleter
 {
-    void operator()(std::uint8_t * ptr)
+    void operator()(TElement * ptr)
     {
         free_aligned(reinterpret_cast<void *>(ptr));
     }
 };
 
-using unique_aligned_buffer = std::unique_ptr<std::uint8_t, aligned_buffer_deleter>;
+template<typename TElement>
+using unique_aligned_buffer = std::unique_ptr<TElement[], aligned_buffer_deleter<TElement>>;
 
-inline unique_aligned_buffer make_unique_buffer_aligned_to_vectorization_word(size_t byte_size)
+template<typename TElement>
+inline unique_aligned_buffer<TElement> make_unique_buffer_aligned_to_vectorization_word(size_t elementCount)
 {
-    return unique_aligned_buffer(
-        reinterpret_cast<uint8_t *>(alloc_aligned_to_vectorization_word(byte_size)),
-        aligned_buffer_deleter());
+    return unique_aligned_buffer<TElement>(
+        reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
+        aligned_buffer_deleter<TElement>());
 }
 
-using shared_aligned_buffer = std::shared_ptr<std::uint8_t>;
+template<typename TElement>
+using shared_aligned_buffer = std::shared_ptr<TElement[]>;
 
-inline shared_aligned_buffer make_shared_buffer_aligned_to_vectorization_word(size_t byte_size)
+template<typename TElement>
+inline shared_aligned_buffer<TElement> make_shared_buffer_aligned_to_vectorization_word(size_t elementCount)
 {
-    return shared_aligned_buffer(
-        reinterpret_cast<uint8_t *>(alloc_aligned_to_vectorization_word(byte_size)),
-        aligned_buffer_deleter());
+    return shared_aligned_buffer<TElement>(
+        reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
+        aligned_buffer_deleter<TElement>());
 }
 
 

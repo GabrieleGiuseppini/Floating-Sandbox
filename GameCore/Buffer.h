@@ -185,7 +185,7 @@ public:
 
     Buffer(size_t size)
         : Buffer(
-            make_unique_buffer_aligned_to_vectorization_word(size * sizeof(TElement)),
+            make_unique_buffer_aligned_to_vectorization_word<TElement>(size),
             size)
     {
     }
@@ -195,7 +195,7 @@ public:
         size_t fillStart,
         TElement fillValue)
         : Buffer(
-            make_unique_buffer_aligned_to_vectorization_word(size * sizeof(TElement)),
+            make_unique_buffer_aligned_to_vectorization_word<TElement>(size),
             size,
             fillStart,
             fillValue)
@@ -217,7 +217,7 @@ public:
 private:
 
     Buffer(
-        unique_aligned_buffer allocatedBuffer,
+        unique_aligned_buffer<TElement> allocatedBuffer,
         size_t size)
     : BaseBuffer<TElement>(
         reinterpret_cast<TElement *>(allocatedBuffer.get()),
@@ -227,7 +227,7 @@ private:
     }
 
     Buffer(
-        unique_aligned_buffer allocatedBuffer,
+        unique_aligned_buffer<TElement> allocatedBuffer,
         size_t size,
         size_t fillStart,
         TElement fillValue)
@@ -241,7 +241,7 @@ private:
     }
 
     // The buffer owned by us
-    unique_aligned_buffer mAllocatedBuffer;
+    unique_aligned_buffer<TElement> mAllocatedBuffer;
 };
 
 /*
@@ -256,7 +256,7 @@ class BufferSegment : public BaseBuffer<TElement>
 public:
 
     BufferSegment(
-        shared_aligned_buffer allocatedBuffer,
+        shared_aligned_buffer<std::uint8_t> allocatedBuffer,
         size_t startByteCount,
         size_t size)
         : BaseBuffer<TElement>(
@@ -267,7 +267,7 @@ public:
     }
 
     BufferSegment(
-        shared_aligned_buffer allocatedBuffer,
+        shared_aligned_buffer<std::uint8_t> allocatedBuffer,
         size_t startByteCount,
         size_t size,
         size_t fillStart,
@@ -290,5 +290,5 @@ public:
 private:
 
     // The buffer not owned by us
-    shared_aligned_buffer mAllocatedBuffer;
+    shared_aligned_buffer<std::uint8_t> mAllocatedBuffer;
 };

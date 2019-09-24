@@ -100,7 +100,7 @@ TEST(BufferTests, Buffer_Swap)
 
 TEST(BufferTests, BufferSegment_EmplaceBack)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(Buffer<int>::CalculateByteSize(64));
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(Buffer<int>::CalculateByteSize(64));
     BufferSegment<int> buf(sharedBuffer, 0, 64);
 
     EXPECT_EQ(0u, buf.GetCurrentPopulatedSize());
@@ -115,7 +115,7 @@ TEST(BufferTests, BufferSegment_EmplaceBack)
 
 TEST(BufferTests, BufferSegment_Move)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(Buffer<int>::CalculateByteSize(64));
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(Buffer<int>::CalculateByteSize(64));
     BufferSegment<int> buf1(sharedBuffer, 0, 64);
 
     buf1.emplace_back(24);
@@ -132,7 +132,7 @@ TEST(BufferTests, BufferSegment_Move)
 
 TEST(BufferTests, BufferSegment_CopyFrom)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(Buffer<int>::CalculateByteSize(64));
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(Buffer<int>::CalculateByteSize(64));
     BufferSegment<int> buf1(sharedBuffer, 0, 64);
 
     buf1.emplace_back(24);
@@ -151,7 +151,7 @@ TEST(BufferTests, BufferSegment_CopyFrom)
 
 TEST(BufferTests, BufferSegment_Fill)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(Buffer<int>::CalculateByteSize(64));
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(Buffer<int>::CalculateByteSize(64));
     BufferSegment<int> buf(sharedBuffer, 0, 64);
 
     buf.fill(242);
@@ -162,7 +162,7 @@ TEST(BufferTests, BufferSegment_Fill)
 
 TEST(BufferTests, BufferSegment_FillAtCctor)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(Buffer<int>::CalculateByteSize(64));
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(Buffer<int>::CalculateByteSize(64));
     BufferSegment<int> buf(sharedBuffer, 0, 64, 12, 242);
 
     buf.emplace_back(566);
@@ -174,7 +174,7 @@ TEST(BufferTests, BufferSegment_FillAtCctor)
 
 TEST(BufferTests, BufferSegment_TwoSegments)
 {
-    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word(
+    auto sharedBuffer = make_shared_buffer_aligned_to_vectorization_word<std::uint8_t>(
         Buffer<int>::CalculateByteSize(64)
         + Buffer<vec2f>::CalculateByteSize(10));
 

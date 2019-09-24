@@ -14,27 +14,27 @@ static void DiffuseLight_Naive(benchmark::State& state)
     auto const pointsSize = MakeSize(SampleSize);
     auto const lampsSize = state.range(0);
 
-    std::vector<vec2f> pointPositions = MakeVectors(pointsSize);
-    std::vector<PlaneId> pointPlaneIds = MakePlaneIds(pointsSize);
-    std::vector<vec2f> lampPositions = MakeVectors(lampsSize);
-    std::vector<PlaneId> lampPlaneIds = MakePlaneIds(lampsSize);
-    std::vector<float> lampDistanceCoeffs = MakeFloats(lampsSize);
-    std::vector<float> lampSpreadMaxDistances = MakeFloats(lampsSize);
+    auto pointPositions = MakeVectors(pointsSize);
+    auto pointPlaneIds = MakePlaneIds(pointsSize);
+    auto lampPositions = MakeVectors(lampsSize);
+    auto lampPlaneIds = MakePlaneIds(lampsSize);
+    auto lampDistanceCoeffs = MakeFloats(lampsSize);
+    auto lampSpreadMaxDistances = MakeFloats(lampsSize);
 
-    std::vector<float> outLightBuffer(pointsSize, 0.0f);
+    auto outLightBuffer = make_unique_buffer_aligned_to_vectorization_word<float>(pointsSize);
 
     for (auto _ : state)
     {
         Algorithms::DiffuseLight_Naive(
-            pointPositions.data(),
-            pointPlaneIds.data(),
-            pointsSize,
-            lampPositions.data(),
-            lampPlaneIds.data(),
-            lampDistanceCoeffs.data(),
-            lampSpreadMaxDistances.data(),
-            lampsSize,
-            outLightBuffer.data());
+            pointPositions.get(),
+            pointPlaneIds.get(),
+            ElementIndex(pointsSize),
+            lampPositions.get(),
+            lampPlaneIds.get(),
+            lampDistanceCoeffs.get(),
+            lampSpreadMaxDistances.get(),
+            ElementIndex(lampsSize),
+            outLightBuffer.get());
     }
 
     benchmark::DoNotOptimize(outLightBuffer);
@@ -46,27 +46,27 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
     auto const pointsSize = MakeSize(SampleSize);
     auto const lampsSize = state.range(0);
 
-    std::vector<vec2f> pointPositions = MakeVectors(pointsSize);
-    std::vector<PlaneId> pointPlaneIds = MakePlaneIds(pointsSize);
-    std::vector<vec2f> lampPositions = MakeVectors(lampsSize);
-    std::vector<PlaneId> lampPlaneIds = MakePlaneIds(lampsSize);
-    std::vector<float> lampDistanceCoeffs = MakeFloats(lampsSize);
-    std::vector<float> lampSpreadMaxDistances = MakeFloats(lampsSize);
+    auto pointPositions = MakeVectors(pointsSize);
+    auto pointPlaneIds = MakePlaneIds(pointsSize);
+    auto lampPositions = MakeVectors(lampsSize);
+    auto lampPlaneIds = MakePlaneIds(lampsSize);
+    auto lampDistanceCoeffs = MakeFloats(lampsSize);
+    auto lampSpreadMaxDistances = MakeFloats(lampsSize);
 
-    std::vector<float> outLightBuffer(pointsSize, 0.0f);
+    auto outLightBuffer = make_unique_buffer_aligned_to_vectorization_word<float>(pointsSize);
 
     for (auto _ : state)
     {
         Algorithms::DiffuseLight_Vectorized(
-            pointPositions.data(),
-            pointPlaneIds.data(),
-            pointsSize,
-            lampPositions.data(),
-            lampPlaneIds.data(),
-            lampDistanceCoeffs.data(),
-            lampSpreadMaxDistances.data(),
-            lampsSize,
-            outLightBuffer.data());
+            pointPositions.get(),
+            pointPlaneIds.get(),
+            ElementIndex(pointsSize),
+            lampPositions.get(),
+            lampPlaneIds.get(),
+            lampDistanceCoeffs.get(),
+            lampSpreadMaxDistances.get(),
+            ElementIndex(lampsSize),
+            outLightBuffer.get());
     }
 
     benchmark::DoNotOptimize(outLightBuffer);

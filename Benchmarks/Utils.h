@@ -1,14 +1,15 @@
 #include <GameCore/GameTypes.h>
+#include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
 #include <vector>
 
 size_t MakeSize(size_t count);
 
-std::vector<float> MakeFloats(size_t count);
-std::vector<float> MakeFloats(size_t count, float value);
-std::vector<PlaneId> MakePlaneIds(size_t count);
-std::vector<vec2f> MakeVectors(size_t count);
+unique_aligned_buffer<float> MakeFloats(size_t count);
+unique_aligned_buffer<float> MakeFloats(size_t count, float value);
+unique_aligned_buffer<PlaneId> MakePlaneIds(size_t count);
+unique_aligned_buffer<vec2f> MakeVectors(size_t count);
 
 struct SpringEndpoints
 {

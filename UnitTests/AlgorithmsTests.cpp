@@ -49,15 +49,15 @@ TEST(AlgorithmsTests, CalculateVectorDirsAndReciprocalLengths)
 
 TEST(AlgorithmsTests, DiffuseLight_1Lamp)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { { 4.0f, 2.0f} };
-    PlaneId lampPlaneIds[] = { 3 };
-    float lampDistanceCoeffs[] = { 0.1f };
-    float lampSpreadMaxDistances[] = { 4.0f };
+    aligned_to_vword vec2f lampPositions[] = { { 4.0f, 2.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 3 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 0.1f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 4.0f };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
@@ -93,15 +93,15 @@ TEST(AlgorithmsTests, DiffuseLight_1Lamp)
 
 TEST(AlgorithmsTests, DiffuseLight_3Lamps)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { {1.0f, 2.0f}, {100.0f, 100.0f}, { 4.0f, 2.0f} };
-    PlaneId lampPlaneIds[] = { 2, 10, 3 };
-    float lampDistanceCoeffs[] = { 0.2f, 10.0f, 0.1f };
-    float lampSpreadMaxDistances[] = { 6.0f, 1.0f, 4.0f };
+    aligned_to_vword vec2f lampPositions[] = { {1.0f, 2.0f}, {100.0f, 100.0f}, { 4.0f, 2.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 2, 10, 3 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 0.2f, 10.0f, 0.1f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 6.0f, 1.0f, 4.0f };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
@@ -141,15 +141,15 @@ TEST(AlgorithmsTests, DiffuseLight_3Lamps)
 
 TEST(AlgorithmsTests, DiffuseLight_4Lamps)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f} };
-    PlaneId lampPlaneIds[] = { 3, 2, 10, 10 };
-    float lampDistanceCoeffs[] = { 0.1f, 0.2f, 10.0f, 20.0f };
-    float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f };
+    aligned_to_vword vec2f lampPositions[] = { { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 3, 2, 10, 10 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 0.1f, 0.2f, 10.0f, 20.0f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
@@ -189,15 +189,15 @@ TEST(AlgorithmsTests, DiffuseLight_4Lamps)
 
 TEST(AlgorithmsTests, DiffuseLight_5Lamps)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f} };
-    PlaneId lampPlaneIds[] = { 3, 2, 10, 10, 3 };
-    float lampDistanceCoeffs[] = { 0.1f, 0.2f, 10.0f, 20.0f, 0.3f };
-    float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 5.0 };
+    aligned_to_vword vec2f lampPositions[] = { { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 3, 2, 10, 10, 3 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 0.1f, 0.2f, 10.0f, 20.0f, 0.3f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 5.0 };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
@@ -241,15 +241,15 @@ TEST(AlgorithmsTests, DiffuseLight_5Lamps)
 
 TEST(AlgorithmsTests, DiffuseLight_8Lamps)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f} };
-    PlaneId lampPlaneIds[] = { 1, 1, 1, 1, 3, 2, 10, 10 };
-    float lampDistanceCoeffs[] = { 10.0f, 20.0f, 10.0f, 20.0f, 0.1f, 0.2f, 10.0f, 20.0f };
-    float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 4.0f, 6.0f, 1.0f, 2.0f };
+    aligned_to_vword vec2f lampPositions[] = { {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 1, 1, 1, 1, 3, 2, 10, 10 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 10.0f, 20.0f, 10.0f, 20.0f, 0.1f, 0.2f, 10.0f, 20.0f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 4.0f, 6.0f, 1.0f, 2.0f };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
@@ -289,15 +289,15 @@ TEST(AlgorithmsTests, DiffuseLight_8Lamps)
 
 TEST(AlgorithmsTests, DiffuseLight_10Lamps)
 {
-    vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
-    PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
+    aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
+    aligned_to_vword PlaneId pointPlaneIds[] = { 1, 1, 2, 3 };
 
-    vec2f lampPositions[] = { {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {1.0f, 1.0f} };
-    PlaneId lampPlaneIds[] = { 1, 1, 1, 1, 3, 2, 10, 10, 10, 10 };
-    float lampDistanceCoeffs[] = { 10.0f, 20.0f, 10.0f, 20.0f, 0.1f, 0.2f, 10.0f, 20.0f, 20.0f, 0.3f };
-    float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 4.0f, 6.0f, 1.0f, 2.0f, 4.0, 6.0f };
+    aligned_to_vword vec2f lampPositions[] = { {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, { 4.0f, 2.0f}, {1.0f, 2.0f}, {100.0f, 100.0f}, {200.0f, 200.0f}, {100.0f, 100.0f}, {1.0f, 1.0f} };
+    aligned_to_vword PlaneId lampPlaneIds[] = { 1, 1, 1, 1, 3, 2, 10, 10, 10, 10 };
+    aligned_to_vword float lampDistanceCoeffs[] = { 10.0f, 20.0f, 10.0f, 20.0f, 0.1f, 0.2f, 10.0f, 20.0f, 20.0f, 0.3f };
+    aligned_to_vword float lampSpreadMaxDistances[] = { 4.0f, 6.0f, 1.0f, 2.0f, 4.0f, 6.0f, 1.0f, 2.0f, 4.0, 6.0f };
 
-    float outLightBuffer[4];
+    aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
         pointPositions,
