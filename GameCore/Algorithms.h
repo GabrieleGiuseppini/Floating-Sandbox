@@ -125,6 +125,8 @@ inline void DiffuseLight_Vectorized(
     float * restrict outLightBuffer)
 {
     // This code is vectorized for SSE = 4 floats
+    assert(vectorization_float_count >= 4);
+    assert(is_aligned_to_float_element_count(pointCount));
     assert(is_aligned_to_vectorization_word(pointPositions));
     assert(is_aligned_to_vectorization_word(pointPlaneIds));
     assert(is_aligned_to_vectorization_word(lampPositions));
@@ -136,6 +138,9 @@ inline void DiffuseLight_Vectorized(
     // Caller is assumed to have skipped this when there are no lamps
     assert(lampCount > 0);
 
+    // TODO: reconsider this: a) should we require also # of lamps to be multiple, and b) even if not,
+    // should the caller be responsible for not invoking this with too few lamps? After all the equilibrium point
+    // might be known only to the caller (because of the preparation work involved)
     if (lampCount < 4)
     {
         // Shortcut: in this case there's no point in vectorizing over lamps
