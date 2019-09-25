@@ -503,37 +503,50 @@ Render:
 			+ Make unit tests
 			+ Make benchmark
 			+ Test if pointLight can be clipped to 1.0 (NO)
-			= Vectorize
-				- See why unaligned instructions (e.g. movups) are generated
-				- Check whole assembly
+			+ Vectorize
+				+ See why unaligned instructions (e.g. movups) are generated
+				+ Check whole assembly
+			- Pad lamps to multiples of element count				
+				- @ Ship
+					- For now just dynamically
+				+ @ UnitTests
+				+ @ Benchmarks
 			- Make aligned inputs:
 				- @ Ship
+					- For now just dynamically
 				+ @ UnitTests
 					+ Use new sys_specifics #define, aligning for AVX is fine for now
 				+ @ Benchmarks
-			DiffuseLight_Naive/10        500697583 ns  475803050 ns          2
-			DiffuseLight_Naive/100      7974034991 ns 7612848800 ns          1
-			DiffuseLight_Vectorized/10   899963837 ns  858005500 ns          1
-			DiffuseLight_Vectorized/100 3916405326 ns 3681623600 ns          1
+
+			DiffuseLight_Naive/1         142790634 ns  140400900 ns
+
+			DiffuseLight_Naive/4         234007041 ns  223601433 ns
+			DiffuseLight_Naive/8         396637138 ns  374402400 ns
+			DiffuseLight_Naive/16        755825516 ns  733204700 ns
+			DiffuseLight_Naive/32       1684067350 ns 1575610100 ns
+			DiffuseLight_Naive/128      9987870927 ns 9391260200 ns
+
+			DiffuseLight_Vectorized/4    200301430 ns  176801133 ns
+			DiffuseLight_Vectorized/8    338434476 ns  319802050 ns
+			DiffuseLight_Vectorized/16   655946602 ns  608403900 ns
+			DiffuseLight_Vectorized/32  1125692742 ns 1014006500 ns
+			DiffuseLight_Vectorized/128 4157379795 ns 3978025500 ns
+
 		- Now: FPS= U/R=
 		- Commit
+		- Precalc lamp buffers and maintain w/GameParameters' changes
+		- Now: FPS= U/R=
 		- Try with exploding lamp's positions into x & y
 			- @ Ship
 			- @ UnitTests
 			- @ Benchmarks
-			- Check assembly for vector for lonely lamps
+			- Run new benchmarks
 			- Now: FPS= U/R=
 			- Decide whether to keep or not
-		- Precalc lamp buffers and maintain w/GameParameters' changes
-			- And make them aligned
+		- Decide whether Ship should use a threshold to switch between vectorized and naive algo
+			- Make benchmarks
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
-		- OLD:
-		- Try with pre-calculated luminiscence function, as a function of square distance
-			- Function only depends on game parameters; lives at ElectricalElements and is re-calc'd by
-			  ElectricalElements at each ElectricalElements::UpdateGameParameters() when params differ
-			- Point's total light = sum[for each light](interpolation of pre-calc'd lum function)
-		- Additional: see if making vector of lamp positions first - reused for each point - helps even further
 
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 

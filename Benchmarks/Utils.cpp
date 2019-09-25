@@ -2,10 +2,7 @@
 
 size_t MakeSize(size_t count)
 {
-    if (0 == (count % 16))
-        return count;
-    else
-        return count + 16 - (count % 16);
+    return make_aligned_float_element_count(count);
 }
 
 unique_aligned_buffer<float> MakeFloats(size_t count)

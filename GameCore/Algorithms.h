@@ -98,6 +98,7 @@ inline void DiffuseLight_Naive(
             {
                 float const distance = (pointPosition - lampPositions[l]).length();
 
+                // Light from this lamp = max(0.0, lum*(spread-distance)/spread)
                 float const newLight =
                     lampDistanceCoeffs[l]
                     * (lampSpreadMaxDistances[l] - distance); // If negative, max(.) below will clamp down to 0.0
@@ -109,6 +110,7 @@ inline void DiffuseLight_Naive(
             }
         }
 
+        // Cap light to 1.0
         outLightBuffer[p] = std::min(1.0f, pointLight);
     }
 }
@@ -127,6 +129,7 @@ inline void DiffuseLight_Vectorized(
     // This code is vectorized for SSE = 4 floats
     assert(vectorization_float_count >= 4);
     assert(is_aligned_to_float_element_count(pointCount));
+    assert(is_aligned_to_float_element_count(lampCount));
     assert(is_aligned_to_vectorization_word(pointPositions));
     assert(is_aligned_to_vectorization_word(pointPlaneIds));
     assert(is_aligned_to_vectorization_word(lampPositions));
@@ -138,108 +141,178 @@ inline void DiffuseLight_Vectorized(
     // Caller is assumed to have skipped this when there are no lamps
     assert(lampCount > 0);
 
-    // TODO: reconsider this: a) should we require also # of lamps to be multiple, and b) even if not,
-    // should the caller be responsible for not invoking this with too few lamps? After all the equilibrium point
-    // might be known only to the caller (because of the preparation work involved)
-    if (lampCount < 4)
-    {
-        // Shortcut: in this case there's no point in vectorizing over lamps
-        DiffuseLight_Naive(
-            pointPositions,
-            pointPlaneIds,
-            pointCount,
-            lampPositions,
-            lampPlaneIds,
-            lampDistanceCoeffs,
-            lampSpreadMaxDistances,
-            lampCount,
-            outLightBuffer);
-
-        return;
-    }
-
     //
-    // Visit all points
+    // Visit all points in groups of 4
     //
 
-    for (ElementIndex p = 0; p < pointCount; ++p)
+    for (ElementIndex p = 0; p < pointCount; p += 4)
     {   
-        // Point position, repeated 4 times
-        auto const pointPosition = pointPositions[p];
-        __m128 const pointPosX_4 = _mm_set1_ps(pointPosition.x); // x0,x0,x0,x0
-        __m128 const pointPosY_4 = _mm_set1_ps(pointPosition.y); // y0,y0,y0,y0
+        //
+        // 1. Prepare point data at slots 0,1,2,3
 
-        // Point plane, repeated 4 times
-        auto const pointPlaneId = pointPlaneIds[p];
-        __m128i const pointPlaneId_4 = _mm_castps_si128(_mm_load_ps1(reinterpret_cast<float const *>(&pointPlaneId)));
+        // Point positions
+        __m128 const pointPos01_4 = _mm_load_ps(reinterpret_cast<float const *>(pointPositions + p)); // x0,y0,x1,y1
+        __m128 const pointPos23_4 = _mm_load_ps(reinterpret_cast<float const *>(pointPositions + p + 2)); // x2,y2,x3,y3
+        __m128 pointPosX_4 = _mm_shuffle_ps(pointPos01_4, pointPos23_4, _MM_SHUFFLE(2, 0, 2, 0)); // x0,x1,x2,x3
+        __m128 pointPosY_4 = _mm_shuffle_ps(pointPos01_4, pointPos23_4, _MM_SHUFFLE(3, 1, 3, 1)); // y0,y1,y2,y3
+
+        // Point planes
+        __m128i pointPlaneId_4 = _mm_load_si128(reinterpret_cast<__m128i const *>(pointPlaneIds + p)); // 0,1,2,3
 
         // Resultant point light
         __m128 pointLight_4 = _mm_setzero_ps();
 
         // Go through all lamps, 4 by 4;
         // can safely visit deleted lamps as their current will always be zero
-        ElementIndex l;
-        for (l = 0; l + 4 <= lampCount; l += 4)
+        for (ElementIndex l = 0; l < lampCount; l += 4)
         {
             // Lamp positions
-            __m128 const lampPos12_4 = _mm_load_ps(reinterpret_cast<float const *>(lampPositions + l)); // x1, y1, x2, y2
-            __m128 const lampPos34_4 = _mm_load_ps(reinterpret_cast<float const *>(lampPositions + l + 2)); // x3, y3, x4, y4        
-            __m128 const lampPosX_4 = _mm_shuffle_ps(lampPos12_4, lampPos34_4, 0x88); // x0,x1,x2,x3
-            __m128 const lampPosY_4 = _mm_shuffle_ps(lampPos12_4, lampPos34_4, 0xDD); // y0,y1,y2,y3
+            __m128 const lampPos01_4 = _mm_load_ps(reinterpret_cast<float const *>(lampPositions + l)); // x0,y0,x1,y1
+            __m128 const lampPos23_4 = _mm_load_ps(reinterpret_cast<float const *>(lampPositions + l + 2)); // x2,y2,x3,y3
+            __m128 const lampPosX_4 = _mm_shuffle_ps(lampPos01_4, lampPos23_4, _MM_SHUFFLE(2, 0, 2, 0)); // x0,x1,x2,x3
+            __m128 const lampPosY_4 = _mm_shuffle_ps(lampPos01_4, lampPos23_4, _MM_SHUFFLE(3, 1, 3, 1)); // y0,y1,y2,y3
 
             // Lamp planes
-            __m128i lampPlaneId_4 = _mm_load_si128(reinterpret_cast<__m128i const *>(lampPlaneIds + l));
+            __m128i lampPlaneId_4 = _mm_load_si128(reinterpret_cast<__m128i const *>(lampPlaneIds + l)); // 0,1,2,3
+
+            // Coeffs
+            __m128 const lampDistanceCoeff_4 = _mm_load_ps(lampDistanceCoeffs + l);
+            __m128 const lampSpreadMaxDistance_4 = _mm_load_ps(lampSpreadMaxDistances + l);
+
+            //
+            // We now perform the following four times, each time rotating the 4 points around the four slots
+            // of their registers:
+            //  distance = pointPosition - lampPosition
+            //  newLight = lampDistanceCoeff * (lampSpreadMaxDistance - distance)
+            //  pointLight = max(newLight, pointLight) // Just max, to avoid having to normalize everything to 1.0
+
+            //
+            // 1 - 0,1,2,3
+            //
 
             // Calculate distance
-            __m128 const displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
-            __m128 const displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
-            __m128 const distanceSquare_4 = _mm_add_ps(
+            __m128 displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
+            __m128 displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
+            __m128 distanceSquare_4 = _mm_add_ps(
                 _mm_mul_ps(displacementX_4, displacementX_4),
                 _mm_mul_ps(displacementY_4, displacementY_4));
-            __m128 const distance_4 = _mm_sqrt_ps(distanceSquare_4);
+            __m128 distance_4 = _mm_sqrt_ps(distanceSquare_4);
 
             // Calculate new light
             __m128 newLight_4 = _mm_mul_ps(
-                _mm_load_ps(lampDistanceCoeffs + l),
-                _mm_sub_ps(
-                    _mm_load_ps(lampSpreadMaxDistances + l),
-                    distance_4));
+                lampDistanceCoeff_4,
+                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
             // Mask with plane ID
-            __m128i const invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            __m128i invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
             newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
 
-            // Point's light is just max, to avoid having to normalize everything to 1.0
+            // Point light
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
+
+            // Rotate -> 1,2,3,0
+            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
+            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
+
+            //
+            // 2 - 1,2,3,0
+            //
+
+            // Calculate distance
+            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
+            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
+            distanceSquare_4 = _mm_add_ps(
+                _mm_mul_ps(displacementX_4, displacementX_4),
+                _mm_mul_ps(displacementY_4, displacementY_4));
+            distance_4 = _mm_sqrt_ps(distanceSquare_4);
+
+            // Calculate new light
+            newLight_4 = _mm_mul_ps(
+                lampDistanceCoeff_4,
+                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
+
+            // Mask with plane ID
+            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+
+            // Point light
+            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
+
+            // Rotate -> 2,3,0,1
+            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
+            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
+
+            //
+            // 3 - 2,3,0,1
+            //
+
+            // Calculate distance
+            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
+            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
+            distanceSquare_4 = _mm_add_ps(
+                _mm_mul_ps(displacementX_4, displacementX_4),
+                _mm_mul_ps(displacementY_4, displacementY_4));
+            distance_4 = _mm_sqrt_ps(distanceSquare_4);
+
+            // Calculate new light
+            newLight_4 = _mm_mul_ps(
+                lampDistanceCoeff_4,
+                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
+
+            // Mask with plane ID
+            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+
+            // Point light
+            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
+
+            // Rotate -> 3,0,1,2
+            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
+            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
+
+            //
+            // 4 - 3,0,1,2
+            //
+
+            // Calculate distance
+            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
+            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
+            distanceSquare_4 = _mm_add_ps(
+                _mm_mul_ps(displacementX_4, displacementX_4),
+                _mm_mul_ps(displacementY_4, displacementY_4));
+            distance_4 = _mm_sqrt_ps(distanceSquare_4);
+
+            // Calculate new light
+            newLight_4 = _mm_mul_ps(
+                lampDistanceCoeff_4,
+                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
+
+            // Mask with plane ID
+            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+
+            // Point light
+            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
+
+            // Rotate -> 0,1,2,3
+            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
+            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
         }
 
-        __m128 pointLightTmp = _mm_max_ps(
-            pointLight_4, 
-            _mm_movehl_ps(pointLight_4, pointLight_4)); // max(abcd, cdcd) -> (max(a,c), max(b,d), ...)
-        pointLightTmp = _mm_max_ss(pointLightTmp, _mm_movehdup_ps(pointLightTmp));
+        //
+        // Store the 4 point lights, capping them to 1.0
+        //
 
-        float pointLight_1;
-        _mm_store_ss(&pointLight_1, pointLightTmp);
-
-        // Go through all remaining lamps, individually
-        for (; l < lampCount; ++l)
-        {
-            if (pointPlaneId <= lampPlaneIds[l])
-            {
-                float const distance = (pointPosition - lampPositions[l]).length();
-
-                float const newLight =
-                    lampDistanceCoeffs[l]
-                    * (lampSpreadMaxDistances[l] - distance); // If negative, max(.) below will clamp down to 0.0
-
-                // Point's light is just max, to avoid having to normalize everything to 1.0
-                pointLight_1 = std::max(
-                    newLight,
-                    pointLight_1);
-            }
-        }
-
-        outLightBuffer[p] = std::min(1.0f, pointLight_1);
+        pointLight_4 = _mm_min_ps(pointLight_4, _mm_set1_ps(1.0f));
+        _mm_store_ps(outLightBuffer + p, pointLight_4);
     }
 }
 

@@ -45,10 +45,10 @@ inline constexpr T ceil_power_of_two(T value)
 
 // The number of floats we want to be able to compute in a single vectorization step.
 // Dictates alignment of buffers.
-// Targeting AVX-256 (though at the moment we are compiling for SSE)
+// Targeting SSE
 
 template <typename T>
-static constexpr T vectorization_float_count = 8; // A.k.a. the vectorization word size
+static constexpr T vectorization_float_count = 4; // A.k.a. the vectorization word size
 
 template <typename T>
 static constexpr T vectorization_byte_count = vectorization_float_count<T> * sizeof(float);
@@ -160,6 +160,3 @@ inline shared_aligned_buffer<TElement> make_shared_buffer_aligned_to_vectorizati
         reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
         aligned_buffer_deleter<TElement>());
 }
-
-
-
