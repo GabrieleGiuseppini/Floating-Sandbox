@@ -152,6 +152,9 @@ void Ship::Update(
             mPoints);
     }
 
+    mElectricalElements.UpdateForGameParameters(
+        gameParameters);
+
     mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 
 
@@ -1285,7 +1288,7 @@ void Ship::UpdateElectricalDynamics(
     DiffuseLight(gameParameters);
 }
 
-void Ship::DiffuseLight(GameParameters const & gameParameters)
+void Ship::DiffuseLight(GameParameters const & /*gameParameters*/)
 {
     //
     // Diffuse light from each lamp to all points on the same or lower plane ID,
@@ -1300,35 +1303,19 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // 1. Prepare lamp data
     //
 
-    // TODO: these should become all pre-allocated members of ElectricalElements, 
-    // and lampLightSpreadMaxDistanceBuffer and part of distanceCoeffBuffer may even be 
-    // pre-calcd and updated only at GameParams updated
+    auto & lampPositions = mElectricalElements.GetLampPositionWorkBuffer();
+    auto & lampPlaneIds = mElectricalElements.GetLampPlaneIdWorkBuffer();
+    auto & lampDistanceCoeffs = mElectricalElements.GetLampDistanceCoefficientWorkBuffer();
 
-    size_t alignedLampCount = make_aligned_float_element_count(mElectricalElements.Lamps().size());
-
-    auto lampPositions = Buffer<vec2f>(alignedLampCount, mElectricalElements.Lamps().size(), vec2f::zero());
-    auto lampPlaneIds = Buffer<PlaneId>(alignedLampCount, mElectricalElements.Lamps().size(), 0);
-    auto lampDistanceCoeffs = Buffer<float>(alignedLampCount, mElectricalElements.Lamps().size(), 0.0f); // effectiveLampLight / lampLightSpreadMaxDistance
-    auto lampSpreadMaxDistances = Buffer<float>(alignedLampCount, mElectricalElements.Lamps().size(), 0.0f);
-
-    for (auto lampIndex : mElectricalElements.Lamps())
+    for (ElementIndex l = 0; l < mElectricalElements.GetLampCount(); ++l)
     {
-        lampPositions.emplace_back(mPoints.GetPosition(mElectricalElements.GetPointIndex(lampIndex)));
-
-        lampPlaneIds.emplace_back(mPoints.GetPlaneId(mElectricalElements.GetPointIndex(lampIndex)));
-
-        auto const lampLightSpreadMaxDistance =
-            mElectricalElements.GetMaterialLightSpread(lampIndex)
-            * gameParameters.LightSpreadAdjustment
-            + 0.5f; // To ensure spread=0 => lamp is lighted        
-
-        lampDistanceCoeffs.emplace_back(
-            mElectricalElements.GetAvailableLight(lampIndex)
-            * mElectricalElements.GetMaterialLuminiscence(lampIndex)
-            * gameParameters.LuminiscenceAdjustment
-            / lampLightSpreadMaxDistance);
-
-        lampSpreadMaxDistances.emplace_back(lampLightSpreadMaxDistance);
+        auto const lampElectricalElementIndex = mElectricalElements.Lamps()[l];
+        auto const lampPointIndex = mElectricalElements.GetPointIndex(lampElectricalElementIndex);
+        lampPositions[l] = mPoints.GetPosition(lampPointIndex);
+        lampPlaneIds[l] = mPoints.GetPlaneId(lampPointIndex);
+        lampDistanceCoeffs[l] =
+            mElectricalElements.GetLampRawDistanceCoefficient(l)
+            * mElectricalElements.GetAvailableLight(lampElectricalElementIndex);
     }
 
     //
@@ -1342,8 +1329,8 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         lampPositions.data(),
         lampPlaneIds.data(),
         lampDistanceCoeffs.data(),
-        lampSpreadMaxDistances.data(),
-        static_cast<ElementIndex>(alignedLampCount),
+        mElectricalElements.GetLampLightSpreadMaxDistanceBufferAsFloat(),
+        mElectricalElements.GetBufferLampCount(),
         mPoints.GetLightBufferAsFloat());
 
     /* TODO: version before being moved to Algorithms

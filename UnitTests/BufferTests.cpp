@@ -18,6 +18,21 @@ TEST(BufferTests, Buffer_EmplaceBack)
     EXPECT_EQ(24, buf[0]);
 }
 
+TEST(BufferTests, Buffer_Clear)
+{
+    Buffer<int> buf(64);
+
+    EXPECT_EQ(0u, buf.GetCurrentPopulatedSize());
+
+    buf.emplace_back(24);
+
+    EXPECT_EQ(1u, buf.GetCurrentPopulatedSize());
+
+    buf.clear();
+
+    EXPECT_EQ(0u, buf.GetCurrentPopulatedSize());
+}
+
 TEST(BufferTests, Buffer_Move)
 {
     Buffer<int> buf1(64);

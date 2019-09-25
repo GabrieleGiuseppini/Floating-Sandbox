@@ -287,7 +287,8 @@ private:
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
         Physics::World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        GameParameters const & gameParameters);
 
 private:
 

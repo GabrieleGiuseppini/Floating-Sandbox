@@ -71,6 +71,15 @@ public:
     }
 
     /*
+     * Clears the buffer, by reducing its currently-populated 
+     * element count to zero, so that it is ready for being re-populated.
+     */
+    void clear()
+    {
+        mCurrentPopulatedSize = 0;
+    }
+
+    /*
      * Copies a buffer into this buffer.
      *
      * The sizes of the buffers must match.

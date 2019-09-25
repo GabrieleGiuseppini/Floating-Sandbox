@@ -525,7 +525,11 @@ Render:
 			+ For now just dynamically
 		+ Now: FPS=17.7 U/R=230
 		+ Commit
-		- Precalc lamp buffers and maintain w/GameParameters' changes
+		= ElectricalElements: precalc lamp buffers and maintain w/GameParameters' changes
+			+ Store initial GameParameters at cctor
+			+ Calc values at Add()
+			+ Recalc values at UpdateForGameParameters
+			- See if may replace setting AvailableLight w/setting non-raw LightDistanceCoeff
 		- Try with exploding lamp's positions into x & y
 			- @ Ship
 			- @ UnitTests

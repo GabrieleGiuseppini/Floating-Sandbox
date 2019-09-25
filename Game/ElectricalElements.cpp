@@ -67,6 +67,25 @@ void ElectricalElements::Add(
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
+
+    //
+    // Lamp
+    //
+
+    if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial.ElectricalType)
+    {
+        float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+            electricalMaterial.LightSpread,
+            mCurrentLightSpreadAdjustment);
+
+        mLampRawDistanceCoefficientBuffer.emplace_back(
+            CalculateLampRawDistanceCoefficient(
+                electricalMaterial.Luminiscence,
+                mCurrentLuminiscenceAdjustment,
+                lampLightSpreadMaxDistance));
+
+        mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+    }
 }
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
@@ -90,6 +109,35 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
+}
+
+void ElectricalElements::UpdateForGameParameters(GameParameters const & gameParameters)
+{
+    //
+    // Recalculate lamp coefficients, if needed
+    //
+
+    if (gameParameters.LightSpreadAdjustment != mCurrentLightSpreadAdjustment
+        || gameParameters.LuminiscenceAdjustment != mCurrentLuminiscenceAdjustment)
+    {
+        for (size_t l = 0; l < mLamps.size(); ++l)
+        {
+            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+                mMaterialLightSpreadBuffer[l],
+                gameParameters.LightSpreadAdjustment);
+
+            mLampRawDistanceCoefficientBuffer[l] = CalculateLampRawDistanceCoefficient(
+                mMaterialLuminiscenceBuffer[l],
+                gameParameters.LuminiscenceAdjustment,
+                lampLightSpreadMaxDistance);
+
+            mLampLightSpreadMaxDistanceBuffer[l] = lampLightSpreadMaxDistance;
+        }
+
+        // Remember new parameters
+        mCurrentLightSpreadAdjustment = gameParameters.LightSpreadAdjustment;
+        mCurrentLuminiscenceAdjustment = gameParameters.LuminiscenceAdjustment;
+    }
 }
 
 void ElectricalElements::UpdateSourcesAndPropagation(

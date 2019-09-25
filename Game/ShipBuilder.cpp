@@ -302,7 +302,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
         parentWorld,
-        gameEventDispatcher);
+        gameEventDispatcher,
+        gameParameters);
 
 
     //
@@ -1119,18 +1120,24 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
     Physics::World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    GameParameters const & gameParameters)
 {
     //
-    // Get indices of points with electrical elements
+    // Get indices of points with electrical elements, and count
+    // number of lamps
     //
 
     std::vector<ElementIndex> electricalElementPointIndices;
+    ElementIndex lampElementCount = 0;
     for (auto pointIndex : points)
     {
         if (NoneElementIndex != points.GetElectricalElement(pointIndex))
-        {
+        {            
             electricalElementPointIndices.push_back(pointIndex);
+
+            if (ElectricalMaterial::ElectricalElementType::Lamp == points.GetElectricalMaterial(pointIndex)->ElectricalType)
+                ++lampElementCount;
         }
     }
 
@@ -1140,8 +1147,10 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 
     ElectricalElements electricalElements(
         static_cast<ElementCount>(electricalElementPointIndices.size()),
+        lampElementCount,
         parentWorld,
-        gameEventDispatcher);
+        gameEventDispatcher,
+        gameParameters);
 
     for (auto pointIndex : electricalElementPointIndices)
     {

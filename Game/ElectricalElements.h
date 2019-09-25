@@ -143,10 +143,12 @@ private:
 public:
 
     ElectricalElements(
-        ElementCount elementCount,
+        ElementCount allElementCount,
+        ElementCount lampElementCount,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-        : ElementContainer(elementCount)
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        GameParameters const & gameParameters)
+        : ElementContainer(allElementCount)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -163,6 +165,15 @@ public:
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
         //////////////////////////////////
+        // Lamps
+        //////////////////////////////////
+        , mBufferLampCount(make_aligned_float_element_count(lampElementCount))
+        , mLampRawDistanceCoefficientBuffer(mBufferLampCount, lampElementCount, 0.0f)
+        , mLampLightSpreadMaxDistanceBuffer(mBufferLampCount, lampElementCount, 0.0f)
+        , mLampPositionWorkBuffer(mBufferLampCount, lampElementCount, vec2f::zero())
+        , mLampPlaneIdWorkBuffer(mBufferLampCount, lampElementCount, 0)
+        , mLampDistanceCoefficientWorkBuffer(mBufferLampCount, lampElementCount, 0.0f)
+        //////////////////////////////////
         // Container
         //////////////////////////////////
         , mParentWorld(parentWorld)
@@ -171,6 +182,8 @@ public:
         , mSources()
         , mSinks()
         , mLamps()
+        , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
+        , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
     {
     }
 
@@ -207,6 +220,8 @@ public:
         ElectricalMaterial const & electricalMaterial);
 
     void Destroy(ElementIndex electricalElementIndex);
+
+    void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateSourcesAndPropagation(
         SequenceNumber newConnectivityVisitSequenceNumber,
@@ -252,6 +267,7 @@ public:
     // Light
     //
 
+    /* TODO: nuke if not needed
     inline float GetMaterialLuminiscence(ElementIndex electricalElementIndex) const
     {
         assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
@@ -263,6 +279,7 @@ public:
         assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
         return mMaterialLightSpreadBuffer[electricalElementIndex];
     }
+    */
 
     //
     // Connected elements
@@ -303,6 +320,45 @@ public:
         return mAvailableLightBuffer[electricalElementIndex];
     }
 
+    //
+    // Lamps
+    //
+
+    inline ElementIndex GetLampCount() const
+    {
+        return static_cast<ElementIndex >(mLamps.size());
+    }
+
+    inline ElementIndex GetBufferLampCount() const
+    {
+        return mBufferLampCount;
+    }
+
+    inline float GetLampRawDistanceCoefficient(ElementIndex electricalElementIndex) const
+    {
+        return mLampRawDistanceCoefficientBuffer[electricalElementIndex];
+    }
+
+    float * restrict GetLampLightSpreadMaxDistanceBufferAsFloat()
+    {
+        return mLampLightSpreadMaxDistanceBuffer.data();
+    }
+
+    Buffer<vec2f> & GetLampPositionWorkBuffer()
+    {
+        return mLampPositionWorkBuffer;
+    }
+
+    Buffer<PlaneId> & GetLampPlaneIdWorkBuffer()
+    {
+        return mLampPlaneIdWorkBuffer;
+    }
+
+    Buffer<float> & GetLampDistanceCoefficientWorkBuffer()
+    {
+        return mLampDistanceCoefficientWorkBuffer;
+    }
+
 private:
 
     void RunLampStateMachine(
@@ -315,6 +371,26 @@ private:
     bool CheckWetFailureTime(
         ElementState::LampState & lamp,
         GameWallClock::time_point currentWallclockTime);
+
+    static inline float CalculateLampLightSpreadMaxDistance(
+        float materialLightSpread,
+        float lightSpreadAdjustment)
+    {
+        return materialLightSpread
+            * lightSpreadAdjustment
+            + 0.5f; // To ensure spread=0 => lamp is lighted        
+    }
+
+    static inline float CalculateLampRawDistanceCoefficient(
+        float materialLuminiscence,
+        float luminiscenceAdjustment,
+        float lampLightSpreadMaxDistance)
+    {
+        // This coefficient pre-calculates part of lum*(spread-distance)/spread
+        return materialLuminiscence
+            * luminiscenceAdjustment
+            / lampLightSpreadMaxDistance;
+    }
 
 private:
 
@@ -339,7 +415,7 @@ private:
     Buffer<float> mMaterialLuminiscenceBuffer;
     Buffer<vec4f> mMaterialLightColorBuffer;
     Buffer<float> mMaterialLightSpreadBuffer;
-
+    
     // Connected elements
     Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;
 
@@ -351,6 +427,18 @@ private:
 
     // Connectivity detection visit sequence number
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
+
+    //////////////////////////////////////////////////////////
+    // Lamps
+    //////////////////////////////////////////////////////////
+
+    ElementIndex const mBufferLampCount;
+
+    Buffer<float> mLampRawDistanceCoefficientBuffer; // EffectiveLampLight / LampLightSpreadMaxDistance
+    Buffer<float> mLampLightSpreadMaxDistanceBuffer;
+    Buffer<vec2f> mLampPositionWorkBuffer;
+    Buffer<PlaneId> mLampPlaneIdWorkBuffer;
+    Buffer<float> mLampDistanceCoefficientWorkBuffer; 
 
     //////////////////////////////////////////////////////////
     // Container
@@ -366,6 +454,12 @@ private:
     std::vector<ElementIndex> mSources;
     std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
+
+    // The game parameter values that we are current with; changes
+    // in the values of these parameters will trigger a re-calculation
+    // of pre-calculated coefficients
+    float mCurrentLightSpreadAdjustment;
+    float mCurrentLuminiscenceAdjustment;
 };
 
 }
