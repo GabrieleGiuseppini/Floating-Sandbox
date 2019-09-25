@@ -21,14 +21,14 @@ void ElectricalElements::Add(
 
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
-    mTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
-    mHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
-    mOperatingTemperaturesBuffer.emplace_back(
+    mMaterialTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
+    mMaterialHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
+    mMaterialOperatingTemperaturesBuffer.emplace_back(
         electricalMaterial.MinimumOperatingTemperature,
         electricalMaterial.MaximumOperatingTemperature);
-    mLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
-    mLightColorBuffer.emplace_back(electricalMaterial.LightColor);
-    mLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
+    mMaterialLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
+    mMaterialLightColorBuffer.emplace_back(electricalMaterial.LightColor);
+    mMaterialLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
     mConnectedElectricalElementsBuffer.emplace_back();
     mAvailableLightBuffer.emplace_back(0.f);
 
@@ -123,7 +123,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
                 bool preconditionsSatisfied = false;
 
-                switch (GetType(sourceIndex))
+                switch (GetMaterialType(sourceIndex))
                 {
                     case ElectricalMaterial::ElectricalElementType::Generator:
                     {
@@ -136,7 +136,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         if (mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent)
                         {
                             if (points.IsWet(sourcePointIndex, 0.3f)
-                                || !mOperatingTemperaturesBuffer[sourceIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
+                                || !mMaterialOperatingTemperaturesBuffer[sourceIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
                             {
                                 mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = false;
                             }
@@ -144,7 +144,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         else
                         {
                             if (!points.IsWet(sourcePointIndex, 0.3f)
-                                && mOperatingTemperaturesBuffer[sourceIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
+                                && mMaterialOperatingTemperaturesBuffer[sourceIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
                             {
                                 mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = true;
                             }
@@ -203,7 +203,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     //
 
                     points.AddHeat(sourcePointIndex,
-                        mHeatGeneratedBuffer[sourceIndex]
+                        mMaterialHeatGeneratedBuffer[sourceIndex]
                         * gameParameters.ElectricalElementHeatProducedAdjustment
                         * GameParameters::SimulationStepTimeDuration<float>);
                 }
@@ -232,7 +232,7 @@ void ElectricalElements::UpdateSinks(
 
             bool isOperating = false;
 
-            switch (GetType(sinkIndex))
+            switch (GetMaterialType(sinkIndex))
             {
                 case ElectricalMaterial::ElectricalElementType::Lamp:
                 {
@@ -255,7 +255,7 @@ void ElectricalElements::UpdateSinks(
                     if (mElementStateBuffer[sinkIndex].OtherSink.IsPowered)
                     {
                         if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            || !mOperatingTemperaturesBuffer[sinkIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                            || !mMaterialOperatingTemperaturesBuffer[sinkIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
                         {
                             mElementStateBuffer[sinkIndex].OtherSink.IsPowered = false;
                         }
@@ -263,7 +263,7 @@ void ElectricalElements::UpdateSinks(
                     else
                     {
                         if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            && mOperatingTemperaturesBuffer[sinkIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                            && mMaterialOperatingTemperaturesBuffer[sinkIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
                         {
                             mElementStateBuffer[sinkIndex].OtherSink.IsPowered = true;
                         }
@@ -289,7 +289,7 @@ void ElectricalElements::UpdateSinks(
             if (isOperating)
             {
                 points.AddHeat(GetPointIndex(sinkIndex),
-                    mHeatGeneratedBuffer[sinkIndex]
+                    mMaterialHeatGeneratedBuffer[sinkIndex]
                     * gameParameters.ElectricalElementHeatProducedAdjustment
                     * GameParameters::SimulationStepTimeDuration<float>);
             }
@@ -320,7 +320,7 @@ void ElectricalElements::RunLampStateMachine(
             // Transition to ON - if we have current or if we're self-powered AND if within operating temperature
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
-                && mOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
                 lamp.State = ElementState::LampState::StateType::LightOn;
@@ -347,7 +347,7 @@ void ElectricalElements::RunLampStateMachine(
                     && CheckWetFailureTime(lamp, currentWallclockTime)
                 ) ||
                 (
-                    !mOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
+                    !mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
                 ))
             {
                 //
@@ -376,7 +376,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
-                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -430,7 +430,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
-                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -498,7 +498,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
                 || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
-                && mOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 

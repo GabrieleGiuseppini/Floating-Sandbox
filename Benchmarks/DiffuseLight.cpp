@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <limits>
 
-static constexpr size_t SampleSize = 20000000;
+static constexpr size_t SampleSize = 200000;
 
 static void DiffuseLight_Naive(benchmark::State& state)
 {

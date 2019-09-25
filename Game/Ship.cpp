@@ -1318,13 +1318,13 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
         lampPlaneIds.emplace_back(mPoints.GetPlaneId(mElectricalElements.GetPointIndex(lampIndex)));
 
         auto const lampLightSpreadMaxDistance =
-            mElectricalElements.GetLightSpread(lampIndex)
+            mElectricalElements.GetMaterialLightSpread(lampIndex)
             * gameParameters.LightSpreadAdjustment
             + 0.5f; // To ensure spread=0 => lamp is lighted        
 
         lampDistanceCoeffs.emplace_back(
             mElectricalElements.GetAvailableLight(lampIndex)
-            * mElectricalElements.GetLuminiscence(lampIndex)
+            * mElectricalElements.GetMaterialLuminiscence(lampIndex)
             * gameParameters.LuminiscenceAdjustment
             / lampLightSpreadMaxDistance);
 

@@ -507,19 +507,20 @@ Render:
 				+ See why unaligned instructions (e.g. movups) are generated
 				+ Check whole assembly
 
-			DiffuseLight_Naive/1         142790634 ns  140400900 ns
+				DiffuseLight_Naive/1           1459902 ns    1313034 ns
 
-			DiffuseLight_Naive/4         234007041 ns  223601433 ns
-			DiffuseLight_Naive/8         396637138 ns  374402400 ns
-			DiffuseLight_Naive/16        755825516 ns  733204700 ns
-			DiffuseLight_Naive/32       1684067350 ns 1575610100 ns
-			DiffuseLight_Naive/128      9987870927 ns 9391260200 ns
+				DiffuseLight_Naive/4           4410487 ns    2102955 ns
+				DiffuseLight_Naive/8           6939162 ns    3441199 ns
+				DiffuseLight_Naive/16          8243712 ns    7382190 ns
+				DiffuseLight_Naive/32         16283442 ns   15600100 ns
+				DiffuseLight_Naive/128        98367356 ns   97067289 ns
 
-			DiffuseLight_Vectorized/4    200301430 ns  176801133 ns
-			DiffuseLight_Vectorized/8    338434476 ns  319802050 ns
-			DiffuseLight_Vectorized/16   655946602 ns  608403900 ns
-			DiffuseLight_Vectorized/32  1125692742 ns 1014006500 ns
-			DiffuseLight_Vectorized/128 4157379795 ns 3978025500 ns
+				DiffuseLight_Vectorized/4      1728907 ns    1667717 ns
+				DiffuseLight_Vectorized/8      3052746 ns    2756644 ns
+				DiffuseLight_Vectorized/16     5355406 ns    5292891 ns
+				DiffuseLight_Vectorized/32    10255291 ns   10028636 ns
+				DiffuseLight_Vectorized/128   39751648 ns   36706118 ns
+
 		+ Ship: pad lamps to multiples of element count, and make all buffers aligned			
 			+ For now just dynamically
 		+ Now: FPS=17.7 U/R=230

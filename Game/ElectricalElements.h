@@ -152,12 +152,12 @@ public:
         //////////////////////////////////
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
-        , mTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
-        , mHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mOperatingTemperaturesBuffer(mBufferElementCount, mElementCount, OperatingTemperatures(0.0f, 0.0f))
-        , mLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
-        , mLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mMaterialTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
+        , mMaterialHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mMaterialOperatingTemperaturesBuffer(mBufferElementCount, mElementCount, OperatingTemperatures(0.0f, 0.0f))
+        , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mMaterialLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
+        , mMaterialLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -243,25 +243,25 @@ public:
     // Type
     //
 
-    inline ElectricalMaterial::ElectricalElementType GetType(ElementIndex electricalElementIndex) const
+    inline ElectricalMaterial::ElectricalElementType GetMaterialType(ElementIndex electricalElementIndex) const
     {
-        return mTypeBuffer[electricalElementIndex];
+        return mMaterialTypeBuffer[electricalElementIndex];
     }
 
     //
     // Light
     //
 
-    inline float GetLuminiscence(ElementIndex electricalElementIndex) const
+    inline float GetMaterialLuminiscence(ElementIndex electricalElementIndex) const
     {
         assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
-        return mLuminiscenceBuffer[electricalElementIndex];
+        return mMaterialLuminiscenceBuffer[electricalElementIndex];
     }
 
-    inline float GetLightSpread(ElementIndex electricalElementIndex) const
+    inline float GetMaterialLightSpread(ElementIndex electricalElementIndex) const
     {
         assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
-        return mLightSpreadBuffer[electricalElementIndex];
+        return mMaterialLightSpreadBuffer[electricalElementIndex];
     }
 
     //
@@ -329,16 +329,16 @@ private:
     Buffer<ElementIndex> mPointIndexBuffer;
 
     // Type
-    Buffer<ElectricalMaterial::ElectricalElementType> mTypeBuffer;
+    Buffer<ElectricalMaterial::ElectricalElementType> mMaterialTypeBuffer;
 
     // Properties
-    Buffer<float> mHeatGeneratedBuffer;
-    Buffer<OperatingTemperatures> mOperatingTemperaturesBuffer;
+    Buffer<float> mMaterialHeatGeneratedBuffer;
+    Buffer<OperatingTemperatures> mMaterialOperatingTemperaturesBuffer;
 
     // Light
-    Buffer<float> mLuminiscenceBuffer;
-    Buffer<vec4f> mLightColorBuffer;
-    Buffer<float> mLightSpreadBuffer;
+    Buffer<float> mMaterialLuminiscenceBuffer;
+    Buffer<vec4f> mMaterialLightColorBuffer;
+    Buffer<float> mMaterialLightSpreadBuffer;
 
     // Connected elements
     Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;
