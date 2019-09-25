@@ -40,7 +40,7 @@ static void DiffuseLight_Naive(benchmark::State& state)
     benchmark::DoNotOptimize(outLightBuffer);
 }
 //BENCHMARK(DiffuseLight_Naive)->Arg(2)->Arg(10)->Arg(20)->Arg(50)->Arg(100);
-BENCHMARK(DiffuseLight_Naive)->Arg(2)->Arg(4)->Arg(8);
+BENCHMARK(DiffuseLight_Naive)->Arg(2)->Arg(4)->Arg(8)->Arg(16);
 
 static void DiffuseLight_Vectorized(benchmark::State & state)
 {
@@ -73,4 +73,4 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
     benchmark::DoNotOptimize(outLightBuffer);
 }
 //BENCHMARK(DiffuseLight_Vectorized)->Arg(2)->Arg(10)->Arg(20)->Arg(50)->Arg(100);
-BENCHMARK(DiffuseLight_Vectorized)->Arg(2)->Arg(4)->Arg(8);
+BENCHMARK(DiffuseLight_Vectorized)->Arg(2)->Arg(4)->Arg(8)->Arg(16);

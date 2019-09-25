@@ -114,13 +114,13 @@ inline void DiffuseLight_Naive(
 }
 
 inline void DiffuseLight_Vectorized(
-    vec2f const * pointPositions,
-    PlaneId const * pointPlaneIds,
+    vec2f const * restrict pointPositions,
+    PlaneId const * restrict pointPlaneIds,
     ElementIndex const pointCount,
-    vec2f const * lampPositions,
-    PlaneId const * lampPlaneIds,
-    float const * lampDistanceCoeffs,
-    float const * lampSpreadMaxDistances,
+    vec2f const * restrict lampPositions,
+    PlaneId const * restrict lampPlaneIds,
+    float const * restrict lampDistanceCoeffs,
+    float const * restrict lampSpreadMaxDistances,
     ElementIndex const lampCount,
     float * restrict outLightBuffer)
 {
@@ -161,8 +161,8 @@ inline void DiffuseLight_Vectorized(
     {   
         // Point position, repeated 4 times
         auto const pointPosition = pointPositions[p];
-        __m128 const pointPosX_4 = _mm_load_ps1(reinterpret_cast<float const *>(&pointPosition)); // x0,x0,x0,x0
-        __m128 const pointPosY_4 = _mm_load_ps1(reinterpret_cast<float const *>(&pointPosition) + 1); // y0,y0,y0,y0
+        __m128 const pointPosX_4 = _mm_set1_ps(pointPosition.x); // x0,x0,x0,x0
+        __m128 const pointPosY_4 = _mm_set1_ps(pointPosition.y); // y0,y0,y0,y0
 
         // Point plane, repeated 4 times
         auto const pointPlaneId = pointPlaneIds[p];
