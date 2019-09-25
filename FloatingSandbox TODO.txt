@@ -499,24 +499,13 @@ Render:
 		+ Now: FPS=13.4 U/R=335/342
 		+ 6: Invert loop and optimize
 		+ Now: FPS=15.8 U/R=272
-		= 7: Vectorize
+		+ 7: Vectorize
 			+ Make unit tests
 			+ Make benchmark
 			+ Test if pointLight can be clipped to 1.0 (NO)
 			+ Vectorize
 				+ See why unaligned instructions (e.g. movups) are generated
 				+ Check whole assembly
-			- Pad lamps to multiples of element count				
-				- @ Ship
-					- For now just dynamically
-				+ @ UnitTests
-				+ @ Benchmarks
-			- Make aligned inputs:
-				- @ Ship
-					- For now just dynamically
-				+ @ UnitTests
-					+ Use new sys_specifics #define, aligning for AVX is fine for now
-				+ @ Benchmarks
 
 			DiffuseLight_Naive/1         142790634 ns  140400900 ns
 
@@ -532,6 +521,8 @@ Render:
 			DiffuseLight_Vectorized/32  1125692742 ns 1014006500 ns
 			DiffuseLight_Vectorized/128 4157379795 ns 3978025500 ns
 
+		- Ship: pad lamps to multiples of element count, and make all buffers aligned			
+			- For now just dynamically
 		- Now: FPS= U/R=
 		- Commit
 		- Precalc lamp buffers and maintain w/GameParameters' changes
