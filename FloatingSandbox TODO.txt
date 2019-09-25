@@ -520,13 +520,11 @@ Render:
 			DiffuseLight_Vectorized/16   655946602 ns  608403900 ns
 			DiffuseLight_Vectorized/32  1125692742 ns 1014006500 ns
 			DiffuseLight_Vectorized/128 4157379795 ns 3978025500 ns
-
-		- Ship: pad lamps to multiples of element count, and make all buffers aligned			
-			- For now just dynamically
-		- Now: FPS= U/R=
-		- Commit
+		+ Ship: pad lamps to multiples of element count, and make all buffers aligned			
+			+ For now just dynamically
+		+ Now: FPS=17.7 U/R=230
+		+ Commit
 		- Precalc lamp buffers and maintain w/GameParameters' changes
-		- Now: FPS= U/R=
 		- Try with exploding lamp's positions into x & y
 			- @ Ship
 			- @ UnitTests
@@ -536,6 +534,8 @@ Render:
 			- Decide whether to keep or not
 		- Decide whether Ship should use a threshold to switch between vectorized and naive algo
 			- Make benchmarks
+		- Now: FPS= U/R=
+		- Run in Debug
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
 
