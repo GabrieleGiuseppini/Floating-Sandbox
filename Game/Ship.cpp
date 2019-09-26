@@ -1311,6 +1311,7 @@ void Ship::DiffuseLight(GameParameters const & /*gameParameters*/)
     {
         auto const lampElectricalElementIndex = mElectricalElements.Lamps()[l];
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampElectricalElementIndex);
+
         lampPositions[l] = mPoints.GetPosition(lampPointIndex);
         lampPlaneIds[l] = mPoints.GetPlaneId(lampPointIndex);
         lampDistanceCoeffs[l] =

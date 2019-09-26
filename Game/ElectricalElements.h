@@ -264,24 +264,6 @@ public:
     }
 
     //
-    // Light
-    //
-
-    /* TODO: nuke if not needed
-    inline float GetMaterialLuminiscence(ElementIndex electricalElementIndex) const
-    {
-        assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
-        return mMaterialLuminiscenceBuffer[electricalElementIndex];
-    }
-
-    inline float GetMaterialLightSpread(ElementIndex electricalElementIndex) const
-    {
-        assert(ElectricalMaterial::ElectricalElementType::Lamp == GetType(electricalElementIndex));
-        return mMaterialLightSpreadBuffer[electricalElementIndex];
-    }
-    */
-
-    //
     // Connected elements
     //
 
@@ -315,6 +297,10 @@ public:
     // Available Light
     //
 
+    /*
+     * Gets the fraction of the element's luminiscence that is actually available after current
+     * propagation.
+     */
     inline float GetAvailableLight(ElementIndex electricalElementIndex) const
     {
         return mAvailableLightBuffer[electricalElementIndex];
@@ -324,36 +310,62 @@ public:
     // Lamps
     //
 
+    /*
+     * Gets the actual number of lamps.
+     */
     inline ElementIndex GetLampCount() const
     {
         return static_cast<ElementIndex >(mLamps.size());
     }
 
+    /*
+     * Gets the number of lamps rounded up to the number of vectorization elements,
+     * which is the number of elements in the lamp buffers.
+     */
     inline ElementIndex GetBufferLampCount() const
     {
         return mBufferLampCount;
     }
 
+    /*
+     * Gets the lamp's light distance coefficient, net of the lamp's available light.
+     */
     inline float GetLampRawDistanceCoefficient(ElementIndex electricalElementIndex) const
     {
         return mLampRawDistanceCoefficientBuffer[electricalElementIndex];
     }
 
+    /*
+     * Gets the spread coefficients for all lamps as a buffer; size is
+     * BufferLampCount.
+     */
     float * restrict GetLampLightSpreadMaxDistanceBufferAsFloat()
     {
         return mLampLightSpreadMaxDistanceBuffer.data();
     }
 
+    /*
+     * Gets a work buffer for populating lamp positions; size is
+     * BufferLampCount.
+     */
     Buffer<vec2f> & GetLampPositionWorkBuffer()
     {
         return mLampPositionWorkBuffer;
     }
 
+    /*
+     * Gets a work buffer for populating lamp plane IDs; size is
+     * BufferLampCount.
+     */
     Buffer<PlaneId> & GetLampPlaneIdWorkBuffer()
     {
         return mLampPlaneIdWorkBuffer;
     }
 
+    /*
+     * Gets a work buffer for populating complete distance coefficients; size is
+     * BufferLampCount.
+     */
     Buffer<float> & GetLampDistanceCoefficientWorkBuffer()
     {
         return mLampDistanceCoefficientWorkBuffer;

@@ -72,6 +72,10 @@ inline void CalculateVectorDirsAndReciprocalLengths(
     }
 }
 
+/*
+ * Diffuse light from each lamp to all points on the same or lower plane ID,
+ * inverse-proportionally to the lamp-point distance
+ */
 inline void DiffuseLight_Naive(
     vec2f const * pointPositions,
     PlaneId const * pointPlaneIds,
@@ -115,6 +119,10 @@ inline void DiffuseLight_Naive(
     }
 }
 
+/*
+ * Diffuse light from each lamp to all points on the same or lower plane ID,
+ * inverse-proportionally to the lamp-point distance
+ */
 inline void DiffuseLight_Vectorized(
     vec2f const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
