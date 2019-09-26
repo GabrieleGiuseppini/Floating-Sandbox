@@ -530,14 +530,17 @@ Render:
 			+ Calc values at Add()
 			+ Recalc values at UpdateForGameParameters
 		- Try with exploding lamp's positions into x & y
-			- @ Ship
+			- Algorithm
 			- @ UnitTests
 			- @ Benchmarks
 			- Run new benchmarks
+			- @ Ship
 			- Now: FPS= U/R=
 			- Decide whether to keep or not
 		- Decide whether Ship should use a threshold to switch between vectorized and naive algo
 			- Make benchmarks
+		- Disable whole diffusion when luminiscence adjust is zero
+			- Requires "current" member at Ship
 		- Now: FPS= U/R=
 		- Run in Debug
 		- Adjust ships:
