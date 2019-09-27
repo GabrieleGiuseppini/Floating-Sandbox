@@ -55,11 +55,13 @@ An optional texture map may be applied on top of the body, which will be drawn a
 
 Users can interact with a body in different ways:
 - Break and repair parts of the body
-- Slice the body in pieces
-- Apply radial forces and angular forces
-- Deploy bombs
+- Slice and smash the body in pieces
+- Deploy and detonate bombs
 - Pin individual points of the body so that their position (and velocity) becomes frozen
 - Add or remove water to and from the body
+- Add or remove heat to and from the body - and let it catch fire!
+- Apply radial forces and angular forces
+- Move individual parts
 
 <img src="https://i.imgur.com/WUk7qGv.png">
 
@@ -84,7 +86,7 @@ I started coding this game after stumbling upon Luke Wren's and Francis Racicot'
 After a while I realized that I had rewritten all of the original code, and that my new project was thus worthy of a new name and a new source code repository, the one you are looking at now.
 
 # Building the Game
-I build this game with Visual Studio 2017 (update 15.8, hence with std::filesystem).
+I build this game with Visual Studio 2019 (thus full C++ 17 support).
 I tried to do my best to craft the CMake files in a platform-independent way, but I'm working on this exclusively in Visual Studio, hence I'm sure some unportable features have slipped in. Feel free to send pull requests for CMake edits for other platforms.
 
 In order to build the game, you will need the following dependencies:

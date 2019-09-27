@@ -507,19 +507,19 @@ Render:
 				+ See why unaligned instructions (e.g. movups) are generated
 				+ Check whole assembly
 
-				DiffuseLight_Naive/1           1459902 ns    1313034 ns
+				DiffuseLight_Naive/1           1308910 ns    1195730 ns        561
 
-				DiffuseLight_Naive/4           4410487 ns    2102955 ns
-				DiffuseLight_Naive/8           6939162 ns    3441199 ns
-				DiffuseLight_Naive/16          8243712 ns    7382190 ns
-				DiffuseLight_Naive/32         16283442 ns   15600100 ns
-				DiffuseLight_Naive/128        98367356 ns   97067289 ns
+				DiffuseLight_Naive/4           2055317 ns    2043863 ns        374
+				DiffuseLight_Naive/8           3586917 ns    3441199 ns        204
+				DiffuseLight_Naive/16          7220152 ns    6964330 ns        112
+				DiffuseLight_Naive/32         16417383 ns   15912102 ns         50
+				DiffuseLight_Naive/128        98089663 ns   91372014 ns          7
 
-				DiffuseLight_Vectorized/4      1728907 ns    1667717 ns
-				DiffuseLight_Vectorized/8      3052746 ns    2756644 ns
-				DiffuseLight_Vectorized/16     5355406 ns    5292891 ns
-				DiffuseLight_Vectorized/32    10255291 ns   10028636 ns
-				DiffuseLight_Vectorized/128   39751648 ns   36706118 ns
+				DiffuseLight_Vectorized/4      1710142 ns    1605893 ns        408
+				DiffuseLight_Vectorized/8      2995209 ns    2944597 ns        249
+				DiffuseLight_Vectorized/16     5288064 ns    5304034 ns        100
+				DiffuseLight_Vectorized/32    10752535 ns    9984064 ns         75
+				DiffuseLight_Vectorized/128   39420602 ns   37623771 ns         17
 
 		+ Ship: pad lamps to multiples of element count, and make all buffers aligned			
 			+ For now just dynamically
@@ -530,22 +530,38 @@ Render:
 			+ Calc values at Add()
 			+ Recalc values at UpdateForGameParameters
 		+ Now: FPS=18 U/R=222
-		- Try with exploding lamp's positions into x & y
-			- Algorithm
-			- @ UnitTests
-			- @ Benchmarks
-			- Run new benchmarks
-			- @ Ship
-			- Now: FPS= U/R=
-			- Decide whether to keep or not
+		+ Try with exploding lamp's positions into x & y
+			+ Algorithm
+			+ @ UnitTests
+			+ @ Benchmarks
+			+ Run new benchmarks
+
+				DiffuseLight_Naive/1          21471036 ns   12792082 ns
+
+				DiffuseLight_Naive/4          20730892 ns   19165837 ns
+				DiffuseLight_Naive/8          36127342 ns   34171648 ns
+				DiffuseLight_Naive/16         70868391 ns   67600433 ns
+				DiffuseLight_Naive/32        158081461 ns  156001000 ns
+				DiffuseLight_Naive/128      1009125502 ns  936006000 ns
+
+				DiffuseLight_Vectorized/4     16869165 ns   16361080 ns
+				DiffuseLight_Vectorized/8     29228165 ns   28363818 ns
+				DiffuseLight_Vectorized/16    54706011 ns   49636682 ns
+				DiffuseLight_Vectorized/32   107635537 ns  101400650 ns          
+				DiffuseLight_Vectorized/128  413520040 ns  382202450 ns
+
+			+ @ Ship
+			+ Decide whether to keep or not
 		- Decide whether Ship should use a threshold to switch between vectorized and naive algo
-			- Make benchmarks
+			- 1) Make Naive 
+			- Make benchmarks w/whole lamp preparation as well
 		- Disable whole diffusion when luminiscence adjust is zero
 			- Requires "current" member at Ship
 		- Now: FPS= U/R=
 		- Run in Debug
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
+		- Update changes.txt
 
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 
