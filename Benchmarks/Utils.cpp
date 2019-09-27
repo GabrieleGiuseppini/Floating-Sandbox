@@ -46,6 +46,18 @@ unique_aligned_buffer<float> MakeFloats(size_t count, float value)
     return floats;
 }
 
+unique_aligned_buffer<ElementIndex> MakeElementIndices(ElementIndex maxElementIndex, size_t count)
+{
+    auto elementIndices = make_unique_buffer_aligned_to_vectorization_word<ElementIndex>(count);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        elementIndices[i] = static_cast<ElementIndex>(i) % maxElementIndex;
+    }
+
+    return elementIndices;
+}
+
 unique_aligned_buffer<PlaneId> MakePlaneIds(size_t count)
 {
     auto planeIds = make_unique_buffer_aligned_to_vectorization_word<PlaneId>(count);

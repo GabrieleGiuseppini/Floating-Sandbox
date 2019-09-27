@@ -552,9 +552,9 @@ Render:
 
 			+ @ Ship
 			+ Decide whether to keep or not
-		- Decide whether Ship should use a threshold to switch between vectorized and naive algo
-			- 1) Make Naive 
-			- Make benchmarks w/whole lamp preparation as well
+		+ Decide whether Ship should use a threshold to switch between vectorized and naive algo
+			+ 1 naive is better than 4 vectorized, 2 naives are already worse
+			+ Just one lamp is not worth optimizing for
 		- Disable whole diffusion when luminiscence adjust is zero
 			- Requires "current" member at Ship
 		- Now: FPS= U/R=
