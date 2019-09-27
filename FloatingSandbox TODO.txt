@@ -529,6 +529,7 @@ Render:
 			+ Store initial GameParameters at cctor
 			+ Calc values at Add()
 			+ Recalc values at UpdateForGameParameters
+		+ Now: FPS=18 U/R=222
 		- Try with exploding lamp's positions into x & y
 			- Algorithm
 			- @ UnitTests
@@ -957,7 +958,10 @@ Render:
 				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
 				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
 				- WaterSurface, may be x-shifted
-		- for each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
+		- For each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
+		- Dynamics:
+			- Ship gets UnderwaterCurrents object from parent world
+				- May be also give OceanSurface and nuke IsUnderwater/GetWaterDepth from World
 		- Rendered (via option):
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
