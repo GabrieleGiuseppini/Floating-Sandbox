@@ -555,13 +555,15 @@ Render:
 		+ Decide whether Ship should use a threshold to switch between vectorized and naive algo
 			+ 1 naive is better than 4 vectorized, 2 naives are already worse
 			+ Just one lamp is not worth optimizing for
-		- Disable whole diffusion when luminiscence adjust is zero
-			- Requires "current" member at Ship
-		- Now: FPS= U/R=
+		+ Disable whole diffusion when luminiscence adjust is zero
+			+ Requires "current" member at Ship
 		- Run in Debug
+		- Now: FPS= U/R=
 		- Adjust ships:
 			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
 		- Update changes.txt
+		- Nuke old code from DiffuseLight
+			- Do blog post first
 
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 

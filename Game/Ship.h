@@ -438,6 +438,11 @@ private:
     // Water splashes
     RunningAverage<30> mWaterSplashedRunningAverage;
 
+    // Last luminiscence adjustment that we've run the light diffusion algorithm with;
+    // used to avoid running diffusion when luminiscence adjustment is zero and we've
+    // already ran once with zero (so to zero out buffer)
+    float mLastLuminiscenceAdjustmentDiffused;
+
     //
     // Render members
     //

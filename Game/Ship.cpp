@@ -93,6 +93,8 @@ Ship::Ship(
     , mIsStructureDirty(true)
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
+    , mLastLuminiscenceAdjustmentDiffused(-1.0f)
+    // Render
     , mLastDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
     , mWindSpeedMagnitudeToRender(0.0)
@@ -1288,7 +1290,7 @@ void Ship::UpdateElectricalDynamics(
     DiffuseLight(gameParameters);
 }
 
-void Ship::DiffuseLight(GameParameters const & /*gameParameters*/)
+void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
     // Diffuse light from each lamp to all points on the same or lower plane ID,
@@ -1296,8 +1298,11 @@ void Ship::DiffuseLight(GameParameters const & /*gameParameters*/)
     //
 
     // Shortcut
-    if (mElectricalElements.Lamps().empty())
+    if (mElectricalElements.Lamps().empty()
+        || (gameParameters.LuminiscenceAdjustment == 0.0f && mLastLuminiscenceAdjustmentDiffused == 0.0f))
+    {
         return;
+    }
 
     //
     // 1. Prepare lamp data
@@ -1333,6 +1338,10 @@ void Ship::DiffuseLight(GameParameters const & /*gameParameters*/)
         mElectricalElements.GetLampLightSpreadMaxDistanceBufferAsFloat(),
         mElectricalElements.GetBufferLampCount(),
         mPoints.GetLightBufferAsFloat());
+
+    // Remember that we've diffused light with this luminiscence adjustment
+    mLastLuminiscenceAdjustmentDiffused = gameParameters.LuminiscenceAdjustment;
+
 
     /* TODO: version before being moved to Algorithms
     //
