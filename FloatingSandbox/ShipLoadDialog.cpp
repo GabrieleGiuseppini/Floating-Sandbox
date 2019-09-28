@@ -168,7 +168,7 @@ ShipLoadDialog::ShipLoadDialog(
                 wxID_ANY,
                 "",
                 wxDefaultPosition,
-                wxDefaultSize,
+                wxSize(-1, 24),
                 0);
 
             mShipSearchCtrl->ShowCancelButton(true);
@@ -179,7 +179,7 @@ ShipLoadDialog::ShipLoadDialog(
 
             hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
 
-            mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
+            mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
             wxBitmap searchNextBitmap(resourceLoader.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
             mSearchNextButton->SetBitmap(searchNextBitmap);
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
