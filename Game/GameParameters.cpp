@@ -36,7 +36,7 @@ GameParameters::GameParameters()
     , RogueWaveRate(2.0f)
     // Heat
     , AirTemperature(298.15f) // 25C
-    , WaterTemperature(288.15) // 15C
+    , WaterTemperature(288.15f) // 15C
     , MaxBurningParticles(112)
     , ThermalConductivityAdjustment(1.0f)
     , HeatDissipationAdjustment(1.0f)

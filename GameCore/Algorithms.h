@@ -135,7 +135,7 @@ inline void DiffuseLight_Vectorized(
     float * restrict outLightBuffer)
 {
     // This code is vectorized for SSE = 4 floats
-    assert(vectorization_float_count >= 4);
+    assert(vectorization_float_count<size_t> >= 4);
     assert(is_aligned_to_float_element_count(pointCount));
     assert(is_aligned_to_float_element_count(lampCount));
     assert(is_aligned_to_vectorization_word(pointPositions));

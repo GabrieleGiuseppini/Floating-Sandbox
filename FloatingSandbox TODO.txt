@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+1.13
+- After DiffuseLight rearc: FPS=29.5, U/R=19
+=================================================
 1.12
 - fps: 29.1/29.5/30.1
 - UR: 221/227
@@ -324,6 +327,8 @@ Render:
 		= Unix build break
 
 		= Lights perf improvement (*)
+			- Nuke old code from DiffuseLight
+				- Do blog post first
 
 		- Cached quantities (*)
 		
@@ -485,85 +490,6 @@ Render:
 			- No fullscreen mode
 
 - Simulation Optimizations:
-
-	= Lights perf improvement (*)
-		+ Start: FPS=9.9 U/R=508/510 (Dorik 2)
-		+ 1: Add IsLegacyElectrical to structural materials
-		+ 2: Make spread linear, == max distance
-			+ Update materials' DB
-			+ Remove mapping and take spread as-is
-		+ 3: Adjust spread adjustment:
-			+ Min/Max = 0.0/20.0, linear
-		+ 4: Adjust luminiscence adjustment:
-			+ Min/Max = 0.0/4.0, exp
-		+ Now: FPS=13.4 U/R=335/342
-		+ 6: Invert loop and optimize
-		+ Now: FPS=15.8 U/R=272
-		+ 7: Vectorize
-			+ Make unit tests
-			+ Make benchmark
-			+ Test if pointLight can be clipped to 1.0 (NO)
-			+ Vectorize
-				+ See why unaligned instructions (e.g. movups) are generated
-				+ Check whole assembly
-
-				DiffuseLight_Naive/1           1308910 ns    1195730 ns        561
-
-				DiffuseLight_Naive/4           2055317 ns    2043863 ns        374
-				DiffuseLight_Naive/8           3586917 ns    3441199 ns        204
-				DiffuseLight_Naive/16          7220152 ns    6964330 ns        112
-				DiffuseLight_Naive/32         16417383 ns   15912102 ns         50
-				DiffuseLight_Naive/128        98089663 ns   91372014 ns          7
-
-				DiffuseLight_Vectorized/4      1710142 ns    1605893 ns        408
-				DiffuseLight_Vectorized/8      2995209 ns    2944597 ns        249
-				DiffuseLight_Vectorized/16     5288064 ns    5304034 ns        100
-				DiffuseLight_Vectorized/32    10752535 ns    9984064 ns         75
-				DiffuseLight_Vectorized/128   39420602 ns   37623771 ns         17
-
-		+ Ship: pad lamps to multiples of element count, and make all buffers aligned			
-			+ For now just dynamically
-		+ Now: FPS=17.7 U/R=230
-		+ Commit
-		+ ElectricalElements: precalc lamp buffers and maintain w/GameParameters' changes
-			+ Store initial GameParameters at cctor
-			+ Calc values at Add()
-			+ Recalc values at UpdateForGameParameters
-		+ Now: FPS=18 U/R=222
-		+ Try with exploding lamp's positions into x & y
-			+ Algorithm
-			+ @ UnitTests
-			+ @ Benchmarks
-			+ Run new benchmarks
-
-				DiffuseLight_Naive/1          21471036 ns   12792082 ns
-
-				DiffuseLight_Naive/4          20730892 ns   19165837 ns
-				DiffuseLight_Naive/8          36127342 ns   34171648 ns
-				DiffuseLight_Naive/16         70868391 ns   67600433 ns
-				DiffuseLight_Naive/32        158081461 ns  156001000 ns
-				DiffuseLight_Naive/128      1009125502 ns  936006000 ns
-
-				DiffuseLight_Vectorized/4     16869165 ns   16361080 ns
-				DiffuseLight_Vectorized/8     29228165 ns   28363818 ns
-				DiffuseLight_Vectorized/16    54706011 ns   49636682 ns
-				DiffuseLight_Vectorized/32   107635537 ns  101400650 ns          
-				DiffuseLight_Vectorized/128  413520040 ns  382202450 ns
-
-			+ @ Ship
-			+ Decide whether to keep or not
-		+ Decide whether Ship should use a threshold to switch between vectorized and naive algo
-			+ 1 naive is better than 4 vectorized, 2 naives are already worse
-			+ Just one lamp is not worth optimizing for
-		+ Disable whole diffusion when luminiscence adjust is zero
-			+ Requires "current" member at Ship
-		- Run in Debug
-		- Now: FPS= U/R=
-		- Adjust ships:
-			- Dorek*: use 0.5-spread lights instead of 1.0 (REALLY?)
-		- Update changes.txt
-		- Nuke old code from DiffuseLight
-			- Do blog post first
 
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 
@@ -1397,12 +1323,12 @@ Render:
 			- Ocean floor is just another setting
 				- GameController only exposes ocean floor as float buffer
 				- GameController::cctor takes it
-				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)
+				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)X2 (png, floatbin)
 				- SettingsManager saves it in binary file (possible shared w/other buffer settings) next to user settings' json file,
 				  w/same name but different extension
 			- Saved settings are thus:
 				- prefix_mangledname.json
-				- prefix_mangledname.dat
+				- prefix_mangledname.floatbin
 			- Changing settings in the GUI puts them in effect immediately
 				- ...and GameController will smooth them
 			- Loaded settings go to GameController
@@ -2022,7 +1948,80 @@ IF WX:
 			+ Starting ACMR: 1.01986 VMR: 0.49888
 			+ Ending ACMR: 1.00672 VMR: 0.101436
 			+ Test to decide whether to keep or not: NO KEEP
+	+ Lights perf improvement (*)
+		+ Start: FPS=9.9 U/R=508/510 (Dorik 2)
+		+ 1: Add IsLegacyElectrical to structural materials
+		+ 2: Make spread linear, == max distance
+			+ Update materials' DB
+			+ Remove mapping and take spread as-is
+		+ 3: Adjust spread adjustment:
+			+ Min/Max = 0.0/20.0, linear
+		+ 4: Adjust luminiscence adjustment:
+			+ Min/Max = 0.0/4.0, exp
+		+ Now: FPS=13.4 U/R=335/342
+		+ 6: Invert loop and optimize
+		+ Now: FPS=15.8 U/R=272
+		+ 7: Vectorize
+			+ Make unit tests
+			+ Make benchmark
+			+ Test if pointLight can be clipped to 1.0 (NO)
+			+ Vectorize
+				+ See why unaligned instructions (e.g. movups) are generated
+				+ Check whole assembly
 
+				DiffuseLight_Naive/1           1308910 ns    1195730 ns        561
+
+				DiffuseLight_Naive/4           2055317 ns    2043863 ns        374
+				DiffuseLight_Naive/8           3586917 ns    3441199 ns        204
+				DiffuseLight_Naive/16          7220152 ns    6964330 ns        112
+				DiffuseLight_Naive/32         16417383 ns   15912102 ns         50
+				DiffuseLight_Naive/128        98089663 ns   91372014 ns          7
+
+				DiffuseLight_Vectorized/4      1710142 ns    1605893 ns        408
+				DiffuseLight_Vectorized/8      2995209 ns    2944597 ns        249
+				DiffuseLight_Vectorized/16     5288064 ns    5304034 ns        100
+				DiffuseLight_Vectorized/32    10752535 ns    9984064 ns         75
+				DiffuseLight_Vectorized/128   39420602 ns   37623771 ns         17
+
+		+ Ship: pad lamps to multiples of element count, and make all buffers aligned			
+			+ For now just dynamically
+		+ Now: FPS=17.7 U/R=230
+		+ Commit
+		+ ElectricalElements: precalc lamp buffers and maintain w/GameParameters' changes
+			+ Store initial GameParameters at cctor
+			+ Calc values at Add()
+			+ Recalc values at UpdateForGameParameters
+		+ Now: FPS=18 U/R=222
+		+ Try with exploding lamp's positions into x & y
+			+ Algorithm
+			+ @ UnitTests
+			+ @ Benchmarks
+			+ Run new benchmarks
+
+				DiffuseLight_Naive/1          21471036 ns   12792082 ns
+
+				DiffuseLight_Naive/4          20730892 ns   19165837 ns
+				DiffuseLight_Naive/8          36127342 ns   34171648 ns
+				DiffuseLight_Naive/16         70868391 ns   67600433 ns
+				DiffuseLight_Naive/32        158081461 ns  156001000 ns
+				DiffuseLight_Naive/128      1009125502 ns  936006000 ns
+
+				DiffuseLight_Vectorized/4     16869165 ns   16361080 ns
+				DiffuseLight_Vectorized/8     29228165 ns   28363818 ns
+				DiffuseLight_Vectorized/16    54706011 ns   49636682 ns
+				DiffuseLight_Vectorized/32   107635537 ns  101400650 ns          
+				DiffuseLight_Vectorized/128  413520040 ns  382202450 ns
+
+			+ @ Ship
+			+ Decide whether to keep or not
+		+ Decide whether Ship should use a threshold to switch between vectorized and naive algo
+			+ 1 naive is better than 4 vectorized, 2 naives are already worse
+			+ Just one lamp is not worth optimizing for
+		+ Disable whole diffusion when luminiscence adjust is zero
+			+ Requires "current" member at Ship
+		+ Run in Debug
+		+ Now: FPS=18.1 U/R=235
+		+ Update changes.txt
 
 + Fix 4 BPP images
 	+ Need ilCopyPixels to convert to standard format (BPP:3, Format: RGB, Type: U_BYTE)
