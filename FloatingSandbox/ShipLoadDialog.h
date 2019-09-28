@@ -13,6 +13,7 @@
 #include <wx/combobox.h>
 #include <wx/dialog.h>
 #include <wx/dirctrl.h>
+#include <wx/srchctrl.h>
 
 #include <filesystem>
 #include <memory>
@@ -44,9 +45,10 @@ private:
     void OnShipFileSelected(fsShipFileSelectedEvent & event);
     void OnShipFileChosen(fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
-    void OnShipSearchTextCtrlText(wxCommandEvent & event);
+    void OnShipSearchCtrlText(wxCommandEvent & event);
+    void OnShipSearchCtrlSearchBtn(wxCommandEvent & event);
+    void OnShipSearchCtrlCancelBtn(wxCommandEvent & event);
     void OnSearchNextButtonClicked(wxCommandEvent & event);
-    void OnShipSearchTextCtrlTextEnter(wxCommandEvent & event);
     void OnHomeDirButtonClicked(wxCommandEvent & event);
     void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
@@ -60,6 +62,7 @@ private:
 
     virtual void EndModal(int retCode) override;
 
+    void StartShipSearch();
     void RepopulateRecentDirectoriesComboBox();
 
 private:
@@ -70,7 +73,7 @@ private:
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
-    wxTextCtrl * mShipSearchTextCtrl;
+    wxSearchCtrl * mShipSearchCtrl;
     wxButton * mInfoButton;
     wxButton * mLoadButton;
     wxButton * mSearchNextButton;

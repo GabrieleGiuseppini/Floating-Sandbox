@@ -203,7 +203,7 @@ public:
     void SetDirectory(std::filesystem::path const & directoryPath);
 
     bool Search(std::string const & shipName);
-    void ChooseSelected();
+    void ChooseSelectedIfAny();
 
 private:
 

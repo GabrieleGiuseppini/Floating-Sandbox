@@ -200,7 +200,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     return foundShipIndex.has_value();
 }
 
-void ShipPreviewWindow::ChooseSelected()
+void ShipPreviewWindow::ChooseSelectedIfAny()
 {
     if (!!mSelectedInfoTileIndex)
     {

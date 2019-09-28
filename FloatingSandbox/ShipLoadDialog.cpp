@@ -89,8 +89,8 @@ ShipLoadDialog::ShipLoadDialog(
     //
 
     {
-        // |  | Label       |   | Label          | |
-        // |  | Combo, Home |   | TextBox [Next] | |
+        // |  | Label       |   | Label            | |
+        // |  | Combo, Home |   | SearchBox [Next] | |
 
         wxFlexGridSizer * gridSizer = new wxFlexGridSizer(2, 5, 0, 0);
 
@@ -161,20 +161,23 @@ ShipLoadDialog::ShipLoadDialog(
         {
             wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            // Search TextCtrl
+            // Search box
 
-            mShipSearchTextCtrl = new wxTextCtrl(
+            mShipSearchCtrl = new wxSearchCtrl(
                 this,
                 wxID_ANY,
                 "",
                 wxDefaultPosition,
                 wxDefaultSize,
-                wxTE_PROCESS_ENTER);
+                0);
 
-            mShipSearchTextCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchTextCtrlText, this);
-            mShipSearchTextCtrl->Bind(wxEVT_TEXT_ENTER, &ShipLoadDialog::OnShipSearchTextCtrlTextEnter, this);
+            mShipSearchCtrl->ShowCancelButton(true);
 
-            hSearchSizer->Add(mShipSearchTextCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+            mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
+            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
+            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
+
+            hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
 
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
             wxBitmap searchNextBitmap(resourceLoader.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
@@ -259,7 +262,7 @@ int ShipLoadDialog::ShowModal()
     mLoadButton->Enable(false);
 
     // Clear search
-    mShipSearchTextCtrl->Clear();
+    mShipSearchCtrl->Clear();
     mSearchNextButton->Enable(false);
 
 
@@ -332,30 +335,28 @@ void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnShipSearchTextCtrlText(wxCommandEvent & /*event*/)
+void ShipLoadDialog::OnShipSearchCtrlText(wxCommandEvent & /*event*/)
 {
-    bool found = false;
+    StartShipSearch();
+}
 
-    auto searchString = mShipSearchTextCtrl->GetValue();
-    if (!searchString.IsEmpty())
-    {
-        found = mShipPreviewWindow->Search(searchString.ToStdString());
-    }
+void ShipLoadDialog::OnShipSearchCtrlSearchBtn(wxCommandEvent & /*event*/)
+{
+    mShipPreviewWindow->ChooseSelectedIfAny();
+}
 
-    mSearchNextButton->Enable(found);
+void ShipLoadDialog::OnShipSearchCtrlCancelBtn(wxCommandEvent & /*event*/)
+{
+    mShipSearchCtrl->Clear();
+    mSearchNextButton->Enable(false);
 }
 
 void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
 {
-    auto searchString = mShipSearchTextCtrl->GetValue();
+    auto searchString = mShipSearchCtrl->GetValue();
     assert(!searchString.IsEmpty());
 
     mShipPreviewWindow->Search(searchString.ToStdString());
-}
-
-void ShipLoadDialog::OnShipSearchTextCtrlTextEnter(wxCommandEvent & /*event*/)
-{
-    mShipPreviewWindow->ChooseSelected();
 }
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
@@ -416,7 +417,7 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
     mLoadButton->Enable(false);
 
     // Clear search
-    mShipSearchTextCtrl->Clear();
+    mShipSearchCtrl->Clear();
     mSearchNextButton->Enable(false);
 
     // Propagate to preview panel
@@ -453,6 +454,19 @@ void ShipLoadDialog::EndModal(int retCode)
     mShipPreviewWindow->OnClose();
 
     wxDialog::EndModal(retCode);
+}
+
+void ShipLoadDialog::StartShipSearch()
+{
+    bool found = false;
+
+    auto searchString = mShipSearchCtrl->GetValue();
+    if (!searchString.IsEmpty())
+    {
+        found = mShipPreviewWindow->Search(searchString.ToStdString());
+    }
+
+    mSearchNextButton->Enable(found);
 }
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
