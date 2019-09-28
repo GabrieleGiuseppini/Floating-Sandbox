@@ -1,10 +1,10 @@
 NPC Physics
 ===========
 
-An NPC is represented by a single particle, exactly like all the other particles in FS. The way the NPC particles move depend on the "regime" or "state" in which an NPC finds itself at the moment. There are two possible "regimes".
+An NPC is represented by a single particle, exactly like all the other particles in FS. The way the NPC particles move depends on the "regime" or "state" in which an NPC finds itself at the moment. There are two possible "regimes".
 
 Constrained Regime
-This is the initial regime, when the NPC is spawn. In this regime the NPC particle is constrained to move along the springs of the ship, and the particle's movement is the resultant of the NPC walk along the springs (governed by a separate algorithm that also considers zones and NPC types) and of gravity. As an example, when walking on an almost-flat horizontal spring, gravity has little effect and the NPC moves freely. As soon as the spring becomes too vertical, however, gravity wins and the NPC "slides" down the spring.
+This is the initial regime, when the NPC is spawn. In this regime the NPC particle is constrained to move along the springs of the ship, and the particle's movement is the resultant of the NPC walk along the springs (governed by a separate algorithm that also considers zones and NPC types) and of gravity. As an example, when walking on an almost-flat horizontal spring, gravity has little effect and the NPC moves freely. As soon as the spring becomes too steep, however, gravity wins and the NPC "slides" down the spring.
 
 In the Constrained Regime NPC's normally walk along the springs of the "Paths" layer, i.e. springs of the ship that are also present in the Paths layer. These springs make up the paths that NPC's walk along. However, NPCs may eventually lose their path, for example when at the end of a path or when the path becomes too steep. When this happens, they fall along the ship springs according to gravity, until they reach a path spring again.
 
@@ -18,4 +18,4 @@ This regime has a few sub-states controlling the actions and the rendering of th
 - Sinking: the NPC particle is sinking towards the bottom of the sea; the NPC might be rendered as rotating with limbs moving in arbitrary directions.
 - Rising: the NPC particle is underwater but rising towards the sea surface; the NPC might be rendered as swimming upwards.
 
-NPC particles will all be made of the same "NPC" material, which simulates human mass and buoyancy when breathing, resulting in a particle that would normally *barely* float. If arbitrary transitions between the three states are required - e.g. a floating NPC should start sinking all of a sudden - these will be implemented by means of added forces on the particles.
+NPC particles will all be made of the same "NPC" material, which simulates human mass and buoyancy when breathing, resulting in a particle that would normally *barely* float. If arbitrary transitions between the three states are required - e.g. a floating NPC should start sinking all of a sudden - these will be implemented by means of forces added onto the particles.

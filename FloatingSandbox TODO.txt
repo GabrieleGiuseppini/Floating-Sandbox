@@ -330,6 +330,13 @@ Render:
 			- Nuke old code from DiffuseLight
 				- Do blog post first
 
+		- Slider text box editable (*)
+
+		- Settings Manager (*)
+
+		- New explosion shader
+			- See if can get sample from guy
+
 		- Cached quantities (*)
 		
 		- Break lights when structure gets "broken"
@@ -344,8 +351,6 @@ Render:
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
-
-		- Settings Manager (*)
 
 		- Instanced drawing for lights (*)
 
