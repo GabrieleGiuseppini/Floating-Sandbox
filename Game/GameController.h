@@ -20,6 +20,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
 
@@ -277,10 +278,10 @@ public:
     float GetMinWaterTemperature() const override { return GameParameters::MinWaterTemperature; }
     float GetMaxWaterTemperature() const override { return GameParameters::MaxWaterTemperature; }
 
-    size_t GetMaxBurningParticles() const override { return mGameParameters.MaxBurningParticles; }
-    void SetMaxBurningParticles(size_t value) override { mGameParameters.MaxBurningParticles = value; }
-    float GetMinMaxBurningParticles() const override { return GameParameters::MinMaxBurningParticles; }
-    float GetMaxMaxBurningParticles() const override { return GameParameters::MaxMaxBurningParticles; }
+    unsigned int GetMaxBurningParticles() const override { return mGameParameters.MaxBurningParticles; }
+    void SetMaxBurningParticles(unsigned int value) override { mGameParameters.MaxBurningParticles = value; }
+    unsigned int GetMinMaxBurningParticles() const override { return GameParameters::MinMaxBurningParticles; }
+    unsigned int GetMaxMaxBurningParticles() const override { return GameParameters::MaxMaxBurningParticles; }
 
     float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
     void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }
@@ -411,15 +412,15 @@ public:
     float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
     float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
-    size_t GetNumberOfStars() const override { return mGameParameters.NumberOfStars; }
-    void SetNumberOfStars(size_t value) override { mGameParameters.NumberOfStars = value; }
-    size_t GetMinNumberOfStars() const override { return GameParameters::MinNumberOfStars; }
-    size_t GetMaxNumberOfStars() const override { return GameParameters::MaxNumberOfStars; }
+    unsigned int GetNumberOfStars() const override { return mGameParameters.NumberOfStars; }
+    void SetNumberOfStars(unsigned int value) override { mGameParameters.NumberOfStars = value; }
+    unsigned int GetMinNumberOfStars() const override { return GameParameters::MinNumberOfStars; }
+    unsigned int GetMaxNumberOfStars() const override { return GameParameters::MaxNumberOfStars; }
 
-    size_t GetNumberOfClouds() const override { return mGameParameters.NumberOfClouds; }
-    void SetNumberOfClouds(size_t value) override { mGameParameters.NumberOfClouds = value; }
-    size_t GetMinNumberOfClouds() const override { return GameParameters::MinNumberOfClouds; }
-    size_t GetMaxNumberOfClouds() const override { return GameParameters::MaxNumberOfClouds; }
+    unsigned int GetNumberOfClouds() const override { return mGameParameters.NumberOfClouds; }
+    void SetNumberOfClouds(unsigned int value) override { mGameParameters.NumberOfClouds = value; }
+    unsigned int GetMinNumberOfClouds() const override { return GameParameters::MinNumberOfClouds; }
+    unsigned int GetMaxNumberOfClouds() const override { return GameParameters::MaxNumberOfClouds; }
 
     //
     // Render parameters
@@ -628,99 +629,6 @@ private:
     //
     // Parameter smoothing
     //
-
-    /*
-     * All reads and writes of the parameters managed by a smoother go through the smoother.
-     *
-     * An underlying assumption is that the target value communicated to the smoother is the actual final parameter
-     * value that will be enforced - in other words, no clipping occurs.
-     */
-    class ParameterSmoother
-    {
-    public:
-
-        ParameterSmoother(
-            std::function<float()> getter,
-            std::function<void(float)> setter,
-            std::chrono::milliseconds trajectoryTime)
-            : mGetter(std::move(getter))
-            , mSetter(std::move(setter))
-            , mTrajectoryTime(trajectoryTime)
-        {
-            mStartValue = mTargetValue = mCurrentValue = mGetter();
-            mCurrentTimestamp = mEndTimestamp = GameWallClock::GetInstance().Now();
-        }
-
-        float GetValue() const
-        {
-            return mCurrentValue;
-        }
-
-        void SetValue(float value)
-        {
-            mStartValue = mCurrentValue;
-            mTargetValue = value;
-
-            mCurrentTimestamp = GameWallClock::GetInstance().Now();
-            mEndTimestamp =
-                mCurrentTimestamp
-                + mTrajectoryTime
-                + std::chrono::milliseconds(1); // Just to make sure we do an update
-        }
-
-        void Update(GameWallClock::time_point now)
-        {
-            if (mCurrentTimestamp < mEndTimestamp)
-            {
-                // Advance
-
-                mCurrentTimestamp = std::min(now, mEndTimestamp);
-
-                float const leftFraction = (mTrajectoryTime == std::chrono::milliseconds::zero())
-                    ? 0.0f
-                    : static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mCurrentTimestamp).count())
-                      / static_cast<float>(mTrajectoryTime.count());
-
-                // We want the sinusoidal to be between Pi/4 and Pi/2;
-                //  beginning of trajectory => leftFraction = 1.0 => phase = Pi/4
-                //  end of trajectory => leftFraction = 0.0 => phase = Pi/2
-                float const phase =
-                    Pi<float> / 4.0f
-                    + Pi<float> / 4.0f * (1.0f - leftFraction);
-
-                // We want the value of the sinusoidal to be:
-                //  beginning of trajectory => phase= Pi/4 => progress = 0
-                //  end of trajectory => phase= Pi/2 => progress = 1
-                float const progress =
-                    (sin(phase) - sin(Pi<float> / 4.0f))
-                    / (1.0f - sin(Pi<float> / 4.0f));
-
-                mCurrentValue =
-                    mStartValue
-                    + (mTargetValue - mStartValue) * progress;
-
-                // Adjust overshooting
-                if (mStartValue < mTargetValue)
-                    mCurrentValue = std::min(mCurrentValue, mTargetValue);
-                else
-                    mCurrentValue = std::max(mCurrentValue, mTargetValue);
-
-                mSetter(mCurrentValue);
-            }
-        }
-
-    private:
-
-        std::function<float()> const mGetter;
-        std::function<void(float)> const mSetter;
-        std::chrono::milliseconds mTrajectoryTime;
-
-        float mStartValue;
-        float mTargetValue;
-        float mCurrentValue;
-        GameWallClock::time_point mCurrentTimestamp;
-        GameWallClock::time_point mEndTimestamp;
-    };
 
     static constexpr size_t SpringStiffnessAdjustmentParameterSmoother = 0;
     static constexpr size_t SpringStrengthAdjustmentParameterSmoother = 1;

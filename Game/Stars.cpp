@@ -9,12 +9,12 @@
 
 namespace Physics {
 
-void Stars::GenerateStars(size_t NumberOfStars)
+void Stars::GenerateStars(unsigned int NumberOfStars)
 {
     mStars.clear();
     mStars.reserve(NumberOfStars);
 
-    for (size_t s = 0; s < NumberOfStars; ++s)
+    for (unsigned int s = 0; s < NumberOfStars; ++s)
     {
         mStars.emplace_back(
             GameRandomEngine::GetInstance().GenerateRandomReal(-1.0f, +1.0f),

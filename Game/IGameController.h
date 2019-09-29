@@ -211,10 +211,10 @@ struct IGameController
     virtual float GetMinWaterTemperature() const = 0;
     virtual float GetMaxWaterTemperature() const = 0;
 
-    virtual size_t GetMaxBurningParticles() const = 0;
-    virtual void SetMaxBurningParticles(size_t value) = 0;
-    virtual float GetMinMaxBurningParticles() const = 0;
-    virtual float GetMaxMaxBurningParticles() const = 0;
+    virtual unsigned int GetMaxBurningParticles() const = 0;
+    virtual void SetMaxBurningParticles(unsigned int value) = 0;
+    virtual unsigned int GetMinMaxBurningParticles() const = 0;
+    virtual unsigned int GetMaxMaxBurningParticles() const = 0;
 
     virtual float GetThermalConductivityAdjustment() const = 0;
     virtual void SetThermalConductivityAdjustment(float value) = 0;
@@ -345,15 +345,15 @@ struct IGameController
     virtual float GetMinAirBubblesDensity() const = 0;
     virtual float GetMaxAirBubblesDensity() const = 0;
 
-    virtual size_t GetNumberOfStars() const = 0;
-    virtual void SetNumberOfStars(size_t value) = 0;
-    virtual size_t GetMinNumberOfStars() const = 0;
-    virtual size_t GetMaxNumberOfStars() const = 0;
+    virtual unsigned int GetNumberOfStars() const = 0;
+    virtual void SetNumberOfStars(unsigned int value) = 0;
+    virtual unsigned int GetMinNumberOfStars() const = 0;
+    virtual unsigned int GetMaxNumberOfStars() const = 0;
 
-    virtual size_t GetNumberOfClouds() const = 0;
-    virtual void SetNumberOfClouds(size_t value) = 0;
-    virtual size_t GetMinNumberOfClouds() const = 0;
-    virtual size_t GetMaxNumberOfClouds() const = 0;
+    virtual unsigned int GetNumberOfClouds() const = 0;
+    virtual void SetNumberOfClouds(unsigned int value) = 0;
+    virtual unsigned int GetMinNumberOfClouds() const = 0;
+    virtual unsigned int GetMaxNumberOfClouds() const = 0;
 
     //
     // Render parameters

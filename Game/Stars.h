@@ -51,7 +51,7 @@ public:
 
 private:
 
-    void GenerateStars(size_t NumberOfStars);
+    void GenerateStars(unsigned int NumberOfStars);
 
 private:
 

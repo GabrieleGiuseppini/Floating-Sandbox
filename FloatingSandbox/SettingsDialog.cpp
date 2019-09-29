@@ -1237,7 +1237,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Max Burning Particles",
                     "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
-                    static_cast<unsigned int>(mGameController->GetMaxBurningParticles()), // TODO: see if can avoid cast
+                    mGameController->GetMaxBurningParticles(),
                     [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
@@ -1401,21 +1401,21 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Stars
             {
-                mNumberOfStarsSlider = new SliderControl<float>(
+                mNumberOfStarsSlider = new SliderControl<unsigned int>(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
                     "Number of Stars",
                     "The number of stars in the sky.",
-                    static_cast<float>(mGameController->GetNumberOfStars()),
-                    [this](float /*value*/)
+                    mGameController->GetNumberOfStars(),
+                    [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<LinearSliderCore>(
-                        static_cast<float>(mGameController->GetMinNumberOfStars()),
-                        static_cast<float>(mGameController->GetMaxNumberOfStars())));
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameController->GetMinNumberOfStars(),
+                        mGameController->GetMaxNumberOfStars()));
 
                 skySizer->Add(
                     mNumberOfStarsSlider,
@@ -1427,21 +1427,21 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 
             // Number of Clouds
             {
-                mNumberOfCloudsSlider = new SliderControl<float>(
+                mNumberOfCloudsSlider = new SliderControl<unsigned int>(
                     skyBox,
                     SliderWidth,
                     SliderHeight,
                     "Number of Clouds",
                     "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
-                    static_cast<float>(mGameController->GetNumberOfClouds()),
-                    [this](float /*value*/)
+                    mGameController->GetNumberOfClouds(),
+                    [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<LinearSliderCore>(
-                        static_cast<float>(mGameController->GetMinNumberOfClouds()),
-                        static_cast<float>(mGameController->GetMaxNumberOfClouds())));
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameController->GetMinNumberOfClouds(),
+                        mGameController->GetMaxNumberOfClouds()));
 
                 skySizer->Add(
                     mNumberOfCloudsSlider,
@@ -2968,9 +2968,9 @@ void SettingsDialog::ReadSettings()
 
     mOceanFloorDetailAmplificationSlider->SetValue(mGameController->GetOceanFloorDetailAmplification());
 
-    mNumberOfStarsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfStars()));
+    mNumberOfStarsSlider->SetValue(mGameController->GetNumberOfStars());
 
-    mNumberOfCloudsSlider->SetValue(static_cast<float>(mGameController->GetNumberOfClouds()));
+    mNumberOfCloudsSlider->SetValue(mGameController->GetNumberOfClouds());
 
     mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
 
@@ -3338,11 +3338,9 @@ void SettingsDialog::ApplySettings()
     mGameController->SetOceanFloorDetailAmplification(
         mOceanFloorDetailAmplificationSlider->GetValue());
 
-    mGameController->SetNumberOfStars(
-        static_cast<size_t>(mNumberOfStarsSlider->GetValue()));
+    mGameController->SetNumberOfStars(mNumberOfStarsSlider->GetValue());
 
-    mGameController->SetNumberOfClouds(
-        static_cast<size_t>(mNumberOfCloudsSlider->GetValue()));
+    mGameController->SetNumberOfClouds(mNumberOfCloudsSlider->GetValue());
 
     // Wind and Waves
 

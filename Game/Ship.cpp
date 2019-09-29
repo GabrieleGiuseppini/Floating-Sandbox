@@ -2197,10 +2197,10 @@ void Ship::GenerateDebris(
 {
     if (gameParameters.DoGenerateDebris)
     {
-        auto const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+        unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
             GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
 
-        for (size_t d = 0; d < debrisParticleCount; ++d)
+        for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
             // Choose velocity
             vec2f const velocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
@@ -2237,7 +2237,7 @@ void Ship::GenerateSparkles(
         // Choose number of particles
         //
 
-        auto const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger<size_t>(
+        unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
             GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
 
 
@@ -2256,7 +2256,7 @@ void Ship::GenerateSparkles(
         // Create particles
         //
 
-        for (size_t d = 0; d < sparkleParticleCount; ++d)
+        for (unsigned int d = 0; d < sparkleParticleCount; ++d)
         {
             // Velocity magnitude
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(

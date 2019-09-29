@@ -146,16 +146,16 @@ struct GameParameters
     static constexpr ElementCount MaxEphemeralParticles = 4096;
 
     bool DoGenerateDebris;
-    static constexpr size_t MinDebrisParticlesPerEvent = 4;
-    static constexpr size_t MaxDebrisParticlesPerEvent = 9;
+    static constexpr unsigned int MinDebrisParticlesPerEvent = 4;
+    static constexpr unsigned int MaxDebrisParticlesPerEvent = 9;
     static float constexpr MinDebrisParticlesVelocity = 12.5f;
     static float constexpr MaxDebrisParticlesVelocity = 20.0f;
     static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(400);
     static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(900);
 
     bool DoGenerateSparkles;
-    static constexpr size_t MinSparkleParticlesPerEvent = 2;
-    static constexpr size_t MaxSparkleParticlesPerEvent = 8;
+    static constexpr unsigned int MinSparkleParticlesPerEvent = 2;
+    static constexpr unsigned int MaxSparkleParticlesPerEvent = 8;
     static float constexpr MinSparkleParticlesVelocity = 50.0f;
     static float constexpr MaxSparkleParticlesVelocity = 70.0f;
     static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
@@ -235,9 +235,9 @@ struct GameParameters
     static float constexpr SmotheringDecayLowWatermark = 0.0005f;
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
-    size_t MaxBurningParticles;
-    static size_t constexpr MaxMaxBurningParticles = 1000;
-    static size_t constexpr MinMaxBurningParticles = 10;
+    unsigned int MaxBurningParticles;
+    static unsigned int constexpr MaxMaxBurningParticles = 1000;
+    static unsigned int constexpr MinMaxBurningParticles = 10;
 
     float ThermalConductivityAdjustment;
     static float constexpr MinThermalConductivityAdjustment = 0.1f;
@@ -297,13 +297,13 @@ struct GameParameters
     static float constexpr MinLightSpreadAdjustment = 0.0f;
     static float constexpr MaxLightSpreadAdjustment = 10.0f;
 
-    size_t NumberOfStars;
-    static constexpr size_t MinNumberOfStars = 0;
-    static constexpr size_t MaxNumberOfStars = 10000;
+    unsigned int NumberOfStars;
+    static constexpr unsigned int MinNumberOfStars = 0;
+    static constexpr unsigned int MaxNumberOfStars = 10000;
 
-    size_t NumberOfClouds;
-    static constexpr size_t MinNumberOfClouds = 0;
-    static constexpr size_t MaxNumberOfClouds = 500;
+    unsigned int NumberOfClouds;
+    static constexpr unsigned int MinNumberOfClouds = 0;
+    static constexpr unsigned int MaxNumberOfClouds = 500;
 
     // Interactions
 

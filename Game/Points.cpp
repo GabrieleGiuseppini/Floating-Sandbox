@@ -493,8 +493,8 @@ void Points::UpdateCombustionLowFrequency(
         std::min(
             size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)),
             mBurningPoints.size() < gameParameters.MaxBurningParticles
-            ? gameParameters.MaxBurningParticles - mBurningPoints.size()
-            : size_t(0)),
+                ? static_cast<size_t>(gameParameters.MaxBurningParticles) - mBurningPoints.size()
+                : size_t(0)),
         mIgnitionCandidates.size());
 
     // Sort top N candidates by ignition temperature delta

@@ -116,8 +116,8 @@ private:
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
-    SliderControl<float> * mNumberOfStarsSlider;
-    SliderControl<float> * mNumberOfCloudsSlider;
+    SliderControl<unsigned int> * mNumberOfStarsSlider;
+    SliderControl<unsigned int> * mNumberOfCloudsSlider;
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;

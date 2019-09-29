@@ -323,15 +323,14 @@ Render:
 		+ Benchmark vectorized spring lengths (see Moleskine)
 			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
 		+ Cache layout optimization for points and springs (*)
+		+ Slider text box editable (*)
 
 		= Unix build break
 
 		= Lights perf improvement (*)
 			- Nuke old code from DiffuseLight
 				- Do blog post first
-
-		= Slider text box editable (*)
-
+	
 		- Settings Manager (*)
 
 		- New explosion shader
@@ -1301,11 +1300,9 @@ Render:
 - UI:
 	- Adjustable zoom increments
 		- Under UIPreferences
-		- See if can use Smoothstep for...smoothing
+		= See if can use Smoothstep for...smoothing
 			- @ Controls
-			- @ Smoothed params
-
-	= SettingsDialog: make slider textboxes editable (*)
+			= @ Smoothed params
 
 	- Ship descriptions: use Mike's drawings
 
@@ -1327,9 +1324,10 @@ Render:
 				- But unless we track individual settings' dirtyness, users may not save subsets of settings
 			- Ocean floor is just another setting
 				- GameController only exposes ocean floor as float buffer
+					- Actual parameter is owned by GameParameters, as std::unique_ptr<float[]> 
 				- GameController::cctor takes it
 				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)X2 (png, floatbin)
-				- SettingsManager saves it in binary file (possible shared w/other buffer settings) next to user settings' json file,
+				- SettingsManager saves it in binary file (specific to ocean floor; other buffer settings will have their own binary file) next to user settings' json file,
 				  w/same name but different extension
 			- Saved settings are thus:
 				- prefix_mangledname.json
@@ -1390,10 +1388,11 @@ Render:
 			- OceanFloor:
 				- GameParameters contains and owns std::unique_ptr<float[]> 
 					- GameParameters cctor needs to take default profile from outside, i.e.
-					  from GameController who takes it from TODOHERE - see somewhere else here
+					  from GameController, who takes it from MainFrame - see above
 				- GameController::SetOceanFloorProfile(.) does:
-					- 1) Set GameParameters
-					- 2) Invoke on OceanFloor
+					- 1) Set in GameParameters
+					- 2) Invoke on OceanFloor (as it would be too expensive for OceanFloor to detect changes
+					     @ Update() time)
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager
@@ -2595,6 +2594,8 @@ IF WX:
 				+ @ PreferencesDialog
 	+ floatingsandbox.com: 
 		+ Links menu
+	+ SettingsDialog: make slider textboxes editable (*)
+		+ Test MaxBurningParticles, Clouds, and Stars
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
