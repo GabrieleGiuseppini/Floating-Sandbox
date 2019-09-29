@@ -22,6 +22,16 @@ public:
 
     virtual int ValueToTick(float value) const override;
 
+    virtual float const & GetMinValue() const override
+    {
+        return mMinValue;
+    }
+
+    virtual float const & GetMaxValue() const override
+    {
+        return mMaxValue;
+    }
+
 private:
 
     float const mMinValue;

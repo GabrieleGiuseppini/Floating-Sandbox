@@ -10,6 +10,8 @@
 LinearSliderCore::LinearSliderCore(
     float minValue,
     float maxValue)
+    : mMinValue(minValue)
+    , mMaxValue(maxValue)
 {
     //
     // Calculate number of ticks and tick size, i.e. value delta for each tick, as follows:
@@ -80,4 +82,14 @@ int LinearSliderCore::ValueToTick(float value) const
     {
         return static_cast<int>(floorf(value / mTickSize));
     }
+}
+
+float const & LinearSliderCore::GetMinValue() const
+{
+    return mMinValue;
+}
+
+float const & LinearSliderCore::GetMaxValue() const
+{
+    return mMaxValue;
 }

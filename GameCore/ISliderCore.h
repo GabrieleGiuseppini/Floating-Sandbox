@@ -26,4 +26,8 @@ public:
     virtual TValue TickToValue(int tick) const = 0;
 
     virtual int ValueToTick(TValue value) const = 0;
+
+    virtual TValue const & GetMinValue() const = 0;
+
+    virtual TValue const & GetMaxValue() const = 0;
 };

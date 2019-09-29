@@ -149,7 +149,7 @@ ShipLoadDialog::ShipLoadDialog(
             wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
             wxBitmap homeBitmap(resourceLoader.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
-            homeDirButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&ShipLoadDialog::OnHomeDirButtonClicked, this);
+            homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
 
             hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
 

@@ -15,6 +15,7 @@
 #include <array>
 #include <cctype>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -240,6 +241,26 @@ public:
     static std::string RgbColor2Hex(rgbColor const & rgbColor)
     {
         return std::string("#") + Byte2Hex(rgbColor.r) + Byte2Hex(rgbColor.g) + Byte2Hex(rgbColor.b);
+    }
+
+    template<typename TValue>
+    static bool LexicalCast(
+        std::string const & str,
+        TValue * outValue)
+    {        
+        std::istringstream iss;
+        iss.unsetf(std::ios::skipws);
+
+        iss.str(str);
+
+        TValue value;
+        iss >> value;
+
+        if (iss.bad() || iss.get() != EOF)
+            return false;
+
+        *outValue = value;
+        return true;
     }
 
     //

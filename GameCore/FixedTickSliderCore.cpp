@@ -35,3 +35,13 @@ int FixedTickSliderCore::ValueToTick(float value) const
 {
     return static_cast<int>((value - mMinValue) / mTickSize);
 }
+
+float const & FixedTickSliderCore::GetMinValue() const
+{
+    return mMinValue;
+}
+
+float const & FixedTickSliderCore::GetMaxValue() const
+{
+    return mMaxValue;
+}

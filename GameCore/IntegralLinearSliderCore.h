@@ -18,6 +18,8 @@ public:
     IntegralLinearSliderCore(
         TValue minValue,
         TValue maxValue)
+        : mMinValue(minValue)
+        , mMaxValue(maxValue)
     {
         //
         // Calculate number of ticks and tick size, i.e. value delta for each tick, as follows:
@@ -92,7 +94,20 @@ public:
         }
     }
 
+    virtual TValue const & GetMinValue() const override
+    {
+        return mMinValue;
+    }
+
+    virtual TValue const & GetMaxValue() const override
+    {
+        return mMaxValue;
+    }
+
 private:
+
+    TValue const mMinValue;
+    TValue const mMaxValue;
 
     float mTickSize;
     int mNumberOfTicks;

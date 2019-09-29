@@ -1231,19 +1231,19 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
             // Max Particles
             {
-                mMaxBurningParticlesSlider = new SliderControl<size_t>(
+                mMaxBurningParticlesSlider = new SliderControl<unsigned int>(
                     fireBox,
                     SliderWidth,
                     SliderHeight,
                     "Max Burning Particles",
                     "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
-                    mGameController->GetMaxBurningParticles(),
-                    [this](size_t /*value*/)
+                    static_cast<unsigned int>(mGameController->GetMaxBurningParticles()), // TODO: see if can avoid cast
+                    [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
                         this->mApplyButton->Enable(true);
                     },
-                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinMaxBurningParticles(),
                         mGameController->GetMaxMaxBurningParticles()),
                     mWarningIcon.get());

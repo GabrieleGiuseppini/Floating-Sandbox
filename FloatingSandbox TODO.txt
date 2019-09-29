@@ -330,12 +330,12 @@ Render:
 			- Nuke old code from DiffuseLight
 				- Do blog post first
 
-		- Slider text box editable (*)
+		= Slider text box editable (*)
 
 		- Settings Manager (*)
 
 		- New explosion shader
-			- See if can get sample from guy
+			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions
 
 		- Cached quantities (*)
 		
@@ -1305,7 +1305,7 @@ Render:
 			- @ Controls
 			- @ Smoothed params
 
-	- SettingsDialog: make slider textboxes editable
+	= SettingsDialog: make slider textboxes editable (*)
 
 	- Ship descriptions: use Mike's drawings
 
@@ -1387,6 +1387,13 @@ Render:
 		- Impl:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
+			- OceanFloor:
+				- GameParameters contains and owns std::unique_ptr<float[]> 
+					- GameParameters cctor needs to take default profile from outside, i.e.
+					  from GameController who takes it from TODOHERE - see somewhere else here
+				- GameController::SetOceanFloorProfile(.) does:
+					- 1) Set GameParameters
+					- 2) Invoke on OceanFloor
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager

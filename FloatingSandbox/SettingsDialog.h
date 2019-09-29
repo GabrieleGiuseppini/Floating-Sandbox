@@ -110,7 +110,7 @@ private:
     SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
-    SliderControl<size_t> * mMaxBurningParticlesSlider;
+    SliderControl<unsigned int> * mMaxBurningParticlesSlider;
 
     // Ocean and Sky
     SliderControl<float> * mOceanDepthSlider;
