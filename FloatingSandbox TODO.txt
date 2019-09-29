@@ -1300,9 +1300,9 @@ Render:
 - UI:
 	- Adjustable zoom increments
 		- Under UIPreferences
-		= See if can use Smoothstep for...smoothing
-			- @ Controls
-			= @ Smoothed params
+		+ See if can use Smoothstep for...smoothing
+			+ @ Controls
+			+ @ Smoothed params
 
 	- Ship descriptions: use Mike's drawings
 

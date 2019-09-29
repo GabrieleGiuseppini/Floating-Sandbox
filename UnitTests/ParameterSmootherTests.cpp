@@ -8,7 +8,7 @@ TEST(ParameterSmootherTests, CurrentValueIsTarget)
 {
     float valueBeingSet = 0.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 5.0f;
@@ -28,7 +28,7 @@ TEST(ParameterSmootherTests, SmoothsFromStartToTarget)
 {
     float valueBeingSet = 1000.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 0.0f;
@@ -61,7 +61,7 @@ TEST(ParameterSmootherTests, RestartsFromPreviousTargetValueOnInterrupted)
 {
     float valueBeingSet = 1000.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 0.0f;
@@ -95,7 +95,7 @@ TEST(ParameterSmootherTests, TargetsClampedTarget)
 {
     float valueBeingSet = 1000.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 0.0f;
@@ -131,7 +131,7 @@ TEST(ParameterSmootherTests, NverOvershoots_Positive)
 {
     float valueBeingSet = 1000.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 0.0f;
@@ -158,7 +158,7 @@ TEST(ParameterSmootherTests, NeverOvershoots_Negative)
 {
     float valueBeingSet = 1000.0f;
 
-    ParameterSmoother smoother(
+    ParameterSmoother<float> smoother(
         []()
         {
             return 10.0f;
@@ -179,4 +179,36 @@ TEST(ParameterSmootherTests, NeverOvershoots_Negative)
 
     smoother.Update(startTimestamp + std::chrono::milliseconds(2000));
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 0.0f, 0.1f));
+}
+
+TEST(ParameterSmootherTests, SetValueImmediateTruncatesProgress)
+{
+    float valueBeingSet = 1000.0f;
+
+    ParameterSmoother<float> smoother(
+        []()
+        {
+            return 0.0f;
+        },
+        [&valueBeingSet](float value)
+        {
+            valueBeingSet = value;
+        },
+            std::chrono::milliseconds(1000));
+
+    auto startTimestamp = GameWallClock::GetInstance().Now();
+    smoother.SetValue(10.0f, startTimestamp);
+
+    EXPECT_FLOAT_EQ(valueBeingSet, 0.0f);
+
+    smoother.Update(startTimestamp + std::chrono::milliseconds(1));
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 0.01f, 0.1f));
+
+    smoother.Update(startTimestamp + std::chrono::milliseconds(500));
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
+
+    smoother.SetValueImmediate(95.0f);
+
+    EXPECT_FLOAT_EQ(smoother.GetValue(), 95.0f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 95.0f, 0.1f));
 }

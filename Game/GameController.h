@@ -183,8 +183,8 @@ public:
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }
     float GetMaxNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MaxNumMechanicalDynamicsIterationsAdjustment; }
 
-    float GetSpringStiffnessAdjustment() const override { return mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].GetValue(); }
-    void SetSpringStiffnessAdjustment(float value) override { mParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].SetValue(value); }
+    float GetSpringStiffnessAdjustment() const override { return mFloatParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStiffnessAdjustment(float value) override { mFloatParameterSmoothers[SpringStiffnessAdjustmentParameterSmoother].SetValue(value); }
     float GetMinSpringStiffnessAdjustment() const override { return GameParameters::MinSpringStiffnessAdjustment; }
     float GetMaxSpringStiffnessAdjustment() const override { return GameParameters::MaxSpringStiffnessAdjustment; }
 
@@ -193,8 +193,8 @@ public:
     float GetMinSpringDampingAdjustment() const override { return GameParameters::MinSpringDampingAdjustment; }
     float GetMaxSpringDampingAdjustment() const override { return GameParameters::MaxSpringDampingAdjustment; }
 
-    float GetSpringStrengthAdjustment() const override { return mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
-    void SetSpringStrengthAdjustment(float value) override { mParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
+    float GetSpringStrengthAdjustment() const override { return mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
+    void SetSpringStrengthAdjustment(float value) override { mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
     float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
     float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
@@ -330,18 +330,18 @@ public:
 
     // Misc
 
-    float GetSeaDepth() const override { return mParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
-    void SetSeaDepth(float value) override { mParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
+    float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
+    void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
     float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }
     float GetMaxSeaDepth() const override { return GameParameters::MaxSeaDepth; }
 
-    float GetOceanFloorBumpiness() const override { return mParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
-    void SetOceanFloorBumpiness(float value) override { mParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
+    float GetOceanFloorBumpiness() const override { return mFloatParameterSmoothers[OceanFloorBumpinessParameterSmoother].GetValue(); }
+    void SetOceanFloorBumpiness(float value) override { mFloatParameterSmoothers[OceanFloorBumpinessParameterSmoother].SetValue(value); }
     float GetMinOceanFloorBumpiness() const override { return GameParameters::MinOceanFloorBumpiness; }
     float GetMaxOceanFloorBumpiness() const override { return GameParameters::MaxOceanFloorBumpiness; }
 
-    float GetOceanFloorDetailAmplification() const override { return mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
-    void SetOceanFloorDetailAmplification(float value) override { mParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
+    float GetOceanFloorDetailAmplification() const override { return mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
+    void SetOceanFloorDetailAmplification(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
@@ -496,8 +496,8 @@ public:
     ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
     void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
-    float GetShipFlameSizeAdjustment() const override { return mParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
-    void SetShipFlameSizeAdjustment(float value) override { mParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }
+    float GetShipFlameSizeAdjustment() const override { return mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
+    void SetShipFlameSizeAdjustment(float value) override { mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }
     float GetMinShipFlameSizeAdjustment() const override { return Render::RenderContext::MinShipFlameSizeAdjustment; }
     float GetMaxShipFlameSizeAdjustment() const override { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
 
@@ -526,12 +526,6 @@ private:
     void InternalUpdate();
 
     void InternalRender();
-
-    static void SmoothToTarget(
-        float & currentValue,
-        float startingValue,
-        float targetValue,
-        std::chrono::steady_clock::time_point startingTime);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
@@ -610,23 +604,6 @@ private:
 
 
     //
-    // The current render parameters that we're smoothing to
-    //
-
-    static constexpr int SmoothMillis = 500;
-
-    float mCurrentZoom;
-    float mTargetZoom;
-    float mStartingZoom;
-    std::chrono::steady_clock::time_point mStartZoomTimestamp;
-
-    vec2f mCurrentCameraPosition;
-    vec2f mTargetCameraPosition;
-    vec2f mStartingCameraPosition;
-    std::chrono::steady_clock::time_point mStartCameraPositionTimestamp;
-
-
-    //
     // Parameter smoothing
     //
 
@@ -636,8 +613,11 @@ private:
     static constexpr size_t OceanFloorBumpinessParameterSmoother = 3;
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
+    std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
-    std::vector<ParameterSmoother> mParameterSmoothers;
+    std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
+    std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
+    
 
     //
     // Stats

@@ -11,22 +11,23 @@
 #include <chrono>
 #include <functional>
 
+template<typename TValue>
 class ParameterSmoother
 {
 public:
 
     ParameterSmoother(
-        std::function<float()> getter,
-        std::function<void(float)> setter,
+        std::function<TValue()> getter,
+        std::function<void(TValue)> setter,
         std::chrono::milliseconds trajectoryTime)
         : ParameterSmoother(
             getter,
-            [setter](float value) -> float
+            [setter](TValue value) -> TValue
             {
                 setter(value);
                 return value;
             },
-            [](float value) -> float
+            [](TValue value) -> TValue
             {
                 return value;
             },
@@ -34,9 +35,9 @@ public:
     {}
 
     ParameterSmoother(
-        std::function<float()> getter,
-        std::function<float(float)> setter,
-        std::function<float(float)> clamper,
+        std::function<TValue()> getter,
+        std::function<TValue(TValue)> setter,
+        std::function<TValue(TValue)> clamper,
         std::chrono::milliseconds trajectoryTime)
         : mGetter(std::move(getter))
         , mSetter(std::move(setter))
@@ -50,18 +51,18 @@ public:
     /*
      * Returns the current value, which is the target value as smoothing is assumed to happen "offline".
      */
-    float GetValue() const
+    TValue GetValue() const
     {
         return mTargetValue;
     }
 
-    void SetValue(float value)
+    void SetValue(TValue value)
     {
         SetValue(value, GameWallClock::GetInstance().Now());
     }
 
     void SetValue(
-        float value,
+        TValue value,
         GameWallClock::time_point now)
     {
         // Skip straight to current target, in case we're already smoothing
@@ -77,6 +78,12 @@ public:
 
         // Our new target is the clamped target
         mTargetValue = mClamper(value);
+    }
+
+    void SetValueImmediate(TValue value)
+    {
+        mCurrentValue = mTargetValue = mSetter(value);
+        mCurrentTimestamp = mEndTimestamp; // Prevent Update from advancing
     }
 
     void Update(GameWallClock::time_point now)
@@ -101,14 +108,8 @@ public:
 
                 mCurrentValue =
                     mStartValue
-                    + (mTargetValue - mStartValue) * SmoothStep(0.0f, 1.0f, progress);
+                    + (mTargetValue - mStartValue) * SmoothStep(0.0f, 1.0f, Clamp(progress, 0.0f, 1.0f));
             }
-
-            // Adjust for overshooting
-            if (mStartValue < mTargetValue)
-                mCurrentValue = std::min(mCurrentValue, mTargetValue);
-            else
-                mCurrentValue = std::max(mCurrentValue, mTargetValue);
 
             mSetter(mCurrentValue);
         }
@@ -116,14 +117,14 @@ public:
 
 private:
 
-    std::function<float()> const mGetter;
-    std::function<float(float)> const mSetter;
-    std::function<float(float)> const mClamper;
+    std::function<TValue()> const mGetter;
+    std::function<TValue(TValue)> const mSetter;
+    std::function<TValue(TValue)> const mClamper;
     std::chrono::milliseconds const mTrajectoryTime;
 
-    float mStartValue;
-    float mTargetValue;
-    float mCurrentValue;
+    TValue mStartValue;
+    TValue mTargetValue;
+    TValue mCurrentValue;
     GameWallClock::time_point mCurrentTimestamp;
     GameWallClock::time_point mEndTimestamp;
 };

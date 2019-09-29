@@ -80,15 +80,9 @@ GameController::GameController(
         *mResourceLoader))
     , mMaterialDatabase(std::move(materialDatabase))
     // Smoothing
-    , mCurrentZoom(mRenderContext->GetZoom())
-    , mTargetZoom(mCurrentZoom)
-    , mStartingZoom(mCurrentZoom)
-    , mStartZoomTimestamp()
-    , mCurrentCameraPosition(mRenderContext->GetCameraWorldPosition())
-    , mTargetCameraPosition(mCurrentCameraPosition)
-    , mStartingCameraPosition(mCurrentCameraPosition)
-    , mStartCameraPositionTimestamp()
-    , mParameterSmoothers()
+    , mFloatParameterSmoothers()
+    , mZoomParameterSmoother()
+    , mCameraWorldPositionParameterSmoother()
     // Stats
     , mTotalFrameCount(0u)
     , mLastFrameCount(0u)
@@ -107,11 +101,11 @@ GameController::GameController(
     //
     // Initialize parameter smoothers
     //
-
+    
     std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
-
+   
     assert(mParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mGameParameters.SpringStiffnessAdjustment;
@@ -123,7 +117,7 @@ GameController::GameController(
         ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mGameParameters.SpringStrengthAdjustment;
@@ -135,7 +129,7 @@ GameController::GameController(
         ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mGameParameters.SeaDepth;
@@ -147,7 +141,7 @@ GameController::GameController(
         ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mGameParameters.OceanFloorBumpiness;
@@ -159,7 +153,7 @@ GameController::GameController(
         ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mGameParameters.OceanFloorDetailAmplification;
@@ -171,7 +165,7 @@ GameController::GameController(
         ParameterSmoothingTrajectoryTime);
 
     assert(mParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
-    mParameterSmoothers.emplace_back(
+    mFloatParameterSmoothers.emplace_back(
         [this]()
         {
             return this->mRenderContext->GetShipFlameSizeAdjustment();
@@ -181,6 +175,38 @@ GameController::GameController(
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
         ParameterSmoothingTrajectoryTime);
+
+    std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
+
+    mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
+        [this]()
+        {
+            return this->mRenderContext->GetZoom();
+        },
+        [this](float value)
+        {
+            return this->mRenderContext->SetZoom(value);
+        },
+        [this](float value)
+        {
+            return this->mRenderContext->ClampZoom(value);
+        },
+        ControlParameterSmoothingTrajectoryTime);
+
+    mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
+        [this]()
+        {
+            return this->mRenderContext->GetCameraWorldPosition();
+        },
+        [this](vec2f value)
+        {
+            return this->mRenderContext->SetCameraWorldPosition(value);
+        },
+        [this](vec2f value)
+        {
+            return this->mRenderContext->ClampCameraWorldPosition(value);
+        },
+        ControlParameterSmoothingTrajectoryTime);
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -877,55 +903,51 @@ void GameController::SetCanvasSize(int width, int height)
     mRenderContext->SetCanvasSize(width, height);
 
     // Pickup eventual changes
-    mTargetCameraPosition = mCurrentCameraPosition = mRenderContext->GetCameraWorldPosition();
-    mTargetZoom = mCurrentZoom = mRenderContext->GetZoom();
+    mZoomParameterSmoother->SetValueImmediate(mRenderContext->GetZoom());
+    mCameraWorldPositionParameterSmoother->SetValueImmediate(mRenderContext->GetCameraWorldPosition());
 }
 
 void GameController::Pan(vec2f const & screenOffset)
 {
-    vec2f worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-    vec2f newTargetCameraPosition = mRenderContext->ClampCameraWorldPosition(mTargetCameraPosition + worldOffset);
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
-    mCurrentCameraPosition = mRenderContext->SetCameraWorldPosition(mTargetCameraPosition); // Skip straight to current target, in case we're already smoothing
-    mStartingCameraPosition = mCurrentCameraPosition;
-    mTargetCameraPosition = newTargetCameraPosition;
+    vec2f const newTargetCameraWorldPosition =
+        mCameraWorldPositionParameterSmoother->GetValue()
+        + worldOffset;
 
-    mStartCameraPositionTimestamp = std::chrono::steady_clock::now();
+    mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
 }
 
 void GameController::PanImmediate(vec2f const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
-    auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(
-        mRenderContext->GetCameraWorldPosition() + worldOffset);
+    vec2f const newTargetCameraWorldPosition =
+        mCameraWorldPositionParameterSmoother->GetValue()
+        + worldOffset;
 
-    mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
+    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
 }
 
 void GameController::ResetPan()
 {
-    auto const newCameraWorldPosition = mRenderContext->SetCameraWorldPosition(vec2f(0, 0));
+    vec2f const newTargetCameraWorldPosition = vec2f(0, 0);
 
-    mTargetCameraPosition = mCurrentCameraPosition = newCameraWorldPosition;
+    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
 }
 
 void GameController::AdjustZoom(float amount)
 {
-    float newTargetZoom = mRenderContext->ClampZoom(mTargetZoom * amount);
+    float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
 
-    mCurrentZoom = mRenderContext->SetZoom(mTargetZoom); // Skip straight to current target, in case we're already smoothing
-    mStartingZoom = mCurrentZoom;
-    mTargetZoom = newTargetZoom;
-
-    mStartZoomTimestamp = std::chrono::steady_clock::now();
+    mZoomParameterSmoother->SetValue(newTargetZoom);
 }
 
 void GameController::ResetZoom()
 {
-    auto const newZoom = mRenderContext->SetZoom(1.0);
+    float const newTargetZoom = 1.0f;
 
-    mTargetZoom = mCurrentZoom = newZoom;
+    mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
 }
 
 vec2f GameController::ScreenToWorld(vec2f const & screenCoordinates) const
@@ -950,8 +972,8 @@ void GameController::InternalUpdate()
 
     // Update parameter smoothers
     std::for_each(
-        mParameterSmoothers.begin(),
-        mParameterSmoothers.end(),
+        mFloatParameterSmoothers.begin(),
+        mFloatParameterSmoothers.end(),
         [&now](auto & ps)
         {
             ps.Update(now);
@@ -973,41 +995,13 @@ void GameController::InternalUpdate()
 void GameController::InternalRender()
 {
     //
-    // Do zoom smoothing
+    // Smooth render controls
     //
 
-    if (mCurrentZoom != mTargetZoom)
-    {
-        SmoothToTarget(
-            mCurrentZoom,
-            mStartingZoom,
-            mTargetZoom,
-            mStartZoomTimestamp);
+    auto now = GameWallClock::GetInstance().Now();
 
-        mRenderContext->SetZoom(mCurrentZoom);
-    }
-
-
-    //
-    // Do camera smoothing
-    //
-
-    if (mCurrentCameraPosition != mTargetCameraPosition)
-    {
-        SmoothToTarget(
-            mCurrentCameraPosition.x,
-            mStartingCameraPosition.x,
-            mTargetCameraPosition.x,
-            mStartCameraPositionTimestamp);
-
-        SmoothToTarget(
-            mCurrentCameraPosition.y,
-            mStartingCameraPosition.y,
-            mTargetCameraPosition.y,
-            mStartCameraPositionTimestamp);
-
-        mRenderContext->SetCameraWorldPosition(mCurrentCameraPosition);
-    }
+    mZoomParameterSmoother->Update(now);
+    mCameraWorldPositionParameterSmoother->Update(now);
 
 
     //
@@ -1064,33 +1058,6 @@ void GameController::InternalRender()
     //
 
     mRenderContext->RenderEnd();
-}
-
-void GameController::SmoothToTarget(
-    float & currentValue,
-    float startingValue,
-    float targetValue,
-    std::chrono::steady_clock::time_point startingTime)
-{
-    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-
-    // Amplitude - summing up pieces from zero to PI yields PI/2
-    float amp = (targetValue - startingValue) / (Pi<float> / 2.0f);
-
-    // X - after SmoothMillis we want PI
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startingTime);
-    float x = static_cast<float>(elapsed.count()) * Pi<float> / static_cast<float>(SmoothMillis);
-    float dv = amp * sinf(x) * sinf(x);
-
-    float oldCurrentValue = currentValue;
-    currentValue += dv;
-
-    // Check if we've overshot
-    if ((targetValue - oldCurrentValue) * (targetValue - currentValue) < 0.0f)
-    {
-        // Overshot
-        currentValue = targetValue;
-    }
 }
 
 void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
