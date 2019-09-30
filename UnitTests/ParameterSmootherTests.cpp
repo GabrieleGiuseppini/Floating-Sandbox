@@ -57,7 +57,7 @@ TEST(ParameterSmootherTests, SmoothsFromStartToTarget)
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f, 0.1f));
 }
 
-TEST(ParameterSmootherTests, RestartsFromPreviousTargetValueOnInterrupted)
+TEST(ParameterSmootherTests, SetValueRestartsFromPreviousTargetValue)
 {
     float valueBeingSet = 1000.0f;
 
@@ -82,6 +82,7 @@ TEST(ParameterSmootherTests, RestartsFromPreviousTargetValueOnInterrupted)
     // Set new target
     auto startTimestamp2 = startTimestamp + std::chrono::milliseconds(500000000);
     smoother.SetValue(100.0f, startTimestamp2);
+    EXPECT_FLOAT_EQ(smoother.GetValue(), 100.0f);
 
     // We jumped to target
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f, 0.1f));
@@ -89,6 +90,41 @@ TEST(ParameterSmootherTests, RestartsFromPreviousTargetValueOnInterrupted)
     // Jump to half-way through
     smoother.Update(startTimestamp2 + std::chrono::milliseconds(500));
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f + 90.0f * 0.5f, 0.5f));
+}
+
+TEST(ParameterSmootherTests, SetValueExtendStartsFromCurrentValue)
+{
+    float valueBeingSet = 1000.0f;
+
+    ParameterSmoother<float> smoother(
+        []()
+        {
+            return 0.0f;
+        },
+        [&valueBeingSet](float value)
+        {
+            valueBeingSet = value;
+        },
+        std::chrono::milliseconds(1000));
+
+    auto startTimestamp = GameWallClock::GetInstance().Now();
+    smoother.SetValue(10.0f, startTimestamp);
+
+    // Now we are at 5
+    smoother.Update(startTimestamp + std::chrono::milliseconds(500));
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
+
+    // Set new target
+    auto startTimestamp2 = startTimestamp + std::chrono::milliseconds(500000000);
+    smoother.SetValueExtend(100.0f, startTimestamp2);
+    EXPECT_FLOAT_EQ(smoother.GetValue(), 100.0f);
+
+    // We haven't moved
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
+
+    // Jump to half-way through
+    smoother.Update(startTimestamp2 + std::chrono::milliseconds(500));
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f + (100.0f - 5.0f) / 2.0f, 0.5f));
 }
 
 TEST(ParameterSmootherTests, TargetsClampedTarget)
