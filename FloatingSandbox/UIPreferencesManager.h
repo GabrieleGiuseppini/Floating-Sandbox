@@ -16,7 +16,7 @@
 #include <vector>
 
 /*
- * This class manages UI preferences,and takes care of persisting and loading them.
+ * This class manages UI preferences, and takes care of persisting and loading them.
  *
  * The class also serves as the storage for some of the preferences.
  */
