@@ -185,6 +185,10 @@ public:
             mCurrentValue = GetValueAt(mCurrentTimestamp);
 
             mSetter(mCurrentValue);
+
+            // In case conditions have changed, we pickup the new target value
+            // and we will return the correct value
+            mTargetValue = mClamper(mTargetValue);
         }
     }
 
