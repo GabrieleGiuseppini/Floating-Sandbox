@@ -8,6 +8,7 @@
 #include "UIPreferencesManager.h"
 
 #include <wx/filepicker.h>
+#include <wx/spinctrl.h>
 #include <wx/wx.h>
 
 #include <memory>
@@ -31,6 +32,7 @@ private:
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -40,6 +42,9 @@ private:
 
     void ReadSettings();
 
+    static float ZoomIncrementSpinToZoomIncrement(int spinPosition);
+    static int ZoomIncrementToZoomIncrementSpin(float zoomIncrement);
+
 private:
 
     // Main panel
@@ -48,6 +53,7 @@ private:
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
+    wxSpinCtrl * mZoomIncrementSpinCtrl;
 
     // Buttons
     wxButton * mOkButton;

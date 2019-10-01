@@ -142,6 +142,16 @@ public:
         mGameController->SetShowTsunamiNotifications(value);
     }
 
+    float GetZoomIncrement() const
+    {
+        return mZoomIncrement;
+    }
+
+    void SetZoomIncrement(float value)
+    {
+        mZoomIncrement = value;
+    }
+
 private:
 
     void LoadPreferences();
@@ -166,4 +176,6 @@ private:
     bool mCheckUpdatesAtStartup;
     bool mShowStartupTip;
     bool mShowShipDescriptionsAtShipLoad;
+
+    float mZoomIncrement;
 };

@@ -330,6 +330,10 @@ Render:
 		= Lights perf improvement (*)
 			- Nuke old code from DiffuseLight
 				- Do blog post first
+
+		- Fix guy's name in Aurora:
+			- Ship
+			- AboutBox - need URL
 	
 		- Settings Manager (*)
 
@@ -1298,12 +1302,13 @@ Render:
 		- How to Guide
 
 - UI:
-	- Adjustable zoom increments
-		- Under UIPreferences
-		= See if can use Smoothstep for...smoothing
-			= @ Controls
-				- Fix mouse wheel zoom
+	= Adjustable zoom increments
+		+ Under UIPreferences
+		+ See if can use Smoothstep for...smoothing
+			+ @ Controls
+				+ Fix mouse wheel zoom
 			+ @ Smoothed params
+		- Finalize ParameterSmoothing
 
 	- Ship descriptions: use Mike's drawings
 

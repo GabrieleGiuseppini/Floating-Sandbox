@@ -30,6 +30,8 @@ UIPreferencesManager::UIPreferencesManager(std::shared_ptr<IGameController> game
     mShowStartupTip = true;
     mShowShipDescriptionsAtShipLoad = true;
 
+    mZoomIncrement = 1.05f;
+
 
     //
     // Load preferences
@@ -186,6 +188,17 @@ void UIPreferencesManager::LoadPreferences()
         {
             mGameController->SetShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
         }
+
+        //
+        // Zoom increment
+        //
+
+        auto zoomIncrementIt = preferencesRootObject.find("zoom_increment");
+        if (zoomIncrementIt != preferencesRootObject.end()
+            && zoomIncrementIt->second.is<double>())
+        {
+            mZoomIncrement = static_cast<float>(zoomIncrementIt->second.get<double>());
+        }
     }
 }
 
@@ -228,6 +241,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetShowTsunamiNotifications());
+
+    // Add zoom increment
+    preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));
 
     // Save
     Utils::SaveJSONFile(
