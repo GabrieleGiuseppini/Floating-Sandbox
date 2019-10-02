@@ -968,13 +968,13 @@ void GameController::OnTsunami(float x)
 
 void GameController::InternalUpdate()
 {
-    auto now = GameWallClock::GetInstance().Now();
+    float const now = GameWallClock::GetInstance().NowAsFloat();
 
     // Update parameter smoothers
     std::for_each(
         mFloatParameterSmoothers.begin(),
         mFloatParameterSmoothers.end(),
-        [&now](auto & ps)
+        [now](auto & ps)
         {
             ps.Update(now);
         });
@@ -998,7 +998,7 @@ void GameController::InternalRender()
     // Smooth render controls
     //
 
-    auto now = GameWallClock::GetInstance().Now();
+    float const now = GameWallClock::GetInstance().NowAsFloat();
 
     mZoomParameterSmoother->Update(now);
     mCameraWorldPositionParameterSmoother->Update(now);

@@ -7,7 +7,6 @@
 
 #include "GameMath.h"
 #include "GameWallClock.h"
-#include "Log.h"
 
 #include <chrono>
 #include <functional>
@@ -43,10 +42,10 @@ public:
         : mGetter(std::move(getter))
         , mSetter(std::move(setter))
         , mClamper(std::move(clamper))
-        , mTrajectoryTime(trajectoryTime)
+        , mTrajectoryTime(std::chrono::duration_cast<std::chrono::duration<float>>(trajectoryTime).count())
     {
         mStartValue = mTargetValue = mCurrentValue = mGetter();
-        mStartTimestamp = mCurrentTimestamp = mEndTimestamp = GameWallClock::time_point::min();
+        mStartTimestamp = mCurrentTimestamp = mEndTimestamp = 0.0f;
     }
 
     /*
@@ -59,106 +58,57 @@ public:
 
     void SetValue(TValue value)
     {
-        SetValue(value, GameWallClock::GetInstance().Now());
+        SetValue(value, GameWallClock::GetInstance().NowAsFloat());
     }
 
     void SetValue(
         TValue value,
-        GameWallClock::time_point now)
+        float now)
     {
-        /* TODOOLD
-        auto elapsed = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mCurrentTimestamp).count())
-            / static_cast<float>(mTrajectoryTime.count());
-        LogMessage("TODO: start=", mStartValue, " cur=", mCurrentValue, " (@", elapsed, ") old_tar=", mTargetValue, " new_tar=", value);
-
-        // Skip straight to current target, in case we're already smoothing
-        mCurrentValue = mSetter(mTargetValue);
-
-        // Start from where we are at now
-        mStartValue = mCurrentValue;
-        mCurrentTimestamp = now;
-        mEndTimestamp =
-            mCurrentTimestamp
-            + mTrajectoryTime
-            + std::chrono::milliseconds(1); // Just to make sure we do at least an update
-
-        // Our new target is the clamped target
-        mTargetValue = mClamper(value);
-        */
-
         if (mCurrentTimestamp < mEndTimestamp
             && now < mEndTimestamp)
         {
-            // We are already smoothing...
+            // We are already smoothing and we're caught during smoothing...
             // ...extend the current smoothing, keeping the following invariants:
             // - The current value
             // - The current time
             // - The "slope" at the current time 
             // - The new end timestamp == now + delta T
 
+            // Advance time
             mCurrentTimestamp = now;
-            auto newEndTimestamp = 
-                now
-                + mTrajectoryTime
-                + std::chrono::milliseconds(1); // Just to make sure we do at least an update
+            mCurrentValue = GetValueAt(mCurrentTimestamp);
 
-            mCurrentValue = GetValueAt(mCurrentTimestamp);            
-
-            float const oldCurOverWhole =
-                static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
-                / static_cast<float>((mEndTimestamp - mStartTimestamp).count());
-
+            // Calculate current timestamp as fraction of current timespan
+            //
             // We need to make sure we're not too close to 1.0f, or else
             // values start diverging too much.
             // We may safely clamp down to 0.9 as the value will stay and the slope
             // will only change marginally.
-            float const oldCurOverWholeClamped = std::min(
-                0.9f,
-                oldCurOverWhole);
-
-            LogMessage("RESMOOTHING: Begin: cur/whole=", oldCurOverWhole, " (", oldCurOverWholeClamped, ")",
-                " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue);
+            assert(mEndTimestamp > mStartTimestamp);
+            float const progressFraction = std::min(
+                (mCurrentTimestamp - mStartTimestamp) / (mEndTimestamp - mStartTimestamp),
+                0.9f);
                 
-            // Now calculate fictitious StartTimestamp so that 
-            // currentTimestamp is to old endTimestamp like 
-            // new currentTimestamp is to new endTimestamp
+            // Calculate new end timestamp
+            mEndTimestamp = now + mTrajectoryTime;
 
-            ////float const fraction =
-            ////    static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
-            ////    / static_cast<float>((mEndTimestamp - mCurrentTimestamp).count());
-            ////mStartTimestamp = mCurrentTimestamp - std::chrono::milliseconds(
-            ////    static_cast<std::chrono::milliseconds::rep>(fraction * mTrajectoryTime.count()));
+            // Calculate fictitious start timestamp so that current timestamp is 
+            // to new timespan like current timestamp was to old timespan
+            mStartTimestamp = 
+                mCurrentTimestamp
+                - (mEndTimestamp - mCurrentTimestamp) * progressFraction / (1.0f - progressFraction);
 
-            auto deltaT = std::chrono::nanoseconds(
-                static_cast<std::chrono::nanoseconds::rep>(
-                    static_cast<float>(newEndTimestamp.time_since_epoch().count() - mCurrentTimestamp.time_since_epoch().count())
-                    * oldCurOverWholeClamped
-                    / (1.0f - oldCurOverWholeClamped)));
-
-            mStartTimestamp = mCurrentTimestamp - deltaT;
-
-            // Update new target value
+            // Our new target is the clamped target
             mTargetValue = mClamper(value);
 
-            // Now calculate fictitious StartValue so that
-            // calculated current value at current time matches current value:
+            // Calculate fictitious start value so that calculated current value 
+            // at current timestamp matches current value:
             //  newStartValue = currentValue - f(newEndValue - newStartValue)
-            float const f = SmoothStep(0.0f, 1.0f, oldCurOverWholeClamped);
+            float const valueFraction = SmoothStep(0.0f, 1.0f, progressFraction);
             mStartValue =
-                (mCurrentValue - mTargetValue * f)
-                / (1.0f - f);
-
-            mEndTimestamp = newEndTimestamp;
-
-
-            float const newCurOverWhole =
-                static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
-                / static_cast<float>((mEndTimestamp - mStartTimestamp).count());
-
-            LogMessage("RESMOOTHING: End: cur/whole=",
-                newCurOverWhole,
-                " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue,
-                " checkVal=", GetValueAt(mCurrentTimestamp));
+                (mCurrentValue - mTargetValue * valueFraction)
+                / (1.0f - valueFraction);
         }
         else
         {
@@ -170,17 +120,10 @@ public:
 
             mStartTimestamp = now;
             mCurrentTimestamp = now;
-            mEndTimestamp =
-                mStartTimestamp
-                + mTrajectoryTime
-                + std::chrono::milliseconds(1); // Just to make sure we do at least an update
+            mEndTimestamp = now + mTrajectoryTime;
 
             // Our new target is the clamped target
             mTargetValue = mClamper(value);
-
-
-            LogMessage("RESMOOTHING: New: ",
-                " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue);
         }
     }
 
@@ -190,7 +133,7 @@ public:
         mCurrentTimestamp = mEndTimestamp; // Prevent Update from advancing
     }
 
-    void Update(GameWallClock::time_point now)
+    void Update(float now)
     {
         if (mCurrentTimestamp < mEndTimestamp)
         {
@@ -210,9 +153,9 @@ public:
 
 private:
 
-    TValue GetValueAt(GameWallClock::time_point now) const
+    TValue GetValueAt(float now) const
     {
-        if (mTrajectoryTime == std::chrono::milliseconds::zero())
+        if (mTrajectoryTime == 0.0f)
         {
             // Degenerate case - we've reached our goal
             return mTargetValue;
@@ -221,8 +164,7 @@ private:
         {
             float const progress =
                 1.0f
-                - (static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - now).count())
-                    / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mStartTimestamp).count()));
+                - ((mEndTimestamp - now) / (mEndTimestamp - mStartTimestamp));
 
             return
                 mStartValue
@@ -235,12 +177,12 @@ private:
     std::function<TValue()> const mGetter;
     std::function<TValue(TValue)> const mSetter;
     std::function<TValue(TValue)> const mClamper;
-    std::chrono::milliseconds const mTrajectoryTime;
+    float const mTrajectoryTime;
 
     TValue mStartValue;
     TValue mTargetValue;
     TValue mCurrentValue;
-    GameWallClock::time_point mStartTimestamp;
-    GameWallClock::time_point mCurrentTimestamp;
-    GameWallClock::time_point mEndTimestamp;
+    float mStartTimestamp;
+    float mCurrentTimestamp;
+    float mEndTimestamp;
 };
