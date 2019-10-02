@@ -108,20 +108,34 @@ public:
                 static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
                 / static_cast<float>((mEndTimestamp - mStartTimestamp).count());
 
-            LogMessage("RESMOOTHING: Begin: cur/whole=",
-                oldCurOverWhole,
-                " startT=", mStartTimestamp.time_since_epoch().count(), " curT=", mCurrentTimestamp.time_since_epoch().count(),
-                " endT=", mEndTimestamp.time_since_epoch().count(),
+            // We need to make sure we're not too close to 1.0f, or else
+            // values start diverging too much.
+            // We may safely clamp down to 0.9 as the value will stay and the slope
+            // will only change marginally.
+            float const oldCurOverWholeClamped = std::min(
+                0.9f,
+                oldCurOverWhole);
+
+            LogMessage("RESMOOTHING: Begin: cur/whole=", oldCurOverWhole, " (", oldCurOverWholeClamped, ")",
                 " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue);
                 
             // Now calculate fictitious StartTimestamp so that 
             // currentTimestamp is to old endTimestamp like 
-            // new currentTimestamp it to new endTimestamp
-            float const fraction =
-                static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
-                / static_cast<float>((mEndTimestamp - mCurrentTimestamp).count());
-            mStartTimestamp = mCurrentTimestamp - std::chrono::milliseconds(
-                static_cast<std::chrono::milliseconds::rep>(fraction * mTrajectoryTime.count()));
+            // new currentTimestamp is to new endTimestamp
+
+            ////float const fraction =
+            ////    static_cast<float>((mCurrentTimestamp - mStartTimestamp).count())
+            ////    / static_cast<float>((mEndTimestamp - mCurrentTimestamp).count());
+            ////mStartTimestamp = mCurrentTimestamp - std::chrono::milliseconds(
+            ////    static_cast<std::chrono::milliseconds::rep>(fraction * mTrajectoryTime.count()));
+
+            auto deltaT = std::chrono::nanoseconds(
+                static_cast<std::chrono::nanoseconds::rep>(
+                    static_cast<float>(newEndTimestamp.time_since_epoch().count() - mCurrentTimestamp.time_since_epoch().count())
+                    * oldCurOverWholeClamped
+                    / (1.0f - oldCurOverWholeClamped)));
+
+            mStartTimestamp = mCurrentTimestamp - deltaT;
 
             // Update new target value
             mTargetValue = mClamper(value);
@@ -129,7 +143,7 @@ public:
             // Now calculate fictitious StartValue so that
             // calculated current value at current time matches current value:
             //  newStartValue = currentValue - f(newEndValue - newStartValue)
-            float const f = SmoothStep(0.0f, 1.0f, oldCurOverWhole);
+            float const f = SmoothStep(0.0f, 1.0f, oldCurOverWholeClamped);
             mStartValue =
                 (mCurrentValue - mTargetValue * f)
                 / (1.0f - f);
@@ -143,8 +157,6 @@ public:
 
             LogMessage("RESMOOTHING: End: cur/whole=",
                 newCurOverWhole,
-                " startT=", mStartTimestamp.time_since_epoch().count(), " curT=", mCurrentTimestamp.time_since_epoch().count(),
-                " endT=", mEndTimestamp.time_since_epoch().count(),
                 " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue,
                 " checkVal=", GetValueAt(mCurrentTimestamp));
         }
@@ -165,6 +177,10 @@ public:
 
             // Our new target is the clamped target
             mTargetValue = mClamper(value);
+
+
+            LogMessage("RESMOOTHING: New: ",
+                " startVal=", mStartValue, " curVal=", mCurrentValue, " targetVal=", mTargetValue);
         }
     }
 
@@ -176,11 +192,11 @@ public:
 
     void Update(GameWallClock::time_point now)
     {
-        mCurrentTimestamp = std::min(now, mEndTimestamp);
-
         if (mCurrentTimestamp < mEndTimestamp)
         {
             // Advance            
+
+            mCurrentTimestamp = std::min(now, mEndTimestamp);
 
             mCurrentValue = GetValueAt(mCurrentTimestamp);
 
@@ -188,7 +204,7 @@ public:
 
             // In case conditions have changed, we pickup the new target value
             // and we will return the correct value
-            mTargetValue = mClamper(mTargetValue);
+            mTargetValue = mClamper(mTargetValue);            
         }
     }
 
@@ -206,8 +222,6 @@ private:
             float const progress =
                 1.0f
                 - (static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - now).count())
-                    // tODOTEST
-                    /// static_cast<float>(mTrajectoryTime.count()));
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(mEndTimestamp - mStartTimestamp).count()));
 
             return
