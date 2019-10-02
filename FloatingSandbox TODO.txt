@@ -1309,7 +1309,7 @@ Render:
 				+ Fix mouse wheel zoom
 			+ @ Smoothed params
 		+ Finalize ParameterSmoothing
-		- Fix unit tests
+		= Fix unit tests
 
 	- Ship descriptions: use Mike's drawings
 

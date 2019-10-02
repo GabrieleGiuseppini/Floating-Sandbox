@@ -104,7 +104,7 @@ GameController::GameController(
     
     std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
    
-    assert(mParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
@@ -116,7 +116,7 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
-    assert(mParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
@@ -128,7 +128,7 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
-    assert(mParameterSmoothers.size() == SeaDepthParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
@@ -140,7 +140,7 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
-    assert(mParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
@@ -152,7 +152,7 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
-    assert(mParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
@@ -164,7 +164,7 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
-    assert(mParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]()
         {
