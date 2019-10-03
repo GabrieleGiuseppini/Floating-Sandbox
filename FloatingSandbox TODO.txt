@@ -336,7 +336,7 @@ Render:
 			- Ship
 			- AboutBox - need URL
 	
-		- Settings Manager (*)
+		= Settings Manager (*)
 
 		- New explosion shader
 			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions
@@ -1305,7 +1305,7 @@ Render:
 - UI:
 	- Ship descriptions: use Mike's drawings
 
-	- SettingsDialog: save settings, defaults, and real-time changes (*)
+	- SettingsMaanger: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
 				- Where "defaults" is hardcoded name for default settings
@@ -1385,7 +1385,8 @@ Render:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
 			- OceanFloor:
-				- GameParameters contains and owns std::unique_ptr<float[]> 
+				- GameParameters contains and owns unique_buffer<float[]> Terrain
+					- TODOHERE
 					- GameParameters cctor needs to take default profile from outside, i.e.
 					  from GameController, who takes it from MainFrame - see above
 				- GameController::SetOceanFloorProfile(.) does:

@@ -19,7 +19,7 @@ class unique_buffer
 {
 public:
 
-    unique_buffer(size_t size)
+    explicit unique_buffer(size_t size)
         : mBuffer(new TValue[size])
         , mSize(size)
     {
