@@ -57,7 +57,6 @@ TEST(ParameterSmootherTests, SmoothsFromStartToTarget)
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f, 0.1f));
 }
 
-/* TODOHERE
 TEST(ParameterSmootherTests, SetValueDuringSmoothing_MaintainsValue)
 {
     float valueBeingSet = 1000.0f;
@@ -76,32 +75,87 @@ TEST(ParameterSmootherTests, SetValueDuringSmoothing_MaintainsValue)
     auto startTimestamp = 3600.0f;
     smoother.SetValue(10.0f, startTimestamp);
 
-    // Now we are at 5
-    smoother.Update(startTimestamp + std::chrono::milliseconds(500));
+    // Now we are at 0.5
+    smoother.Update(startTimestamp + 0.5f);
     EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
 
     // Set new target
-    auto startTimestamp2 = startTimestamp + std::chrono::milliseconds(500000000);
+    auto startTimestamp2 = startTimestamp + 0.5001f;
     smoother.SetValue(100.0f, startTimestamp2);
     EXPECT_FLOAT_EQ(smoother.GetValue(), 100.0f);
 
-    // We jumped to target
-    EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f, 0.1f));
-
-    // Jump to half-way through
-    smoother.Update(startTimestamp2 + std::chrono::milliseconds(500));
-    EXPECT_TRUE(ApproxEquals(valueBeingSet, 10.0f + 90.0f * 0.5f, 0.5f));
+    // Value has remained more or less the same
+    smoother.Update(startTimestamp2 + 0.0002f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.01f, 0.1f));
 }
 
 TEST(ParameterSmootherTests, SetValueDuringSmoothing_ExtendsTime)
 {
+    float valueBeingSet = 1000.0f;
+
+    ParameterSmoother<float> smoother(
+        []()
+        {
+            return 0.0f;
+        },
+        [&valueBeingSet](float value)
+        {
+            valueBeingSet = value;
+        },
+        std::chrono::milliseconds(1000));
+
+    auto startTimestamp = 3600.0f;
+    smoother.SetValue(10.0f, startTimestamp);
+
+    // Now we are at 0.5
+    smoother.Update(startTimestamp + 0.5f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
+
+    // Set new target
+    auto startTimestamp2 = startTimestamp + 0.5001f;
+    smoother.SetValue(100.0f, startTimestamp2);
+    EXPECT_FLOAT_EQ(smoother.GetValue(), 100.0f);
+
+    // Jump close to end
+    smoother.Update(startTimestamp2 + 0.999f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 100.0f, 0.1f));
+
+    // Jump to end
+    smoother.Update(startTimestamp2 + 1.0f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 100.0f, 0.0001f));
 }
 
 TEST(ParameterSmootherTests, SetValueDuringSmoothing_RemainsStable)
 {
-}
+    float valueBeingSet = 1000.0f;
 
-*/
+    ParameterSmoother<float> smoother(
+        []()
+        {
+            return 0.0f;
+        },
+        [&valueBeingSet](float value)
+        {
+            valueBeingSet = value;
+        },
+        std::chrono::milliseconds(1000));
+
+    auto startTimestamp = 3600.0f;
+    smoother.SetValue(10.0f, startTimestamp);
+
+    // Now we are at 0.5
+    smoother.Update(startTimestamp + 0.5f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 5.0f, 0.1f));
+
+    // Set new target, close to the end
+    auto startTimestamp2 = startTimestamp + 0.5001f;
+    smoother.SetValue(100.0f, startTimestamp2);
+    EXPECT_FLOAT_EQ(smoother.GetValue(), 100.0f);
+
+    // Jump to new value, being very close to end
+    smoother.Update(startTimestamp2 + 0.999f);
+    EXPECT_TRUE(ApproxEquals(valueBeingSet, 99.9f, 0.1f));
+}
 
 TEST(ParameterSmootherTests, TargetsClampedTarget)
 {

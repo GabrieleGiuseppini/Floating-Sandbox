@@ -324,6 +324,7 @@ Render:
 			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
 		+ Cache layout optimization for points and springs (*)
 		+ Slider text box editable (*)
+		+ Adjustable zoom increments (*)
 
 		= Unix build break
 
@@ -1302,15 +1303,6 @@ Render:
 		- How to Guide
 
 - UI:
-	= Adjustable zoom increments
-		+ Under UIPreferences
-		+ See if can use Smoothstep for...smoothing
-			+ @ Controls
-				+ Fix mouse wheel zoom
-			+ @ Smoothed params
-		+ Finalize ParameterSmoothing
-		= Fix unit tests
-
 	- Ship descriptions: use Mike's drawings
 
 	- SettingsDialog: save settings, defaults, and real-time changes (*)
@@ -2603,6 +2595,14 @@ IF WX:
 		+ Links menu
 	+ SettingsDialog: make slider textboxes editable (*)
 		+ Test MaxBurningParticles, Clouds, and Stars
+	+ Adjustable zoom increments
+		+ Under UIPreferences
+		+ See if can use Smoothstep for...smoothing
+			+ @ Controls
+				+ Fix mouse wheel zoom
+			+ @ Smoothed params
+		+ Finalize ParameterSmoothing
+		+ Fix unit tests
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
