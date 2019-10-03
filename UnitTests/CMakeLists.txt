@@ -28,6 +28,7 @@ set (UNIT_TEST_SOURCES
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
 	SegmentTests.cpp
+	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
 	SysSpecificsTests.cpp
@@ -35,6 +36,7 @@ set (UNIT_TEST_SOURCES
 	TextureAtlasTests.cpp
 	TruncatedPriorityQueueTests.cpp
 	TupleKeysTests.cpp
+	UniqueBufferTests.cpp
 	Utils.cpp
 	Utils.h
 	VectorsTests.cpp

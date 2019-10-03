@@ -44,10 +44,13 @@ set  (SOURCES
 	ProgressCallback.h
 	RunningAverage.h
 	Segment.h
+	Settings.cpp
+	Settings.h
 	SysSpecifics.h
 	TemporallyCoherentPriorityQueue.h
 	TruncatedPriorityQueue.h
 	TupleKeys.h
+	UniqueBuffer.h
 	Utils.cpp
 	Utils.h	
 	Vectors.cpp
