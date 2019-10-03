@@ -324,7 +324,7 @@ Render:
 			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
 		+ Cache layout optimization for points and springs (*)
 		+ Slider text box editable (*)
-		+ Adjustable zoom increments (*)
+		+ Adjustable zoom and pan increments (*)
 
 		= Unix build break
 

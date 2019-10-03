@@ -31,6 +31,7 @@ UIPreferencesManager::UIPreferencesManager(std::shared_ptr<IGameController> game
     mShowShipDescriptionsAtShipLoad = true;
 
     mZoomIncrement = 1.05f;
+    mPanIncrement = 20.0f;
 
 
     //
@@ -199,6 +200,17 @@ void UIPreferencesManager::LoadPreferences()
         {
             mZoomIncrement = static_cast<float>(zoomIncrementIt->second.get<double>());
         }
+
+        //
+        // Pan increment
+        //
+
+        auto panIncrementIt = preferencesRootObject.find("pan_increment");
+        if (panIncrementIt != preferencesRootObject.end()
+            && panIncrementIt->second.is<double>())
+        {
+            mPanIncrement = static_cast<float>(panIncrementIt->second.get<double>());
+        }
     }
 }
 
@@ -244,6 +256,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add zoom increment
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));
+
+    // Add pan increment
+    preferencesRootObject["pan_increment"] = picojson::value(static_cast<double>(mPanIncrement));
 
     // Save
     Utils::SaveJSONFile(

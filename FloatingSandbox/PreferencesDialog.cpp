@@ -10,6 +10,7 @@
 
 static constexpr int Border = 10;
 static constexpr int MaxZoomIncrementPosition = 200;
+static constexpr int MaxPanIncrementPosition = 200;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
@@ -119,6 +120,12 @@ void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
+}
+
+void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
 }
 
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -233,6 +240,36 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
             Border);
     }
 
+    {
+        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
+            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+
+        mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
+
+        mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
+
+        mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
+
+        gridSizer->Add(
+            mPanIncrementSpinCtrl,
+            wxGBPosition(2, 2),
+            wxGBSpan(2, 1),
+            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+            Border);
+    }
+
+    {
+        auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
+            wxALIGN_LEFT);
+
+        gridSizer->Add(
+            label,
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 1),
+            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM,
+            Border);
+    }
+
     //
     // Row 4
     //
@@ -299,6 +336,7 @@ void PreferencesDialog::ReadSettings()
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
+    mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
 }
 
 float PreferencesDialog::ZoomIncrementSpinToZoomIncrement(int spinPosition)
@@ -309,4 +347,14 @@ float PreferencesDialog::ZoomIncrementSpinToZoomIncrement(int spinPosition)
 int PreferencesDialog::ZoomIncrementToZoomIncrementSpin(float zoomIncrement)
 {
     return static_cast<int>(std::round((zoomIncrement - 1.0f) * static_cast<float>(MaxZoomIncrementPosition) / 2.0f));
+}
+
+float PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
+{
+    return static_cast<float>(spinPosition);
+}
+
+int PreferencesDialog::PanIncrementToPanIncrementSpin(float panIncrement)
+{
+    return static_cast<int>(panIncrement);
 }

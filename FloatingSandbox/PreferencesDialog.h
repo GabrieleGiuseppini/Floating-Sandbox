@@ -33,6 +33,7 @@ private:
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
+    void OnPanIncrementSpinCtrl(wxSpinEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -45,6 +46,9 @@ private:
     static float ZoomIncrementSpinToZoomIncrement(int spinPosition);
     static int ZoomIncrementToZoomIncrementSpin(float zoomIncrement);
 
+    static float PanIncrementSpinToPanIncrement(int spinPosition);
+    static int PanIncrementToPanIncrementSpin(float panIncrement);
+
 private:
 
     // Main panel
@@ -54,6 +58,7 @@ private:
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
+    wxSpinCtrl * mPanIncrementSpinCtrl;
 
     // Buttons
     wxButton * mOkButton;

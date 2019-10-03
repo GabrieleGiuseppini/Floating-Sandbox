@@ -765,25 +765,28 @@ void MainFrame::OnPaint(wxPaintEvent & event)
 
 void MainFrame::OnKeyDown(wxKeyEvent & event)
 {
+    assert(!!mUIPreferencesManager);
+    auto const panIncrement = mUIPreferencesManager->GetPanIncrement();
+
     if (event.GetKeyCode() == WXK_LEFT)
     {
         // Left
-        mGameController->Pan(vec2f(-20.0f, 0.0f));
+        mGameController->Pan(vec2f(-panIncrement, 0.0f));
     }
     else if (event.GetKeyCode() == WXK_UP)
     {
         // Up
-        mGameController->Pan(vec2f(00.0f, -20.0f));
+        mGameController->Pan(vec2f(00.0f, -panIncrement));
     }
     else if (event.GetKeyCode() == WXK_RIGHT)
     {
         // Right
-        mGameController->Pan(vec2f(20.0f, 0.0f));
+        mGameController->Pan(vec2f(panIncrement, 0.0f));
     }
     else if (event.GetKeyCode() == WXK_DOWN)
     {
         // Down
-        mGameController->Pan(vec2f(0.0f, 20.0f));
+        mGameController->Pan(vec2f(0.0f, panIncrement));
     }
     else if (event.GetKeyCode() == '/')
     {
@@ -1011,7 +1014,6 @@ void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent& event)
 void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent& event)
 {
     assert(!!mGameController);
-
     mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
 }
 
@@ -1208,7 +1210,6 @@ void MainFrame::OnZoomInMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     assert(!!mUIPreferencesManager);
-
     mGameController->AdjustZoom(mUIPreferencesManager->GetZoomIncrement());
 }
 
@@ -1217,14 +1218,12 @@ void MainFrame::OnZoomOutMenuItemSelected(wxCommandEvent & /*event*/)
     assert(!!mGameController);
     assert(!!mUIPreferencesManager);
     assert(mUIPreferencesManager->GetZoomIncrement() > 0.0f);
-
     mGameController->AdjustZoom(1.0f / mUIPreferencesManager->GetZoomIncrement());
 }
 
 void MainFrame::OnAmbientLightUpMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     float newAmbientLight = std::min(1.0f, mGameController->GetAmbientLightIntensity() * 1.02f);
     mGameController->SetAmbientLightIntensity(newAmbientLight);
 }
@@ -1232,7 +1231,6 @@ void MainFrame::OnAmbientLightUpMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     float newAmbientLight = mGameController->GetAmbientLightIntensity() / 1.02f;
     mGameController->SetAmbientLightIntensity(newAmbientLight);
 }
@@ -1240,168 +1238,144 @@ void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnMoveMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Move);
 }
 
 void MainFrame::OnMoveAllMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::MoveAll);
 }
 
 void MainFrame::OnSmashMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Smash);
 }
 
 void MainFrame::OnSliceMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Saw);
 }
 
 void MainFrame::OnHeatBlasterMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::HeatBlaster);
 }
 
 void MainFrame::OnFireExtinguisherMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::FireExtinguisher);
 }
 
 void MainFrame::OnGrabMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Grab);
 }
 
 void MainFrame::OnSwirlMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Swirl);
 }
 
 void MainFrame::OnPinMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Pin);
 }
 
 void MainFrame::OnInjectAirBubblesMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::InjectAirBubbles);
 }
 
 void MainFrame::OnFloodHoseMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::FloodHose);
 }
 
 void MainFrame::OnTimerBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::TimerBomb);
 }
 
 void MainFrame::OnRCBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::RCBomb);
 }
 
 void MainFrame::OnImpactBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::ImpactBomb);
 }
 
 void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     mGameController->DetonateAntiMatterBombs();
 }
 
 void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::WaveMaker);
 }
 
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::TerrainAdjust);
 }
 
 void MainFrame::OnRepairStructureMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::RepairStructure);
 }
 
 void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::Scrub);
 }
 
 void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     mGameController->DetonateRCBombs();
 }
 
 void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::AntiMatterBomb);
 }
 
 void MainFrame::OnThanosSnapMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-
     mToolController->SetTool(ToolType::ThanosSnap);
 }
 
 void MainFrame::OnTriggerTsunamiMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     mGameController->TriggerTsunami();
 }
 
 void MainFrame::OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     mGameController->TriggerRogueWave();
 }
 

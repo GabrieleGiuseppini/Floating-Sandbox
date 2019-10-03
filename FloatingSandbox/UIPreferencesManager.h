@@ -152,6 +152,16 @@ public:
         mZoomIncrement = value;
     }
 
+    float GetPanIncrement() const
+    {
+        return mPanIncrement;
+    }
+
+    void SetPanIncrement(float value)
+    {
+        mPanIncrement = value;
+    }
+
 private:
 
     void LoadPreferences();
@@ -178,4 +188,5 @@ private:
     bool mShowShipDescriptionsAtShipLoad;
 
     float mZoomIncrement;
+    float mPanIncrement;
 };
