@@ -166,6 +166,25 @@ public:
         s->SetValue(value);
     }
 
+    bool GetIsDirty(TEnum settingId) const
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+
+        return mSettings[static_cast<size_t>(settingId)]->GetIsDirty();
+    }
+
+    void ClearDirty()
+    {
+        for (auto & s : mSettings)
+            s->SetIsDirty(false);
+    }
+
+    void MarkAllAsDirty()
+    {
+        for (auto & s : mSettings)
+            s->SetIsDirty(true);
+    }
+
     // TODOHERE
 
 private:

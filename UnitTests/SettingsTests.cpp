@@ -101,6 +101,31 @@ TEST(SettingsTests, Settings_SetAndGetValue)
     EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
 }
 
+TEST(SettingsTests, Settings_ManagesDirtyness)
+{
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    settings.ClearDirty();
+
+    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+
+    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+
+    settings.MarkAllAsDirty();
+
+    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting2_uint32));
+    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting3_bool));
+
+    settings.ClearDirty();
+
+    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+}
+
 /////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Enforcer_Enforce)
