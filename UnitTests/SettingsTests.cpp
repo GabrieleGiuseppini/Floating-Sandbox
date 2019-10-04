@@ -30,7 +30,7 @@ TEST(SettingsTests, Setting_DefaultConstructor)
     Setting<float> fSetting;
 
     EXPECT_EQ(0.0f, fSetting.GetValue());
-    EXPECT_FALSE(fSetting.GetIsDirty());
+    EXPECT_FALSE(fSetting.IsDirty());
 }
 
 TEST(SettingsTests, Setting_ConstructorValue)
@@ -38,7 +38,7 @@ TEST(SettingsTests, Setting_ConstructorValue)
     Setting<float> fSetting(5.0f);
 
     EXPECT_EQ(5.0f, fSetting.GetValue());
-    EXPECT_FALSE(fSetting.GetIsDirty());
+    EXPECT_FALSE(fSetting.IsDirty());
 }
 
 TEST(SettingsTests, Setting_SetValue)
@@ -48,27 +48,54 @@ TEST(SettingsTests, Setting_SetValue)
     fSetting.SetValue(5.0f);
 
     EXPECT_EQ(5.0f, fSetting.GetValue());
-    EXPECT_TRUE(fSetting.GetIsDirty());
+    EXPECT_TRUE(fSetting.IsDirty());
 }
 
-TEST(SettingsTests, Setting_SetDirty)
+TEST(SettingsTests, Setting_MarkAsDirty)
 {
     Setting<float> fSetting;
 
-    fSetting.SetValue(5.0f);
+    fSetting.ClearDirty();
 
-    EXPECT_TRUE(fSetting.GetIsDirty());
+    EXPECT_FALSE(fSetting.IsDirty());
 
-    fSetting.SetIsDirty(false);
+    fSetting.MarkAsDirty();
 
-    EXPECT_FALSE(fSetting.GetIsDirty());
+    EXPECT_TRUE(fSetting.IsDirty());
 }
 
+TEST(SettingsTests, Setting_ClearDirty)
+{
+    Setting<float> fSetting;
+
+    fSetting.MarkAsDirty();
+
+    EXPECT_TRUE(fSetting.IsDirty());
+
+    fSetting.ClearDirty();
+
+    EXPECT_FALSE(fSetting.IsDirty());
+}
 TEST(SettingsTests, Setting_Type)
 {
     Setting<float> fSetting;
 
     EXPECT_EQ(typeid(float), fSetting.GetType());
+}
+
+TEST(SettingsTests, Setting_IsEqual)
+{
+    Setting<float> fSetting1;
+    fSetting1.SetValue(5.0f);
+
+    Setting<float> fSetting2;
+    fSetting2.SetValue(15.0f);
+
+    Setting<float> fSetting3;
+    fSetting3.SetValue(5.0f);
+
+    EXPECT_FALSE(fSetting1.IsEqual(fSetting2));
+    EXPECT_TRUE(fSetting1.IsEqual(fSetting3));
 }
 
 TEST(SettingsTests, Setting_Clone)
@@ -77,7 +104,7 @@ TEST(SettingsTests, Setting_Clone)
     fSetting.SetValue(5.0f);
 
     std::unique_ptr<BaseSetting> fSettingClone = fSetting.Clone();
-    EXPECT_FALSE(fSettingClone->GetIsDirty());
+    EXPECT_FALSE(fSettingClone->IsDirty());
     EXPECT_EQ(typeid(float), fSettingClone->GetType());
 
     Setting<float> * fSetting2 = dynamic_cast<Setting<float> *>(fSettingClone.get());
@@ -101,29 +128,106 @@ TEST(SettingsTests, Settings_SetAndGetValue)
     EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
 }
 
-TEST(SettingsTests, Settings_ManagesDirtyness)
+TEST(SettingsTests, Settings_IsAtLeastOneDirty)
 {
     Settings<TestSettings> settings(MakeTestSettings());
 
-    settings.ClearDirty();
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
 
-    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting2_uint32));
-    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+    EXPECT_TRUE(settings.IsAtLeastOneDirty());
+
+    settings.ClearDirty(TestSettings::Setting2_uint32);
+
+    EXPECT_TRUE(settings.IsAtLeastOneDirty());
+
+    settings.ClearDirty(TestSettings::Setting4_string);
+
+    EXPECT_FALSE(settings.IsAtLeastOneDirty());
+}
+
+TEST(SettingsTests, Settings_AllDirtyness)
+{
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    settings.ClearAllDirty();
+
+    EXPECT_FALSE(settings.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.IsDirty(TestSettings::Setting3_bool));
 
     settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
 
-    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting2_uint32));
-    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+    EXPECT_TRUE(settings.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.IsDirty(TestSettings::Setting3_bool));
 
     settings.MarkAllAsDirty();
 
-    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting2_uint32));
-    EXPECT_TRUE(settings.GetIsDirty(TestSettings::Setting3_bool));
+    EXPECT_TRUE(settings.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_TRUE(settings.IsDirty(TestSettings::Setting3_bool));
 
-    settings.ClearDirty();
+    settings.ClearAllDirty();
 
-    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting2_uint32));
-    EXPECT_FALSE(settings.GetIsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings.IsDirty(TestSettings::Setting3_bool));
+}
+
+TEST(SettingsTests, Settings_SetDirtyWithDiff)
+{
+    Settings<TestSettings> settings1(MakeTestSettings());
+
+    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    Settings<TestSettings> settings2(MakeTestSettings());
+
+    settings2.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings2.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings2.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings2.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 1000);
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+
+    // No diff
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+
+    // Diff
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Tesz!"));
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting4_string));
+
+    // No diff
+    settings2.SetValue<std::string>(TestSettings::Setting4_string, std::string("Tesz!"));
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
 }
 
 /////////////////////////////////////////////////////////
@@ -167,10 +271,10 @@ TEST(SettingsTests, Enforcer_Pull)
             valueBeingSet = value;
         });
 
-    fSetting.SetIsDirty(false);
+    fSetting.ClearDirty();
 
     e.Pull(fSetting);
 
     EXPECT_EQ(4.0f, fSetting.GetValue());
-    EXPECT_TRUE(fSetting.GetIsDirty());
+    EXPECT_TRUE(fSetting.IsDirty());
 }

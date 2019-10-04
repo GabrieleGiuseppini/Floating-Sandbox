@@ -5,6 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
+#include <picojson.h> // TODO: remove if including Utils.h
+
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -17,6 +20,50 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
+// De/Serialization: interface between settings and the de/serialization storage.
+//
+///////////////////////////////////////////////////////////////////////////////////////
+
+/* 
+ * Abstraction of file-system primitives to ease unit tests.
+ */
+struct SettingsPersistenceFileSystem
+{
+    // TODO
+};
+
+class SettingsSerializationContext final
+{
+public:
+
+    SettingsSerializationContext(SettingsPersistenceFileSystem & fileSystem)
+        : mFileSystem(fileSystem)
+    {}
+
+    // TODO
+
+private:
+
+    SettingsPersistenceFileSystem & mFileSystem;
+};
+
+class SettingsDeserializationContext final
+{
+public:
+
+    SettingsDeserializationContext(SettingsPersistenceFileSystem & fileSystem)
+        : mFileSystem(fileSystem)
+    {}
+
+    // TODO
+
+private:
+
+    SettingsPersistenceFileSystem & mFileSystem;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////
+//
 // Settings: these classes provide (temporary) storage for settings. This storage
 // is not meant to replace the official storage provided by the settings' owners.
 //
@@ -25,19 +72,30 @@ class BaseSetting
 {
 public:
 
-    bool GetIsDirty() const
+    bool IsDirty() const
     {
         return mIsDirty;
     }
 
-    void SetIsDirty(bool value)
+    void MarkAsDirty()
     {
-        mIsDirty = value;
+        mIsDirty = true;
+    }
+
+    void ClearDirty()
+    {
+        mIsDirty = false;
     }
 
     virtual std::type_info const & GetType() const = 0;
 
+    virtual bool IsEqual(BaseSetting const & other) const = 0;
+
     virtual std::unique_ptr<BaseSetting> Clone() const = 0;
+
+    virtual void Serialize(SettingsSerializationContext & context) const = 0;
+
+    virtual void Deserialize(SettingsDeserializationContext const & context) const = 0;
 
 protected:
 
@@ -72,14 +130,14 @@ public:
     {
         mValue = value;
 
-        SetIsDirty(true);
+        MarkAsDirty();
     }
 
     void SetValue(TValue && value)
     {
         mValue = value;
 
-        SetIsDirty(true);
+        MarkAsDirty();
     }
 
     virtual std::type_info const & GetType() const override
@@ -87,9 +145,27 @@ public:
         return typeid(TValue);
     }
 
+    virtual bool IsEqual(BaseSetting const & other) const override
+    {
+        assert(other.GetType() == typeid(TValue));
+
+        Setting<TValue> const & o = dynamic_cast<Setting<TValue> const &>(other);
+        return mValue == o.mValue;
+    }
+
     virtual std::unique_ptr<BaseSetting> Clone() const override
     {
         return std::make_unique<Setting<TValue>>(mValue);
+    }
+
+    virtual void Serialize(SettingsSerializationContext & context) const override
+    {
+        // TODO
+    }
+
+    virtual void Deserialize(SettingsDeserializationContext const & context) const override
+    {
+        // TODO: set self dirty if we load ourselves
     }
 
 private:
@@ -166,26 +242,66 @@ public:
         s->SetValue(value);
     }
 
-    bool GetIsDirty(TEnum settingId) const
+    bool IsDirty(TEnum settingId) const
     {
         assert(static_cast<size_t>(settingId) < mSettings.size());
 
-        return mSettings[static_cast<size_t>(settingId)]->GetIsDirty();
+        return mSettings[static_cast<size_t>(settingId)]->IsDirty();
     }
 
-    void ClearDirty()
+    void ClearDirty(TEnum settingId) const
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+
+        mSettings[static_cast<size_t>(settingId)]->ClearDirty();
+    }
+
+    void MarkAsDirty(TEnum settingId) const
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+
+        mSettings[static_cast<size_t>(settingId)]->MarkAsDirty();
+    }
+
+    bool IsAtLeastOneDirty() const
+    {
+        return std::any_of(
+            mSettings.cbegin(),
+            mSettings.cend(),
+            [](auto const & s)
+            {
+                return s->IsDirty();
+            });
+    }
+
+    void ClearAllDirty()
     {
         for (auto & s : mSettings)
-            s->SetIsDirty(false);
+            s->ClearDirty();
     }
 
     void MarkAllAsDirty()
     {
         for (auto & s : mSettings)
-            s->SetIsDirty(true);
-    }
+            s->MarkAsDirty();
+    }    
 
-    // TODOHERE
+    void SetDirtyWithDiff(Settings<TEnum> const & other)
+    {
+        assert(mSettings.size() == other.mSettings.size());
+
+        for (size_t s = 0; s < mSettings.size(); ++s)
+        {
+            if (!mSettings[s]->IsEqual(*other.mSettings[s]))
+            {
+                mSettings[s]->MarkAsDirty();
+            }
+            else
+            {
+                mSettings[s]->ClearDirty();
+            }
+        }
+    }
 
 private:
 
