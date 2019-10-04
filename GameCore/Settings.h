@@ -9,14 +9,18 @@
 #include <functional>
 #include <memory>
 #include <typeinfo>
+#include <vector>
 
 /*
- * Implementation of settings that may be serialized and de-serialized.
+ * Implementation of settings that may be serialized, de-serialized, and managed.
  */
 
- ///////////////////////////////////////////////////////////////////////////////////////
- // Settings
- ///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+//
+// Settings: these classes provide (temporary) storage for settings. This storage
+// is not meant to replace the official storage provided by the settings' owners.
+//
+///////////////////////////////////////////////////////////////////////////////////////
 class BaseSetting
 {
 public:
@@ -93,8 +97,87 @@ private:
     TValue mValue;
 };
 
+/*
+ * This class implements a container of settings thay are managed
+ * together.
+ *
+ * A settings container is aligned with an enum that provides "ID's" 
+ * to address individual settings.
+ */
+template<typename TEnum>
+class Settings
+{
+public:
+
+    Settings(std::vector<std::unique_ptr<BaseSetting>> && settings)
+        : mSettings(std::move(settings))
+    {
+        assert(mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+    }
+
+    Settings(std::vector<std::unique_ptr<BaseSetting>> const & settings)
+    {
+        assert(settings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        
+        mSettings.reserve(settings.size());
+
+        for (auto const & s : settings)
+        {
+            mSettings.emplace_back(s->Clone());
+        }
+    }
+
+    Settings & operator=(Settings const & other)
+    {
+        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mSettings.clear();
+
+        for (auto const & s : other.mSettings)
+        {
+            mSettings.emplace_back(s->Clone());
+        }
+    }
+
+    Settings & operator=(Settings && other)
+    {
+        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mSettings = std::move(other.mSettings);
+    }
+
+    template<typename TValue>
+    TValue const & GetValue(TEnum settingId) const
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+        assert(typeid(TValue) == mSettings[static_cast<size_t>(settingId)]->GetType());
+
+        Setting<TValue> const * s = dynamic_cast<Setting<TValue> const *>(mSettings[static_cast<size_t>(settingId)].get());
+        return s->GetValue();
+    }
+
+    template<typename TValue>
+    void SetValue(TEnum settingId, TValue const & value)
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+        assert(typeid(TValue) == mSettings[static_cast<size_t>(settingId)]->GetType());
+
+        Setting<TValue> * s = dynamic_cast<Setting<TValue> *>(mSettings[static_cast<size_t>(settingId)].get());
+        s->SetValue(value);
+    }
+
+    // TODOHERE
+
+private:
+
+    std::vector<std::unique_ptr<BaseSetting>> mSettings;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////
-// Enforcement
+//
+// Enforcement: these classes provide the bridging between the actual owners of the
+// setting values and the BaseSetting hierarchy instances.
+//
 ///////////////////////////////////////////////////////////////////////////////////////
 
 class BaseSettingEnforcer

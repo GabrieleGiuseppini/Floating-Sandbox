@@ -2,6 +2,29 @@
 
 #include "gtest/gtest.h"
 
+enum TestSettings : size_t
+{
+    Setting1_float = 0,
+    Setting2_uint32,
+    Setting3_bool,
+    Setting4_string,
+
+    _Last = Setting4_string
+};
+
+auto MakeTestSettings()
+{
+    std::vector<std::unique_ptr<BaseSetting>> settings;
+    settings.emplace_back(new Setting<float>());
+    settings.emplace_back(new Setting<uint32_t>());
+    settings.emplace_back(new Setting<bool>());
+    settings.emplace_back(new Setting<std::string>());
+
+    return settings;
+}
+
+////////////////////////////////////////////////////////////////
+
 TEST(SettingsTests, Setting_DefaultConstructor)
 {
     Setting<float> fSetting;
@@ -63,7 +86,24 @@ TEST(SettingsTests, Setting_Clone)
 
 /////////////////////////////////////////////////////////
 
-TEST(SettingsTest, Enforcer_Enforce)
+TEST(SettingsTests, Settings_SetAndGetValue)
+{
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    EXPECT_EQ(242.0f, settings.GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(999u, settings.GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(true, settings.GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
+}
+
+/////////////////////////////////////////////////////////
+
+TEST(SettingsTests, Enforcer_Enforce)
 {
     Setting<float> fSetting;
     fSetting.SetValue(5.0f);
@@ -85,7 +125,7 @@ TEST(SettingsTest, Enforcer_Enforce)
     EXPECT_EQ(valueBeingSet, 5.0f);
 }
 
-TEST(SettingsTest, Enforcer_Pull)
+TEST(SettingsTests, Enforcer_Pull)
 {
     Setting<float> fSetting;
     fSetting.SetValue(5.0f);
