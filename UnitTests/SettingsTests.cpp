@@ -1,5 +1,7 @@
 #include <GameCore/Settings.h>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
 
 enum TestSettings : size_t
@@ -22,6 +24,8 @@ auto MakeTestSettings()
 
     return settings;
 }
+
+static std::filesystem::path RootTestDirectory = "C:\\Foo\\Bar";
 
 ////////////////////////////////////////////////////////////////
 
@@ -232,18 +236,38 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
 
 /////////////////////////////////////////////////////////
 
-TEST(SettingsTests, Serialization_AllTypes)
+TEST(SettingsTests, Serialization_Settings)
 {
-    Settings<TestSettings> settings1(MakeTestSettings());
+    auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
-    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
-    settings1.SetValue<bool>(TestSettings::Setting3_bool, true);
-    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    Settings<TestSettings> settings(MakeTestSettings());
 
-    // TODOHERE
+    settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    {
+        SettingsSerializationContext sContext("Test Settings", RootTestDirectory, testFileSystem);
+        settings.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+    std::filesystem::path expectedSettingsFilePath = RootTestDirectory / "Test Settings.setting.json";
+
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedSettingsFilePath), 1);
+
+    std::string settingsContent = std::string(
+        testFileSystem->GetFileMap()[expectedSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedSettingsFilePath]->size());
+
+    // TODOHERE: verify content
 }
 
+TEST(SettingsTests, Serialization_NamedStreams)
+{
+    // TODOHERE
+}
 TEST(SettingsTests, Serialization_SerializesOnlyDirtyOnes)
 {
     // TODOHERE

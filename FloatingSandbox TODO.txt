@@ -338,6 +338,11 @@ Render:
 	
 		= Settings Manager (*)
 
+		- Music from Officer TimCan:
+			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
+			- Add the three songs
+				- SleepingSun should however be very rare!
+
 		- New explosion shader
 			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions
 
@@ -399,6 +404,9 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
+			- RMS Poseidon from MrGarfield: according to him might replace old one
+			- Hummel: 
+				- Mini Bismarck rar is empty
 		- To take:
 			- All the ones under "Ready"		
 				

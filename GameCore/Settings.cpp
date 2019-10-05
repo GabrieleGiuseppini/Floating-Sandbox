@@ -11,8 +11,10 @@
 
 SettingsSerializationContext::SettingsSerializationContext(
     std::string const & settingsName,
-    std::shared_ptr<SettingsPersistenceFileSystem> fileSystem)
+    std::filesystem::path const & rootUserSettingsDirectoryPath,
+    std::shared_ptr<IFileSystem> fileSystem)
     : mSettingsName(std::move(settingsName))
+    , mRootUserSettingsDirectoryPath(rootUserSettingsDirectoryPath)
     , mFileSystem(std::move(fileSystem))
     , mSettingsRoot()
     , mHasBeenSerialized(false)
@@ -35,28 +37,32 @@ void SettingsSerializationContext::Serialize()
     mHasBeenSerialized = true;
 }
 
-std::ostream & SettingsSerializationContext::GetNamedStream(std::string const & streamName)
+std::shared_ptr<std::ostream> SettingsSerializationContext::GetNamedStream(std::string const & streamName)
 {    
+    // TODO: filename
+    //return mFileSystem->OpenOutputStream()
     // TODO
-    static std::ostringstream oss;
-    return oss;
+    return std::shared_ptr<std::ostream>(new std::stringstream());
 }
 
 SettingsDeserializationContext::SettingsDeserializationContext(
     std::string const & settingsName,
-    std::shared_ptr<SettingsPersistenceFileSystem> fileSystem)
+    std::filesystem::path const & rootSystemSettingsDirectoryPath,
+    std::filesystem::path const & rootUserSettingsDirectoryPath,
+    std::shared_ptr<IFileSystem> fileSystem)
     : mSettingsName(std::move(settingsName))
+    , mRootSystemSettingsDirectoryPath(rootSystemSettingsDirectoryPath)
+    , mRootUserSettingsDirectoryPath(rootUserSettingsDirectoryPath)
     , mFileSystem(std::move(fileSystem))
     , mSettingsRoot()
 {
     // TODO: load json
 }
 
-std::istream & SettingsDeserializationContext::GetNamedStream(std::string const & streamName) const
+std::shared_ptr<std::istream> SettingsDeserializationContext::GetNamedStream(std::string const & streamName) const
 {
     // TODO
-    static std::istringstream iss;
-    return iss;
+    return std::shared_ptr<std::istream>(new std::stringstream());
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

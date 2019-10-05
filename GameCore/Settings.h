@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "FileSystem.h"
+
 #include <picojson.h>
 
 #include <algorithm>
@@ -26,21 +28,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-/* 
- * Abstraction of file-system primitives to ease unit tests.
- */
-struct SettingsPersistenceFileSystem
-{
-    // TODO
-};
-
 class SettingsSerializationContext final
 {
 public:
 
     SettingsSerializationContext(
         std::string const & settingsName,
-        std::shared_ptr<SettingsPersistenceFileSystem> fileSystem);
+        std::filesystem::path const & rootUserSettingsDirectoryPath,
+        std::shared_ptr<IFileSystem> fileSystem);
 
     ~SettingsSerializationContext()
     {
@@ -54,12 +49,13 @@ public:
         return mSettingsRoot;
     }
 
-    std::ostream & GetNamedStream(std::string const & streamName);
+    std::shared_ptr<std::ostream> GetNamedStream(std::string const & streamName);
 
 private:
 
     std::string const mSettingsName;
-    std::shared_ptr<SettingsPersistenceFileSystem> mFileSystem;
+    std::filesystem::path const mRootUserSettingsDirectoryPath;
+    std::shared_ptr<IFileSystem> mFileSystem;
 
     picojson::object mSettingsRoot;
     bool mHasBeenSerialized;
@@ -71,19 +67,23 @@ public:
 
     SettingsDeserializationContext(
         std::string const & settingsName,
-        std::shared_ptr<SettingsPersistenceFileSystem> fileSystem);
+        std::filesystem::path const & rootSystemSettingsDirectoryPath,
+        std::filesystem::path const & rootUserSettingsDirectoryPath,
+        std::shared_ptr<IFileSystem> fileSystem);
 
     picojson::object const & GetSettingsRoot() const
     {
         return mSettingsRoot;
     }
 
-    std::istream & GetNamedStream(std::string const & streamName) const;
+    std::shared_ptr<std::istream> GetNamedStream(std::string const & streamName) const;
 
 private:
 
     std::string const mSettingsName;
-    std::shared_ptr<SettingsPersistenceFileSystem> mFileSystem;
+    std::filesystem::path const mRootSystemSettingsDirectoryPath;
+    std::filesystem::path const mRootUserSettingsDirectoryPath;
+    std::shared_ptr<IFileSystem> mFileSystem;
 
     picojson::object mSettingsRoot;
 };

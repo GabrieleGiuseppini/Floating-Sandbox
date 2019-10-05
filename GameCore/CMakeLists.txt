@@ -17,6 +17,7 @@ set  (SOURCES
 	EnumFlags.h
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
+	FileSystem.h
 	FixedSizeVector.h
 	FixedTickSliderCore.cpp
 	FixedTickSliderCore.h
