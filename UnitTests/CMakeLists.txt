@@ -25,6 +25,7 @@ set (UNIT_TEST_SOURCES
 	FixedSizeVectorTests.cpp
 	GameEventDispatcherTests.cpp
 	GameMathTests.cpp
+	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
 	SegmentTests.cpp

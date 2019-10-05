@@ -1,0 +1,170 @@
+#include <GameCore/MemoryStreams.h>
+
+#include <istream>
+#include <ostream>
+
+#include "gtest/gtest.h"
+
+TEST(MemoryStreamsTests, BackingOutputStream_write)
+{
+    memory_streambuf ms;
+    
+    std::ostream os(&ms);
+
+    unsigned char testData[] = { 0x05, 0x00, 0x7f, 0x80, 0x81, 0xff };
+
+    os.write(reinterpret_cast<char *>(testData), 3);
+
+    EXPECT_EQ(ms.size(),3);
+
+    os.write(reinterpret_cast<char *>(testData) + 3, 3);
+
+    EXPECT_EQ(ms.size(), 6);
+
+    EXPECT_EQ(0x05, static_cast<unsigned char>(ms.data()[0]));
+    EXPECT_EQ(0x00, static_cast<unsigned char>(ms.data()[1]));
+    EXPECT_EQ(0x7f, static_cast<unsigned char>(ms.data()[2]));
+    EXPECT_EQ(0x80, static_cast<unsigned char>(ms.data()[3]));
+    EXPECT_EQ(0x81, static_cast<unsigned char>(ms.data()[4]));
+    EXPECT_EQ(0xff, static_cast<unsigned char>(ms.data()[5]));
+}
+
+TEST(MemoryStreamsTests, BackingOutputStream_streaming)
+{
+    memory_streambuf ms;
+
+    std::ostream os(&ms);
+
+    os << "foo" << "bar";
+
+    ASSERT_EQ(ms.size(), 6);
+
+    EXPECT_EQ('f', ms.data()[0]);
+    EXPECT_EQ('o', ms.data()[1]);
+    EXPECT_EQ('o', ms.data()[2]);
+    EXPECT_EQ('b', ms.data()[3]);
+    EXPECT_EQ('a', ms.data()[4]);
+    EXPECT_EQ('r', ms.data()[5]);
+}
+
+TEST(MemoryStreamsTests, BackingOutputStream_put)
+{
+    memory_streambuf ms;
+
+    std::ostream os(&ms);
+
+    os.put('h');
+    os.put('o');
+    os.put('i');
+
+    ASSERT_EQ(ms.size(), 3);
+
+    EXPECT_EQ('h', ms.data()[0]);
+    EXPECT_EQ('o', ms.data()[1]);
+    EXPECT_EQ('i', ms.data()[2]);
+}
+
+TEST(MemoryStreamsTests, BackingInputStream_read_whole)
+{
+    memory_streambuf ms("hello");
+
+    std::istream is(&ms);
+
+    char localBuf[5];
+    is.read(localBuf, 5);
+
+    EXPECT_EQ(5, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    EXPECT_EQ('h', localBuf[0]);
+    EXPECT_EQ('e', localBuf[1]);
+    EXPECT_EQ('l', localBuf[2]);
+    EXPECT_EQ('l', localBuf[3]);
+    EXPECT_EQ('o', localBuf[4]);
+}
+
+TEST(MemoryStreamsTests, BackingInputStream_read_less)
+{
+    memory_streambuf ms("hello");
+
+    std::istream is(&ms);
+
+    char localBuf[5];
+    is.read(localBuf, 3);
+
+    EXPECT_EQ(3, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    EXPECT_EQ('h', localBuf[0]);
+    EXPECT_EQ('e', localBuf[1]);
+    EXPECT_EQ('l', localBuf[2]);
+}
+
+TEST(MemoryStreamsTests, BackingInputStream_read_more)
+{
+    memory_streambuf ms("hello");
+
+    std::istream is(&ms);
+
+    char localBuf[5];
+    is.read(localBuf, 6);
+
+    EXPECT_EQ(5, is.gcount());
+    EXPECT_TRUE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_TRUE(is.eof());
+
+    EXPECT_EQ('h', localBuf[0]);
+    EXPECT_EQ('e', localBuf[1]);
+    EXPECT_EQ('l', localBuf[2]);
+    EXPECT_EQ('l', localBuf[3]);
+    EXPECT_EQ('o', localBuf[4]);
+}
+
+TEST(MemoryStreamsTests, BackingInputStream_get)
+{
+    unsigned char initData[] = { unsigned char(0x00), unsigned char(0x7f), unsigned char(0x80), unsigned char(0x81), unsigned char(0xff) };
+    memory_streambuf ms(reinterpret_cast<char *>(initData), 5);
+
+    std::istream is(&ms);
+
+    int ch = is.get();
+    EXPECT_EQ(0x00, ch);
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ch = is.get();
+    EXPECT_EQ(0x7f, ch);
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ch = is.get();
+    EXPECT_EQ(0x80, ch);
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ch = is.get();
+    EXPECT_EQ(0x81, ch);
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ch = is.get();
+    EXPECT_EQ(0xff, ch);
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ch = is.get();
+    EXPECT_EQ(EOF, ch);
+    EXPECT_TRUE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_TRUE(is.eof());
+}

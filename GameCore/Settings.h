@@ -5,12 +5,14 @@
  ***************************************************************************************/
 #pragma once
 
-#include <picojson.h> // TODO: remove if including Utils.h
+#include <picojson.h>
 
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <iostream>
 #include <memory>
+#include <optional>
 #include <typeinfo>
 #include <vector>
 
@@ -36,38 +38,65 @@ class SettingsSerializationContext final
 {
 public:
 
-    SettingsSerializationContext(SettingsPersistenceFileSystem & fileSystem)
-        : mFileSystem(fileSystem)
-    {}
+    SettingsSerializationContext(
+        std::string const & settingsName,
+        std::shared_ptr<SettingsPersistenceFileSystem> fileSystem);
 
-    // TODO
+    ~SettingsSerializationContext()
+    {
+        Serialize();
+    }
+
+    void Serialize();
+
+    picojson::object & GetSettingsRoot()
+    {
+        return mSettingsRoot;
+    }
+
+    std::ostream & GetNamedStream(std::string const & streamName);
 
 private:
 
-    SettingsPersistenceFileSystem & mFileSystem;
+    std::string const mSettingsName;
+    std::shared_ptr<SettingsPersistenceFileSystem> mFileSystem;
+
+    picojson::object mSettingsRoot;
+    bool mHasBeenSerialized;
 };
 
 class SettingsDeserializationContext final
 {
 public:
 
-    SettingsDeserializationContext(SettingsPersistenceFileSystem & fileSystem)
-        : mFileSystem(fileSystem)
-    {}
+    SettingsDeserializationContext(
+        std::string const & settingsName,
+        std::shared_ptr<SettingsPersistenceFileSystem> fileSystem);
 
-    // TODO
+    picojson::object const & GetSettingsRoot() const
+    {
+        return mSettingsRoot;
+    }
+
+    std::istream & GetNamedStream(std::string const & streamName) const;
 
 private:
 
-    SettingsPersistenceFileSystem & mFileSystem;
+    std::string const mSettingsName;
+    std::shared_ptr<SettingsPersistenceFileSystem> mFileSystem;
+
+    picojson::object mSettingsRoot;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
-// Settings: these classes provide (temporary) storage for settings. This storage
-// is not meant to replace the official storage provided by the settings' owners.
+// Settings: these classes provide (temporary) storage for settings that are being
+// managed. 
+// This storage is not meant to replace the official storage provided by the 
+// settings' owners.
 //
 ///////////////////////////////////////////////////////////////////////////////////////
+
 class BaseSetting
 {
 public:
@@ -95,16 +124,23 @@ public:
 
     virtual void Serialize(SettingsSerializationContext & context) const = 0;
 
-    virtual void Deserialize(SettingsDeserializationContext const & context) const = 0;
+    virtual void Deserialize(SettingsDeserializationContext const & context) = 0;
 
 protected:
 
-    BaseSetting()
-        : mIsDirty(false)
+    explicit BaseSetting(std::string name)
+        : mName(std::move(name))
+        , mIsDirty(false)
     {}
+
+    std::string GetName() const
+    {
+        return mName;
+    }
 
 private:
 
+    std::string const mName;
     bool mIsDirty;
 };
 
@@ -113,12 +149,16 @@ class Setting final : public BaseSetting
 {
 public:
 
-    Setting()
-        : mValue()
+    explicit Setting(std::string name)
+        : BaseSetting(std::move(name))
+        , mValue()
     {}
 
-    explicit Setting(TValue const & value)
-        : mValue(value)
+    Setting(
+        std::string name,
+        TValue const & value)
+        : BaseSetting(std::move(name))
+        , mValue(value)
     {}
 
     TValue const & GetValue() const
@@ -155,18 +195,14 @@ public:
 
     virtual std::unique_ptr<BaseSetting> Clone() const override
     {
-        return std::make_unique<Setting<TValue>>(mValue);
+        return std::make_unique<Setting<TValue>>(GetName(), mValue);
     }
 
-    virtual void Serialize(SettingsSerializationContext & context) const override
-    {
-        // TODO
-    }
+    // This is to be specialized for each setting type
+    virtual void Serialize(SettingsSerializationContext & context) const override;
 
-    virtual void Deserialize(SettingsDeserializationContext const & context) const override
-    {
-        // TODO: set self dirty if we load ourselves
-    }
+    // This is to be specialized for each setting type
+    virtual void Deserialize(SettingsDeserializationContext const & context) override;
 
 private:
 
@@ -286,6 +322,11 @@ public:
             s->MarkAsDirty();
     }    
 
+    /*
+     * Marks each setting as dirty or clean depending on whether or not
+     * the setting is different than the corresponding setting in the
+     * other settings container.
+     */
     void SetDirtyWithDiff(Settings<TEnum> const & other)
     {
         assert(mSettings.size() == other.mSettings.size());
@@ -300,6 +341,36 @@ public:
             {
                 mSettings[s]->ClearDirty();
             }
+        }
+    }
+
+    /*
+     * Serializes all and only the dirty settings.
+     */
+    void SerializeDirty(SettingsSerializationContext & context) const
+    {
+        for (auto const & s : mSettings)
+        {
+            if (s->IsDirty())
+            {
+                s->Serialize(context);
+            }
+        }
+    }
+
+    /*
+     * De-serializes settings.
+     *
+     * After this call, settings that were de-serialized are marked as dirty, and
+     * settings that were not de-serialized are marked as clean.
+     */
+    void Deserialize(SettingsDeserializationContext const & context)
+    {
+        ClearAllDirty();
+
+        for (auto const & s : mSettings)
+        {
+            s->Deserialize(context);
         }
     }
 

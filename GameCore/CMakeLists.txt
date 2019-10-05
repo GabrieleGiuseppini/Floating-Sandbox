@@ -38,6 +38,7 @@ set  (SOURCES
 	LinearSliderCore.h
 	Log.cpp
 	Log.h
+	MemoryStreams.h
 	ParameterSmoother.h
 	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h

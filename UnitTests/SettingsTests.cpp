@@ -15,10 +15,10 @@ enum TestSettings : size_t
 auto MakeTestSettings()
 {
     std::vector<std::unique_ptr<BaseSetting>> settings;
-    settings.emplace_back(new Setting<float>());
-    settings.emplace_back(new Setting<uint32_t>());
-    settings.emplace_back(new Setting<bool>());
-    settings.emplace_back(new Setting<std::string>());
+    settings.emplace_back(new Setting<float>("setting1_float"));
+    settings.emplace_back(new Setting<uint32_t>("setting2_uint32"));
+    settings.emplace_back(new Setting<bool>("setting3_bool"));
+    settings.emplace_back(new Setting<std::string>("setting4_string"));
 
     return settings;
 }
@@ -27,7 +27,7 @@ auto MakeTestSettings()
 
 TEST(SettingsTests, Setting_DefaultConstructor)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
 
     EXPECT_EQ(0.0f, fSetting.GetValue());
     EXPECT_FALSE(fSetting.IsDirty());
@@ -35,7 +35,7 @@ TEST(SettingsTests, Setting_DefaultConstructor)
 
 TEST(SettingsTests, Setting_ConstructorValue)
 {
-    Setting<float> fSetting(5.0f);
+    Setting<float> fSetting("", 5.0f);
 
     EXPECT_EQ(5.0f, fSetting.GetValue());
     EXPECT_FALSE(fSetting.IsDirty());
@@ -43,7 +43,7 @@ TEST(SettingsTests, Setting_ConstructorValue)
 
 TEST(SettingsTests, Setting_SetValue)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
 
     fSetting.SetValue(5.0f);
 
@@ -53,7 +53,7 @@ TEST(SettingsTests, Setting_SetValue)
 
 TEST(SettingsTests, Setting_MarkAsDirty)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
 
     fSetting.ClearDirty();
 
@@ -66,7 +66,7 @@ TEST(SettingsTests, Setting_MarkAsDirty)
 
 TEST(SettingsTests, Setting_ClearDirty)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
 
     fSetting.MarkAsDirty();
 
@@ -78,20 +78,20 @@ TEST(SettingsTests, Setting_ClearDirty)
 }
 TEST(SettingsTests, Setting_Type)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
 
     EXPECT_EQ(typeid(float), fSetting.GetType());
 }
 
 TEST(SettingsTests, Setting_IsEqual)
 {
-    Setting<float> fSetting1;
+    Setting<float> fSetting1("");
     fSetting1.SetValue(5.0f);
 
-    Setting<float> fSetting2;
+    Setting<float> fSetting2("");
     fSetting2.SetValue(15.0f);
 
-    Setting<float> fSetting3;
+    Setting<float> fSetting3("");
     fSetting3.SetValue(5.0f);
 
     EXPECT_FALSE(fSetting1.IsEqual(fSetting2));
@@ -100,7 +100,7 @@ TEST(SettingsTests, Setting_IsEqual)
 
 TEST(SettingsTests, Setting_Clone)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
     fSetting.SetValue(5.0f);
 
     std::unique_ptr<BaseSetting> fSettingClone = fSetting.Clone();
@@ -117,10 +117,10 @@ TEST(SettingsTests, Settings_SetAndGetValue)
 {
     Settings<TestSettings> settings(MakeTestSettings());
 
-    settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
-    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
-    settings.SetValue<bool>(TestSettings::Setting3_bool, true);
-    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings.SetValue(TestSettings::Setting1_float, float(242.0f));
+    settings.SetValue(TestSettings::Setting2_uint32, uint32_t(999));
+    settings.SetValue(TestSettings::Setting3_bool, bool(true));
+    settings.SetValue(TestSettings::Setting4_string, std::string("Test!"));
 
     EXPECT_EQ(242.0f, settings.GetValue<float>(TestSettings::Setting1_float));
     EXPECT_EQ(999u, settings.GetValue<uint32_t>(TestSettings::Setting2_uint32));
@@ -232,9 +232,33 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
 
 /////////////////////////////////////////////////////////
 
+TEST(SettingsTests, Serialization_AllTypes)
+{
+    Settings<TestSettings> settings1(MakeTestSettings());
+
+    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    // TODOHERE
+}
+
+TEST(SettingsTests, Serialization_SerializesOnlyDirtyOnes)
+{
+    // TODOHERE
+}
+
+TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
+{
+    // TODOHERE
+}
+
+/////////////////////////////////////////////////////////
+
 TEST(SettingsTests, Enforcer_Enforce)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
     fSetting.SetValue(5.0f);
 
     float valueBeingSet = 0.0f;
@@ -256,7 +280,7 @@ TEST(SettingsTests, Enforcer_Enforce)
 
 TEST(SettingsTests, Enforcer_Pull)
 {
-    Setting<float> fSetting;
+    Setting<float> fSetting("");
     fSetting.SetValue(5.0f);
 
     float valueBeingSet = 4.0f;
