@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "Version.h"
 
 #include <picojson.h>
 
@@ -28,37 +29,99 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
+enum class StorageTypes
+{
+    System,
+    User
+};
+
+/*
+ * The identifier of settings that have been/are going to be persisted.
+ */
+struct PersistedSettingsKey
+{
+    std::string Name;
+    StorageTypes StorageType;
+
+    PersistedSettingsKey(
+        std::string const & name,
+        StorageTypes storageType)
+        : Name(name)
+        , StorageType(storageType)
+    {}
+};
+
+/*
+ * Abstraction over the storage, implementing high-level operations specific
+ * to settings. 
+ *
+ * Bridges between the settings logic and the
+ * IFileSystem interface.
+ */
+class SettingsStorage final
+{
+public:
+
+    SettingsStorage(
+        std::filesystem::path const & rootSystemSettingsDirectoryPath,
+        std::filesystem::path const & rootUserSettingsDirectoryPath,
+        std::shared_ptr<IFileSystem> fileSystem);
+
+    void DeleteAllFiles(PersistedSettingsKey const & settingsKey);
+
+    std::shared_ptr<std::istream> OpenInputStream(
+        PersistedSettingsKey const & settingsKey,
+        std::string const & streamName,
+        std::string const & extension);
+
+    std::shared_ptr<std::ostream> OpenOutputStream(
+        PersistedSettingsKey const & settingsKey,
+        std::string const & streamName,
+        std::string const & extension);
+
+private:
+
+    std::filesystem::path MakeFilePath(
+        PersistedSettingsKey const & settingsKey,
+        std::string const & streamName,
+        std::string const & extension) const;
+
+    std::filesystem::path GetRootPath(StorageTypes storageType) const;
+
+    std::filesystem::path const mRootSystemSettingsDirectoryPath;
+    std::filesystem::path const mRootUserSettingsDirectoryPath;
+    std::shared_ptr<IFileSystem> mFileSystem;
+};
+
 class SettingsSerializationContext final
 {
 public:
 
     SettingsSerializationContext(
-        std::string const & settingsName,
-        std::filesystem::path const & rootUserSettingsDirectoryPath,
-        std::shared_ptr<IFileSystem> fileSystem);
+        PersistedSettingsKey const & settingsKey,
+        std::shared_ptr<SettingsStorage> storage);
 
-    ~SettingsSerializationContext()
-    {
-        Serialize();
-    }
-
-    void Serialize();
+    ~SettingsSerializationContext();
 
     picojson::object & GetSettingsRoot()
     {
-        return mSettingsRoot;
+        return *mSettingsRoot;
     }
 
-    std::shared_ptr<std::ostream> GetNamedStream(std::string const & streamName);
+    std::shared_ptr<std::ostream> GetNamedStream(
+        std::string const & streamName,
+        std::string const & extension)
+    {
+        return mStorage->OpenOutputStream(mSettingsKey, streamName, extension);
+    }
 
 private:
 
-    std::string const mSettingsName;
-    std::filesystem::path const mRootUserSettingsDirectoryPath;
-    std::shared_ptr<IFileSystem> mFileSystem;
+    PersistedSettingsKey const mSettingsKey;
+    std::shared_ptr<SettingsStorage> mStorage;
 
-    picojson::object mSettingsRoot;
-    bool mHasBeenSerialized;
+    picojson::object mSettingsJson;
+    picojson::object * mSettingsRoot;
 };
 
 class SettingsDeserializationContext final
@@ -66,26 +129,33 @@ class SettingsDeserializationContext final
 public:
 
     SettingsDeserializationContext(
-        std::string const & settingsName,
-        std::filesystem::path const & rootSystemSettingsDirectoryPath,
-        std::filesystem::path const & rootUserSettingsDirectoryPath,
-        std::shared_ptr<IFileSystem> fileSystem);
+        PersistedSettingsKey const & settingsKey,
+        std::shared_ptr<SettingsStorage> storage);
 
     picojson::object const & GetSettingsRoot() const
     {
         return mSettingsRoot;
     }
 
-    std::shared_ptr<std::istream> GetNamedStream(std::string const & streamName) const;
+    Version const & GetSettingsVersion() const
+    {
+        return mSettingsVersion;
+    }
+
+    std::shared_ptr<std::istream> GetNamedStream(
+        std::string const & streamName,
+        std::string const & extension)
+    {
+        return mStorage->OpenInputStream(mSettingsKey, streamName, extension);
+    }
 
 private:
 
-    std::string const mSettingsName;
-    std::filesystem::path const mRootSystemSettingsDirectoryPath;
-    std::filesystem::path const mRootUserSettingsDirectoryPath;
-    std::shared_ptr<IFileSystem> mFileSystem;
-
+    PersistedSettingsKey const mSettingsKey;
+    std::shared_ptr<SettingsStorage> mStorage;
+    
     picojson::object mSettingsRoot;
+    Version mSettingsVersion;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -412,7 +482,7 @@ public:
 
     void Enforce(BaseSetting const & setting) const override
     {
-        assert(setting.GetType() == typeid(float));
+        assert(setting.GetType() == typeid(TValue));
 
         auto const & s = dynamic_cast<Setting<TValue> const &>(setting);
         mSetter(s.GetValue());
@@ -420,7 +490,7 @@ public:
 
     void Pull(BaseSetting & setting) const override
     {
-        assert(setting.GetType() == typeid(float));
+        assert(setting.GetType() == typeid(TValue));
 
         auto & s = dynamic_cast<Setting<TValue> &>(setting);
         s.SetValue(mGetter());

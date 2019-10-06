@@ -1,6 +1,10 @@
 #include <GameCore/Settings.h>
 
+#include <GameCore/Utils.h>
+
 #include "Utils.h"
+
+#include <picojson.h>
 
 #include "gtest/gtest.h"
 
@@ -25,7 +29,8 @@ auto MakeTestSettings()
     return settings;
 }
 
-static std::filesystem::path RootTestDirectory = "C:\\Foo\\Bar";
+static std::filesystem::path TestRootSystemDirectory = "C:\\Foo\\System\\";
+static std::filesystem::path TestRootUserDirectory = "C:\\Foo\\User\\";
 
 ////////////////////////////////////////////////////////////////
 
@@ -236,9 +241,54 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
 
 /////////////////////////////////////////////////////////
 
-TEST(SettingsTests, Serialization_Settings)
+TEST(SettingsTests, Storage_EnsuresUserSettingsDirectoryExists)
+{
+    ::testing::InSequence dummy;
+
+    std::shared_ptr<MockFileSystem> mockFileSystem(new ::testing::StrictMock<MockFileSystem>());
+
+    EXPECT_CALL(*mockFileSystem, EnsureDirectoryExists(TestRootUserDirectory))
+        .Times(1);
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        mockFileSystem);
+}
+
+TEST(SettingsTests, Storage_DeleteAllFilesDeletesAllStreamsAndSettings)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.settings.json"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.foo bar.dat"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Namez.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+    EXPECT_EQ(4, testFileSystem->GetFileMap().size());
+
+    storage.DeleteAllFiles(PersistedSettingsKey("Test Name", StorageTypes::User));
+
+    ASSERT_EQ(1, testFileSystem->GetFileMap().size());
+    EXPECT_EQ(1, testFileSystem->GetFileMap().count(TestRootUserDirectory / "Test Namez.yulp.abracadabra"));
+}
+
+/////////////////////////////////////////////////////////
+
+TEST(SettingsTests, Serialization_Settings_AllDirty)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
 
     Settings<TestSettings> settings(MakeTestSettings());
 
@@ -247,36 +297,138 @@ TEST(SettingsTests, Serialization_Settings)
     settings.SetValue<bool>(TestSettings::Setting3_bool, true);
     settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
 
+    settings.MarkAllAsDirty();
+
     {
-        SettingsSerializationContext sContext("Test Settings", RootTestDirectory, testFileSystem);
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
         settings.SerializeDirty(sContext);
         // Context destruction happens here
     }
 
-    std::filesystem::path expectedSettingsFilePath = RootTestDirectory / "Test Settings.setting.json";
+    std::filesystem::path expectedSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
 
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 1);
     ASSERT_EQ(testFileSystem->GetFileMap().count(expectedSettingsFilePath), 1);
 
     std::string settingsContent = std::string(
         testFileSystem->GetFileMap()[expectedSettingsFilePath]->data(),
         testFileSystem->GetFileMap()[expectedSettingsFilePath]->size());
 
-    // TODOHERE: verify content
+    auto settingsRootValue = Utils::ParseJSONString(settingsContent);
+    ASSERT_TRUE(settingsRootValue.is<picojson::object>());
+
+    auto & settingsRootObject = settingsRootValue.get<picojson::object>();
+    EXPECT_EQ(2, settingsRootObject.size());
+
+    // Version
+    ASSERT_EQ(1, settingsRootObject.count("version"));
+    ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
+    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Settings
+    ASSERT_EQ(1, settingsRootObject.count("settings"));
+    ASSERT_TRUE(settingsRootObject["settings"].is<picojson::object>());
+
+    auto & settingsObject = settingsRootObject["settings"].get<picojson::object>();
+
+    //
+    // Settings content
+    //
+
+    EXPECT_EQ(4, settingsObject.size());
+
+    ASSERT_EQ(1, settingsObject.count("setting1_float"));
+    ASSERT_TRUE(settingsObject["setting1_float"].is<double>());
+    EXPECT_DOUBLE_EQ(242.0, settingsObject["setting1_float"].get<double>());
+
+    ASSERT_EQ(1, settingsObject.count("setting2_uint32"));
+    ASSERT_TRUE(settingsObject["setting2_uint32"].is<int64_t>());
+    EXPECT_EQ(999LL, settingsObject["setting2_uint32"].get<int64_t>());
+
+    ASSERT_EQ(1, settingsObject.count("setting3_bool"));
+    ASSERT_TRUE(settingsObject["setting3_bool"].is<bool>());
+    EXPECT_EQ(true, settingsObject["setting3_bool"].get<bool>());
+
+    ASSERT_EQ(1, settingsObject.count("setting4_string"));
+    ASSERT_TRUE(settingsObject["setting4_string"].is<std::string>());
+    EXPECT_EQ(std::string("Test!"), settingsObject["setting4_string"].get<std::string>());
 }
 
+TEST(SettingsTests, Serialization_Settings_AllClean)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<bool>(TestSettings::Setting3_bool, true);
+    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+
+    settings.ClearAllDirty();
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+    std::filesystem::path expectedSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
+
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 1);
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedSettingsFilePath), 1);
+
+    std::string settingsContent = std::string(
+        testFileSystem->GetFileMap()[expectedSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedSettingsFilePath]->size());
+
+    auto settingsRootValue = Utils::ParseJSONString(settingsContent);
+    ASSERT_TRUE(settingsRootValue.is<picojson::object>());
+
+    auto & settingsRootObject = settingsRootValue.get<picojson::object>();
+    EXPECT_EQ(2, settingsRootObject.size());
+
+    // Version
+    ASSERT_EQ(1, settingsRootObject.count("version"));
+    ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
+    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Settings
+    ASSERT_EQ(1, settingsRootObject.count("settings"));
+    ASSERT_TRUE(settingsRootObject["settings"].is<picojson::object>());
+
+    auto & settingsObject = settingsRootObject["settings"].get<picojson::object>();
+    EXPECT_EQ(0, settingsObject.size());
+}
+
+/* TODOHERE
 TEST(SettingsTests, Serialization_NamedStreams)
 {
-    // TODOHERE
+    // TODOHERE: make custom test setting type
 }
-TEST(SettingsTests, Serialization_SerializesOnlyDirtyOnes)
+
+TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 {
-    // TODOHERE
+    // TODOHERE: both setting and named stream
 }
 
 TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 {
     // TODOHERE
 }
+*/
 
 /////////////////////////////////////////////////////////
 

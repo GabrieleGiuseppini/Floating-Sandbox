@@ -18,14 +18,31 @@ struct IFileSystem
     {}
 
     /*
+     * Creates a directory if it doesn't exist already.
+     */
+    virtual void EnsureDirectoryExists(std::filesystem::path const & directoryPath) = 0;
+
+    /*
      * Opens a file for reading. Returns an empty pointer if the file does not exist.
      */
     virtual std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath) = 0;
 
     /*
      * Opens a file for writing. Overwrites the files if it exists already.
+     *
+     * The file is flushed and closed when the shared pointer goes out of scope.
      */
     virtual std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) = 0;
+
+    /*
+     * Returns paths of all files in the specified directory.
+     */
+    virtual std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) = 0;
+
+    /*
+     * Deletes a file.
+     */
+    virtual void DeleteFile(std::filesystem::path const & filePath) = 0;
 };
 
 /*
@@ -65,5 +82,25 @@ public:
                 os->flush();
                 delete os;
             });
+    }
+
+    virtual std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) override
+    {
+        std::vector<std::filesystem::path> filePaths;
+
+        for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+        {
+            if (std::filesystem::is_regular_file(entryIt.path()))
+            {
+                filePaths.push_back(entryIt.path());
+            }
+        }
+
+        return filePaths;
+    }
+
+    virtual void DeleteFile(std::filesystem::path const & filePath) override
+    {
+        std::filesystem::remove(filePath);
     }
 };

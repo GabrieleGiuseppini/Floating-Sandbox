@@ -35,6 +35,8 @@ public:
 
     static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
 
+    static picojson::value ParseJSONString(std::string const & jsonString);
+
     static void SaveJSONFile(
         picojson::value const & value,
         std::filesystem::path const & filepath);

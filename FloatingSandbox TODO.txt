@@ -343,6 +343,9 @@ Render:
 			- Add the three songs
 				- SleepingSun should however be very rare!
 
+		- Sparkles with shader
+			- Needs also velocity in vertex buffer, together with progress
+
 		- New explosion shader
 			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions
 
@@ -1313,7 +1316,7 @@ Render:
 - UI:
 	- Ship descriptions: use Mike's drawings
 
-	- SettingsMaanger: save settings, defaults, and real-time changes (*)
+	= SettingsManager: save settings, defaults, and real-time changes (*)
 		- Spec: 
 			- Game starts always with default settings; user has the ability though to load named settings
 				- Where "defaults" is hardcoded name for default settings
@@ -1321,24 +1324,24 @@ Render:
 				- Under Data\Themes
 				- Managed by SettingsDialog (not by SettingsManager)
 				- Read-only (marked as "system" settings to avoid overwriting)
-			- Saved settings have a name, which is the one shown to the user (filename is opaque and has unique prefix before FS-mangled name),
+			- Saved settings have a name, which is the one shown to the user
 			  and a description
 				- Names are unique
-					- Prefix is only to avoid filenames conflicts after FS-mangling
+					- UI makes sure names only contain FS-allowed chars
 				- User may overwrite non-system saved settings only
 			- Saved settings do not have necessarily all settings 
 			  (e.g. to allow for graphical themes, which only specify certain render properties)
-				- But unless we track individual settings' dirtyness, users may not save subsets of settings
+				- We track individual settings' dirtyness wrt defaults, so users may save subsets of settings
 			- Ocean floor is just another setting
-				- GameController only exposes ocean floor as float buffer
-					- Actual parameter is owned by GameParameters, as std::unique_ptr<float[]> 
+				- GameController exposes ocean floor as OceanFloorTerrain
+					- Actual parameter is owned by OceanFloor
 				- GameController::cctor takes it
-				- MainFrame provides the initial one loaded via ResourceManager::LoadOceanFloor(path of default system one)X2 (png, floatbin)
+				- MainFrame provides the initial one loaded via OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
 				- SettingsManager saves it in binary file (specific to ocean floor; other buffer settings will have their own binary file) next to user settings' json file,
 				  w/same name but different extension
 			- Saved settings are thus:
-				- prefix_mangledname.json
-				- prefix_mangledname.floatbin
+				- settings_name.settings.json
+				- settings_name.stream_name.dat
 			- Changing settings in the GUI puts them in effect immediately
 				- ...and GameController will smooth them
 			- Loaded settings go to GameController
@@ -1393,14 +1396,14 @@ Render:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
 			- OceanFloor:
-				- GameParameters contains and owns unique_buffer<float[]> Terrain
-					- TODOHERE
-					- GameParameters cctor needs to take default profile from outside, i.e.
-					  from GameController, who takes it from MainFrame - see above
-				- GameController::SetOceanFloorProfile(.) does:
-					- 1) Set in GameParameters
-					- 2) Invoke on OceanFloor (as it would be too expensive for OceanFloor to detect changes
-					     @ Update() time)
+				- OceanFloor contains and own OceanFloorTerrain
+					- OceanFloorTerrain has unique_buffer
+					- OceanFloorTerrain exposes Load(.) X2 (png, floatbin)
+					- SettingsManager has BaseSetting specialization for OceanFloorTerrain
+				- OceanFloor cctor needs to take default OceanFloorTerrain from outside, i.e.
+				  from GameController, who takes it from MainFrame - see above
+				- GameController::SetOceanFloorTerrain(.) in turn invokes on OceanFloor
+					- As it would be too expensive for OceanFloor to detect changes @ Update() time
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager

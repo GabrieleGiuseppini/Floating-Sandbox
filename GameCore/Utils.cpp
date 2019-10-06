@@ -39,14 +39,19 @@ picojson::value Utils::ParseJSONFile(std::filesystem::path const & filepath)
 {
 	std::string fileContents = RemoveJSONComments(Utils::LoadTextFile(filepath));
 
-	picojson::value jsonContent;
-	std::string parseError = picojson::parse(jsonContent, fileContents);
-	if (!parseError.empty())
-	{
-		throw GameException("Error parsing JSON file \"" + filepath.string() + "\": " + parseError);
-	}
+    return ParseJSONString(fileContents);	
+}
 
-	return jsonContent;
+picojson::value Utils::ParseJSONString(std::string const & jsonString)
+{
+    picojson::value jsonContent;
+    std::string parseError = picojson::parse(jsonContent, jsonString);
+    if (!parseError.empty())
+    {
+        throw GameException("Error parsing JSON string: " + parseError);
+    }
+
+    return jsonContent;
 }
 
 void Utils::SaveJSONFile(
