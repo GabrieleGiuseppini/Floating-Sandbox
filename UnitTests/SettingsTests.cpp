@@ -8,14 +8,67 @@
 
 #include "gtest/gtest.h"
 
+/////////////////////////////////////////////
+// Custom type and its serialization
+/////////////////////////////////////////////
+
+struct CustomValue
+{
+    std::string Str;
+    int Int;
+
+    CustomValue()
+    {}
+
+    CustomValue(
+        std::string const &str,
+        int _int)
+        : Str(str)
+        , Int(_int)
+    {}
+
+    bool operator==(CustomValue const & other) const
+    {
+        return Str == other.Str
+            && Int == other.Int;
+    }
+};
+
+template<>
+void Setting<CustomValue>::Serialize(SettingsSerializationContext & context) const
+{
+    auto os = context.GetNamedStream(GetName(), "bin");
+    *os << mValue.Str + ":" + std::to_string(mValue.Int);
+}
+
+template<>
+void Setting<CustomValue>::Deserialize(SettingsDeserializationContext const & context)
+{
+    auto const is = context.GetNamedStream(GetName(), "bin");
+
+    std::string tmp;
+    *is >> tmp;
+
+    auto pos = tmp.find(':');
+    assert(pos != std::string::npos);
+
+    mValue.Str = tmp.substr(0, pos);
+    mValue.Int = std::stoi(tmp.substr(pos + 1));
+        
+    MarkAsDirty();
+}
+
+/////////////////////////////////////////////
+
 enum TestSettings : size_t
 {
     Setting1_float = 0,
     Setting2_uint32,
     Setting3_bool,
     Setting4_string,
+    Setting5_custom,
 
-    _Last = Setting4_string
+    _Last = Setting5_custom
 };
 
 auto MakeTestSettings()
@@ -25,6 +78,7 @@ auto MakeTestSettings()
     settings.emplace_back(new Setting<uint32_t>("setting2_uint32"));
     settings.emplace_back(new Setting<bool>("setting3_bool"));
     settings.emplace_back(new Setting<std::string>("setting4_string"));
+    settings.emplace_back(new Setting<CustomValue>("setting5_custom"));
 
     return settings;
 }
@@ -123,18 +177,21 @@ TEST(SettingsTests, Setting_Clone)
 /////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Settings_SetAndGetValue)
-{
+{    
     Settings<TestSettings> settings(MakeTestSettings());
 
     settings.SetValue(TestSettings::Setting1_float, float(242.0f));
     settings.SetValue(TestSettings::Setting2_uint32, uint32_t(999));
     settings.SetValue(TestSettings::Setting3_bool, bool(true));
     settings.SetValue(TestSettings::Setting4_string, std::string("Test!"));
+    settings.SetValue(TestSettings::Setting5_custom, CustomValue("Foo", 123));
 
     EXPECT_EQ(242.0f, settings.GetValue<float>(TestSettings::Setting1_float));
     EXPECT_EQ(999u, settings.GetValue<uint32_t>(TestSettings::Setting2_uint32));
     EXPECT_EQ(true, settings.GetValue<bool>(TestSettings::Setting3_bool));
     EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("Foo"), settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(123, settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
 
 TEST(SettingsTests, Settings_IsAtLeastOneDirty)
@@ -188,13 +245,15 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
     settings1.SetValue<bool>(TestSettings::Setting3_bool, true);
     settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
-
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+    
     Settings<TestSettings> settings2(MakeTestSettings());
 
     settings2.SetValue<float>(TestSettings::Setting1_float, 242.0f);
     settings2.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
     settings2.SetValue<bool>(TestSettings::Setting3_bool, true);
     settings2.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings2.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
 
     settings1.SetDirtyWithDiff(settings2);
 
@@ -202,6 +261,7 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting2_uint32));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting5_custom));
 
     settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 1000);
     settings1.SetDirtyWithDiff(settings2);
@@ -210,6 +270,16 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting5_custom));
+
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Bar", 123));
+    settings1.SetDirtyWithDiff(settings2);
+
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 
     // No diff
     settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
@@ -219,6 +289,7 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 
     // Diff
     settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Tesz!"));
@@ -228,6 +299,7 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 
     // No diff
     settings2.SetValue<std::string>(TestSettings::Setting4_string, std::string("Tesz!"));
@@ -237,6 +309,7 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting2_uint32));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting3_bool));
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
+    EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 }
 
 /////////////////////////////////////////////////////////
@@ -280,6 +353,7 @@ TEST(SettingsTests, Storage_DeleteAllFilesDeletesAllStreamsAndSettings)
 
 /////////////////////////////////////////////////////////
 
+/* TODOHERE: custom value integration
 TEST(SettingsTests, Serialization_Settings_AllDirty)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();

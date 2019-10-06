@@ -144,7 +144,7 @@ public:
 
     std::shared_ptr<std::istream> GetNamedStream(
         std::string const & streamName,
-        std::string const & extension)
+        std::string const & extension) const
     {
         return mStorage->OpenInputStream(mSettingsKey, streamName, extension);
     }
