@@ -353,7 +353,6 @@ TEST(SettingsTests, Storage_DeleteAllFilesDeletesAllStreamsAndSettings)
 
 /////////////////////////////////////////////////////////
 
-/* TODOHERE: custom value integration
 TEST(SettingsTests, Serialization_Settings_AllDirty)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
@@ -370,8 +369,11 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
     settings.SetValue<bool>(TestSettings::Setting3_bool, true);
     settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Bar", 123));
 
     settings.MarkAllAsDirty();
+
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 0);
 
     {
         SettingsSerializationContext sContext(
@@ -382,16 +384,21 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
         // Context destruction happens here
     }
 
-    std::filesystem::path expectedSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 2);
 
-    EXPECT_EQ(testFileSystem->GetFileMap().size(), 1);
-    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedSettingsFilePath), 1);
+    //
+    // Verify json
+    //
 
-    std::string settingsContent = std::string(
-        testFileSystem->GetFileMap()[expectedSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedSettingsFilePath]->size());
+    std::filesystem::path expectedJsonSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
 
-    auto settingsRootValue = Utils::ParseJSONString(settingsContent);
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1);
+
+    std::string jsonSettingsContent = std::string(
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
+
+    auto settingsRootValue = Utils::ParseJSONString(jsonSettingsContent);
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
 
     auto & settingsRootObject = settingsRootValue.get<picojson::object>();
@@ -408,9 +415,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
 
     auto & settingsObject = settingsRootObject["settings"].get<picojson::object>();
 
-    //
     // Settings content
-    //
 
     EXPECT_EQ(4, settingsObject.size());
 
@@ -429,6 +434,20 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     ASSERT_EQ(1, settingsObject.count("setting4_string"));
     ASSERT_TRUE(settingsObject["setting4_string"].is<std::string>());
     EXPECT_EQ(std::string("Test!"), settingsObject["setting4_string"].get<std::string>());
+
+    //
+    // Custom type named stream
+    //
+
+    std::filesystem::path expectedCustomTypeSettingsFilePath = TestRootUserDirectory / "Test Settings.setting5_custom.bin";
+
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedCustomTypeSettingsFilePath), 1);
+
+    std::string customSettingContent = std::string(
+        testFileSystem->GetFileMap()[expectedCustomTypeSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedCustomTypeSettingsFilePath]->size());
+
+    EXPECT_EQ(std::string("Bar:123"), customSettingContent);
 }
 
 TEST(SettingsTests, Serialization_Settings_AllClean)
@@ -447,6 +466,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
     settings.SetValue<bool>(TestSettings::Setting3_bool, true);
     settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Bar", 123));
 
     settings.ClearAllDirty();
 
@@ -459,14 +479,18 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
         // Context destruction happens here
     }
 
-    std::filesystem::path expectedSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
+    //
+    // Verify json
+    //
+
+    std::filesystem::path expectedJsonSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
 
     EXPECT_EQ(testFileSystem->GetFileMap().size(), 1);
-    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedSettingsFilePath), 1);
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1);
 
     std::string settingsContent = std::string(
-        testFileSystem->GetFileMap()[expectedSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedSettingsFilePath]->size());
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
 
     auto settingsRootValue = Utils::ParseJSONString(settingsContent);
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
@@ -488,11 +512,6 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
 }
 
 /* TODOHERE
-TEST(SettingsTests, Serialization_NamedStreams)
-{
-    // TODOHERE: make custom test setting type
-}
-
 TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 {
     // TODOHERE: both setting and named stream
