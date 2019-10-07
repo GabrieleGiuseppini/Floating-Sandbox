@@ -144,14 +144,32 @@ TEST(UniqueBufferTests, ConvertCopy_SmallerToLarger)
     unique_buffer<unsigned char> b1(4);
 
     b1[0] = 1;
+    b1[1] = 1;
     b1[2] = 1;
     b1[3] = 1;
-    b1[4] = 1;
     
-    // TODO
+    unique_buffer<uint32_t> b2 = b1.convert_copy<uint32_t>();
+
+    EXPECT_EQ(4, b1.size());
+
+    ASSERT_EQ(1, b2.size());
+    EXPECT_EQ(uint32_t(0x01010101), b2[0]);
 }
 
 TEST(UniqueBufferTests, ConvertMove_SmallerToLarger)
 {
-    // TODO
+    unique_buffer<unsigned char> b1(4);
+
+    b1[0] = 1;
+    b1[1] = 1;
+    b1[2] = 1;
+    b1[3] = 1;
+
+    unique_buffer<uint32_t> b2 = b1.convert_move<uint32_t>();
+
+    EXPECT_EQ(0, b1.size());
+
+    ASSERT_EQ(1, b2.size());
+    EXPECT_EQ(uint32_t(0x01010101), b2[0]);
+
 }

@@ -57,7 +57,12 @@ private:
     virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override
     {
         assert(ch != EOF);
+
+        auto consumed = this->gptr() - this->eback();
+
         mStreamBuffer.push_back(static_cast<char>(ch));
+
+        this->setg(mStreamBuffer.data(), mStreamBuffer.data() + consumed, mStreamBuffer.data() + mStreamBuffer.size());
 
         return ch;    
     }

@@ -168,3 +168,32 @@ TEST(MemoryStreamsTests, BackingInputStream_get)
     EXPECT_FALSE(is.bad());
     EXPECT_TRUE(is.eof());
 }
+
+TEST(MemoryStreamsTests, BackingInputStream_streaming)
+{
+    memory_streambuf ms("Hello");
+
+    std::istream is(&ms);
+
+    std::string content;
+    is >> content;
+
+    EXPECT_EQ(std::string("Hello"), content);
+}
+
+TEST(MemoryStreamsTests, BackingOutputAndInputStream_10K_streaming)
+{
+    memory_streambuf ms;
+
+    std::ostream os(&ms);
+    for (size_t i = 0; i < 1024; ++i)
+        os << "aaaaaaaaaa";
+       
+
+    std::istream is(&ms);
+
+    std::string content;
+    is >> content;
+
+    EXPECT_EQ(std::string(10 * 1024, 'a'), content);
+}

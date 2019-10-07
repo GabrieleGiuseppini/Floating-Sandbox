@@ -511,17 +511,199 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     EXPECT_EQ(0, settingsObject.size());
 }
 
-/* TODOHERE
 TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 {
-    // TODOHERE: both setting and named stream
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    settings.ClearAllDirty();
+
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Bar", 123));
+
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 0);
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+    EXPECT_EQ(testFileSystem->GetFileMap().size(), 2);
+
+    //
+    // Verify json
+    //
+
+    std::filesystem::path expectedJsonSettingsFilePath = TestRootUserDirectory / "Test Settings.settings.json";
+
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1);
+
+    std::string jsonSettingsContent = std::string(
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
+        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
+
+    auto settingsRootValue = Utils::ParseJSONString(jsonSettingsContent);
+    ASSERT_TRUE(settingsRootValue.is<picojson::object>());
+
+    auto & settingsRootObject = settingsRootValue.get<picojson::object>();
+    EXPECT_EQ(2, settingsRootObject.size());
+
+    // Version
+    ASSERT_EQ(1, settingsRootObject.count("version"));
+    ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
+    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Settings
+    ASSERT_EQ(1, settingsRootObject.count("settings"));
+    ASSERT_TRUE(settingsRootObject["settings"].is<picojson::object>());
+
+    auto & settingsObject = settingsRootObject["settings"].get<picojson::object>();
+
+    // Settings content
+
+    EXPECT_EQ(1, settingsObject.size());
+    EXPECT_EQ(1, settingsObject.count("setting2_uint32"));
+
+    //
+    // Custom type named stream
+    //
+
+    std::filesystem::path expectedCustomTypeSettingsFilePath = TestRootUserDirectory / "Test Settings.setting5_custom.bin";
+
+    ASSERT_EQ(testFileSystem->GetFileMap().count(expectedCustomTypeSettingsFilePath), 1);
 }
 
+TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
+{
+    //
+    // 1. Serialize
+    //
+
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+
+    Settings<TestSettings> settings1(MakeTestSettings());
+
+    settings1.ClearAllDirty();
+
+    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<bool>(TestSettings::Setting3_bool, false);
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings1.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+
+    //
+    // 2. De-serialize
+    //
+
+    Settings<TestSettings> settings2(MakeTestSettings());
+
+    settings2.MarkAllAsDirty();
+
+    {
+        SettingsDeserializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings2.Deserialize(sContext);
+    }
+
+
+    //
+    // 3. Verify
+    //
+
+    EXPECT_EQ(242.0f, settings2.GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(999u, settings2.GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(false, settings2.GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("Test!"), settings2.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("Foo"), settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
+}
 TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 {
-    // TODOHERE
+    //
+    // 1. Serialize
+    //
+
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+
+    Settings<TestSettings> settings1(MakeTestSettings());
+
+    settings1.ClearAllDirty();
+
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Bar", 123));
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings1.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+
+    //
+    // 2. De-serialize
+    //
+
+    Settings<TestSettings> settings2(MakeTestSettings());
+
+    settings2.MarkAllAsDirty();
+
+    {
+        SettingsDeserializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings2.Deserialize(sContext);
+    }
+
+
+    //
+    // 3. Verify
+    //
+
+    EXPECT_FALSE(settings2.IsDirty(Setting1_float));
+    EXPECT_TRUE(settings2.IsDirty(Setting2_uint32));
+    EXPECT_FALSE(settings2.IsDirty(Setting3_bool));
+    EXPECT_FALSE(settings2.IsDirty(Setting4_string));
+    EXPECT_TRUE(settings2.IsDirty(Setting5_custom));
 }
-*/
 
 /////////////////////////////////////////////////////////
 

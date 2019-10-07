@@ -131,8 +131,7 @@ SettingsDeserializationContext::SettingsDeserializationContext(
         "settings",
         "json");
 
-    std::string settingsJson;
-    *is >> settingsJson;
+    std::string settingsJson = Utils::LoadTextStream(*is);
 
     auto settingsValue = Utils::ParseJSONString(settingsJson);
     if (!settingsValue.is<picojson::object>())

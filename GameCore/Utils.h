@@ -283,6 +283,14 @@ public:
         return ss.str();
     }
 
+    static std::string LoadTextStream(std::istream const & stream)
+    {
+        std::stringstream ss;
+        ss << stream.rdbuf();
+
+        return ss.str();
+    }
+
     static void SaveTextFile(
         std::string const & content,
         std::filesystem::path const & filepath)
