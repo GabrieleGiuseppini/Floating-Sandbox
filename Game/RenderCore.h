@@ -44,6 +44,7 @@ enum class ProgramType
     ShipPointsColorWithTemperature,
     ShipRopes,
     ShipRopesWithTemperature,
+    ShipSparkles,
     ShipSpringsColor,
     ShipSpringsColorWithTemperature,
     ShipSpringsTexture,
@@ -140,6 +141,9 @@ enum class VertexAttributeType : GLuint
     ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
     ShipPointColor = 2,
     ShipPointTemperature = 3,
+
+    Sparkle1 = 0,
+    Sparkle2 = 1,
 
     GenericTexture1 = 0,
     GenericTexture2 = 1,

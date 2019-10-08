@@ -326,18 +326,6 @@
 },
 
 {
-	"groupName": "SawSparkle",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 2.0,
-			"worldHeight": 2.0,
-			"filename": "saw_sparkle_\\d+"
-		}
-	]
-},
-
-{
 	"groupName": "TimerBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[

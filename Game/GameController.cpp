@@ -915,7 +915,9 @@ void GameController::Pan(vec2f const & screenOffset)
         mCameraWorldPositionParameterSmoother->GetValue()
         + worldOffset;
 
-    mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+    mCameraWorldPositionParameterSmoother->SetValue(
+        newTargetCameraWorldPosition,
+        GameWallClock::GetInstance().ContinuousNowAsFloat());
 }
 
 void GameController::PanImmediate(vec2f const & screenOffset)
@@ -940,7 +942,9 @@ void GameController::AdjustZoom(float amount)
 {
     float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
 
-    mZoomParameterSmoother->SetValue(newTargetZoom);
+    mZoomParameterSmoother->SetValue(
+        newTargetZoom,
+        GameWallClock::GetInstance().ContinuousNowAsFloat());
 }
 
 void GameController::ResetZoom()
@@ -998,7 +1002,7 @@ void GameController::InternalRender()
     // Smooth render controls
     //
 
-    float const now = GameWallClock::GetInstance().NowAsFloat();
+    float const now = GameWallClock::GetInstance().ContinuousNowAsFloat();
 
     mZoomParameterSmoother->Update(now);
     mCameraWorldPositionParameterSmoother->Update(now);

@@ -67,6 +67,9 @@ ShipRenderContext::ShipRenderContext(
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentWindSpeedMagnitudeAverage(0.0f)
     //
+    , mSparkleVertexBuffer()
+    , mSparkleVertexVBO()
+    //
     , mAirBubbleVertexBuffer()
     , mGenericTexturePlaneVertexBuffers()
     , mGenericTextureTotalPlaneQuadCount(0)
@@ -91,6 +94,7 @@ ShipRenderContext::ShipRenderContext(
     // VAOs
     , mShipVAO()
     , mFlameVAO()
+    , mSparkleVAO()
     , mGenericTextureVAO()
     , mVectorArrowVAO()
     // Textures
@@ -129,8 +133,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[8];
-    glGenBuffers(8, vbos);
+    GLuint vbos[9];
+    glGenBuffers(9, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -154,16 +158,19 @@ ShipRenderContext::ShipRenderContext(
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
     mStressedSpringElementVBO = vbos[4];
-    mStressedSpringElementBuffer.reserve(1000); // Arbitrary
+    mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
     mFlameVertexVBO = vbos[5];
 
-    mGenericTextureVBO = vbos[6];
+    mSparkleVertexVBO = vbos[6];
+    mSparkleVertexBuffer.reserve(256); // Arbitrary
+
+    mGenericTextureVBO = vbos[7];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mGenericTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
     glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
-    mVectorArrowVBO = vbos[7];
+    mVectorArrowVBO = vbos[8];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -249,6 +256,29 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 2, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Sparkle VAO's
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mSparkleVAO = tmpGLuint;
+
+        glBindVertexArray(*mSparkleVAO);
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
+        static_assert(sizeof(SparkleVertex) == (4 + 4) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sparkle1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle1), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sparkle2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle2), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -404,7 +434,7 @@ void ShipRenderContext::OnViewModelUpdated()
 void ShipRenderContext::UpdateOrthoMatrices()
 {
     //
-    // Each plane Z segment is divided into 9 layers, one for each type of rendering we do for a ship:
+    // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
     //      - 1: Flames - background
     //      - 2: Springs
@@ -413,14 +443,15 @@ void ShipRenderContext::UpdateOrthoMatrices()
     //      - 4: Stressed springs
     //      - 5: Points
     //      - 6: Flames - foreground
-    //      - 7: Generic textures
-    //      - 8: Vectors
+    //      - 7: Sparkles
+    //      - 8: Generic textures
+    //      - 9: Vectors
     //
 
     constexpr float ShipRegionZStart = 1.0f;
     constexpr float ShipRegionZWidth = -2.0f;
 
-    constexpr int NLayers = 9;
+    constexpr int NLayers = 10;
 
     ViewModel::ProjectionMatrix shipOrthoMatrix;
 
@@ -594,7 +625,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
 
     //
-    // Layer 7: Generic Textures
+    // Layer 7: Sparkles
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -607,12 +638,12 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 8: Vectors
+    // Layer 8: Generic Textures
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -622,6 +653,24 @@ void ShipRenderContext::UpdateOrthoMatrices()
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         8,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 9: Vectors
+    //
+
+    mViewModel.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        9,
         NLayers,
         shipOrthoMatrix);
 
@@ -908,12 +957,14 @@ void ShipRenderContext::OnShipFlameSizeAdjustmentUpdated()
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
-    // Reset flames, air bubbles, and generic textures
+    // Reset flames, sparkles, air bubbles, and generic textures
     //
 
     mFlameVertexBuffer.reset();
     mFlameBackgroundCount = 0u;
     mFlameForegroundCount = 0u;
+
+    mSparkleVertexBuffer.clear();
 
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mAirBubbleVertexBuffer.map(mGenericTextureVBOAllocatedVertexCount);
@@ -1263,6 +1314,33 @@ void ShipRenderContext::UploadFlamesEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void ShipRenderContext::UploadSparklesStart()
+{
+    // Empty buffer
+    mSparkleVertexBuffer.clear();
+}
+
+void ShipRenderContext::UploadSparklesEnd()
+{
+    //
+    // Upload to VBO
+    //
+
+    if (!mSparkleVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
+
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            mSparkleVertexBuffer.size() * sizeof(SparkleVertex),
+            mSparkleVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
     // Empty buffer
@@ -1604,6 +1682,7 @@ void ShipRenderContext::RenderEnd()
     }
 
 
+
     //
     // Render foreground flames
     //
@@ -1622,6 +1701,15 @@ void ShipRenderContext::RenderEnd()
             mFlameBackgroundCount,
             mFlameForegroundCount);
     }
+
+
+
+    //
+    // Render sparkles
+    //
+
+    RenderSparkles();
+
 
 
     //
@@ -1682,6 +1770,21 @@ void ShipRenderContext::RenderFlames(
 
         // Update stats
         mRenderStatistics.LastRenderedShipFlames += flameCount; // # of quads
+    }
+}
+
+void ShipRenderContext::RenderSparkles()
+{
+    if (mSparkleVertexBuffer.size() > 0)
+    {
+        glBindVertexArray(*mSparkleVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+
+        assert(0 == (mSparkleVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mSparkleVertexBuffer.size()));
+
+        glBindVertexArray(0);
     }
 }
 

@@ -1140,6 +1140,40 @@ public:
     }
 
     //
+    // Sparkles
+    //
+
+    inline void UploadShipSparklesStart(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadSparklesStart();
+    }
+
+    inline void UploadShipSparkle(
+        ShipId shipId,
+        PlaneId planeId,
+        vec2f const & position,        
+        vec2f const & velocityVector,
+        float progress)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadSparkle(
+            planeId,
+            position,
+            velocityVector,
+            progress);
+    }
+
+    inline void UploadShipSparklesEnd(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadSparklesEnd();
+    }
+
+    //
     // Air bubbles and generic textures
     //
 

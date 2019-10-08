@@ -343,8 +343,26 @@ Render:
 			- Add the three songs
 				- SleepingSun should however be very rare!
 
-		- Sparkles with shader
-			- Needs also velocity in vertex buffer, together with progress
+		= Sparkles with shader
+			= Impl:
+				+ ShipRenderContext
+					+ VBO, VAO
+					+ Shader
+						+ Need sparkleSpace position
+						+ Complete
+							+ See perf (@ShaderToy) w/length instead of length2
+					+ UploadSparkle: make vertices
+						+ Quad size is 4x4
+				+ Ship
+					+ UploadStart/End
+					+ Upload:
+						+ Normalize velocity to (-1,-1) -> (1,1) and adjust sign
+					+ Expire sparkle when underwater
+					+ Simplify sparkle state machine, if there's stuff we don't need anymore
+				- See videos and adjust butterfly
+			- Cleanup:
+				- See if may adjust sparkle quad size to be smaller and have the same amount of fill
+				+ Nuke sparkle texture(s)
 
 		- New explosion shader
 			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions

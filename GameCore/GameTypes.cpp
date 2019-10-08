@@ -46,8 +46,6 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::RcBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
         return TextureGroupType::RcBombPing;
-    else if (Utils::CaseInsensitiveEquals(str, "SawSparkle"))
-        return TextureGroupType::SawSparkle;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBomb"))
         return TextureGroupType::TimerBomb;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefuse"))

@@ -38,8 +38,6 @@ uniform float paramTime;
 
 #define PI 3.14159265358979323844
 
-#define PI 3.14159265358979323844
-
 mat2 GetRotationMatrix(float angle)
 {
     mat2 m;

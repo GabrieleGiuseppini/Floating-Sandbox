@@ -339,7 +339,10 @@ TextureDatabase TextureDatabase::Load(
     // Make sure all textures found in file system have been exhausted
     if (matchedTextureFiles.size() != allTextureFiles.size())
     {
-        throw GameException("Texture database: couldn't match " + std::to_string(allTextureFiles.size()) + " texture files to texture specification file");
+        throw GameException(
+            "Texture database: couldn't match " 
+            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size()) 
+            + " texture files to texture specifications");
     }
 
     // Notify progress

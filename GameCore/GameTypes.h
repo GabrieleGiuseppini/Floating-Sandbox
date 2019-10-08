@@ -309,7 +309,6 @@ enum class TextureGroupType : uint16_t
     RcBomb,
     RcBombExplosion,
     RcBombPing,
-    SawSparkle,
     TimerBomb,
     TimerBombDefuse,
     TimerBombExplosion,

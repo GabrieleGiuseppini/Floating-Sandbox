@@ -271,7 +271,7 @@ public:
     /*
      * Note: assumption is that upload happens in plane ID order (for depth sorting).
      */
-    void UploadFlame(
+    inline void UploadFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         float scale,
@@ -318,7 +318,7 @@ public:
             vec2f(leftX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(-1.0, 1.0));
+            vec2f(-1.0f, 1.0f));
 
         // Top-right
         mFlameVertexBuffer.emplace_at(
@@ -326,7 +326,7 @@ public:
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(1.0, 1.0));
+            vec2f(1.0f, 1.0f));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_at(
@@ -334,7 +334,7 @@ public:
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(-1.0, 0.0));
+            vec2f(-1.0f, 0.0f));
 
         // Triangle 2
 
@@ -344,7 +344,7 @@ public:
             vec2f(rightX, topY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(1.0, 1.0));
+            vec2f(1.0f, 1.0f));
 
         // Bottom-left
         mFlameVertexBuffer.emplace_at(
@@ -352,7 +352,7 @@ public:
             vec2f(leftX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(-1.0, 0.0));
+            vec2f(-1.0f, 0.0f));
 
         // Bottom-right
         mFlameVertexBuffer.emplace_at(
@@ -360,10 +360,95 @@ public:
             vec2f(rightX, bottomY),
             static_cast<float>(planeId),
             flamePersonalitySeed,
-            vec2f(1.0, 0.0));
+            vec2f(1.0f, 0.0f));
     }
 
     void UploadFlamesEnd();
+
+    //
+    // Sparkles
+    //
+
+    void UploadSparklesStart();
+
+    inline void UploadSparkle(
+        PlaneId planeId,
+        vec2f const & position,        
+        vec2f const & velocityVector,
+        float progress)
+    {
+        //
+        // Calculate sparkle quad
+        //
+
+        static float constexpr QuadWidth = 4.0f;
+        static float constexpr QuadHeight = 4.0f;
+
+        // Calculate quad coordinates
+        float const leftX = position.x - QuadWidth / 2.0f;
+        float const rightX = position.x + QuadWidth / 2.0f;
+        float const topY = position.y - QuadHeight / 2.0f;
+        float const bottomY = position.y + QuadHeight / 2.0f;
+
+
+        //
+        // Store vertices
+        //
+
+        // Triangle 1
+
+        // Top-left
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(-1.0f, -1.0f));
+
+        // Top-right
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(1.0f, -1.0f));
+
+        // Bottom-left
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(-1.0f, 1.0f));
+
+        // Triangle 2
+
+        // Top-right
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(1.0f, -1.0f));
+
+        // Bottom-left
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(-1.0f, 1.0f));
+
+        // Bottom-right
+        mSparkleVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            static_cast<float>(planeId),
+            progress,
+            velocityVector,
+            vec2f(1.0f, 1.0f));
+    }
+
+    void UploadSparklesEnd();
 
     //
     // Air bubbles and generic textures
@@ -592,6 +677,8 @@ private:
     void RenderFlames(
         size_t startFlameIndex,
         size_t flameCount);
+
+    void RenderSparkles();
     void RenderGenericTextures();
     void RenderVectorArrows();
 
@@ -654,6 +741,28 @@ private:
             , planeId(_planeId)
             , flamePersonalitySeed(_flamePersonalitySeed)
             , flameSpacePosition(_flameSpacePosition)
+        {}
+    };
+
+    struct SparkleVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+        float progress;
+        vec2f velocityVector;
+        vec2f sparkleSpacePosition;
+
+        SparkleVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            float _progress,
+            vec2f _velocityVector,
+            vec2f _sparkleSpacePosition)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , progress(_progress)
+            , velocityVector(_velocityVector)
+            , sparkleSpacePosition(_sparkleSpacePosition)
         {}
     };
 
@@ -722,6 +831,9 @@ private:
     RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
     float mCurrentWindSpeedMagnitudeAverage;
 
+    std::vector<SparkleVertex> mSparkleVertexBuffer;
+    GameOpenGLVBO mSparkleVertexVBO;
+
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
     size_t mGenericTextureTotalPlaneQuadCount;
@@ -761,6 +873,7 @@ private:
 
     GameOpenGLVAO mShipVAO;
     GameOpenGLVAO mFlameVAO;
+    GameOpenGLVAO mSparkleVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 

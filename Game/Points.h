@@ -169,16 +169,10 @@ private:
 
         struct SparkleState
         {
-            TextureFrameIndex FrameIndex;
             float Progress;
 
             SparkleState()
-            {}
-
-            SparkleState(
-                TextureFrameIndex frameIndex)
-                : FrameIndex(frameIndex)
-                , Progress(0.0f)
+                : Progress(0.0f)
             {}
         };
 

@@ -267,8 +267,7 @@ void Points::CreateEphemeralParticleSparkle(
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::chrono::duration_cast<std::chrono::duration<float>>(maxLifetime).count();
-    mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState(
-        GameRandomEngine::GetInstance().Choose<TextureFrameIndex>(2));
+    mEphemeralStateBuffer[pointIndex] = EphemeralState::SparkleState();
 
     mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
     mPlaneIdBuffer[pointIndex] = planeId;
@@ -846,7 +845,8 @@ void Points::UpdateEphemeralParticles(
                 {
                     // Check if expired
                     auto const elapsedLifetime = currentSimulationTime - mEphemeralStartTimeBuffer[pointIndex];
-                    if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex])
+                    if (elapsedLifetime >= mEphemeralMaxLifetimeBuffer[pointIndex]
+                        || mParentWorld.IsUnderwater(GetPosition(pointIndex)))
                     {
                         ExpireEphemeralParticle(pointIndex);
                     }
@@ -1099,6 +1099,8 @@ void Points::UploadEphemeralParticles(
         renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
 
+    renderContext.UploadShipSparklesStart(shipId);
+
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
         switch (GetEphemeralType(pointIndex))
@@ -1131,14 +1133,14 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Sparkle:
             {
-                renderContext.UploadShipGenericTextureRenderSpecification(
+                vec2f const velocityVector = -GetVelocity(pointIndex) / GameParameters::MaxSparkleParticlesVelocity;
+
+                renderContext.UploadShipSparkle(
                     shipId,
                     GetPlaneId(pointIndex),
-                    TextureFrameId(TextureGroupType::SawSparkle, mEphemeralStateBuffer[pointIndex].Sparkle.FrameIndex),
                     GetPosition(pointIndex),
-                    1.0f,
-                    4.0f * mEphemeralStateBuffer[pointIndex].Sparkle.Progress,
-                    1.0f - mEphemeralStateBuffer[pointIndex].Sparkle.Progress);
+                    velocityVector,
+                    mEphemeralStateBuffer[pointIndex].Sparkle.Progress);
 
                 break;
             }
@@ -1151,6 +1153,8 @@ void Points::UploadEphemeralParticles(
             }
         }
     }
+
+    renderContext.UploadShipSparklesEnd(shipId);
 
     if (mAreEphemeralPointsDirty)
     {

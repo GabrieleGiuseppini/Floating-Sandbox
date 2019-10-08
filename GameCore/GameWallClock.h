@@ -31,6 +31,18 @@ public:
         return *instance;
     }
 
+    /*
+     * Returns the current time as a fractional number of seconds since an arbitrary
+     * reference moment. Is not subject to the game pausing.
+     *
+     * Useful as a "t" variable when the trend is important - not its absolute value.
+     */
+    inline float ContinuousNowAsFloat() const
+    {
+        return std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - mClockStartTime)            
+            .count();
+    }
+
     inline time_point Now() const
     {
         if (!!mLastResumeTime)
