@@ -2242,14 +2242,11 @@ void Ship::GenerateSparkles(
 
 
         //
-        // Choose velocity angle distribution: butterfly perpendicular to cut direction
+        // Calculate velocity angle: we want a gaussian centered around direction opposite to cut direction
         //
 
-        vec2f const perpendicularCutVector = (cutDirectionEndPos - cutDirectionStartPos).normalise().to_perpendicular();
-        float const axisAngleCw = perpendicularCutVector.angleCw(vec2f(1.0f, 0.0f));
-        float constexpr AxisAngleWidth = Pi<float> / 7.0f;
-        float const startAngleCw = axisAngleCw - AxisAngleWidth;
-        float const endAngleCw = axisAngleCw + AxisAngleWidth;
+        float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
+        float constexpr AngleWidth = Pi<float> / 16.0f;
 
 
         //
@@ -2262,10 +2259,10 @@ void Ship::GenerateSparkles(
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
                 GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
 
-            // Velocity angle: butterfly perpendicular to *direction of sawing*, not spring
+            // Velocity angle: gaussian centered around central angle
             float const velocityAngleCw =
-                GameRandomEngine::GetInstance().GenerateRandomReal(startAngleCw, endAngleCw)
-                + (GameRandomEngine::GetInstance().Choose(2) == 0 ? Pi<float> : 0.0f);
+                centralAngleCW
+                + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalNormalizedReal();
 
             // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(

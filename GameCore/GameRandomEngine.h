@@ -132,6 +132,15 @@ public:
         return dis(mRandomEngine);
     }
 
+    /*
+     * Generates a random number between -INF and +INF, distributed
+     * according to a Gaussian with mean zero and stdev 1.
+     */
+    inline float GenerateNormalNormalizedReal()
+    {
+        return mNormalDistribution(mRandomEngine);
+    }
+
 private:
 
     GameRandomEngine()
@@ -139,8 +148,10 @@ private:
         std::seed_seq seed_seq({ 1, 242, 19730528 });
         mRandomEngine = std::ranlux48_base(seed_seq);
         mRandomUniformDistribution = std::uniform_real_distribution<float>(0.0f, 1.0f);
+        mNormalDistribution = std::normal_distribution<float>(0.0f, 1.0f);
     }
 
     std::ranlux48_base mRandomEngine;
     std::uniform_real_distribution<float> mRandomUniformDistribution;
+    std::normal_distribution<float> mNormalDistribution;
 };

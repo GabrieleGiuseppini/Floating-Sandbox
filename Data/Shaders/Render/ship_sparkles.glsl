@@ -37,41 +37,36 @@ in float progress; // [0.0, 1.0]
 in vec2 velocityVector; // [(-1.0, -1.0), (1.0, 1.0)]
 in vec2 sparkleSpacePosition; // [(-1.0, -1.0), (1.0, 1.0)]
 
-vec3 GetHeatColor(float h) // 0.0 -> 1.0
-{  
-    vec3 whiteTint = mix(
-        vec3(1.0, 1.0, 0.19), 	// yellow
-        vec3(1.0, 1.0, 1.0),	// white
-        smoothstep(0.84, 1.0, h));
-    
-    return whiteTint;
-}    
-
 void main()
 {
-    vec2 velocityVectorAdj = velocityVector / 2.0;     
+    vec2 velocityVectorAdj = velocityVector / 1.0;
     
     // v = (0.0, 0.0)
     // w = -velocity
+    // p = uw
 	// Consider the line extending the segment, parameterized as v + t (w - v).
   	// We find projection of point p onto the line. 
   	// It falls where t = [(p-v) . (w-v)] / |w-v|^2
   	// We clamp t from [0,1] to handle points outside the segment vw.
     float l2 = (velocityVectorAdj.x * velocityVectorAdj.x + velocityVectorAdj.y * velocityVectorAdj.y);  // i.e. |w-v|^2 -  avoid a sqrt
-  	float t = max(0.0, min(1.0, dot(sparkleSpacePosition, velocityVectorAdj) / l2));
-    vec2 projection = t * velocityVectorAdj;  // Projection falls on the segment
+    float t = dot(sparkleSpacePosition, velocityVectorAdj) / l2;
+    t = max(-1.0, min(1.0, t)); // [-1.0, 1.0]
+    vec2 projection = t * velocityVectorAdj;    
     float vectorDistance = length(projection - sparkleSpacePosition);
     
-    float centerDistance = length(sparkleSpacePosition);
+    // d = Density: 1.0 at center, 0.0 at border
+    #define LineThickness 0.05
+    float d = 1.0 - vectorDistance/LineThickness;
     
-    float vectorDistanceNormalized = smoothstep(0.0, 0.15, vectorDistance);
-    float centerDistanceNormalized = smoothstep(0.0, 0.20, centerDistance);
+    if (d < 0.01)
+        discard;
     
-    float heat = 1.0 - (vectorDistanceNormalized * centerDistanceNormalized);
+    vec3 col = mix(
+        vec3(0.8, 0.50, 0.14), 	// orange
+        vec3(1.0, 1.0, 0.80),	// yellow/white
+        smoothstep(0.45, 1.0, d));
     
-    // Colorize
-    vec3 col = GetHeatColor(heat);
-    float alpha = 1.0 - smoothstep(0.2, 0.35, 1.0 - heat);
+    float alpha = d;
 
     alpha *= 1.0 - progress;
 

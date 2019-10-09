@@ -24,7 +24,7 @@ public:
 
     inline static vec2f fromPolar(
         float magnitude,
-        float angle) // Angle is CW
+        float angle) // Angle is CW, starting FROM E (1.0, 0.0); angle 0.0 <=> (1.0, 0.0); angle +PI/2 <=> (0.0, -1.0)
     {
         return vec2f(
             magnitude * cos(angle),
@@ -184,6 +184,17 @@ public:
         return -atan2f(
             x * other.y - y * other.x,
             x * other.x + y * other.y);
+    }
+
+    /*
+     * Returns the CW angle between this vector and (1.0, 0.0); angle is positive when this is
+     * CW wrt (1.0, 0.0) (up to PI), and then becomes -PI at 180 degrees and decreases towards -0.
+     */
+    inline float angleCw() const
+    {
+        return -atan2f(
+            y,
+            x);
     }
 
     /*

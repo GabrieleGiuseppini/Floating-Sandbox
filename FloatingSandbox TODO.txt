@@ -359,10 +359,19 @@ Render:
 						+ Normalize velocity to (-1,-1) -> (1,1) and adjust sign
 					+ Expire sparkle when underwater
 					+ Simplify sparkle state machine, if there's stuff we don't need anymore
-				- See videos and adjust butterfly
+				= Watch videos and adjust butterfly
+					= Use full quad
+					= Shader
+					= Butterfly: gaussian around direction opposite to movement
+					- Faster max (and min) speed
+					- Shorter with longer progress
 			- Cleanup:
 				- See if may adjust sparkle quad size to be smaller and have the same amount of fill
 				+ Nuke sparkle texture(s)
+				- GameRandomEngine renames
+				- vector::angles:
+					- fromPolar: clarify where angle starts
+					- angleCW: overload w/out "other" (or default args=(1.0, 0.0))
 
 		- New explosion shader
 			- See if can get sample from guy: https://www.behance.net/gallery/34682483/Explosions
