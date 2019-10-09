@@ -55,7 +55,7 @@ void main()
     float vectorDistance = length(projection - sparkleSpacePosition);
     
     // d = Density: 1.0 at center, 0.0 at border
-    #define LineThickness 0.05
+    #define LineThickness 0.1
     float d = 1.0 - vectorDistance/LineThickness;
     
     if (d < 0.01)
@@ -64,8 +64,8 @@ void main()
     vec3 col = mix(
         vec3(0.8, 0.50, 0.14), 	// orange
         vec3(1.0, 1.0, 0.80),	// yellow/white
-        smoothstep(0.45, 1.0, d));
-    
+        (t + 1.0) / 2.0);
+
     float alpha = d;
 
     alpha *= 1.0 - progress;
