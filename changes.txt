@@ -1,6 +1,7 @@
 1.13.0
 - Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps 
 - Improved performance of "load ship" window - no more freezing when browsing a large number of ships!
+- Reworked sparkles generated when using the chainsaw (slice) tool
 - Added "Lava" ocean textures (thanks to Pac0master!) and a few more ocean textures
 - Zoom increment is now adjustable
 - From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
