@@ -62,9 +62,9 @@ void main()
         discard;
     
     vec3 col = mix(
-        vec3(0.8, 0.50, 0.14), 	// orange
         vec3(1.0, 1.0, 0.80),	// yellow/white
-        (t + 1.0) / 2.0);
+        vec3(0.8, 0.50, 0.14), 	// orange        
+        smoothstep(0.0, 0.35, progress) * (1.0 - (t + 1.0) / 2.0));
 
     float alpha = d;
 
