@@ -53,7 +53,7 @@ void main()
     float vectorDistance = length(projection - sparkleSpacePosition);
     
     // Density: 1.0 at center, 0.0 at edge
-    #define LineThickness 0.2
+    #define LineThickness 0.22
     float d = 1.0 - vectorDistance/LineThickness;
     
     // Leave early outside of sparkle
@@ -65,7 +65,7 @@ void main()
     vec3 col = mix(
         vec3(1.0, 1.0, 0.80),	// yellow/white
         vec3(0.8, 0.50, 0.14), 	// orange        
-        smoothstep(0.0, 0.35, progress) * (1.0 - (t + 1.0) / 2.0));
+        smoothstep(0.1, 0.45, progress) * (1.0 - (t + 1.0) / 2.0));
 
     // The closer to the edge, the more transparent the sparkle is
     float alpha = d;

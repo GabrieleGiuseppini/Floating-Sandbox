@@ -351,6 +351,8 @@ Render:
 				+ Shader:
 					+ Get rid of velocityVectorAdj
 				+ GameRandomEngine renames
+			+ Try:
+				+ More thick
 
 		= Unix build break
 
@@ -358,8 +360,11 @@ Render:
 			- Do blog post
 
 		- Fix guy's name in Aurora:
+			- Need:
+				- Name
+				- URL
 			- Ship
-			- AboutBox - need URL
+			- AboutBox
 	
 		= Settings Manager (*)
 
@@ -367,12 +372,18 @@ Render:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
 			- Add the three songs
 				- SleepingSun should however be very rare!
+			- Add to about box
+				- Ask name & url
 
 		- New explosion shader
 			+ Take frames out of 4K video
 			- Make atlas just for explosion
 				- Resize frames (512x512)
 				- Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
+
+		- Video:
+			- Sparkles: before and after
+				- Titanic at night, from afar
 
 		- Cached quantities (*)
 		
@@ -388,8 +399,6 @@ Render:
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
-
-		- Instanced drawing for lights (*)
 
 		- Underwater currents (*)
 		
@@ -791,7 +800,7 @@ Render:
 	- Try interleaving Update's with Render's
 		- First, quick and dirty: do at stars, clouds, ocean
 					
-	- Lights on the GPU with instanced drawing (*)
+	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)
 		- Lamp coords, spread, and luminiscence in uniform array
 		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
