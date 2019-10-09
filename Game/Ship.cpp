@@ -1341,43 +1341,6 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 
     // Remember that we've diffused light with this luminiscence adjustment
     mLastLuminiscenceAdjustmentDiffused = gameParameters.LuminiscenceAdjustment;
-
-
-    /* TODO: version before being moved to Algorithms
-    //
-    // 2. Visit all points
-    //
-
-    for (auto pointIndex : mPoints)
-    {
-        auto const pointPosition = mPoints.GetPosition(pointIndex);
-        auto const pointPlane = mPoints.GetPlaneId(pointIndex);
-
-        float pointLight = 0.0f;
-
-        // Go through all lamps;
-        // can safely visit deleted lamps as their current will always be zero
-        for (size_t l = 0; l < mElectricalElements.Lamps().size(); ++l)
-        {            
-            if (pointPlane <= lampPlaneIdBuffer[l])
-            {
-                float const distance = (pointPosition - lampPositionBuffer[l]).length();
-
-                float const newLight =
-                    std::min(
-                        distanceCoeffBuffer[l] * std::max(lampLightSpreadMaxDistanceBuffer[l] - distance, 0.0f),
-                        1.0f);
-
-                // Point's light is just max, to avoid having to normalize everything to 1.0
-                pointLight = std::max(
-                    newLight,
-                    pointLight);
-            }
-        }
-
-        mPoints.SetLight(pointIndex, pointLight);
-    }
-    */
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -2238,7 +2201,7 @@ void Ship::GenerateSparkles(
         //
 
         unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
-            GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent);
+            GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent); 
 
 
         //

@@ -344,7 +344,7 @@ Render:
 				- SleepingSun should however be very rare!
 
 		= Sparkles with shader
-			= Impl:
+			+ Impl:
 				+ ShipRenderContext
 					+ VBO, VAO
 					+ Shader
@@ -359,19 +359,22 @@ Render:
 						+ Normalize velocity to (-1,-1) -> (1,1) and adjust sign
 					+ Expire sparkle when underwater
 					+ Simplify sparkle state machine, if there's stuff we don't need anymore
-				= Watch videos and adjust butterfly
+				+ Watch videos and adjust butterfly
 					+ Use full quad
 					+ Shader
 					+ Butterfly: gaussian around direction opposite to movement
-					= Faster max (and min) speed: * 1.5
-			- Cleanup:
+					+ Faster max (and min) speed: * 1.5
+			= Cleanup:
 				+ Nuke sparkle texture(s)
-				- Shader:
-					- Get rid of velocityVectorAdj
+				+ Shader:
+					+ Get rid of velocityVectorAdj
 				- GameRandomEngine renames
 
 		- New explosion shader
-			- Take frames out of 4K video
+			+ Take frames out of 4K video
+			- Make atlas just for explosion
+				- Resize frames (512x512)
+				- Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
 
 		- Cached quantities (*)
 		

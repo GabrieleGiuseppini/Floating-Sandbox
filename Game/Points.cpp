@@ -260,7 +260,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mLightBuffer[pointIndex] = 0.0f;
 
-    mMaterialWindReceptivityBuffer[pointIndex] = 5.0f; // Sparkles are susceptible to wind
+    mMaterialWindReceptivityBuffer[pointIndex] = 20.0f; // Sparkles are susceptible to wind
 
     mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 

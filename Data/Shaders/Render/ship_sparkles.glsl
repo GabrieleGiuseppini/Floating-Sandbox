@@ -39,8 +39,6 @@ in vec2 sparkleSpacePosition; // [(-1.0, -1.0), (1.0, 1.0)]
 
 void main()
 {
-    vec2 velocityVectorAdj = velocityVector / 1.0;
-    
     // v = (0.0, 0.0)
     // w = -velocity
     // p = uw
@@ -48,26 +46,31 @@ void main()
   	// We find projection of point p onto the line. 
   	// It falls where t = [(p-v) . (w-v)] / |w-v|^2
   	// We clamp t from [0,1] to handle points outside the segment vw.
-    float l2 = (velocityVectorAdj.x * velocityVectorAdj.x + velocityVectorAdj.y * velocityVectorAdj.y);  // i.e. |w-v|^2 -  avoid a sqrt
-    float t = dot(sparkleSpacePosition, velocityVectorAdj) / l2;
+    float l2 = (velocityVector.x * velocityVector.x + velocityVector.y * velocityVector.y);  // i.e. |w-v|^2 -  avoid a sqrt
+    float t = dot(sparkleSpacePosition, velocityVector) / l2;
     t = max(-1.0, min(1.0, t)); // [-1.0, 1.0]
-    vec2 projection = t * velocityVectorAdj;    
+    vec2 projection = t * velocityVector;
     float vectorDistance = length(projection - sparkleSpacePosition);
     
-    // d = Density: 1.0 at center, 0.0 at border
+    // Density: 1.0 at center, 0.0 at edge
     #define LineThickness 0.2
     float d = 1.0 - vectorDistance/LineThickness;
     
+    // Leave early outside of sparkle
     if (d < 0.01)
         discard;
     
+    // progress = 0.0: whole sparkle is yellow/white
+    // progress > 0.0: sparkle is orange at t=-1 end, yellow/white at t=1 end
     vec3 col = mix(
         vec3(1.0, 1.0, 0.80),	// yellow/white
         vec3(0.8, 0.50, 0.14), 	// orange        
         smoothstep(0.0, 0.35, progress) * (1.0 - (t + 1.0) / 2.0));
 
+    // The closer to the edge, the more transparent the sparkle is
     float alpha = d;
 
+    // Higher progress => more transparent sparkle
     alpha *= 1.0 - progress;
 
     gl_FragColor = vec4(col, alpha);
