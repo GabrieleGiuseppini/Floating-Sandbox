@@ -377,13 +377,13 @@ void OceanSurface::ApplyThanosSnap(
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // Choose X
-    float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateUniformReal(
         -GameParameters::HalfMaxWorldWidth,
         GameParameters::HalfMaxWorldWidth);
 
     // Choose height (good: 5 at 50-50)
     float constexpr AverageTsunamiHeight = 250.0f / SWEHeightFieldAmplification;
-    float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
         AverageTsunamiHeight * 0.96f,
         AverageTsunamiHeight * 1.04f)
         + SWEHeightFieldOffset;
@@ -424,13 +424,13 @@ void OceanSurface::TriggerRogueWave(
 
     // Choose height
     float constexpr MaxRogueWaveHeight = 50.0f / SWEHeightFieldAmplification;
-    float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
         MaxRogueWaveHeight * 0.35f,
         MaxRogueWaveHeight)
         + SWEHeightFieldOffset;
 
     // Choose rate
-    float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateUniformReal(
         0.7f,
         2.0f);
 

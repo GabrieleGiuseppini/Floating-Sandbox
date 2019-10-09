@@ -98,7 +98,7 @@ void BlastForceField::Apply(
         && NoneElementIndex != closestPointIndex)
     {
         // Choose a detach velocity - using the same distribution as Debris
-        vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+        vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
             GameParameters::MinDebrisParticlesVelocity,
             GameParameters::MaxDebrisParticlesVelocity);
 

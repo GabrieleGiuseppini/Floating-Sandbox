@@ -2138,9 +2138,9 @@ void Ship::GenerateAirBubbles(
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
 {
-    float vortexAmplitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float vortexAmplitude = GameRandomEngine::GetInstance().GenerateUniformReal(
         GameParameters::MinAirBubblesVortexAmplitude, GameParameters::MaxAirBubblesVortexAmplitude);
-    float vortexPeriod = GameRandomEngine::GetInstance().GenerateRandomReal(
+    float vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         GameParameters::MinAirBubblesVortexPeriod, GameParameters::MaxAirBubblesVortexPeriod);
 
     mPoints.CreateEphemeralParticleAirBubble(
@@ -2160,19 +2160,19 @@ void Ship::GenerateDebris(
 {
     if (gameParameters.DoGenerateDebris)
     {
-        unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+        unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
             GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
             // Choose velocity
-            vec2f const velocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+            vec2f const velocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
                 GameParameters::MinDebrisParticlesVelocity,
                 GameParameters::MaxDebrisParticlesVelocity);
 
             // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                GameRandomEngine::GetInstance().GenerateUniformInteger(
                     GameParameters::MinDebrisParticlesLifetime.count(),
                     GameParameters::MaxDebrisParticlesLifetime.count()));
 
@@ -2200,7 +2200,7 @@ void Ship::GenerateSparkles(
         // Choose number of particles
         //
 
-        unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateRandomInteger(
+        unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
             GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent); 
 
 
@@ -2219,17 +2219,17 @@ void Ship::GenerateSparkles(
         for (unsigned int d = 0; d < sparkleParticleCount; ++d)
         {
             // Velocity magnitude
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateRandomReal(
+            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
                 GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
 
             // Velocity angle: gaussian centered around central angle
             float const velocityAngleCw =
                 centralAngleCW
-                + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalNormalizedReal();
+                + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
 
             // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateRandomInteger(
+                GameRandomEngine::GetInstance().GenerateUniformInteger(
                     GameParameters::MinSparkleParticlesLifetime.count(),
                     GameParameters::MaxSparkleParticlesLifetime.count()));
 

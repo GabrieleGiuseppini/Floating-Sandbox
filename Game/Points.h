@@ -1310,7 +1310,7 @@ private:
 
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
     {
-        return GameRandomEngine::GetInstance().GenerateRandomReal(
+        return GameRandomEngine::GetInstance().GenerateUniformReal(
             0.0f,
             cumulatedIntakenWaterThresholdForAirBubbles);
     }

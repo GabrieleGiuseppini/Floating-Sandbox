@@ -574,7 +574,7 @@ bool ElectricalElements::CheckWetFailureTime(
     {
         // Sample the CDF
        isFailure =
-            GameRandomEngine::GetInstance().GenerateRandomNormalizedReal()
+            GameRandomEngine::GetInstance().GenerateNormalizedUniformReal()
             < lamp.WetFailureRateCdf;
 
         // Schedule next check

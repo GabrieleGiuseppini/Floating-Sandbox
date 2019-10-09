@@ -164,7 +164,7 @@ void Wind::Update(GameParameters const & gameParameters)
                     if (now >= mNextPoissonSampleTimestamp)
                     {
                         // Check if we should gust
-                        if (GameRandomEngine::GetInstance().GenerateRandomBoolean(mGustCdf))
+                        if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mGustCdf))
                         {
                             // Transition to EnterGust
                             mCurrentState = State::EnterGust;
@@ -300,7 +300,7 @@ void Wind::Update(GameParameters const & gameParameters)
 
 GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
 {
-    float chosenSeconds = GameRandomEngine::GetInstance().GenerateRandomReal(minSeconds, maxSeconds);
+    float chosenSeconds = GameRandomEngine::GetInstance().GenerateUniformReal(minSeconds, maxSeconds);
     return std::chrono::duration_cast<GameWallClock::duration>(std::chrono::duration<float>(chosenSeconds));
 }
 

@@ -17,9 +17,9 @@ void Stars::GenerateStars(unsigned int NumberOfStars)
     for (unsigned int s = 0; s < NumberOfStars; ++s)
     {
         mStars.emplace_back(
-            GameRandomEngine::GetInstance().GenerateRandomReal(-1.0f, +1.0f),
-            GameRandomEngine::GetInstance().GenerateRandomReal(-1.0f, +1.0f),
-            GameRandomEngine::GetInstance().GenerateRandomReal(0.25f, +1.0f));
+            GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, +1.0f),
+            GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, +1.0f),
+            GameRandomEngine::GetInstance().GenerateUniformReal(0.25f, +1.0f));
     }
 }
 

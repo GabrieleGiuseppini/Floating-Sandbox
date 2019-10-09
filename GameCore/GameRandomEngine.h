@@ -35,7 +35,7 @@ public:
     template <typename T>
     inline T Choose(T count)
     {
-        return GenerateRandomInteger<T>(0, count - 1);
+        return GenerateUniformInteger<T>(0, count - 1);
     }
 
     /*
@@ -48,7 +48,7 @@ public:
         T previous)
     {
         // Choose randomly, but avoid choosing the last-chosen again
-        T chosen = GenerateRandomInteger<T>(0, count - 2);
+        T chosen = GenerateUniformInteger<T>(0, count - 2);
         if (chosen >= previous)
         {
             ++chosen;
@@ -70,7 +70,7 @@ public:
         // Choose randomly, but avoid choosing the last-chosen again
         if (previous >= first && previous <= last)
         {
-            T chosen = GenerateRandomInteger<T>(first, last - 1);
+            T chosen = GenerateUniformInteger<T>(first, last - 1);
             if (chosen >= previous)
             {
                 ++chosen;
@@ -80,12 +80,12 @@ public:
         }
         else
         {
-            return GenerateRandomInteger<T>(first, last);
+            return GenerateUniformInteger<T>(first, last);
         }
     }
 
     template <typename T>
-    inline T GenerateRandomInteger(
+    inline T GenerateUniformInteger(
         T minValue,
         T maxValue)
     {
@@ -93,19 +93,19 @@ public:
         return dis(mRandomEngine);
     }
 
-    inline float GenerateRandomNormalizedReal()
+    inline float GenerateNormalizedUniformReal()
     {
         return mRandomUniformDistribution(mRandomEngine);
     }
 
-    inline float GenerateRandomReal(
+    inline float GenerateUniformReal(
         float minValue,
         float maxValue)
     {
         return minValue + mRandomUniformDistribution(mRandomEngine) * (maxValue - minValue);
     }
 
-    inline vec2f GenerateRandomRadialVector(
+    inline vec2f GenerateUniformRadialVector(
         float minMagnitude,
         float maxMagnitude)
     {
@@ -113,17 +113,17 @@ public:
         // Choose a vector: point on a circle with random radius and random angle
         //
 
-        float const magnitude = GenerateRandomReal(
+        float const magnitude = GenerateUniformReal(
             minMagnitude, maxMagnitude);
 
-        float const angle = GenerateRandomReal(0.0f, 2.0f * Pi<float>);
+        float const angle = GenerateUniformReal(0.0f, 2.0f * Pi<float>);
 
         return vec2f::fromPolar(magnitude, angle);
     }
 
-    inline bool GenerateRandomBoolean(float trueProbability)
+    inline bool GenerateUniformBoolean(float trueProbability)
     {
-        return GenerateRandomNormalizedReal() < trueProbability;
+        return GenerateNormalizedUniformReal() < trueProbability;
     }
 
     inline float GenerateExponentialReal(float lambda)
@@ -136,7 +136,7 @@ public:
      * Generates a random number between -INF and +INF, distributed
      * according to a Gaussian with mean zero and stdev 1.
      */
-    inline float GenerateNormalNormalizedReal()
+    inline float GenerateNormalizedNormalReal()
     {
         return mNormalDistribution(mRandomEngine);
     }

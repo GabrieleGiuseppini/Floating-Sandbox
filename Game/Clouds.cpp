@@ -24,16 +24,16 @@ void Clouds::Update(
         {
             mClouds.emplace_back(
                 new Cloud(
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 100.0f,    // OffsetX
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.01f,     // SpeedX1
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.04f,     // AmpX
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.01f,     // SpeedX2
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 100.0f,    // OffsetY
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.001f,    // AmpY
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.005f,    // SpeedY
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 100.0f,    // OffsetX
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f,     // SpeedX1
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.04f,     // AmpX
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f,     // SpeedX2
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 100.0f,    // OffsetY
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.001f,    // AmpY
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f,    // SpeedY
                     0.2f + static_cast<float>(c) / static_cast<float>(c + 3), // OffsetScale - the earlier clouds are smaller
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.05f,     // AmpScale
-                    GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() * 0.005f));  // SpeedScale
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.05f,     // AmpScale
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f));  // SpeedScale
         }
     }
 

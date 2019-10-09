@@ -325,25 +325,7 @@ Render:
 		+ Cache layout optimization for points and springs (*)
 		+ Slider text box editable (*)
 		+ Adjustable zoom and pan increments (*)
-
-		= Unix build break
-
-		= Lights perf improvement (*)
-			- Nuke old code from DiffuseLight
-				- Do blog post first
-
-		- Fix guy's name in Aurora:
-			- Ship
-			- AboutBox - need URL
-	
-		= Settings Manager (*)
-
-		- Music from Officer TimCan:
-			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
-			- Add the three songs
-				- SleepingSun should however be very rare!
-
-		= Sparkles with shader
+		+ Sparkles with shader
 			+ Impl:
 				+ ShipRenderContext
 					+ VBO, VAO
@@ -364,11 +346,27 @@ Render:
 					+ Shader
 					+ Butterfly: gaussian around direction opposite to movement
 					+ Faster max (and min) speed: * 1.5
-			= Cleanup:
+			+ Cleanup:
 				+ Nuke sparkle texture(s)
 				+ Shader:
 					+ Get rid of velocityVectorAdj
-				- GameRandomEngine renames
+				+ GameRandomEngine renames
+
+		= Unix build break
+
+		= Lights perf improvement (*)
+			- Do blog post
+
+		- Fix guy's name in Aurora:
+			- Ship
+			- AboutBox - need URL
+	
+		= Settings Manager (*)
+
+		- Music from Officer TimCan:
+			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
+			- Add the three songs
+				- SleepingSun should however be very rare!
 
 		- New explosion shader
 			+ Take frames out of 4K video

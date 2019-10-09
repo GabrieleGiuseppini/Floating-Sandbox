@@ -311,7 +311,7 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
     if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
     {
         mCombustionStateBuffer[pointElementIndex].FlameDevelopment = GameRandomEngine::GetInstance()
-            .GenerateRandomReal(0.1f, 0.14f);
+            .GenerateUniformReal(0.1f, 0.14f);
     }
 }
 
@@ -524,7 +524,7 @@ void Points::UpdateCombustionLowFrequency(
             0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mIgnitionCandidates[i]));
 
         // Assign a personality, we'll use it for noise
-        mCombustionStateBuffer[pointIndex].Personality = GameRandomEngine::GetInstance().GenerateRandomNormalizedReal();
+        mCombustionStateBuffer[pointIndex].Personality = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
         // Max development: random and depending on number of springs connected to this point
         // (so chains have smaller flames)

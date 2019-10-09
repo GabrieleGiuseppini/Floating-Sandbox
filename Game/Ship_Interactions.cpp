@@ -227,10 +227,10 @@ void Ship::DestroyAt(
                     ? 1.0f
                     : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
 
-                if (GameRandomEngine::GetInstance().GenerateRandomNormalizedReal() <= destroyProbability)
+                if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
                 {
                     // Choose a detach velocity - using the same distribution as Debris
-                    vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateRandomRadialVector(
+                    vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
                         GameParameters::MinDebrisParticlesVelocity,
                         GameParameters::MaxDebrisParticlesVelocity);
 
@@ -1089,8 +1089,8 @@ void Ship::ApplyThanosSnap(
 
             // Choose a detach velocity
             vec2f detachVelocity = vec2f(
-                direction * GameRandomEngine::GetInstance().GenerateRandomReal(35.0f, 60.0f),
-                GameRandomEngine::GetInstance().GenerateRandomReal(-3.0f, 18.0f));
+                direction * GameRandomEngine::GetInstance().GenerateUniformReal(35.0f, 60.0f),
+                GameRandomEngine::GetInstance().GenerateUniformReal(-3.0f, 18.0f));
 
             // Detach
             mPoints.Detach(
