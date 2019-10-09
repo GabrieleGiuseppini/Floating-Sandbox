@@ -381,14 +381,13 @@ public:
         // Calculate sparkle quad
         //
 
-        static float constexpr QuadWidth = 4.0f;
-        static float constexpr QuadHeight = 4.0f;
+        static float constexpr QuadSide = 2.0f;
 
         // Calculate quad coordinates
-        float const leftX = position.x - QuadWidth / 2.0f;
-        float const rightX = position.x + QuadWidth / 2.0f;
-        float const topY = position.y - QuadHeight / 2.0f;
-        float const bottomY = position.y + QuadHeight / 2.0f;
+        float const leftX = position.x - QuadSide / 2.0f;
+        float const rightX = position.x + QuadSide / 2.0f;
+        float const topY = position.y - QuadSide / 2.0f;
+        float const bottomY = position.y + QuadSide / 2.0f;
 
 
         //

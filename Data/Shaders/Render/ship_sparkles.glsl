@@ -55,7 +55,7 @@ void main()
     float vectorDistance = length(projection - sparkleSpacePosition);
     
     // d = Density: 1.0 at center, 0.0 at border
-    #define LineThickness 0.1
+    #define LineThickness 0.2
     float d = 1.0 - vectorDistance/LineThickness;
     
     if (d < 0.01)

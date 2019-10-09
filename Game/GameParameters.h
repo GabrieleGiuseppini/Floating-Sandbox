@@ -156,8 +156,8 @@ struct GameParameters
     bool DoGenerateSparkles;
     static constexpr unsigned int MinSparkleParticlesPerEvent = 2;
     static constexpr unsigned int MaxSparkleParticlesPerEvent = 8;
-    static float constexpr MinSparkleParticlesVelocity = 50.0f;
-    static float constexpr MaxSparkleParticlesVelocity = 70.0f;
+    static float constexpr MinSparkleParticlesVelocity = 75.0f;
+    static float constexpr MaxSparkleParticlesVelocity = 105.0f;
     static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
     static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
 

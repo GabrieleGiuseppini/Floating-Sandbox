@@ -2246,7 +2246,7 @@ void Ship::GenerateSparkles(
         //
 
         float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
-        float constexpr AngleWidth = Pi<float> / 16.0f;
+        float constexpr AngleWidth = Pi<float> / 20.0f;
 
 
         //
