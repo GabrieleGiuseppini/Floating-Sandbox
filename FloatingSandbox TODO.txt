@@ -797,6 +797,8 @@ Render:
 
 - Gfx optimizations:
 
+	- See if Z test and ocean before clouds buys us anything
+
 	- Try interleaving Update's with Render's
 		- First, quick and dirty: do at stars, clouds, ocean
 					
@@ -1429,6 +1431,7 @@ Render:
 		- Impl:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
+			+ ResourceLoader::GetThemeSettingsRootFilepath()
 			- OceanFloor:
 				- OceanFloor contains and own OceanFloorTerrain
 					- OceanFloorTerrain has unique_buffer

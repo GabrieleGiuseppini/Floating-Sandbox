@@ -7,7 +7,12 @@
 
 #include "Utils.h"
 
+#include <regex>
+
 ///////////////////////////////////////////////////////////////////////////////////////
+
+static std::string const SettingsStreamName = "settings";
+static std::string const SettingsExtension = "json";
 
 SettingsStorage::SettingsStorage(
     std::filesystem::path const & rootSystemSettingsDirectoryPath,
@@ -21,7 +26,24 @@ SettingsStorage::SettingsStorage(
     mFileSystem->EnsureDirectoryExists(rootUserSettingsDirectoryPath);
 }
 
-void SettingsStorage::DeleteAllFiles(PersistedSettingsKey const & settingsKey)
+std::vector<PersistedSettingsMetadata> SettingsStorage::ListSettings()
+{
+    std::vector<PersistedSettingsMetadata> persistedSettingsMetadata;
+
+    ListSettings(
+        mRootSystemSettingsDirectoryPath,
+        StorageTypes::System,
+        persistedSettingsMetadata);
+
+    ListSettings(
+        mRootUserSettingsDirectoryPath,
+        StorageTypes::User,
+        persistedSettingsMetadata);
+
+    return persistedSettingsMetadata;
+}
+
+void SettingsStorage::Delete(PersistedSettingsKey const & settingsKey)
 {
     for (auto const & filePath : mFileSystem->ListFiles(GetRootPath(settingsKey.StorageType)))
     {
@@ -57,6 +79,48 @@ std::shared_ptr<std::ostream> SettingsStorage::OpenOutputStream(
             extension));
 }
 
+void SettingsStorage::ListSettings(
+    std::filesystem::path directoryPath,
+    StorageTypes storageType,
+    std::vector<PersistedSettingsMetadata> & outPersistedSettingsMetadata) const
+{
+    static std::regex const SettingsFilenameRegex("^([^\\.]+)\\." + SettingsStreamName + "\\." + SettingsExtension + "$");
+
+    std::smatch filenameMatch;
+    for (auto const & filepath : mFileSystem->ListFiles(directoryPath))
+    {
+        auto const filename = filepath.filename().string();
+        if (std::regex_match(filename, filenameMatch, SettingsFilenameRegex))
+        {
+            //
+            // Good settings
+            //
+
+            // Extract name
+            assert(filenameMatch.size() == 2);
+            std::string settingsName = filenameMatch[1].str();
+
+            // Extract description
+
+            auto is = mFileSystem->OpenInputStream(filepath);
+            auto settingsValue = Utils::ParseJSONStream(*is);
+            if (!settingsValue.is<picojson::object>())
+            {
+                throw GameException("JSON settings could not be loaded: root value is not an object");
+            }
+
+            auto const & description = Utils::GetMandatoryJsonMember<std::string>(
+                settingsValue.get<picojson::object>(),
+                "description");
+
+            // Store entry
+            outPersistedSettingsMetadata.emplace_back(
+                PersistedSettingsKey(settingsName, storageType),
+                description);
+        }
+    }
+}
+
 std::filesystem::path SettingsStorage::MakeFilePath(
     PersistedSettingsKey const & settingsKey,
     std::string const & streamName,
@@ -90,7 +154,7 @@ SettingsSerializationContext::SettingsSerializationContext(
     , mSettingsJson()
 {
     // Delete all files for this settings name
-    mStorage->DeleteAllFiles(mSettingsKey);
+    mStorage->Delete(mSettingsKey);
 
     // Prepare json
     mSettingsJson["version"] = picojson::value(Version::CurrentVersion().ToString());
@@ -108,8 +172,8 @@ SettingsSerializationContext::~SettingsSerializationContext()
 
     auto os = mStorage->OpenOutputStream(
         mSettingsKey,
-        "settings",
-        "json");
+        SettingsStreamName,
+        SettingsExtension);
     
     *os << settingsJson;
 }
@@ -128,12 +192,10 @@ SettingsDeserializationContext::SettingsDeserializationContext(
 
     auto is = mStorage->OpenInputStream(
         mSettingsKey,
-        "settings",
-        "json");
+        SettingsStreamName,
+        SettingsExtension);
 
-    std::string settingsJson = Utils::LoadTextStream(*is);
-
-    auto settingsValue = Utils::ParseJSONString(settingsJson);
+    auto settingsValue = Utils::ParseJSONStream(*is);
     if (!settingsValue.is<picojson::object>())
     {
         throw GameException("JSON settings could not be loaded: root value is not an object");

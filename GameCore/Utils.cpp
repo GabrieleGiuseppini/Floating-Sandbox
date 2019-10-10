@@ -42,6 +42,13 @@ picojson::value Utils::ParseJSONFile(std::filesystem::path const & filepath)
     return ParseJSONString(fileContents);	
 }
 
+picojson::value Utils::ParseJSONStream(std::istream const & stream)
+{
+    std::string fileContents = RemoveJSONComments(Utils::LoadTextStream(stream));
+
+    return ParseJSONString(fileContents);
+}
+
 picojson::value Utils::ParseJSONString(std::string const & jsonString)
 {
     picojson::value jsonContent;

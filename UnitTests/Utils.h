@@ -60,7 +60,7 @@ public:
 
         for (auto const & kv : mFileMap)
         {
-            if (kv.first.compare(directoryPath) > 0)
+            if (IsParentOf(directoryPath, kv.first))
                 filePaths.push_back(kv.first);
         }
 
@@ -77,6 +77,22 @@ public:
     }
 
 private:
+
+    static bool IsParentOf(
+        std::filesystem::path const & directoryPath,
+        std::filesystem::path const & childPath)
+    {
+        auto childIt = childPath.begin();
+        for (auto const & element : directoryPath)
+        {
+            if (childIt == childPath.end() || *childIt != element)
+                return false;
+            
+            ++childIt;
+        }
+
+        return true;
+    }
 
     FileMap mFileMap;
 };

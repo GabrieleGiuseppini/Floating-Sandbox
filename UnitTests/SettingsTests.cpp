@@ -6,11 +6,11 @@
 
 #include <picojson.h>
 
+#include <algorithm>
+
 #include "gtest/gtest.h"
 
-/////////////////////////////////////////////
 // Custom type and its serialization
-/////////////////////////////////////////////
 
 struct CustomValue
 {
@@ -58,7 +58,7 @@ void Setting<CustomValue>::Deserialize(SettingsDeserializationContext const & co
     MarkAsDirty();
 }
 
-/////////////////////////////////////////////
+// Test template settings
 
 enum TestSettings : size_t
 {
@@ -83,9 +83,11 @@ auto MakeTestSettings()
     return settings;
 }
 
-static std::filesystem::path TestRootSystemDirectory = "C:\\Foo\\System\\";
-static std::filesystem::path TestRootUserDirectory = "C:\\Foo\\User\\";
+static std::filesystem::path TestRootSystemDirectory = "C:\\Foo\\System";
+static std::filesystem::path TestRootUserDirectory = "C:\\Foo\\User";
 
+////////////////////////////////////////////////////////////////
+// Setting
 ////////////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Setting_DefaultConstructor)
@@ -174,7 +176,9 @@ TEST(SettingsTests, Setting_Clone)
     EXPECT_EQ(5.0f, fSetting2->GetValue());
 }
 
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// Settings
+////////////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Settings_SetAndGetValue)
 {    
@@ -312,7 +316,9 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 }
 
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// Storage
+////////////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Storage_EnsuresUserSettingsDirectoryExists)
 {
@@ -329,7 +335,7 @@ TEST(SettingsTests, Storage_EnsuresUserSettingsDirectoryExists)
         mockFileSystem);
 }
 
-TEST(SettingsTests, Storage_DeleteAllFilesDeletesAllStreamsAndSettings)
+TEST(SettingsTests, Storage_DeleteDeletesAllStreamsAndSettings)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
@@ -343,15 +349,60 @@ TEST(SettingsTests, Storage_DeleteAllFilesDeletesAllStreamsAndSettings)
         TestRootUserDirectory,
         testFileSystem);
 
-    EXPECT_EQ(4, testFileSystem->GetFileMap().size());
+    ASSERT_EQ(4, testFileSystem->GetFileMap().size());
 
-    storage.DeleteAllFiles(PersistedSettingsKey("Test Name", StorageTypes::User));
+    storage.Delete(PersistedSettingsKey("Test Name", StorageTypes::User));
 
     ASSERT_EQ(1, testFileSystem->GetFileMap().size());
     EXPECT_EQ(1, testFileSystem->GetFileMap().count(TestRootUserDirectory / "Test Namez.yulp.abracadabra"));
 }
 
-/////////////////////////////////////////////////////////
+TEST(SettingsTests, Storage_ListSettings)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::string const testJson1 = R"({"version":"1.2.3.4","description":"This is a description","settings":{}})";
+    std::string const testJson2 = R"({"version":"1.2.3.4","description":"","settings":{}})";
+
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson2);
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.foo bar.dat"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Hidden Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Super Settings.settings.json"] = std::make_shared<memory_streambuf>(testJson1);
+    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Settings.settings.json"] = std::make_shared<memory_streambuf>(testJson2);
+    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Hidden Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+    auto settings = storage.ListSettings();
+
+    ASSERT_EQ(3u, settings.size());
+
+    std::sort(
+        settings.begin(),
+        settings.end(),
+        [](auto const & lhs, auto const & rhs)
+        {
+            return lhs.Key.Name < rhs.Key.Name;
+        });
+
+    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Super Settings", StorageTypes::User));
+    EXPECT_EQ(settings[0].Description, "This is a description");
+
+    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("System Settings", StorageTypes::System));
+    EXPECT_EQ(settings[1].Description, "");
+
+    EXPECT_EQ(settings[2].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
+    EXPECT_EQ(settings[2].Description, "");
+}
+
+////////////////////////////////////////////////////////////////
+// Serialization
+////////////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Serialization_Settings_AllDirty)
 {
@@ -646,6 +697,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
     EXPECT_EQ(std::string("Foo"), settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
     EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
+
 TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 {
     //
@@ -705,7 +757,9 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
     EXPECT_TRUE(settings2.IsDirty(Setting5_custom));
 }
 
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// Enforcer
+////////////////////////////////////////////////////////////////
 
 TEST(SettingsTests, Enforcer_Enforce)
 {

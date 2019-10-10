@@ -79,6 +79,13 @@ public:
 
 
     //
+    // Theme Settings
+    //
+
+    std::filesystem::path GetThemeSettingsRootFilepath() const;
+
+
+    //
     // Misc
     //
 

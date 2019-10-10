@@ -29,11 +29,13 @@ class Utils
 {
 public:
 
-    //
+    ////////////////////////////////////////////////////////
     // JSON
-    //
+    ////////////////////////////////////////////////////////
 
     static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
+
+    static picojson::value ParseJSONStream(std::istream const & stream);
 
     static picojson::value ParseJSONString(std::string const & jsonString);
 
@@ -153,9 +155,9 @@ public:
         return memberIt->second.get<picojson::array>();
     }
 
-    //
+    ////////////////////////////////////////////////////////
     // String
-    //
+    ////////////////////////////////////////////////////////
 
     static std::string Trim(std::string const & str)
     {
@@ -265,9 +267,9 @@ public:
         return true;
     }
 
-    //
+    ////////////////////////////////////////////////////////
     // Text files
-    //
+    ////////////////////////////////////////////////////////
 
     static std::string LoadTextFile(std::filesystem::path const & filepath)
     {

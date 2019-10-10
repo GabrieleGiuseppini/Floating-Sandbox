@@ -49,6 +49,28 @@ struct PersistedSettingsKey
         : Name(name)
         , StorageType(storageType)
     {}
+
+    bool operator==(PersistedSettingsKey const & other) const
+    {
+        return Name == other.Name
+            && StorageType == other.StorageType;
+    }
+};
+
+/*
+ * Metadata describing persisted settings.
+ */
+struct PersistedSettingsMetadata
+{
+    PersistedSettingsKey Key;
+    std::string Description;
+
+    PersistedSettingsMetadata(
+        PersistedSettingsKey key,
+        std::string description)
+        : Key(std::move(key))
+        , Description(std::move(description))
+    {}
 };
 
 /*
@@ -67,7 +89,9 @@ public:
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<IFileSystem> fileSystem);
 
-    void DeleteAllFiles(PersistedSettingsKey const & settingsKey);
+    std::vector<PersistedSettingsMetadata> ListSettings();
+
+    void Delete(PersistedSettingsKey const & settingsKey);
 
     std::shared_ptr<std::istream> OpenInputStream(
         PersistedSettingsKey const & settingsKey,
@@ -80,6 +104,11 @@ public:
         std::string const & extension);
 
 private:
+
+    void ListSettings(
+        std::filesystem::path directoryPath,
+        StorageTypes storageType,
+        std::vector<PersistedSettingsMetadata> & outPersistedSettingsMetadata) const;
 
     std::filesystem::path MakeFilePath(
         PersistedSettingsKey const & settingsKey,
