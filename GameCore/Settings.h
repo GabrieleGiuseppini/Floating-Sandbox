@@ -132,6 +132,7 @@ public:
 
     SettingsSerializationContext(
         PersistedSettingsKey const & settingsKey,
+        std::string const & description,
         std::shared_ptr<SettingsStorage> storage);
 
     ~SettingsSerializationContext();

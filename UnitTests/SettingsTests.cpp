@@ -434,6 +434,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     {
         SettingsSerializationContext sContext(
             PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
             storage);
 
         settings.SerializeDirty(sContext);
@@ -458,12 +459,17 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
 
     auto & settingsRootObject = settingsRootValue.get<picojson::object>();
-    EXPECT_EQ(2, settingsRootObject.size());
+    EXPECT_EQ(3, settingsRootObject.size());
 
     // Version
     ASSERT_EQ(1, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
     EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Description
+    ASSERT_EQ(1, settingsRootObject.count("description"));
+    ASSERT_TRUE(settingsRootObject["description"].is<std::string>());
+    EXPECT_EQ(std::string("Test description"), settingsRootObject["description"].get<std::string>());
 
     // Settings
     ASSERT_EQ(1, settingsRootObject.count("settings"));
@@ -529,6 +535,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     {
         SettingsSerializationContext sContext(
             PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
             storage);
 
         settings.SerializeDirty(sContext);
@@ -552,12 +559,17 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
 
     auto & settingsRootObject = settingsRootValue.get<picojson::object>();
-    EXPECT_EQ(2, settingsRootObject.size());
+    EXPECT_EQ(3, settingsRootObject.size());
 
     // Version
     ASSERT_EQ(1, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
     EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Description
+    ASSERT_EQ(1, settingsRootObject.count("description"));
+    ASSERT_TRUE(settingsRootObject["description"].is<std::string>());
+    EXPECT_EQ(std::string("Test description"), settingsRootObject["description"].get<std::string>());
 
     // Settings
     ASSERT_EQ(1, settingsRootObject.count("settings"));
@@ -589,6 +601,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
     {
         SettingsSerializationContext sContext(
             PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
             storage);
 
         settings.SerializeDirty(sContext);
@@ -613,12 +626,17 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
 
     auto & settingsRootObject = settingsRootValue.get<picojson::object>();
-    EXPECT_EQ(2, settingsRootObject.size());
+    EXPECT_EQ(3, settingsRootObject.size());
 
     // Version
     ASSERT_EQ(1, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
     EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+
+    // Description
+    ASSERT_EQ(1, settingsRootObject.count("description"));
+    ASSERT_TRUE(settingsRootObject["description"].is<std::string>());
+    EXPECT_EQ(std::string("Test description"), settingsRootObject["description"].get<std::string>());
 
     // Settings
     ASSERT_EQ(1, settingsRootObject.count("settings"));
@@ -667,6 +685,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
     {
         SettingsSerializationContext sContext(
             PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
             storage);
 
         settings1.SerializeDirty(sContext);
@@ -727,6 +746,7 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
     {
         SettingsSerializationContext sContext(
             PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
             storage);
 
         settings1.SerializeDirty(sContext);

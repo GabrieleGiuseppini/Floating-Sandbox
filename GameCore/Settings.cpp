@@ -148,6 +148,7 @@ std::filesystem::path SettingsStorage::GetRootPath(StorageTypes storageType) con
 
 SettingsSerializationContext::SettingsSerializationContext(
     PersistedSettingsKey const & settingsKey,
+    std::string const & description,
     std::shared_ptr<SettingsStorage> storage)
     : mSettingsKey(std::move(settingsKey))
     , mStorage(std::move(storage))
@@ -158,7 +159,9 @@ SettingsSerializationContext::SettingsSerializationContext(
 
     // Prepare json
     mSettingsJson["version"] = picojson::value(Version::CurrentVersion().ToString());
-    mSettingsJson["settings"] = picojson::value(picojson::object());
+    mSettingsJson["description"] = picojson::value(description);
+    mSettingsJson["settings"] = picojson::value(picojson::object());    
+
     mSettingsRoot = &(mSettingsJson["settings"].get<picojson::object>());
 }
 
