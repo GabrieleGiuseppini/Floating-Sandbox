@@ -21,11 +21,16 @@ struct CustomValue
     {}
 
     CustomValue(
-        std::string const &str,
+        std::string const & str,
         int _int)
         : Str(str)
         , Int(_int)
     {}
+
+    CustomValue(CustomValue const & other) = default;
+    CustomValue(CustomValue && other) = default;
+    CustomValue & operator=(CustomValue const & other) = default;
+    CustomValue & operator=(CustomValue && other) = default;
 
     bool operator==(CustomValue const & other) const
     {
@@ -806,4 +811,90 @@ TEST(SettingsTests, Enforcer_Pull)
 
     EXPECT_EQ(4.0f, fSetting.GetValue());
     EXPECT_TRUE(fSetting.IsDirty());
+}
+
+////////////////////////////////////////////////////////////////
+// BaseSettingsManager
+////////////////////////////////////////////////////////////////
+
+// Mimics the place where the enforcers enforce to/pull from
+struct TestGlobalSettings
+{
+    float setting1;
+    uint32_t setting2;
+    bool setting3;
+    std::string setting4;
+    CustomValue setting5;
+};
+
+static TestGlobalSettings GlobalSettings;
+
+class TestSettingsManager : public BaseSettingsManager<TestSettings, TestFileSystem>
+{
+public:
+
+    TestSettingsManager(std::shared_ptr<TestFileSystem> fileSystem)
+        : BaseSettingsManager(
+            TestRootSystemDirectory,
+            TestRootUserDirectory,
+            std::move(fileSystem))
+    {
+        auto testSettings = MakeTestSettings();
+
+        AddSetting<float>(
+            TestSettings::Setting1_float,
+            "setting1_float",
+            []() -> float const & { return GlobalSettings.setting1; },
+            [](auto const & v) { GlobalSettings.setting1 = v; });
+
+        AddSetting<uint32_t>(
+            TestSettings::Setting2_uint32,
+            "setting2_uint32",
+            []() -> uint32_t const & { return GlobalSettings.setting2; },
+            [](auto const & v) { GlobalSettings.setting2 = v; });
+
+        AddSetting<bool>(
+            TestSettings::Setting3_bool,
+            "setting3_bool",
+            []() -> bool const & { return GlobalSettings.setting3; },
+            [](auto const & v) { GlobalSettings.setting3 = v; });
+
+        AddSetting<std::string>(
+            TestSettings::Setting4_string,
+            "setting4_string",
+            []() -> std::string const & { return GlobalSettings.setting4; },
+            [](auto const & v) { GlobalSettings.setting4 = v; });
+
+        AddSetting<CustomValue>(
+            TestSettings::Setting5_custom,
+            "setting5_custom",
+            []() -> CustomValue const & { return GlobalSettings.setting5; },
+            [](auto const & v) { GlobalSettings.setting5 = v; });
+
+        // Initialize
+        Initialize();
+    }
+};
+
+TEST(SettingsTests, BaseSettingsManager_BuildsDefaults)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    // Set defaults
+    GlobalSettings.setting1 = 789.5f;
+    GlobalSettings.setting2 = 242;
+    GlobalSettings.setting3 = true;
+    GlobalSettings.setting4 = "A Forest";
+    GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
+    // Create manager - defaults are taken at this moment
+    TestSettingsManager sm(testFileSystem);
+
+    // Verify defaults
+    EXPECT_EQ(789.5f, sm.GetDefaults().GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(242u, sm.GetDefaults().GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(true, sm.GetDefaults().GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("A Forest"), sm.GetDefaults().GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("MyVal"), sm.GetDefaults().GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(50, sm.GetDefaults().GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }

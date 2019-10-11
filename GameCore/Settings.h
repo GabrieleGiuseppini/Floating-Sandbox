@@ -27,6 +27,10 @@
 //
 // De/Serialization: interface between settings and the de/serialization storage.
 //
+// For each persisted setting, we have the following files:
+// - "<Name>.settings.json", one and only one
+// - "<Name>.<StreamName>.<Extension>", zero or more
+//
 ///////////////////////////////////////////////////////////////////////////////////////
 
 enum class StorageTypes
@@ -320,13 +324,32 @@ class Settings
 {
 public:
 
-    Settings(std::vector<std::unique_ptr<BaseSetting>> && settings)
+    Settings(Settings const & other)
+    {
+        assert(other.mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mSettings.reserve(static_cast<size_t>(TEnum::_Last) + 1);
+
+        for (auto const & s : other.mSettings)
+        {
+            mSettings.emplace_back(s->Clone());
+        }
+    }
+
+    Settings(Settings && other)
+    {
+        assert(other.mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mSettings = std::move(other.mSettings);
+    }
+
+    explicit Settings(std::vector<std::unique_ptr<BaseSetting>> && settings)
         : mSettings(std::move(settings))
     {
         assert(mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
     }
 
-    Settings(std::vector<std::unique_ptr<BaseSetting>> const & settings)
+    explicit Settings(std::vector<std::unique_ptr<BaseSetting>> const & settings)
     {
         assert(settings.size() == static_cast<size_t>(TEnum::_Last) + 1);
         
@@ -355,6 +378,20 @@ public:
         assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
 
         mSettings = std::move(other.mSettings);
+    }
+
+    BaseSetting const & operator[](TEnum settingId) const
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+
+        return *mSettings[static_cast<size_t>(settingId)];
+    }
+
+    BaseSetting & operator[](TEnum settingId)
+    {
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+
+        return *mSettings[static_cast<size_t>(settingId)];
     }
 
     template<typename TValue>
@@ -529,4 +566,154 @@ private:
 
     Getter const mGetter;
     Setter const mSetter;
+};
+
+/*
+ * This class implements a container of enforcers.
+ */
+template<typename TEnum>
+class Enforcers
+{
+public:
+
+    Enforcers(std::vector<std::unique_ptr<BaseSettingEnforcer>> && enforcers)
+        : mEnforcers(std::move(enforcers))
+    {
+        assert(mEnforcers.size() == static_cast<size_t>(TEnum::_Last) + 1);
+    }
+
+    Enforcers(std::vector<std::unique_ptr<BaseSettingEnforcer>> const & enforcers)
+    {
+        assert(enforcers.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mEnforcers.reserve(enforcers.size());
+
+        for (auto const & e : enforcers)
+        {
+            mEnforcers.emplace_back(e);
+        }
+    }
+
+    Enforcers & operator=(Enforcers const & other)
+    {
+        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mEnforcers.clear();
+
+        for (auto const & e : other.mEnforcers)
+        {
+            mEnforcers.emplace_back(e->Clone());
+        }
+    }
+
+    Enforcers & operator=(Enforcers && other)
+    {
+        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+
+        mEnforcers = std::move(other.mEnforcers);
+    }
+
+    void Enforce(Settings<TEnum> const & settings) const
+    {
+        for (size_t e = 0; e < static_cast<size_t>(TEnum::_Last) + 1; ++e)
+        {
+            mEnforcers[e]->Enforce(settings[static_cast<TEnum>(e)]);
+        }
+    }
+
+    void Pull(Settings<TEnum> & settings) const
+    {
+        for (size_t e = 0; e < static_cast<size_t>(TEnum::_Last) + 1; ++e)
+        {
+            mEnforcers[e]->Pull(settings[static_cast<TEnum>(e)]);
+        }
+    }
+
+private:
+
+    std::vector<std::unique_ptr<BaseSettingEnforcer>> mEnforcers;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////
+//
+// Base class of settings managers.
+//
+// Specializations provide the following:
+// - Building the "master template" settings, as instances of Setting's and Enforcer's
+//
+///////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TEnum, typename TFileSystem = FileSystem>
+class BaseSettingsManager
+{
+public:
+
+    /*
+     * Returns the default values for all settings.
+     */
+    Settings<TEnum> const & GetDefaults() const
+    {
+        assert(!!mDefaultSettings);
+        return *mDefaultSettings;
+    }
+
+
+    // TODOHERE
+
+protected:
+
+    BaseSettingsManager(
+        std::filesystem::path const & rootSystemSettingsDirectoryPath,
+        std::filesystem::path const & rootUserSettingsDirectoryPath,
+        std::shared_ptr<TFileSystem> fileSystem = std::make_shared<TFileSystem>())
+        : mRootSystemSettingsDirectoryPath(rootSystemSettingsDirectoryPath)
+        , mRootUserSettingsDirectoryPath(rootUserSettingsDirectoryPath)
+        , mFileSystem(std::move(fileSystem))
+    {}
+
+    template<typename TValue>
+    void AddSetting(
+        TEnum settingId,
+        std::string && name,
+        typename SettingEnforcer<TValue>::Getter && getter,
+        typename SettingEnforcer<TValue>::Setter && setter)
+    {
+        assert(mTmpSettings.size() == static_cast<size_t>(settingId));
+        assert(mTmpEnforcers.size() == static_cast<size_t>(settingId));
+
+        mTmpSettings.emplace_back(new Setting<TValue>(std::move(name)));
+        mTmpEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter)));
+    }
+
+    void Initialize()
+    {
+        // Finalize settings and enforcers
+        mTemplateSettings = std::make_unique<Settings<TEnum>>(std::move(mTmpSettings));
+        mEnforcers = std::make_unique<Enforcers<TEnum>>(std::move(mTmpEnforcers));
+
+        // Build defaults 
+        // (assuming Initialize() is invoked when all getters deliver
+        //  default settings)
+        mDefaultSettings = std::make_unique<Settings<TEnum>>(*mTemplateSettings);
+        mEnforcers->Pull(*mDefaultSettings);
+        mDefaultSettings->ClearAllDirty();
+    }
+
+private:
+
+    // Configuration
+    std::filesystem::path const mRootSystemSettingsDirectoryPath;
+    std::filesystem::path const mRootUserSettingsDirectoryPath;
+    std::shared_ptr<TFileSystem> const mFileSystem;
+
+    // Temporary containers for building up templates
+    std::vector<std::unique_ptr<BaseSetting>> mTmpSettings;
+    std::vector<std::unique_ptr<BaseSettingEnforcer>> mTmpEnforcers;
+
+    // Templates
+    std::unique_ptr<Settings<TEnum>> mTemplateSettings;
+    std::unique_ptr<Enforcers<TEnum>> mEnforcers;
+
+    // Default settings
+    std::unique_ptr<Settings<TEnum>> mDefaultSettings;
 };

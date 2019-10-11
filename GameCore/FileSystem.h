@@ -18,6 +18,11 @@ struct IFileSystem
     {}
 
     /*
+     * Checks whether a file or directory exists.
+     */
+    virtual bool Exists(std::filesystem::path const & path) = 0;
+
+    /*
      * Creates a directory if it doesn't exist already.
      */
     virtual void EnsureDirectoryExists(std::filesystem::path const & directoryPath) = 0;
@@ -54,6 +59,16 @@ public:
 
     FileSystem()
     {}
+
+    bool Exists(std::filesystem::path const & path) override
+    {
+        return std::filesystem::exists(path);
+    }
+
+    void EnsureDirectoryExists(std::filesystem::path const & directoryPath) override
+    {
+        std::filesystem::create_directories(directoryPath);
+    }
 
     std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath) override
     {

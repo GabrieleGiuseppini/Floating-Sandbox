@@ -28,6 +28,12 @@ public:
     // IFileSystem
     ///////////////////////////////////////////////////////////
 
+    bool Exists(std::filesystem::path const & path) override
+    {
+        auto it = mFileMap.find(path);
+        return (it != mFileMap.end());
+    }
+
     void EnsureDirectoryExists(std::filesystem::path const & /*directoryPath*/) override
     {
         // Nop
@@ -101,6 +107,7 @@ class MockFileSystem : public IFileSystem
 {
 public:
 
+    MOCK_METHOD1(Exists, bool(std::filesystem::path const & path));
     MOCK_METHOD1(EnsureDirectoryExists, void(std::filesystem::path const & directoryPath));
     MOCK_METHOD1(OpenOutputStream, std::shared_ptr<std::ostream>(std::filesystem::path const & filePath));
     MOCK_METHOD1(OpenInputStream, std::shared_ptr<std::istream>(std::filesystem::path const & filePath));
