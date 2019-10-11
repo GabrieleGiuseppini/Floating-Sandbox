@@ -648,15 +648,30 @@ class BaseSettingsManager
 {
 public:
 
-    /*
-     * Returns the default values for all settings.
-     */
     Settings<TEnum> const & GetDefaults() const
     {
         assert(!!mDefaultSettings);
         return *mDefaultSettings;
     }
 
+    void Enforce(Settings<TEnum> const & settings) const
+    {
+        assert(!!mEnforcers);
+        mEnforcers->Enforce(settings);
+    }
+
+    void Pull(Settings<TEnum> & settings) const
+    {
+        assert(!!mEnforcers);
+        mEnforcers->Pull(settings);
+    }
+
+    Settings<TEnum> Pull() const
+    {
+        auto settings = *mTemplateSettings;
+        Pull(settings);
+        return settings;
+    }
 
     // TODOHERE
 

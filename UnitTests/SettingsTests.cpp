@@ -820,11 +820,11 @@ TEST(SettingsTests, Enforcer_Pull)
 // Mimics the place where the enforcers enforce to/pull from
 struct TestGlobalSettings
 {
-    float setting1;
-    uint32_t setting2;
-    bool setting3;
-    std::string setting4;
-    CustomValue setting5;
+    float setting1{ 0.0f };
+    uint32_t setting2{ 45 };
+    bool setting3{ false };
+    std::string setting4{ "" };
+    CustomValue setting5{ "", 45 };
 };
 
 static TestGlobalSettings GlobalSettings;
@@ -897,4 +897,53 @@ TEST(SettingsTests, BaseSettingsManager_BuildsDefaults)
     EXPECT_EQ(std::string("A Forest"), sm.GetDefaults().GetValue<std::string>(TestSettings::Setting4_string));
     EXPECT_EQ(std::string("MyVal"), sm.GetDefaults().GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
     EXPECT_EQ(50, sm.GetDefaults().GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
+}
+
+TEST(SettingsTests, BaseSettingsManager_Enforces)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+    TestSettingsManager sm(testFileSystem);
+
+    // Prepare settings
+    Settings<TestSettings> settings(MakeTestSettings());
+    settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.SetValue<bool>(TestSettings::Setting3_bool, false);
+    settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    // Enforce
+    sm.Enforce(settings);
+
+    // Verify
+    EXPECT_EQ(242.0f, GlobalSettings.setting1);
+    EXPECT_EQ(999u, GlobalSettings.setting2);
+    EXPECT_EQ(false, GlobalSettings.setting3);
+    EXPECT_EQ(std::string("Test!"), GlobalSettings.setting4);
+    EXPECT_EQ(std::string("Foo"), GlobalSettings.setting5.Str);
+    EXPECT_EQ(123, GlobalSettings.setting5.Int);
+}
+
+TEST(SettingsTests, BaseSettingsManager_Pulls)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+    TestSettingsManager sm(testFileSystem);
+
+    // Set new values
+    GlobalSettings.setting1 = 789.5f;
+    GlobalSettings.setting2 = 242;
+    GlobalSettings.setting3 = true;
+    GlobalSettings.setting4 = "A Forest";
+    GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
+    // Pull
+    auto settings = sm.Pull();
+
+    // Verify
+    EXPECT_EQ(789.5f, settings.GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(242u, settings.GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(true, settings.GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("A Forest"), settings.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("MyVal"), settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(50, settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
