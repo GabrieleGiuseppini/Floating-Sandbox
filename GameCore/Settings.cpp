@@ -26,7 +26,7 @@ SettingsStorage::SettingsStorage(
     mFileSystem->EnsureDirectoryExists(rootUserSettingsDirectoryPath);
 }
 
-std::vector<PersistedSettingsMetadata> SettingsStorage::ListSettings()
+std::vector<PersistedSettingsMetadata> SettingsStorage::ListSettings() const
 {
     std::vector<PersistedSettingsMetadata> persistedSettingsMetadata;
 

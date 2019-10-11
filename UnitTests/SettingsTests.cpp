@@ -947,3 +947,30 @@ TEST(SettingsTests, BaseSettingsManager_Pulls)
     EXPECT_EQ(std::string("MyVal"), settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
     EXPECT_EQ(50, settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
+
+TEST(SettingsTests, BaseSettingsManager_ListPersistedSettings)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
+
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+
+    TestSettingsManager sm(testFileSystem);
+
+    auto settings = sm.ListPersistedSettings();
+
+    ASSERT_EQ(2u, settings.size());
+
+    std::sort(
+        settings.begin(),
+        settings.end(),
+        [](auto const & lhs, auto const & rhs)
+        {
+            return lhs.Key.Name < rhs.Key.Name;
+        });
+
+    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
+    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("Test Name 2", StorageTypes::User));
+}

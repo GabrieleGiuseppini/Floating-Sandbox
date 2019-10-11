@@ -93,7 +93,7 @@ public:
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<IFileSystem> fileSystem);
 
-    std::vector<PersistedSettingsMetadata> ListSettings();
+    std::vector<PersistedSettingsMetadata> ListSettings() const;
 
     void Delete(PersistedSettingsKey const & settingsKey);
 
@@ -673,6 +673,16 @@ public:
         return settings;
     }
 
+    //
+    // Storage
+    //
+
+    auto ListPersistedSettings() const
+    {
+        return mStorage.ListSettings();
+    }
+
+    // TODOHERE
     // TODOHERE
 
 protected:
@@ -681,9 +691,10 @@ protected:
         std::filesystem::path const & rootSystemSettingsDirectoryPath,
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<TFileSystem> fileSystem = std::make_shared<TFileSystem>())
-        : mRootSystemSettingsDirectoryPath(rootSystemSettingsDirectoryPath)
-        , mRootUserSettingsDirectoryPath(rootUserSettingsDirectoryPath)
-        , mFileSystem(std::move(fileSystem))
+        : mStorage(
+            rootSystemSettingsDirectoryPath
+            , rootUserSettingsDirectoryPath
+            , std::move(fileSystem))
     {}
 
     template<typename TValue>
@@ -716,11 +727,9 @@ protected:
 
 private:
 
-    // Configuration
-    std::filesystem::path const mRootSystemSettingsDirectoryPath;
-    std::filesystem::path const mRootUserSettingsDirectoryPath;
-    std::shared_ptr<TFileSystem> const mFileSystem;
-
+    // Storage
+    SettingsStorage mStorage;
+  
     // Temporary containers for building up templates
     std::vector<std::unique_ptr<BaseSetting>> mTmpSettings;
     std::vector<std::unique_ptr<BaseSettingEnforcer>> mTmpEnforcers;
