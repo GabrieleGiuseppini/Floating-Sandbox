@@ -281,6 +281,8 @@ struct GameParameters
     static float constexpr MinSeaDepth = -50.0f;
     static float constexpr MaxSeaDepth = 10000.0f;
 
+    static size_t constexpr OceanFloorTerrainSamples = 2048;
+
     float OceanFloorBumpiness;
     static float constexpr MinOceanFloorBumpiness = 0.0f;
     static float constexpr MaxOceanFloorBumpiness = 6.0f;
@@ -378,10 +380,8 @@ struct GameParameters
     static constexpr size_t MaxPinnedPoints = 64u;
     static constexpr size_t MaxThanosSnaps = 8u;
 
-
     static constexpr size_t MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static constexpr size_t MaxTrianglesPerPoint = 8u;
-
 
 private:
 

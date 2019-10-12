@@ -47,6 +47,8 @@ set  (PHYSICS_SOURCES
 	ImpactBomb.h
 	OceanFloor.cpp
 	OceanFloor.h
+	OceanFloorTerrain.cpp
+	OceanFloorTerrain.h
 	OceanSurface.cpp
 	OceanSurface.h
 	Physics.h

@@ -1368,11 +1368,10 @@ Render:
 				+ Via StandardSystemPaths class
 			+ ResourceLoader::GetThemeSettingsRootFilepath()
 			+ Settings framework
-			- OceanFloor:
-				- OceanFloorTerrain
-					- Has unique_buffer<float>
-					- Exposes Load(.) X2 (png, istream) // see notebook
-					- other notebook methods
+			= OceanFloor:
+				+ OceanFloorTerrain
+					+ Has unique_buffer<float>
+					+ other notebook methods
 				- OceanFloor contains and owns OceanFloorTerrain
 					- Needs it as a member as it exposes reference to it
 				- OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
@@ -1385,8 +1384,13 @@ Render:
 				- IGameController (and OceanFloor):
 					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
 					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)
+				- Test
+					- Default at beginning
+						- Double-check interpolation we do at image->terrain algo
+					- Reset
 			- FloatingSandbox/SettingsManager.h
 				- BaseSetting specialization for OceanFloorTerrain
+					- Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
 			- MainFrame:
 				- Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)

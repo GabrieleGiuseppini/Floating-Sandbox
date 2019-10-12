@@ -32,19 +32,19 @@ public:
         , mSize(size)
     {}
 
-    unique_buffer(unique_buffer const & other)
+    unique_buffer(unique_buffer<TValue> const & other)
     {
         *this = other;
     }
 
-    unique_buffer(unique_buffer && other)
+    unique_buffer(unique_buffer<TValue> && other)
     {
         mBuffer = std::move(other.mBuffer);
         mSize = other.mSize;
         other.mSize = 0;
     }
 
-    unique_buffer & operator=(unique_buffer const & other)
+    unique_buffer<TValue> & operator=(unique_buffer<TValue> const & other)
     {
         mBuffer = std::make_unique<TValue[]>(other.mSize);
         std::memcpy(mBuffer.get(), other.mBuffer.get(), other.mSize * sizeof(TValue));
@@ -53,13 +53,27 @@ public:
         return *this;
     }
 
-    unique_buffer & operator=(unique_buffer && other)
+    unique_buffer<TValue> & operator=(unique_buffer<TValue> && other)
     {
         mBuffer = std::move(other.mBuffer);
         mSize = other.mSize;
         other.mSize = 0;
 
         return *this;
+    }
+
+    bool operator==(unique_buffer<TValue> const & other) const
+    {
+        if (mBuffer.get() == other.mBuffer.get())
+            return true;
+
+        return mSize == other.mSize
+            && 0 == std::memcmp(mBuffer.get(), other.mBuffer.get(), mSize * sizeof(TValue));
+    }
+
+    bool operator!=(unique_buffer<TValue> const & other) const
+    {
+        return !(*this == other);
     }
 
     inline size_t size() const noexcept

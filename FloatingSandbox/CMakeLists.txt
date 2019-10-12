@@ -29,6 +29,7 @@ set  (FLOATING_SANDBOX_SOURCES
 	ScalarTimeSeriesProbeControl.h
 	SettingsDialog.cpp
 	SettingsDialog.h
+	SettingsManager.h
 	ShipDescriptionDialog.cpp
 	ShipDescriptionDialog.h
 	ShipLoadDialog.cpp

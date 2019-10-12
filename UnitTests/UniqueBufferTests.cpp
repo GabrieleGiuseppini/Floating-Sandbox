@@ -102,6 +102,34 @@ TEST(UniqueBufferTests, MoveAssignment)
     EXPECT_EQ(999.0f, b2[7]);
 }
 
+TEST(UniqueBufferTests, Comparison)
+{
+    unique_buffer<float> b1(3);
+    b1[0] = 4.0f;
+    b1[1] = 8.0f;
+    b1[2] = 16.0f;
+
+    unique_buffer<float> b2(3);
+    b2[0] = 4.0f;
+    b2[1] = 8.0f;
+    b2[2] = 16.0f;
+
+    unique_buffer<float> b3(3);
+    b3[0] = 4.0f;
+    b3[1] = 8.1f;
+    b3[2] = 16.0f;
+
+    unique_buffer<float> b4(4);
+    b4[0] = 4.0f;
+    b4[1] = 8.0f;
+    b4[2] = 16.0f;
+    b4[3] = 32.0f;
+   
+    EXPECT_EQ(b1, b2);
+    EXPECT_NE(b1, b3);
+    EXPECT_NE(b1, b4);
+    EXPECT_NE(b4, b1);
+}
 TEST(UniqueBufferTests, ConvertCopy_LargerToSmaller)
 {
     unique_buffer<float> b1(3);
