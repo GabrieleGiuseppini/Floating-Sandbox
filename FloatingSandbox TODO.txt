@@ -375,11 +375,35 @@ Render:
 			- Add to about box
 				- Ask name & url
 
-		- New explosion shader
-			+ Take frames out of 4K video
-			- Make atlas just for explosion
-				- Resize frames (512x512)
-				- Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
+		= New explosions:
+			- Shader:
+				+ Take frames out of 4K video
+				- Make atlas just for explosion
+					- Resize frames (512x512) or (256x256)
+					- Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
+				- Cross-linear alpha between two textures
+				- Discard
+			- Atlas:
+				- RegularAtlas builder (no optim's, all same size (but not necessarily square))
+			- ShipRenderContext:
+				- New Explosion upload
+					- Quad vertices, just like sparkles
+					- New shader
+					- Own texture (atlas)
+					- Own plane as fire (will have deterministic deep sort, depending on which gets drawn first)
+						- TBD: or same plane?
+			- Ship: needs own state machine for explosions
+				- Does: rendering; creation of each frame's force field;
+					- i.e. has Update() and Upload()
+				- Replaces normal bombs' blast callback: DoBombExplosion
+					- Do IHandler while you're at it
+					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
+				- Expires when progress reaches max lifetime parameter (float seconds)
+			- Replace bombs: (verify all call the same Ship::DoBombExplosion(.))
+				- Impact
+				- RC
+				- Timer
+			- Start workitem for explosive combustion
 
 		- Video:
 			- Sparkles: before and after
@@ -1381,14 +1405,15 @@ Render:
 				+ GameController::Reset():
 					+ First takes current terrain, via World
 					+ Then, passes it back to World's cctor, as &&
+				- Crash when reloading after having written last sample
 				- IGameController (and OceanFloor):
 					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
 					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)
-				- Test
-					- Default terrain at beginning
-						- Double-check interpolation we do at image->terrain algo
-					- Precision of adjusted terrain
-					- Reset: maintains manually-adjusted terrain				
+				= Test:
+					+ Default terrain at beginning
+						+ Double-check interpolation we do at image->terrain algo					
+					+ Precision of adjusted terrain
+					+ Reset: maintains manually-adjusted terrain				
 			= FloatingSandbox/SettingsManager.h
 				- BaseSetting specialization for OceanFloorTerrain
 					- Does it need OceanFloorTerrain to expose Load(...istream...) ?
