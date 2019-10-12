@@ -100,7 +100,7 @@ public:
     std::shared_ptr<std::istream> OpenInputStream(
         PersistedSettingsKey const & settingsKey,
         std::string const & streamName,
-        std::string const & extension);
+        std::string const & extension) const;
 
     std::shared_ptr<std::ostream> OpenOutputStream(
         PersistedSettingsKey const & settingsKey,
@@ -133,7 +133,7 @@ public:
     SettingsSerializationContext(
         PersistedSettingsKey const & settingsKey,
         std::string const & description,
-        std::shared_ptr<SettingsStorage> storage);
+        SettingsStorage & storage);
 
     ~SettingsSerializationContext();
 
@@ -146,13 +146,13 @@ public:
         std::string const & streamName,
         std::string const & extension)
     {
-        return mStorage->OpenOutputStream(mSettingsKey, streamName, extension);
+        return mStorage.OpenOutputStream(mSettingsKey, streamName, extension);
     }
 
 private:
 
     PersistedSettingsKey const mSettingsKey;
-    std::shared_ptr<SettingsStorage> mStorage;
+    SettingsStorage & mStorage;
 
     picojson::object mSettingsJson;
     picojson::object * mSettingsRoot;
@@ -164,7 +164,7 @@ public:
 
     SettingsDeserializationContext(
         PersistedSettingsKey const & settingsKey,
-        std::shared_ptr<SettingsStorage> storage);
+        SettingsStorage const & storage);
 
     picojson::object const & GetSettingsRoot() const
     {
@@ -180,13 +180,13 @@ public:
         std::string const & streamName,
         std::string const & extension) const
     {
-        return mStorage->OpenInputStream(mSettingsKey, streamName, extension);
+        return mStorage.OpenInputStream(mSettingsKey, streamName, extension);
     }
 
 private:
 
     PersistedSettingsKey const mSettingsKey;
-    std::shared_ptr<SettingsStorage> mStorage;
+    SettingsStorage const & mStorage;
     
     picojson::object mSettingsRoot;
     Version mSettingsVersion;
@@ -678,6 +678,56 @@ public:
     auto ListPersistedSettings() const
     {
         return mStorage.ListSettings();
+    }
+
+    /*
+     * Loads the settings with the specified key.
+     *
+     * On output only loaded settings will be marked as dirty - the others
+     * will be clear.
+     */
+    void LoadPersistedSettings(
+        PersistedSettingsKey const & key,
+        Settings<TEnum> & settings) const
+    {
+        SettingsDeserializationContext ctx(key, mStorage);
+        settings.Deserialize(ctx);
+    }
+
+    /*
+     * Loads the settings with the specified key.
+     *
+     * On output only loaded settings will be marked as dirty - the others
+     * will be clear.
+     */
+    Settings<TEnum> LoadPersistedSettings(PersistedSettingsKey const & key) const
+    {
+        auto settings = mTemplateSettings;
+        LoadPersistedSettings(key, settings);
+        return settings;
+    }
+
+    /*
+     * Saves all and only the settings that are marked as dirty.
+     */
+    void SaveDirtySettings(
+        std::string const & name,
+        std::string const & description,
+        Settings<TEnum> const & settings)
+    {
+        SettingsSerializationContext ctx(
+            PersistedSettingsKey(
+                name,
+                StorageTypes::User),
+            description, 
+            mStorage);
+
+        settings.SerializeDirty(ctx);
+    }
+
+    void DeletePersistedSettings(PersistedSettingsKey const & key)
+    {
+        mStorage.Delete(key);
     }
 
     // TODOHERE

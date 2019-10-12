@@ -58,7 +58,7 @@ void SettingsStorage::Delete(PersistedSettingsKey const & settingsKey)
 std::shared_ptr<std::istream> SettingsStorage::OpenInputStream(
     PersistedSettingsKey const & settingsKey,
     std::string const & streamName,
-    std::string const & extension)
+    std::string const & extension) const
 {
     return mFileSystem->OpenInputStream(
         MakeFilePath(
@@ -149,13 +149,13 @@ std::filesystem::path SettingsStorage::GetRootPath(StorageTypes storageType) con
 SettingsSerializationContext::SettingsSerializationContext(
     PersistedSettingsKey const & settingsKey,
     std::string const & description,
-    std::shared_ptr<SettingsStorage> storage)
+    SettingsStorage & storage)
     : mSettingsKey(std::move(settingsKey))
-    , mStorage(std::move(storage))
+    , mStorage(storage)
     , mSettingsJson()
 {
     // Delete all files for this settings name
-    mStorage->Delete(mSettingsKey);
+    mStorage.Delete(mSettingsKey);
 
     // Prepare json
     mSettingsJson["version"] = picojson::value(Version::CurrentVersion().ToString());
@@ -173,7 +173,7 @@ SettingsSerializationContext::~SettingsSerializationContext()
 
     std::string const settingsJson = picojson::value(mSettingsJson).serialize(true);
 
-    auto os = mStorage->OpenOutputStream(
+    auto os = mStorage.OpenOutputStream(
         mSettingsKey,
         SettingsStreamName,
         SettingsExtension);
@@ -183,9 +183,9 @@ SettingsSerializationContext::~SettingsSerializationContext()
 
 SettingsDeserializationContext::SettingsDeserializationContext(
     PersistedSettingsKey const & settingsKey,
-    std::shared_ptr<SettingsStorage> storage)
+    SettingsStorage const & storage)
     : mSettingsKey(std::move(settingsKey))
-    , mStorage(std::move(storage))
+    , mStorage(storage)
     , mSettingsRoot()
     , mSettingsVersion(Version::CurrentVersion())
 {
@@ -193,7 +193,7 @@ SettingsDeserializationContext::SettingsDeserializationContext(
     // Load JSON
     //
 
-    auto is = mStorage->OpenInputStream(
+    auto is = mStorage.OpenInputStream(
         mSettingsKey,
         SettingsStreamName,
         SettingsExtension);

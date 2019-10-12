@@ -413,7 +413,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+    SettingsStorage storage(
         TestRootSystemDirectory,
         TestRootUserDirectory,
         testFileSystem);
@@ -516,7 +516,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+    SettingsStorage storage(
         TestRootSystemDirectory,
         TestRootUserDirectory,
         testFileSystem);
@@ -583,7 +583,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+    SettingsStorage storage(
         TestRootSystemDirectory,
         TestRootUserDirectory,
         testFileSystem);
@@ -666,7 +666,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
 
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+    SettingsStorage storage(
         TestRootSystemDirectory,
         TestRootUserDirectory,
         testFileSystem);
@@ -730,7 +730,7 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    std::shared_ptr<SettingsStorage> storage = std::make_shared<SettingsStorage>(
+    SettingsStorage storage(
         TestRootSystemDirectory,
         TestRootUserDirectory,
         testFileSystem);
@@ -996,4 +996,167 @@ TEST(SettingsTests, BaseSettingsManager_ListPersistedSettings)
 
     EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
     EXPECT_EQ(settings[1].Key, PersistedSettingsKey("Test Name 2", StorageTypes::User));
+}
+
+TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByVal)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+    TestSettingsManager sm(testFileSystem);
+
+    //
+    // Save settings
+    //
+
+    Settings<TestSettings> settings1(MakeTestSettings());
+    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<bool>(TestSettings::Setting3_bool, false);
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    sm.SaveDirtySettings("TestName", "TestDescription", settings1);
+
+    //
+    // Load settings
+    //
+
+    Settings<TestSettings> settings2 = sm.LoadPersistedSettings(PersistedSettingsKey("TestName", StorageTypes::User));
+
+    //
+    // Verify
+    //
+
+    EXPECT_EQ(242.0f, settings2.GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(999u, settings2.GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(false, settings2.GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("Test!"), settings2.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("Foo"), settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
+}
+
+TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByRef)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+    TestSettingsManager sm(testFileSystem);
+
+    //
+    // Save settings
+    //
+
+    Settings<TestSettings> settings1(MakeTestSettings());
+    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings1.SetValue<bool>(TestSettings::Setting3_bool, false);
+    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    sm.SaveDirtySettings("TestName", "TestDescription", settings1);
+
+    //
+    // Load settings
+    //
+
+    Settings<TestSettings> settings2(MakeTestSettings());
+
+    sm.LoadPersistedSettings(
+        PersistedSettingsKey("TestName", StorageTypes::User),
+        settings2);
+
+    //
+    // Verify
+    //
+
+    EXPECT_EQ(242.0f, settings2.GetValue<float>(TestSettings::Setting1_float));
+    EXPECT_EQ(999u, settings2.GetValue<uint32_t>(TestSettings::Setting2_uint32));
+    EXPECT_EQ(false, settings2.GetValue<bool>(TestSettings::Setting3_bool));
+    EXPECT_EQ(std::string("Test!"), settings2.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("Foo"), settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
+    EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
+}
+
+TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    //
+    // Prepare 3 settings
+    //
+
+    std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 3.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+
+    TestSettingsManager sm(testFileSystem);
+
+    auto persistedSettings1 = sm.ListPersistedSettings();
+
+    ASSERT_EQ(3u, persistedSettings1.size());
+
+    std::sort(
+        persistedSettings1.begin(),
+        persistedSettings1.end(),
+        [](auto const & lhs, auto const & rhs)
+        {
+            return lhs.Key.Name < rhs.Key.Name;
+        });
+
+    //
+    // Delete 1 setting
+    //
+
+    sm.DeletePersistedSettings(persistedSettings1[1].Key);
+
+    //
+    // Verify 2 left
+    //
+
+    auto persistedSettings2 = sm.ListPersistedSettings();
+
+    EXPECT_EQ(2u, persistedSettings2.size());
+
+    std::sort(
+        persistedSettings2.begin(),
+        persistedSettings2.end(),
+        [](auto const & lhs, auto const & rhs)
+        {
+            return lhs.Key.Name < rhs.Key.Name;
+        });
+
+    EXPECT_EQ(persistedSettings2[0].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
+    EXPECT_EQ(persistedSettings2[1].Key, PersistedSettingsKey("Test Name 3", StorageTypes::User));
+}
+
+TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings_All)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    //
+    // Prepare 3 settings
+    //
+
+    std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+
+    TestSettingsManager sm(testFileSystem);
+
+    auto persistedSettings1 = sm.ListPersistedSettings();
+
+    ASSERT_EQ(2u, persistedSettings1.size());
+
+    //
+    // Delete all settings
+    //
+
+    sm.DeletePersistedSettings(persistedSettings1[0].Key);
+    sm.DeletePersistedSettings(persistedSettings1[1].Key);
+
+    //
+    // Verify nothing left
+    //
+
+    auto persistedSettings2 = sm.ListPersistedSettings();
+
+    EXPECT_EQ(0u, persistedSettings2.size());
 }

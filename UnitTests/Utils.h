@@ -44,6 +44,7 @@ public:
         auto it = mFileMap.find(filePath);
         if (it != mFileMap.end())
         {
+            it->second->rewind();
             return std::make_shared<std::istream>(it->second.get());
         }
         else

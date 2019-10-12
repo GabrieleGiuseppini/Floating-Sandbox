@@ -28,8 +28,7 @@ public:
         mStreamBuffer.resize(initString.size());
         initString.copy(mStreamBuffer.data(), initString.size());
 
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data(), mStreamBuffer.data() + mStreamBuffer.size());
-        this->setp(nullptr, nullptr);
+        rewind();
     }
 
     memory_streambuf(char * initData, size_t initDataSize)
@@ -38,8 +37,7 @@ public:
         mStreamBuffer.resize(initDataSize);
         std::memcpy(mStreamBuffer.data(), initData, initDataSize);
 
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data(), mStreamBuffer.data() + mStreamBuffer.size());
-        this->setp(nullptr, nullptr);
+        rewind();
     }
 
     char const * data() const
@@ -50,6 +48,12 @@ public:
     std::size_t size() const
     {
         return mStreamBuffer.size();
+    }
+
+    void rewind()
+    {
+        this->setg(mStreamBuffer.data(), mStreamBuffer.data(), mStreamBuffer.data() + mStreamBuffer.size());
+        this->setp(nullptr, nullptr);
     }
 
 private:

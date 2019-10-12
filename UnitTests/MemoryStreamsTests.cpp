@@ -125,6 +125,30 @@ TEST(MemoryStreamsTests, BackingInputStream_read_more)
     EXPECT_EQ('o', localBuf[4]);
 }
 
+TEST(MemoryStreamsTests, BackingInputStream_rewind)
+{
+    memory_streambuf ms("hello");
+
+    std::istream is(&ms);
+
+    char localBuf[5];
+    is.read(localBuf, 5);
+
+    EXPECT_EQ(5, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+
+    ms.rewind();
+
+    is.read(localBuf, 5);
+
+    EXPECT_EQ(5, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+}
+
 TEST(MemoryStreamsTests, BackingInputStream_get)
 {
     unsigned char initData[] = { unsigned char(0x00), unsigned char(0x7f), unsigned char(0x80), unsigned char(0x81), unsigned char(0xff) };
