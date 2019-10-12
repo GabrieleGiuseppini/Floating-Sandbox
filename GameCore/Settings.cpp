@@ -43,6 +43,16 @@ std::vector<PersistedSettingsMetadata> SettingsStorage::ListSettings() const
     return persistedSettingsMetadata;
 }
 
+bool SettingsStorage::HasSettings(PersistedSettingsKey const & settingsKey) const
+{
+    auto const settingsFilePath = MakeFilePath(
+        settingsKey,
+        SettingsStreamName,
+        SettingsExtension);
+
+    return mFileSystem->Exists(settingsFilePath);
+}
+
 void SettingsStorage::Delete(PersistedSettingsKey const & settingsKey)
 {
     for (auto const & filePath : mFileSystem->ListFiles(GetRootPath(settingsKey.StorageType)))

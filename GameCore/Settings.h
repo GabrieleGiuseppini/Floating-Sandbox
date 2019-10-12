@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -59,6 +60,11 @@ struct PersistedSettingsKey
         return Name == other.Name
             && StorageType == other.StorageType;
     }
+
+    static PersistedSettingsKey MakeLastPlayedSettingsKey()
+    {
+        return PersistedSettingsKey("Last Played", StorageTypes::User);
+    }
 };
 
 /*
@@ -75,6 +81,22 @@ struct PersistedSettingsMetadata
         : Key(std::move(key))
         , Description(std::move(description))
     {}
+
+    static PersistedSettingsMetadata MakeLastPlayedSettingsMetadata()
+    {
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+        std::stringstream ss;
+        ss
+            << "The settings that were used when the game was last played on "
+            << std::put_time(std::localtime(&now_c), "%F") 
+            << ".";
+
+        return PersistedSettingsMetadata(
+            PersistedSettingsKey::MakeLastPlayedSettingsKey(),
+            ss.str());
+    }
 };
 
 /*
@@ -92,6 +114,8 @@ public:
         std::filesystem::path const & rootSystemSettingsDirectoryPath,
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<IFileSystem> fileSystem);
+
+    bool HasSettings(PersistedSettingsKey const & settingsKey) const;
 
     std::vector<PersistedSettingsMetadata> ListSettings() const;
 
@@ -129,6 +153,15 @@ private:
 class SettingsSerializationContext final
 {
 public:
+
+    SettingsSerializationContext(
+        PersistedSettingsMetadata const & settingsMetadata,
+        SettingsStorage & storage)
+        : SettingsSerializationContext(
+            settingsMetadata.Key,
+            settingsMetadata.Description,
+            storage)
+    {}
 
     SettingsSerializationContext(
         PersistedSettingsKey const & settingsKey,
@@ -614,14 +647,23 @@ public:
         mEnforcers = std::move(other.mEnforcers);
     }
 
-    void Enforce(Settings<TEnum> const & settings) const
+    /*
+     * Enforces all and only the settings that are marked as dirty.
+     */
+    void EnforceDirty(Settings<TEnum> const & settings) const
     {
         for (size_t e = 0; e < static_cast<size_t>(TEnum::_Last) + 1; ++e)
         {
-            mEnforcers[e]->Enforce(settings[static_cast<TEnum>(e)]);
+            if (settings[static_cast<TEnum>(e)].IsDirty())
+            {
+                mEnforcers[e]->Enforce(settings[static_cast<TEnum>(e)]);
+            }
         }
     }
 
+    /*
+     * Pulls all settings and marks all of them as dirty, unconditionally.
+     */
     void Pull(Settings<TEnum> & settings) const
     {
         for (size_t e = 0; e < static_cast<size_t>(TEnum::_Last) + 1; ++e)
@@ -654,16 +696,25 @@ public:
         return mDefaultSettings;
     }
 
-    void Enforce(Settings<TEnum> const & settings) const
+    /*
+     * Enforces all and only the settings that are marked as dirty.
+     */
+    void EnforceDirtySettings(Settings<TEnum> const & settings) const
     {
-        mEnforcers.Enforce(settings);
+        mEnforcers.EnforceDirty(settings);
     }
 
+    /*
+     * Pulls all settings and marks all of them as dirty, unconditionally.
+     */
     void Pull(Settings<TEnum> & settings) const
     {
         mEnforcers.Pull(settings);
     }
 
+    /*
+     * Pulls all settings and marks all of them as dirty, unconditionally.
+     */
     Settings<TEnum> Pull() const
     {
         auto settings = mTemplateSettings;
@@ -730,8 +781,49 @@ public:
         mStorage.Delete(key);
     }
 
-    // TODOHERE
-    // TODOHERE
+    /*
+     * Checks whether the settings used in the previous session
+     * are available for being loaded.
+     */
+    bool HasLastPlayedSettingsPersisted() const
+    {
+        return mStorage.HasSettings(PersistedSettingsKey::MakeLastPlayedSettingsKey());
+    }
+
+    /*
+     * Saves the currently-enforced settings as the standard "last-played" settings.
+     */
+    void SaveLastPlayedSettings()
+    {
+        // Take snapshot
+        auto settings = mTemplateSettings;
+        Pull(settings);
+
+        // Diff with defaults
+        settings.SetDirtyWithDiff(mDefaultSettings);
+
+        // Save
+        {
+            SettingsSerializationContext ctx(
+                PersistedSettingsMetadata::MakeLastPlayedSettingsMetadata(),
+                mStorage);
+
+            settings.SerializeDirty(ctx);
+        }
+    }
+
+    /*
+     * Enforces the last played settings, if they are persisted.
+     */
+    void LoadAndEnforceLastPlayedSettings()
+    {
+        if (HasLastPlayedSettingsPersisted())
+        {
+            EnforceDirtySettings(
+                LoadPersistedSettings(
+                    PersistedSettingsKey::MakeLastPlayedSettingsKey()));
+        }
+    }
 
 protected:
 

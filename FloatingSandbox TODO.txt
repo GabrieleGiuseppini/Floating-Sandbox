@@ -1432,6 +1432,7 @@ Render:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
 			+ ResourceLoader::GetThemeSettingsRootFilepath()
+			= Settings framework
 			- OceanFloor:
 				- OceanFloor contains and own OceanFloorTerrain
 					- OceanFloorTerrain has unique_buffer
@@ -1441,6 +1442,7 @@ Render:
 				  from GameController, who takes it from MainFrame - see above
 				- GameController::SetOceanFloorTerrain(.) in turn invokes on OceanFloor
 					- As it would be too expensive for OceanFloor to detect changes @ Update() time
+
 		- Dialog:
 			- Control values are meant to always be in sync with real game params
 				- Handlers write value directly to SettingsManager

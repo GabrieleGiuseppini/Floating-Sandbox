@@ -927,20 +927,29 @@ TEST(SettingsTests, BaseSettingsManager_Enforces)
     auto testFileSystem = std::make_shared<TestFileSystem>();
     TestSettingsManager sm(testFileSystem);
 
+    // Set currently-enforced
+    GlobalSettings.setting1 = 789.5f;
+    GlobalSettings.setting2 = 242;
+    GlobalSettings.setting3 = true;
+    GlobalSettings.setting4 = "A Forest";
+    GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
     // Prepare settings
     Settings<TestSettings> settings(MakeTestSettings());
     settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
     settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+    settings.ClearAllDirty();
+    // Only the following will be enforced
     settings.SetValue<bool>(TestSettings::Setting3_bool, false);
     settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
-    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+    settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));    
 
-    // Enforce
-    sm.Enforce(settings);
+    // Enforce dirty
+    sm.EnforceDirtySettings(settings);
 
     // Verify
-    EXPECT_EQ(242.0f, GlobalSettings.setting1);
-    EXPECT_EQ(999u, GlobalSettings.setting2);
+    EXPECT_EQ(789.5f, GlobalSettings.setting1);
+    EXPECT_EQ(242u, GlobalSettings.setting2);
     EXPECT_EQ(false, GlobalSettings.setting3);
     EXPECT_EQ(std::string("Test!"), GlobalSettings.setting4);
     EXPECT_EQ(std::string("Foo"), GlobalSettings.setting5.Str);
@@ -1159,4 +1168,79 @@ TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings_All)
     auto persistedSettings2 = sm.ListPersistedSettings();
 
     EXPECT_EQ(0u, persistedSettings2.size());
+}
+
+TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    //
+    // Set defaults
+    //
+
+    GlobalSettings.setting1 = 789.5f;
+    GlobalSettings.setting2 = 242;
+    GlobalSettings.setting3 = true;
+    GlobalSettings.setting4 = "A Forest";
+    GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
+    //
+    // Create settings manager - defaults are taken here
+    //
+
+    TestSettingsManager sm(testFileSystem);
+
+    //
+    // Last played do not exist by default
+    //
+
+    EXPECT_FALSE(sm.HasLastPlayedSettingsPersisted());
+
+    //
+    // Change last played settings
+    //
+
+    GlobalSettings.setting2 = 243;
+    GlobalSettings.setting5 = CustomValue("MyVal", 51);
+
+    //
+    // Save last played settings
+    //
+
+    sm.SaveLastPlayedSettings();
+
+    //
+    // Last played exist now
+    //
+
+    EXPECT_TRUE(sm.HasLastPlayedSettingsPersisted());
+
+    //
+    // Change enforced settings again
+    //
+
+    GlobalSettings.setting2 = 244;
+    GlobalSettings.setting5 = CustomValue("MyVal", 52);
+
+    // These are to verify that we only saved delta with default
+    GlobalSettings.setting1 = 200.0f;
+    GlobalSettings.setting3 = false;
+    GlobalSettings.setting4 = "The Drowning Man";
+
+    //
+    // Load and enforce last played settings
+    //
+
+    sm.LoadAndEnforceLastPlayedSettings();
+
+    //
+    // Verify enforced settings
+    //
+
+    EXPECT_EQ(200.0f, GlobalSettings.setting1); // From before
+    EXPECT_EQ(243u, GlobalSettings.setting2); // Saved
+    EXPECT_EQ(false, GlobalSettings.setting3); // From before
+    EXPECT_EQ("The Drowning Man", GlobalSettings.setting4); // From before
+    EXPECT_EQ("MyVal", GlobalSettings.setting5.Str); // Saved
+    EXPECT_EQ(51, GlobalSettings.setting5.Int); // Saved
 }
