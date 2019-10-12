@@ -1354,150 +1354,190 @@ Render:
 
 	= SettingsManager: save settings, defaults, and real-time changes (*)
 		- Spec: 
-			- Game starts always with default settings; user has the ability though to load named settings
-				- Where "defaults" is hardcoded name for default settings
-			- Game also comes with own "themes" settings
-				- Under Data\Themes
-				- Managed by SettingsDialog (not by SettingsManager)
-				- Read-only (marked as "system" settings to avoid overwriting)
-			- Saved settings have a name, which is the one shown to the user
-			  and a description
-				- Names are unique
-					- UI makes sure names only contain FS-allowed chars
-				- User may overwrite non-system saved settings only
-			- Saved settings do not have necessarily all settings 
-			  (e.g. to allow for graphical themes, which only specify certain render properties)
-				- We track individual settings' dirtyness wrt defaults, so users may save subsets of settings
-			- Ocean floor is just another setting
-				- GameController exposes ocean floor as OceanFloorTerrain
-					- Actual parameter is owned by OceanFloor
-				- GameController::cctor takes it
-				- MainFrame provides the initial one loaded via OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
-				- SettingsManager saves it in binary file (specific to ocean floor; other buffer settings will have their own binary file) next to user settings' json file,
-				  w/same name but different extension
-			- Saved settings are thus:
-				- settings_name.settings.json
-				- settings_name.stream_name.dat
+			- Game starts always with default settings; user has the ability though to load named settings and to load
+			  the last-played settings
 			- Changing settings in the GUI puts them in effect immediately
 				- ...and GameController will smooth them
 			- Loaded settings go to GameController
 				- ...and GameController will smooth them
-
-			- TODO: Now review the below based on this 
-
-			- SettingsManager (@FloatingSandbox):
-				- Has GameController, SoundController, etc.
-				- Defines struct with all customizable setting members
-				- Maintains two instances of struct:
-					- Defaults
-					- Last (last settings when the dialog was opened, i.e. before user has changed them in this settings session)
-						- TODO: really needed? Can't caller (SettingsDialog) ask SettingsManager to make/return_current struct?
-				- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
-				- Manages saving and loading customizable settings to and from json
-				- Created by MainFrame on startup
-					- Initializes here --TODONUKE:, loading settings if present
-				- Exposes getters and setters for all customizable properties, used by SettingsDialog
-					- get(): from their place
-					- set(): to their place
-				- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
-					- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
-					- --TODONUKE: Then if personal_settings.json exists:
-						- Loads it to temp struct - via Load(filepath)->temp struct
-						- Then applies temp struct - via ApplyToGame(temp struct)
-				- CreateCheckpoint():
-					- Makes Last by reading from GameController, SoundController, etc.
-				- Load(filepath)
-					- Loads from path into temp struct - via Load(filepath)->temp struct
-					- Then applies temp struct via ApplyToGame(temp struct)
-				- --TODONUKE: Save()
-					- Save(path of personal_settings.json)
-				- Save(filepath)
-					- Reads current from their place into temp struct - via ReadFromGame()->temp struct
-					- Saves temp struct to filepath
-				- RevertToCheckpoint()
-					- Applies Last
-				- RestoreDefaults():
-					- Applies Default
-				- --TODONUKE:RestorePersonalSettings():
-					- Load(path of personal_settings.json)
-				- Internal helpers:
-					- ApplyToGame(struct)
-						- Applies struct to GameController, SoundController, etc.
-					- ReadFromGame()->struct
-						- Reads all from GameController, SoundController, etc. into struct
-							- struct cctor has all vals
-					- Save(struct, filepath)
-					- Load(filepath) -> struct
-		- Impl:
+			- Dialog:
+				- Control values are meant to always be in sync with real game params
+					- Handlers enforce values immediately
+		- Plan:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
 			+ ResourceLoader::GetThemeSettingsRootFilepath()
-			= Settings framework
+			+ Settings framework
 			- OceanFloor:
-				- OceanFloor contains and own OceanFloorTerrain
-					- OceanFloorTerrain has unique_buffer
-					- OceanFloorTerrain exposes Load(.) X2 (png, floatbin)
-					- SettingsManager has BaseSetting specialization for OceanFloorTerrain
-				- OceanFloor cctor needs to take default OceanFloorTerrain from outside, i.e.
-				  from GameController, who takes it from MainFrame - see above
-				- GameController::SetOceanFloorTerrain(.) in turn invokes on OceanFloor
-					- As it would be too expensive for OceanFloor to detect changes @ Update() time
+				- OceanFloorTerrain
+					- Has unique_buffer<float>
+					- Exposes Load(.) X2 (png, istream) // see notebook
+					- other notebook methods
+				- OceanFloor contains and owns OceanFloorTerrain
+					- Needs it as a member as it exposes reference to it
+				- OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
+				  from World who takes it from GameController as &&
+					- GameController provides the initial one loaded via 
+					  OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
+				- GameController::Reset():
+					- First takes current terrain, via World
+					- Then, passes it back to World's cctor, as &&
+				- IGameController (and OceanFloor):
+					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
+					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)
+			- FloatingSandbox/SettingsManager.h
+				- BaseSetting specialization for OceanFloorTerrain
+				- Static factory maker
+			- MainFrame:
+				- Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
+				- Menu: "Load last played settings"
+					- Only enabled if "last played settings" exists
+				- Save last-played settings on exit
+			- SettingsDialog:
+				- New "Settings Management" tab:
+					- TODOHERE
+			- Data\Themes:
+				- Ocean of Lava
+				- Marianas Trench
+					- https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwjR1dOP7pblAhWEZlAKHR2mA4wQjRx6BAgBEAQ&url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F141793088246977612%2F&psig=AOvVaw0OzRMFmTiX8N2vV9EdhIk5&ust=1570974426012606
 
-		- Dialog:
-			- Control values are meant to always be in sync with real game params
-				- Handlers write value directly to SettingsManager
-				- Then mark dialog as dirty
-					- Dirty means there have been changes, which might get wiped (by restoring Last) if Cancel is pressed
-			- UI:
-				- Remove Apply 
-				- Buttons: OK, Revert Changes (iff dirty), Cancel (iff dirty)
-				- File Menu (TODO: no menu, buttons and drop-down): --TODONUKESave As Defaults, Save Preferences..., Load Preferences..., --TODONUKE:Restore Defaults, Restore Factory Defaults
-			- OnShow():
-				- Calls SettingsManager::CreateCheckpoint()
-				- Reads all control values from SettingsManager
-				- Does not mark self as dirty
-			- --TODONUKE:SaveAsDefaults: saves current to personal_settings.json
-				- Calls SettingsManager::Save()
-				- Stays dirty if it was dirty
-			- SavePreferences: saves with filename
-				- Calls SettingsManager::Save(filepath)
-				- Stays dirty if it was dirty
-			- LoadPreferences: loads with filename, changes settings
-				- Calls SettingsManager::Load(filepath)
-				- Reads all control values from SettingsManager
-				- Marks self as dirty
-			- --TODONUKE:RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
-				- Calls SettingsManager::RestorePersonalSettings()
-				- Reads all control values from SettingsManager
-				- Sets dirty
-			- RestoreFactoryDefaults: we set everything to default, but don't commit - allow Revert
-				- Calls SettingsManager::RestoreDefaults()
-				- Reads all control values from SettingsManager
-				- Sets dirty
-			- OK:
-				- Close dialog
-			- Revert Changes: 
-				- Calls SettingsManager::RevertToCheckpoint()
-				- Reads all control values from SettingsManager
-				- Cleans dirty - via MarkAsDirty(bool)
-			- Cancel (only shown if dirty)/Close
-				- Calls SettingsManager::RevertToCheckpoint()
-				- Close dialog
-			- Helpers:
-				- MarkAsDirty(bool)
-					- Stores flag
-					- Enables/Disabled buttons and menus
+
+		- OLD:
+			- Spec: 
+				- Game starts always with default settings; user has the ability though to load named settings
+					- Where "defaults" is hardcoded name for default settings
+				- Game also comes with own "themes" settings
+					- Under Data\Themes
+					- Managed by SettingsDialog (not by SettingsManager)
+					- Read-only (marked as "system" settings to avoid overwriting)
+				- Saved settings have a name, which is the one shown to the user
+				  and a description
+					- Names are unique
+						- UI makes sure names only contain FS-allowed chars
+					- User may overwrite non-system saved settings only
+				- Saved settings do not have necessarily all settings 
+				  (e.g. to allow for graphical themes, which only specify certain render properties)
+					- We track individual settings' dirtyness wrt defaults, so users may save subsets of settings
+				- Ocean floor is just another setting
+					- GameController exposes ocean floor as OceanFloorTerrain
+						- Actual parameter is owned by OceanFloor
+					- GameController::cctor takes it
+					- MainFrame provides the initial one loaded via OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
+					- SettingsManager saves it in binary file (specific to ocean floor; other buffer settings will have their own binary file) next to user settings' json file,
+					  w/same name but different extension
+				- Saved settings are thus:
+					- settings_name.settings.json
+					- settings_name.stream_name.dat
+				- Changing settings in the GUI puts them in effect immediately
+					- ...and GameController will smooth them
+				- Loaded settings go to GameController
+					- ...and GameController will smooth them
+
+				- TODO: Now review the below based on this 
+
+				- SettingsManager (@FloatingSandbox):
+					- Has GameController, SoundController, etc.
+					- Defines struct with all customizable setting members
+					- Maintains two instances of struct:
+						- Defaults
+						- Last (last settings when the dialog was opened, i.e. before user has changed them in this settings session)
+							- TODO: really needed? Can't caller (SettingsDialog) ask SettingsManager to make/return_current struct?
+					- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
+					- Manages saving and loading customizable settings to and from json
+					- Created by MainFrame on startup
+						- Initializes here --TODONUKE:, loading settings if present
+					- Exposes getters and setters for all customizable properties, used by SettingsDialog
+						- get(): from their place
+						- set(): to their place
+					- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
+						- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
+						- --TODONUKE: Then if personal_settings.json exists:
+							- Loads it to temp struct - via Load(filepath)->temp struct
+							- Then applies temp struct - via ApplyToGame(temp struct)
+					- CreateCheckpoint():
+						- Makes Last by reading from GameController, SoundController, etc.
+					- Load(filepath)
+						- Loads from path into temp struct - via Load(filepath)->temp struct
+						- Then applies temp struct via ApplyToGame(temp struct)
+					- --TODONUKE: Save()
+						- Save(path of personal_settings.json)
+					- Save(filepath)
+						- Reads current from their place into temp struct - via ReadFromGame()->temp struct
+						- Saves temp struct to filepath
+					- RevertToCheckpoint()
+						- Applies Last
+					- RestoreDefaults():
+						- Applies Default
+					- --TODONUKE:RestorePersonalSettings():
+						- Load(path of personal_settings.json)
+					- Internal helpers:
+						- ApplyToGame(struct)
+							- Applies struct to GameController, SoundController, etc.
+						- ReadFromGame()->struct
+							- Reads all from GameController, SoundController, etc. into struct
+								- struct cctor has all vals
+						- Save(struct, filepath)
+						- Load(filepath) -> struct
+			- Impl:
+				+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
+					+ Via StandardSystemPaths class
+				+ ResourceLoader::GetThemeSettingsRootFilepath()
+				= Settings framework
+				- OceanFloor:
+					- OceanFloor contains and own OceanFloorTerrain
+						- OceanFloorTerrain has unique_buffer
+						- OceanFloorTerrain exposes Load(.) X2 (png, floatbin)
+						- SettingsManager has BaseSetting specialization for OceanFloorTerrain
+					- OceanFloor cctor needs to take default OceanFloorTerrain from outside, i.e.
+					  from GameController, who takes it from MainFrame - see above
+					- GameController::SetOceanFloorTerrain(.) in turn invokes on OceanFloor
+						- As it would be too expensive for OceanFloor to detect changes @ Update() time
+			- Dialog:
+				- Control values are meant to always be in sync with real game params
+					- Handlers write value directly to SettingsManager
+					- Then mark dialog as dirty
+						- Dirty means there have been changes, which might get wiped (by restoring Last) if Cancel is pressed
+				- UI:
+					- Remove Apply 
+					- Buttons: OK, Revert Changes (iff dirty), Cancel (iff dirty)
+					- File Menu (TODO: no menu, buttons and drop-down): --TODONUKESave As Defaults, Save Preferences..., Load Preferences..., --TODONUKE:Restore Defaults, Restore Factory Defaults
+				- OnShow():
+					- Calls SettingsManager::CreateCheckpoint()
+					- Reads all control values from SettingsManager
+					- Does not mark self as dirty
+				- --TODONUKE:SaveAsDefaults: saves current to personal_settings.json
+					- Calls SettingsManager::Save()
+					- Stays dirty if it was dirty
+				- SavePreferences: saves with filename
+					- Calls SettingsManager::Save(filepath)
+					- Stays dirty if it was dirty
+				- LoadPreferences: loads with filename, changes settings
+					- Calls SettingsManager::Load(filepath)
+					- Reads all control values from SettingsManager
+					- Marks self as dirty
+				- --TODONUKE:RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
+					- Calls SettingsManager::RestorePersonalSettings()
+					- Reads all control values from SettingsManager
+					- Sets dirty
+				- RestoreFactoryDefaults: we set everything to default, but don't commit - allow Revert
+					- Calls SettingsManager::RestoreDefaults()
+					- Reads all control values from SettingsManager
+					- Sets dirty
+				- OK:
+					- Close dialog
+				- Revert Changes: 
+					- Calls SettingsManager::RevertToCheckpoint()
+					- Reads all control values from SettingsManager
+					- Cleans dirty - via MarkAsDirty(bool)
+				- Cancel (only shown if dirty)/Close
+					- Calls SettingsManager::RevertToCheckpoint()
+					- Close dialog
+				- Helpers:
+					- MarkAsDirty(bool)
+						- Stores flag
+						- Enables/Disabled buttons and menus
 
 	- Save ocean floor terrain and load it at startup
-		- TODO: might become pointless if we take care of this at SettingsManager as spec'dabove
-		- GameController takes root path of user world data (given by MainFrame via StandardPaths)
-			- Loads (optional) data at startup (if exists)
-			- Saves data at dctor
-			- Passes this data to world at World::cctor
-			- Preferences allows user to reset to default
-				- Conditionally, by polling GameController who checks if it has mUserOceanFloorTerrain
-				- When reset -> GameController::ResetOceanFloorTerranToDefault
-					- Nukes mUserOceanFloorTerrain and calls World::ResetOceanFloorTerranToDefault which propagates
 
 	- ShipLoadDialog:
 		- Ship preview database/cache
