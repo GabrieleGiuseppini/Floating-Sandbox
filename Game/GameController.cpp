@@ -75,9 +75,9 @@ GameController::GameController(
     , mResourceLoader(std::move(resourceLoader))
     , mStatusText(std::move(statusText))
     , mWorld(new Physics::World(
+        Physics::OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
-        mGameParameters,
-        *mResourceLoader))
+        mGameParameters))
     , mMaterialDatabase(std::move(materialDatabase))
     // Smoothing
     , mFloatParameterSmoothers()
@@ -210,12 +210,14 @@ GameController::GameController(
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
-{
+{    
+    assert(!!mWorld);
+
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
+        std::move(Physics::OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
-        mGameParameters,
-        *mResourceLoader);
+        mGameParameters);
 
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
@@ -254,7 +256,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     // Validate ship
     mRenderContext->ValidateShip(shipDefinition);
 
-    // Save metadata
+    // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     // Load ship into current world
@@ -277,11 +279,13 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
 
 void GameController::ReloadLastShip()
 {
+    assert(!!mWorld);
+
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
+        std::move(Physics::OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
-        mGameParameters,
-        *mResourceLoader);
+        mGameParameters);
 
     // Load ship definition
 

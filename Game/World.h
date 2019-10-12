@@ -10,7 +10,6 @@
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
-#include "ResourceLoader.h"
 #include "ShipDefinition.h"
 
 #include <GameCore/AABB.h>
@@ -29,9 +28,9 @@ class World
 public:
 
     World(
+        OceanFloorTerrain && oceanFloorTerrain,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters,
-        ResourceLoader & resourceLoader);
+        GameParameters const & gameParameters);
 
     float GetCurrentSimulationTime() const
     {
@@ -65,6 +64,16 @@ public:
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();
+    }
+
+    inline void SetOceanFloorTerrain(OceanFloorTerrain const & oceanFloorTerrain)
+    {
+        mOceanFloor.SetTerrain(oceanFloorTerrain);
+    }
+
+    inline OceanFloorTerrain const & GetOceanFloorTerrain() const
+    {
+        return mOceanFloor.GetTerrain();
     }
 
     //

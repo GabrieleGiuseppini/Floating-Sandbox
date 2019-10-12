@@ -46,9 +46,13 @@ public:
 
     unique_buffer<TValue> & operator=(unique_buffer<TValue> const & other)
     {
-        mBuffer = std::make_unique<TValue[]>(other.mSize);
-        std::memcpy(mBuffer.get(), other.mBuffer.get(), other.mSize * sizeof(TValue));
-        mSize = other.mSize;
+        if (mSize != other.mSize)
+        {
+            mBuffer = std::make_unique<TValue[]>(other.mSize);
+            mSize = other.mSize;
+        }
+
+        std::memcpy(mBuffer.get(), other.mBuffer.get(), other.mSize * sizeof(TValue));        
 
         return *this;
     }
@@ -64,6 +68,7 @@ public:
 
     bool operator==(unique_buffer<TValue> const & other) const
     {
+        // Shortcut
         if (mBuffer.get() == other.mBuffer.get())
             return true;
 

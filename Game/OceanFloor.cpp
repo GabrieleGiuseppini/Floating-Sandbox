@@ -7,142 +7,62 @@
 
 namespace Physics {
 
-// Bump map bitmaps smaller than this width are resized up (interpolating) to this width
-static constexpr int IdealBumpMapWidth = 5000;
-
 // The number of slices we want to render the ocean floor as;
 // this is the graphical resolution
 template<typename T>
 static constexpr T RenderSlices = 500;
 
-namespace /* anonymous */ {
+OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
+    : mBumpProfile(SamplesCount)
+    , mTerrain(std::move(terrain))
+    , mSamples(new Sample[SamplesCount + 1])
+    , mCurrentSeaDepth(0.0f)
+    , mCurrentOceanFloorBumpiness(0.0f)
+    , mCurrentOceanFloorDetailAmplification(0.0f)
+{
+    // Calculate bump profile
+    CalculateBumpProfile();
 
-    int GetTopmostY(
-        RgbImageData const & imageData,
-        int x)
-    {
-        int imageY;
-        for (imageY = 0 /*top*/; imageY < imageData.Size.Height; ++imageY)
-        {
-            int pointIndex = imageY * imageData.Size.Width + x;
-            if (imageData.Data[pointIndex] != rgbColor::zero())
-            {
-                // Found it!
-                break;
-            }
-        }
-
-        return imageY;
-    }
+    // Calculate samples
+    CalculateResultantSampleValues();
 }
 
-OceanFloor::OceanFloor(ResourceLoader & resourceLoader)
-    : mSamples(new Sample[SamplesCount + 1])
-    , mBumpMapSamples(new float[SamplesCount + 1])
-    , mCurrentSeaDepth(std::numeric_limits<float>::lowest())
-    , mCurrentOceanFloorBumpiness(std::numeric_limits<float>::lowest())
-    , mCurrentOceanFloorDetailAmplification(std::numeric_limits<float>::lowest())
+void OceanFloor::SetTerrain(OceanFloorTerrain const & terrain)
 {
-    //
-    // Initialize bump map
-    // - Load bump map image
-    // - Implicitly resample it to 5000m, if width < 5000
-    // - Convert each (topmost) y of the map into a Y coordinate, between H/2 (top) and -H/2 (bottom)
-    //
+    // Update terrain
+    mTerrain = terrain;
 
-    RgbImageData bumpMapImage = ImageFileTools::LoadImageRgbUpperLeft(resourceLoader.GetOceanFloorBumpMapFilepath());
-
-    float const worldXToImageX = bumpMapImage.Size.Width < IdealBumpMapWidth
-        ? static_cast<float>(bumpMapImage.Size.Width) / static_cast<float>(IdealBumpMapWidth)
-        : 1.0f;
-
-    float const halfHeight = static_cast<float>(bumpMapImage.Size.Height / 2);
-
-    for (size_t s = 0; s < SamplesCount; ++s)
-    {
-        // Calculate pixel X
-        float const imageX = static_cast<float>(s)
-            * Dx
-            * worldXToImageX;
-
-        // Integral and fractional parts
-        int imageXI = static_cast<int>(floor(imageX));
-        float imageXIF = imageX - static_cast<float>(imageXI);
-
-        // Calculate the left and right x's, wrapping around bump map as necessary
-        int x1 = imageXI % bumpMapImage.Size.Width;
-        int x2 = (imageXI + 1) % bumpMapImage.Size.Width;
-
-        // Find topmost Y's
-        float sampleValue1 = static_cast<float>(bumpMapImage.Size.Height - GetTopmostY(bumpMapImage, x1)) - halfHeight;
-        float sampleValue2 = static_cast<float>(bumpMapImage.Size.Height - GetTopmostY(bumpMapImage, x2)) - halfHeight;
-
-        // Store sample
-        mBumpMapSamples[s] =
-            sampleValue1
-            + (sampleValue2 - sampleValue1) / Dx * imageXIF;
-    }
-
-    // Populate extra sample
-    mBumpMapSamples[SamplesCount] = mBumpMapSamples[SamplesCount - 1];
+    // Recalculate samples
+    CalculateResultantSampleValues();
 }
 
 void OceanFloor::Update(GameParameters const & gameParameters)
 {
-    if (gameParameters.SeaDepth != mCurrentSeaDepth
-        || gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness
+    bool doRecalculateSamples = false;
+
+    // Check whether we need to recalculate the bump profile
+    if (gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness)
+    {
+        // Update current game parameters
+        mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
+
+        // Recalculate bump profile
+        CalculateBumpProfile();
+
+        doRecalculateSamples = true;
+    }
+
+    // Check whether we need to recalculate the samples
+    if (doRecalculateSamples
+        || gameParameters.SeaDepth != mCurrentSeaDepth
         || gameParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
     {
-        // Frequencies of bump sine components
-        static constexpr float BumpFrequency1 = 0.005f;
-        static constexpr float BumpFrequency2 = 0.015f;
-        static constexpr float BumpFrequency3 = 0.001f;
-
-        float const seaDepth = gameParameters.SeaDepth;
-        float const oceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
-        float const oceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
-
-        // sample index = 0
-        float previousSampleValue;
-        {
-            previousSampleValue =
-                -seaDepth
-                + 0.0f
-                + mBumpMapSamples[0] * oceanFloorDetailAmplification;
-
-            mSamples[0].SampleValue = previousSampleValue;
-        }
-
-        // Calulate samples = world y of ocean floor at the sample's x
-        // sample index = 1...SamplesCount-1
-        float x = Dx;
-        for (int64_t i = 1; i < SamplesCount; i++, x += Dx)
-        {
-            float const c1 = sinf(x * BumpFrequency1) * 10.f;
-            float const c2 = sinf(x * BumpFrequency2) * 6.f;
-            float const c3 = sinf(x * BumpFrequency3) * 45.f;
-            float const sampleValue =
-                -seaDepth
-                + (c1 + c2 - c3) * oceanFloorBumpiness
-                + mBumpMapSamples[i] * oceanFloorDetailAmplification;
-
-            mSamples[i].SampleValue = sampleValue;
-            mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
-
-            previousSampleValue = sampleValue;
-        }
-
-        // Populate last delta (extra sample has same value as this sample)
-        mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
-
-        // Populate extra sample - same value as last sample
-        mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-        mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
-
-        // Remember current game parameters
+        // Update current game parameters
         mCurrentSeaDepth = gameParameters.SeaDepth;
-        mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
         mCurrentOceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
+
+        // Recalculate samples
+        CalculateResultantSampleValues();
     }
 }
 
@@ -252,21 +172,83 @@ bool OceanFloor::AdjustTo(
     float x = leftX;
     for (int64_t s = sampleIndex; x <= rightX; ++s, x += Dx)
     {
-        // Update sample value
+        // Calculate new sample value, i.e. trajectory's value
         float newSampleValue = leftTargetY + slopeY * (x - leftX);
+
+        // Decide whether it's a significant change
         hasAdjusted |= abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
+
+        // Translate sample value into terrain change
+        float newTerrainProfileSampleValue =
+            (newSampleValue - mBumpProfile[s] + mCurrentSeaDepth)
+            / (mCurrentOceanFloorDetailAmplification != 0.0f ? mCurrentOceanFloorDetailAmplification : 1.0f);
+
+        // Update terrain
+        mTerrain[s] = newTerrainProfileSampleValue;
+
+        // Recalculate sample value
+        newSampleValue = CalculateResultantSampleValue(s);
+
+        // Update sample value
         mSamples[s].SampleValue = newSampleValue;
 
         // Update previous sample's delta
-        if (s > 0) // No point in updating sample[-1]
+        if (s > 0)
             mSamples[s - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[s - 1].SampleValue;
 
         // Update this sample's delta
-        if (s < SamplesCount) // No point in updating delta of extra sample
+        if (s < SamplesCount) // No point in updating delta of extra sample, it's never used
             mSamples[s].SampleValuePlusOneMinusSampleValue = mSamples[s + 1].SampleValue - newSampleValue;
     }
 
     return hasAdjusted;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+void OceanFloor::CalculateBumpProfile()
+{
+    static constexpr float BumpFrequency1 = 0.005f;
+    static constexpr float BumpFrequency2 = 0.015f;
+    static constexpr float BumpFrequency3 = 0.001f;
+
+    float x = 0.0;
+    for (int64_t i = 0; i < SamplesCount; ++i, x += Dx)
+    {
+        float const c1 = sinf(x * BumpFrequency1) * 10.f;
+        float const c2 = sinf(x * BumpFrequency2) * 6.f;
+        float const c3 = sinf(x * BumpFrequency3) * 45.f;
+        mBumpProfile[i] = (c1 + c2 - c3) * mCurrentOceanFloorBumpiness;
+    }
+}
+
+void OceanFloor::CalculateResultantSampleValues()
+{
+    // sample index = 0
+    float previousSampleValue;
+    {
+        previousSampleValue = CalculateResultantSampleValue(0);
+
+        mSamples[0].SampleValue = previousSampleValue;
+    }
+
+    // sample index = 1...SamplesCount-1
+    for (int64_t i = 1; i < SamplesCount; ++i)
+    {
+        float const sampleValue = CalculateResultantSampleValue(i);
+
+        mSamples[i].SampleValue = sampleValue;
+        mSamples[i - 1].SampleValuePlusOneMinusSampleValue = sampleValue - previousSampleValue;
+
+        previousSampleValue = sampleValue;
+    }
+
+    // Populate last delta (extra sample has same value as this sample)
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
+
+    // Populate extra sample - same value as last sample
+    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
 }
 
 }

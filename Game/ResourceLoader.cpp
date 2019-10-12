@@ -159,9 +159,9 @@ std::filesystem::path ResourceLoader::GetThemeSettingsRootFilepath() const
 // Misc
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetOceanFloorBumpMapFilepath() const
+std::filesystem::path ResourceLoader::GetDefaultOceanFloorTerrainFilepath() const
 {
-    std::filesystem::path localPath = std::filesystem::path("Data") / "Misc" / "ocean_floor_bumpmap.png";
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Misc" / "default_ocean_floor_terrain.png";
     return std::filesystem::absolute(localPath);
 }
 

@@ -8,10 +8,9 @@
 #include "Physics.h"
 
 #include "GameParameters.h"
-#include "ImageFileTools.h"
-#include "ResourceLoader.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/UniqueBuffer.h>
 
 #include <memory>
 
@@ -22,7 +21,14 @@ class OceanFloor
 {
 public:
 
-    OceanFloor(ResourceLoader & resourceLoader);
+    OceanFloor(OceanFloorTerrain && terrain);
+
+    OceanFloorTerrain const & GetTerrain() const
+    {
+        return mTerrain;
+    }
+
+    void SetTerrain(OceanFloorTerrain const & terrain);
 
     void Update(GameParameters const & gameParameters);
 
@@ -73,12 +79,39 @@ public:
 
 private:
 
-    // The number of samples for the entire world width;
-    // a higher value means more resolution, at the expense of cache misses
-    static constexpr int64_t SamplesCount = 2048;
+    void CalculateBumpProfile();
+
+    void CalculateResultantSampleValues();
+
+    inline float CalculateResultantSampleValue(size_t sampleIndex) const
+    {
+        assert(sampleIndex < SamplesCount);
+
+        return
+            -mCurrentSeaDepth
+            + mBumpProfile[sampleIndex]
+            + mTerrain[sampleIndex] * mCurrentOceanFloorDetailAmplification;
+    }
+
+private:
+
+    // The bump profile (ondulating component seafloor);
+    // one value for each sample
+    unique_buffer<float> mBumpProfile;
+
+    // The terrain (user-provided component of seafloor);
+    // one value for each sample
+    OceanFloorTerrain mTerrain;
+
+    //
+    // Pre-calculated samples, i.e. world y of ocean floor at the sample's x
+    //
+
+    // The number of samples
+    static constexpr int64_t SamplesCount = GameParameters::OceanFloorTerrainSamples<int64_t>;
 
     // The x step of the samples
-    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
+    static constexpr float Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
 
     // What we store for each sample
     struct Sample
@@ -87,14 +120,14 @@ private:
         float SampleValuePlusOneMinusSampleValue; // Delta w/next
     };
 
-    // The current samples (plus 1 to account for x==MaxWorldWidth)
+    // The current samples (plus 1 to account for x==MaxWorldWidth),
+    // derived from the components
     std::unique_ptr<Sample[]> mSamples;
 
-    // The bump map samples (plus 1 to account for x==MaxWorldWidth),
-    // between -H/2 and H/2
-    std::unique_ptr<float[]> const mBumpMapSamples;
-
+    //
     // The game parameters for which we're current
+    //
+
     float mCurrentSeaDepth;
     float mCurrentOceanFloorBumpiness;
     float mCurrentOceanFloorDetailAmplification;

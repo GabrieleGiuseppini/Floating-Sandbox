@@ -89,7 +89,7 @@ public:
     // Misc
     //
 
-    std::filesystem::path GetOceanFloorBumpMapFilepath() const;
+    std::filesystem::path GetDefaultOceanFloorTerrainFilepath() const;
 
 
     //

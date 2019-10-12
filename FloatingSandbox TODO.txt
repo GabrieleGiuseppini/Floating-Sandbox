@@ -1372,26 +1372,28 @@ Render:
 				+ OceanFloorTerrain
 					+ Has unique_buffer<float>
 					+ other notebook methods
-				- OceanFloor contains and owns OceanFloorTerrain
-					- Needs it as a member as it exposes reference to it
-				- OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
+				+ OceanFloor contains and owns OceanFloorTerrain
+					+ Needs it as a member as it exposes reference to it
+				+ OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
 				  from World who takes it from GameController as &&
-					- GameController provides the initial one loaded via 
+					+ GameController provides the initial one loaded via 
 					  OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
-				- GameController::Reset():
-					- First takes current terrain, via World
-					- Then, passes it back to World's cctor, as &&
+				+ GameController::Reset():
+					+ First takes current terrain, via World
+					+ Then, passes it back to World's cctor, as &&
 				- IGameController (and OceanFloor):
 					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
 					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)
 				- Test
-					- Default at beginning
+					- Default terrain at beginning
 						- Double-check interpolation we do at image->terrain algo
-					- Reset
-			- FloatingSandbox/SettingsManager.h
+					- Precision of adjusted terrain
+					- Reset: maintains manually-adjusted terrain				
+			= FloatingSandbox/SettingsManager.h
 				- BaseSetting specialization for OceanFloorTerrain
 					- Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
+			- Run unit tests in Debug
 			- MainFrame:
 				- Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
 				- Menu: "Load last played settings"
@@ -1403,7 +1405,7 @@ Render:
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench
-					- https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwjR1dOP7pblAhWEZlAKHR2mA4wQjRx6BAgBEAQ&url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F141793088246977612%2F&psig=AOvVaw0OzRMFmTiX8N2vV9EdhIk5&ust=1570974426012606
+					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
 
 
 		- OLD:

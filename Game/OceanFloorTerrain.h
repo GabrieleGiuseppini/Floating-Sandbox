@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Physics.h"
-
 #include "GameParameters.h"
 
 #include <GameCore/UniqueBuffer.h>
@@ -27,7 +25,7 @@ public:
     explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
     {
-        assert(terrainBuffer.size() == GameParameters::OceanFloorTerrainSamples);
+        assert(terrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
     }
 
     OceanFloorTerrain(OceanFloorTerrain const & other) = default;
@@ -38,17 +36,27 @@ public:
 
     bool operator==(OceanFloorTerrain const & other) const
     {
-        assert(other.mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples);
+        assert(other.mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
 
         return (mTerrainBuffer == other.mTerrainBuffer);
     }
 
-    float const * data() const
+    inline float operator[](size_t index) const
+    {
+        return mTerrainBuffer[index];
+    }
+
+    inline float& operator[](size_t index)
+    {
+        return mTerrainBuffer[index];
+    }
+
+    inline float const * data() const
     {
         return mTerrainBuffer.get();
     }
 
-    size_t size() const
+    inline size_t size() const
     {
         return mTerrainBuffer.size();
     }

@@ -15,16 +15,16 @@
 namespace Physics {
 
 World::World(
+    OceanFloorTerrain && oceanFloorTerrain,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters,
-    ResourceLoader & resourceLoader)
+    GameParameters const & gameParameters)
     : mCurrentSimulationTime(0.0f)
     , mAllShips()
     , mStars()
     , mWind(gameEventDispatcher)
     , mClouds()
     , mOceanSurface(gameEventDispatcher)
-    , mOceanFloor(resourceLoader)
+    , mOceanFloor(std::move(oceanFloorTerrain))
     , mGameEventHandler(gameEventDispatcher)
 {
     // Initialize world pieces

@@ -281,7 +281,10 @@ struct GameParameters
     static float constexpr MinSeaDepth = -50.0f;
     static float constexpr MaxSeaDepth = 10000.0f;
 
-    static size_t constexpr OceanFloorTerrainSamples = 2048;
+    // The number of ocean floor terrain samples for the entire world width;
+    // a higher value means more resolution, at the expense of cache misses
+    template <typename T>
+    static T constexpr OceanFloorTerrainSamples = 2048;
 
     float OceanFloorBumpiness;
     static float constexpr MinOceanFloorBumpiness = 0.0f;

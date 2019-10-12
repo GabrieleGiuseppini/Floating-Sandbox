@@ -32,20 +32,20 @@ namespace /* anonymous */ {
 
 OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const & imageFilePath)
 {
-    unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples);
+    unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
 
     // Load image
     RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgbUpperLeft(imageFilePath);
     float const halfHeight = static_cast<float>(oceanFloorImage.Size.Height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, aka world width between two samples
-    float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(GameParameters::OceanFloorTerrainSamples);
+    float constexpr Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
 
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
     // world width
     float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.Width) / GameParameters::MaxWorldWidth;
   
-    for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples; ++s)
+    for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples<size_t>; ++s)
     {
         // Calculate pixel X
         float const worldX = static_cast<float>(s) * Dx;
