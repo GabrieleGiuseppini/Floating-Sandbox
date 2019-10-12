@@ -651,25 +651,22 @@ public:
 
     Settings<TEnum> const & GetDefaults() const
     {
-        assert(!!mDefaultSettings);
-        return *mDefaultSettings;
+        return mDefaultSettings;
     }
 
     void Enforce(Settings<TEnum> const & settings) const
     {
-        assert(!!mEnforcers);
-        mEnforcers->Enforce(settings);
+        mEnforcers.Enforce(settings);
     }
 
     void Pull(Settings<TEnum> & settings) const
     {
-        assert(!!mEnforcers);
-        mEnforcers->Pull(settings);
+        mEnforcers.Pull(settings);
     }
 
     Settings<TEnum> Pull() const
     {
-        auto settings = *mTemplateSettings;
+        auto settings = mTemplateSettings;
         Pull(settings);
         return settings;
     }
@@ -688,7 +685,34 @@ public:
 
 protected:
 
+    class BaseSettingsManagerFactory
+    {
+    public:
+
+        template<typename TValue>
+        void AddSetting(
+            TEnum settingId,
+            std::string && name,
+            typename SettingEnforcer<TValue>::Getter && getter,
+            typename SettingEnforcer<TValue>::Setter && setter)
+        {
+            assert(mSettings.size() == static_cast<size_t>(settingId));
+            assert(mEnforcers.size() == static_cast<size_t>(settingId));
+
+            mSettings.emplace_back(new Setting<TValue>(std::move(name)));
+            mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter)));
+        }
+
+    private:
+
+        friend class BaseSettingsManager;
+
+        std::vector<std::unique_ptr<BaseSetting>> mSettings;
+        std::vector<std::unique_ptr<BaseSettingEnforcer>> mEnforcers;
+    };
+
     BaseSettingsManager(
+        BaseSettingsManagerFactory && factory,
         std::filesystem::path const & rootSystemSettingsDirectoryPath,
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<TFileSystem> fileSystem = std::make_shared<TFileSystem>())
@@ -696,34 +720,15 @@ protected:
             rootSystemSettingsDirectoryPath
             , rootUserSettingsDirectoryPath
             , std::move(fileSystem))
-    {}
-
-    template<typename TValue>
-    void AddSetting(
-        TEnum settingId,
-        std::string && name,
-        typename SettingEnforcer<TValue>::Getter && getter,
-        typename SettingEnforcer<TValue>::Setter && setter)
+        , mTemplateSettings(std::move(factory.mSettings))
+        , mEnforcers(std::move(factory.mEnforcers))
+        , mDefaultSettings(mTemplateSettings)
     {
-        assert(mTmpSettings.size() == static_cast<size_t>(settingId));
-        assert(mTmpEnforcers.size() == static_cast<size_t>(settingId));
-
-        mTmpSettings.emplace_back(new Setting<TValue>(std::move(name)));
-        mTmpEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter)));
-    }
-
-    void Initialize()
-    {
-        // Finalize settings and enforcers
-        mTemplateSettings = std::make_unique<Settings<TEnum>>(std::move(mTmpSettings));
-        mEnforcers = std::make_unique<Enforcers<TEnum>>(std::move(mTmpEnforcers));
-
         // Build defaults 
-        // (assuming Initialize() is invoked when all getters deliver
+        // (assuming this manager is constructed when all getters deliver
         //  default settings)
-        mDefaultSettings = std::make_unique<Settings<TEnum>>(*mTemplateSettings);
-        mEnforcers->Pull(*mDefaultSettings);
-        mDefaultSettings->ClearAllDirty();
+        mEnforcers.Pull(mDefaultSettings);
+        mDefaultSettings.ClearAllDirty();
     }
 
 private:
@@ -731,14 +736,10 @@ private:
     // Storage
     SettingsStorage mStorage;
   
-    // Temporary containers for building up templates
-    std::vector<std::unique_ptr<BaseSetting>> mTmpSettings;
-    std::vector<std::unique_ptr<BaseSettingEnforcer>> mTmpEnforcers;
-
     // Templates
-    std::unique_ptr<Settings<TEnum>> mTemplateSettings;
-    std::unique_ptr<Enforcers<TEnum>> mEnforcers;
+    Settings<TEnum> mTemplateSettings;
+    Enforcers<TEnum> mEnforcers;
 
     // Default settings
-    std::unique_ptr<Settings<TEnum>> mDefaultSettings;
+    Settings<TEnum> mDefaultSettings;
 };

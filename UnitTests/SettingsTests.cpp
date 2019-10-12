@@ -853,47 +853,50 @@ class TestSettingsManager : public BaseSettingsManager<TestSettings, TestFileSys
 {
 public:
 
-    TestSettingsManager(std::shared_ptr<TestFileSystem> fileSystem)
-        : BaseSettingsManager(
-            TestRootSystemDirectory,
-            TestRootUserDirectory,
-            std::move(fileSystem))
+    static BaseSettingsManagerFactory MakeSettingsFactory()
     {
-        auto testSettings = MakeTestSettings();
+        BaseSettingsManagerFactory factory;
 
-        AddSetting<float>(
+        factory.AddSetting<float>(
             TestSettings::Setting1_float,
             "setting1_float",
             []() -> float const & { return GlobalSettings.setting1; },
             [](auto const & v) { GlobalSettings.setting1 = v; });
 
-        AddSetting<uint32_t>(
+        factory.AddSetting<uint32_t>(
             TestSettings::Setting2_uint32,
             "setting2_uint32",
             []() -> uint32_t const & { return GlobalSettings.setting2; },
             [](auto const & v) { GlobalSettings.setting2 = v; });
 
-        AddSetting<bool>(
+        factory.AddSetting<bool>(
             TestSettings::Setting3_bool,
             "setting3_bool",
             []() -> bool const & { return GlobalSettings.setting3; },
             [](auto const & v) { GlobalSettings.setting3 = v; });
 
-        AddSetting<std::string>(
+        factory.AddSetting<std::string>(
             TestSettings::Setting4_string,
             "setting4_string",
             []() -> std::string const & { return GlobalSettings.setting4; },
             [](auto const & v) { GlobalSettings.setting4 = v; });
 
-        AddSetting<CustomValue>(
+        factory.AddSetting<CustomValue>(
             TestSettings::Setting5_custom,
             "setting5_custom",
             []() -> CustomValue const & { return GlobalSettings.setting5; },
             [](auto const & v) { GlobalSettings.setting5 = v; });
 
-        // Initialize
-        Initialize();
+        return factory;
     }
+
+    TestSettingsManager(std::shared_ptr<TestFileSystem> fileSystem)
+        : BaseSettingsManager(
+            MakeSettingsFactory(),
+            TestRootSystemDirectory,
+            TestRootUserDirectory,
+            std::move(fileSystem))
+    {}
 };
 
 TEST(SettingsTests, BaseSettingsManager_BuildsDefaults)
