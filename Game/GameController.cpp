@@ -75,7 +75,7 @@ GameController::GameController(
     , mResourceLoader(std::move(resourceLoader))
     , mStatusText(std::move(statusText))
     , mWorld(new Physics::World(
-        Physics::OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
+        OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
         mGameParameters))
     , mMaterialDatabase(std::move(materialDatabase))
@@ -215,7 +215,7 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
 
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
-        std::move(Physics::OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
+        std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
         mGameParameters);
 
@@ -283,7 +283,7 @@ void GameController::ReloadLastShip()
 
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
-        std::move(Physics::OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
+        std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
         mGameParameters);
 

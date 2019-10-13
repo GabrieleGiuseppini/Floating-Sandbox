@@ -7,8 +7,6 @@
 
 #include "ImageFileTools.h"
 
-namespace Physics {
-
 namespace /* anonymous */ {
 
     int GetTopmostY(
@@ -82,4 +80,16 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     return OceanFloorTerrain(std::move(terrainBuffer));
 }
 
+OceanFloorTerrain OceanFloorTerrain::LoadFromStream(std::istream & is)
+{
+    unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
+
+    is.read(reinterpret_cast<char *>(terrainBuffer.get()), terrainBuffer.size() * sizeof(float));
+
+    return OceanFloorTerrain(std::move(terrainBuffer));
+}
+
+void OceanFloorTerrain::SaveToStream(std::ostream & os) const
+{
+    os.write(reinterpret_cast<char const *>(mTerrainBuffer.get()), mTerrainBuffer.size() * sizeof(float));
 }

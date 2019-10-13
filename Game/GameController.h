@@ -330,6 +330,9 @@ public:
 
     // Misc
 
+    OceanFloorTerrain GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
+    void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mWorld->SetOceanFloorTerrain(value); }
+
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
     float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }

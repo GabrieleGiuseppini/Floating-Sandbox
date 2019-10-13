@@ -11,7 +11,6 @@ namespace Physics
     class Clouds;
     class ElectricalElements;
     class OceanFloor;
-    class OceanFloorTerrain;
     class OceanSurface;
     class PinnedPoints;
 	class Points;
@@ -32,7 +31,6 @@ namespace Physics
 
 #include "Clouds.h"
 #include "Stars.h"
-#include "OceanFloorTerrain.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"
 #include "Wind.h"

@@ -860,31 +860,31 @@ public:
         factory.AddSetting<float>(
             TestSettings::Setting1_float,
             "setting1_float",
-            []() -> float const & { return GlobalSettings.setting1; },
+            []() -> float { return GlobalSettings.setting1; },
             [](auto const & v) { GlobalSettings.setting1 = v; });
 
         factory.AddSetting<uint32_t>(
             TestSettings::Setting2_uint32,
             "setting2_uint32",
-            []() -> uint32_t const & { return GlobalSettings.setting2; },
+            []() -> uint32_t { return GlobalSettings.setting2; },
             [](auto const & v) { GlobalSettings.setting2 = v; });
 
         factory.AddSetting<bool>(
             TestSettings::Setting3_bool,
             "setting3_bool",
-            []() -> bool const & { return GlobalSettings.setting3; },
+            []() -> bool { return GlobalSettings.setting3; },
             [](auto const & v) { GlobalSettings.setting3 = v; });
 
         factory.AddSetting<std::string>(
             TestSettings::Setting4_string,
             "setting4_string",
-            []() -> std::string const & { return GlobalSettings.setting4; },
+            []() -> std::string { return GlobalSettings.setting4; },
             [](auto const & v) { GlobalSettings.setting4 = v; });
 
         factory.AddSetting<CustomValue>(
             TestSettings::Setting5_custom,
             "setting5_custom",
-            []() -> CustomValue const & { return GlobalSettings.setting5; },
+            []() -> CustomValue { return GlobalSettings.setting5; },
             [](auto const & v) { GlobalSettings.setting5 = v; });
 
         return factory;

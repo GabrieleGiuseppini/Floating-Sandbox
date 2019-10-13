@@ -242,6 +242,8 @@ SettingsDeserializationContext::SettingsDeserializationContext(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+// Specializations for common types
+///////////////////////////////////////////////////////////////////////////////////////
 
 template<>
 void Setting<float>::Serialize(SettingsSerializationContext & context) const
@@ -255,8 +257,7 @@ void Setting<float>::Deserialize(SettingsDeserializationContext const & context)
     auto value = Utils::GetOptionalJsonMember<double>(context.GetSettingsRoot(), GetName());
     if (!!value)
     {
-        mValue = static_cast<float>(*value);
-        MarkAsDirty();
+        SetValue(static_cast<float>(*value));
     }
 }
 
@@ -272,8 +273,7 @@ void Setting<unsigned int>::Deserialize(SettingsDeserializationContext const & c
     auto value = Utils::GetOptionalJsonMember<int64_t>(context.GetSettingsRoot(), GetName());
     if (!!value)
     {
-        mValue = static_cast<unsigned int>(*value);
-        MarkAsDirty();
+        SetValue(static_cast<unsigned int >(*value));
     }
 }
 
@@ -289,8 +289,7 @@ void Setting<bool>::Deserialize(SettingsDeserializationContext const & context)
     auto value = Utils::GetOptionalJsonMember<bool>(context.GetSettingsRoot(), GetName());
     if (!!value)
     {
-        mValue = *value;
-        MarkAsDirty();
+        SetValue(*value);
     }
 }
 
@@ -306,8 +305,6 @@ void Setting<std::string>::Deserialize(SettingsDeserializationContext const & co
     auto value = Utils::GetOptionalJsonMember<std::string>(context.GetSettingsRoot(), GetName());
     if (!!value)
     {
-        mValue = *value;
-        MarkAsDirty();
+        SetValue(*value);
     }
 }
-

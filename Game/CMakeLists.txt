@@ -17,6 +17,8 @@ set  (GAME_SOURCES
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.h
+	OceanFloorTerrain.cpp
+	OceanFloorTerrain.h
 	ResourceLoader.cpp
 	ResourceLoader.h
 	ShipBuilder.cpp
@@ -47,8 +49,6 @@ set  (PHYSICS_SOURCES
 	ImpactBomb.h
 	OceanFloor.cpp
 	OceanFloor.h
-	OceanFloorTerrain.cpp
-	OceanFloorTerrain.h
 	OceanSurface.cpp
 	OceanSurface.h
 	Physics.h

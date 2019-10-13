@@ -72,6 +72,11 @@ public:
         if (mBuffer.get() == other.mBuffer.get())
             return true;
 
+        if ((!!mBuffer) != (!!other.mBuffer))
+            return false;
+
+        assert(!!mBuffer && !!other.mBuffer);
+
         return mSize == other.mSize
             && 0 == std::memcmp(mBuffer.get(), other.mBuffer.get(), mSize * sizeof(TValue));
     }

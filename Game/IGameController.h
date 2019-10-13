@@ -6,11 +6,13 @@
 #pragma once
 
 #include "GameEventHandlers.h"
+#include "OceanFloorTerrain.h"
 #include "ShipMetadata.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/UniqueBuffer.h>
 #include <GameCore/Vectors.h>
 
 #include <filesystem>
@@ -262,6 +264,9 @@ struct IGameController
     virtual float GetMaxElectricalElementHeatProducedAdjustment() const = 0;
 
     // Misc
+
+    virtual OceanFloorTerrain GetOceanFloorTerrain() const = 0;
+    virtual void SetOceanFloorTerrain(OceanFloorTerrain const & value) = 0;
 
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;

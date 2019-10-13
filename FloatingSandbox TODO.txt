@@ -395,6 +395,9 @@ Render:
 			- Ship: needs own state machine for explosions
 				- Does: rendering; creation of each frame's force field;
 					- i.e. has Update() and Upload()
+					- While you're at it, state should become simulation-time based, rather than
+					  wall clock-time based, so that physics of explosions (# of force field applications) is
+					  deterministic and explosion effect does not depend on computer speed
 				- Replaces normal bombs' blast callback: DoBombExplosion
 					- Do IHandler while you're at it
 					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
@@ -1392,7 +1395,7 @@ Render:
 				+ Via StandardSystemPaths class
 			+ ResourceLoader::GetThemeSettingsRootFilepath()
 			+ Settings framework
-			= OceanFloor:
+			+ OceanFloor:
 				+ OceanFloorTerrain
 					+ Has unique_buffer<float>
 					+ other notebook methods
@@ -1406,24 +1409,25 @@ Render:
 					+ First takes current terrain, via World
 					+ Then, passes it back to World's cctor, as &&
 				+ Crash when reloading after having written last sample
-				- IGameController (and OceanFloor):
-					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
-					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)
-				= Test:
+				+ IGameController (and OceanFloor):
+					+ Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
+					+ Set[OceanFloor]Terrain(OceanFloorTerrain const &)
+				+ Test:
 					+ Default terrain at beginning
 						+ Double-check interpolation we do at image->terrain algo					
 					+ Precision of adjusted terrain
 					+ Reset: maintains manually-adjusted terrain				
 			= FloatingSandbox/SettingsManager.h
-				- BaseSetting specialization for OceanFloorTerrain
-					- Does it need OceanFloorTerrain to expose Load(...istream...) ?
+				+ BaseSetting specialization for OceanFloorTerrain
+					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
-			- Run unit tests in Debug
+			+ Run unit tests in Debug
 			- MainFrame:
 				- Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
 				- Menu: "Load last played settings"
 					- Only enabled if "last played settings" exists
 				- Save last-played settings on exit
+					- If UI Preferences say so
 			- SettingsDialog:
 				- New "Settings Management" tab:
 					- TODOHERE

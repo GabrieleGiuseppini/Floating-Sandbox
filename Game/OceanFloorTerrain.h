@@ -10,17 +10,28 @@
 #include <GameCore/UniqueBuffer.h>
 
 #include <filesystem>
+#include <iostream>
 
-namespace Physics
-{
-
+/*
+ * This class represents the user-modifiable component of the ocean floor.
+ *
+ * The class bridges between the physics and the settings infrastructure.
+ */
 class OceanFloorTerrain
 {
 public:
 
     static OceanFloorTerrain LoadFromImage(std::filesystem::path const & imageFilePath);
 
+    static OceanFloorTerrain LoadFromStream(std::istream & is);
+
 public:
+
+    explicit OceanFloorTerrain(unique_buffer<float> const & terrainBuffer)
+        : mTerrainBuffer(terrainBuffer)
+    {
+        assert(mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
+    }
 
     explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
@@ -36,9 +47,7 @@ public:
 
     bool operator==(OceanFloorTerrain const & other) const
     {
-        assert(other.mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
-
-        return (mTerrainBuffer == other.mTerrainBuffer);
+        return mTerrainBuffer == other.mTerrainBuffer;
     }
 
     inline float operator[](size_t index) const
@@ -46,24 +55,14 @@ public:
         return mTerrainBuffer[index];
     }
 
-    inline float& operator[](size_t index)
+    inline float & operator[](size_t index)
     {
         return mTerrainBuffer[index];
     }
 
-    inline float const * data() const
-    {
-        return mTerrainBuffer.get();
-    }
-
-    inline size_t size() const
-    {
-        return mTerrainBuffer.size();
-    }
+    void SaveToStream(std::ostream & os) const;
 
 private:
 
     unique_buffer<float> mTerrainBuffer;
 };
-
-}

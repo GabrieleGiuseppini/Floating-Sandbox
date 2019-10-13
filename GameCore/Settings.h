@@ -312,11 +312,11 @@ public:
 
     void SetValue(TValue && value)
     {
-        mValue = value;
+        mValue = std::move(value);
 
         MarkAsDirty();
     }
-
+    
     virtual std::type_info const & GetType() const override
     {
         return typeid(TValue);
@@ -439,13 +439,13 @@ public:
     }
 
     template<typename TValue>
-    void SetValue(TEnum settingId, TValue const & value)
+    void SetValue(TEnum settingId, TValue && value)
     {
         assert(static_cast<size_t>(settingId) < mSettings.size());
         assert(typeid(TValue) == mSettings[static_cast<size_t>(settingId)]->GetType());
 
         Setting<TValue> * s = dynamic_cast<Setting<TValue> *>(mSettings[static_cast<size_t>(settingId)].get());
-        s->SetValue(value);
+        s->SetValue(std::move(value));
     }
 
     bool IsDirty(TEnum settingId) const
@@ -570,7 +570,7 @@ class SettingEnforcer final : public BaseSettingEnforcer
 {
 public:
 
-    using Getter = std::function<TValue const & ()>;
+    using Getter = std::function<TValue ()>;
     using Setter = std::function<void(TValue const &)>;
 
     SettingEnforcer(
@@ -593,7 +593,7 @@ public:
         assert(setting.GetType() == typeid(TValue));
 
         auto & s = dynamic_cast<Setting<TValue> &>(setting);
-        s.SetValue(mGetter());
+        s.SetValue(std::move(mGetter()));
     }
 
 private:
@@ -840,6 +840,7 @@ protected:
         {
             assert(mSettings.size() == static_cast<size_t>(settingId));
             assert(mEnforcers.size() == static_cast<size_t>(settingId));
+            (void)settingId;
 
             mSettings.emplace_back(new Setting<TValue>(std::move(name)));
             mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter)));

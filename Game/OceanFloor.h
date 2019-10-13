@@ -8,6 +8,7 @@
 #include "Physics.h"
 
 #include "GameParameters.h"
+#include "OceanFloorTerrain.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/UniqueBuffer.h>
