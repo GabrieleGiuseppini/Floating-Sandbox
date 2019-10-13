@@ -7,6 +7,7 @@
 
 #include "GameParameters.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -234,8 +235,14 @@ public:
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
         return vec2f(
-            (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCam.x,
-            (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCam.y);
+            Clamp(
+                (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCam.x,
+                -GameParameters::HalfMaxWorldWidth,
+                GameParameters::HalfMaxWorldWidth),
+            Clamp(
+                (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCam.y,
+                -GameParameters::HalfMaxWorldHeight,
+                GameParameters::HalfMaxWorldHeight));
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)

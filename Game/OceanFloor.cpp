@@ -170,7 +170,7 @@ bool OceanFloor::AdjustTo(
 
     bool hasAdjusted = false;
     float x = leftX;
-    for (int64_t s = sampleIndex; x <= rightX; ++s, x += Dx)
+    for (int64_t s = sampleIndex; x <= rightX && s < SamplesCount; ++s, x += Dx)
     {
         // Calculate new sample value, i.e. trajectory's value
         float newSampleValue = leftTargetY + slopeY * (x - leftX);
@@ -196,10 +196,16 @@ bool OceanFloor::AdjustTo(
         if (s > 0)
             mSamples[s - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[s - 1].SampleValue;
 
-        // Update this sample's delta
-        if (s < SamplesCount) // No point in updating delta of extra sample, it's never used
+        // Update this sample's delta;
+        // no point in updating delta of extra sample, as it's never used, and no point
+        // in updating delta of last sample, as it's always zero
+        if (s < SamplesCount - 1) 
             mSamples[s].SampleValuePlusOneMinusSampleValue = mSamples[s + 1].SampleValue - newSampleValue;
     }
+
+    // Make sure the extra sample has the same value as the last sample,
+    // in case we've just changed the latter 
+    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
 
     return hasAdjusted;
 }

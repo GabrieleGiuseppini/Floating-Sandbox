@@ -1405,7 +1405,7 @@ Render:
 				+ GameController::Reset():
 					+ First takes current terrain, via World
 					+ Then, passes it back to World's cctor, as &&
-				- Crash when reloading after having written last sample
+				+ Crash when reloading after having written last sample
 				- IGameController (and OceanFloor):
 					- Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
 					- Set[OceanFloor]Terrain(OceanFloorTerrain const &)

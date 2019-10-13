@@ -25,7 +25,7 @@ public:
     explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
     {
-        assert(terrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
+        assert(mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
     }
 
     OceanFloorTerrain(OceanFloorTerrain const & other) = default;
