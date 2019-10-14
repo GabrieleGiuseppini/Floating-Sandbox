@@ -12,6 +12,7 @@
 #include "PreferencesDialog.h"
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
+#include "SettingsManager.h"
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "ToolController.h"
@@ -76,6 +77,7 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
+    wxMenuItem * mReloadLastPlayedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mShowStatusTextMenuItem;
@@ -171,6 +173,7 @@ private:
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent& event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
+    void OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & event);
     void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);
@@ -270,7 +273,7 @@ private:
 
     void ResetState();
 
-    void UpdateFrameTitle();
+    void UpdateFrameTitle();    
 
     void OnError(
         std::string const & message,
@@ -294,6 +297,7 @@ private:
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::unique_ptr<ToolController> mToolController;
+    std::shared_ptr<SettingsManager> mSettingsManager;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
     std::unique_ptr<UpdateChecker> mUpdateChecker;
 

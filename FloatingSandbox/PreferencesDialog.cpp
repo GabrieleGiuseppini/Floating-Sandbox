@@ -9,6 +9,7 @@
 #include <wx/stattext.h>
 
 static constexpr int Border = 10;
+
 static constexpr int MaxZoomIncrementPosition = 200;
 static constexpr int MaxPanIncrementPosition = 200;
 
@@ -104,6 +105,12 @@ void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent
     }
 }
 
+void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
+}
+
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -137,6 +144,9 @@ void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+
+    gridSizer->SetFlexibleDirection(wxHORIZONTAL);
+    gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
     
 
     //
@@ -144,11 +154,21 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
     //
 
     {
-        wxBoxSizer * screenshotDirSizer = new wxBoxSizer(wxVERTICAL);
-
         wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
-        screenshotDirSizer->Add(screenshotDirStaticText, 1, wxALIGN_LEFT | wxEXPAND, 0);
+        
+        gridSizer->Add(
+            screenshotDirStaticText,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 4), // Take entire row
+            wxRIGHT | wxLEFT | wxEXPAND | wxALIGN_BOTTOM,
+            Border);
+    }
 
+    //
+    // Row 2
+    //
+
+    {
         mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
             panel,
             wxID_ANY,
@@ -162,18 +182,16 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         mScreenshotDirPickerCtrl->Bind(wxEVT_DIRPICKER_CHANGED, &PreferencesDialog::OnScreenshotDirPickerChanged, this);
 
-        screenshotDirSizer->Add(mScreenshotDirPickerCtrl, 1, wxALIGN_LEFT | wxEXPAND, 0);
-
         gridSizer->Add(
-            screenshotDirSizer,
-            wxGBPosition(0, 0),
+            mScreenshotDirPickerCtrl,
+            wxGBPosition(1, 0),
             wxGBSpan(1, 4), // Take entire row
-            wxALL | wxEXPAND,
+            wxRIGHT | wxLEFT | wxEXPAND,
             Border);
     }
 
     //
-    // Row 2
+    // Row 3
     //
 
     {
@@ -185,7 +203,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mShowTipOnStartupCheckBox,
-            wxGBPosition(1, 0),
+            wxGBPosition(2, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -203,7 +221,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mZoomIncrementSpinCtrl,
-            wxGBPosition(1, 2),
+            wxGBPosition(2, 2),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
             Border);
@@ -215,14 +233,14 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             label,
-            wxGBPosition(1, 3),
+            wxGBPosition(2, 3),
             wxGBSpan(1, 1),
             wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM,
             Border);
     }
 
     //
-    // Row 3
+    // Row 4
     //
 
     {
@@ -234,7 +252,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mCheckForUpdatesAtStartupCheckBox,
-            wxGBPosition(2, 0),
+            wxGBPosition(3, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -252,8 +270,8 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mPanIncrementSpinCtrl,
-            wxGBPosition(2, 2),
-            wxGBSpan(2, 1),
+            wxGBPosition(3, 2),
+            wxGBSpan(1, 1),
             wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
             Border);
     }
@@ -264,14 +282,33 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             label,
-            wxGBPosition(1, 3),
+            wxGBPosition(3, 3),
             wxGBSpan(1, 1),
             wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM,
             Border);
     }
 
     //
-    // Row 4
+    // Row 5
+    //
+
+    {
+        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+
+        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-played settings when exiting the game.");
+
+        mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mSaveSettingsOnExitCheckBox,
+            wxGBPosition(4, 0), 
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    //
+    // Row 6
     //
 
     {
@@ -283,14 +320,14 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mShowShipDescriptionAtShipLoadCheckBox,
-            wxGBPosition(3, 0),
+            wxGBPosition(5, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
     //
-    // Row 5
+    // Row 7
     //
 
     {
@@ -302,7 +339,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(4, 0),
+            wxGBPosition(6, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -317,7 +354,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
         40,
         0,
         wxGBPosition(0, 1),
-        wxGBSpan(5, 1));
+        wxGBSpan(7, 1));
 
 
     // Finalize panel
@@ -333,6 +370,7 @@ void PreferencesDialog::ReadSettings()
 
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
+    mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));

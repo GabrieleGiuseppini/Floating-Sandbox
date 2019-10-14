@@ -122,6 +122,16 @@ public:
         mShowStartupTip = value;
     }
 
+    bool GetSaveSettingsOnExit() const
+    {
+        return mSaveSettingsOnExit;
+    }
+
+    void SetSaveSettingsOnExit(bool value)
+    {
+        mSaveSettingsOnExit = value;
+    }
+
     bool GetShowShipDescriptionsAtShipLoad() const
     {
         return mShowShipDescriptionsAtShipLoad;
@@ -185,8 +195,11 @@ private:
     std::vector<Version> mBlacklistedUpdates;
     bool mCheckUpdatesAtStartup;
     bool mShowStartupTip;
+    bool mSaveSettingsOnExit;
     bool mShowShipDescriptionsAtShipLoad;
 
     float mZoomIncrement;
     float mPanIncrement;
+
+
 };

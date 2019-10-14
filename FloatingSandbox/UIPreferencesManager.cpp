@@ -28,6 +28,7 @@ UIPreferencesManager::UIPreferencesManager(std::shared_ptr<IGameController> game
     mBlacklistedUpdates = { };
     mCheckUpdatesAtStartup = true;
     mShowStartupTip = true;
+    mSaveSettingsOnExit = true;
     mShowShipDescriptionsAtShipLoad = true;
 
     mZoomIncrement = 1.05f;
@@ -67,7 +68,7 @@ UIPreferencesManager::~UIPreferencesManager()
 void UIPreferencesManager::LoadPreferences()
 {
     auto preferencesRootValue = Utils::ParseJSONFile(
-        StandardSystemPaths::GetInstance().GetUserSettingsGameFolderPath() / Filename);
+        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / Filename);
 
     if (preferencesRootValue.is<picojson::object>())
     {
@@ -169,6 +170,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Save settings on exit
+        //
+
+        auto saveSettingsOnExitIt = preferencesRootObject.find("save_settings_on_exit");
+        if (saveSettingsOnExitIt != preferencesRootObject.end()
+            && saveSettingsOnExitIt->second.is<bool>())
+        {
+            mSaveSettingsOnExit = saveSettingsOnExitIt->second.get<bool>();
+        }
+
+        //
         // Show ship descriptions at ship load
         //
 
@@ -248,6 +260,9 @@ void UIPreferencesManager::SavePreferences() const
     // Add show startup tip
     preferencesRootObject["show_startup_tip"] = picojson::value(mShowStartupTip);
 
+    // Add save settings on exit
+    preferencesRootObject["save_settings_on_exit"] = picojson::value(mSaveSettingsOnExit);
+
     // Add show ship descriptions at ship load
     preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
 
@@ -263,5 +278,5 @@ void UIPreferencesManager::SavePreferences() const
     // Save
     Utils::SaveJSONFile(
         picojson::value(preferencesRootObject),
-        StandardSystemPaths::GetInstance().GetUserSettingsGameFolderPath() / Filename);
+        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / Filename);
 }

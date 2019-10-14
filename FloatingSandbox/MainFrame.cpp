@@ -9,6 +9,7 @@
 #include "NewVersionDisplayDialog.h"
 #include "ShipDescriptionDialog.h"
 #include "SplashScreenDialog.h"
+#include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
 #include <Game/ImageFileTools.h>
@@ -36,67 +37,68 @@
 #include <sstream>
 #include <thread>
 
-const long ID_MAIN_CANVAS = wxNewId();
+long const ID_MAIN_CANVAS = wxNewId();
 
-const long ID_LOAD_SHIP_MENUITEM = wxNewId();
-const long ID_RELOAD_LAST_SHIP_MENUITEM = wxNewId();
-const long ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
-const long ID_QUIT_MENUITEM = wxNewId();
+long const ID_LOAD_SHIP_MENUITEM = wxNewId();
+long const ID_RELOAD_LAST_SHIP_MENUITEM = wxNewId();
+long const ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
+long const ID_QUIT_MENUITEM = wxNewId();
 
-const long ID_ZOOM_IN_MENUITEM = wxNewId();
-const long ID_ZOOM_OUT_MENUITEM = wxNewId();
-const long ID_AMBIENT_LIGHT_UP_MENUITEM = wxNewId();
-const long ID_AMBIENT_LIGHT_DOWN_MENUITEM = wxNewId();
-const long ID_PAUSE_MENUITEM = wxNewId();
-const long ID_STEP_MENUITEM = wxNewId();
-const long ID_RESET_VIEW_MENUITEM = wxNewId();
+long const ID_ZOOM_IN_MENUITEM = wxNewId();
+long const ID_ZOOM_OUT_MENUITEM = wxNewId();
+long const ID_AMBIENT_LIGHT_UP_MENUITEM = wxNewId();
+long const ID_AMBIENT_LIGHT_DOWN_MENUITEM = wxNewId();
+long const ID_PAUSE_MENUITEM = wxNewId();
+long const ID_STEP_MENUITEM = wxNewId();
+long const ID_RESET_VIEW_MENUITEM = wxNewId();
 
-const long ID_MOVE_MENUITEM = wxNewId();
-const long ID_MOVE_ALL_MENUITEM = wxNewId();
-const long ID_SMASH_MENUITEM = wxNewId();
-const long ID_SLICE_MENUITEM = wxNewId();
-const long ID_HEAT_BLASTER_MENUITEM = wxNewId();
-const long ID_FIRE_EXTINGUISHER_MENUITEM = wxNewId();
-const long ID_GRAB_MENUITEM = wxNewId();
-const long ID_SWIRL_MENUITEM = wxNewId();
-const long ID_PIN_MENUITEM = wxNewId();
-const long ID_INJECT_AIR_BUBBLES_MENUITEM = wxNewId();
-const long ID_FLOOD_HOSE_MENUITEM = wxNewId();
-const long ID_TIMERBOMB_MENUITEM = wxNewId();
-const long ID_RCBOMB_MENUITEM = wxNewId();
-const long ID_IMPACTBOMB_MENUITEM = wxNewId();
-const long ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
-const long ID_THANOSSNAP_MENUITEM = wxNewId();
-const long ID_WAVEMAKER_MENUITEM = wxNewId();
-const long ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
-const long ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
-const long ID_SCRUB_MENUITEM = wxNewId();
-const long ID_RCBOMBDETONATE_MENUITEM = wxNewId();
-const long ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
-const long ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
-const long ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
+long const ID_MOVE_MENUITEM = wxNewId();
+long const ID_MOVE_ALL_MENUITEM = wxNewId();
+long const ID_SMASH_MENUITEM = wxNewId();
+long const ID_SLICE_MENUITEM = wxNewId();
+long const ID_HEAT_BLASTER_MENUITEM = wxNewId();
+long const ID_FIRE_EXTINGUISHER_MENUITEM = wxNewId();
+long const ID_GRAB_MENUITEM = wxNewId();
+long const ID_SWIRL_MENUITEM = wxNewId();
+long const ID_PIN_MENUITEM = wxNewId();
+long const ID_INJECT_AIR_BUBBLES_MENUITEM = wxNewId();
+long const ID_FLOOD_HOSE_MENUITEM = wxNewId();
+long const ID_TIMERBOMB_MENUITEM = wxNewId();
+long const ID_RCBOMB_MENUITEM = wxNewId();
+long const ID_IMPACTBOMB_MENUITEM = wxNewId();
+long const ID_ANTIMATTERBOMB_MENUITEM = wxNewId();
+long const ID_THANOSSNAP_MENUITEM = wxNewId();
+long const ID_WAVEMAKER_MENUITEM = wxNewId();
+long const ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
+long const ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
+long const ID_SCRUB_MENUITEM = wxNewId();
+long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
+long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
+long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 
-const long ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
-const long ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
-const long ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
-const long ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
-const long ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
-const long ID_SHOW_STATUS_TEXT_MENUITEM = wxNewId();
-const long ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM = wxNewId();
-const long ID_FULL_SCREEN_MENUITEM = wxNewId();
-const long ID_NORMAL_SCREEN_MENUITEM = wxNewId();
-const long ID_MUTE_MENUITEM = wxNewId();
+long const ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
+long const ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM = wxNewId();
+long const ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
+long const ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
+long const ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
+long const ID_SHOW_PROBE_PANEL_MENUITEM = wxNewId();
+long const ID_SHOW_STATUS_TEXT_MENUITEM = wxNewId();
+long const ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM = wxNewId();
+long const ID_FULL_SCREEN_MENUITEM = wxNewId();
+long const ID_NORMAL_SCREEN_MENUITEM = wxNewId();
+long const ID_MUTE_MENUITEM = wxNewId();
 
-const long ID_HELP_MENUITEM = wxNewId();
-const long ID_ABOUT_MENUITEM = wxNewId();
-const long ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
-const long ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
-const long ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
+long const ID_HELP_MENUITEM = wxNewId();
+long const ID_ABOUT_MENUITEM = wxNewId();
+long const ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
+long const ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
+long const ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
 
-const long ID_POSTIINITIALIZE_TIMER = wxNewId();
-const long ID_GAME_TIMER = wxNewId();
-const long ID_LOW_FREQUENCY_TIMER = wxNewId();
-const long ID_CHECK_UPDATE_TIMER = wxNewId();
+long const ID_POSTIINITIALIZE_TIMER = wxNewId();
+long const ID_GAME_TIMER = wxNewId();
+long const ID_LOW_FREQUENCY_TIMER = wxNewId();
+long const ID_CHECK_UPDATE_TIMER = wxNewId();
 
 MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
@@ -104,6 +106,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mGameController()
     , mSoundController()
     , mToolController()
+    , mSettingsManager()
     , mUIPreferencesManager()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
@@ -394,6 +397,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     optionsMenu->Append(openSettingsWindowMenuItem);
     Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
 
+    mReloadLastPlayedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM, _("Reload Last Played Settings\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
+    optionsMenu->Append(mReloadLastPlayedSettingsMenuItem);
+    Connect(ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnReloadLastPlayedSettingsMenuItem);
+
     wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Preferences...\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openPreferencesWindowMenuItem);
     Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
@@ -625,6 +632,20 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
+    // Create Settings manager
+    //
+
+    mSettingsManager = std::make_shared<SettingsManager>(
+        mGameController,
+        mSoundController,
+        mResourceLoader->GetThemeSettingsRootFilepath(),
+        StandardSystemPaths::GetInstance().GetUserGameSettingsRootFilepath());
+
+    // Enable "Reload Last Played Settings" menu if we have last-played settings
+    mReloadLastPlayedSettingsMenuItem->Enable(mSettingsManager->HasLastPlayedSettingsPersisted());
+
+
+    //
     // Create UI Preferences manager
     //
 
@@ -740,6 +761,11 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 
     if (!!mLowFrequencyTimer)
         mLowFrequencyTimer->Stop();
+
+    // Save last-played settings, if enabled
+    if (!!mUIPreferencesManager && mUIPreferencesManager->GetSaveSettingsOnExit())
+        if (!!mSettingsManager)
+            mSettingsManager->SaveLastPlayedSettings();
 
     Destroy();
 }
@@ -1393,6 +1419,13 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mSettingsDialog->Open();
+}
+
+void MainFrame::OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & /*event*/)
+{
+    assert(!!mSettingsManager);
+
+    mSettingsManager->LoadAndEnforceLastPlayedSettings();
 }
 
 void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event*/)

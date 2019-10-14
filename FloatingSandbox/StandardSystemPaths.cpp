@@ -20,10 +20,15 @@ std::filesystem::path StandardSystemPaths::GetUserPicturesGameFolderPath() const
         / ApplicationName; // Without version - we want this to be sticky across upgrades
 }
 
-std::filesystem::path StandardSystemPaths::GetUserSettingsGameFolderPath() const
+std::filesystem::path StandardSystemPaths::GetUserGameRootFolderPath() const
 {
-    auto settingsFolder = wxStandardPaths::Get().GetUserConfigDir();
+    auto userFolder = wxStandardPaths::Get().GetUserConfigDir();
 
-    return std::filesystem::path(settingsFolder.ToStdString())
+    return std::filesystem::path(userFolder.ToStdString())
         / ApplicationName; // Without version - we want this to be sticky across upgrades
+}
+
+std::filesystem::path StandardSystemPaths::GetUserGameSettingsRootFilepath() const
+{
+    return GetUserGameRootFolderPath() / "Settings";
 }

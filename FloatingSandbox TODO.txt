@@ -368,6 +368,11 @@ Render:
 	
 		= Settings Manager (*)
 
+		- Move status text toggles to UIPreferences, so that they're save-able
+			- Leave menu entries, they now talk to UIPreferencesManager
+				- Refresh status after window closed
+
+
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
 			- Add the three songs
@@ -395,9 +400,7 @@ Render:
 			- Ship: needs own state machine for explosions
 				- Does: rendering; creation of each frame's force field;
 					- i.e. has Update() and Upload()
-					- While you're at it, state should become simulation-time based, rather than
-					  wall clock-time based, so that physics of explosions (# of force field applications) is
-					  deterministic and explosion effect does not depend on computer speed
+					- Make sure state is wall clock-time based, as we need to sync with sounds
 				- Replaces normal bombs' blast callback: DoBombExplosion
 					- Do IHandler while you're at it
 					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
@@ -1422,15 +1425,21 @@ Render:
 					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
 			+ Run unit tests in Debug
-			- MainFrame:
-				- Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
-				- Menu: "Load last played settings"
-					- Only enabled if "last played settings" exists
-				- Save last-played settings on exit
-					- If UI Preferences say so
+			= MainFrame:
+				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
+				= Menu: "Reload last played settings"
+					+ Only enabled if "last played settings" exists
+				= Save last-played settings on exit
+					+ If UI Preferences say so
+				+ Fix crash
+				+ Fix Preferences Dialog
 			- SettingsDialog:
+				- Hookup current settings
+				- Change standard bottom buttons
 				- New "Settings Management" tab:
 					- TODOHERE
+				- Hookup remaining settings
+				- "Restore Default Terrain" button
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench

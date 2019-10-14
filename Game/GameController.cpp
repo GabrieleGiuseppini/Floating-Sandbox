@@ -92,7 +92,7 @@ GameController::GameController(
     , mLastTotalUpdateDuration(std::chrono::steady_clock::duration::zero())
     , mTotalRenderDuration(std::chrono::steady_clock::duration::zero())
     , mLastTotalRenderDuration(std::chrono::steady_clock::duration::zero())
-    , mOriginTimestampGame(GameWallClock::time_point::min())
+    , mOriginTimestampGame(GameWallClock::GetInstance().Now())
     , mSkippedFirstStatPublishes(0)
 {
     // Register ourselves as event handler for the events we care about

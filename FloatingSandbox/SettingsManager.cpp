@@ -27,11 +27,35 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterDragAdjustment);
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
     ADD_GC_SETTING(float, WaterCrazyness);
-    ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
+    ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);    
+
+    ADD_GC_SETTING(float, BasalWaveHeightAdjustment);
+    ADD_GC_SETTING(float, BasalWaveLengthAdjustment);
+    ADD_GC_SETTING(float, BasalWaveSpeedAdjustment);
+    ADD_GC_SETTING(float, TsunamiRate);
+    ADD_GC_SETTING(float, RogueWaveRate);
+    ADD_GC_SETTING(bool, DoModulateWind);
+    ADD_GC_SETTING(float, WindSpeedBase);
+    ADD_GC_SETTING(float, WindSpeedMaxFactor);
+
+    // Heat
+    ADD_GC_SETTING(float, AirTemperature);
+    ADD_GC_SETTING(float, WaterTemperature);
+    ADD_GC_SETTING(unsigned int, MaxBurningParticles);
+    ADD_GC_SETTING(float, ThermalConductivityAdjustment);
+    ADD_GC_SETTING(float, HeatDissipationAdjustment);
+    ADD_GC_SETTING(float, IgnitionTemperatureAdjustment);
+    ADD_GC_SETTING(float, MeltingTemperatureAdjustment);
+    ADD_GC_SETTING(float, CombustionSpeedAdjustment);
+    ADD_GC_SETTING(float, CombustionHeatAdjustment);
+    ADD_GC_SETTING(float, HeatBlasterHeatFlow);
+    ADD_GC_SETTING(float, HeatBlasterRadius);
+    ADD_GC_SETTING(float, ElectricalElementHeatProducedAdjustment);
     
     // TODOHERE
 
     ADD_GC_SETTING(float, LuminiscenceAdjustment);
+    
 
     return factory;
 }

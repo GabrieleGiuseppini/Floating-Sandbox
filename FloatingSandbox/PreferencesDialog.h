@@ -30,6 +30,7 @@ private:
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
+    void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
@@ -55,6 +56,7 @@ private:
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
+    wxCheckBox * mSaveSettingsOnExitCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;

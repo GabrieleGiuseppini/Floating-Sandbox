@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "OceanFloorTerrain.h"
 
+#include "GameParameters.h"
 #include "ImageFileTools.h"
 
 namespace /* anonymous */ {
@@ -92,4 +93,9 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromStream(std::istream & is)
 void OceanFloorTerrain::SaveToStream(std::ostream & os) const
 {
     os.write(reinterpret_cast<char const *>(mTerrainBuffer.get()), mTerrainBuffer.size() * sizeof(float));
+}
+
+bool OceanFloorTerrain::IsExpectedSize(size_t size)
+{
+    return size == GameParameters::OceanFloorTerrainSamples<size_t>;
 }

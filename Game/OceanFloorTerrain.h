@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-
 #include <GameCore/UniqueBuffer.h>
 
 #include <filesystem>
@@ -30,13 +28,13 @@ public:
     explicit OceanFloorTerrain(unique_buffer<float> const & terrainBuffer)
         : mTerrainBuffer(terrainBuffer)
     {
-        assert(mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
+        assert(IsExpectedSize(mTerrainBuffer.size()));
     }
 
     explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
     {
-        assert(mTerrainBuffer.size() == GameParameters::OceanFloorTerrainSamples<size_t>);
+        assert(IsExpectedSize(mTerrainBuffer.size()));
     }
 
     OceanFloorTerrain(OceanFloorTerrain const & other) = default;
@@ -63,6 +61,8 @@ public:
     void SaveToStream(std::ostream & os) const;
 
 private:
+
+    static bool IsExpectedSize(size_t size);
 
     unique_buffer<float> mTerrainBuffer;
 };

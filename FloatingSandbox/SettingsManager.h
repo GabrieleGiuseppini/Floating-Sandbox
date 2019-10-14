@@ -24,6 +24,31 @@ enum class GameSettings : size_t
     WaterCrazyness,
     WaterDiffusionSpeedAdjustment,
 
+    BasalWaveHeightAdjustment,
+    BasalWaveLengthAdjustment,
+    BasalWaveSpeedAdjustment,
+    TsunamiRate,
+    RogueWaveRate,
+    DoModulateWind,
+    WindSpeedBase,
+    WindSpeedMaxFactor,
+
+    // Heat
+    AirTemperature,
+    WaterTemperature,
+    MaxBurningParticles,
+    ThermalConductivityAdjustment,
+    HeatDissipationAdjustment,
+    IgnitionTemperatureAdjustment,
+    MeltingTemperatureAdjustment,
+    CombustionSpeedAdjustment,
+    CombustionHeatAdjustment,
+    HeatBlasterHeatFlow,
+    HeatBlasterRadius,
+    ElectricalElementHeatProducedAdjustment,
+
+    // Misc
+
     // TODOHERE
     LuminiscenceAdjustment,
 

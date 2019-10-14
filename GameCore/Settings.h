@@ -90,7 +90,7 @@ struct PersistedSettingsMetadata
         std::stringstream ss;
         ss
             << "The settings that were used when the game was last played on "
-            << std::put_time(std::localtime(&now_c), "%F") 
+            << std::put_time(std::localtime(&now_c), "%F at %T") 
             << ".";
 
         return PersistedSettingsMetadata(
@@ -237,6 +237,9 @@ private:
 class BaseSetting
 {
 public:
+
+    virtual ~BaseSetting()
+    {}
 
     bool IsDirty() const
     {
@@ -560,6 +563,9 @@ class BaseSettingEnforcer
 {
 public:
 
+    virtual ~BaseSettingEnforcer()
+    {}
+
     virtual void Enforce(BaseSetting const & setting) const = 0;
 
     virtual void Pull(BaseSetting & setting) const = 0;
@@ -860,9 +866,9 @@ protected:
         std::filesystem::path const & rootUserSettingsDirectoryPath,
         std::shared_ptr<TFileSystem> fileSystem = std::make_shared<TFileSystem>())
         : mStorage(
-            rootSystemSettingsDirectoryPath
-            , rootUserSettingsDirectoryPath
-            , std::move(fileSystem))
+            rootSystemSettingsDirectoryPath,
+            rootUserSettingsDirectoryPath,
+            std::move(fileSystem))
         , mTemplateSettings(std::move(factory.mSettings))
         , mEnforcers(std::move(factory.mEnforcers))
         , mDefaultSettings(mTemplateSettings)

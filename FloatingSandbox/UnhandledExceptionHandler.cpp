@@ -30,7 +30,7 @@ void create_minidump(struct _EXCEPTION_POINTERS* apExceptionInfo)
             // Make filename
             //
 
-            std::filesystem::path folderPath = StandardSystemPaths::GetInstance().GetUserSettingsGameFolderPath()
+            std::filesystem::path folderPath = StandardSystemPaths::GetInstance().GetUserGameRootFolderPath()
                 / "CrashDumps";
 
             if (!std::filesystem::exists(folderPath))
