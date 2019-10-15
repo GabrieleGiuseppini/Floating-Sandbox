@@ -58,8 +58,14 @@ SettingsDialog::SettingsDialog(
         _("Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
+        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR,
         _T("Settings Window"));
+
+    this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
+
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
+    SetIcon(wxICON(AAA_SHIP_ICON));
 
 
     //
@@ -93,8 +99,6 @@ SettingsDialog::SettingsDialog(
 
     wxPanel * mechanicsFluidsLightsPanel = new wxPanel(notebook);
 
-    mechanicsFluidsLightsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
     PopulateMechanicsFluidsLightsPanel(mechanicsFluidsLightsPanel);
 
     notebook->AddPage(mechanicsFluidsLightsPanel, "Mechanics, Fluids, and Lights");
@@ -105,8 +109,6 @@ SettingsDialog::SettingsDialog(
     //
 
     wxPanel * heatPanel = new wxPanel(notebook);
-
-    heatPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     PopulateHeatPanel(heatPanel);
 
@@ -119,8 +121,6 @@ SettingsDialog::SettingsDialog(
 
     wxPanel * oceanAndSkyPanel = new wxPanel(notebook);
 
-    oceanAndSkyPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
     PopulateOceanAndSkyPanel(oceanAndSkyPanel);
 
     notebook->AddPage(oceanAndSkyPanel, "Ocean and Sky");
@@ -131,8 +131,6 @@ SettingsDialog::SettingsDialog(
     //
 
     wxPanel * windAndWavesPanel = new wxPanel(notebook);
-
-    windAndWavesPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     PopulateWindAndWavesPanel(windAndWavesPanel);
 
@@ -145,8 +143,6 @@ SettingsDialog::SettingsDialog(
 
     wxPanel * interactionsPanel = new wxPanel(notebook);
 
-    interactionsPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
     PopulateInteractionsPanel(interactionsPanel);
 
     notebook->AddPage(interactionsPanel, "Interactions");
@@ -157,8 +153,6 @@ SettingsDialog::SettingsDialog(
     //
 
     wxPanel * renderingPanel = new wxPanel(notebook);
-
-    renderingPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     PopulateRenderingPanel(renderingPanel);
 
@@ -171,12 +165,9 @@ SettingsDialog::SettingsDialog(
 
     wxPanel * soundPanel = new wxPanel(notebook);
 
-    soundPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-
     PopulateSoundPanel(soundPanel);
 
     notebook->AddPage(soundPanel, "Sound");
-
 
 
     //
@@ -184,8 +175,6 @@ SettingsDialog::SettingsDialog(
     //
 
     wxPanel * advancedPanel = new wxPanel(notebook);
-
-    advancedPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     PopulateAdvancedPanel(advancedPanel);
 
@@ -200,40 +189,33 @@ SettingsDialog::SettingsDialog(
 
     // Buttons
 
-    wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
+    {
+        wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    buttonsSizer->AddSpacer(20);
+        buttonsSizer->AddSpacer(20);
 
-    // TODOTEST
-    //mOkButton = new wxButton(this, wxID_ANY, "OK");
-    //mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
-    mOkButton = new wxButton(this, wxID_OK);
-    //Connect(wxID_OK, wxEVT_BUTTON, (wxObjectEventFunction)& SettingsDialog::OnOkButton);
-    mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
-    buttonsSizer->Add(mOkButton, 0);
+        mOkButton = new wxButton(this, wxID_ANY, "OK");
+        mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
+        buttonsSizer->Add(mOkButton, 0);
 
-    buttonsSizer->AddSpacer(20);
+        buttonsSizer->AddSpacer(20);
 
-    // TODOTEST
-    //mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
-    //mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
-    //this->SetEscapeId(mCancelButton->GetId());
-    mCancelButton = new wxButton(this, wxID_CANCEL);
-    //Connect(wxID_CANCEL, wxEVT_BUTTON, (wxObjectEventFunction)& SettingsDialog::OnCancelButton);
-    buttonsSizer->Add(mCancelButton, 0);
+        mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
+        mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
+        buttonsSizer->Add(mCancelButton, 0);
 
-    buttonsSizer->AddSpacer(20);
+        buttonsSizer->AddSpacer(20);
 
-    mUndoButton = new wxButton(this, wxID_ANY, "Undo");
-    mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
-    buttonsSizer->Add(mUndoButton, 0);
+        mUndoButton = new wxButton(this, wxID_ANY, "Undo");
+        mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
+        buttonsSizer->Add(mUndoButton, 0);
 
-    buttonsSizer->AddSpacer(20);
+        buttonsSizer->AddSpacer(20);
 
-    dialogVSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+        dialogVSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+    }
 
     dialogVSizer->AddSpacer(20);
-
 
 
     //
@@ -251,6 +233,9 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Open()
 {
+    if (IsShown())
+        return; // Handle Ctrl^S while minimized
+
     assert(!!mSettingsManager);
 
     //
@@ -276,6 +261,7 @@ void SettingsDialog::Open()
     //
 
     this->Show();
+    this->Raise();
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
@@ -449,42 +435,17 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-    LogMessage("TODOHERE:OK");
-    //
-    // Close the dialog
-    //
-    
-    this->Close();
+    // Just close the dialog   
+    DoClose();
 }
 
 void SettingsDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    LogMessage("TODOHERE:CANCEL");
-    assert(!!mSettingsManager);
-
-    if (mHasBeenDirtyInCurrentSession)
-    {
-        //
-        // Undo changes done since last open, including eventual loads
-        //
-
-        mLiveSettings = mCheckpointSettings;
-
-        // Just enforce anything in the checkpoint that is different than the current settings
-        mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
-        mSettingsManager->EnforceDirtySettings(mLiveSettings);
-    }
-
-    //
-    // Close the dialog
-    //
-    
-    this->Close();
+    DoCancel();
 }
 
 void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
 {
-    LogMessage("TODOHERE:UNDO");
     assert(!!mSettingsManager);
 
     //
@@ -507,6 +468,42 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
     // Remember we are clean now
     mHasBeenDirtyInCurrentSession = false;
     ReconcileDirtyState();
+}
+
+void SettingsDialog::OnCloseButton(wxCloseEvent & /*event*/)
+{
+    DoCancel();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void SettingsDialog::DoCancel()
+{
+    assert(!!mSettingsManager);
+
+    if (mHasBeenDirtyInCurrentSession)
+    {
+        //
+        // Undo changes done since last open, including eventual loads
+        //
+
+        mLiveSettings = mCheckpointSettings;
+
+        // Just enforce anything in the checkpoint that is different than the current settings
+        mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
+        mSettingsManager->EnforceDirtySettings(mLiveSettings);
+    }
+
+    //
+    // Close the dialog
+    //
+
+    DoClose();
+}
+
+void SettingsDialog::DoClose()
+{
+    this->Hide();
 }
 
 void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)

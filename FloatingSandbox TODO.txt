@@ -1445,6 +1445,12 @@ Render:
 				+ Fix crash
 				+ Fix Preferences Dialog
 			= SettingsDialog:
+				+ Frame:
+					+ See if appears in Taskbar
+					+ Minimize
+					+ Background
+					+ Icon
+					+ Cancel in OnClose
 				= Hookup current settings
 				+ Change standard bottom buttons
 				- New "Settings Management" tab:

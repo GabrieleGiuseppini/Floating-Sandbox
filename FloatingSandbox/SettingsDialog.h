@@ -17,12 +17,11 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/clrpicker.h>
-#include <wx/dialog.h>
 #include <wx/radiobox.h>
 
 #include <memory>
 
-class SettingsDialog : public wxDialog
+class SettingsDialog : public wxFrame
 {
 public:
 
@@ -82,6 +81,8 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnUndoButton(wxCommandEvent & event);
+
+    void OnCloseButton(wxCloseEvent & event);
 
 private:
 
@@ -202,6 +203,9 @@ private:
     std::unique_ptr<wxBitmap> mWarningIcon;
 
 private:
+
+    void DoCancel();
+    void DoClose();
 
     void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
     void PopulateHeatPanel(wxPanel * panel);
