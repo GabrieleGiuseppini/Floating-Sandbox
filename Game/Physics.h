@@ -7,7 +7,7 @@
 
 namespace Physics
 {
-    class Bombs;
+    class Bombs;    
     class Clouds;
     class ElectricalElements;
     class OceanFloor;
@@ -17,6 +17,7 @@ namespace Physics
 	class Ship;
 	class Springs;
     class Stars;
+    class Storm;
 	class Triangles;
     class Wind;
 	class World;
@@ -29,6 +30,7 @@ namespace Physics
 #include "Triangles.h"
 #include "ElectricalElements.h"
 
+#include "Storm.h"
 #include "Clouds.h"
 #include "Stars.h"
 #include "OceanFloor.h"

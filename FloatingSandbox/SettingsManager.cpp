@@ -55,6 +55,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // TODOHERE
 
     ADD_GC_SETTING(float, LuminiscenceAdjustment);
+    ADD_GC_SETTING(float, LightSpreadAdjustment);
     
 
     return factory;

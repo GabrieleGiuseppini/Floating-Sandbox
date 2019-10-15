@@ -203,6 +203,28 @@ TEST(SettingsTests, Settings_SetAndGetValue)
     EXPECT_EQ(123, settings.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
 
+TEST(SettingsTests, Settings_SetAndGetValue_ByConstRef)
+{
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    std::string const testVal = "Test!";
+    settings.SetValue(TestSettings::Setting4_string, testVal);
+
+    EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string("Test!"), testVal);
+}
+
+TEST(SettingsTests, Settings_SetAndGetValue_ByRValue)
+{
+    Settings<TestSettings> settings(MakeTestSettings());
+
+    std::string testVal = "Test!";
+    settings.SetValue(TestSettings::Setting4_string, std::move(testVal));
+
+    EXPECT_EQ(std::string("Test!"), settings.GetValue<std::string>(TestSettings::Setting4_string));
+    EXPECT_EQ(std::string(""), testVal);
+}
+
 TEST(SettingsTests, Settings_IsAtLeastOneDirty)
 {
     Settings<TestSettings> settings(MakeTestSettings());

@@ -18,6 +18,7 @@
 #include <memory>
 #include <optional>
 #include <typeinfo>
+#include <utility>
 #include <vector>
 
 /*
@@ -408,6 +409,8 @@ public:
         {
             mSettings.emplace_back(s->Clone());
         }
+
+        return *this;
     }
 
     Settings & operator=(Settings && other)
@@ -415,6 +418,8 @@ public:
         assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
 
         mSettings = std::move(other.mSettings);
+
+        return *this;
     }
 
     BaseSetting const & operator[](TEnum settingId) const
@@ -442,12 +447,26 @@ public:
     }
 
     template<typename TValue>
+    void SetValue(TEnum settingId, TValue const & value)
+    {
+        using T = std::remove_cv_t<std::remove_reference_t<TValue>>;
+
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+        assert(typeid(T) == mSettings[static_cast<size_t>(settingId)]->GetType());
+
+        auto * s = dynamic_cast<Setting<T> *>(mSettings[static_cast<size_t>(settingId)].get());
+        s->SetValue(value);
+    }
+
+    template<typename TValue>
     void SetValue(TEnum settingId, TValue && value)
     {
-        assert(static_cast<size_t>(settingId) < mSettings.size());
-        assert(typeid(TValue) == mSettings[static_cast<size_t>(settingId)]->GetType());
+        using T = std::remove_cv_t<std::remove_reference_t<TValue>>;
 
-        Setting<TValue> * s = dynamic_cast<Setting<TValue> *>(mSettings[static_cast<size_t>(settingId)].get());
+        assert(static_cast<size_t>(settingId) < mSettings.size());
+        assert(typeid(T) == mSettings[static_cast<size_t>(settingId)]->GetType());
+
+        auto * s = dynamic_cast<Setting<T> *>(mSettings[static_cast<size_t>(settingId)].get());
         s->SetValue(std::move(value));
     }
 
@@ -644,6 +663,8 @@ public:
         {
             mEnforcers.emplace_back(e->Clone());
         }
+
+        return *this;
     }
 
     Enforcers & operator=(Enforcers && other)
@@ -651,6 +672,8 @@ public:
         assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
 
         mEnforcers = std::move(other.mEnforcers);
+
+        return *this;
     }
 
     /*
@@ -696,6 +719,11 @@ template<typename TEnum, typename TFileSystem = FileSystem>
 class BaseSettingsManager
 {
 public:
+
+    Settings<TEnum> MakeSettings() const
+    {
+        return mTemplateSettings;
+    }
 
     Settings<TEnum> const & GetDefaults() const
     {

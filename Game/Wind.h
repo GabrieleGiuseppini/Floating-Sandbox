@@ -25,7 +25,9 @@ public:
 
     void SetSilence(float silenceAmount);
 
-    void Update(GameParameters const & gameParameters);
+    void Update(
+        Storm::Parameters const & stormParameters,
+        GameParameters const & gameParameters);
 
     /*
      * Returns the (signed) base magnitude, i.e. the magnitude of the unmodulated wind speed.

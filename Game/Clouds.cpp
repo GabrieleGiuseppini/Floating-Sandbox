@@ -11,6 +11,7 @@ namespace Physics {
 
 void Clouds::Update(
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     // Resize clouds vector

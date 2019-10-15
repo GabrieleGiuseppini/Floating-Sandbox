@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "SettingsManager.h"
 #include "SliderControl.h"
 #include "SoundController.h"
 
@@ -27,8 +28,9 @@ public:
 
     SettingsDialog(
         wxWindow * parent,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        std::shared_ptr<SettingsManager> settingsManager,
+        std::shared_ptr<IGameController> gameController, // TODO: must go
+        std::shared_ptr<SoundController> soundController, // TODO: must go
         ResourceLoader const & resourceLoader);
 
     virtual ~SettingsDialog();
@@ -78,7 +80,8 @@ private:
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
-    void OnApplyButton(wxCommandEvent & event);
+    void OnCancelButton(wxCommandEvent & event);
+    void OnUndoButton(wxCommandEvent & event);
 
 private:
 
@@ -193,7 +196,7 @@ private:
     // Buttons
     wxButton * mOkButton;
     wxButton * mCancelButton;
-    wxButton * mApplyButton;
+    wxButton * mUndoButton;
 
     // Icons
     std::unique_ptr<wxBitmap> mWarningIcon;
@@ -213,11 +216,31 @@ private:
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
 
+    // TODO: has to go
     void ApplySettings();
+    void OnLiveSettingsChanged();
+
+    void ReconcileDirtyState();
 
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<IGameController> mGameController;
-    std::shared_ptr<SoundController> mSoundController;
+    std::shared_ptr<SettingsManager> mSettingsManager;
+    std::shared_ptr<IGameController> mGameController; // TODO: must go
+    std::shared_ptr<SoundController> mSoundController; // TODO: must go
+
+    //
+    // State
+    //
+
+    // The current settings, always enforced
+    Settings<GameSettings> mLiveSettings;
+
+    // The settings when the dialog was last opened
+    Settings<GameSettings> mCheckpointSettings;
+
+    // Tracks whether the user has changed any settings since the dialog 
+    // was last opened. When false there's a guarantee that the current live
+    // settings have not been modified.
+    bool mHasBeenDirtyInCurrentSession;
 };

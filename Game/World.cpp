@@ -21,6 +21,7 @@ World::World(
     : mCurrentSimulationTime(0.0f)
     , mAllShips()
     , mStars()
+    , mStorm()
     , mWind(gameEventDispatcher)
     , mClouds()
     , mOceanSurface(gameEventDispatcher)
@@ -29,8 +30,9 @@ World::World(
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
-    mWind.Update(gameParameters);
-    mClouds.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mWind.Update(mStorm.GetParameters(), gameParameters);
+    mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
@@ -550,8 +552,9 @@ void World::Update(
 
     // Update world parts
     mStars.Update(gameParameters);
-    mWind.Update(gameParameters);
-    mClouds.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mWind.Update(mStorm.GetParameters(), gameParameters);
+    mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 
@@ -577,6 +580,9 @@ void World::Render(
 
     // Upload stars
     mStars.Upload(renderContext);
+
+    // Upload storm
+    mStorm.Upload(renderContext);
 
     // Upload clouds
     mClouds.Upload(renderContext);

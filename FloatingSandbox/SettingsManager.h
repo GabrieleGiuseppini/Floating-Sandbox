@@ -50,9 +50,11 @@ enum class GameSettings : size_t
     // Misc
 
     // TODOHERE
-    LuminiscenceAdjustment,
 
-    _Last = LuminiscenceAdjustment
+    LuminiscenceAdjustment,
+    LightSpreadAdjustment,
+
+    _Last = LightSpreadAdjustment
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

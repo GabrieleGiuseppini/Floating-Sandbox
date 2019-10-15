@@ -40,12 +40,17 @@ const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
 
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
+    std::shared_ptr<SettingsManager> settingsManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader const & resourceLoader)
     : mParent(parent)
+    , mSettingsManager(std::move(settingsManager))
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
+    // State
+    , mLiveSettings(mSettingsManager->MakeSettings())
+    , mCheckpointSettings(mSettingsManager->MakeSettings())
 {
     Create(
         mParent,
@@ -199,21 +204,29 @@ SettingsDialog::SettingsDialog(
 
     buttonsSizer->AddSpacer(20);
 
+    // TODOTEST
+    //mOkButton = new wxButton(this, wxID_ANY, "OK");
+    //mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
     mOkButton = new wxButton(this, wxID_OK);
-    Connect(wxID_OK, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnOkButton);
+    //Connect(wxID_OK, wxEVT_BUTTON, (wxObjectEventFunction)& SettingsDialog::OnOkButton);
+    mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
     buttonsSizer->Add(mOkButton, 0);
 
     buttonsSizer->AddSpacer(20);
 
+    // TODOTEST
+    //mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
+    //mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
+    //this->SetEscapeId(mCancelButton->GetId());
     mCancelButton = new wxButton(this, wxID_CANCEL);
+    //Connect(wxID_CANCEL, wxEVT_BUTTON, (wxObjectEventFunction)& SettingsDialog::OnCancelButton);
     buttonsSizer->Add(mCancelButton, 0);
 
     buttonsSizer->AddSpacer(20);
 
-    mApplyButton = new wxButton(this, wxID_APPLY);
-    mApplyButton->Enable(false);
-    Connect(wxID_APPLY, wxEVT_BUTTON, (wxObjectEventFunction)&SettingsDialog::OnApplyButton);
-    buttonsSizer->Add(mApplyButton, 0);
+    mUndoButton = new wxButton(this, wxID_ANY, "Undo");
+    mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
+    buttonsSizer->Add(mUndoButton, 0);
 
     buttonsSizer->AddSpacer(20);
 
@@ -238,236 +251,262 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Open()
 {
-    assert(!!mGameController);
+    assert(!!mSettingsManager);
 
+    //
+    // Initialize state
+    //
+
+    // Pull currently-enforced settings
+    mSettingsManager->Pull(mLiveSettings);
+    mLiveSettings.ClearAllDirty();
+
+    // Save checkpoint for undo
+    mCheckpointSettings = mLiveSettings;
+
+    // Populate controls with live settings
     ReadSettings();
 
-    // We're not dirty
-    mApplyButton->Enable(false);
+    // Remember that the user hasn't changed anything yet in this session
+    mHasBeenDirtyInCurrentSession = false;
+    ReconcileDirtyState();
+
+    //
+    // Open dialog
+    //
 
     this->Show();
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*/)
 {
     mAirBubbleDensitySlider->Enable(mGenerateAirBubblesCheckBox->IsChecked());
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
 {
     mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateOceanRenderModeSettings();
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnTextureOceanChanged(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateOceanRenderModeSettings();
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDepthOceanColorStartChanged(wxColourPickerEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDepthOceanColorEndChanged(wxColourPickerEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateOceanRenderModeSettings();
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateLandRenderModeSettings();
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnTextureLandChanged(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     ReconciliateLandRenderModeSettings();
 
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnTextureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnMode1ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnPlayWindSoundCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
 {
-    // Remember we're dirty now
-    mApplyButton->Enable(true);
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-    assert(!!mGameController);
-
-    // Write settings back to controller
-    ApplySettings();
-
-    // Close ourselves
+    LogMessage("TODOHERE:OK");
+    //
+    // Close the dialog
+    //
+    
     this->Close();
 }
 
-void SettingsDialog::OnApplyButton(wxCommandEvent & /*event*/)
+void SettingsDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    assert(!!mGameController);
+    LogMessage("TODOHERE:CANCEL");
+    assert(!!mSettingsManager);
 
-    // Write settings back to controller
-    ApplySettings();
+    if (mHasBeenDirtyInCurrentSession)
+    {
+        //
+        // Undo changes done since last open, including eventual loads
+        //
 
-    // We're not dirty anymore
-    mApplyButton->Enable(false);
+        mLiveSettings = mCheckpointSettings;
+
+        // Just enforce anything in the checkpoint that is different than the current settings
+        mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
+        mSettingsManager->EnforceDirtySettings(mLiveSettings);
+    }
+
+    //
+    // Close the dialog
+    //
+    
+    this->Close();
+}
+
+void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
+{
+    LogMessage("TODOHERE:UNDO");
+    assert(!!mSettingsManager);
+
+    //
+    // Undo changes done since last open, including eventual loads
+    //
+
+    mLiveSettings = mCheckpointSettings;
+
+    // Just enforce anything in the checkpoint that is different than the current settings
+    mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
+    mSettingsManager->EnforceDirtySettings(mLiveSettings);
+
+    mLiveSettings.ClearAllDirty();
+
+    assert(mSettingsManager->Pull() == mCheckpointSettings);
+
+    // Re-populate controls with new values
+    ReadSettings();
+
+    // Remember we are clean now
+    mHasBeenDirtyInCurrentSession = false;
+    ReconcileDirtyState();
 }
 
 void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
@@ -496,10 +535,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Simulation Quality",
                     "Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
                     mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<FixedTickSliderCore>(
                         0.5f,
@@ -524,10 +563,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Strength Adjust",
                     "Adjusts the strength of springs.",
                     mGameController->GetSpringStrengthAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinSpringStrengthAdjustment(),
@@ -551,10 +590,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Rot Acceler8r",
                     "Adjusts the speed with which materials rot when exposed to sea water.",
                     mGameController->GetRotAcceler8r(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinRotAcceler8r(),
@@ -604,10 +643,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Luminiscence Adjust",
                     "Adjusts the quantity of light emitted by luminiscent materials.",
                     mGameController->GetLuminiscenceAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinLuminiscenceAdjustment(),
@@ -631,10 +670,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Light Spread Adjust",
                     "Adjusts how wide light emitted by luminiscent materials spreads out.",
                     mGameController->GetLightSpreadAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinLightSpreadAdjustment(),
@@ -683,10 +722,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Water Density Adjust",
                     "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
                     mGameController->GetWaterDensityAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterDensityAdjustment(),
@@ -709,10 +748,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Water Drag Adjust",
                     "Adjusts the drag force exerted by sea water on physical bodies.",
                     mGameController->GetWaterDragAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinWaterDragAdjustment(),
@@ -736,10 +775,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Water Intake Adjust",
                     "Adjusts the speed with which sea water enters or leaves a physical body.",
                     mGameController->GetWaterIntakeAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterIntakeAdjustment(),
@@ -762,10 +801,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Water Crazyness",
                     "Adjusts how \"splashy\" water flows inside a physical body.",
                     mGameController->GetWaterCrazyness(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterCrazyness(),
@@ -788,10 +827,10 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     "Water Diffusion Speed",
                     "Adjusts the speed with which water propagates within a physical body.",
                     mGameController->GetWaterDiffusionSpeedAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterDiffusionSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterDiffusionSpeedAdjustment(),
@@ -850,10 +889,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Thermal Conductivity Adjust",
                     "Adjusts the speed with which heat propagates along materials.",
                     mGameController->GetThermalConductivityAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinThermalConductivityAdjustment(),
@@ -877,10 +916,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Heat Dissipation Adjust",
                     "Adjusts the speed with which materials dissipate or accumulate heat to or from air and water.",
                     mGameController->GetHeatDissipationAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinHeatDissipationAdjustment(),
@@ -904,10 +943,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Burning Point Adjust",
                     "Adjusts the temperature at which materials ignite.",
                     mGameController->GetIgnitionTemperatureAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::IgnitionTemperatureAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinIgnitionTemperatureAdjustment(),
@@ -931,10 +970,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Melting Point Adjust",
                     "Adjusts the temperature at which materials melt.",
                     mGameController->GetMeltingTemperatureAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::MeltingTemperatureAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinMeltingTemperatureAdjustment(),
@@ -958,10 +997,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Combustion Speed Adjust",
                     "Adjusts the rate with which materials consume when burning.",
                     mGameController->GetCombustionSpeedAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::CombustionSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinCombustionSpeedAdjustment(),
@@ -985,10 +1024,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Combustion Heat Adjust",
                     "Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles.",
                     mGameController->GetCombustionHeatAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::CombustionHeatAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinCombustionHeatAdjustment(),
@@ -1037,10 +1076,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Air Temperature",
                     "The temperature of air (K).",
                     mGameController->GetAirTemperature(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinAirTemperature(),
@@ -1063,10 +1102,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Water Temperature",
                     "The temperature of water (K).",
                     mGameController->GetWaterTemperature(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterTemperature, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterTemperature(),
@@ -1112,10 +1151,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Heat Generation Adjust",
                     "Adjusts the amount of heat generated by working electrical elements, such as lamps and generators.",
                     mGameController->GetElectricalElementHeatProducedAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinElectricalElementHeatProducedAdjustment(),
@@ -1162,10 +1201,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Radius",
                     "The radius of HeatBlaster tool (m).",
                     mGameController->GetHeatBlasterRadius(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::HeatBlasterRadius, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinHeatBlasterRadius(),
@@ -1188,10 +1227,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Heat",
                     "The heat produced by the HeatBlaster tool (KJ/s).",
                     mGameController->GetHeatBlasterHeatFlow(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::HeatBlasterHeatFlow, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinHeatBlasterHeatFlow(),
@@ -1238,10 +1277,10 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     "Max Burning Particles",
                     "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
                     mGameController->GetMaxBurningParticles(),
-                    [this](unsigned int /*value*/)
+                    [this](unsigned int value)
                     {
-                        // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::MaxBurningParticles, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinMaxBurningParticles(),
@@ -1304,7 +1343,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinSeaDepth(),
@@ -1331,7 +1371,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinOceanFloorBumpiness(),
@@ -1357,7 +1398,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinOceanFloorDetailAmplification(),
@@ -1411,7 +1453,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinNumberOfStars(),
@@ -1437,7 +1480,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     [this](unsigned int /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinNumberOfClouds(),
@@ -1500,7 +1544,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWindSpeedBase(),
@@ -1540,7 +1585,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         [this](float /*value*/)
                         {
                             // Remember we're dirty now
-                            this->mApplyButton->Enable(true);
+                            // TODO
+                        //this->mApplyButton->Enable(true);
                         },
                         std::make_unique<LinearSliderCore>(
                             mGameController->GetMinWindSpeedMaxFactor(),
@@ -1595,7 +1641,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBasalWaveHeightAdjustment(),
@@ -1621,7 +1668,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinBasalWaveLengthAdjustment(),
@@ -1648,7 +1696,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBasalWaveSpeedAdjustment(),
@@ -1700,7 +1749,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinTsunamiRate(),
@@ -1726,7 +1776,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRogueWaveRate(),
@@ -1789,7 +1840,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinDestroyRadius(),
@@ -1815,7 +1867,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBombBlastRadius(),
@@ -1841,7 +1894,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinBombBlastHeat(),
@@ -1868,7 +1922,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinAntiMatterBombImplosionStrength(),
@@ -1894,7 +1949,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinFloodRadius(),
@@ -1920,7 +1976,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinFloodQuantity(),
@@ -1946,7 +2003,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRepairRadius(),
@@ -1972,7 +2030,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRepairSpeedAdjustment(),
@@ -2059,7 +2118,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         [this](float /*value*/)
                         {
                             // Remember we're dirty now
-                            this->mApplyButton->Enable(true);
+                            // TODO
+                            //this->mApplyButton->Enable(true);
                         },
                         std::make_unique<LinearSliderCore>(
                             mGameController->GetMinAirBubblesDensity(),
@@ -2246,7 +2306,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2272,7 +2333,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2506,7 +2568,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2532,7 +2595,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinShipFlameSizeAdjustment(),
@@ -2656,7 +2720,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2683,7 +2748,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     [this](float /*value*/)
                     {
                         // Remember we're dirty now
-                        this->mApplyButton->Enable(true);
+                        // TODO
+                        //this->mApplyButton->Enable(true);
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterLevelOfDetail(),
@@ -2731,7 +2797,8 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         [this](float /*value*/)
         {
             // Remember we're dirty now
-            this->mApplyButton->Enable(true);
+            // TODO
+            //this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
             0.0f,
@@ -2752,7 +2819,8 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         [this](float /*value*/)
         {
             // Remember we're dirty now
-            this->mApplyButton->Enable(true);
+            // TODO
+            //this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
             0.0f,
@@ -2773,7 +2841,8 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         [this](float /*value*/)
         {
             // Remember we're dirty now
-            this->mApplyButton->Enable(true);
+            // TODO
+            //this->mApplyButton->Enable(true);
         },
         std::make_unique<LinearSliderCore>(
             0.0f,
@@ -2828,10 +2897,10 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
         " it is not meant for improving the rigidity of physical bodies.",
         mGameController->GetSpringStiffnessAdjustment(),
-        [this](float /*value*/)
+        [this](float value)
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
+            this->mLiveSettings.SetValue(GameSettings::SpringStiffnessAdjustment, value);
+            this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinSpringStiffnessAdjustment(),
@@ -2850,10 +2919,10 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         "This setting is for testing physical instability of the mass-spring network with different damping values;"
         " it is not meant for improving the rigidity of physical bodies.",
         mGameController->GetSpringDampingAdjustment(),
-        [this](float /*value*/)
+        [this](float value)
         {
-            // Remember we're dirty now
-            this->mApplyButton->Enable(true);
+            this->mLiveSettings.SetValue(GameSettings::SpringDampingAdjustment, value);
+            this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
             mGameController->GetMinSpringDampingAdjustment(),
@@ -2914,51 +2983,51 @@ void SettingsDialog::ReadSettings()
 
     // Mechanics, Fluids, Lights
 
-    mMechanicalQualitySlider->SetValue(mGameController->GetNumMechanicalDynamicsIterationsAdjustment());
+    mMechanicalQualitySlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
-    mStrengthSlider->SetValue(mGameController->GetSpringStrengthAdjustment());
+    mStrengthSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
 
-    mRotAcceler8rSlider->SetValue(mGameController->GetRotAcceler8r());
+    mRotAcceler8rSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::RotAcceler8r));
 
-    mWaterDensitySlider->SetValue(mGameController->GetWaterDensityAdjustment());
+    mWaterDensitySlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDensityAdjustment));
 
-    mWaterDragSlider->SetValue(mGameController->GetWaterDragAdjustment());
+    mWaterDragSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDragAdjustment));
 
-    mWaterIntakeSlider->SetValue(mGameController->GetWaterIntakeAdjustment());
+    mWaterIntakeSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
 
-    mWaterCrazynessSlider->SetValue(mGameController->GetWaterCrazyness());
+    mWaterCrazynessSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterCrazyness));
 
-    mWaterDiffusionSpeedSlider->SetValue(mGameController->GetWaterDiffusionSpeedAdjustment());
+    mWaterDiffusionSpeedSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
 
-    mLuminiscenceSlider->SetValue(mGameController->GetLuminiscenceAdjustment());
+    mLuminiscenceSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
 
-    mLightSpreadSlider->SetValue(mGameController->GetLightSpreadAdjustment());
+    mLightSpreadSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::LightSpreadAdjustment));
 
     // Heat
 
-    mThermalConductivityAdjustmentSlider->SetValue(mGameController->GetThermalConductivityAdjustment());
+    mThermalConductivityAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
 
-    mHeatDissipationAdjustmentSlider->SetValue(mGameController->GetHeatDissipationAdjustment());
+    mHeatDissipationAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
 
-    mIgnitionTemperatureAdjustmentSlider->SetValue(mGameController->GetIgnitionTemperatureAdjustment());
+    mIgnitionTemperatureAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));
 
-    mMeltingTemperatureAdjustmentSlider->SetValue(mGameController->GetMeltingTemperatureAdjustment());
+    mMeltingTemperatureAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
 
-    mCombustionSpeedAdjustmentSlider->SetValue(mGameController->GetCombustionSpeedAdjustment());
+    mCombustionSpeedAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
 
-    mCombustionHeatAdjustmentSlider->SetValue(mGameController->GetCombustionHeatAdjustment());
+    mCombustionHeatAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
 
-    mAirTemperatureSlider->SetValue(mGameController->GetAirTemperature());
+    mAirTemperatureSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::AirTemperature));
 
-    mWaterTemperatureSlider->SetValue(mGameController->GetWaterTemperature());
+    mWaterTemperatureSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterTemperature));
 
-    mElectricalElementHeatProducedAdjustmentSlider->SetValue(mGameController->GetElectricalElementHeatProducedAdjustment());
+    mElectricalElementHeatProducedAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
 
-    mHeatBlasterRadiusSlider->SetValue(mGameController->GetHeatBlasterRadius());
+    mHeatBlasterRadiusSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatBlasterRadius));
 
-    mHeatBlasterHeatFlowSlider->SetValue(mGameController->GetHeatBlasterHeatFlow());
+    mHeatBlasterHeatFlowSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
 
-    mMaxBurningParticlesSlider->SetValue(mGameController->GetMaxBurningParticles());
+    mMaxBurningParticlesSlider->SetValue(mLiveSettings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
 
     // Ocean and Sky
 
@@ -3591,4 +3660,28 @@ void SettingsDialog::ApplySettings()
             break;
         }
     }
+}
+
+void SettingsDialog::OnLiveSettingsChanged()
+{
+    assert(!!mSettingsManager);
+
+    // Enforce settings that have just changed
+    mSettingsManager->EnforceDirtySettings(mLiveSettings);
+
+    // We're back in sync
+    mLiveSettings.ClearAllDirty();
+
+    // Remember that we have changed since we were opened
+    mHasBeenDirtyInCurrentSession = true;
+    ReconcileDirtyState();
+}
+
+void SettingsDialog::ReconcileDirtyState()
+{
+    //
+    // Update buttons' state based on dirty state
+    //
+
+    mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
 }

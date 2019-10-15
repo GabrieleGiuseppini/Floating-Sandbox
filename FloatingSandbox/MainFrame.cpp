@@ -1413,6 +1413,7 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mSettingsDialog = std::make_unique<SettingsDialog>(
             this,
+            mSettingsManager,
             mGameController,
             mSoundController,
             *mResourceLoader);

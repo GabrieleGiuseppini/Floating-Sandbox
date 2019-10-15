@@ -47,7 +47,9 @@ void Wind::SetSilence(float silenceAmount)
     mCurrentSilenceAmount = silenceAmount;
 }
 
-void Wind::Update(GameParameters const & gameParameters)
+void Wind::Update(
+    Storm::Parameters const & stormParameters,
+    GameParameters const & gameParameters)
 {
     //
     // Check whether parameters have changed

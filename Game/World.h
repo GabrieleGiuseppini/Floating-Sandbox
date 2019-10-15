@@ -235,6 +235,7 @@ private:
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
+    Storm mStorm;
     Wind mWind;
     Clouds mClouds;
     OceanSurface mOceanSurface;

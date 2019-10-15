@@ -1022,19 +1022,29 @@ Render:
 			- "gunpowder" and "diesel"
 
 	- Storms
-		- Another physics component
-		- Given to Wind and OceanSurface, who uses its StormMagnitude = [0.0 ... 1.0] to increase wind in calculations
-			- OceanSurface: uses also this one when deciding whether to recalc pre-calc'd params
-		- Given to Clouds, who uses its StormMagnitude for darkness of clouds
-			- Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
-				- RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
-		- Triggers lightnings:
-			- Communicated to RenderContext by Storms::Upload(...), for each step of the lighting state machine
-			- TBD: Storms' lightning state machine should hit Ship (for fire)
-				- What about: via handler owned (implemented) and passed by World?
-			- Also manual trigger for lightning
-			- Shader:
-				- TBD
+		Spec:
+			- Another physics component
+			- State machine with concentric phases:
+				- Wind (and thus waves)
+				- Darknening
+					- RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
+					  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
+				- Cloud Darkening (same phase as Darkening)
+				- Rain
+				- Lightnings
+			- TODOOLD:
+			- Given to Wind and OceanSurface, who uses its StormMagnitude = [0.0 ... 1.0] to increase wind in calculations
+				- OceanSurface: uses also this one when deciding whether to recalc pre-calc'd params
+			- Given to Clouds, who uses its StormMagnitude for darkness of clouds
+				- Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
+					- RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+			- Triggers lightnings:
+				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
+				- TBD: Storms' lightning state machine should hit Ship (for fire)
+					- What about: via handler owned (implemented) and passed by World?
+				- Also manual trigger for lightning
+				- Shader:
+					- TBD
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
@@ -1424,6 +1434,7 @@ Render:
 				+ BaseSetting specialization for OceanFloorTerrain
 					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
+				- Massage name to make it lower-caseand underscore-separated
 			+ Run unit tests in Debug
 			= MainFrame:
 				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
@@ -1433,13 +1444,14 @@ Render:
 					+ If UI Preferences say so
 				+ Fix crash
 				+ Fix Preferences Dialog
-			- SettingsDialog:
-				- Hookup current settings
-				- Change standard bottom buttons
+			= SettingsDialog:
+				= Hookup current settings
+				+ Change standard bottom buttons
 				- New "Settings Management" tab:
 					- TODOHERE
 				- Hookup remaining settings
 				- "Restore Default Terrain" button
+			- Make wind speed smoothed, quite long
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench

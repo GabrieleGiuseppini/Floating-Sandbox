@@ -25,6 +25,7 @@ public:
 
     void Update(
         float currentSimulationTime,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void Upload(Render::RenderContext & renderContext) const
