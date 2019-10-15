@@ -65,6 +65,8 @@ set  (PHYSICS_SOURCES
 	Springs.h
 	Stars.cpp
 	Stars.h
+	Storm.cpp
+	Storm.h
 	TimerBomb.cpp
 	TimerBomb.h
 	Triangles.cpp
