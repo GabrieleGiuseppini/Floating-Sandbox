@@ -47,7 +47,7 @@ in vec2 vertexTextureCoords;
 in float vertexTemperature;
 
 // Params
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
@@ -75,7 +75,7 @@ void main()
     vec4 fragColour = mix(vertexCol, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
-    float totalLightIntensity = paramAmbientLightIntensity + (1.0 - paramAmbientLightIntensity) * vertexLight;
+    float totalLightIntensity = paramEffectiveAmbientLightIntensity + (1.0 - paramEffectiveAmbientLightIntensity) * vertexLight;
 
     // Apply light
     fragColour *= totalLightIntensity;

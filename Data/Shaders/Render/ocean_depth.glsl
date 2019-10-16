@@ -31,7 +31,7 @@ void main()
 in vec3 oceanCoord;
 
 // Parameters
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
@@ -45,5 +45,5 @@ void main()
         paramOceanDepthColorEnd, 
         pow(darkMix, 3.0));
 
-    gl_FragColor = vec4(oceanColor.xyz * paramAmbientLightIntensity, 1.0 - paramOceanTransparency);
+    gl_FragColor = vec4(oceanColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);
 } 

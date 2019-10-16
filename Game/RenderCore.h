@@ -68,8 +68,9 @@ ProgramType ShaderFilenameToProgramType(std::string const & str);
 std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
-{
-    AmbientLightIntensity = 0,
+{    
+    CloudDarkening = 0,
+    EffectiveAmbientLightIntensity,
     FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,

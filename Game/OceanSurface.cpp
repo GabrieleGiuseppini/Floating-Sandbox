@@ -65,7 +65,7 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mNextTsunamiTimestamp(GameWallClock::duration::max())
     , mNextRogueWaveTimestamp(GameWallClock::duration::max())
     ////////
-    , mWindBaseSpeedMagnitude(std::numeric_limits<float>::max())
+    , mWindBaseAndStormSpeedMagnitude(std::numeric_limits<float>::max())
     , mBasalWaveHeightAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
@@ -110,7 +110,7 @@ void OceanSurface::Update(
     // Check whether parameters have changed
     //
 
-    if (mWindBaseSpeedMagnitude != wind.GetBaseSpeedMagnitude()
+    if (mWindBaseAndStormSpeedMagnitude != wind.GetBaseAndStormSpeedMagnitude()
         || mBasalWaveHeightAdjustment != gameParameters.BasalWaveHeightAdjustment
         || mBasalWaveLengthAdjustment != gameParameters.BasalWaveLengthAdjustment
         || mBasalWaveSpeedAdjustment != gameParameters.BasalWaveSpeedAdjustment
@@ -411,7 +411,7 @@ void OceanSurface::TriggerRogueWave(
 {
     // Choose locus
     int32_t centerIndex;
-    if (wind.GetBaseSpeedMagnitude() >= 0.0f)
+    if (wind.GetBaseAndStormSpeedMagnitude() >= 0.0f)
     {
         // Left locus
         centerIndex = SWEBoundaryConditionsSamples;
@@ -471,12 +471,12 @@ void OceanSurface::RecalculateCoefficients(
     // Basal waves
     //
 
-    float baseWindSpeedMagnitude = abs(wind.GetBaseSpeedMagnitude()); // km/h
+    float baseWindSpeedMagnitude = abs(wind.GetBaseAndStormSpeedMagnitude()); // km/h
     if (baseWindSpeedMagnitude < 60)
         // y = 63.09401 - 63.09401*e^(-0.05025263*x)
         baseWindSpeedMagnitude = 63.09401f - 63.09401f * exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
 
-    float const baseWindSpeedSign = wind.GetBaseSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
+    float const baseWindSpeedSign = wind.GetBaseAndStormSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
 
     // Amplitude
     // - Amplitude = f(WindSpeed, km/h), with f fitted over points from Full Developed Waves
@@ -567,7 +567,7 @@ void OceanSurface::RecalculateCoefficients(
     // Store new parameter values that we are now current with
     //
 
-    mWindBaseSpeedMagnitude = wind.GetBaseSpeedMagnitude();
+    mWindBaseAndStormSpeedMagnitude = wind.GetBaseAndStormSpeedMagnitude();
     mBasalWaveHeightAdjustment = gameParameters.BasalWaveHeightAdjustment;
     mBasalWaveLengthAdjustment = gameParameters.BasalWaveLengthAdjustment;
     mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
@@ -738,13 +738,13 @@ void OceanSurface::GenerateSamples(
     static float constexpr WindRippleWaveNumber = 0.5f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
-    float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseSpeedMagnitude();
+    float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseAndStormSpeedMagnitude();
     float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
         ? 0.0f
-        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseSpeedMagnitude()))
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseAndStormSpeedMagnitude()))
         / abs(windSpeedGustRelativeAmplitude);
 
-    float const windRipplesAngularVelocity = (wind.GetBaseSpeedMagnitude() >= 0)
+    float const windRipplesAngularVelocity = (wind.GetBaseAndStormSpeedMagnitude() >= 0)
         ? 128.0f
         : -128.0f;
 

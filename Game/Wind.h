@@ -30,13 +30,14 @@ public:
         GameParameters const & gameParameters);
 
     /*
-     * Returns the (signed) base magnitude, i.e. the magnitude of the unmodulated wind speed.
+     * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated 
+     * wind speed - with the storm speed magnitude on top of it.
      *
      * Km/h.
      */
-    float GetBaseSpeedMagnitude() const
+    float GetBaseAndStormSpeedMagnitude() const
     {
-        return mBaseSpeedMagnitude;
+        return mBaseAndStormSpeedMagnitude;
     }
 
     /*
@@ -63,7 +64,9 @@ private:
 
     static GameWallClock::duration ChooseDuration(float minSeconds, float maxSeconds);
 
-    void RecalculateParameters(GameParameters const & gameParameters);
+    void RecalculateParameters(
+        Storm::Parameters const & stormParameters,
+        GameParameters const & gameParameters);
 
 private:
 
@@ -74,7 +77,7 @@ private:
     //
 
     float mZeroSpeedMagnitude;
-    float mBaseSpeedMagnitude;
+    float mBaseAndStormSpeedMagnitude;
     float mPreMaxSpeedMagnitude;
     float mMaxSpeedMagnitude;
 
@@ -85,6 +88,7 @@ private:
     float mCurrentSpeedBaseParameter;
     float mCurrentSpeedMaxFactorParameter;
     float mCurrentGustFrequencyAdjustmentParameter;
+    float mCurrentStormWindSpeedParameter;
 
     //
     // Wind state machine

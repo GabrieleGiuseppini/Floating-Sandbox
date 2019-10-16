@@ -1538,11 +1538,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Wind Speed Base",
                     "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",
                     mGameController->GetWindSpeedBase(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWindSpeedBase(),

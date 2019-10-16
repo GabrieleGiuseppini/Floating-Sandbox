@@ -32,7 +32,7 @@ World::World(
     mStars.Update(gameParameters);
     mStorm.Update(gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
-    mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 }
@@ -554,7 +554,7 @@ void World::Update(
     mStars.Update(gameParameters);
     mStorm.Update(gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
-    mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
 

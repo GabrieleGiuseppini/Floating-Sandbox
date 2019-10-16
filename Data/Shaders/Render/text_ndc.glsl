@@ -36,7 +36,7 @@ in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
 
 // Params
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 
 // The texture
 uniform sampler2D paramSharedTexture;
@@ -46,8 +46,8 @@ void main()
     vec4 textureColor = texture2D(paramSharedTexture, vertexTextureCoordinates);
 
     vec3 textColor =
-        textureColor.xyz * step(0.5, paramAmbientLightIntensity)
-        + vec3(1.0, 1.0, 1.0) * (1.0 - step(0.5, paramAmbientLightIntensity));
+        textureColor.xyz * step(0.5, paramEffectiveAmbientLightIntensity)
+        + vec3(1.0, 1.0, 1.0) * (1.0 - step(0.5, paramEffectiveAmbientLightIntensity));
 
     gl_FragColor = vec4(
         textColor,

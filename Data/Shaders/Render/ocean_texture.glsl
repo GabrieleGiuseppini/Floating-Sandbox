@@ -34,7 +34,7 @@ in vec3 textureCoord;
 uniform sampler2D paramOceanTexture;
 
 // Parameters        
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec2 paramTextureScaling;
 uniform float paramOceanDarkeningRate;
@@ -54,5 +54,5 @@ void main()
     // Lighten the top of the water
     textureColor *= 1.0 + (1.0 - smoothstep(0.0, 1.0, textureCoord.z)) * 0.1;
 
-    gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 1.0 - paramOceanTransparency);
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);
 } 

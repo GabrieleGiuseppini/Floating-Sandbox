@@ -179,7 +179,7 @@ public:
     {
         mAmbientLightIntensity = intensity;
 
-        OnAmbientLightIntensityUpdated();
+        OnEffectiveAmbientLightIntensityUpdated();
     }
 
     float GetOceanTransparency() const
@@ -506,6 +506,19 @@ public:
     void RenderStart();
 
     //
+    // World
+    //
+
+    inline void UploadStormAmbientDarkening(float darkening)
+    {
+        if (darkening != mCurrentStormAmbientDarkening)
+        {
+            mCurrentStormAmbientDarkening = darkening;
+            OnEffectiveAmbientLightIntensityUpdated();
+        }
+    }
+
+    //
     // Sky
     //
 
@@ -529,7 +542,9 @@ public:
     void UploadStarsEnd();
 
 
-    void UploadCloudsStart(size_t cloudCount);
+    void UploadCloudsStart(
+        size_t cloudCount,
+        float cloudDarkening);
 
     inline void UploadCloud(
         float virtualX,
@@ -1380,7 +1395,8 @@ private:
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
-    void OnAmbientLightIntensityUpdated();
+    void OnEffectiveAmbientLightIntensityUpdated();
+    void OnCloudDarkeningUpdated();
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
@@ -1400,7 +1416,7 @@ private:
 
     void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
-
+    
 private:
 
     //
@@ -1583,7 +1599,7 @@ private:
     //
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;    
 
     std::vector<TextureFrameSpecification> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
@@ -1592,6 +1608,14 @@ private:
     std::vector<TextureFrameSpecification> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
+
+    //
+    // World
+    //
+
+    float mCurrentCloudDarkening;
+    float mCurrentStormAmbientDarkening;
+    float mEffectiveAmbientLightIntensity;
 
     //
     // Ships

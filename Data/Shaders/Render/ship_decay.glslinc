@@ -35,7 +35,7 @@ in float vertexDecay;
 in vec2 vertexTextureCoords;
 
 // Params
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 
 // Input texture
 uniform sampler2D paramSharedTexture;
@@ -53,7 +53,7 @@ void main()
     vec4 fragColour = vec4(vertexDecay, vertexDecay, vertexDecay, 1.0);
     
     // Apply ambient light
-    fragColour *= paramAmbientLightIntensity;
+    fragColour *= paramEffectiveAmbientLightIntensity;
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 

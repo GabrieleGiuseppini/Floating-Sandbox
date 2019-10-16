@@ -21,18 +21,31 @@ public:
 
     Clouds()
         : mClouds()
+        , mStormClouds()
+        , mCloudDarkening(0.0f)
     {}
 
     void Update(
         float currentSimulationTime,
+        float baseAndStormSpeedMagnitude,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void Upload(Render::RenderContext & renderContext) const
     {
-        renderContext.UploadCloudsStart(mClouds.size());
+        renderContext.UploadCloudsStart(
+            mClouds.size() + mStormClouds.size(),
+            mCloudDarkening);
 
         for (auto const & cloud : mClouds)
+        {
+            renderContext.UploadCloud(
+                cloud->GetX(),
+                cloud->GetY(),
+                cloud->GetScale());
+        }
+
+        for (auto const & cloud : mStormClouds)
         {
             renderContext.UploadCloud(
                 cloud->GetX(),
@@ -60,17 +73,14 @@ private:
             float offsetScale,
             float ampScale,
             float speedScale)
-            : mX(0.0f)
-            , mY(0.0f)
-            , mScale(0.0f)
-            , mOffsetX(offsetX)
+            : mX(offsetX)
+            , mY(offsetY)
+            , mScale(offsetScale)
             , mSpeedX1(speedX1)
             , mAmpX(ampX)
             , mSpeedX2(speedX2)
-            , mOffsetY(offsetY)
             , mAmpY(ampY)
             , mSpeedY(speedY)
-            , mOffsetScale(offsetScale)
             , mAmpScale(ampScale)
             , mSpeedScale(speedScale)
         {
@@ -80,11 +90,11 @@ private:
             float currentSimulationTime,
             float cloudSpeed)
         {
-            float const scaledSpeed = currentSimulationTime * cloudSpeed;
+            float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
-            mX = mOffsetX + (mSpeedX1 * scaledSpeed) + (mAmpX * sinf(mSpeedX2 * scaledSpeed));
-            mY = mOffsetY + (mAmpY * sinf(mSpeedY * scaledSpeed));
-            mScale = mOffsetScale + (mAmpScale * sinf(mSpeedScale * scaledSpeed));
+            mX += (mSpeedX1 * cloudSpeed * dt) + (mAmpX * sinf(mSpeedX2 * cloudSpeed * currentSimulationTime));
+            mY += (mAmpY * sinf(mSpeedY * cloudSpeed * currentSimulationTime));
+            mScale += (mAmpScale * sinf(mSpeedScale * cloudSpeed * currentSimulationTime));
         }
 
         inline float GetX() const
@@ -108,21 +118,22 @@ private:
         float mY;
         float mScale;
 
-        float const mOffsetX;
         float const mSpeedX1;
         float const mAmpX;
         float const mSpeedX2;
 
-        float const mOffsetY;
         float const mAmpY;
         float const mSpeedY;
 
-        float const mOffsetScale;
         float const mAmpScale;
         float const mSpeedScale;
     };
 
     std::vector<std::unique_ptr<Cloud>> mClouds;
+    std::vector<std::unique_ptr<Cloud>> mStormClouds;
+
+    // Updated at Update()
+    float mCloudDarkening;
 };
 
 }

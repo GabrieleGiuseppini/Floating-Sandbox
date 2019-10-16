@@ -9,7 +9,7 @@
 in vec3 inOcean;	// Position (vec2), IGNORED (float)
 
 // Parameters
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanFlatColor;
 uniform mat4 paramOrthoMatrix;
@@ -22,8 +22,8 @@ void main()
     // Calculate color
     oceanColor = vec4(paramOceanFlatColor.xyz, 1.0 - paramOceanTransparency);
 
-    // Apply ambient light intensity
-    oceanColor = oceanColor * paramAmbientLightIntensity;
+    // Apply ambient light
+    oceanColor = oceanColor * paramEffectiveAmbientLightIntensity;
 
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inOcean.xy, -1.0, 1.0);

@@ -30,7 +30,7 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         int canvasWidth,
         int canvasHeight,
-        float ambientLightIntensity,
+        float effectiveAmbientLightIntensity,
         ProgressCallback const & progressCallback);
 
     void UpdateCanvasSize(int width, int height)
@@ -42,7 +42,7 @@ public:
         mAreTextSlotsDirty = true;
     }
 
-    void UpdateAmbientLightIntensity(float ambientLightIntensity);
+    void UpdateEffectiveAmbientLightIntensity(float effectiveAmbientLightIntensity);
 
     void RenderStart();
 
@@ -132,7 +132,7 @@ private:
     float mScreenToNdcX;
     float mScreenToNdcY;
 
-    float mAmbientLightIntensity;
+    float mEffectiveAmbientLightIntensity;
 
 
     //

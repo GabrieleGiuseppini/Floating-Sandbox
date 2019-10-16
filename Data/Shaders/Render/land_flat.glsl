@@ -9,7 +9,7 @@
 in vec2 inLand; // Position
 
 // Parameters
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramLandFlatColor;
 uniform mat4 paramOrthoMatrix;
 
@@ -19,7 +19,7 @@ out vec4 landColor;
 void main()
 {
     // Calculate color
-    landColor = vec4(paramLandFlatColor * paramAmbientLightIntensity, 1.0);
+    landColor = vec4(paramLandFlatColor * paramEffectiveAmbientLightIntensity, 1.0);
 
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);

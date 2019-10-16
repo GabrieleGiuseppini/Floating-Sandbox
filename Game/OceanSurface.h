@@ -156,7 +156,7 @@ private:
     GameWallClock::time_point mNextRogueWaveTimestamp;
 
     // Parameters that the calculated values are current with
-    float mWindBaseSpeedMagnitude;
+    float mWindBaseAndStormSpeedMagnitude;
     float mBasalWaveHeightAdjustment;
     float mBasalWaveLengthAdjustment;
     float mBasalWaveSpeedAdjustment;

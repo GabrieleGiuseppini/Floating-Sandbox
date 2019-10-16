@@ -12,12 +12,12 @@ TextRenderContext::TextRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
     int canvasHeight,
-    float ambientLightIntensity,
+    float effectiveAmbientLightIntensity,
     ProgressCallback const & progressCallback)
     : mShaderManager(shaderManager)
     , mScreenToNdcX(2.0f / static_cast<float>(canvasWidth))
     , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
-    , mAmbientLightIntensity(ambientLightIntensity)
+    , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
     , mTextSlots()
     , mCurrentTextSlotGeneration(0)
     , mAreTextSlotsDirty(false)
@@ -120,17 +120,17 @@ TextRenderContext::TextRenderContext(
     // Update parameters
     //
 
-    UpdateAmbientLightIntensity(mAmbientLightIntensity);
+    UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
 }
 
-void TextRenderContext::UpdateAmbientLightIntensity(float ambientLightIntensity)
+void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
 {
-    mAmbientLightIntensity = ambientLightIntensity;
+    mEffectiveAmbientLightIntensity = intensity;
 
     // Set parameter
     mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::AmbientLightIntensity>(
-        ambientLightIntensity);
+    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 }
 
 void TextRenderContext::RenderStart()

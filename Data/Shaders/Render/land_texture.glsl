@@ -34,7 +34,7 @@ in vec3 textureCoord;
 uniform sampler2D paramLandTexture;
 
 // Parameters        
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform vec2 paramTextureScaling;
 uniform float paramOceanDarkeningRate;
 
@@ -50,5 +50,5 @@ void main()
         vec4(0,0,0,0), 
         pow(darkMix, 3.0));
 
-    gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 1.0);
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 1.0);
 } 

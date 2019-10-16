@@ -33,10 +33,10 @@ in vec2 texturePos;
 uniform sampler2D paramWorldBorderTexture;
 
 // Parameters        
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
     vec4 textureColor = texture2D(paramWorldBorderTexture, texturePos);
-    gl_FragColor = vec4(textureColor.xyz * paramAmbientLightIntensity, 0.75);
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 0.75);
 } 

@@ -45,7 +45,7 @@ public:
         TextureAtlasMetadata const & genericTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
-        float ambientLightIntensity,
+        float effectiveAmbientLightIntensity,
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
@@ -72,12 +72,12 @@ public:
         UpdateOrthoMatrices();
     }
 
-    void SetAmbientLightIntensity(float ambientLightIntensity)
+    void SetEffectiveAmbientLightIntensity(float intensity)
     {
-        mAmbientLightIntensity = ambientLightIntensity;
+        mEffectiveAmbientLightIntensity = intensity;
 
         // React
-        OnAmbientLightIntensityUpdated();
+        OnEffectiveAmbientLightIntensityUpdated();
     }
 
     void SetWaterColor(vec4f waterColor)
@@ -665,7 +665,7 @@ private:
 private:
 
     void UpdateOrthoMatrices();
-    void OnAmbientLightIntensityUpdated();
+    void OnEffectiveAmbientLightIntensityUpdated();
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
@@ -901,7 +901,7 @@ private:
 
     ViewModel const & mViewModel;
 
-    float mAmbientLightIntensity;
+    float mEffectiveAmbientLightIntensity;
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;

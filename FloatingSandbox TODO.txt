@@ -1021,24 +1021,51 @@ Render:
 		- New materials:
 			- "gunpowder" and "diesel"
 
-	- Storms
+	= Storms
 		Spec:
-			- Another physics component
+			+ Another physics component
 			- Game wall-clock based
 			- State machine with concentric phases:
 				- Wind (and thus waves)
+					- Make clouds more sensible to speed - should go faster at higher speeds
+				- Cloud Darkening
 				- Darknening
-					- RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
+					- Out of phase with cloud darkening, to avoid ugly crossing
+					= RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
 					  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
-				- Cloud Darkening (same phase as Darkening)
+						+ Rename shaders' param
+							+ RenderCore
+							+ Shaders
+							+ RenderContext.h
+						+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
+						  stormDarkening is different than current
+						+ Invoke from storm
+						- Test combined changes in intensities
+				- Clouds
+					- Rearc clouds: 
+						- Clouds:
+							- Position is maintained into x=[-1.5, +1.5], y=TBD
+							- Normal clouds: 
+								- New clouds: random
+								- Old clouds: removed
+								- Roll clouds around
+							- Storm clouds:
+								- New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
+								  at +1.5 or -1.5 depending on total wind speed sign
+									- Higher scale range, with median larger with progress
+								- Old clouds: removed
+								- Roll clouds around
+						- RenderContext:
+							- map [-0.5, +0.5], TBD into NDC
 				- Rain
 				- Lightnings
-			- TODOOLD:
-			- Given to Wind and OceanSurface, who uses its StormMagnitude = [0.0 ... 1.0] to increase wind in calculations
-				- OceanSurface: uses also this one when deciding whether to recalc pre-calc'd params
-			- Given to Clouds, who uses its StormMagnitude for darkness of clouds
-				- Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
-					- RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+			= Storm::Parameters:
+				+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
+					+ OceanSurface: gets in indirectly and makes waves
+				+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
+					+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
+						+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+					+ Shader
 			- Triggers lightnings:
 				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
 				- TBD: Storms' lightning state machine should hit Ship (for fire)
@@ -1046,6 +1073,10 @@ Render:
 				- Also manual trigger for lightning
 				- Shader:
 					- TBD
+			- Cleanup:
+				- Clouds shader: if cloudDarkening param is only used to multiply with ambient light, then
+				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
+				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)

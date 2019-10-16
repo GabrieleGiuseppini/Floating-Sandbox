@@ -12,8 +12,8 @@
 #include <chrono>
 
 /*
-* Parameters that affect the game (physics, world).
-*/
+ * Parameters that affect the game (physics, world).
+ */
 struct GameParameters
 {
     GameParameters();
@@ -209,6 +209,10 @@ struct GameParameters
     float RogueWaveRate; // Minutes
     static float constexpr MinRogueWaveRate = 0.0f;
     static float constexpr MaxRogueWaveRate = 15.0f;
+
+    // Storm
+
+    std::chrono::seconds StormDuration;
 
     // Heat and combustion
 

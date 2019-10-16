@@ -35,7 +35,7 @@ in vec3 vertexAttributes; // Light, Water, Decay
 in vec2 vertexTextureCoords;
 
 // Params
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
@@ -62,7 +62,7 @@ void main()
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
-    float totalLightIntensity = mix(vertexAttributes.x, 1.0, paramAmbientLightIntensity);
+    float totalLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
     // Apply light
     fragColour *= totalLightIntensity;

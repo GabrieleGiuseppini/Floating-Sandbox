@@ -34,7 +34,9 @@ GameParameters::GameParameters()
     , BasalWaveSpeedAdjustment(4.0f)
     , TsunamiRate(20.0f)
     , RogueWaveRate(2.0f)
-    // Heat
+    // Storm
+    , StormDuration(60 * 2)
+    // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C
     , MaxBurningParticles(112)

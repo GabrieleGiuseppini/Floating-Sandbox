@@ -56,6 +56,10 @@ RenderContext::RenderContext(
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
+    // World
+    , mCurrentCloudDarkening(1.0f)
+    , mCurrentStormAmbientDarkening(1.0f)
+    , mEffectiveAmbientLightIntensity(1.0f)
     // Ships
     , mShips()
     , mGenericTextureAtlasOpenGLHandle()
@@ -587,7 +591,8 @@ RenderContext::RenderContext(
 
     OnViewModelUpdated();
 
-    OnAmbientLightIntensityUpdated();
+    OnEffectiveAmbientLightIntensityUpdated();
+    OnCloudDarkeningUpdated();
     OnOceanTransparencyUpdated();
     OnOceanDarkeningRateUpdated();
     OnOceanRenderParametersUpdated();
@@ -673,7 +678,7 @@ void RenderContext::AddShip(
             *mGenericTextureAtlasMetadata,
             mRenderStatistics,
             mViewModel,
-            mAmbientLightIntensity,
+            mEffectiveAmbientLightIntensity,
             CalculateWaterColor(),
             mWaterContrast,
             mWaterLevelOfDetail,
@@ -733,7 +738,7 @@ void RenderContext::RenderStart()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Clear canvas - and depth buffer
-    vec3f const clearColor = mFlatSkyColor.toVec3f() * mAmbientLightIntensity;
+    vec3f const clearColor = mFlatSkyColor.toVec3f() * mEffectiveAmbientLightIntensity;
     glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -795,14 +800,16 @@ void RenderContext::UploadStarsEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::UploadCloudsStart(size_t cloudCount)
+void RenderContext::UploadCloudsStart(
+    size_t cloudCount,
+    float cloudDarkening)
 {
+    //
+    // Prepare cloud quad buffer
+    //
+
     if (cloudCount > 0)
     {
-        //
-        // Prepare cloud quad buffer
-        //
-
         glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
         glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
@@ -815,6 +822,17 @@ void RenderContext::UploadCloudsStart(size_t cloudCount)
     else
     {
         mCloudQuadBuffer.reset();
+    }
+
+    //
+    // Update darkening
+    //
+
+    if (mCurrentCloudDarkening != cloudDarkening)
+    {
+        mCurrentCloudDarkening = cloudDarkening;
+
+        OnCloudDarkeningUpdated();
     }
 }
 
@@ -1253,50 +1271,62 @@ void RenderContext::OnViewModelUpdated()
     UpdateWorldBorder();
 }
 
-void RenderContext::OnAmbientLightIntensityUpdated()
+void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 {
+    // Calculate effective ambient light intensity
+    mEffectiveAmbientLightIntensity = mAmbientLightIntensity * mCurrentStormAmbientDarkening;
+
     // Set parameters in all programs
 
     mShaderManager->ActivateProgram<ProgramType::Stars>();
     mShaderManager->SetProgramParameter<ProgramType::Stars, ProgramParameterType::StarTransparency>(
-        pow(std::max(0.0f, 1.0f - mAmbientLightIntensity), 3.0f));
+        pow(std::max(0.0f, 1.0f - mEffectiveAmbientLightIntensity), 3.0f));
 
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
-    mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanFlat>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
-    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AmbientLightIntensity>(
-        mAmbientLightIntensity);
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     // Update all ships
     for (auto & ship : mShips)
     {
-        ship->SetAmbientLightIntensity(mAmbientLightIntensity);
+        ship->SetEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
     }
 
     // Update text context
-    mTextRenderContext->UpdateAmbientLightIntensity(mAmbientLightIntensity);
+    mTextRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
+}
+
+void RenderContext::OnCloudDarkeningUpdated()
+{
+    // Set parameters in all programs
+
+    mShaderManager->ActivateProgram<ProgramType::Clouds>();
+    mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::CloudDarkening>(
+        mCurrentCloudDarkening);
 }
 
 void RenderContext::OnOceanTransparencyUpdated()
