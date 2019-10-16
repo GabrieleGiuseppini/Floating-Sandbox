@@ -1024,6 +1024,7 @@ Render:
 	- Storms
 		Spec:
 			- Another physics component
+			- Game wall-clock based
 			- State machine with concentric phases:
 				- Wind (and thus waves)
 				- Darknening

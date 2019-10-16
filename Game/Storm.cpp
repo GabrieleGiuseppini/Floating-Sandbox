@@ -9,9 +9,7 @@
 
 namespace Physics {
 
-void Storm::Update(
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
+void Storm::Update(GameParameters const & gameParameters)
 {
     // TODO
 }

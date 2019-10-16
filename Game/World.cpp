@@ -30,7 +30,7 @@ World::World(
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
-    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
@@ -552,7 +552,7 @@ void World::Update(
 
     // Update world parts
     mStars.Update(gameParameters);
-    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);

@@ -20,9 +20,7 @@ public:
         : mParameters()
     {}
 
-    void Update(
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
+    void Update(GameParameters const & gameParameters);
 
     void Upload(Render::RenderContext & renderContext) const;
 
