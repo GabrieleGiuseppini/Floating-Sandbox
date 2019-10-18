@@ -898,6 +898,12 @@ void GameController::TriggerRogueWave()
     mWorld->TriggerRogueWave();
 }
 
+void GameController::TriggerStorm()
+{
+    assert(!!mWorld);
+    mWorld->TriggerStorm();
+}
+
 //
 // Render controls
 //

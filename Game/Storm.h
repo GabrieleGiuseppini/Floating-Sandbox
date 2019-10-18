@@ -35,12 +35,14 @@ public:
     {
         float WindSpeed; // Km/h, absolute (on top of current direction)
         unsigned int NumberOfClouds;
+        float CloudsSize; // [0.0f = initial size, 1.0 = full size]
         float CloudDarkening; // [0.0f = full darkness, 1.0 = no darkening]
         float AmbientDarkening; // [0.0f = full darkness, 1.0 = no darkening]
 
         Parameters()
             : WindSpeed(0.0f)
             , NumberOfClouds(0)
+            , CloudsSize(0.0f)
             , CloudDarkening(1.0f)
             , AmbientDarkening(1.0f)
         {}
@@ -50,6 +52,13 @@ public:
     {
         return mParameters;
     }
+
+    void TriggerStorm();
+
+private:
+
+    void TurnStormOn(GameWallClock::time_point now);
+    void TurnStormOff();
 
 private:
 

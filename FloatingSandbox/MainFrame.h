@@ -171,6 +171,7 @@ private:
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent& event);
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent& event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent& event);
+    void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & event);

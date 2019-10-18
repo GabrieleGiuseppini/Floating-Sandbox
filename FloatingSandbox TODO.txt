@@ -1053,7 +1053,7 @@ Render:
 								- New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
 								  at +1.5 or -1.5 depending on total wind speed sign
 									- Higher scale range, with median larger with progress
-								- Old clouds: removed
+								- Old clouds: removed when rolled over
 								- Roll clouds around
 						- RenderContext:
 							- map [-0.5, +0.5], TBD into NDC
@@ -1070,13 +1070,13 @@ Render:
 				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
 				- TBD: Storms' lightning state machine should hit Ship (for fire)
 					- What about: via handler owned (implemented) and passed by World?
-				- Also manual trigger for lightning
 				- Shader:
 					- TBD
+			+ Manual storm trigger
 			- Cleanup:
 				- Clouds shader: if cloudDarkening param is only used to multiply with ambient light, then
 				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
-				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()
+				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)

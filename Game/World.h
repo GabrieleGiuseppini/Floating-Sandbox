@@ -215,6 +215,8 @@ public:
 
     void TriggerRogueWave();
 
+    void TriggerStorm();
+
     void SetSilence(float silenceAmount);
 
 public:

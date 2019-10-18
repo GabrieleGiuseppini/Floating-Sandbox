@@ -76,6 +76,7 @@ long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
 long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
+long const ID_TRIGGERSTORM_MENUITEM = wxNewId();
 
 long const ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 long const ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM = wxNewId();
@@ -385,6 +386,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(triggerRogueWaveMenuItem);
     Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
+
+    wxMenuItem * triggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerStormMenuItem);
+    Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -1403,6 +1408,12 @@ void MainFrame::OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->TriggerRogueWave();
+}
+
+void MainFrame::OnTriggerStormMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerStorm();
 }
 
 //////////

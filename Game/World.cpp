@@ -527,6 +527,11 @@ void World::TriggerTsunami()
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
 }
 
+void World::TriggerStorm()
+{
+    mStorm.TriggerStorm();
+}
+
 void World::TriggerRogueWave()
 {
     mOceanSurface.TriggerRogueWave(

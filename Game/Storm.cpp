@@ -23,11 +23,10 @@ void Storm::Update(GameParameters const & gameParameters)
         //
 
         // TODOHERE
-
-        // Turn on storm
-        mIsInStorm = true;
-        mCurrentStormProgress = 0.0f;
-        mLastStormUpdateTimestamp = now;
+        return;
+        /*
+        TurnStormOn(now);
+        */
     }
 
 
@@ -44,7 +43,9 @@ void Storm::Update(GameParameters const & gameParameters)
     // TODOTEST
     float TODO = sinf(Pi<float> * mCurrentStormProgress);
     mParameters.WindSpeed = TODO * 40.0f;
-    mParameters.CloudDarkening = 1.0f - TODO / 2.2f;
+    mParameters.NumberOfClouds = static_cast<int>(40.0f * TODO);
+    mParameters.CloudsSize = TODO;
+    mParameters.CloudDarkening = 1.0f - TODO / 2.3f;
     mParameters.AmbientDarkening = 1.0f - TODO / 5.0f;
 
 
@@ -55,7 +56,7 @@ void Storm::Update(GameParameters const & gameParameters)
     if (mCurrentStormProgress >= 1.0f)
     {
         // Turn off storm
-        mIsInStorm = false;
+        TurnStormOff();        
     }
 
 
@@ -76,6 +77,27 @@ void Storm::Upload(Render::RenderContext & renderContext) const
 
 
     // TODO: lightnings
+}
+
+void Storm::TriggerStorm()
+{
+    if (!mIsInStorm)
+    {
+        // Turn on storm
+        TurnStormOn(GameWallClock::GetInstance().Now());
+    }
+}
+
+void Storm::TurnStormOn(GameWallClock::time_point now)
+{
+    mIsInStorm = true;
+    mCurrentStormProgress = 0.0f;
+    mLastStormUpdateTimestamp = now;
+}
+
+void Storm::TurnStormOff()
+{
+    mIsInStorm = false;
 }
 
 }

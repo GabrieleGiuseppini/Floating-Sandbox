@@ -96,6 +96,7 @@ struct IGameController
 
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;
+    virtual void TriggerStorm() = 0;
 
     //
     // Rendering controls
