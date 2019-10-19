@@ -5,18 +5,18 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
-
 namespace Physics {
 
 //
 // We keep clouds in a virtual 3.0 x 1.0 space, of which only
-// the central 1.0-wide slice is visible
+// the central [-0.5, 0.5] x [-0.5, 0.5] slice will be visible
 //
 
 float constexpr CloudSpaceWidth = 3.0f;
-float constexpr MinCloudSpaceX = -1.5f;
 float constexpr MaxCloudSpaceX = 1.5f;
+
+float constexpr CloudSpaceHeight = 1.0f;
+float constexpr MaxCloudSpaceY = 0.5f;
 
 void Clouds::Update(
     float currentSimulationTime,
@@ -41,50 +41,40 @@ void Clouds::Update(
         {
             mClouds.emplace_back(
                 new Cloud(
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 100.0f,    // OffsetX
-                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f),         // SpeedX1
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f,  // AmpX
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f,     // SpeedX2
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 100.0f,    // OffsetY
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00007f,  // AmpY
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f,    // SpeedY
-                    0.27f + static_cast<float>(c) / static_cast<float>(c + 3), // OffsetScale - the earlier clouds are smaller
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.0005f,   // AmpScale
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.002f));  // SpeedScale 
+                    ++mLastCloudId,
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX),
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
+                    0.27f + static_cast<float>(c) / static_cast<float>(c + 3))); // Earlier clouds are smaller
         }
     }
 
 
     //
-    // Update storm cloud count
+    // Fill up to storm cloud count
     //
 
     if (mStormClouds.size() < stormParameters.NumberOfClouds)
     {
         // Add a cloud if the last cloud (arbitrary) is already enough ahead
         if (mStormClouds.empty()
-            || MaxCloudSpaceX - std::abs(mStormClouds.back()->GetX()) >= 1.0f / static_cast<float>(stormParameters.NumberOfClouds))
+            || (baseAndStormSpeedMagnitude >= 0.0f && mStormClouds.back()->GetX() >= -MaxCloudSpaceX + CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds))
+            || (baseAndStormSpeedMagnitude < 0.0f && mStormClouds.back()->GetX() <= MaxCloudSpaceX - CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds)))
         {
+            LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
             // TODOTEST: not good yet, bigger!
             //float sizeMedian = 0.85f + 1.20f * stormParameters.CloudsSize;
-            float sizeMedian = 1.50f;
-            float sizeDev = 0.25f + 0.45f * stormParameters.CloudsSize;
+            float sizeMedian = 2.00f;
+            //float sizeDev = 0.25f + 0.45f * stormParameters.CloudsSize;
+            float sizeDev = 0.0f;
 
-            // TODO: move most to cctor of Cloud
             mStormClouds.emplace_back(
                 new Cloud(
-                    MaxCloudSpaceX * windSign,    // OffsetX
-                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f),         // SpeedX1
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f,  // AmpX
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f,     // SpeedX2
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-0.5, 0.5f),    // OffsetY
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00007f,  // AmpY
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f,    // SpeedY
+                    ++mLastCloudId,
+                    -MaxCloudSpaceX * windSign,
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
                     GameRandomEngine::GetInstance().GenerateUniformReal(
                         sizeMedian - sizeDev,
-                        sizeMedian + sizeDev), // OffsetScale
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.0005f,   // AmpScale
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.002f));  // SpeedScale 
+                        sizeMedian + sizeDev)));
 
         }
     }
@@ -99,10 +89,9 @@ void Clouds::Update(
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.    
-    // TODO: seems broken for negative wind
     float const cloudSpeed = 
-        windSign 
-        * (- 7.0f * std::abs(baseAndStormSpeedMagnitude) / 8.0f + std::pow(std::abs(baseAndStormSpeedMagnitude), 1.04f));
+        -7.0f * baseAndStormSpeedMagnitude / 8.0f 
+        + windSign * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.14f);
 
     for (auto & cloud : mClouds)
     {
@@ -110,20 +99,50 @@ void Clouds::Update(
             currentSimulationTime,
             cloudSpeed);
 
-        // Manage clouds leaving space:
-        // - Normal clouds: rollover when cross border
-        // TODOHERE
+        // Manage clouds leaving space: rollover when cross border
+        if (baseAndStormSpeedMagnitude >= 0.0f && cloud->GetX() > MaxCloudSpaceX)
+            cloud->GetX() -= CloudSpaceWidth;
+        else if (baseAndStormSpeedMagnitude < 0.0f && cloud->GetX() < -MaxCloudSpaceX)
+            cloud->GetX() += CloudSpaceWidth;
     }
 
-    for (auto & cloud : mStormClouds)
+    for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
-        cloud->Update(
+        (*it)->Update(
             currentSimulationTime,
             cloudSpeed);
 
-        // Manage clouds leaving space:
-        // - Storm clouds: retire when cross border if too many, else rollover
-        // TODOHERE
+        // Manage clouds leaving space: retire when cross border if too many, else rollover
+        if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->GetX() > MaxCloudSpaceX)
+        {
+            if (mStormClouds.size() > stormParameters.NumberOfClouds)
+            {
+                it = mStormClouds.erase(it);
+                LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
+            }
+            else
+            {
+                (*it)->GetX() -= CloudSpaceWidth;
+                ++it;
+            }
+        }
+        else if (baseAndStormSpeedMagnitude < 0.0f && (*it)->GetX() < -MaxCloudSpaceX)
+        {
+            if (mStormClouds.size() > stormParameters.NumberOfClouds)
+            {
+                it = mStormClouds.erase(it);
+                LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
+            }
+            else
+            {
+                (*it)->GetX() += CloudSpaceWidth;
+                ++it;
+            }
+        }
+        else
+        {
+            ++it;
+        }
     }
 
 

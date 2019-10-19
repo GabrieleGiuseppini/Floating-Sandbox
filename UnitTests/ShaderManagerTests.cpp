@@ -257,7 +257,7 @@ TEST_F(ShaderManagerTests, ExtractsShaderParameters_Single)
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_Multiple)
@@ -271,7 +271,7 @@ uniform mat4 paramOrthoMatrix;
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
     ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
     EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
@@ -286,7 +286,7 @@ foobar;
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::AmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnUnrecognizedParameter)

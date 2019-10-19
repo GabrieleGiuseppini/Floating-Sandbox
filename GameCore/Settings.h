@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "Utils.h"
 #include "Version.h"
 
 #include <picojson.h>
@@ -18,6 +19,7 @@
 #include <memory>
 #include <optional>
 #include <typeinfo>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -226,6 +228,121 @@ private:
     Version mSettingsVersion;
 };
 
+/*
+ * Maintains the logic for de/serializing values.
+ */
+struct SettingSerializer
+{
+    template<typename TValue, 
+        typename std::enable_if_t<
+            !std::is_integral<TValue>::value
+            && !std::is_same<TValue, bool>::value
+            && !std::is_floating_point<TValue>::value
+            && !std::is_enum<TValue>::value>* = nullptr>
+    static void Serialize(
+        SettingsSerializationContext & context,
+        std::string const & settingName,
+        TValue const & value);
+
+    template<typename TValue,
+        typename std::enable_if_t<
+        !std::is_integral<TValue>::value
+        && !std::is_same<TValue, bool>::value
+        && !std::is_floating_point<TValue>::value
+        && !std::is_enum<TValue>::value> * = nullptr>
+    static bool Deserialize(
+        SettingsDeserializationContext const & context,
+        std::string const & settingName,
+        TValue & value);
+
+    // Specializations for integral and enum types
+
+    template<typename TValue, 
+        typename std::enable_if_t<
+            (std::is_integral<TValue>::value && !std::is_same<bool, TValue>::value)
+            || std::is_enum<TValue>::value> * = nullptr>
+    static void Serialize(
+        SettingsSerializationContext & context,
+        std::string const & settingName,
+        TValue const & value)
+    {
+        context.GetSettingsRoot()[settingName] = picojson::value(static_cast<int64_t>(value));
+    }
+
+    template<typename TValue, 
+        typename std::enable_if_t<
+            (std::is_integral<TValue>::value && !std::is_same<bool, TValue>::value)
+            || std::is_enum<TValue>::value> * = nullptr>
+    static bool Deserialize(
+        SettingsDeserializationContext const & context,
+        std::string const & settingName,
+        TValue & value)
+    {
+        auto jsonValue = Utils::GetOptionalJsonMember<int64_t>(context.GetSettingsRoot(), settingName);
+        if (!!jsonValue)
+        {
+            value = static_cast<TValue>(*jsonValue);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Specializations for bool
+
+    template<typename TValue, typename std::enable_if_t<std::is_same<bool, TValue>::value> * = nullptr>
+    static void Serialize(
+        SettingsSerializationContext & context,
+        std::string const & settingName,
+        bool const & value)
+    {
+        context.GetSettingsRoot()[settingName] = picojson::value(value);
+    }
+
+    template<typename TValue, typename std::enable_if_t<std::is_same<bool, TValue>::value> * = nullptr>
+    static bool Deserialize(
+        SettingsDeserializationContext const & context,
+        std::string const & settingName,
+        bool & value)
+    {
+        auto jsonValue = Utils::GetOptionalJsonMember<bool>(context.GetSettingsRoot(), settingName);
+        if (!!jsonValue)
+        {
+            value = *jsonValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    // Specialization for floating-point types
+
+    template<typename TValue, typename std::enable_if_t<std::is_floating_point<TValue>::value> * = nullptr>
+    static void Serialize(
+        SettingsSerializationContext & context,
+        std::string const & settingName,
+        TValue const & value)
+    {
+        context.GetSettingsRoot()[settingName] = picojson::value(static_cast<double>(value));
+    }
+
+    template<typename TValue, typename std::enable_if_t<std::is_floating_point<TValue>::value> * = nullptr>
+    static bool Deserialize(
+        SettingsDeserializationContext const & context,
+        std::string const & settingName,
+        TValue & value)
+    {
+        auto jsonValue = Utils::GetOptionalJsonMember<double>(context.GetSettingsRoot(), settingName);
+        if (!!jsonValue)
+        {
+            value = static_cast<TValue>(*jsonValue);
+            return true;
+        }
+
+        return false;
+    }
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////
 //
 // Settings: these classes provide (temporary) storage for settings that are being
@@ -339,14 +456,19 @@ public:
         return std::make_unique<Setting<TValue>>(GetName(), mValue);
     }
 
-    // This is to be specialized for each setting type
-    virtual void Serialize(SettingsSerializationContext & context) const override;
+    virtual void Serialize(SettingsSerializationContext & context) const override
+    {
+        SettingSerializer::Serialize<TValue>(context, GetName(), mValue);
+    }
 
-    // This is to be specialized for each setting type
-    virtual void Deserialize(SettingsDeserializationContext const & context) override;
+    virtual void Deserialize(SettingsDeserializationContext const & context) override
+    {
+        if (SettingSerializer::Deserialize<TValue>(context, GetName(), mValue))
+            this->MarkAsDirty();
+    }
 
 private:
-
+    
     TValue mValue;
 };
 
@@ -364,9 +486,9 @@ public:
 
     Settings(Settings const & other)
     {
-        assert(other.mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(other.mSettings.size() == Size);
 
-        mSettings.reserve(static_cast<size_t>(TEnum::_Last) + 1);
+        mSettings.reserve(Size);
 
         for (auto const & s : other.mSettings)
         {
@@ -376,7 +498,7 @@ public:
 
     Settings(Settings && other)
     {
-        assert(other.mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(other.mSettings.size() == Size);
 
         mSettings = std::move(other.mSettings);
     }
@@ -384,12 +506,12 @@ public:
     explicit Settings(std::vector<std::unique_ptr<BaseSetting>> && settings)
         : mSettings(std::move(settings))
     {
-        assert(mSettings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(mSettings.size() == Size);
     }
 
     explicit Settings(std::vector<std::unique_ptr<BaseSetting>> const & settings)
     {
-        assert(settings.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(settings.size() == Size);
         
         mSettings.reserve(settings.size());
 
@@ -401,7 +523,7 @@ public:
 
     Settings & operator=(Settings const & other)
     {
-        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(other.mSettings.size() == Size);
 
         mSettings.clear();
 
@@ -415,11 +537,24 @@ public:
 
     Settings & operator=(Settings && other)
     {
-        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
+        assert(other.mSettings.size() == Size);
 
         mSettings = std::move(other.mSettings);
 
         return *this;
+    }
+
+    bool operator==(Settings const & other) const
+    {
+        assert(other.mSettings.size() == Size);
+
+        for (size_t s = 0; s < Size; ++s)
+        { 
+            if (!mSettings[s]->IsEqual(*other.mSettings[s]))
+                return false;
+        }
+
+        return true;
     }
 
     BaseSetting const & operator[](TEnum settingId) const
@@ -567,6 +702,8 @@ public:
     }
 
 private:
+
+    inline static size_t const Size = static_cast<size_t>(TEnum::_Last) + 1;
 
     std::vector<std::unique_ptr<BaseSetting>> mSettings;
 };

@@ -92,6 +92,8 @@ public:
             a);
     }
 
+    static rgbColor fromString(std::string const & str);
+
     std::string toString() const;
 };
 
@@ -215,6 +217,8 @@ public:
             static_cast<float>(b) / 255.0f,
             static_cast<float>(a) / 255.0f);
     }
+
+    static rgbaColor fromString(std::string const & str);
 
     std::string toString() const;
 };

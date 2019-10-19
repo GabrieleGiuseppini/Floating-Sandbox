@@ -35,7 +35,7 @@ GameParameters::GameParameters()
     , TsunamiRate(20.0f)
     , RogueWaveRate(2.0f)
     // Storm
-    , StormDuration(60 * 2)
+    , StormDuration(60 * 4)
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C

@@ -1022,9 +1022,9 @@ Render:
 			- "gunpowder" and "diesel"
 
 	= Storms
-		Spec:
+		- Spec:
 			+ Another physics component
-			- Game wall-clock based
+			+ Game wall-clock based
 			- State machine with concentric phases:
 				- Wind (and thus waves)
 					- Make clouds more sensible to speed - should go faster at higher speeds
@@ -1042,21 +1042,23 @@ Render:
 						+ Invoke from storm
 						- Test combined changes in intensities
 				- Clouds
-					- Rearc clouds: 
-						- Clouds:
-							- Position is maintained into x=[-1.5, +1.5], y=TBD
-							- Normal clouds: 
-								- New clouds: random
-								- Old clouds: removed
-								- Roll clouds around
-							- Storm clouds:
-								- New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
+					= Rearc clouds: 
+						= Clouds:
+							+ Position is maintained into x=[-1.5, +1.5]
+							+ Normal clouds: 
+								+ New clouds: random
+								+ Old clouds: removed
+								+ Roll clouds around
+							= Storm clouds:
+								= New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
 								  at +1.5 or -1.5 depending on total wind speed sign
-									- Higher scale range, with median larger with progress
-								- Old clouds: removed when rolled over
-								- Roll clouds around
-						- RenderContext:
-							- map [-0.5, +0.5], TBD into NDC
+									= Higher scale range, with median larger with progress
+								+ Old clouds: removed when rolled over
+								+ Roll clouds around
+						= RenderContext:
+							+ map into NDC
+							- Remove test overrides
+					- See if can enlarge small cloud
 				- Rain
 				- Lightnings
 			= Storm::Parameters:
@@ -1066,6 +1068,8 @@ Render:
 					+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
 						+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
 					+ Shader
+			- Wind volume: start with storm
+				- Need additional arg to wind event
 			- Triggers lightnings:
 				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
 				- TBD: Storms' lightning state machine should hit Ship (for fire)
@@ -1495,6 +1499,8 @@ Render:
 				- Marianas Trench
 					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
 
+		- Run unit tests in debug
+
 
 		- OLD:
 			- Spec: 
@@ -1631,7 +1637,7 @@ Render:
 						- Stores flag
 						- Enables/Disabled buttons and menus
 
-	- Save ocean floor terrain and load it at startup
+	= Save ocean floor terrain and load it at startup
 
 	- ShipLoadDialog:
 		- Ship preview database/cache

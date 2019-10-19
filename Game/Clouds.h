@@ -8,6 +8,8 @@
 #include "GameParameters.h"
 #include "RenderContext.h"
 
+#include <GameCore/GameRandomEngine.h>
+
 #include <memory>
 #include <vector>
 
@@ -20,7 +22,8 @@ class Clouds
 public:
 
     Clouds()
-        : mClouds()
+        : mLastCloudId(0)
+        , mClouds()
         , mStormClouds()
         , mCloudDarkening(0.0f)
     {}
@@ -40,6 +43,7 @@ public:
         for (auto const & cloud : mClouds)
         {
             renderContext.UploadCloud(
+                cloud->GetId(),
                 cloud->GetX(),
                 cloud->GetY(),
                 cloud->GetScale());
@@ -48,6 +52,7 @@ public:
         for (auto const & cloud : mStormClouds)
         {
             renderContext.UploadCloud(
+                cloud->GetId(),
                 cloud->GetX(),
                 cloud->GetY(),
                 cloud->GetScale());
@@ -63,26 +68,21 @@ private:
     public:
 
         Cloud(
-            float offsetX,
-            float speedX1,
-            float ampX,
-            float speedX2,
-            float offsetY,
-            float ampY,
-            float speedY,
-            float offsetScale,
-            float ampScale,
-            float speedScale)
-            : mX(offsetX)
-            , mY(offsetY)
-            , mScale(offsetScale)
-            , mSpeedX1(speedX1)
-            , mAmpX(ampX)
-            , mSpeedX2(speedX2)
-            , mAmpY(ampY)
-            , mSpeedY(speedY)
-            , mAmpScale(ampScale)
-            , mSpeedScale(speedScale)
+            uint32_t id,
+            float initialX,
+            float initialY,
+            float initialScale)
+            : mId(id)
+            , mX(initialX)
+            , mY(initialY)
+            , mScale(initialScale)
+            , mLinearSpeedX(GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))
+            , mPeriodicSpeedXAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f)
+            , mPeriodicSpeedXPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f)
+            , mPeriodicSpeedYAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00007f)
+            , mPeriodicSpeedYPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f)
+            , mPeriodicSpeedScaleAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.0005f)
+            , mPeriodicSpeedScalePeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.002f)
         {
         }
 
@@ -92,12 +92,22 @@ private:
         {
             float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
-            mX += (mSpeedX1 * cloudSpeed * dt) + (mAmpX * sinf(mSpeedX2 * cloudSpeed * currentSimulationTime));
-            mY += (mAmpY * sinf(mSpeedY * cloudSpeed * currentSimulationTime));
-            mScale += (mAmpScale * sinf(mSpeedScale * cloudSpeed * currentSimulationTime));
+            mX += (mLinearSpeedX * cloudSpeed * dt) + (mPeriodicSpeedXAmp * sinf(mPeriodicSpeedXPeriod * cloudSpeed * currentSimulationTime));
+            mY += (mPeriodicSpeedYAmp * sinf(mPeriodicSpeedYPeriod * cloudSpeed * currentSimulationTime));
+            mScale += (mPeriodicSpeedScaleAmp * sinf(mPeriodicSpeedScalePeriod * cloudSpeed * currentSimulationTime));
+        }
+
+        inline uint32_t GetId() const
+        {
+            return mId;
         }
 
         inline float GetX() const
+        {
+            return mX;
+        }
+
+        inline float & GetX()
         {
             return mX;
         }
@@ -114,20 +124,24 @@ private:
 
     private:
 
+        uint32_t const mId; // Not consecutive, only guaranteed to be sticky and unique across all clouds
+
         float mX;
         float mY;
         float mScale;
 
-        float const mSpeedX1;
-        float const mAmpX;
-        float const mSpeedX2;
+        float const mLinearSpeedX;
+        float const mPeriodicSpeedXAmp;
+        float const mPeriodicSpeedXPeriod;
 
-        float const mAmpY;
-        float const mSpeedY;
+        float const mPeriodicSpeedYAmp;
+        float const mPeriodicSpeedYPeriod;
 
-        float const mAmpScale;
-        float const mSpeedScale;
+        float const mPeriodicSpeedScaleAmp;
+        float const mPeriodicSpeedScalePeriod;
     };
+
+    uint32_t mLastCloudId;
 
     std::vector<std::unique_ptr<Cloud>> mClouds;
     std::vector<std::unique_ptr<Cloud>> mStormClouds;

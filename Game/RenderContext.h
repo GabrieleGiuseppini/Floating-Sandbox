@@ -547,8 +547,9 @@ public:
         float cloudDarkening);
 
     inline void UploadCloud(
-        float virtualX,
-        float virtualY,
+        uint32_t cloudId,
+        float virtualX, // [-1.5, +1.5]
+        float virtualY, // [-0.5, +0.5]
         float scale)
     {
         //
@@ -556,37 +557,32 @@ public:
         //
 
         //
-        // Roll coordinates into a 3.0 X 2.0 view,
-        // then take the central slice and map it into NDC ((-1,-1) X (1,1))
+        // Map input slice [-0.5, +0.5], [-0.5, +0.5] into NDC [-1.0, +1.0], [-1.0, +1.0]
         //
 
-        float rolledX = std::fmod(virtualX, 3.0f);
-        if (rolledX < 0.0f)
-            rolledX += 3.0f;
-        float mappedX = -1.0f + 2.0f * (rolledX - 1.0f);
-
-        float rolledY = std::fmod(virtualY, 2.0f);
-        if (rolledY < 0.0f)
-            rolledY += 2.0f;
-        float mappedY = -1.0f + 2.0f * (rolledY - 0.5f);
+        // TODOTEST: temporarily mapping whole
+        //float const mappedX = virtualX * 2.0f;
+        //float const mappedY = virtualY * 2.0f;
+        float const mappedX = virtualX / 1.5f;
+        float const mappedY = virtualY / 1.5f;
+        // TODOTEST
+        scale /= 1.5f;
 
 
         //
         // Populate quad in buffer
         //
 
-        size_t const cloudTextureIndex = mCloudQuadBuffer.size() % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
+        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             TextureGroupType::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float const aspectRatio = static_cast<float>(mViewModel.GetCanvasWidth()) / static_cast<float>(mViewModel.GetCanvasHeight());
-
         float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
         float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
-        float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
-        float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
+        float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * mViewModel.GetAspectRatio();
+        float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * mViewModel.GetAspectRatio();
 
         CloudQuad & cloudQuad = mCloudQuadBuffer.emplace_back();
 

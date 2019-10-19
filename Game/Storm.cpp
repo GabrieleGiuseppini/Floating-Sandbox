@@ -33,20 +33,71 @@ void Storm::Update(GameParameters const & gameParameters)
     //
     // Update storm step
     //
+    // Storm script:
+    //  - 1: Cloud + Wind buildup + Cloud darkening goes ep
+    //  - 2: Ambient light darkening goes up
+    //  - TODOHERE: lightnings (+thunder)
+    //  - TODOHERE: rain
+    //  - TODOHERE: targeted lightnings
+    //  - 0.5f
+    //  - TODOHERE: targeted lightnings
+    //  - TODOHERE: rain
+    //  - TODOHERE: lightnings (+thunder)
+    //  - 2: Ambient light darkening goes down
+    //  - 1: Cloud + Wind buildup + Cloud darkening goes down
 
+    float constexpr Phase1UpStart = 0.0f;
+    float constexpr Phase2UpStart = 0.1f;
+    float constexpr Phase1UpEnd = 0.125f; // 1/8    
+    float constexpr Phase2UpEnd = 0.175f;
+
+    float constexpr Phase2DownStart = 0.825f;
+    float constexpr Phase1DownStart = 0.875f;
+    float constexpr Phase2DownEnd = 0.9f;    
+    float constexpr Phase1DownEnd = 1.0f;
+
+    // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =
         std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(now - mLastStormUpdateTimestamp).count()
         / std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(gameParameters.StormDuration).count();
 
     mCurrentStormProgress += progressStep;
 
-    // TODOTEST
-    float TODO = sinf(Pi<float> * mCurrentStormProgress);
-    mParameters.WindSpeed = TODO * 40.0f;
-    mParameters.NumberOfClouds = static_cast<int>(40.0f * TODO);
-    mParameters.CloudsSize = TODO;
-    mParameters.CloudDarkening = 1.0f - TODO / 2.3f;
-    mParameters.AmbientDarkening = 1.0f - TODO / 5.0f;
+    if (mCurrentStormProgress < 0.5f)
+    { 
+        // Up
+        float upProgress = mCurrentStormProgress;
+
+        // Phase 1
+        float phase1Progress = SmoothStep(Phase1UpStart, Phase1UpEnd, upProgress);
+        mParameters.WindSpeed = phase1Progress * 40.0f;
+        mParameters.NumberOfClouds = static_cast<int>(40.0f * phase1Progress);
+        mParameters.CloudsSize = 1.0f; // TODO
+        mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
+
+        // Phase 2
+        float phase2Progress = SmoothStep(Phase2UpStart, Phase2UpEnd, upProgress);
+        // TODOTEST: checking if it's just the cloud darkening alone that makes for bad colors
+        //mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
+
+        // TODO: other phases
+    }
+    else
+    {
+        // Down
+        float downProgress = 1.0f - mCurrentStormProgress;
+
+        // Phase 1
+        float phase1Progress = SmoothStep(Phase1DownStart, Phase1DownEnd, downProgress);
+        mParameters.WindSpeed = phase1Progress * 40.0f;
+        mParameters.NumberOfClouds = static_cast<int>(40.0f * phase1Progress);
+        mParameters.CloudsSize = 1.0f; // TODO
+        mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
+
+        // Phase 2
+        float phase2Progress = SmoothStep(Phase2DownStart, Phase2DownEnd, downProgress);
+        mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
+    }
 
 
     //
@@ -75,8 +126,9 @@ void Storm::Upload(Render::RenderContext & renderContext) const
 
     renderContext.UploadStormAmbientDarkening(mParameters.AmbientDarkening);
 
-
     // TODO: lightnings
+
+    // TODO: rain
 }
 
 void Storm::TriggerStorm()

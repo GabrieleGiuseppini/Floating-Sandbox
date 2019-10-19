@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Settings.h"
 
-#include "Utils.h"
+#include "Colors.h"
 
 #include <regex>
 
@@ -245,66 +245,56 @@ SettingsDeserializationContext::SettingsDeserializationContext(
 // Specializations for common types
 ///////////////////////////////////////////////////////////////////////////////////////
 
+// string
+
 template<>
-void Setting<float>::Serialize(SettingsSerializationContext & context) const
+void SettingSerializer::Serialize<std::string>(
+    SettingsSerializationContext & context,
+    std::string const & settingName,
+    std::string const & value)
 {
-    context.GetSettingsRoot()[GetName()] = picojson::value(static_cast<double>(mValue));
+    context.GetSettingsRoot()[settingName] = picojson::value(value);
 }
 
 template<>
-void Setting<float>::Deserialize(SettingsDeserializationContext const & context)
+bool SettingSerializer::Deserialize<std::string>(
+    SettingsDeserializationContext const & context,
+    std::string const & settingName,
+    std::string & value)
 {
-    auto value = Utils::GetOptionalJsonMember<double>(context.GetSettingsRoot(), GetName());
-    if (!!value)
+    auto jsonValue = Utils::GetOptionalJsonMember<std::string>(context.GetSettingsRoot(), settingName);
+    if (!!jsonValue)
     {
-        SetValue(static_cast<float>(*value));
+        value = *jsonValue;
+        return true;
     }
+
+    return false;
+}
+
+// rgbColor 
+
+template<>
+void SettingSerializer::Serialize<rgbColor>(
+    SettingsSerializationContext & context,
+    std::string const & settingName,
+    rgbColor const & value)
+{
+    context.GetSettingsRoot()[settingName] = picojson::value(value.toString());
 }
 
 template<>
-void Setting<unsigned int>::Serialize(SettingsSerializationContext & context) const
+bool SettingSerializer::Deserialize<rgbColor>(
+    SettingsDeserializationContext const & context,
+    std::string const & settingName,
+    rgbColor & value)
 {
-    context.GetSettingsRoot()[GetName()] = picojson::value(static_cast<int64_t>(mValue));
-}
-
-template<>
-void Setting<unsigned int>::Deserialize(SettingsDeserializationContext const & context)
-{
-    auto value = Utils::GetOptionalJsonMember<int64_t>(context.GetSettingsRoot(), GetName());
-    if (!!value)
+    auto jsonValue = Utils::GetOptionalJsonMember<std::string>(context.GetSettingsRoot(), settingName);
+    if (!!jsonValue)
     {
-        SetValue(static_cast<unsigned int >(*value));
+        value = rgbColor::fromString(*jsonValue);
+        return true;
     }
-}
 
-template<>
-void Setting<bool>::Serialize(SettingsSerializationContext & context) const
-{
-    context.GetSettingsRoot()[GetName()] = picojson::value(mValue);
-}
-
-template<>
-void Setting<bool>::Deserialize(SettingsDeserializationContext const & context)
-{
-    auto value = Utils::GetOptionalJsonMember<bool>(context.GetSettingsRoot(), GetName());
-    if (!!value)
-    {
-        SetValue(*value);
-    }
-}
-
-template<>
-void Setting<std::string>::Serialize(SettingsSerializationContext & context) const
-{
-    context.GetSettingsRoot()[GetName()] = picojson::value(mValue);
-}
-
-template<>
-void Setting<std::string>::Deserialize(SettingsDeserializationContext const & context)
-{
-    auto value = Utils::GetOptionalJsonMember<std::string>(context.GetSettingsRoot(), GetName());
-    if (!!value)
-    {
-        SetValue(*value);
-    }
+    return false;
 }

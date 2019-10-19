@@ -171,6 +171,11 @@ public:
         return mCanvasHeight;
     }
 
+    float GetAspectRatio() const
+    {
+        return static_cast<float>(GetCanvasWidth()) / static_cast<float>(GetCanvasHeight());
+    }
+
     void SetCanvasSize(int width, int height)
     {
         mCanvasWidth = width;

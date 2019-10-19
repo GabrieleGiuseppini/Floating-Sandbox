@@ -233,6 +233,8 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Open()
 {
+    LogMessage("TODO: SettingsDialog::Open() 1");
+
     if (IsShown())
         return; // Handle Ctrl^S while minimized
 
@@ -260,8 +262,10 @@ void SettingsDialog::Open()
     // Open dialog
     //
 
-    this->Show();
     this->Raise();
+    this->Show();    
+
+    LogMessage("TODO: SettingsDialog::Open() 2");
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
@@ -503,6 +507,8 @@ void SettingsDialog::DoCancel()
 
 void SettingsDialog::DoClose()
 {
+    LogMessage("TODO: SettingsDialog::DoClose()");
+
     this->Hide();
 }
 
@@ -1337,11 +1343,10 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     "Ocean Depth",
                     "The ocean depth (m).",
                     mGameController->GetSeaDepth(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinSeaDepth(),
@@ -1365,11 +1370,10 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     "Ocean Floor Bumpiness",
                     "Adjusts how much the ocean floor rolls up and down.",
                     mGameController->GetOceanFloorBumpiness(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorBumpiness, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinOceanFloorBumpiness(),
@@ -1392,11 +1396,10 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     "Ocean Floor Detail",
                     "Adjusts the jaggedness of the ocean floor irregularities.",
                     mGameController->GetOceanFloorDetailAmplification(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinOceanFloorDetailAmplification(),
@@ -1447,11 +1450,10 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     "Number of Stars",
                     "The number of stars in the sky.",
                     mGameController->GetNumberOfStars(),
-                    [this](unsigned int /*value*/)
+                    [this](unsigned int value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinNumberOfStars(),
@@ -1474,11 +1476,10 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     "Number of Clouds",
                     "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
                     mGameController->GetNumberOfClouds(),
-                    [this](unsigned int /*value*/)
+                    [this](unsigned int value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameController->GetMinNumberOfClouds(),
@@ -1578,11 +1579,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         "Wind Gust Amplitude",
                         "The amplitude of wind gusts, as a multiplier of the base wind speed.",
                         mGameController->GetWindSpeedMaxFactor(),
-                        [this](float /*value*/)
+                        [this](float value)
                         {
-                            // Remember we're dirty now
-                            // TODO
-                        //this->mApplyButton->Enable(true);
+                            this->mLiveSettings.SetValue(GameSettings::WindSpeedMaxFactor, value);
+                            this->OnLiveSettingsChanged();
                         },
                         std::make_unique<LinearSliderCore>(
                             mGameController->GetMinWindSpeedMaxFactor(),
@@ -1634,11 +1634,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Wave Height Adjust",
                     "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",
                     static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveHeightAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBasalWaveHeightAdjustment(),
@@ -1661,11 +1660,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Wave Width Adjust",
                     "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",
                     static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveLengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinBasalWaveLengthAdjustment(),
@@ -1689,11 +1687,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Wave Speed Adjust",
                     "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",
                     static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBasalWaveSpeedAdjustment(),
@@ -1742,11 +1739,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Tsunami Rate",
                     "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",
                     static_cast<float>(mGameController->GetTsunamiRate()),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::TsunamiRate, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinTsunamiRate(),
@@ -1769,11 +1765,10 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     "Rogue Wave Rate",
                     "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",
                     static_cast<float>(mGameController->GetRogueWaveRate()),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRogueWaveRate(),
@@ -1833,11 +1828,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Destroy Radius",
                     "The starting radius of the damage caused by destructive tools (m).",
                     mGameController->GetDestroyRadius(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinDestroyRadius(),
@@ -1860,11 +1854,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Bomb Blast Radius",
                     "The radius of bomb explosions (m).",
                     mGameController->GetBombBlastRadius(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinBombBlastRadius(),
@@ -1887,11 +1880,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Bomb Blast Heat",
                     "The heat generated by bomb explosions (KJ/s).",
                     mGameController->GetBombBlastHeat(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameController->GetMinBombBlastHeat(),
@@ -1915,11 +1907,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "AM Bomb Implosion Strength",
                     "Adjusts the strength of the initial anti-matter bomb implosion.",
                     mGameController->GetAntiMatterBombImplosionStrength(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinAntiMatterBombImplosionStrength(),
@@ -1942,11 +1933,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Flood Radius",
                     "How wide an area is flooded by the flood tool (m).",
                     mGameController->GetFloodRadius(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinFloodRadius(),
@@ -1969,11 +1959,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Flood Quantity",
                     "How much water is injected by the flood tool (m3).",
                     mGameController->GetFloodQuantity(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinFloodQuantity(),
@@ -1996,11 +1985,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Repair Radius",
                     "Adjusts the radius of the repair tool (m).",
                     mGameController->GetRepairRadius(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRepairRadius(),
@@ -2023,11 +2011,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     "Repair Speed Adjust",
                     "Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!",
                     mGameController->GetRepairSpeedAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinRepairSpeedAdjustment(),
@@ -2111,11 +2098,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         "Air Bubbles Density",
                         "The density of air bubbles generated when water enters a ship.",
                         mGameController->GetAirBubblesDensity(),
-                        [this](float /*value*/)
+                        [this](float value)
                         {
-                            // Remember we're dirty now
-                            // TODO
-                            //this->mApplyButton->Enable(true);
+                            this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
+                            this->OnLiveSettingsChanged();
                         },
                         std::make_unique<LinearSliderCore>(
                             mGameController->GetMinAirBubblesDensity(),
@@ -2299,11 +2285,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Transparency",
                     "Adjusts the transparency of sea water.",
                     mGameController->GetOceanTransparency(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::OceanTransparency, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2326,11 +2311,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Darkening Rate",
                     "Adjusts the rate at which the ocean darkens with depth.",
                     mGameController->GetOceanDarkeningRate(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2561,11 +2545,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Heat Overlay Transparency",
                     "Adjusts the transparency of the heat overlay.",
                     mGameController->GetHeatOverlayTransparency(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::HeatOverlayTransparency, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2588,11 +2571,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Flame Size Adjust",
                     "Adjusts the size of flames.",
                     mGameController->GetShipFlameSizeAdjustment(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinShipFlameSizeAdjustment(),
@@ -2713,11 +2695,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Water Contrast",
                     "Adjusts the contrast of water inside physical bodies.",
                     mGameController->GetWaterContrast(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterContrast, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -2741,11 +2722,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     "Water Level of Detail",
                     "Adjusts how detailed water inside a physical body looks.",
                     mGameController->GetWaterLevelOfDetail(),
-                    [this](float /*value*/)
+                    [this](float value)
                     {
-                        // Remember we're dirty now
-                        // TODO
-                        //this->mApplyButton->Enable(true);
+                        this->mLiveSettings.SetValue(GameSettings::WaterLevelOfDetail, value);
+                        this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
                         mGameController->GetMinWaterLevelOfDetail(),
@@ -2790,11 +2770,10 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         "Effects Volume",
         "Adjusts the volume of sounds generated by the simulation.",
         mSoundController->GetMasterEffectsVolume(),
-        [this](float /*value*/)
+        [this](float value)
         {
-            // Remember we're dirty now
-            // TODO
-            //this->mApplyButton->Enable(true);
+            this->mLiveSettings.SetValue(GameSettings::MasterEffectsVolume, value);
+            this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
             0.0f,
@@ -2812,11 +2791,10 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         "Tools Volume",
         "Adjusts the volume of sounds generated by interactive tools.",
         mSoundController->GetMasterToolsVolume(),
-        [this](float /*value*/)
+        [this](float value)
         {
-            // Remember we're dirty now
-            // TODO
-            //this->mApplyButton->Enable(true);
+            this->mLiveSettings.SetValue(GameSettings::MasterToolsVolume, value);
+            this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
             0.0f,
@@ -2834,11 +2812,10 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         "Music Volume",
         "Adjusts the volume of music.",
         mSoundController->GetMasterMusicVolume(),
-        [this](float /*value*/)
+        [this](float value)
         {
-            // Remember we're dirty now
-            // TODO
-            //this->mApplyButton->Enable(true);
+            this->mLiveSettings.SetValue(GameSettings::MasterMusicVolume, value);
+            this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
             0.0f,

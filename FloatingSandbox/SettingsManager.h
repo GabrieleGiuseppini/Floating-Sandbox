@@ -48,13 +48,62 @@ enum class GameSettings : size_t
     ElectricalElementHeatProducedAdjustment,
 
     // Misc
-
-    // TODOHERE
-
+    OceanFloorTerrain,
+    SeaDepth,
+    OceanFloorBumpiness,
+    OceanFloorDetailAmplification,
+    DestroyRadius,
+    RepairRadius,
+    RepairSpeedAdjustment,
+    BombBlastRadius,
+    BombBlastHeat,
+    AntiMatterBombImplosionStrength,
+    FloodRadius,
+    FloodQuantity,
     LuminiscenceAdjustment,
     LightSpreadAdjustment,
+    UltraViolentMode,
+    DoGenerateDebris,
+    DoGenerateSparkles,
+    DoGenerateAirBubbles,
+    AirBubblesDensity,
+    NumberOfStars,
+    NumberOfClouds,
 
-    _Last = LightSpreadAdjustment
+    // Render
+    FlatSkyColor,
+    WaterContrast,
+    OceanTransparency,
+    OceanDarkeningRate,
+    ShowShipThroughOcean,
+    WaterLevelOfDetail,
+    ShipRenderMode,
+    DebugShipRenderMode,
+    OceanRenderMode,
+    TextureOceanTextureIndex,
+    DepthOceanColorStart,
+    DepthOceanColorEnd,
+    FlatOceanColor,
+    LandRenderMode,
+    TextureLandTextureIndex,
+    FlatLandColor,
+    VectorFieldRenderMode,
+    ShowShipStress,
+    DrawHeatOverlay,
+    HeatOverlayTransparency,
+    ShipFlameRenderMode,
+    ShipFlameSizeAdjustment,
+
+    // Sound
+    MasterEffectsVolume,
+    MasterToolsVolume,
+    MasterMusicVolume,
+    PlayBreakSounds,
+    PlayStressSounds,
+    PlayWindSound,
+    PlaySinkingMusic,
+
+    _Last = PlaySinkingMusic
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

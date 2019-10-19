@@ -40,32 +40,43 @@ struct CustomValue
 };
 
 template<>
-void Setting<CustomValue>::Serialize(SettingsSerializationContext & context) const
+void SettingSerializer::Serialize<CustomValue>(
+    SettingsSerializationContext & context,
+    std::string const & settingName,
+    CustomValue const & value)
 {
-    auto os = context.GetNamedStream(GetName(), "bin");
-    *os << mValue.Str + ":" + std::to_string(mValue.Int);
+    auto os = context.GetNamedStream(settingName, "bin");
+    *os << value.Str + ":" + std::to_string(value.Int);
 }
 
 template<>
-void Setting<CustomValue>::Deserialize(SettingsDeserializationContext const & context)
+bool SettingSerializer::Deserialize<CustomValue>(
+    SettingsDeserializationContext const & context,
+    std::string const & settingName,
+    CustomValue & value)
 {
-    auto const is = context.GetNamedStream(GetName(), "bin");
+    auto const is = context.GetNamedStream(settingName, "bin");
 
-    std::string tmp;
-    *is >> tmp;
+    if (!!is)
+    {
+        std::string tmp;
+        *is >> tmp;
 
-    auto pos = tmp.find(':');
-    assert(pos != std::string::npos);
+        auto pos = tmp.find(':');
+        assert(pos != std::string::npos);
 
-    mValue.Str = tmp.substr(0, pos);
-    mValue.Int = std::stoi(tmp.substr(pos + 1));
+        value.Str = tmp.substr(0, pos);
+        value.Int = std::stoi(tmp.substr(pos + 1));
+
+        return true;
+    }
         
-    MarkAsDirty();
+    return false;
 }
 
 // Test template settings
 
-enum TestSettings : size_t
+enum class TestSettings : size_t
 {
     Setting1_float = 0,
     Setting2_uint32,
@@ -342,6 +353,19 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
     EXPECT_FALSE(settings1.IsDirty(TestSettings::Setting4_string));
     EXPECT_TRUE(settings1.IsDirty(TestSettings::Setting5_custom));
 }
+
+TEST(SettingsTests, Settings_Comparison)
+{
+    Settings<TestSettings> settings1(MakeTestSettings());
+    Settings<TestSettings> settings2(MakeTestSettings());
+    Settings<TestSettings> settings3(MakeTestSettings());
+
+    settings2.SetValue(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    EXPECT_EQ(settings1, settings3);
+    EXPECT_NE(settings1, settings2);
+}
+
 
 ////////////////////////////////////////////////////////////////
 // Storage
@@ -744,6 +768,146 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
     EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
 }
 
+enum class RgbColorTestSettings : size_t
+{
+    Setting1 = 0,
+    _Last = Setting1
+};
+
+TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_rgbColor)
+{
+    //
+    // 1. Serialize
+    //
+
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);    
+
+    std::vector<std::unique_ptr<BaseSetting>> testSettings;
+    testSettings.emplace_back(new Setting<rgbColor>("setting1"));
+
+    Settings<RgbColorTestSettings> settings1(testSettings);
+    settings1.ClearAllDirty();
+
+    settings1.SetValue<rgbColor>(RgbColorTestSettings::Setting1, rgbColor(22, 33, 45));
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
+            storage);
+
+        settings1.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+
+    //
+    // 2. De-serialize
+    //
+
+    Settings<RgbColorTestSettings> settings2(testSettings);
+    settings2.MarkAllAsDirty();
+
+    {
+        SettingsDeserializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings2.Deserialize(sContext);
+    }
+
+
+    //
+    // 3. Verify
+    //
+
+    EXPECT_EQ(rgbColor(22, 33, 45), settings2.GetValue<rgbColor>(RgbColorTestSettings::Setting1));
+}
+
+enum class TestEnum : int
+{
+    Value1,
+    Value2,
+    Value3,
+    Value4,
+    Value5,
+    Value6
+};
+
+enum class EnumTestSettings : size_t
+{
+    Setting1 = 0,
+    Setting2,
+    Setting3,
+    _Last = Setting3
+};
+
+TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_Enum)
+{
+    //
+    // 1. Serialize
+    //
+
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+    std::vector<std::unique_ptr<BaseSetting>> testSettings;
+    testSettings.emplace_back(new Setting<TestEnum>("setting1"));
+    testSettings.emplace_back(new Setting<TestEnum>("setting2"));
+    testSettings.emplace_back(new Setting<TestEnum>("setting3"));
+
+    Settings<EnumTestSettings> settings1(testSettings);
+    settings1.ClearAllDirty();
+
+    settings1.SetValue<TestEnum>(EnumTestSettings::Setting1, TestEnum::Value2);
+    settings1.SetValue<TestEnum>(EnumTestSettings::Setting2, TestEnum::Value4);
+    settings1.SetValue<TestEnum>(EnumTestSettings::Setting3, TestEnum::Value5);
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
+            storage);
+
+        settings1.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+
+    //
+    // 2. De-serialize
+    //
+
+    Settings<EnumTestSettings> settings2(testSettings);
+    settings2.MarkAllAsDirty();
+
+    {
+        SettingsDeserializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings2.Deserialize(sContext);
+    }
+
+
+    //
+    // 3. Verify
+    //
+
+    EXPECT_EQ(TestEnum::Value2, settings2.GetValue<TestEnum>(EnumTestSettings::Setting1));
+    EXPECT_EQ(TestEnum::Value4, settings2.GetValue<TestEnum>(EnumTestSettings::Setting2));
+    EXPECT_EQ(TestEnum::Value5, settings2.GetValue<TestEnum>(EnumTestSettings::Setting3));
+}
+
 TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 {
     //
@@ -797,11 +961,70 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
     // 3. Verify
     //
 
-    EXPECT_FALSE(settings2.IsDirty(Setting1_float));
-    EXPECT_TRUE(settings2.IsDirty(Setting2_uint32));
-    EXPECT_FALSE(settings2.IsDirty(Setting3_bool));
-    EXPECT_FALSE(settings2.IsDirty(Setting4_string));
-    EXPECT_TRUE(settings2.IsDirty(Setting5_custom));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings2.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting4_string));
+    EXPECT_TRUE(settings2.IsDirty(TestSettings::Setting5_custom));
+}
+
+TEST(SettingsTests, Serialization_CustomNonDeserializedSettingIsClean)
+{
+    //
+    // 1. Serialize
+    //
+
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    SettingsStorage storage(
+        TestRootSystemDirectory,
+        TestRootUserDirectory,
+        testFileSystem);
+
+
+    Settings<TestSettings> settings1(MakeTestSettings());
+
+    settings1.ClearAllDirty();
+
+    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+
+    {
+        SettingsSerializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            "Test description",
+            storage);
+
+        settings1.SerializeDirty(sContext);
+        // Context destruction happens here
+    }
+
+
+    //
+    // 2. De-serialize
+    //
+
+    Settings<TestSettings> settings2(MakeTestSettings());
+
+    settings2.MarkAllAsDirty();
+
+    {
+        SettingsDeserializationContext sContext(
+            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            storage);
+
+        settings2.Deserialize(sContext);
+    }
+
+
+    //
+    // 3. Verify
+    //
+
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting1_float));
+    EXPECT_TRUE(settings2.IsDirty(TestSettings::Setting2_uint32));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting3_bool));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting4_string));
+    EXPECT_FALSE(settings2.IsDirty(TestSettings::Setting5_custom));
 }
 
 ////////////////////////////////////////////////////////////////

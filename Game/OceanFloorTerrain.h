@@ -25,16 +25,22 @@ public:
 
 public:
 
+    OceanFloorTerrain()
+        : mTerrainBuffer(Size)
+    {
+        mTerrainBuffer.fill(0.0f);
+    }
+
     explicit OceanFloorTerrain(unique_buffer<float> const & terrainBuffer)
         : mTerrainBuffer(terrainBuffer)
     {
-        assert(IsExpectedSize(mTerrainBuffer.size()));
+        assert(mTerrainBuffer.size() == Size);
     }
 
     explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
     {
-        assert(IsExpectedSize(mTerrainBuffer.size()));
+        assert(mTerrainBuffer.size() == Size);
     }
 
     OceanFloorTerrain(OceanFloorTerrain const & other) = default;
@@ -62,7 +68,7 @@ public:
 
 private:
 
-    static bool IsExpectedSize(size_t size);
+    static size_t Size;
 
     unique_buffer<float> mTerrainBuffer;
 };

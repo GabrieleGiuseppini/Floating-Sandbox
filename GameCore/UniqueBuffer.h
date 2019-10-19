@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -33,6 +34,8 @@ public:
     {}
 
     unique_buffer(unique_buffer<TValue> const & other)
+        : mBuffer()
+        , mSize(0)
     {
         *this = other;
     }
@@ -137,6 +140,14 @@ public:
         mSize = 0;
 
         return unique_buffer<TValue2>(newPtr, newSize);
+    }
+
+    void fill(TValue const & value)
+    {
+        std::fill(
+            mBuffer.get(),
+            mBuffer.get() + mSize,
+            value);
     }
 
 private:
