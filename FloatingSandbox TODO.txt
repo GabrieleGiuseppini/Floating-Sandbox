@@ -380,6 +380,11 @@ Render:
 			- Add to about box
 				- Ask name & url
 
+		- Music?
+			Long Note Four by Kevin MacLeod is licensed under a Creative Commons Attribution licence (https://creativecommons.org/licenses/...)
+			Source: http://incompetech.com/music/royalty-...
+			Artist: http://incompetech.com/
+
 		= New explosions:
 			- Shader:
 				+ Take frames out of 4K video
@@ -1026,11 +1031,12 @@ Render:
 			+ Another physics component
 			+ Game wall-clock based
 			- State machine with concentric phases:
-				- Wind (and thus waves)
-					- Make clouds more sensible to speed - should go faster at higher speeds
-				- Cloud Darkening
-				- Darknening
-					- Out of phase with cloud darkening, to avoid ugly crossing
+				= Wind (and thus waves)
+					+ Make clouds more sensible to speed - should go faster at higher speeds
+					- Test storm wind on top of wind modulation
+				+ Cloud Darkening
+				= Darknening
+					+ Out of phase with cloud darkening, to avoid ugly crossing
 					= RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
 					  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
 						+ Rename shaders' param
@@ -1042,29 +1048,26 @@ Render:
 						+ Invoke from storm
 						- Test combined changes in intensities
 				- Clouds
-					= Rearc clouds: 
-						= Clouds:
+					+ Rearc clouds: 
+						+ Clouds:
 							+ Position is maintained into x=[-1.5, +1.5]
 							+ Normal clouds: 
 								+ New clouds: random
 								+ Old clouds: removed
 								+ Roll clouds around
-							= Storm clouds:
-								= New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
+							+ Storm clouds:
+								+ New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
 								  at +1.5 or -1.5 depending on total wind speed sign
-									= Higher scale range, with median larger with progress
+									+ Higher scale range, with median larger with progress
 								+ Old clouds: removed when rolled over
 								+ Roll clouds around
-							- Darkening:
-								- Per-cloud, storm only
-								- Use values:
-									- 0.3
-									- 0.56
-									- 0.93
-		
-						= RenderContext:
+							+ Cloud darkening:
+								+ Per-cloud, storm only
+								+ Use values: 0.3, 0.56, 0.93
+								+ Shader		
+						+ RenderContext:
 							+ map into NDC
-							- Remove test overrides
+							+ Remove test overrides
 					- See if can enlarge small cloud
 				- Rain
 				- Lightnings
@@ -1477,7 +1480,7 @@ Render:
 				+ BaseSetting specialization for OceanFloorTerrain
 					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
 				- Static factory maker
-				- Massage name to make it lower-caseand underscore-separated
+				+ Massage name to make it lower-case and underscore-separated
 			+ Run unit tests in Debug
 			= MainFrame:
 				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)

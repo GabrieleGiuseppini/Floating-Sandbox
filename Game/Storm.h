@@ -40,12 +40,18 @@ public:
         float AmbientDarkening; // [0.0f = full darkness, 1.0 = no darkening]
 
         Parameters()
-            : WindSpeed(0.0f)
-            , NumberOfClouds(0)
-            , CloudsSize(0.0f)
-            , CloudDarkening(1.0f)
-            , AmbientDarkening(1.0f)
-        {}
+        {
+            Reset();
+        }
+
+        void Reset()
+        {
+            WindSpeed = 0.0f;
+            NumberOfClouds = 0;
+            CloudsSize = 0.0f;
+            CloudDarkening = 1.0f;
+            AmbientDarkening = 1.0f;
+        }
     };
 
     Parameters const & GetParameters() const

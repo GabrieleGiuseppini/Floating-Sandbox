@@ -44,7 +44,8 @@ void Clouds::Update(
                     ++mLastCloudId,
                     GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX),
                     GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
-                    0.27f + static_cast<float>(c) / static_cast<float>(c + 3))); // Earlier clouds are smaller
+                    GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 1.3f), // Size
+                    1.0f));
         }
     }
 
@@ -57,25 +58,16 @@ void Clouds::Update(
     {
         // Add a cloud if the last cloud (arbitrary) is already enough ahead
         if (mStormClouds.empty()
-            || (baseAndStormSpeedMagnitude >= 0.0f && mStormClouds.back()->GetX() >= -MaxCloudSpaceX + CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds))
-            || (baseAndStormSpeedMagnitude < 0.0f && mStormClouds.back()->GetX() <= MaxCloudSpaceX - CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds)))
+            || (baseAndStormSpeedMagnitude >= 0.0f && mStormClouds.back()->X >= -MaxCloudSpaceX + CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds))
+            || (baseAndStormSpeedMagnitude < 0.0f && mStormClouds.back()->X <= MaxCloudSpaceX - CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds)))
         {
-            LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
-            // TODOTEST: not good yet, bigger!
-            //float sizeMedian = 0.85f + 1.20f * stormParameters.CloudsSize;
-            float sizeMedian = 2.00f;
-            //float sizeDev = 0.25f + 0.45f * stormParameters.CloudsSize;
-            float sizeDev = 0.0f;
-
             mStormClouds.emplace_back(
                 new Cloud(
                     ++mLastCloudId,
                     -MaxCloudSpaceX * windSign,
                     GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
-                    GameRandomEngine::GetInstance().GenerateUniformReal(
-                        sizeMedian - sizeDev,
-                        sizeMedian + sizeDev)));
-
+                    stormParameters.CloudsSize,
+                    stormParameters.CloudDarkening));
         }
     }
 
@@ -99,11 +91,17 @@ void Clouds::Update(
             currentSimulationTime,
             cloudSpeed);
 
-        // Manage clouds leaving space: rollover when cross border
-        if (baseAndStormSpeedMagnitude >= 0.0f && cloud->GetX() > MaxCloudSpaceX)
-            cloud->GetX() -= CloudSpaceWidth;
-        else if (baseAndStormSpeedMagnitude < 0.0f && cloud->GetX() < -MaxCloudSpaceX)
-            cloud->GetX() += CloudSpaceWidth;
+        // Manage clouds leaving space: rollover and update darkening when crossing border
+        if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
+        {
+            cloud->X -= CloudSpaceWidth;
+            cloud->Darkening = stormParameters.CloudDarkening;
+        }
+        else if (baseAndStormSpeedMagnitude < 0.0f && cloud->X < -MaxCloudSpaceX)
+        {
+            cloud->X += CloudSpaceWidth;
+            cloud->Darkening = stormParameters.CloudDarkening;
+        }
     }
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
@@ -113,29 +111,33 @@ void Clouds::Update(
             cloudSpeed);
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
-        if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->GetX() > MaxCloudSpaceX)
+        if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)
         {
             if (mStormClouds.size() > stormParameters.NumberOfClouds)
             {
                 it = mStormClouds.erase(it);
-                LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
             }
             else
             {
-                (*it)->GetX() -= CloudSpaceWidth;
+                // Rollover and catch up
+                (*it)->X -= CloudSpaceWidth;
+                (*it)->Scale = stormParameters.CloudsSize;
+                (*it)->Darkening = stormParameters.CloudDarkening;
                 ++it;
             }
         }
-        else if (baseAndStormSpeedMagnitude < 0.0f && (*it)->GetX() < -MaxCloudSpaceX)
+        else if (baseAndStormSpeedMagnitude < 0.0f && (*it)->X < -MaxCloudSpaceX)
         {
             if (mStormClouds.size() > stormParameters.NumberOfClouds)
             {
                 it = mStormClouds.erase(it);
-                LogMessage("TODO: Total Storm Clouds: ", mStormClouds.size());
             }
             else
             {
-                (*it)->GetX() += CloudSpaceWidth;
+                // Rollover and catch up
+                (*it)->X += CloudSpaceWidth;
+                (*it)->Scale = stormParameters.CloudsSize;
+                (*it)->Darkening = stormParameters.CloudDarkening;
                 ++it;
             }
         }
@@ -144,13 +146,6 @@ void Clouds::Update(
             ++it;
         }
     }
-
-
-    //
-    // Update cloud darkening
-    //
-
-    mCloudDarkening = stormParameters.CloudDarkening;
 }
 
 }

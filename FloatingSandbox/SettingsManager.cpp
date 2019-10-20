@@ -5,17 +5,22 @@
 ***************************************************************************************/
 #include "SettingsManager.h"
 
+#include <cctype>
+#include <sstream>
+
+std::string MangleSettingName(std::string && settingName);
+
 #define ADD_GC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::##name,                           \
-        #name,                                          \
+        MangleSettingName(#name),                       \
         [gameController]() -> type { return gameController->Get##name(); }, \
         [gameController](auto const & v) { gameController->Set##name(v); });
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::##name,                           \
-        #name,                                          \
+        MangleSettingName(#name),                       \
         [soundController]() -> type { return soundController->Get##name(); }, \
         [soundController](auto const & v) { soundController->Set##name(v); });
 
@@ -158,4 +163,31 @@ bool SettingSerializer::Deserialize<OceanFloorTerrain>(
     }
 
     return false;
+}
+
+std::string MangleSettingName(std::string && settingName)
+{
+    std::stringstream ss;
+
+    bool isFirst = true;
+    for (char ch : settingName)
+    {
+        if (std::isupper(ch))
+        {
+            if (!isFirst)
+            {
+                ss << '_';
+            }
+
+            ss << static_cast<char>(std::tolower(ch));
+        }
+        else
+        { 
+            ss << ch;
+        }
+
+        isFirst = false;
+    }
+
+    return ss.str();
 }

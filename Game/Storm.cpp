@@ -33,38 +33,28 @@ void Storm::Update(GameParameters const & gameParameters)
     //
     // Update storm step
     //
-    // Storm script:
-    //  - 1: Cloud + Wind buildup + Cloud darkening goes ep
-    //  - 2: Ambient light darkening goes up
-    //  - TODOHERE: lightnings (+thunder)
-    //  - TODOHERE: rain
-    //  - TODOHERE: targeted lightnings
-    //  - 0.5f
-    //  - TODOHERE: targeted lightnings
-    //  - TODOHERE: rain
-    //  - TODOHERE: lightnings (+thunder)
-    //  - 2: Ambient light darkening goes down
-    //  - 1: Cloud + Wind buildup + Cloud darkening goes down
 
-    float constexpr Phase1UpStart = 0.0f;
-    float constexpr Phase2UpStart = 0.07f;
-    float constexpr Phase1UpEnd = 0.1f; 
-    float constexpr Phase2UpEnd = 0.125f;
+    // Storm script
 
-    float constexpr Phase2DownStart = 0.825f;
-    float constexpr Phase1DownStart = 0.875f;
-    float constexpr Phase2DownEnd = 0.9f;    
-    float constexpr Phase1DownEnd = 1.0f;
+    float constexpr WindUpStart = 0.0f;
+    float constexpr CloudsUpStart = 0.0f;
+    float constexpr AmbientDarkeningUpStart = 0.09f;    
+    float constexpr CloudsUpEnd = 0.1f;
+    float constexpr WindUpEnd = 0.12f;
+    float constexpr AmbientDarkeningUpEnd = 0.125f;
+        
+    float constexpr CloudsDownStart = 0.8f;
+    float constexpr CloudsDownEnd = 0.88f;
+    float constexpr WindDownStart = 0.88f;
+    float constexpr AmbientDarkeningDownStart = 0.9f;    
+    float constexpr AmbientDarkeningDownEnd = 0.97f;
+    float constexpr WindDownEnd = 1.0f;
 
-    ////float constexpr Phase1UpStart = 0.1f;
-    ////float constexpr Phase2UpStart = 0.0f;
-    ////float constexpr Phase1UpEnd = 0.175f; // 1/8    
-    ////float constexpr Phase2UpEnd = 0.125f;
 
-    ////float constexpr Phase2DownStart = 0.875f;
-    ////float constexpr Phase1DownStart = 0.825f;
-    ////float constexpr Phase2DownEnd = 1.0f;
-    ////float constexpr Phase1DownEnd = 0.0f;
+    float constexpr MaxClouds = 50.0f;
+    float constexpr MinCloudSize = 1.85f;
+    float constexpr MaxCloudSize = 2.35f;
+
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =
@@ -75,38 +65,46 @@ void Storm::Update(GameParameters const & gameParameters)
 
     if (mCurrentStormProgress < 0.5f)
     { 
-        // Up
+        // Up - from 0.0  to 0.5
         float upProgress = mCurrentStormProgress;
 
-        // Phase 1
-        float phase1Progress = SmoothStep(Phase1UpStart, Phase1UpEnd, upProgress);
-        mParameters.WindSpeed = phase1Progress * 40.0f;
-        mParameters.NumberOfClouds = static_cast<int>(40.0f * phase1Progress);
-        mParameters.CloudsSize = 1.0f; // TODO
-        //mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
-        mParameters.CloudDarkening = gameParameters.LuminiscenceAdjustment;
+        // Wind
+        float windSmoothProgress = SmoothStep(WindUpStart, WindUpEnd, upProgress);
+        mParameters.WindSpeed = windSmoothProgress * 40.0f;
 
-        // Phase 2
-        float phase2Progress = SmoothStep(Phase2UpStart, Phase2UpEnd, upProgress);
-        mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
+        // Clouds
+        float cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f);
+        mParameters.NumberOfClouds = static_cast<int>(MaxClouds * cloudsLinearProgress);
+        mParameters.CloudsSize = MinCloudSize + (MaxCloudSize - MinCloudSize) * cloudsLinearProgress;
+        mParameters.CloudDarkening = (cloudsLinearProgress < 0.5f) ? 0.65f : (cloudsLinearProgress < 0.9f ? 0.56f : 0.4f);
+
+        // Ambient darkening
+        float ambientDarkeningSmoothProgress = SmoothStep(AmbientDarkeningUpStart, AmbientDarkeningUpEnd, upProgress);
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
 
         // TODO: other phases
     }
     else
     {
-        // Down
-        float downProgress = 1.0f - mCurrentStormProgress;
+        // Down - from 0.5 to 1.0
+        float downProgress = mCurrentStormProgress;
 
-        // Phase 1
-        float phase1Progress = SmoothStep(Phase1DownStart, Phase1DownEnd, downProgress);
-        mParameters.WindSpeed = phase1Progress * 40.0f;
-        mParameters.NumberOfClouds = static_cast<int>(40.0f * phase1Progress);
-        mParameters.CloudsSize = 1.0f; // TODO
-        mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
+        // Wind
+        float windSmoothProgress = 1.0f - SmoothStep(WindDownStart, WindDownEnd, downProgress);
+        mParameters.WindSpeed = windSmoothProgress * 40.0f;
 
-        // Phase 2
-        float phase2Progress = SmoothStep(Phase2DownStart, Phase2DownEnd, downProgress);
-        mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
+        // Clouds
+        // from 1.0 to 0.0
+        float cloudsLinearProgress = 1.0f - Clamp((downProgress - CloudsDownStart) / (CloudsDownEnd - CloudsDownStart), 0.0f, 1.0f);
+        mParameters.NumberOfClouds = static_cast<int>(MaxClouds * cloudsLinearProgress);
+        mParameters.CloudsSize = MinCloudSize + (MaxCloudSize - MinCloudSize) * cloudsLinearProgress;
+        mParameters.CloudDarkening = (cloudsLinearProgress < 0.5f) ? 1.0f : (cloudsLinearProgress < 0.9f ? 0.56f : 0.4f);
+        
+        // Ambient darkening
+        float ambientDarkeningSmoothProgress = 1.0f - SmoothStep(AmbientDarkeningDownStart, AmbientDarkeningDownEnd, downProgress);
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
+
+        // TODO: other phases
     }
 
 
@@ -117,7 +115,10 @@ void Storm::Update(GameParameters const & gameParameters)
     if (mCurrentStormProgress >= 1.0f)
     {
         // Turn off storm
-        TurnStormOff();        
+        TurnStormOff();
+
+        // Reset storm parameters
+        mParameters.Reset();
     }
 
 

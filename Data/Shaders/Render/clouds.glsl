@@ -10,15 +10,19 @@
 //
 
 // Inputs
-in vec4 inCloud; // Position (vec2), TextureCoordinates (vec2)
+in vec4 inCloud1; // Position (vec2), TextureCoordinates (vec2)
+in float inCloud2; // Darkening
 
 // Outputs
 out vec2 texturePos;
+out float darkness;
 
 void main()
 {
-    gl_Position = vec4(inCloud.xy, -1.0, 1.0);
-    texturePos = inCloud.zw;
+    texturePos = inCloud1.zw;
+    darkness = inCloud2;
+
+    gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
 }
 
 ###FRAGMENT
@@ -29,16 +33,16 @@ void main()
 
 // Inputs from previous shader
 in vec2 texturePos;
+in float darkness;
 
 // The texture
 uniform sampler2D paramCloudTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
-uniform float paramCloudDarkening;
 
 void main()
 {
     vec4 textureColor = texture2D(paramCloudTexture, texturePos);
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * paramCloudDarkening, textureColor.w);
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, textureColor.w);
 } 

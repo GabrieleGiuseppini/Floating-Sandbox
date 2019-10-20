@@ -22,6 +22,7 @@ Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventHandler(std::move(gameEventDispatcher))
     // Pre-calculated parameters
     , mZeroSpeedMagnitude(0.0f)
+    , mBaseSpeedMagnitude(0.0f)
     , mBaseAndStormSpeedMagnitude(0.0f)
     , mPreMaxSpeedMagnitude(0.0f)
     , mMaxSpeedMagnitude(0.0f)
@@ -297,6 +298,7 @@ void Wind::Update(
     // Publish interesting quantities for probes
     mGameEventHandler->OnWindSpeedUpdated(
         mZeroSpeedMagnitude,
+        mBaseSpeedMagnitude,
         mBaseAndStormSpeedMagnitude,
         mPreMaxSpeedMagnitude,
         mMaxSpeedMagnitude,
@@ -314,9 +316,10 @@ void Wind::RecalculateParameters(
     GameParameters const & gameParameters)
 {
     mZeroSpeedMagnitude = 0.0f;
+    mBaseSpeedMagnitude = gameParameters.WindSpeedBase;
     mBaseAndStormSpeedMagnitude = (gameParameters.WindSpeedBase >= 0.0f)
-        ? gameParameters.WindSpeedBase + stormParameters.WindSpeed
-        : gameParameters.WindSpeedBase - stormParameters.WindSpeed;
+        ? mBaseSpeedMagnitude + stormParameters.WindSpeed
+        : mBaseSpeedMagnitude - stormParameters.WindSpeed;
     mMaxSpeedMagnitude = mBaseAndStormSpeedMagnitude * gameParameters.WindSpeedMaxFactor;
     mPreMaxSpeedMagnitude = mBaseAndStormSpeedMagnitude + (mMaxSpeedMagnitude - mBaseAndStormSpeedMagnitude) / 8.0f;
 

@@ -69,8 +69,7 @@ std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
 {    
-    CloudDarkening = 0,
-    EffectiveAmbientLightIntensity,
+    EffectiveAmbientLightIntensity = 0,
     FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,
@@ -119,7 +118,8 @@ enum class VertexAttributeType : GLuint
 
     Star = 0,
 
-    Cloud = 0,
+    Cloud1 = 0,
+    Cloud2 = 1,
 
     Land = 0,
 

@@ -542,15 +542,14 @@ public:
     void UploadStarsEnd();
 
 
-    void UploadCloudsStart(
-        size_t cloudCount,
-        float cloudDarkening);
+    void UploadCloudsStart(size_t cloudCount);
 
     inline void UploadCloud(
         uint32_t cloudId,
-        float virtualX, // [-1.5, +1.5]
-        float virtualY, // [-0.5, +0.5]
-        float scale)
+        float virtualX,     // [-1.5, +1.5]
+        float virtualY,     // [-0.5, +0.5]
+        float scale,
+        float darkening)    // 0.0:dark, 1.0:light
     {
         //
         // We use Normalized Device Coordinates here
@@ -560,13 +559,13 @@ public:
         // Map input slice [-0.5, +0.5], [-0.5, +0.5] into NDC [-1.0, +1.0], [-1.0, +1.0]
         //
 
-        // TODOTEST: temporarily mapping whole
-        //float const mappedX = virtualX * 2.0f;
-        //float const mappedY = virtualY * 2.0f;
-        float const mappedX = virtualX / 1.5f;
-        float const mappedY = virtualY / 1.5f;
-        // TODOTEST
-        scale /= 1.5f;
+        float const mappedX = virtualX * 2.0f;
+        float const mappedY = virtualY * 2.0f;
+
+        // TEST: fitting everything in visible window
+        ////float const mappedX = virtualX / 1.5f;
+        ////float const mappedY = virtualY / 1.5f;
+        ////scale /= 1.5f;
 
 
         //
@@ -584,37 +583,53 @@ public:
         float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * mViewModel.GetAspectRatio();
         float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * mViewModel.GetAspectRatio();
 
-        CloudQuad & cloudQuad = mCloudQuadBuffer.emplace_back();
+        // top-left
+        mCloudVertexBuffer.emplace_back(
+            leftX,
+            topY,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            darkening);
 
-        cloudQuad.ndcXTopLeft1 = leftX;
-        cloudQuad.ndcYTopLeft1 = topY;
-        cloudQuad.ndcTextureXTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudQuad.ndcTextureYTopLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        // bottom-left
+        mCloudVertexBuffer.emplace_back(
+            leftX,
+            bottomY,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            darkening);
 
-        cloudQuad.ndcXBottomLeft1 = leftX;
-        cloudQuad.ndcYBottomLeft1 = bottomY;
-        cloudQuad.ndcTextureXBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudQuad.ndcTextureYBottomLeft1 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        // top-right
+        mCloudVertexBuffer.emplace_back(
+            rightX,
+            topY,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            darkening);
 
-        cloudQuad.ndcXTopRight1 = rightX;
-        cloudQuad.ndcYTopRight1 = topY;
-        cloudQuad.ndcTextureXTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudQuad.ndcTextureYTopRight1 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
+        // bottom-left
+        mCloudVertexBuffer.emplace_back(
+            leftX,
+            bottomY,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            darkening);
 
-        cloudQuad.ndcXBottomLeft2 = leftX;
-        cloudQuad.ndcYBottomLeft2 = bottomY;
-        cloudQuad.ndcTextureXBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x;
-        cloudQuad.ndcTextureYBottomLeft2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        // top-right
+        mCloudVertexBuffer.emplace_back(
+            rightX,
+            topY,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            darkening);
 
-        cloudQuad.ndcXTopRight2 = rightX;
-        cloudQuad.ndcYTopRight2 = topY;
-        cloudQuad.ndcTextureXTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudQuad.ndcTextureYTopRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y;
-
-        cloudQuad.ndcXBottomRight2 = rightX;
-        cloudQuad.ndcYBottomRight2 = bottomY;
-        cloudQuad.ndcTextureXBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x;
-        cloudQuad.ndcTextureYBottomRight2 = cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+        // bottom-right
+        mCloudVertexBuffer.emplace_back(
+            rightX,
+            bottomY,
+            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
+            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            darkening);
     }
 
     void UploadCloudsEnd();
@@ -1392,7 +1407,6 @@ private:
 
     void OnViewModelUpdated();
     void OnEffectiveAmbientLightIntensityUpdated();
-    void OnCloudDarkeningUpdated();
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
@@ -1437,38 +1451,26 @@ private:
         {}
     };
 
-    // Two triangles
-    struct CloudQuad
+    struct CloudVertex
     {
-        float ndcXTopLeft1;
-        float ndcYTopLeft1;
-        float ndcTextureXTopLeft1;
-        float ndcTextureYTopLeft1;
+        float ndcX;
+        float ndcY;
+        float ndcTextureX;
+        float ndcTextureY;
+        float darkness;
 
-        float ndcXBottomLeft1;
-        float ndcYBottomLeft1;
-        float ndcTextureXBottomLeft1;
-        float ndcTextureYBottomLeft1;
-
-        float ndcXTopRight1;
-        float ndcYTopRight1;
-        float ndcTextureXTopRight1;
-        float ndcTextureYTopRight1;
-
-        float ndcXBottomLeft2;
-        float ndcYBottomLeft2;
-        float ndcTextureXBottomLeft2;
-        float ndcTextureYBottomLeft2;
-
-        float ndcXTopRight2;
-        float ndcYTopRight2;
-        float ndcTextureXTopRight2;
-        float ndcTextureYTopRight2;
-
-        float ndcXBottomRight2;
-        float ndcYBottomRight2;
-        float ndcTextureXBottomRight2;
-        float ndcTextureYBottomRight2;
+        CloudVertex(
+            float _ndcX,
+            float _ndcY,
+            float _ndcTextureX,
+            float _ndcTextureY,
+            float _darkness)
+            : ndcX(_ndcX)
+            , ndcY(_ndcY)
+            , ndcTextureX(_ndcTextureX)
+            , ndcTextureY(_ndcTextureY)
+            , darkness(_darkness)
+        {}
     };
 
     struct LandSegment
@@ -1554,7 +1556,7 @@ private:
     BoundedVector<StarVertex> mStarVertexBuffer;
     GameOpenGLVBO mStarVBO;
 
-    GameOpenGLMappedBuffer<CloudQuad, GL_ARRAY_BUFFER> mCloudQuadBuffer;
+    GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
 
     GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
@@ -1609,7 +1611,6 @@ private:
     // World
     //
 
-    float mCurrentCloudDarkening;
     float mCurrentStormAmbientDarkening;
     float mEffectiveAmbientLightIntensity;
 

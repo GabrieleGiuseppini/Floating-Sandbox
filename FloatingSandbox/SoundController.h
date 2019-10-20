@@ -247,6 +247,7 @@ public:
     virtual void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
+        float const baseAndStormSpeedMagnitude,
         float const preMaxSpeedMagnitude,
         float const maxSpeedMagnitude,
         vec2f const & windSpeed) override;

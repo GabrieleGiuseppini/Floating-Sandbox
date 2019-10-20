@@ -24,7 +24,7 @@ RenderContext::RenderContext(
     // Buffers
     : mStarVertexBuffer()
     , mStarVBO()
-    , mCloudQuadBuffer()
+    , mCloudVertexBuffer()
     , mCloudVBO()
     , mLandSegmentBuffer()
     , mLandSegmentBufferAllocatedSize(0u)
@@ -57,7 +57,6 @@ RenderContext::RenderContext(
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     // World
-    , mCurrentCloudDarkening(1.0f)
     , mCurrentStormAmbientDarkening(1.0f)
     , mEffectiveAmbientLightIntensity(1.0f)
     // Ships
@@ -276,8 +275,10 @@ RenderContext::RenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud), 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud2), 1, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -592,7 +593,6 @@ RenderContext::RenderContext(
     OnViewModelUpdated();
 
     OnEffectiveAmbientLightIntensityUpdated();
-    OnCloudDarkeningUpdated();
     OnOceanTransparencyUpdated();
     OnOceanDarkeningRateUpdated();
     OnOceanRenderParametersUpdated();
@@ -800,9 +800,7 @@ void RenderContext::UploadStarsEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::UploadCloudsStart(
-    size_t cloudCount,
-    float cloudDarkening)
+void RenderContext::UploadCloudsStart(size_t cloudCount)
 {
     //
     // Prepare cloud quad buffer
@@ -812,41 +810,33 @@ void RenderContext::UploadCloudsStart(
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-        glBufferData(GL_ARRAY_BUFFER, cloudCount * sizeof(CloudQuad), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
+        if (mCloudVertexBuffer.size() != 6 * cloudCount)
+        {
+            glBufferData(GL_ARRAY_BUFFER, 6 * cloudCount * sizeof(CloudVertex), nullptr, GL_STREAM_DRAW);
+            CheckOpenGLError();
+        }
 
-        mCloudQuadBuffer.map(cloudCount);
+        mCloudVertexBuffer.map(6 * cloudCount);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     else
     {
-        mCloudQuadBuffer.reset();
-    }
-
-    //
-    // Update darkening
-    //
-
-    if (mCurrentCloudDarkening != cloudDarkening)
-    {
-        mCurrentCloudDarkening = cloudDarkening;
-
-        OnCloudDarkeningUpdated();
+        mCloudVertexBuffer.reset();
     }
 }
 
 void RenderContext::UploadCloudsEnd()
 {
-    if (mCloudQuadBuffer.size() > 0)
+    if (mCloudVertexBuffer.size() > 0)
     {
         //
-        // Upload cloud quad buffer
+        // Upload cloud vertex buffer
         //
 
         glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-        mCloudQuadBuffer.unmap();
+        mCloudVertexBuffer.unmap();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -871,7 +861,7 @@ void RenderContext::RenderSkyEnd()
     // Draw clouds
     ////////////////////////////////////////////////////
 
-    if (mCloudQuadBuffer.size() > 0)
+    if (mCloudVertexBuffer.size() > 0)
     {
         glBindVertexArray(*mCloudVAO);
 
@@ -880,7 +870,7 @@ void RenderContext::RenderSkyEnd()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(6 * mCloudQuadBuffer.size()));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCloudVertexBuffer.size()));
         CheckOpenGLError();
     }
 
@@ -1318,15 +1308,6 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
     // Update text context
     mTextRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
-}
-
-void RenderContext::OnCloudDarkeningUpdated()
-{
-    // Set parameters in all programs
-
-    mShaderManager->ActivateProgram<ProgramType::Clouds>();
-    mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::CloudDarkening>(
-        mCurrentCloudDarkening);
 }
 
 void RenderContext::OnOceanTransparencyUpdated()

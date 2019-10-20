@@ -167,9 +167,7 @@ std::string ProgramTypeToStr(ProgramType program)
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
 {    
-    if (str == "CloudDarkening")
-        return ProgramParameterType::CloudDarkening;
-    else if (str == "EffectiveAmbientLightIntensity")
+    if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
     else if (str == "FlameSpeed")
         return ProgramParameterType::FlameSpeed;
@@ -232,8 +230,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {    
-    case ProgramParameterType::CloudDarkening:
-        return "CloudDarkening";
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
     case ProgramParameterType::FlameSpeed:
@@ -300,8 +296,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     // World
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
-    else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
-        return VertexAttributeType::Cloud;
+    else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
+        return VertexAttributeType::Cloud1;
+    else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))
+        return VertexAttributeType::Cloud2;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))

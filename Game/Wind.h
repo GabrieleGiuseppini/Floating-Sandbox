@@ -77,6 +77,7 @@ private:
     //
 
     float mZeroSpeedMagnitude;
+    float mBaseSpeedMagnitude;
     float mBaseAndStormSpeedMagnitude;
     float mPreMaxSpeedMagnitude;
     float mMaxSpeedMagnitude;

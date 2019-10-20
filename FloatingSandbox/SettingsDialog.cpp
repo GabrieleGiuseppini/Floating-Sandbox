@@ -286,11 +286,13 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
 {
-    mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
+    mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());    
 
     OnLiveSettingsChanged();
+
+    mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
 }
 
 void SettingsDialog::OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
@@ -3018,7 +3020,7 @@ void SettingsDialog::ReadSettings()
 
     mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
 
-    mModulateWindCheckBox->SetValue(mGameController->GetDoModulateWind());
+    mModulateWindCheckBox->SetValue(mLiveSettings.GetValue<bool>(GameSettings::DoModulateWind));
 
     mWindGustAmplitudeSlider->SetValue(mGameController->GetWindSpeedMaxFactor());
     mWindGustAmplitudeSlider->Enable(mGameController->GetDoModulateWind());
@@ -3031,7 +3033,7 @@ void SettingsDialog::ReadSettings()
 
     mBasalWaveSpeedAdjustmentSlider->SetValue(mGameController->GetBasalWaveSpeedAdjustment());
 
-    mTsunamiRateSlider->SetValue(mGameController->GetTsunamiRate());
+    mTsunamiRateSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::TsunamiRate));
 
     mRogueWaveRateSlider->SetValue(mGameController->GetRogueWaveRate());
 
@@ -3297,6 +3299,7 @@ void SettingsDialog::ReconciliateLandRenderModeSettings()
     mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
 }
 
+// TODO: has to go
 void SettingsDialog::ApplySettings()
 {
     assert(!!mGameController);
@@ -3405,8 +3408,7 @@ void SettingsDialog::ApplySettings()
     mGameController->SetBasalWaveSpeedAdjustment(
         mBasalWaveSpeedAdjustmentSlider->GetValue());
 
-    mGameController->SetTsunamiRate(
-        mTsunamiRateSlider->GetValue());
+    mLiveSettings.SetValue(GameSettings::TsunamiRate, mTsunamiRateSlider->GetValue());
 
     mGameController->SetRogueWaveRate(
         mRogueWaveRateSlider->GetValue());
