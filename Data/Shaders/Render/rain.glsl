@@ -44,7 +44,7 @@ void main()
     
     #define RainSpatialDensity 35.0
     #define RainSpeed 25.0
-    #define DropletLength 0.7
+    #define DropletLength 0.85
     #define DropletWidth 0.04
     
     vec2 scaledUV = uv * RainSpatialDensity;
