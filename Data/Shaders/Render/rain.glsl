@@ -42,12 +42,13 @@ void main()
     // ---------------------------------------------
     //
     
-    #define RainSpatialDensity 35.0
+    #define RainSpatialDensityX 35.0
+    #define RainSpatialDensityY 20.0
     #define RainSpeed 25.0
     #define DropletLength 0.85
-    #define DropletWidth 0.04
+    #define DropletWidth 0.05
     
-    vec2 scaledUV = uv * RainSpatialDensity;
+    vec2 scaledUV = uv * vec2(RainSpatialDensityX, RainSpatialDensityY);
         
 	// Offset Y based off time
     scaledUV.y += paramTime * RainSpeed;
