@@ -1055,6 +1055,13 @@ Render:
 									= Higher scale range, with median larger with progress
 								+ Old clouds: removed when rolled over
 								+ Roll clouds around
+							- Darkening:
+								- Per-cloud, storm only
+								- Use values:
+									- 0.3
+									- 0.56
+									- 0.93
+		
 						= RenderContext:
 							+ map into NDC
 							- Remove test overrides
@@ -1488,7 +1495,10 @@ Render:
 					+ Icon
 					+ Cancel in OnClose
 				= Hookup current settings
-				+ Change standard bottom buttons
+					- Get rid of mGameController, mSoundController
+					- Make ReadSettings(Settings const & settings)
+				= Change standard bottom buttons
+					- Add "Restore Defaults", see paper
 				- New "Settings Management" tab:
 					- TODOHERE
 				- Hookup remaining settings

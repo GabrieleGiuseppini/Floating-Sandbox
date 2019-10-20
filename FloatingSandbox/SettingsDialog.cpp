@@ -233,8 +233,6 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Open()
 {
-    LogMessage("TODO: SettingsDialog::Open() 1");
-
     if (IsShown())
         return; // Handle Ctrl^S while minimized
 
@@ -264,8 +262,6 @@ void SettingsDialog::Open()
 
     this->Raise();
     this->Show();    
-
-    LogMessage("TODO: SettingsDialog::Open() 2");
 }
 
 void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
@@ -367,8 +363,14 @@ void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & /*event*/)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & /*event*/)
+void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & event)
 {
+    auto flatSkyColor = event.GetColour();
+
+    mLiveSettings.SetValue(
+        GameSettings::FlatSkyColor,
+        rgbColor(flatSkyColor.Red(), flatSkyColor.Green(), flatSkyColor.Blue()));
+
     OnLiveSettingsChanged();
 }
 
@@ -3128,7 +3130,7 @@ void SettingsDialog::ReadSettings()
 
     ReconciliateLandRenderModeSettings();
 
-    auto flatSkyColor = mGameController->GetFlatSkyColor();
+    auto flatSkyColor = mLiveSettings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
     mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
     auto shipRenderMode = mGameController->GetShipRenderMode();

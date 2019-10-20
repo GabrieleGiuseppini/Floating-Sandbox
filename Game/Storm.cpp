@@ -47,14 +47,24 @@ void Storm::Update(GameParameters const & gameParameters)
     //  - 1: Cloud + Wind buildup + Cloud darkening goes down
 
     float constexpr Phase1UpStart = 0.0f;
-    float constexpr Phase2UpStart = 0.1f;
-    float constexpr Phase1UpEnd = 0.125f; // 1/8    
-    float constexpr Phase2UpEnd = 0.175f;
+    float constexpr Phase2UpStart = 0.07f;
+    float constexpr Phase1UpEnd = 0.1f; 
+    float constexpr Phase2UpEnd = 0.125f;
 
     float constexpr Phase2DownStart = 0.825f;
     float constexpr Phase1DownStart = 0.875f;
     float constexpr Phase2DownEnd = 0.9f;    
     float constexpr Phase1DownEnd = 1.0f;
+
+    ////float constexpr Phase1UpStart = 0.1f;
+    ////float constexpr Phase2UpStart = 0.0f;
+    ////float constexpr Phase1UpEnd = 0.175f; // 1/8    
+    ////float constexpr Phase2UpEnd = 0.125f;
+
+    ////float constexpr Phase2DownStart = 0.875f;
+    ////float constexpr Phase1DownStart = 0.825f;
+    ////float constexpr Phase2DownEnd = 1.0f;
+    ////float constexpr Phase1DownEnd = 0.0f;
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =
@@ -73,12 +83,12 @@ void Storm::Update(GameParameters const & gameParameters)
         mParameters.WindSpeed = phase1Progress * 40.0f;
         mParameters.NumberOfClouds = static_cast<int>(40.0f * phase1Progress);
         mParameters.CloudsSize = 1.0f; // TODO
-        mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
+        //mParameters.CloudDarkening = 1.0f - phase1Progress / 2.3f;
+        mParameters.CloudDarkening = gameParameters.LuminiscenceAdjustment;
 
         // Phase 2
         float phase2Progress = SmoothStep(Phase2UpStart, Phase2UpEnd, upProgress);
-        // TODOTEST: checking if it's just the cloud darkening alone that makes for bad colors
-        //mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
+        mParameters.AmbientDarkening = 1.0f - phase2Progress / 5.0f;
 
         // TODO: other phases
     }
