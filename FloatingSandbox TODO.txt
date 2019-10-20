@@ -1047,7 +1047,7 @@ Render:
 						  stormDarkening is different than current
 						+ Invoke from storm
 						- Test combined changes in intensities
-				- Clouds
+				+ Clouds
 					+ Rearc clouds: 
 						+ Clouds:
 							+ Position is maintained into x=[-1.5, +1.5]
@@ -1068,7 +1068,7 @@ Render:
 						+ RenderContext:
 							+ map into NDC
 							+ Remove test overrides
-					- See if can enlarge small cloud
+					+ See if can enlarge small cloud
 				- Rain
 				- Lightnings
 			= Storm::Parameters:

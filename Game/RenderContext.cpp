@@ -415,6 +415,8 @@ RenderContext::RenderContext(
             progressCallback((2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + progress * CloudTextureProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
         });
 
+    LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size.Width, "x", cloudTextureAtlas.AtlasData.Size.Height);
+
     // Create OpenGL handle
     glGenTextures(1, &tmpGLuint);
     mCloudTextureAtlasOpenGLHandle = tmpGLuint;
