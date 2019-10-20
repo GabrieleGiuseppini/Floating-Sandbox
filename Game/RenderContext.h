@@ -518,6 +518,15 @@ public:
         }
     }
 
+	inline void UploadRain(float density)
+	{
+		if (density != mCurrentRainDensity)
+		{
+			mCurrentRainDensity = density;
+			OnRainDensityUpdated();
+		}
+	}
+
     //
     // Sky
     //
@@ -1403,10 +1412,12 @@ private:
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();
+	void RenderRain();
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
     void OnEffectiveAmbientLightIntensityUpdated();
+	void OnRainDensityUpdated();
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
@@ -1528,6 +1539,19 @@ private:
         {}
     };
 
+	struct RainVertex
+	{
+		float ndcX;
+		float ndcY;
+
+		RainVertex(
+			float _ndcX,
+			float _ndcY)
+			: ndcX(_ndcX)
+			, ndcY(_ndcY)
+		{}
+	};
+
     struct WorldBorderVertex
     {
         float x;
@@ -1576,6 +1600,8 @@ private:
     std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
     GameOpenGLVBO mFireExtinguisherSprayVBO;
 
+	GameOpenGLVBO mRainVBO;
+
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
 
@@ -1587,9 +1613,10 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
-    GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mCrossOfLightVAO;	
     GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mFireExtinguisherSprayVAO;
+	GameOpenGLVAO mRainVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
     //
@@ -1612,6 +1639,7 @@ private:
     //
 
     float mCurrentStormAmbientDarkening;
+	float mCurrentRainDensity;
     float mEffectiveAmbientLightIntensity;
 
     //

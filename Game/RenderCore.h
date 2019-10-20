@@ -35,6 +35,7 @@ enum class ProgramType
     OceanDepth,
     OceanFlat,
     OceanTexture,
+	Rain,
     ShipFlamesBackground1,
     ShipFlamesBackground2,
     ShipFlamesForeground1,
@@ -81,6 +82,7 @@ enum class ProgramParameterType : uint8_t
     OceanDepthColorEnd,
     OceanFlatColor,
     OrthoMatrix,
+	RainDensity,
     StarTransparency,
     TextureScaling,
     Time,
@@ -127,6 +129,8 @@ enum class VertexAttributeType : GLuint
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
+
+	Rain = 0,
 
     FireExtinguisherSpray = 0,
 

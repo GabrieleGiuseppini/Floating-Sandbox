@@ -179,6 +179,11 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+	virtual void OnRainUpdated(float const /*density*/)
+	{
+		// Default-implemented
+	}
+
     virtual void OnSilenceStarted()
     {
         // Default-implemented

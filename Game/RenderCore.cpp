@@ -35,6 +35,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
+	else if (lstr == "rain")
+		return ProgramType::Rain;
     else if (lstr == "ship_flames_background_1")
         return ProgramType::ShipFlamesBackground1;
     else if (lstr == "ship_flames_background_2")
@@ -111,6 +113,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
+	case ProgramType::Rain:
+		return "Rain";
     case ProgramType::ShipFlamesBackground1:
         return "ShipFlamesBackground1";
     case ProgramType::ShipFlamesBackground2:
@@ -191,6 +195,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+	else if (str == "RainDensity")
+		return ProgramParameterType::RainDensity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
     else if (str == "TextureScaling")
@@ -254,6 +260,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "OceanFlatColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
+	case ProgramParameterType::RainDensity:
+		return "RainDensity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
     case ProgramParameterType::TextureScaling:
@@ -308,6 +316,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
+	else if (Utils::CaseInsensitiveEquals(str, "Rain"))
+		return VertexAttributeType::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))

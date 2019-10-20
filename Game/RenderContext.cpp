@@ -33,9 +33,10 @@ RenderContext::RenderContext(
     , mOceanSegmentBufferAllocatedSize(0u)
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
-    , mCrossOfLightVBO()
+    , mCrossOfLightVBO()	
     , mHeatBlasterFlameVBO()
     , mFireExtinguisherSprayVBO()
+	, mRainVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -43,9 +44,10 @@ RenderContext::RenderContext(
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
-    , mCrossOfLightVAO()
+    , mCrossOfLightVAO()	
     , mHeatBlasterFlameVAO()
     , mFireExtinguisherSprayVAO()
+	, mRainVAO()
     , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
@@ -58,6 +60,7 @@ RenderContext::RenderContext(
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     // World
     , mCurrentStormAmbientDarkening(1.0f)
+	, mCurrentRainDensity(0.0f)
     , mEffectiveAmbientLightIntensity(1.0f)
     // Ships
     , mShips()
@@ -232,16 +235,17 @@ RenderContext::RenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[8];
-    glGenBuffers(8, vbos);
+    GLuint vbos[9];
+    glGenBuffers(9, vbos);
     mStarVBO = vbos[0];
     mCloudVBO = vbos[1];
     mLandVBO = vbos[2];
     mOceanVBO = vbos[3];
-    mCrossOfLightVBO = vbos[4];
+    mCrossOfLightVBO = vbos[4];	
     mHeatBlasterFlameVBO = vbos[5];
     mFireExtinguisherSprayVBO = vbos[6];
-    mWorldBorderVBO = vbos[7];
+	mRainVBO = vbos[7];
+    mWorldBorderVBO = vbos[8];
 
 
     //
@@ -379,6 +383,40 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
+
+
+	//
+	// Initialize Rain VAO
+	//
+
+	glGenVertexArrays(1, &tmpGLuint);
+	mRainVAO = tmpGLuint;
+
+	glBindVertexArray(*mRainVAO);
+	CheckOpenGLError();
+
+	// Describe vertex attributes
+	glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
+	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rain));
+	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void*)0);
+	CheckOpenGLError();
+
+	// Upload quad
+	{
+		RainVertex rainVertices[6]{
+			{-1.0, 1.0},
+			{-1.0, -1.0},
+			{1.0, 1.0},
+			{-1.0, -1.0},
+			{1.0, 1.0},
+			{1.0, -1.0}
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(RainVertex) * 6, rainVertices, GL_STATIC_DRAW);
+		CheckOpenGLError();
+	}
+
+	glBindVertexArray(0);
 
 
     //
@@ -595,6 +633,7 @@ RenderContext::RenderContext(
     OnViewModelUpdated();
 
     OnEffectiveAmbientLightIntensityUpdated();
+	OnRainDensityUpdated();
     OnOceanTransparencyUpdated();
     OnOceanDarkeningRateUpdated();
     OnOceanRenderParametersUpdated();
@@ -1052,6 +1091,12 @@ void RenderContext::RenderEnd()
         RenderFireExtinguisherSpray();
     }
 
+	// Render rain
+	if (mCurrentRainDensity != 0.0f)
+	{
+		RenderRain();
+	}
+
     // Render world end
     RenderWorldBorder();
 
@@ -1159,10 +1204,28 @@ void RenderContext::RenderFireExtinguisherSpray()
         *mFireExtinguisherSprayShaderToRender,
         GameWallClock::GetInstance().NowAsFloat());
 
+	// Draw
     assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void RenderContext::RenderRain()
+{
+	glBindVertexArray(*mRainVAO);
+
+	mShaderManager->ActivateProgram(ProgramType::Rain);
+
+	// Set time parameter
+	mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+		ProgramType::Rain,
+		GameWallClock::GetInstance().NowAsFloat());
+
+	// Draw
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindVertexArray(0);
 }
 
 void RenderContext::RenderWorldBorder()
@@ -1298,6 +1361,10 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
+	mShaderManager->ActivateProgram<ProgramType::Rain>();
+	mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveAmbientLightIntensity>(
+		mEffectiveAmbientLightIntensity);
+
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
@@ -1310,6 +1377,15 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
     // Update text context
     mTextRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
+}
+
+void RenderContext::OnRainDensityUpdated()
+{
+	// Set parameter in all programs
+
+	mShaderManager->ActivateProgram<ProgramType::Rain>();
+	mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
+		mCurrentRainDensity);
 }
 
 void RenderContext::OnOceanTransparencyUpdated()

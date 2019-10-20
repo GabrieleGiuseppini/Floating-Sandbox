@@ -278,6 +278,15 @@ public:
         }
     }
 
+	virtual void OnRainUpdated(float const density) override
+	{
+		// No need to aggregate this one
+		for (auto sink : mGenericSinks)
+		{
+			sink->OnRainUpdated(density);
+		}
+	}
+
     virtual void OnSilenceStarted() override
     {
         // No need to aggregate this one

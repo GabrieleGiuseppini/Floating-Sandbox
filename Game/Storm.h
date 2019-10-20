@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "RenderContext.h"
 
@@ -18,8 +19,9 @@ class Storm
 
 public:
 
-    Storm()
-        : mParameters()
+    Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+		: mGameEventHandler(std::move(gameEventDispatcher))
+        , mParameters()
         , mIsInStorm(false)
         , mCurrentStormProgress(0.0f)
         , mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
@@ -38,6 +40,7 @@ public:
         float CloudsSize; // [0.0f = initial size, 1.0 = full size]
         float CloudDarkening; // [0.0f = full darkness, 1.0 = no darkening]
         float AmbientDarkening; // [0.0f = full darkness, 1.0 = no darkening]
+		float RainDensity; // [0.0f = no rain, 1.0f = full rain]
 
         Parameters()
         {
@@ -51,6 +54,7 @@ public:
             CloudsSize = 0.0f;
             CloudDarkening = 1.0f;
             AmbientDarkening = 1.0f;
+			RainDensity = 0.0f;
         }
     };
 
@@ -67,6 +71,8 @@ private:
     void TurnStormOff();
 
 private:
+
+	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     Parameters mParameters;
 

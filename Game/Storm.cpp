@@ -39,14 +39,18 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr WindUpStart = 0.0f;
     float constexpr CloudsUpStart = 0.0f;
     float constexpr AmbientDarkeningUpStart = 0.09f;    
+	float constexpr RainUpStart = 0.09f;
     float constexpr CloudsUpEnd = 0.1f;
     float constexpr WindUpEnd = 0.12f;
     float constexpr AmbientDarkeningUpEnd = 0.125f;
+	float constexpr RainUpEnd = 0.25f;
         
+	float constexpr RainDownStart = 0.75f;
     float constexpr CloudsDownStart = 0.8f;
     float constexpr CloudsDownEnd = 0.88f;
     float constexpr WindDownStart = 0.88f;
     float constexpr AmbientDarkeningDownStart = 0.9f;    
+	float constexpr RainDownEnd = 0.95f;
     float constexpr AmbientDarkeningDownEnd = 0.97f;
     float constexpr WindDownEnd = 1.0f;
 
@@ -82,6 +86,10 @@ void Storm::Update(GameParameters const & gameParameters)
         float ambientDarkeningSmoothProgress = SmoothStep(AmbientDarkeningUpStart, AmbientDarkeningUpEnd, upProgress);
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
 
+		// Rain
+		float rainLinearProgress = Clamp((upProgress - RainUpStart) / (RainUpEnd - RainUpStart), 0.0f, 1.0f);
+		mParameters.RainDensity = rainLinearProgress;
+
         // TODO: other phases
     }
     else
@@ -104,6 +112,10 @@ void Storm::Update(GameParameters const & gameParameters)
         float ambientDarkeningSmoothProgress = 1.0f - SmoothStep(AmbientDarkeningDownStart, AmbientDarkeningDownEnd, downProgress);
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
 
+		// Rain
+		float rainLinearProgress = 1.0f - Clamp((downProgress - RainDownStart) / (RainDownEnd - RainDownStart), 0.0f, 1.0f);
+		mParameters.RainDensity = rainLinearProgress;
+
         // TODO: other phases
     }
 
@@ -122,6 +134,13 @@ void Storm::Update(GameParameters const & gameParameters)
     }
 
 
+	//
+	// Notify quantities
+	//
+
+	mGameEventHandler->OnRainUpdated(mParameters.RainDensity);
+
+
     //
     // Remember the last storm update timestamp
     //
@@ -131,15 +150,13 @@ void Storm::Update(GameParameters const & gameParameters)
 
 void Storm::Upload(Render::RenderContext & renderContext) const
 {
-    //
     // Upload ambient darkening
-    //
-
     renderContext.UploadStormAmbientDarkening(mParameters.AmbientDarkening);
 
-    // TODO: lightnings
+	// Upload rain
+	renderContext.UploadRain(mParameters.RainDensity);
 
-    // TODO: rain
+    // TODO: lightnings
 }
 
 void Storm::TriggerStorm()

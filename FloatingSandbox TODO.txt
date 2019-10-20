@@ -1034,10 +1034,12 @@ Render:
 				= Wind (and thus waves)
 					+ Make clouds more sensible to speed - should go faster at higher speeds
 					- Test storm wind on top of wind modulation
+					- No zero state while there is storm
+						- TODO: either mZero level is storm, or we don't enter the level altogether
 				+ Cloud Darkening
-				= Darknening
+				+ Darknening
 					+ Out of phase with cloud darkening, to avoid ugly crossing
-					= RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
+					+ RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
 					  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
 						+ Rename shaders' param
 							+ RenderCore
@@ -1046,7 +1048,7 @@ Render:
 						+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
 						  stormDarkening is different than current
 						+ Invoke from storm
-						- Test combined changes in intensities
+						+ Test combined changes in intensities
 				+ Clouds
 					+ Rearc clouds: 
 						+ Clouds:
@@ -1069,17 +1071,24 @@ Render:
 							+ map into NDC
 							+ Remove test overrides
 					+ See if can enlarge small cloud
-				- Rain
+				= Rain
+					- Shader
+						- Discard
+					- Sound (continuous, like wind)
+				- Thunders
+					- First starts soon, others random with same distribution as wind gusts
+					- Events
+					- Sounds (N, one shot)
 				- Lightnings
-			= Storm::Parameters:
+			+ Storm::Parameters:
 				+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 					+ OceanSurface: gets in indirectly and makes waves
 				+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
 					+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
 						+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
 					+ Shader
-			- Wind volume: start with storm
-				- Need additional arg to wind event
+			+ Wind volume: start with storm
+				+ Need additional arg to wind event
 			- Triggers lightnings:
 				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
 				- TBD: Storms' lightning state machine should hit Ship (for fire)
@@ -1087,6 +1096,9 @@ Render:
 				- Shader:
 					- TBD
 			+ Manual storm trigger
+			- SettingsDialog: 
+				- Storm rate and storm length 
+				- Enable rain
 			- Cleanup:
 				- Clouds shader: if cloudDarkening param is only used to multiply with ambient light, then
 				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
