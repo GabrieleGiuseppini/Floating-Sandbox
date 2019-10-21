@@ -19,13 +19,7 @@ class Storm
 
 public:
 
-    Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-		: mGameEventHandler(std::move(gameEventDispatcher))
-        , mParameters()
-        , mIsInStorm(false)
-        , mCurrentStormProgress(0.0f)
-        , mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
-    {}
+	Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(GameParameters const & gameParameters);
 
@@ -85,6 +79,12 @@ private:
 
     // The current progress of the storm, when in a storm: [0.0, 1.0]
     float mCurrentStormProgress;
+
+	// The CDF for thunders
+	float const mThunderCdf;
+
+	// The next timestamp at which to sample the Poisson distribution for deciding thunders
+	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;
 
     // The timestamp at which we last did a storm update
     GameWallClock::time_point mLastStormUpdateTimestamp;

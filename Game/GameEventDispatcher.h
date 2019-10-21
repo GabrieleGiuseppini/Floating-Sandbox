@@ -19,6 +19,7 @@ class GameEventDispatcher
     , public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
     , public IStatisticsGameEventHandler
+	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -38,6 +39,7 @@ public:
         , mWavePhenomenaSinks()
         , mCombustionSinks()
         , mStatisticsSinks()
+		, mAtmosphereSinks()
         , mGenericSinks()
     {
     }
@@ -177,6 +179,58 @@ public:
         }
     }
 
+	//
+	// Atmosphere
+	//
+
+	virtual void OnWindSpeedUpdated(
+		float const zeroSpeedMagnitude,
+		float const baseSpeedMagnitude,
+		float const baseAndStormSpeedMagnitude,
+		float const preMaxSpeedMagnitude,
+		float const maxSpeedMagnitude,
+		vec2f const& windSpeed) override
+	{
+		// No need to aggregate this one
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnWindSpeedUpdated(
+				zeroSpeedMagnitude,
+				baseSpeedMagnitude,
+				baseAndStormSpeedMagnitude,
+				preMaxSpeedMagnitude,
+				maxSpeedMagnitude,
+				windSpeed);
+		}
+	}
+
+	virtual void OnRainUpdated(float const density) override
+	{
+		// No need to aggregate this one
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnRainUpdated(density);
+		}
+	}
+
+	virtual void OnThunder() override
+	{
+		// No need to aggregate this one
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnThunder();
+		}
+	}
+
+	virtual void OnLightning() override
+	{
+		// No need to aggregate this one
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnLightning();
+		}
+	}
+
     //
     // Generic
     //
@@ -256,36 +310,6 @@ public:
             sink->OnWaterSplashed(waterSplashed);
         }
     }
-
-    virtual void OnWindSpeedUpdated(
-        float const zeroSpeedMagnitude,
-        float const baseSpeedMagnitude,
-        float const baseAndStormSpeedMagnitude,
-        float const preMaxSpeedMagnitude,
-        float const maxSpeedMagnitude,
-        vec2f const & windSpeed) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mGenericSinks)
-        {
-            sink->OnWindSpeedUpdated(
-                zeroSpeedMagnitude,
-                baseSpeedMagnitude,
-                baseAndStormSpeedMagnitude,
-                preMaxSpeedMagnitude,
-                maxSpeedMagnitude,
-                windSpeed);
-        }
-    }
-
-	virtual void OnRainUpdated(float const density) override
-	{
-		// No need to aggregate this one
-		for (auto sink : mGenericSinks)
-		{
-			sink->OnRainUpdated(density);
-		}
-	}
 
     virtual void OnSilenceStarted() override
     {
@@ -512,6 +536,11 @@ public:
         mStatisticsSinks.push_back(sink);
     }
 
+	void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* sink)
+	{
+		mAtmosphereSinks.push_back(sink);
+	}
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * sink)
     {
         mGenericSinks.push_back(sink);
@@ -535,5 +564,6 @@ private:
     std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;
     std::vector<ICombustionGameEventHandler *> mCombustionSinks;
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
+	std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

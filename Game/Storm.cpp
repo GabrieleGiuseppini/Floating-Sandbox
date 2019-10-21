@@ -12,6 +12,27 @@
 
 namespace Physics {
 
+// The number of thunders we want per second
+float constexpr ThunderRate = 1.0f / 25.0f;
+
+// The number of poisson samples we perform in a second
+float constexpr PoissonSampleRate = 4.0f;
+GameWallClock::duration constexpr PoissonSampleDeltaT = std::chrono::duration_cast<GameWallClock::duration>(
+	std::chrono::duration<float>(1.0f / PoissonSampleRate));
+
+Storm::Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+	: mGameEventHandler(std::move(gameEventDispatcher))
+	, mParameters()
+	, mIsInStorm(false)
+	, mCurrentStormProgress(0.0f)
+	// We want ThunderRate thunders every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
+	// hence we want 1/PoissonSampleRate thunders per sample interval
+	, mThunderCdf(1.0f - exp(-ThunderRate / PoissonSampleRate))
+	, mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
+	, mNextThunderPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
+{
+}
+
 void Storm::Update(GameParameters const & gameParameters)
 {
     auto const now = GameWallClock::GetInstance().Now();
@@ -38,7 +59,8 @@ void Storm::Update(GameParameters const & gameParameters)
 
     float constexpr WindUpStart = 0.0f;
     float constexpr CloudsUpStart = 0.0f;
-    float constexpr AmbientDarkeningUpStart = 0.09f;    
+	float constexpr ThunderStart = 0.08f;
+    float constexpr AmbientDarkeningUpStart = 0.09f;    	
 	float constexpr RainUpStart = 0.09f;
     float constexpr CloudsUpEnd = 0.1f;
     float constexpr WindUpEnd = 0.12f;
@@ -49,8 +71,9 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr CloudsDownStart = 0.8f;
     float constexpr CloudsDownEnd = 0.88f;
     float constexpr WindDownStart = 0.88f;
-    float constexpr AmbientDarkeningDownStart = 0.9f;    
-	float constexpr RainDownEnd = 0.95f;
+	float constexpr ThunderEnd = 0.88f;
+	float constexpr AmbientDarkeningDownStart = 0.9f;	
+	float constexpr RainDownEnd = 0.905f;
     float constexpr AmbientDarkeningDownEnd = 0.97f;
     float constexpr WindDownEnd = 1.0f;
 
@@ -66,6 +89,10 @@ void Storm::Update(GameParameters const & gameParameters)
         / std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(gameParameters.StormDuration).count();
 
     mCurrentStormProgress += progressStep;
+
+	//
+	// Concentric stages
+	//
 
     if (mCurrentStormProgress < 0.5f)
     { 
@@ -118,6 +145,33 @@ void Storm::Update(GameParameters const & gameParameters)
 
         // TODO: other phases
     }
+
+
+	//
+	// Thunder stage
+	//
+
+	if (mCurrentStormProgress >= ThunderStart && mCurrentStormProgress <= ThunderEnd)
+	{
+		// Check if it's time to sample poisson
+		if (now >= mNextThunderPoissonSampleTimestamp)
+		{
+			// Check if we should do a thunder
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mThunderCdf))
+			{
+				// Do thunder!
+				mGameEventHandler->OnThunder();
+			}
+
+			// Schedule next poisson sampling
+			mNextThunderPoissonSampleTimestamp = now + PoissonSampleDeltaT;
+		}
+	}
+
+	//
+	// Lightning stage
+	//
+
 
 
     //

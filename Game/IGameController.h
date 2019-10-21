@@ -30,6 +30,7 @@ struct IGameController
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
     virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
+	virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;

@@ -92,6 +92,12 @@ public:
         mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
     }
 
+	void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) override
+	{
+		assert(!!mGameEventDispatcher);
+		mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
+	}
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);

@@ -66,8 +66,10 @@ void main()
     vec2 inTile = fract(scaledUV);
     
     // Shuffle in-tile X based on its tile coordinates;
-    // Randomizes x and droplet width
-    inTile.x = fract(inTile.x + fract(sin(tileY) * 100000.0));
+    // we must be careful to not offset the droplet out of its tile
+    float rand = fract(sin(77.7 * tileY + 77.7 * tileX) * 1000.0);
+    inTile.x += (1.0 - DropletWidth) * (rand - 0.5);
+    
     
     // Distance from center of tile
     float xDistance = abs(0.5 - inTile.x);
@@ -78,8 +80,8 @@ void main()
     float dropletThickness = (1.0 - clampedXDistance) * smoothstep(1.0 - DropletLength, 1.0, 1.0 - yDistance);
     
     // Turning off tiles
-    float rand = fract(19047.56 * sin(tileX * 71.0 + tileY * 7.0));
-    float m = 1.0 - step(paramRainDensity, rand);
+    float randOnOff = fract(19047.56 * sin(tileX * 71.0 + tileY * 7.0));
+    float m = 1.0 - step(paramRainDensity, randOnOff);
     dropletThickness *= m;
 
     //

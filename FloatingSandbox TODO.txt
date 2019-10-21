@@ -1033,9 +1033,8 @@ Render:
 			- State machine with concentric phases:
 				= Wind (and thus waves)
 					+ Make clouds more sensible to speed - should go faster at higher speeds
-					- Test storm wind on top of wind modulation
-					- No zero state while there is storm
-						- TODO: either mZero level is storm, or we don't enter the level altogether
+					+ No zero state while there is storm
+					+ Test storm wind on top of wind modulation					
 				+ Cloud Darkening
 				+ Darknening
 					+ Out of phase with cloud darkening, to avoid ugly crossing
@@ -1074,12 +1073,13 @@ Render:
 				= Rain
 					- Shader
 						- Discard
-					- Sound (continuous, like wind)
-				- Thunders
-					- First starts soon, others random with same distribution as wind gusts
-					- Events
-					- Sounds (N, one shot)
+					+ Sound (continuous, like wind)
+				+ Thunders
+					+ Others random with same distribution as wind gusts
+					+ Events
+					+ Sounds (N, one shot)
 				- Lightnings
+					- TODO
 			+ Storm::Parameters:
 				+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 					+ OceanSurface: gets in indirectly and makes waves
@@ -1100,9 +1100,11 @@ Render:
 				- Storm rate and storm length 
 				- Enable rain
 			- Cleanup:
-				- Clouds shader: if cloudDarkening param is only used to multiply with ambient light, then
-				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
-				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
+				- Do perf analysis
+				- Clouds shader: TODO: it's now per-cloud; redo: 
+					- if cloudDarkening param is only used to multiply with ambient light, then
+					  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
+					  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)

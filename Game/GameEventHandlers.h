@@ -110,6 +110,35 @@ struct IStatisticsGameEventHandler
     }
 };
 
+struct IAtmosphereGameEventHandler
+{
+	virtual void OnWindSpeedUpdated(
+		float const /*zeroSpeedMagnitude*/,
+		float const /*baseSpeedMagnitude*/,
+		float const /*baseAndStormSpeedMagnitude*/,
+		float const /*preMaxSpeedMagnitude*/,
+		float const /*maxSpeedMagnitude*/,
+		vec2f const& /*windSpeed*/)
+	{
+		// Default-implemented
+	}
+
+	virtual void OnRainUpdated(float const /*density*/)
+	{
+		// Default-implemented
+	}
+
+	virtual void OnThunder()
+	{
+		// Default-implemented
+	}
+
+	virtual void OnLightning()
+	{
+		// Default-implemented
+	}
+};
+
 struct IGenericGameEventHandler
 {
     virtual void OnDestroy(
@@ -167,22 +196,6 @@ struct IGenericGameEventHandler
     {
         // Default-implemented
     }
-
-    virtual void OnWindSpeedUpdated(
-        float const /*zeroSpeedMagnitude*/,
-        float const /*baseSpeedMagnitude*/,
-        float const /*baseAndStormSpeedMagnitude*/,
-        float const /*preMaxSpeedMagnitude*/,
-        float const /*maxSpeedMagnitude*/,
-        vec2f const & /*windSpeed*/)
-    {
-        // Default-implemented
-    }
-
-	virtual void OnRainUpdated(float const /*density*/)
-	{
-		// Default-implemented
-	}
 
     virtual void OnSilenceStarted()
     {

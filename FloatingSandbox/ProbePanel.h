@@ -21,6 +21,7 @@ class ProbePanel
     : public wxPanel
     , public ILifecycleGameEventHandler
     , public IStatisticsGameEventHandler
+	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
 public:

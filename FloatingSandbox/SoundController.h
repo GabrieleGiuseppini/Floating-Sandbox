@@ -34,6 +34,7 @@ class SoundController
     , public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
     , public IStructuralGameEventHandler
+	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -187,6 +188,7 @@ public:
         gameController.RegisterWavePhenomenaEventHandler(this);
         gameController.RegisterCombustionEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);
+		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -251,6 +253,12 @@ public:
         float const preMaxSpeedMagnitude,
         float const maxSpeedMagnitude,
         vec2f const & windSpeed) override;
+
+	virtual void OnRainUpdated(float density) override;
+
+	virtual void OnThunder() override;
+
+	virtual void OnLightning() override;
 
     virtual void OnSilenceStarted() override;
 
@@ -467,6 +475,7 @@ private:
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
     ContinuousSingleChoiceSound mWindSound;
+	ContinuousSingleChoiceSound mRainSound;
     ContinuousSingleChoiceSound mFireBurningSound;
 
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
