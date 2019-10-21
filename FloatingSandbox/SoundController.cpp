@@ -1205,8 +1205,9 @@ void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
     float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.3f * std::abs(waterTaken))) + 1.f);
+
+	// Starts automatically if volume greater than zero
     mWaterRushSound.SetVolume(rushVolume);
-    mWaterRushSound.Start();
 }
 
 void SoundController::OnWaterSplashed(float waterSplashed)
@@ -1246,8 +1247,9 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
     // 12 * (-1 / 1.3^(0.01*x) + 1)
     float splashVolume = 12.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+
+	// Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);
-    mWaterSplashSound.Start();
 }
 
 void SoundController::OnWindSpeedUpdated(
@@ -1283,9 +1285,8 @@ void SoundController::OnWindSpeedUpdated(
     // Smooth the volume
     float const smoothedWindVolume = mWindVolumeRunningAverage.Update(windVolume);
 
-    // Set the volume
+    // Set the volume - starts automatically if volume greater than zero
     mWindSound.SetVolume(smoothedWindVolume);
-    mWindSound.Start();
 
 
     //
@@ -1310,9 +1311,8 @@ void SoundController::OnWindSpeedUpdated(
 
 void SoundController::OnRainUpdated(float density)
 {
-	// Set the volume
+	// Set the volume - starts automatically if greater than zero
 	mRainSound.SetVolume(density * 80.0f);
-	mRainSound.Start();
 }
 
 void SoundController::OnThunder()

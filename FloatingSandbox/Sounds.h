@@ -605,6 +605,15 @@ struct ContinuousSound
         if (!!mSound)
         {
             mSound->setVolume(volume);
+			if (volume > 0.0f)
+			{
+				Start();
+			}
+			else
+			{
+				// Conserve resources
+				Stop();
+			}
         }
     }
 

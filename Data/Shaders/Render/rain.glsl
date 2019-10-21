@@ -42,9 +42,9 @@ void main()
     // ---------------------------------------------
     //
     
-    #define RainSpatialDensityX 35.0
-    #define RainSpatialDensityY 20.0
-    #define RainSpeed 25.0
+    #define RainSpatialDensityX 45.0
+    #define RainSpatialDensityY 30.0
+    #define RainSpeed 20.0
     #define DropletLength 0.85
     #define DropletWidth 0.05
     

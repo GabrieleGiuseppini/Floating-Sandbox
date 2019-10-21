@@ -1071,7 +1071,8 @@ Render:
 							+ Remove test overrides
 					+ See if can enlarge small cloud
 				= Rain
-					- Shader
+					= Shader
+						+ Try with more spatial density
 						- Discard
 					+ Sound (continuous, like wind)
 				+ Thunders
