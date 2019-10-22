@@ -416,6 +416,8 @@ Render:
 				- Timer
 			- Start workitem for explosive combustion
 
+		- Print speed (in m/s) after throwing objects with both move tools
+
 		- Video:
 			- Sparkles: before and after
 				- Titanic at night, from afar
@@ -974,8 +976,8 @@ Render:
 	- Different materials have different rotting speed
 		- For instance, Cardboard would soften and break apart in water within a minute or so
 
-	- Print speed (in m/s) after throwing objects with both move tools
-		- Requires slot-ification of text in text layer, and/or rotating slots
+	- StatusText/TextLayer replacement (*)
+		- Slot-ification of text in text layer, and/or rotating slots
 		- Replace GameLib::StatusText with new TextLayer class
 			- Two sets of methods:
 				- 1: State-modifying:
@@ -1521,7 +1523,11 @@ Render:
 					- TODOHERE
 				- Hookup remaining settings
 				- "Restore Default Terrain" button
+				- Tooltips on buttons
 			- Make wind speed smoothed, quite long
+			- Visual notification when last settings loaded
+				- 1) Need boolean returned from SettingsManager
+				- 2) Do StatusText replacement
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench

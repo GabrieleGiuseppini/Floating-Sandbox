@@ -28,16 +28,6 @@ static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
 static int constexpr CellBorder = 8;
 
-const long ID_ULTRA_VIOLENT_CHECKBOX = wxNewId();
-const long ID_GENERATE_DEBRIS_CHECKBOX = wxNewId();
-const long ID_GENERATE_SPARKLES_CHECKBOX = wxNewId();
-const long ID_GENERATE_AIR_BUBBLES_CHECKBOX = wxNewId();
-const long ID_MODULATE_WIND_CHECKBOX = wxNewId();
-const long ID_PLAY_BREAK_SOUNDS_CHECKBOX = wxNewId();
-const long ID_PLAY_STRESS_SOUNDS_CHECKBOX = wxNewId();
-const long ID_PLAY_WIND_SOUND_CHECKBOX = wxNewId();
-const long ID_PLAY_SINKING_MUSIC_CHECKBOX = wxNewId();
-
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<SettingsManager> settingsManager,
@@ -194,25 +184,32 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
+		auto revertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
+		revertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
+		this->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
+		buttonsSizer->Add(revertToDefaultsButton, 0, 0, 0);
+
+		buttonsSizer->AddStretchSpacer(1);
+
         mOkButton = new wxButton(this, wxID_ANY, "OK");
         mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
-        buttonsSizer->Add(mOkButton, 0);
+        buttonsSizer->Add(mOkButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
         mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
-        buttonsSizer->Add(mCancelButton, 0);
+        buttonsSizer->Add(mCancelButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mUndoButton = new wxButton(this, wxID_ANY, "Undo");
         mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
-        buttonsSizer->Add(mUndoButton, 0);
+        buttonsSizer->Add(mUndoButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        dialogVSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT);
+        dialogVSizer->Add(buttonsSizer, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 0);
     }
 
     dialogVSizer->AddSpacer(20);
@@ -264,8 +261,9 @@ void SettingsDialog::Open()
     this->Show();    
 }
 
-void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
@@ -441,6 +439,11 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
     OnLiveSettingsChanged();
 }
 
+void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
+{
+	// TODO
+}
+
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
     // Just close the dialog   
@@ -511,8 +514,6 @@ void SettingsDialog::DoCancel()
 
 void SettingsDialog::DoClose()
 {
-    LogMessage("TODO: SettingsDialog::DoClose()");
-
     this->Hide();
 }
 
@@ -1566,10 +1567,9 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 // Modulate Wind
                 {
-                    mModulateWindCheckBox = new wxCheckBox(windBox, ID_MODULATE_WIND_CHECKBOX, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
+                    mModulateWindCheckBox = new wxCheckBox(windBox, wxID_ANY, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
                     mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
-
-                    Connect(ID_MODULATE_WIND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnModulateWindCheckBoxClick);
+					mModulateWindCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnModulateWindCheckBoxClick, this);
 
                     windModulationBoxSizer->Add(mModulateWindCheckBox, 0, wxALIGN_LEFT, 0);
                 }
@@ -2037,9 +2037,9 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
 
                 {
-                    mUltraViolentCheckBox = new wxCheckBox(toolsBox, ID_ULTRA_VIOLENT_CHECKBOX, _("Ultra-Violent Mode"));
+                    mUltraViolentCheckBox = new wxCheckBox(toolsBox, wxID_ANY, _("Ultra-Violent Mode"));
                     mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
-                    Connect(ID_ULTRA_VIOLENT_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnUltraViolentCheckBoxClick);
+					mUltraViolentCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnUltraViolentCheckBoxClick, this);
 
                     checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALIGN_LEFT, 0);
 
@@ -2086,9 +2086,9 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 // Generate Air Bubbles
                 {
-                    mGenerateAirBubblesCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_AIR_BUBBLES_CHECKBOX, _("Generate Air Bubbles"));
+                    mGenerateAirBubblesCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Air Bubbles"));
                     mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
-                    Connect(ID_GENERATE_AIR_BUBBLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateAirBubblesCheckBoxClick);
+					mGenerateAirBubblesCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateAirBubblesCheckBoxClick, this);
 
                     airBubblesBoxSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALIGN_LEFT, 0);
                 }
@@ -2127,17 +2127,17 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
 
                 {
-                    mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_DEBRIS_CHECKBOX, _("Generate Debris"));
+                    mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Debris"));
                     mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
-                    Connect(ID_GENERATE_DEBRIS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateDebrisCheckBoxClick);
+					mGenerateDebrisCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateDebrisCheckBoxClick, this);
 
                     checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
 
                     checkboxesSizer->AddSpacer(5);
 
-                    mGenerateSparklesCheckBox = new wxCheckBox(sideEffectsBox, ID_GENERATE_SPARKLES_CHECKBOX, _("Generate Sparkles"));
+                    mGenerateSparklesCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
                     mGenerateSparklesCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
-                    Connect(ID_GENERATE_SPARKLES_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnGenerateSparklesCheckBoxClick);
+					mGenerateSparklesCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesCheckBoxClick, this);
 
                     checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALIGN_LEFT, 0);
 
@@ -2832,24 +2832,24 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
 
     wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, panel);
 
-    mPlayBreakSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_BREAK_SOUNDS_CHECKBOX, _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Break Sounds Checkbox"));
+    mPlayBreakSoundsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Break Sounds Checkbox"));
     mPlayBreakSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials break.");
-    Connect(ID_PLAY_BREAK_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayBreakSoundsCheckBoxClick);
+	mPlayBreakSoundsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayBreakSoundsCheckBoxClick, this);
     checkboxesSizer->Add(mPlayBreakSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    mPlayStressSoundsCheckBox = new wxCheckBox(panel, ID_PLAY_STRESS_SOUNDS_CHECKBOX, _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Stress Sounds Checkbox"));
+    mPlayStressSoundsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Stress Sounds Checkbox"));
     mPlayStressSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials are under stress.");
-    Connect(ID_PLAY_STRESS_SOUNDS_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayStressSoundsCheckBoxClick);
+	mPlayStressSoundsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayStressSoundsCheckBoxClick, this);
     checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    mPlayWindSoundCheckBox = new wxCheckBox(panel, ID_PLAY_WIND_SOUND_CHECKBOX, _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
+    mPlayWindSoundCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
     mPlayWindSoundCheckBox->SetToolTip("Enables or disables the generation of wind sounds.");
-    Connect(ID_PLAY_WIND_SOUND_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlayWindSoundCheckBoxClick);
+	mPlayWindSoundCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayWindSoundCheckBoxClick, this);
     checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
-    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, ID_PLAY_SINKING_MUSIC_CHECKBOX, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
+    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Sinking Music Checkbox"));
     mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing \"Nearer My God to Thee\" when a ship starts sinking.");
-    Connect(ID_PLAY_SINKING_MUSIC_CHECKBOX, wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&SettingsDialog::OnPlaySinkingMusicCheckBoxClick);
+	mPlaySinkingMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlaySinkingMusicCheckBoxClick, this);
     checkboxesSizer->Add(mPlaySinkingMusicCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
 
     controlsSizer->Add(checkboxesSizer, 0, wxALL, SliderBorder);

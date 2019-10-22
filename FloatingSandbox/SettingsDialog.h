@@ -78,6 +78,7 @@ private:
     void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
+	void OnRevertToDefaultsButton(wxCommandEvent& event);
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnUndoButton(wxCommandEvent & event);
