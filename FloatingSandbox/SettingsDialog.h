@@ -45,31 +45,23 @@ private:
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
-    void OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnTextureOceanChanged(wxCommandEvent & event);
-    void OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
-    void OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnFlatOceanColorChanged(wxColourPickerEvent & event);
     void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
 
-    void OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnTextureLandChanged(wxCommandEvent & event);
-    void OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnFlatLandColorChanged(wxColourPickerEvent & event);
-
     void OnFlatSkyColorChanged(wxColourPickerEvent & event);
 
-    void OnTextureShipRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnShipRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
-
-    void OnMode1ShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnMode2ShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
-
+    void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);    
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
 
@@ -218,6 +210,7 @@ private:
     void PopulateAdvancedPanel(wxPanel * panel);
 
     void ReadSettings();
+
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
 

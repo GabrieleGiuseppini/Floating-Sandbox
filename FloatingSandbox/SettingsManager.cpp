@@ -110,6 +110,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, HeatOverlayTransparency);
     ADD_GC_SETTING(ShipFlameRenderMode, ShipFlameRenderMode);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);
+	ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
 
     // Sound
     ADD_SC_SETTING(float, MasterEffectsVolume);

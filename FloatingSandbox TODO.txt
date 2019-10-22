@@ -1493,10 +1493,10 @@ Render:
 						+ Double-check interpolation we do at image->terrain algo					
 					+ Precision of adjusted terrain
 					+ Reset: maintains manually-adjusted terrain				
-			= FloatingSandbox/SettingsManager.h
+			+ FloatingSandbox/SettingsManager.h
 				+ BaseSetting specialization for OceanFloorTerrain
 					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
-				- Static factory maker
+				+ Static factory maker
 				+ Massage name to make it lower-case and underscore-separated
 			+ Run unit tests in Debug
 			= MainFrame:
@@ -1505,6 +1505,7 @@ Render:
 					+ Only enabled if "last played settings" exists
 				= Save last-played settings on exit
 					+ If UI Preferences say so
+					- Verify ocean floor
 				+ Fix crash
 				+ Fix Preferences Dialog
 			= SettingsDialog:
@@ -1514,14 +1515,13 @@ Render:
 					+ Background
 					+ Icon
 					+ Cancel in OnClose
-				= Hookup current settings
+				= Hookup settings
 					- Get rid of mGameController, mSoundController
 					- Make ReadSettings(Settings const & settings)
 				= Change standard bottom buttons
-					- Add "Restore Defaults", see paper
+					= Add "Restore Defaults", see paper
 				- New "Settings Management" tab:
 					- TODOHERE
-				- Hookup remaining settings
 				- "Restore Default Terrain" button
 				- Tooltips on buttons
 			- Make wind speed smoothed, quite long

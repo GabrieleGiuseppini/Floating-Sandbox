@@ -93,6 +93,7 @@ enum class GameSettings : size_t
     HeatOverlayTransparency,
     ShipFlameRenderMode,
     ShipFlameSizeAdjustment,
+	DrawHeatBlasterFlame,
 
     // Sound
     MasterEffectsVolume,

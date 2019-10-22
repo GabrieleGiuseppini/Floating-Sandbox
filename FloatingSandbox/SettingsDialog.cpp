@@ -48,7 +48,7 @@ SettingsDialog::SettingsDialog(
         _("Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR,
+        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | /* wxFRAME_FLOAT_ON_PARENT | */ wxFRAME_NO_TASKBAR, // See https://trac.wxwidgets.org/ticket/18535
         _T("Settings Window"));
 
     this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
@@ -267,18 +267,21 @@ void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::DoGenerateDebris, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::DoGenerateSparkles, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::DoGenerateAirBubbles, event.IsChecked());
     mAirBubbleDensitySlider->Enable(mGenerateAirBubblesCheckBox->IsChecked());
 
     OnLiveSettingsChanged();
@@ -287,60 +290,89 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & /*event*
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
 {
     mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());    
-
     OnLiveSettingsChanged();
 
     mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
 }
 
-void SettingsDialog::OnTextureOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    ReconciliateOceanRenderModeSettings();
+	if (mTextureOceanRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Texture);
+	}
+	else if (mDepthOceanRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Depth);
+	}
+	else
+	{
+		assert(mFlatOceanRenderModeRadioButton->GetValue());
+		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Flat);
+	}
 
-    OnLiveSettingsChanged();
+	OnLiveSettingsChanged();
+
+    ReconciliateOceanRenderModeSettings();
 }
 
 void SettingsDialog::OnTextureOceanChanged(wxCommandEvent & /*event*/)
 {
+	mLiveSettings.SetValue(GameSettings::TextureOceanTextureIndex, static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnDepthOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnDepthOceanColorStartChanged(wxColourPickerEvent & event)
 {
-    ReconciliateOceanRenderModeSettings();
+	auto color = event.GetColour();
 
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnDepthOceanColorStartChanged(wxColourPickerEvent & /*event*/)
-{
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnDepthOceanColorEndChanged(wxColourPickerEvent & /*event*/)
-{
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnFlatOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
-    ReconciliateOceanRenderModeSettings();
+	mLiveSettings.SetValue(
+		GameSettings::DepthOceanColorStart,
+		rgbColor(color.Red(), color.Green(), color.Blue()));
 
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & /*event*/)
+void SettingsDialog::OnDepthOceanColorEndChanged(wxColourPickerEvent & event)
 {
+	auto color = event.GetColour();
+
+	mLiveSettings.SetValue(
+		GameSettings::DepthOceanColorEnd,
+		rgbColor(color.Red(), color.Green(), color.Blue()));
+
+	OnLiveSettingsChanged();
+}
+
+void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & event)
+{
+	auto color = event.GetColour();
+
+	mLiveSettings.SetValue(
+		GameSettings::FlatOceanColor,
+		rgbColor(color.Red(), color.Green(), color.Blue()));
+
+	OnLiveSettingsChanged();
+}
+
+void SettingsDialog::OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event)
+{
+	mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    OnLiveSettingsChanged();
-}
+	if (mTextureLandRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Texture);
+	}
+	else
+	{
+		assert(mFlatLandRenderModeRadioButton->GetValue());
+		mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Flat);
+	}
 
-void SettingsDialog::OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
     ReconciliateLandRenderModeSettings();
 
     OnLiveSettingsChanged();
@@ -348,94 +380,177 @@ void SettingsDialog::OnTextureLandRenderModeRadioButtonClick(wxCommandEvent & /*
 
 void SettingsDialog::OnTextureLandChanged(wxCommandEvent & /*event*/)
 {
+	mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnFlatLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & event)
 {
-    ReconciliateLandRenderModeSettings();
+	auto color = event.GetColour();
 
-    OnLiveSettingsChanged();
-}
+	mLiveSettings.SetValue(
+		GameSettings::FlatLandColor,
+		rgbColor(color.Red(), color.Green(), color.Blue()));
 
-void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & /*event*/)
-{
-    OnLiveSettingsChanged();
+	OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & event)
 {
-    auto flatSkyColor = event.GetColour();
+    auto color = event.GetColour();
 
     mLiveSettings.SetValue(
         GameSettings::FlatSkyColor,
-        rgbColor(flatSkyColor.Red(), flatSkyColor.Green(), flatSkyColor.Blue()));
+        rgbColor(color.Red(), color.Green(), color.Blue()));
 
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnTextureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
+	if (mTextureShipRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Texture);
+	}
+	else
+	{
+		assert(mStructureShipRenderModeRadioButton->GetValue());
+		mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Structure);
+	}
+	
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnStructureShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::DrawHeatOverlay, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::DrawHeatBlasterFlame, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnMode1ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
+	if (mMode1ShipFlameRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode1);
+	}
+	else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
+	{
+		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode2);
+	}
+	else
+	{
+		assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
+		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::NoDraw);
+	}
+	
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
+	auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
+	if (0 == selectedDebugShipRenderMode)
+	{
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::None);
+	}
+	else if (1 == selectedDebugShipRenderMode)
+	{
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Wireframe);
+	}
+	else if (2 == selectedDebugShipRenderMode)
+	{
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Points);
+	}
+	else if (3 == selectedDebugShipRenderMode)
+	{
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Springs);
+	}
+	else if (4 == selectedDebugShipRenderMode)
+	{
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::EdgeSprings);
+	}
+	else
+	{
+		assert(5 == selectedDebugShipRenderMode);
+		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
+	}
+
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
+	auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
+	switch (selectedVectorFieldRenderMode)
+	{
+		case 0:
+		{
+			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::None);
+			break;
+		}
+
+		case 1:
+		{
+			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointVelocity);
+			break;
+		}
+
+		case 2:
+		{
+			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointForce);
+			break;
+		}
+
+		case 3:
+		{
+			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterVelocity);
+			break;
+		}
+
+		default:
+		{
+			assert(4 == selectedVectorFieldRenderMode);
+			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterMomentum);
+			break;
+		}
+	}
+
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::PlayBreakSounds, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::PlayStressSounds, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPlayWindSoundCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnPlayWindSoundCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::PlayWindSound, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & /*event*/)
+void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event)
 {
+	mLiveSettings.SetValue(GameSettings::PlaySinkingMusic, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
@@ -2203,7 +2318,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mTextureOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a static pattern.");
-                    mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureOceanRenderModeRadioButtonClick, this);
+                    mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBox, wxID_ANY, wxEmptyString,
@@ -2223,7 +2338,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Depth Gradient"),
                         wxDefaultPosition, wxDefaultSize);
                     mDepthOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a vertical color gradient.");
-                    mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnDepthOceanRenderModeRadioButtonClick, this);
+                    mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
@@ -2243,7 +2358,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
                     mFlatOceanRenderModeRadioButton->SetToolTip("Draws the ocean using a single color.");
-                    mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatOceanRenderModeRadioButtonClick, this);
+                    mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
@@ -2368,7 +2483,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mTextureLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static image.");
-                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureLandRenderModeRadioButtonClick, this);
+                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
                     landRenderModeBoxSizer2->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBox, wxID_ANY, wxEmptyString,
@@ -2386,7 +2501,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
                     mFlatLandRenderModeRadioButton->SetToolTip("Draws the ocean floor using a static color.");
-                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnFlatLandRenderModeRadioButtonClick, this);
+                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
                     landRenderModeBoxSizer2->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBox, wxID_ANY);
@@ -2497,19 +2612,19 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 1"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mMode1ShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
-                    mMode1ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnMode1ShipFlameRenderModeRadioButtonClick, this);
+                    mMode1ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode1ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mMode2ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 2"),
                         wxDefaultPosition, wxDefaultSize);
                     mMode2ShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
-                    mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick, this);
+                    mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode2ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mNoDrawShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Not Drawn"),
                         wxDefaultPosition, wxDefaultSize);
                     mNoDrawShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
-                    mNoDrawShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnMode2ShipFlameRenderModeRadioButtonClick, this);
+                    mNoDrawShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mNoDrawShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     fireRenderModeBoxSizer1->Add(fireRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
@@ -2630,13 +2745,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mTextureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mTextureShipRenderModeRadioButton->SetToolTip("Draws the ship using its texture image.");
-                    mTextureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnTextureShipRenderModeRadioButtonClick, this);
+                    mTextureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipRenderModeRadioButtonClick, this);
                     shipRenderModeBoxSizer2->Add(mTextureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mStructureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Structure"),
                         wxDefaultPosition, wxDefaultSize);
                     mStructureShipRenderModeRadioButton->SetToolTip("Draws the ship using its structure.");
-                    mStructureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnStructureShipRenderModeRadioButtonClick, this);
+                    mStructureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipRenderModeRadioButtonClick, this);
                     shipRenderModeBoxSizer2->Add(mStructureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     shipRenderModeBoxSizer1->Add(shipRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
