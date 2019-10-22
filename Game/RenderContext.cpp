@@ -139,7 +139,7 @@ RenderContext::RenderContext(
     // Initialize text render context
     //
 
-    mTextRenderContext = std::make_unique<TextRenderContext>(
+    mTextRenderContext = std::make_shared<TextRenderContext>(
         resourceLoader,
         *(mShaderManager.get()),
         mViewModel.GetCanvasWidth(),

@@ -978,17 +978,31 @@ Render:
 	- Different materials have different rotting speed
 		- For instance, Cardboard would soften and break apart in water within a minute or so
 
-	- StatusText/TextLayer replacement (*)
-		- Slot-ification of text in text layer, and/or rotating slots
-		- Replace GameLib::StatusText with new TextLayer class
+	= StatusText/TextLayer replacement (*)
+		! Slot-ification of text in text layer, with exhausted slots scrolling up
+		= Replace GameLib::StatusText with new TextLayer class
+			+ Owned by GameController
+			- Talks directly to TextRenderContext (see below)
 			- Two sets of methods:
 				- 1: State-modifying:
-					- TextLayer::SetStatusText/...other StatusText funcs...
-					- TextLayer::PublishText(something for coords, text)
+					+ TextLayer::SetStatusTextes()/Enable
+					- TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
 						- Standard fade-in/stay/fade-out
 						- Handles slots and their rotation
-				- 2: void Render(RenderContext &)
-					- Does things
+				- 2: void Update()
+					- Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
+		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
+			+ Given by GameController, who takes it from RenderContext
+			! RenderContext will forfait wrapping of text API's
+		- TextRenderContext cares about single-line texts only
+			- Make sure multiple-line support is not for perf
+			
+		- GameController:
+			- Use mTextLayer for tsunami
+				- Remove RenderContext's forwarding of API's
+			+ Nuke StatusText
+				+ Also source files
+
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 

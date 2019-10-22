@@ -16,7 +16,7 @@
 #include "RenderContext.h"
 #include "ResourceLoader.h"
 #include "ShipMetadata.h"
-#include "StatusText.h"
+#include "TextLayer.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -538,8 +538,8 @@ private:
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
-        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::unique_ptr<StatusText> statusText,
+        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,        
+		std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader);
 
@@ -614,7 +614,7 @@ private:
     std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<ResourceLoader> mResourceLoader;
-    std::shared_ptr<StatusText> mStatusText;
+	std::shared_ptr<TextLayer> mTextLayer;
 
 
     //

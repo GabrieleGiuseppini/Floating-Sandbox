@@ -32,8 +32,8 @@ set  (GAME_SOURCES
 	ShipMetadata.h
 	ShipPreview.cpp
 	ShipPreview.h
-	StatusText.cpp
-	StatusText.h)
+	TextLayer.cpp
+	TextLayer.h)
 
 set  (PHYSICS_SOURCES
 	AntiMatterBomb.h

@@ -49,6 +49,16 @@ public:
 
 public:
 
+	//
+	// Components
+	//
+
+	std::shared_ptr<TextRenderContext> GetTextRenderContext() const
+	{
+		return mTextRenderContext;
+	}
+
+
     //
     // World and view properties
     //
@@ -477,6 +487,7 @@ public:
         return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
     }
 
+
     //
     // Statistics
     //
@@ -502,6 +513,10 @@ public:
     RgbImageData TakeScreenshot();
 
 public:
+
+	//////////////////////////////////////////////////////////////////
+	// Rendering
+	//////////////////////////////////////////////////////////////////
 
     void RenderStart();
 
@@ -1678,7 +1693,7 @@ private:
 
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::unique_ptr<UploadedTextureManager> mUploadedTextureManager;
-    std::unique_ptr<TextRenderContext> mTextRenderContext;
+    std::shared_ptr<TextRenderContext> mTextRenderContext;
 
     //
     // The current render parameters

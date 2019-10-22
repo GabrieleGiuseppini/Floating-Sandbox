@@ -1,31 +1,39 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2018-10-13
+* Created:              2019-10-23
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
-#include "RenderContext.h"
+#include "TextRenderContext.h"
 
 #include <GameCore/GameTypes.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
-class StatusText
+class TextLayer
 {
 public:
 
-    StatusText(
+	TextLayer(
+		std::shared_ptr<Render::TextRenderContext> textRenderContext,
         bool isStatusTextEnabled,
         bool isExtendedStatusTextEnabled);
 
-    void SetStatusTextEnabled(bool isEnabled);
+    void SetStatusTextEnabled(bool isEnabled)
+	{
+		mIsStatusTextEnabled = isEnabled;
+	}
 
-    void SetExtendedStatusTextEnabled(bool isEnabled);
+	void SetExtendedStatusTextEnabled(bool isEnabled)
+	{
+		mIsExtendedStatusTextEnabled = isEnabled;
+	}
 
-    void SetText(
+    void SetStatusTexts(
         float immediateFps,
         float averageFps,
         std::chrono::duration<float> elapsedGameSeconds,
@@ -36,13 +44,16 @@ public:
         float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
 
-    void Render(Render::RenderContext & renderContext);
+    void Update(float now);
 
 private:
 
-    //
-    // Current state
-    //
+	std::shared_ptr<Render::TextRenderContext> mTextRenderContext;
+
+
+	//
+	// Status text state
+	//
 
     bool mIsStatusTextEnabled;
     bool mIsExtendedStatusTextEnabled;

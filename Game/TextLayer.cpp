@@ -1,36 +1,29 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2018-10-13
+* Created:              2019-10-23
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "StatusText.h"
+#include "TextLayer.h"
 
 #include <cassert>
 #include <iomanip>
 #include <sstream>
 
-StatusText::StatusText(
+TextLayer::TextLayer(
+	std::shared_ptr<Render::TextRenderContext> textRenderContext,
     bool isStatusTextEnabled,
     bool isExtendedStatusTextEnabled)
-    : mIsStatusTextEnabled(isStatusTextEnabled)
-    , mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
+    : mTextRenderContext(std::move(textRenderContext))
+	// StatusText state
+	, mIsStatusTextEnabled(isStatusTextEnabled)
+	, mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
     , mTextLines()
     , mTextHandle(NoneRenderedTextHandle)
     , mIsTextDirty(false)
 {
 }
 
-void StatusText::SetStatusTextEnabled(bool isEnabled)
-{
-    mIsStatusTextEnabled = isEnabled;
-}
-
-void StatusText::SetExtendedStatusTextEnabled(bool isEnabled)
-{
-    mIsExtendedStatusTextEnabled = isEnabled;
-}
-
-void StatusText::SetText(
+void TextLayer::SetStatusTexts(
     float immediateFps,
     float averageFps,
     std::chrono::duration<float> elapsedGameSeconds,
@@ -97,7 +90,7 @@ void StatusText::SetText(
     mIsTextDirty = true;
 }
 
-void StatusText::Render(Render::RenderContext & renderContext)
+void TextLayer::Update(float /*now*/)
 {
     // Check whether we need to flip the state of the status text
     if (mIsStatusTextEnabled || mIsExtendedStatusTextEnabled)
@@ -105,7 +98,7 @@ void StatusText::Render(Render::RenderContext & renderContext)
         if (NoneRenderedTextHandle == mTextHandle)
         {
             // Create status text
-            mTextHandle = renderContext.AddText(
+            mTextHandle = mTextRenderContext->AddText(
                 mTextLines,
                 TextPositionType::TopLeft,
                 1.0f,
@@ -114,7 +107,7 @@ void StatusText::Render(Render::RenderContext & renderContext)
         else if (mIsTextDirty)
         {
             // Update status text
-            renderContext.UpdateText(
+			mTextRenderContext->UpdateText(
                 mTextHandle,
                 mTextLines,
                 1.0f);
@@ -125,7 +118,7 @@ void StatusText::Render(Render::RenderContext & renderContext)
     else if (NoneRenderedTextHandle != mTextHandle)
     {
         // Turn off status text
-        renderContext.ClearText(mTextHandle);
+		mTextRenderContext->ClearText(mTextHandle);
         mTextHandle = NoneRenderedTextHandle;
     }
 }

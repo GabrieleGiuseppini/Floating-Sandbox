@@ -29,10 +29,11 @@ std::unique_ptr<GameController> GameController::Create(
             progressCallback(0.9f * progress, message);
         });
 
-    // Create status text
-    std::unique_ptr<StatusText> statusText = std::make_unique<StatusText>(
-        isStatusTextEnabled,
-        isExtendedStatusTextEnabled);
+	// Create text layer
+	std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(
+		renderContext->GetTextRenderContext(),
+		isStatusTextEnabled,
+		isExtendedStatusTextEnabled);
 
     //
     // Create controller
@@ -43,7 +44,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
-            std::move(statusText),
+			std::move(textLayer),
             std::move(materialDatabase),
             resourceLoader));
 }
@@ -52,7 +53,7 @@ GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::function<void()> swapRenderBuffersFunction,
     std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::unique_ptr<StatusText> statusText,
+	std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
     std::shared_ptr<ResourceLoader> resourceLoader)
     // State
@@ -73,7 +74,7 @@ GameController::GameController(
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mResourceLoader(std::move(resourceLoader))
-    , mStatusText(std::move(statusText))
+    , mTextLayer(std::move(textLayer))
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
@@ -455,14 +456,14 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::SetStatusTextEnabled(bool isEnabled)
 {
-    assert(!!mStatusText);
-    mStatusText->SetStatusTextEnabled(isEnabled);
+    assert(!!mTextLayer);
+	mTextLayer->SetStatusTextEnabled(isEnabled);
 }
 
 void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
 {
-    assert(!!mStatusText);
-    mStatusText->SetExtendedStatusTextEnabled(isEnabled);
+    assert(!!mTextLayer);
+	mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
 float GameController::GetCurrentSimulationTime() const
@@ -1004,6 +1005,10 @@ void GameController::InternalUpdate()
 
     // Update state machines
     UpdateStateMachines(mWorld->GetCurrentSimulationTime());
+
+	// Update text layer
+    assert(!!mTextLayer);
+	mTextLayer->Update(now);
 }
 
 void GameController::InternalRender()
@@ -1058,13 +1063,6 @@ void GameController::InternalRender()
 
         mFireExtinguisherSprayToRender.reset();
     }
-
-    //
-    // Render status text
-    //
-
-    assert(!!mStatusText);
-    mStatusText->Render(*mRenderContext);
 
 
     //
@@ -1155,8 +1153,8 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
 
     // Update status text
-    assert(!!mStatusText);
-    mStatusText->SetText(
+    assert(!!mTextLayer);
+    mTextLayer->SetStatusTexts(
         lastFps,
         totalFps,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
