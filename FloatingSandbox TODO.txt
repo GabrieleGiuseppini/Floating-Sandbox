@@ -1501,13 +1501,13 @@ Render:
 				+ Static factory maker
 				+ Massage name to make it lower-case and underscore-separated
 			+ Run unit tests in Debug
-			= MainFrame:
+			+ MainFrame:
 				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
 				+ Menu: "Reload last played settings"
 					+ Only enabled if "last played settings" exists
-				= Save last-played settings on exit
+				+ Save last-played settings on exit
 					+ If UI Preferences say so
-					- Verify ocean floor
+					+ Verify ocean floor
 				+ Fix crash
 				+ Fix Preferences Dialog
 			= SettingsDialog:
@@ -1519,15 +1519,15 @@ Render:
 					+ Cancel in OnClose
 				+ Hookup settings
 					+ Make ReadSettings(Settings const & settings)
-				- Get rid of mSoundController
-				- Take IGameControllerSettingsOptions					
+				+ Get rid of mSoundController
+				+ Take IGameControllerSettingsOptions					
 				+ Change standard bottom buttons
 					+ Add "Restore Defaults", see paper
 				- New "Settings Management" tab:
 					- TODOHERE
 				- "Restore Default Terrain" button
 				+ Tooltips on buttons
-			- Make wind speed smoothed, quite long
+			- Make wind speed smoothed (@ GameController), quite long
 			- Visual notification when last settings loaded
 				- 1) Need boolean returned from SettingsManager
 				- 2) Do StatusText replacement

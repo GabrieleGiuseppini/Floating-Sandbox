@@ -1426,7 +1426,6 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             mSettingsManager,
             mGameController,
-            mSoundController,
             *mResourceLoader);
     }
 

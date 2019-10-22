@@ -7,7 +7,7 @@
 
 #include "SoundController.h"
 
-#include <Game/IGameController.h>
+#include <Game/IGameControllerSettings.h>
 
 #include <GameCore/Settings.h>
 
@@ -112,7 +112,7 @@ class SettingsManager final : public BaseSettingsManager<GameSettings>
 public:
 
     SettingsManager(
-        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<IGameControllerSettings> gameControllerSettings,
         std::shared_ptr<SoundController> soundController,
         std::filesystem::path const & rootSystemSettingsDirectoryPath,
         std::filesystem::path const & rootUserSettingsDirectoryPath);
@@ -120,6 +120,6 @@ public:
 private:
 
     static BaseSettingsManagerFactory MakeSettingsFactory(
-        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<IGameControllerSettings> gameControllerSettings,
         std::shared_ptr<SoundController> soundController);
 };

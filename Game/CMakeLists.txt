@@ -12,6 +12,8 @@ set  (GAME_SOURCES
 	GameParameters.cpp
 	GameParameters.h
 	IGameController.h
+	IGameControllerSettings.h
+	IGameControllerSettingsOptions.h
 	ImageFileTools.cpp
 	ImageFileTools.h
 	Materials.cpp

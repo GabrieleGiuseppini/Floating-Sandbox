@@ -14,8 +14,8 @@ std::string MangleSettingName(std::string && settingName);
     factory.AddSetting<type>(                           \
         GameSettings::##name,                           \
         MangleSettingName(#name),                       \
-        [gameController]() -> type { return gameController->Get##name(); }, \
-        [gameController](auto const & v) { gameController->Set##name(v); });
+        [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
+        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
@@ -25,7 +25,7 @@ std::string MangleSettingName(std::string && settingName);
         [soundController](auto const & v) { soundController->Set##name(v); });
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
-    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<IGameControllerSettings> gameControllerSettings,
     std::shared_ptr<SoundController> soundController)
 {
     BaseSettingsManagerFactory factory;
@@ -125,12 +125,12 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 }
 
 SettingsManager::SettingsManager(
-    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<IGameControllerSettings> gameControllerSettings,
     std::shared_ptr<SoundController> soundController,
     std::filesystem::path const & rootSystemSettingsDirectoryPath,
     std::filesystem::path const & rootUserSettingsDirectoryPath)
     : BaseSettingsManager<GameSettings>(
-        MakeSettingsFactory(gameController, soundController),
+        MakeSettingsFactory(gameControllerSettings, soundController),
         rootSystemSettingsDirectoryPath,
         rootUserSettingsDirectoryPath)
 {}

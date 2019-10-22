@@ -9,6 +9,8 @@
 #include "GameEventHandlers.h"
 #include "GameParameters.h"
 #include "IGameController.h"
+#include "IGameControllerSettings.h"
+#include "IGameControllerSettingsOptions.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -39,6 +41,8 @@
  */
 class GameController final
     : public IGameController
+	, public IGameControllerSettings
+	, public IGameControllerSettingsOptions
     , public IWavePhenomenaGameEventHandler
 {
 public:
@@ -180,6 +184,17 @@ public:
     void AdjustZoom(float amount) override;
     void ResetZoom() override;
     vec2f ScreenToWorld(vec2f const & screenCoordinates) const override;
+
+	//
+	// Interaction parameters
+	//
+
+	bool GetShowTsunamiNotifications() const override { return mShowTsunamiNotifications; }
+	void SetShowTsunamiNotifications(bool value) override { mShowTsunamiNotifications = value; }
+
+	/////////////////////////////////////////////////////////
+	// IGameControllerSettings and IGameControllerSettingsOptions
+	/////////////////////////////////////////////////////////
 
     //
     // Game parameters
@@ -514,9 +529,6 @@ public:
     //
     // Interaction parameters
     //
-
-    bool GetShowTsunamiNotifications() const override { return mShowTsunamiNotifications; }
-    void SetShowTsunamiNotifications(bool value) override { mShowTsunamiNotifications = value; }
 
     bool GetDrawHeatBlasterFlame() const override { return mDrawHeatBlasterFlame; }
     void SetDrawHeatBlasterFlame(bool value) override { mDrawHeatBlasterFlame = value; }

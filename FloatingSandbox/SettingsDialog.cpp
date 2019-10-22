@@ -31,13 +31,11 @@ static int constexpr CellBorder = 8;
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<SettingsManager> settingsManager,
-	std::shared_ptr<IGameController> gameController,
-	std::shared_ptr<SoundController> soundController,
+	std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
     ResourceLoader const & resourceLoader)
     : mParent(parent)
     , mSettingsManager(std::move(settingsManager))
-	, mGameController(std::move(gameController))
-	, mSoundController(std::move(soundController))
+	, mGameControllerSettingsOptions(std::move(gameControllerSettingsOptions))
     // State
     , mLiveSettings(mSettingsManager->MakeSettings())
     , mCheckpointSettings(mSettingsManager->MakeSettings())
@@ -698,8 +696,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     },
                     std::make_unique<FixedTickSliderCore>(
                         0.5f,
-                        mGameController->GetMinNumMechanicalDynamicsIterationsAdjustment(),
-                        mGameController->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+                        mGameControllerSettingsOptions->GetMinNumMechanicalDynamicsIterationsAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
                     mWarningIcon.get());
 
                 mechanicsSizer->Add(
@@ -724,9 +722,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinSpringStrengthAdjustment(),
+                        mGameControllerSettingsOptions->GetMinSpringStrengthAdjustment(),
                         1.0f,
-                        mGameController->GetMaxSpringStrengthAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxSpringStrengthAdjustment()));
 
                 mechanicsSizer->Add(
                     mStrengthSlider,
@@ -750,9 +748,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinRotAcceler8r(),
+                        mGameControllerSettingsOptions->GetMinRotAcceler8r(),
                         1.0f,
-                        mGameController->GetMaxRotAcceler8r()));
+                        mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
 
                 mechanicsSizer->Add(
                     mRotAcceler8rSlider,
@@ -802,9 +800,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinLuminiscenceAdjustment(),
+                        mGameControllerSettingsOptions->GetMinLuminiscenceAdjustment(),
                         1.0f,
-                        mGameController->GetMaxLuminiscenceAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxLuminiscenceAdjustment()));
 
                 lightsSizer->Add(
                     mLuminiscenceSlider,
@@ -828,8 +826,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinLightSpreadAdjustment(),
-                        mGameController->GetMaxLightSpreadAdjustment()));
+                        mGameControllerSettingsOptions->GetMinLightSpreadAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxLightSpreadAdjustment()));
 
                 lightsSizer->Add(
                     mLightSpreadSlider,
@@ -879,8 +877,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterDensityAdjustment(),
-                        mGameController->GetMaxWaterDensityAdjustment()));
+                        mGameControllerSettingsOptions->GetMinWaterDensityAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterDensityAdjustment()));
 
                 fluidsSizer->Add(
                     mWaterDensitySlider,
@@ -904,9 +902,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinWaterDragAdjustment(),
+                        mGameControllerSettingsOptions->GetMinWaterDragAdjustment(),
                         1.0f,
-                        mGameController->GetMaxWaterDragAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxWaterDragAdjustment()));
 
                 fluidsSizer->Add(
                     mWaterDragSlider,
@@ -930,8 +928,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterIntakeAdjustment(),
-                        mGameController->GetMaxWaterIntakeAdjustment()));
+                        mGameControllerSettingsOptions->GetMinWaterIntakeAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterIntakeAdjustment()));
 
                 fluidsSizer->Add(
                     mWaterIntakeSlider,
@@ -955,8 +953,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterCrazyness(),
-                        mGameController->GetMaxWaterCrazyness()));
+                        mGameControllerSettingsOptions->GetMinWaterCrazyness(),
+                        mGameControllerSettingsOptions->GetMaxWaterCrazyness()));
 
                 fluidsSizer->Add(
                     mWaterCrazynessSlider,
@@ -980,8 +978,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterDiffusionSpeedAdjustment(),
-                        mGameController->GetMaxWaterDiffusionSpeedAdjustment()));
+                        mGameControllerSettingsOptions->GetMinWaterDiffusionSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterDiffusionSpeedAdjustment()));
 
                 fluidsSizer->Add(
                     mWaterDiffusionSpeedSlider,
@@ -1041,9 +1039,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinThermalConductivityAdjustment(),
+                        mGameControllerSettingsOptions->GetMinThermalConductivityAdjustment(),
                         1.0f,
-                        mGameController->GetMaxThermalConductivityAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxThermalConductivityAdjustment()));
 
                 physicsSizer->Add(
                     mThermalConductivityAdjustmentSlider,
@@ -1067,9 +1065,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinHeatDissipationAdjustment(),
+                        mGameControllerSettingsOptions->GetMinHeatDissipationAdjustment(),
                         1.0f,
-                        mGameController->GetMaxHeatDissipationAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxHeatDissipationAdjustment()));
 
                 physicsSizer->Add(
                     mHeatDissipationAdjustmentSlider,
@@ -1093,9 +1091,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinIgnitionTemperatureAdjustment(),
+                        mGameControllerSettingsOptions->GetMinIgnitionTemperatureAdjustment(),
                         1.0f,
-                        mGameController->GetMaxIgnitionTemperatureAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxIgnitionTemperatureAdjustment()));
 
                 physicsSizer->Add(
                     mIgnitionTemperatureAdjustmentSlider,
@@ -1119,9 +1117,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinMeltingTemperatureAdjustment(),
+                        mGameControllerSettingsOptions->GetMinMeltingTemperatureAdjustment(),
                         1.0f,
-                        mGameController->GetMaxMeltingTemperatureAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxMeltingTemperatureAdjustment()));
 
                 physicsSizer->Add(
                     mMeltingTemperatureAdjustmentSlider,
@@ -1145,9 +1143,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinCombustionSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMinCombustionSpeedAdjustment(),
                         1.0f,
-                        mGameController->GetMaxCombustionSpeedAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxCombustionSpeedAdjustment()));
 
                 physicsSizer->Add(
                     mCombustionSpeedAdjustmentSlider,
@@ -1171,9 +1169,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinCombustionHeatAdjustment(),
+                        mGameControllerSettingsOptions->GetMinCombustionHeatAdjustment(),
                         1.0f,
-                        mGameController->GetMaxCombustionHeatAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxCombustionHeatAdjustment()));
 
                 physicsSizer->Add(
                     mCombustionHeatAdjustmentSlider,
@@ -1222,8 +1220,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinAirTemperature(),
-                        mGameController->GetMaxAirTemperature()));
+                        mGameControllerSettingsOptions->GetMinAirTemperature(),
+                        mGameControllerSettingsOptions->GetMaxAirTemperature()));
 
                 worldSizer->Add(
                     mAirTemperatureSlider,
@@ -1247,8 +1245,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterTemperature(),
-                        mGameController->GetMaxWaterTemperature()));
+                        mGameControllerSettingsOptions->GetMinWaterTemperature(),
+                        mGameControllerSettingsOptions->GetMaxWaterTemperature()));
 
                 worldSizer->Add(
                     mWaterTemperatureSlider,
@@ -1295,9 +1293,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinElectricalElementHeatProducedAdjustment(),
+                        mGameControllerSettingsOptions->GetMinElectricalElementHeatProducedAdjustment(),
                         1.0f,
-                        mGameController->GetMaxElectricalElementHeatProducedAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxElectricalElementHeatProducedAdjustment()));
 
                 electricalSizer->Add(
                     mElectricalElementHeatProducedAdjustmentSlider,
@@ -1344,8 +1342,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinHeatBlasterRadius(),
-                        mGameController->GetMaxHeatBlasterRadius()));
+                        mGameControllerSettingsOptions->GetMinHeatBlasterRadius(),
+                        mGameControllerSettingsOptions->GetMaxHeatBlasterRadius()));
 
                 heatBlasterSizer->Add(
                     mHeatBlasterRadiusSlider,
@@ -1369,9 +1367,9 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinHeatBlasterHeatFlow(),
+                        mGameControllerSettingsOptions->GetMinHeatBlasterHeatFlow(),
                         2000.0f,
-                        mGameController->GetMaxHeatBlasterHeatFlow()));
+                        mGameControllerSettingsOptions->GetMaxHeatBlasterHeatFlow()));
 
                 heatBlasterSizer->Add(
                     mHeatBlasterHeatFlowSlider,
@@ -1418,8 +1416,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameController->GetMinMaxBurningParticles(),
-                        mGameController->GetMaxMaxBurningParticles()),
+                        mGameControllerSettingsOptions->GetMinMaxBurningParticles(),
+                        mGameControllerSettingsOptions->GetMaxMaxBurningParticles()),
                     mWarningIcon.get());
 
                 fireSizer->Add(
@@ -1480,9 +1478,9 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinSeaDepth(),
+                        mGameControllerSettingsOptions->GetMinSeaDepth(),
                         300.0f,
-                        mGameController->GetMaxSeaDepth()));
+                        mGameControllerSettingsOptions->GetMaxSeaDepth()));
 
                 oceanSizer->Add(
                     mOceanDepthSlider,
@@ -1506,8 +1504,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinOceanFloorBumpiness(),
-                        mGameController->GetMaxOceanFloorBumpiness()));
+                        mGameControllerSettingsOptions->GetMinOceanFloorBumpiness(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorBumpiness()));
 
                 oceanSizer->Add(
                     mOceanFloorBumpinessSlider,
@@ -1531,9 +1529,9 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinOceanFloorDetailAmplification(),
+                        mGameControllerSettingsOptions->GetMinOceanFloorDetailAmplification(),
                         10.0f,
-                        mGameController->GetMaxOceanFloorDetailAmplification()));
+                        mGameControllerSettingsOptions->GetMaxOceanFloorDetailAmplification()));
 
                 oceanSizer->Add(
                     mOceanFloorDetailAmplificationSlider,
@@ -1584,8 +1582,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameController->GetMinNumberOfStars(),
-                        mGameController->GetMaxNumberOfStars()));
+                        mGameControllerSettingsOptions->GetMinNumberOfStars(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfStars()));
 
                 skySizer->Add(
                     mNumberOfStarsSlider,
@@ -1609,8 +1607,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameController->GetMinNumberOfClouds(),
-                        mGameController->GetMaxNumberOfClouds()));
+                        mGameControllerSettingsOptions->GetMinNumberOfClouds(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfClouds()));
 
                 skySizer->Add(
                     mNumberOfCloudsSlider,
@@ -1671,8 +1669,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWindSpeedBase(),
-                        mGameController->GetMaxWindSpeedBase()));
+                        mGameControllerSettingsOptions->GetMinWindSpeedBase(),
+                        mGameControllerSettingsOptions->GetMaxWindSpeedBase()));
 
                 windSizer->Add(
                     mWindSpeedBaseSlider,
@@ -1709,8 +1707,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                             this->OnLiveSettingsChanged();
                         },
                         std::make_unique<LinearSliderCore>(
-                            mGameController->GetMinWindSpeedMaxFactor(),
-                            mGameController->GetMaxWindSpeedMaxFactor()));
+                            mGameControllerSettingsOptions->GetMinWindSpeedMaxFactor(),
+                            mGameControllerSettingsOptions->GetMaxWindSpeedMaxFactor()));
 
                     windModulationBoxSizer->Add(mWindGustAmplitudeSlider, 1, wxEXPAND, 0);
                 }
@@ -1763,8 +1761,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinBasalWaveHeightAdjustment(),
-                        mGameController->GetMaxBasalWaveHeightAdjustment()));
+                        mGameControllerSettingsOptions->GetMinBasalWaveHeightAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBasalWaveHeightAdjustment()));
 
                 basalWavesSizer->Add(
                     mBasalWaveHeightAdjustmentSlider,
@@ -1788,9 +1786,9 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinBasalWaveLengthAdjustment(),
+                        mGameControllerSettingsOptions->GetMinBasalWaveLengthAdjustment(),
                         1.0f,
-                        mGameController->GetMaxBasalWaveLengthAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxBasalWaveLengthAdjustment()));
 
                 basalWavesSizer->Add(
                     mBasalWaveLengthAdjustmentSlider,
@@ -1814,8 +1812,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinBasalWaveSpeedAdjustment(),
-                        mGameController->GetMaxBasalWaveSpeedAdjustment()));
+                        mGameControllerSettingsOptions->GetMinBasalWaveSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBasalWaveSpeedAdjustment()));
 
                 basalWavesSizer->Add(
                     mBasalWaveSpeedAdjustmentSlider,
@@ -1865,8 +1863,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinTsunamiRate(),
-                        mGameController->GetMaxTsunamiRate()));
+                        mGameControllerSettingsOptions->GetMinTsunamiRate(),
+                        mGameControllerSettingsOptions->GetMaxTsunamiRate()));
 
                 abnormalWavesSizer->Add(
                     mTsunamiRateSlider,
@@ -1890,8 +1888,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRogueWaveRate(),
-                        mGameController->GetMaxRogueWaveRate()));
+                        mGameControllerSettingsOptions->GetMinRogueWaveRate(),
+                        mGameControllerSettingsOptions->GetMaxRogueWaveRate()));
 
                 abnormalWavesSizer->Add(
                     mRogueWaveRateSlider,
@@ -1952,8 +1950,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinDestroyRadius(),
-                        mGameController->GetMaxDestroyRadius()));
+                        mGameControllerSettingsOptions->GetMinDestroyRadius(),
+                        mGameControllerSettingsOptions->GetMaxDestroyRadius()));
 
                 toolsSizer->Add(
                     mDestroyRadiusSlider,
@@ -1977,8 +1975,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinBombBlastRadius(),
-                        mGameController->GetMaxBombBlastRadius()));
+                        mGameControllerSettingsOptions->GetMinBombBlastRadius(),
+                        mGameControllerSettingsOptions->GetMaxBombBlastRadius()));
 
                 toolsSizer->Add(
                     mBombBlastRadiusSlider,
@@ -2002,9 +2000,9 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameController->GetMinBombBlastHeat(),
+                        mGameControllerSettingsOptions->GetMinBombBlastHeat(),
                         40000.0f,
-                        mGameController->GetMaxBombBlastHeat()));
+                        mGameControllerSettingsOptions->GetMaxBombBlastHeat()));
 
                 toolsSizer->Add(
                     mBombBlastHeatSlider,
@@ -2028,8 +2026,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinAntiMatterBombImplosionStrength(),
-                        mGameController->GetMaxAntiMatterBombImplosionStrength()));
+                        mGameControllerSettingsOptions->GetMinAntiMatterBombImplosionStrength(),
+                        mGameControllerSettingsOptions->GetMaxAntiMatterBombImplosionStrength()));
 
                 toolsSizer->Add(
                     mAntiMatterBombImplosionStrengthSlider,
@@ -2053,8 +2051,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinFloodRadius(),
-                        mGameController->GetMaxFloodRadius()));
+                        mGameControllerSettingsOptions->GetMinFloodRadius(),
+                        mGameControllerSettingsOptions->GetMaxFloodRadius()));
 
                 toolsSizer->Add(
                     mFloodRadiusSlider,
@@ -2078,8 +2076,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinFloodQuantity(),
-                        mGameController->GetMaxFloodQuantity()));
+                        mGameControllerSettingsOptions->GetMinFloodQuantity(),
+                        mGameControllerSettingsOptions->GetMaxFloodQuantity()));
 
                 toolsSizer->Add(
                     mFloodQuantitySlider,
@@ -2103,8 +2101,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRepairRadius(),
-                        mGameController->GetMaxRepairRadius()));
+                        mGameControllerSettingsOptions->GetMinRepairRadius(),
+                        mGameControllerSettingsOptions->GetMaxRepairRadius()));
 
                 toolsSizer->Add(
                     mRepairRadiusSlider,
@@ -2128,8 +2126,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinRepairSpeedAdjustment(),
-                        mGameController->GetMaxRepairSpeedAdjustment()));
+                        mGameControllerSettingsOptions->GetMinRepairSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxRepairSpeedAdjustment()));
 
                 toolsSizer->Add(
                     mRepairSpeedAdjustmentSlider,
@@ -2214,8 +2212,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                             this->OnLiveSettingsChanged();
                         },
                         std::make_unique<LinearSliderCore>(
-                            mGameController->GetMinAirBubblesDensity(),
-                            mGameController->GetMaxAirBubblesDensity()));
+                            mGameControllerSettingsOptions->GetMinAirBubblesDensity(),
+                            mGameControllerSettingsOptions->GetMaxAirBubblesDensity()));
 
                     airBubblesBoxSizer->Add(mAirBubbleDensitySlider, 1, wxEXPAND, 0);
                 }
@@ -2314,7 +2312,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBox, wxID_ANY, wxEmptyString,
                         wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_READONLY);
-                    for (auto const & entry : mGameController->GetTextureOceanAvailableThumbnails())
+                    for (auto const & entry : mGameControllerSettingsOptions->GetTextureOceanAvailableThumbnails())
                     {
                         mTextureOceanComboBox->Append(
                             entry.first,
@@ -2477,7 +2475,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBox, wxID_ANY, wxEmptyString,
                         wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
-                    for (auto const & entry : mGameController->GetTextureLandAvailableThumbnails())
+                    for (auto const & entry : mGameControllerSettingsOptions->GetTextureLandAvailableThumbnails())
                     {
                         mTextureLandComboBox->Append(
                             entry.first,
@@ -2683,8 +2681,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinShipFlameSizeAdjustment(),
-                        mGameController->GetMaxShipFlameSizeAdjustment()));
+                        mGameControllerSettingsOptions->GetMinShipFlameSizeAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxShipFlameSizeAdjustment()));
 
                 renderSizer->Add(
                     mShipFlameSizeAdjustmentSlider,
@@ -2832,8 +2830,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameController->GetMinWaterLevelOfDetail(),
-                        mGameController->GetMaxWaterLevelOfDetail()));
+                        mGameControllerSettingsOptions->GetMinWaterLevelOfDetail(),
+                        mGameControllerSettingsOptions->GetMaxWaterLevelOfDetail()));
 
                 waterSizer->Add(
                     mWaterLevelOfDetailSlider,
@@ -2976,8 +2974,8 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
             this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinSpringStiffnessAdjustment(),
-            mGameController->GetMaxSpringStiffnessAdjustment()),
+            mGameControllerSettingsOptions->GetMinSpringStiffnessAdjustment(),
+            mGameControllerSettingsOptions->GetMaxSpringStiffnessAdjustment()),
         mWarningIcon.get());
 
     controlsSizer->Add(mSpringStiffnessSlider, 1, wxALL, SliderBorder);
@@ -2997,8 +2995,8 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
             this->OnLiveSettingsChanged();
         },
         std::make_unique<LinearSliderCore>(
-            mGameController->GetMinSpringDampingAdjustment(),
-            mGameController->GetMaxSpringDampingAdjustment()),
+            mGameControllerSettingsOptions->GetMinSpringDampingAdjustment(),
+            mGameControllerSettingsOptions->GetMaxSpringDampingAdjustment()),
             mWarningIcon.get());
 
     controlsSizer->Add(mSpringDampingSlider, 1, wxALL, SliderBorder);

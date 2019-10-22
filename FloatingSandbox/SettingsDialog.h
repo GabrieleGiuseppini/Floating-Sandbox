@@ -8,6 +8,7 @@
 #include "SettingsManager.h"
 #include "SliderControl.h"
 
+#include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
@@ -26,8 +27,7 @@ public:
     SettingsDialog(
         wxWindow * parent,
         std::shared_ptr<SettingsManager> settingsManager,
-		std::shared_ptr<IGameController> gameController,  // Just for mix and max values, and display quantities
-		std::shared_ptr<SoundController> soundController, // Just for mix and max values, and display quantities
+		std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
         ResourceLoader const & resourceLoader);
 
     virtual ~SettingsDialog();
@@ -221,8 +221,7 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<SettingsManager> mSettingsManager;
-	std::shared_ptr<IGameController> mGameController; // Just for mix and max values, and display quantities
-	std::shared_ptr<SoundController> mSoundController; // Just for mix and max values, and display quantities
+	std::shared_ptr<IGameControllerSettingsOptions> mGameControllerSettingsOptions;
 
     //
     // State
