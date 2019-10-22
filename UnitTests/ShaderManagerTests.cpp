@@ -252,7 +252,7 @@ TEST_F(ShaderManagerTests, SubstitutesStaticParameters_ErrorsOnUnrecognizedParam
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_Single)
 {
-    std::string source = "  uniform float paramAmbientLightIntensity;\n";
+    std::string source = "  uniform float paramEffectiveAmbientLightIntensity;\n";
 
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
@@ -263,7 +263,7 @@ TEST_F(ShaderManagerTests, ExtractsShaderParameters_Single)
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_Multiple)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 foobar;
 uniform mat4 paramOrthoMatrix;
 )!!!";
@@ -278,7 +278,7 @@ uniform mat4 paramOrthoMatrix;
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresCommentedOutParameters)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 foobar;
 //uniform mat4 paramOrthoMatrix;
 )!!!";
@@ -292,7 +292,7 @@ foobar;
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnUnrecognizedParameter)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 foobar;
 uniform mat4 paramOrthoMatriz;
 )!!!";
@@ -305,9 +305,9 @@ uniform mat4 paramOrthoMatriz;
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnRedefinedParameter)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 foobar;
-uniform mat4 paramAmbientLightIntensity;
+uniform mat4 paramEffectiveAmbientLightIntensity;
 )!!!";
 
     EXPECT_THROW(
@@ -328,7 +328,7 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Single)
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Multiple)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 in matfoo lopo lopo inShipPointColor;
 foobar;
 in mat4 inGenericTexture3;
@@ -344,7 +344,7 @@ in mat4 inGenericTexture3;
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 foobar;
 in mat4 inHeadPosition;
 )!!!";
@@ -357,7 +357,7 @@ in mat4 inHeadPosition;
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnRedeclaredAttribute)
 {
     std::string source = R"!!!(
-uniform float paramAmbientLightIntensity;
+uniform float paramEffectiveAmbientLightIntensity;
 in mat4 inShipPointColor;
 foobar;
 in mat4 inShipPointColor;

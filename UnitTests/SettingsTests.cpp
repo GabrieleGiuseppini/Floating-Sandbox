@@ -357,10 +357,27 @@ TEST(SettingsTests, Settings_SetDirtyWithDiff)
 TEST(SettingsTests, Settings_Comparison)
 {
     Settings<TestSettings> settings1(MakeTestSettings());
-    Settings<TestSettings> settings2(MakeTestSettings());
-    Settings<TestSettings> settings3(MakeTestSettings());
+	settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+	settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+	settings1.SetValue<bool>(TestSettings::Setting3_bool, true);
+	settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+	settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
 
-    settings2.SetValue(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+    Settings<TestSettings> settings2(MakeTestSettings());
+	settings2.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+	settings2.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+	settings2.SetValue<bool>(TestSettings::Setting3_bool, true);
+	settings2.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+	settings2.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    Settings<TestSettings> settings3(MakeTestSettings());
+	settings3.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+	settings3.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+	settings3.SetValue<bool>(TestSettings::Setting3_bool, true);
+	settings3.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+	settings3.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+    settings2.SetValue(TestSettings::Setting5_custom, CustomValue("Foo", 124));
 
     EXPECT_EQ(settings1, settings3);
     EXPECT_NE(settings1, settings2);
@@ -1476,7 +1493,9 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
     // Load and enforce last played settings
     //
 
-    sm.LoadAndEnforceLastPlayedSettings();
+    auto ret = sm.LoadAndEnforceLastPlayedSettings();
+
+	EXPECT_TRUE(ret);
 
     //
     // Verify enforced settings

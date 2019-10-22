@@ -991,14 +991,20 @@ public:
     /*
      * Enforces the last played settings, if they are persisted.
      */
-    void LoadAndEnforceLastPlayedSettings()
+    bool LoadAndEnforceLastPlayedSettings()
     {
         if (HasLastPlayedSettingsPersisted())
         {
             EnforceDirtySettings(
                 LoadPersistedSettings(
                     PersistedSettingsKey::MakeLastPlayedSettingsKey()));
+
+			return true;
         }
+		else
+		{
+			return false;
+		}
     }
 
 protected:

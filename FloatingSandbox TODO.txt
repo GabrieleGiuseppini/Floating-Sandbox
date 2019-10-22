@@ -1529,7 +1529,7 @@ Render:
 				+ Tooltips on buttons
 			- Make wind speed smoothed (@ GameController), quite long
 			- Visual notification when last settings loaded
-				- 1) Need boolean returned from SettingsManager
+				+ 1) Need boolean returned from SettingsManager
 				- 2) Do StatusText replacement
 			- Data\Themes:
 				- Ocean of Lava
