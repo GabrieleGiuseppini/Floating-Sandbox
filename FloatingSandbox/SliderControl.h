@@ -42,7 +42,6 @@ public:
         int height,
         std::string const & label,
         std::string const & toolTipLabel,
-        TValue currentValue,
         std::function<void(TValue)> onValueChanged,
         std::unique_ptr<ISliderCore<TValue>> sliderCore)
         : SliderControl(
@@ -51,7 +50,6 @@ public:
             height,
             label,
             toolTipLabel,
-            currentValue,
             onValueChanged,
             std::move(sliderCore),
             nullptr)
@@ -64,7 +62,6 @@ public:
         int height,
         std::string const & label,
         std::string const & toolTipLabel,
-        TValue currentValue,
         std::function<void(TValue)> onValueChanged,
         std::unique_ptr<ISliderCore<TValue>> sliderCore,
         wxBitmap const * warningIcon)
@@ -89,7 +86,7 @@ public:
         mSlider = std::make_unique<wxSlider>(
             this,
             wxNewId(),
-            mSliderCore->ValueToTick(currentValue),
+            0, // Start value
             0,
             mSliderCore->GetNumberOfTicks(),
             wxDefaultPosition,
@@ -157,7 +154,6 @@ public:
             *mTextCtrlValidator);
 
         mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-        mTextCtrl->SetValue(std::to_string(currentValue));
 
         mTextCtrl->Bind(wxEVT_TEXT_ENTER, &SliderControl::OnTextEnter, this);
 

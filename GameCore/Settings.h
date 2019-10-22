@@ -557,6 +557,11 @@ public:
         return true;
     }
 
+	bool operator!=(Settings const & other) const
+	{
+		return !(*this == other);
+	}
+
     BaseSetting const & operator[](TEnum settingId) const
     {
         assert(static_cast<size_t>(settingId) < mSettings.size());

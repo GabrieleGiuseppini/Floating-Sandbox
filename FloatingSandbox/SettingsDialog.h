@@ -7,9 +7,7 @@
 
 #include "SettingsManager.h"
 #include "SliderControl.h"
-#include "SoundController.h"
 
-#include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
@@ -28,8 +26,8 @@ public:
     SettingsDialog(
         wxWindow * parent,
         std::shared_ptr<SettingsManager> settingsManager,
-        std::shared_ptr<IGameController> gameController, // TODO: must go
-        std::shared_ptr<SoundController> soundController, // TODO: must go
+		std::shared_ptr<IGameController> gameController,  // Just for mix and max values, and display quantities
+		std::shared_ptr<SoundController> soundController, // Just for mix and max values, and display quantities
         ResourceLoader const & resourceLoader);
 
     virtual ~SettingsDialog();
@@ -188,6 +186,7 @@ private:
     //////////////////////////////////////////////////////
 
     // Buttons
+	wxButton * mRevertToDefaultsButton;
     wxButton * mOkButton;
     wxButton * mCancelButton;
     wxButton * mUndoButton;
@@ -209,13 +208,11 @@ private:
     void PopulateSoundPanel(wxPanel * panel);
     void PopulateAdvancedPanel(wxPanel * panel);
 
-    void ReadSettings();
+    void SyncSettingsWithControls(Settings<GameSettings> const & settings);
 
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
 
-    // TODO: has to go
-    void ApplySettings();
     void OnLiveSettingsChanged();
 
     void ReconcileDirtyState();
@@ -224,8 +221,8 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<SettingsManager> mSettingsManager;
-    std::shared_ptr<IGameController> mGameController; // TODO: must go
-    std::shared_ptr<SoundController> mSoundController; // TODO: must go
+	std::shared_ptr<IGameController> mGameController; // Just for mix and max values, and display quantities
+	std::shared_ptr<SoundController> mSoundController; // Just for mix and max values, and display quantities
 
     //
     // State
@@ -241,4 +238,8 @@ private:
     // was last opened. When false there's a guarantee that the current live
     // settings have not been modified.
     bool mHasBeenDirtyInCurrentSession;
+
+	// Tracks whether the current settings are dirty wrt the defaults
+	// (best effort, we assume all changes deviate from the default)
+	bool mAreSettingsDirtyWrtDefaults;
 };

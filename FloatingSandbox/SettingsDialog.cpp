@@ -31,13 +31,13 @@ static int constexpr CellBorder = 8;
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<SettingsManager> settingsManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+	std::shared_ptr<IGameController> gameController,
+	std::shared_ptr<SoundController> soundController,
     ResourceLoader const & resourceLoader)
     : mParent(parent)
     , mSettingsManager(std::move(settingsManager))
-    , mGameController(std::move(gameController))
-    , mSoundController(std::move(soundController))
+	, mGameController(std::move(gameController))
+	, mSoundController(std::move(soundController))
     // State
     , mLiveSettings(mSettingsManager->MakeSettings())
     , mCheckpointSettings(mSettingsManager->MakeSettings())
@@ -184,26 +184,29 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
-		auto revertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
-		revertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
-		this->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
-		buttonsSizer->Add(revertToDefaultsButton, 0, 0, 0);
+		mRevertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
+		mRevertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
+		mRevertToDefaultsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
+		buttonsSizer->Add(mRevertToDefaultsButton, 0, 0, 0);
 
 		buttonsSizer->AddStretchSpacer(1);
 
         mOkButton = new wxButton(this, wxID_ANY, "OK");
+		mOkButton->SetToolTip("Closes the window keeping all changes.");
         mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
         buttonsSizer->Add(mOkButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
+		mCancelButton->SetToolTip("Reverts all changes effected since the window was last opened, and closes the window.");
         mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
         buttonsSizer->Add(mCancelButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mUndoButton = new wxButton(this, wxID_ANY, "Undo");
+		mUndoButton->SetToolTip("Reverts all changes effected since the window was last opened.");
         mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
         buttonsSizer->Add(mUndoButton, 0, 0, 0);
 
@@ -247,11 +250,17 @@ void SettingsDialog::Open()
     mCheckpointSettings = mLiveSettings;
 
     // Populate controls with live settings
-    ReadSettings();
+	SyncSettingsWithControls(mLiveSettings);
 
     // Remember that the user hasn't changed anything yet in this session
-    mHasBeenDirtyInCurrentSession = false;
-    ReconcileDirtyState();
+    mHasBeenDirtyInCurrentSession = false;    
+
+	// Enable Revert to Defaults button only if settings are different than defaults
+	mAreSettingsDirtyWrtDefaults = (mLiveSettings != mSettingsManager->GetDefaults());
+
+	// Reconcile controls wrt dirty state
+	ReconcileDirtyState();
+	
 
     //
     // Open dialog
@@ -282,7 +291,7 @@ void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & event)
 void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event)
 {
 	mLiveSettings.SetValue(GameSettings::DoGenerateAirBubbles, event.IsChecked());
-    mAirBubbleDensitySlider->Enable(mGenerateAirBubblesCheckBox->IsChecked());
+    mAirBubbleDensitySlider->Enable(event.IsChecked());
 
     OnLiveSettingsChanged();
 }
@@ -556,7 +565,32 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event)
 
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
 {
-	// TODO
+	//
+	// Enforce default settings
+	//
+
+	mLiveSettings = mSettingsManager->GetDefaults();
+
+	// Do not update checkpoint, allow user to revert to it
+
+	// Enforce anything as a safety net
+	mLiveSettings.MarkAllAsDirty();
+	mSettingsManager->EnforceDirtySettings(mLiveSettings);
+
+	mLiveSettings.ClearAllDirty();
+
+	assert(mSettingsManager->Pull() == mLiveSettings);
+
+	// Re-populate controls with new values
+	SyncSettingsWithControls(mLiveSettings);
+
+	// Remember user has made changes wrt checkpoint
+	mHasBeenDirtyInCurrentSession = true;
+
+	// Remember we are clean now wrt defaults	
+	mAreSettingsDirtyWrtDefaults = false;
+
+	ReconcileDirtyState();
 }
 
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -589,7 +623,7 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
     assert(mSettingsManager->Pull() == mCheckpointSettings);
 
     // Re-populate controls with new values
-    ReadSettings();
+	SyncSettingsWithControls(mLiveSettings);
 
     // Remember we are clean now
     mHasBeenDirtyInCurrentSession = false;
@@ -657,7 +691,6 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Simulation Quality",
                     "Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
-                    mGameController->GetNumMechanicalDynamicsIterationsAdjustment(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
@@ -685,8 +718,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Strength Adjust",
                     "Adjusts the strength of springs.",
-                    mGameController->GetSpringStrengthAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -712,7 +744,6 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Rot Acceler8r",
                     "Adjusts the speed with which materials rot when exposed to sea water.",
-                    mGameController->GetRotAcceler8r(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
@@ -765,7 +796,6 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Luminiscence Adjust",
                     "Adjusts the quantity of light emitted by luminiscent materials.",
-                    mGameController->GetLuminiscenceAdjustment(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
@@ -792,8 +822,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Light Spread Adjust",
                     "Adjusts how wide light emitted by luminiscent materials spreads out.",
-                    mGameController->GetLightSpreadAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -844,8 +873,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Density Adjust",
                     "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
-                    mGameController->GetWaterDensityAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -870,8 +898,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Drag Adjust",
                     "Adjusts the drag force exerted by sea water on physical bodies.",
-                    mGameController->GetWaterDragAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -897,8 +924,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Intake Adjust",
                     "Adjusts the speed with which sea water enters or leaves a physical body.",
-                    mGameController->GetWaterIntakeAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -923,8 +949,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Crazyness",
                     "Adjusts how \"splashy\" water flows inside a physical body.",
-                    mGameController->GetWaterCrazyness(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
                         this->OnLiveSettingsChanged();
@@ -949,8 +974,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Diffusion Speed",
                     "Adjusts the speed with which water propagates within a physical body.",
-                    mGameController->GetWaterDiffusionSpeedAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDiffusionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1011,8 +1035,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Thermal Conductivity Adjust",
                     "Adjusts the speed with which heat propagates along materials.",
-                    mGameController->GetThermalConductivityAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1038,8 +1061,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Heat Dissipation Adjust",
                     "Adjusts the speed with which materials dissipate or accumulate heat to or from air and water.",
-                    mGameController->GetHeatDissipationAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1065,8 +1087,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Burning Point Adjust",
                     "Adjusts the temperature at which materials ignite.",
-                    mGameController->GetIgnitionTemperatureAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::IgnitionTemperatureAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1092,8 +1113,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Melting Point Adjust",
                     "Adjusts the temperature at which materials melt.",
-                    mGameController->GetMeltingTemperatureAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MeltingTemperatureAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1119,8 +1139,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Combustion Speed Adjust",
                     "Adjusts the rate with which materials consume when burning.",
-                    mGameController->GetCombustionSpeedAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1146,8 +1165,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Combustion Heat Adjust",
                     "Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles.",
-                    mGameController->GetCombustionHeatAdjustment(),
-                    [this](float value)
+					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionHeatAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1197,8 +1215,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Air Temperature",
-                    "The temperature of air (K).",
-                    mGameController->GetAirTemperature(),
+                    "The temperature of air (K).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
@@ -1223,8 +1240,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Water Temperature",
-                    "The temperature of water (K).",
-                    mGameController->GetWaterTemperature(),
+                    "The temperature of water (K).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterTemperature, value);
@@ -1272,8 +1288,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Heat Generation Adjust",
-                    "Adjusts the amount of heat generated by working electrical elements, such as lamps and generators.",
-                    mGameController->GetElectricalElementHeatProducedAdjustment(),
+                    "Adjusts the amount of heat generated by working electrical elements, such as lamps and generators.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
@@ -1322,8 +1337,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Radius",
-                    "The radius of HeatBlaster tool (m).",
-                    mGameController->GetHeatBlasterRadius(),
+                    "The radius of HeatBlaster tool (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatBlasterRadius, value);
@@ -1348,8 +1362,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Heat",
-                    "The heat produced by the HeatBlaster tool (KJ/s).",
-                    mGameController->GetHeatBlasterHeatFlow(),
+                    "The heat produced by the HeatBlaster tool (KJ/s).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatBlasterHeatFlow, value);
@@ -1398,8 +1411,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Max Burning Particles",
-                    "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",
-                    mGameController->GetMaxBurningParticles(),
+                    "The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!",                    
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MaxBurningParticles, value);
@@ -1461,8 +1473,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Ocean Depth",
-                    "The ocean depth (m).",
-                    mGameController->GetSeaDepth(),
+                    "The ocean depth (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
@@ -1488,8 +1499,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Ocean Floor Bumpiness",
-                    "Adjusts how much the ocean floor rolls up and down.",
-                    mGameController->GetOceanFloorBumpiness(),
+                    "Adjusts how much the ocean floor rolls up and down.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorBumpiness, value);
@@ -1514,8 +1524,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Ocean Floor Detail",
-                    "Adjusts the jaggedness of the ocean floor irregularities.",
-                    mGameController->GetOceanFloorDetailAmplification(),
+                    "Adjusts the jaggedness of the ocean floor irregularities.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);
@@ -1568,8 +1577,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Number of Stars",
-                    "The number of stars in the sky.",
-                    mGameController->GetNumberOfStars(),
+                    "The number of stars in the sky.",                    
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
@@ -1594,8 +1602,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Number of Clouds",
-                    "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
-                    mGameController->GetNumberOfClouds(),
+                    "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",                    
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
@@ -1657,8 +1664,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Wind Speed Base",
-                    "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",
-                    mGameController->GetWindSpeedBase(),
+                    "The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
@@ -1696,8 +1702,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         SliderWidth,
                         -1,
                         "Wind Gust Amplitude",
-                        "The amplitude of wind gusts, as a multiplier of the base wind speed.",
-                        mGameController->GetWindSpeedMaxFactor(),
+                        "The amplitude of wind gusts, as a multiplier of the base wind speed.",                        
                         [this](float value)
                         {
                             this->mLiveSettings.SetValue(GameSettings::WindSpeedMaxFactor, value);
@@ -1751,8 +1756,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Wave Height Adjust",
-                    "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",
-                    static_cast<float>(mGameController->GetBasalWaveHeightAdjustment()),
+                    "Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveHeightAdjustment, value);
@@ -1777,8 +1781,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Wave Width Adjust",
-                    "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",
-                    static_cast<float>(mGameController->GetBasalWaveLengthAdjustment()),
+                    "Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveLengthAdjustment, value);
@@ -1804,8 +1807,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Wave Speed Adjust",
-                    "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",
-                    static_cast<float>(mGameController->GetBasalWaveSpeedAdjustment()),
+                    "Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveSpeedAdjustment, value);
@@ -1856,8 +1858,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Tsunami Rate",
-                    "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",
-                    static_cast<float>(mGameController->GetTsunamiRate()),
+                    "The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::TsunamiRate, value);
@@ -1882,8 +1883,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Rogue Wave Rate",
-                    "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",
-                    static_cast<float>(mGameController->GetRogueWaveRate()),
+                    "The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, value);
@@ -1945,8 +1945,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Destroy Radius",
-                    "The starting radius of the damage caused by destructive tools (m).",
-                    mGameController->GetDestroyRadius(),
+                    "The starting radius of the damage caused by destructive tools (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
@@ -1971,8 +1970,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Bomb Blast Radius",
-                    "The radius of bomb explosions (m).",
-                    mGameController->GetBombBlastRadius(),
+                    "The radius of bomb explosions (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
@@ -1997,8 +1995,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Bomb Blast Heat",
-                    "The heat generated by bomb explosions (KJ/s).",
-                    mGameController->GetBombBlastHeat(),
+                    "The heat generated by bomb explosions (KJ/s).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
@@ -2024,8 +2021,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "AM Bomb Implosion Strength",
-                    "Adjusts the strength of the initial anti-matter bomb implosion.",
-                    mGameController->GetAntiMatterBombImplosionStrength(),
+                    "Adjusts the strength of the initial anti-matter bomb implosion.",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
@@ -2050,8 +2046,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Flood Radius",
-                    "How wide an area is flooded by the flood tool (m).",
-                    mGameController->GetFloodRadius(),
+                    "How wide an area is flooded by the flood tool (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
@@ -2076,8 +2071,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Flood Quantity",
-                    "How much water is injected by the flood tool (m3).",
-                    mGameController->GetFloodQuantity(),
+                    "How much water is injected by the flood tool (m3).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
@@ -2102,8 +2096,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Repair Radius",
-                    "Adjusts the radius of the repair tool (m).",
-                    mGameController->GetRepairRadius(),
+                    "Adjusts the radius of the repair tool (m).",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
@@ -2128,8 +2121,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Repair Speed Adjust",
-                    "Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!",
-                    mGameController->GetRepairSpeedAdjustment(),
+                    "Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!",                    
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
@@ -2216,7 +2208,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                         -1,
                         "Air Bubbles Density",
                         "The density of air bubbles generated when water enters a ship.",
-                        mGameController->GetAirBubblesDensity(),
                         [this](float value)
                         {
                             this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
@@ -2403,7 +2394,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Transparency",
                     "Adjusts the transparency of sea water.",
-                    mGameController->GetOceanTransparency(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanTransparency, value);
@@ -2429,7 +2419,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Darkening Rate",
                     "Adjusts the rate at which the ocean darkens with depth.",
-                    mGameController->GetOceanDarkeningRate(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
@@ -2663,7 +2652,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Heat Overlay Transparency",
                     "Adjusts the transparency of the heat overlay.",
-                    mGameController->GetHeatOverlayTransparency(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatOverlayTransparency, value);
@@ -2689,7 +2677,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Flame Size Adjust",
                     "Adjusts the size of flames.",
-                    mGameController->GetShipFlameSizeAdjustment(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
@@ -2813,7 +2800,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Contrast",
                     "Adjusts the contrast of water inside physical bodies.",
-                    mGameController->GetWaterContrast(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterContrast, value);
@@ -2840,7 +2826,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Level of Detail",
                     "Adjusts how detailed water inside a physical body looks.",
-                    mGameController->GetWaterLevelOfDetail(),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterLevelOfDetail, value);
@@ -2888,7 +2873,6 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderHeight,
         "Effects Volume",
         "Adjusts the volume of sounds generated by the simulation.",
-        mSoundController->GetMasterEffectsVolume(),
         [this](float value)
         {
             this->mLiveSettings.SetValue(GameSettings::MasterEffectsVolume, value);
@@ -2909,7 +2893,6 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderHeight,
         "Tools Volume",
         "Adjusts the volume of sounds generated by interactive tools.",
-        mSoundController->GetMasterToolsVolume(),
         [this](float value)
         {
             this->mLiveSettings.SetValue(GameSettings::MasterToolsVolume, value);
@@ -2930,7 +2913,6 @@ void SettingsDialog::PopulateSoundPanel(wxPanel * panel)
         SliderHeight,
         "Music Volume",
         "Adjusts the volume of music.",
-        mSoundController->GetMasterMusicVolume(),
         [this](float value)
         {
             this->mLiveSettings.SetValue(GameSettings::MasterMusicVolume, value);
@@ -2988,7 +2970,6 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         "Spring Stiffness Adjust",
         "This setting is for testing physical instability of the mass-spring network with high stiffness values;"
         " it is not meant for improving the rigidity of physical bodies.",
-        mGameController->GetSpringStiffnessAdjustment(),
         [this](float value)
         {
             this->mLiveSettings.SetValue(GameSettings::SpringStiffnessAdjustment, value);
@@ -3010,7 +2991,6 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
         "Spring Damping Adjust",
         "This setting is for testing physical instability of the mass-spring network with different damping values;"
         " it is not meant for improving the rigidity of physical bodies.",
-        mGameController->GetSpringDampingAdjustment(),
         [this](float value)
         {
             this->mLiveSettings.SetValue(GameSettings::SpringDampingAdjustment, value);
@@ -3069,121 +3049,119 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
     panel->SetSizerAndFit(controlsSizer);
 }
 
-void SettingsDialog::ReadSettings()
+void SettingsDialog::SyncSettingsWithControls(Settings<GameSettings> const & settings)
 {
-    assert(!!mGameController);
-
     // Mechanics, Fluids, Lights
 
-    mMechanicalQualitySlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
-    mStrengthSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
+    mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
 
-    mRotAcceler8rSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::RotAcceler8r));
+    mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
-    mWaterDensitySlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDensityAdjustment));
+    mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
 
-    mWaterDragSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDragAdjustment));
+    mWaterDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDragAdjustment));
 
-    mWaterIntakeSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
+    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
 
-    mWaterCrazynessSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterCrazyness));
+    mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
 
-    mWaterDiffusionSpeedSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
+    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
 
-    mLuminiscenceSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
+    mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
 
-    mLightSpreadSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::LightSpreadAdjustment));
+    mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
 
     // Heat
 
-    mThermalConductivityAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
+    mThermalConductivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
 
-    mHeatDissipationAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
+    mHeatDissipationAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
 
-    mIgnitionTemperatureAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));
+    mIgnitionTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));
 
-    mMeltingTemperatureAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
+    mMeltingTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
 
-    mCombustionSpeedAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
+    mCombustionSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
 
-    mCombustionHeatAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
+    mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
 
-    mAirTemperatureSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::AirTemperature));
+    mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
 
-    mWaterTemperatureSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::WaterTemperature));
+    mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
 
-    mElectricalElementHeatProducedAdjustmentSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
+    mElectricalElementHeatProducedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
 
-    mHeatBlasterRadiusSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatBlasterRadius));
+    mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
 
-    mHeatBlasterHeatFlowSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
+    mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
 
-    mMaxBurningParticlesSlider->SetValue(mLiveSettings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
+    mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
 
     // Ocean and Sky
 
-    mOceanDepthSlider->SetValue(mGameController->GetSeaDepth());
+    mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
 
-    mOceanFloorBumpinessSlider->SetValue(mGameController->GetOceanFloorBumpiness());
+    mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
 
-    mOceanFloorDetailAmplificationSlider->SetValue(mGameController->GetOceanFloorDetailAmplification());
+    mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
 
-    mNumberOfStarsSlider->SetValue(mGameController->GetNumberOfStars());
+    mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
 
-    mNumberOfCloudsSlider->SetValue(mGameController->GetNumberOfClouds());
+    mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
 
-    mWindSpeedBaseSlider->SetValue(mGameController->GetWindSpeedBase());
+    mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
 
-    mModulateWindCheckBox->SetValue(mLiveSettings.GetValue<bool>(GameSettings::DoModulateWind));
+    mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
 
-    mWindGustAmplitudeSlider->SetValue(mGameController->GetWindSpeedMaxFactor());
-    mWindGustAmplitudeSlider->Enable(mGameController->GetDoModulateWind());
+    mWindGustAmplitudeSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedMaxFactor));
+    mWindGustAmplitudeSlider->Enable(settings.GetValue<bool>(GameSettings::DoModulateWind));
 
     // Waves
 
-    mBasalWaveHeightAdjustmentSlider->SetValue(mGameController->GetBasalWaveHeightAdjustment());
+    mBasalWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveHeightAdjustment));
 
-    mBasalWaveLengthAdjustmentSlider->SetValue(mGameController->GetBasalWaveLengthAdjustment());
+    mBasalWaveLengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveLengthAdjustment));
 
-    mBasalWaveSpeedAdjustmentSlider->SetValue(mGameController->GetBasalWaveSpeedAdjustment());
+    mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
 
-    mTsunamiRateSlider->SetValue(mLiveSettings.GetValue<float>(GameSettings::TsunamiRate));
+    mTsunamiRateSlider->SetValue(settings.GetValue<float>(GameSettings::TsunamiRate));
 
-    mRogueWaveRateSlider->SetValue(mGameController->GetRogueWaveRate());
+    mRogueWaveRateSlider->SetValue(settings.GetValue<float>(GameSettings::RogueWaveRate));
 
     // Interactions
 
-    mDestroyRadiusSlider->SetValue(mGameController->GetDestroyRadius());
+    mDestroyRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::DestroyRadius));
 
-    mBombBlastRadiusSlider->SetValue(mGameController->GetBombBlastRadius());
+    mBombBlastRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastRadius));
 
-    mBombBlastHeatSlider->SetValue(mGameController->GetBombBlastHeat());
+    mBombBlastHeatSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastHeat));
 
-    mAntiMatterBombImplosionStrengthSlider->SetValue(mGameController->GetAntiMatterBombImplosionStrength());
+    mAntiMatterBombImplosionStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::AntiMatterBombImplosionStrength));
 
-    mFloodRadiusSlider->SetValue(mGameController->GetFloodRadius());
+    mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
 
-    mFloodQuantitySlider->SetValue(mGameController->GetFloodQuantity());
+    mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
 
-    mRepairRadiusSlider->SetValue(mGameController->GetRepairRadius());
+    mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
 
-    mRepairSpeedAdjustmentSlider->SetValue(mGameController->GetRepairSpeedAdjustment());
+    mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
 
-    mUltraViolentCheckBox->SetValue(mGameController->GetUltraViolentMode());
+    mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
-    mGenerateDebrisCheckBox->SetValue(mGameController->GetDoGenerateDebris());
+    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
 
-    mGenerateSparklesCheckBox->SetValue(mGameController->GetDoGenerateSparkles());
+    mGenerateSparklesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparkles));
 
-    mGenerateAirBubblesCheckBox->SetValue(mGameController->GetDoGenerateAirBubbles());
+    mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
-    mAirBubbleDensitySlider->SetValue(mGameController->GetAirBubblesDensity());
-    mAirBubbleDensitySlider->Enable(mGameController->GetDoGenerateAirBubbles());
+    mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
+    mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
     // Render
 
-    auto oceanRenderMode = mGameController->GetOceanRenderMode();
+    auto oceanRenderMode = settings.GetValue<OceanRenderMode>(GameSettings::OceanRenderMode);
     switch (oceanRenderMode)
     {
         case OceanRenderMode::Texture:
@@ -3205,26 +3183,26 @@ void SettingsDialog::ReadSettings()
         }
     }
 
-    mTextureOceanComboBox->Select(static_cast<int>(mGameController->GetTextureOceanTextureIndex()));
+    mTextureOceanComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureOceanTextureIndex)));
 
-    auto depthOceanColorStart = mGameController->GetDepthOceanColorStart();
+    auto depthOceanColorStart = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorStart);
     mDepthOceanColorStartPicker->SetColour(wxColor(depthOceanColorStart.r, depthOceanColorStart.g, depthOceanColorStart.b));
 
-    auto depthOceanColorEnd = mGameController->GetDepthOceanColorEnd();
+    auto depthOceanColorEnd = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorEnd);
     mDepthOceanColorEndPicker->SetColour(wxColor(depthOceanColorEnd.r, depthOceanColorEnd.g, depthOceanColorEnd.b));
 
-    auto flatOceanColor = mGameController->GetFlatOceanColor();
+    auto flatOceanColor = settings.GetValue<rgbColor>(GameSettings::FlatOceanColor);
     mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
 
     ReconciliateOceanRenderModeSettings();
 
-    mSeeShipThroughOceanCheckBox->SetValue(mGameController->GetShowShipThroughOcean());
+    mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
 
-    mOceanTransparencySlider->SetValue(mGameController->GetOceanTransparency());
+    mOceanTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::OceanTransparency));
 
-    mOceanDarkeningRateSlider->SetValue(mGameController->GetOceanDarkeningRate());
+    mOceanDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDarkeningRate));
 
-    auto landRenderMode = mGameController->GetLandRenderMode();
+    auto landRenderMode = settings.GetValue<LandRenderMode>(GameSettings::LandRenderMode);
     switch (landRenderMode)
     {
         case LandRenderMode::Texture:
@@ -3240,17 +3218,17 @@ void SettingsDialog::ReadSettings()
         }
     }
 
-    mTextureLandComboBox->Select(static_cast<int>(mGameController->GetTextureLandTextureIndex()));
+    mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
 
-    auto flatLandColor = mGameController->GetFlatLandColor();
+    auto flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
 
     ReconciliateLandRenderModeSettings();
 
-    auto flatSkyColor = mLiveSettings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
+    auto flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
     mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
-    auto shipRenderMode = mGameController->GetShipRenderMode();
+    auto shipRenderMode = settings.GetValue<ShipRenderMode>(GameSettings::ShipRenderMode);
     switch (shipRenderMode)
     {
         case ShipRenderMode::Texture:
@@ -3266,17 +3244,17 @@ void SettingsDialog::ReadSettings()
         }
     }
 
-    mShowStressCheckBox->SetValue(mGameController->GetShowShipStress());
+    mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
 
-    mWaterContrastSlider->SetValue(mGameController->GetWaterContrast());
+    mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
 
-    mWaterLevelOfDetailSlider->SetValue(mGameController->GetWaterLevelOfDetail());
+    mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
 
-    mDrawHeatOverlayCheckBox->SetValue(mGameController->GetDrawHeatOverlay());
+    mDrawHeatOverlayCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatOverlay));
 
-    mHeatOverlayTransparencySlider->SetValue(mGameController->GetHeatOverlayTransparency());
+    mHeatOverlayTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::HeatOverlayTransparency));
 
-    auto shipFlameRenderMode = mGameController->GetShipFlameRenderMode();
+    auto shipFlameRenderMode = settings.GetValue<ShipFlameRenderMode>(GameSettings::ShipFlameRenderMode);
     switch (shipFlameRenderMode)
     {
         case ShipFlameRenderMode::Mode1:
@@ -3298,33 +3276,33 @@ void SettingsDialog::ReadSettings()
         }
     }
 
-    mDrawHeatBlasterFlameCheckBox->SetValue(mGameController->GetDrawHeatBlasterFlame());
+    mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
 
-    mShipFlameSizeAdjustmentSlider->SetValue(mGameController->GetShipFlameSizeAdjustment());
+    mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
 
     // Sound
 
-    mEffectsVolumeSlider->SetValue(mSoundController->GetMasterEffectsVolume());
+    mEffectsVolumeSlider->SetValue(settings.GetValue<float>(GameSettings::MasterEffectsVolume));
 
-    mToolsVolumeSlider->SetValue(mSoundController->GetMasterToolsVolume());
+    mToolsVolumeSlider->SetValue(settings.GetValue<float>(GameSettings::MasterToolsVolume));
 
-    mMusicVolumeSlider->SetValue(mSoundController->GetMasterMusicVolume());
+    mMusicVolumeSlider->SetValue(settings.GetValue<float>(GameSettings::MasterMusicVolume));
 
-    mPlayBreakSoundsCheckBox->SetValue(mSoundController->GetPlayBreakSounds());
+    mPlayBreakSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayBreakSounds));
 
-    mPlayStressSoundsCheckBox->SetValue(mSoundController->GetPlayStressSounds());
+    mPlayStressSoundsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayStressSounds));
 
-    mPlayWindSoundCheckBox->SetValue(mSoundController->GetPlayWindSound());
+    mPlayWindSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayWindSound));
 
-    mPlaySinkingMusicCheckBox->SetValue(mSoundController->GetPlaySinkingMusic());
+    mPlaySinkingMusicCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlaySinkingMusic));
 
     // Advanced
 
-    mSpringStiffnessSlider->SetValue(mGameController->GetSpringStiffnessAdjustment());
+    mSpringStiffnessSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStiffnessAdjustment));
 
-    mSpringDampingSlider->SetValue(mGameController->GetSpringDampingAdjustment());
+    mSpringDampingSlider->SetValue(settings.GetValue<float>(GameSettings::SpringDampingAdjustment));
 
-    auto debugShipRenderMode = mGameController->GetDebugShipRenderMode();
+    auto debugShipRenderMode = settings.GetValue<DebugShipRenderMode>(GameSettings::DebugShipRenderMode);
     switch (debugShipRenderMode)
     {
         case DebugShipRenderMode::None:
@@ -3364,7 +3342,7 @@ void SettingsDialog::ReadSettings()
         }
     }
 
-    auto vectorFieldRenderMode = mGameController->GetVectorFieldRenderMode();
+    auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderMode>(GameSettings::VectorFieldRenderMode);
     switch (vectorFieldRenderMode)
     {
         case VectorFieldRenderMode::None:
@@ -3414,346 +3392,6 @@ void SettingsDialog::ReconciliateLandRenderModeSettings()
     mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
 }
 
-// TODO: has to go
-void SettingsDialog::ApplySettings()
-{
-    assert(!!mGameController);
-
-    // Mechanics, Fluids, Lights
-
-    mGameController->SetNumMechanicalDynamicsIterationsAdjustment(
-        mMechanicalQualitySlider->GetValue());
-
-    mGameController->SetSpringStrengthAdjustment(
-        mStrengthSlider->GetValue());
-
-    mGameController->SetRotAcceler8r(
-        mRotAcceler8rSlider->GetValue());
-
-    mGameController->SetWaterDensityAdjustment(
-        mWaterDensitySlider->GetValue());
-
-    mGameController->SetWaterDragAdjustment(
-        mWaterDragSlider->GetValue());
-
-    mGameController->SetWaterIntakeAdjustment(
-        mWaterIntakeSlider->GetValue());
-
-    mGameController->SetWaterCrazyness(
-        mWaterCrazynessSlider->GetValue());
-
-    mGameController->SetWaterDiffusionSpeedAdjustment(
-        mWaterDiffusionSpeedSlider->GetValue());
-
-    mGameController->SetLuminiscenceAdjustment(
-        mLuminiscenceSlider->GetValue());
-
-    mGameController->SetLightSpreadAdjustment(
-        mLightSpreadSlider->GetValue());
-
-    // Heat
-
-    mGameController->SetThermalConductivityAdjustment(
-        mThermalConductivityAdjustmentSlider->GetValue());
-
-    mGameController->SetHeatDissipationAdjustment(
-        mHeatDissipationAdjustmentSlider->GetValue());
-
-    mGameController->SetIgnitionTemperatureAdjustment(
-        mIgnitionTemperatureAdjustmentSlider->GetValue());
-
-    mGameController->SetMeltingTemperatureAdjustment(
-        mMeltingTemperatureAdjustmentSlider->GetValue());
-
-    mGameController->SetCombustionSpeedAdjustment(
-        mCombustionSpeedAdjustmentSlider->GetValue());
-
-    mGameController->SetCombustionHeatAdjustment(
-        mCombustionHeatAdjustmentSlider->GetValue());
-
-    mGameController->SetAirTemperature(
-        mAirTemperatureSlider->GetValue());
-
-    mGameController->SetWaterTemperature(
-        mWaterTemperatureSlider->GetValue());
-
-    mGameController->SetElectricalElementHeatProducedAdjustment(
-        mElectricalElementHeatProducedAdjustmentSlider->GetValue());
-
-    mGameController->SetHeatBlasterRadius(
-        mHeatBlasterRadiusSlider->GetValue());
-
-    mGameController->SetHeatBlasterHeatFlow(
-        mHeatBlasterHeatFlowSlider->GetValue());
-
-    mGameController->SetMaxBurningParticles(
-        mMaxBurningParticlesSlider->GetValue());
-
-    // Ocean and Sky
-
-    mGameController->SetSeaDepth(
-        mOceanDepthSlider->GetValue());
-
-    mGameController->SetOceanFloorBumpiness(
-        mOceanFloorBumpinessSlider->GetValue());
-
-    mGameController->SetOceanFloorDetailAmplification(
-        mOceanFloorDetailAmplificationSlider->GetValue());
-
-    mGameController->SetNumberOfStars(mNumberOfStarsSlider->GetValue());
-
-    mGameController->SetNumberOfClouds(mNumberOfCloudsSlider->GetValue());
-
-    // Wind and Waves
-
-    mGameController->SetWindSpeedBase(
-        mWindSpeedBaseSlider->GetValue());
-
-    mGameController->SetDoModulateWind(mModulateWindCheckBox->IsChecked());
-
-    mGameController->SetWindSpeedMaxFactor(
-        mWindGustAmplitudeSlider->GetValue());
-
-    mGameController->SetBasalWaveHeightAdjustment(
-        mBasalWaveHeightAdjustmentSlider->GetValue());
-
-    mGameController->SetBasalWaveLengthAdjustment(
-        mBasalWaveLengthAdjustmentSlider->GetValue());
-
-    mGameController->SetBasalWaveSpeedAdjustment(
-        mBasalWaveSpeedAdjustmentSlider->GetValue());
-
-    mLiveSettings.SetValue(GameSettings::TsunamiRate, mTsunamiRateSlider->GetValue());
-
-    mGameController->SetRogueWaveRate(
-        mRogueWaveRateSlider->GetValue());
-
-    // Interactions
-
-    mGameController->SetDestroyRadius(
-        mDestroyRadiusSlider->GetValue());
-
-    mGameController->SetBombBlastRadius(
-        mBombBlastRadiusSlider->GetValue());
-
-    mGameController->SetBombBlastHeat(
-        mBombBlastHeatSlider->GetValue());
-
-    mGameController->SetAntiMatterBombImplosionStrength(
-        mAntiMatterBombImplosionStrengthSlider->GetValue());
-
-    mGameController->SetFloodRadius(
-        mFloodRadiusSlider->GetValue());
-
-    mGameController->SetFloodQuantity(
-        mFloodQuantitySlider->GetValue());
-
-    mGameController->SetRepairRadius(
-        mRepairRadiusSlider->GetValue());
-
-    mGameController->SetRepairSpeedAdjustment(
-        mRepairSpeedAdjustmentSlider->GetValue());
-
-    mGameController->SetUltraViolentMode(mUltraViolentCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateDebris(mGenerateDebrisCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateSparkles(mGenerateSparklesCheckBox->IsChecked());
-
-    mGameController->SetDoGenerateAirBubbles(mGenerateAirBubblesCheckBox->IsChecked());
-
-    mGameController->SetAirBubblesDensity(mAirBubbleDensitySlider->GetValue());
-
-    // Render
-
-    if (mTextureOceanRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetOceanRenderMode(OceanRenderMode::Texture);
-    }
-    else if (mDepthOceanRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetOceanRenderMode(OceanRenderMode::Depth);
-    }
-    else
-    {
-        assert(mFlatOceanRenderModeRadioButton->GetValue());
-        mGameController->SetOceanRenderMode(OceanRenderMode::Flat);
-    }
-
-    mGameController->SetTextureOceanTextureIndex(static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
-
-    auto depthOceanColorStart = mDepthOceanColorStartPicker->GetColour();
-    mGameController->SetDepthOceanColorStart(
-        rgbColor(depthOceanColorStart.Red(), depthOceanColorStart.Green(), depthOceanColorStart.Blue()));
-
-    auto depthOceanColorEnd = mDepthOceanColorEndPicker->GetColour();
-    mGameController->SetDepthOceanColorEnd(
-        rgbColor(depthOceanColorEnd.Red(), depthOceanColorEnd.Green(), depthOceanColorEnd.Blue()));
-
-    auto flatOceanColor = mFlatOceanColorPicker->GetColour();
-    mGameController->SetFlatOceanColor(
-        rgbColor(flatOceanColor.Red(), flatOceanColor.Green(), flatOceanColor.Blue()));
-
-    mGameController->SetShowShipThroughOcean(mSeeShipThroughOceanCheckBox->IsChecked());
-
-    mGameController->SetOceanTransparency(
-        mOceanTransparencySlider->GetValue());
-
-    mGameController->SetOceanDarkeningRate(
-        mOceanDarkeningRateSlider->GetValue());
-
-    if (mTextureLandRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetLandRenderMode(LandRenderMode::Texture);
-    }
-    else
-    {
-        assert(mFlatLandRenderModeRadioButton->GetValue());
-        mGameController->SetLandRenderMode(LandRenderMode::Flat);
-    }
-
-    mGameController->SetTextureLandTextureIndex(static_cast<size_t>(mTextureLandComboBox->GetSelection()));
-
-    auto flatLandColor = mFlatLandColorPicker->GetColour();
-    mGameController->SetFlatLandColor(
-        rgbColor(flatLandColor.Red(), flatLandColor.Green(), flatLandColor.Blue()));
-
-    auto flatSkyColor = mFlatSkyColorPicker->GetColour();
-    mGameController->SetFlatSkyColor(
-        rgbColor(flatSkyColor.Red(), flatSkyColor.Green(), flatSkyColor.Blue()));
-
-    if (mTextureShipRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetShipRenderMode(ShipRenderMode::Texture);
-    }
-    else
-    {
-        assert(mStructureShipRenderModeRadioButton->GetValue());
-        mGameController->SetShipRenderMode(ShipRenderMode::Structure);
-    }
-
-    mGameController->SetShowShipStress(mShowStressCheckBox->IsChecked());
-
-    mGameController->SetWaterContrast(
-        mWaterContrastSlider->GetValue());
-
-    mGameController->SetWaterLevelOfDetail(
-        mWaterLevelOfDetailSlider->GetValue());
-
-    mGameController->SetDrawHeatOverlay(mDrawHeatOverlayCheckBox->IsChecked());
-
-    mGameController->SetHeatOverlayTransparency(
-        mHeatOverlayTransparencySlider->GetValue());
-
-    if (mMode1ShipFlameRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::Mode1);
-    }
-    else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
-    {
-        mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::Mode2);
-    }
-    else
-    {
-        assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
-        mGameController->SetShipFlameRenderMode(ShipFlameRenderMode::NoDraw);
-    }
-
-    mGameController->SetDrawHeatBlasterFlame(mDrawHeatBlasterFlameCheckBox->IsChecked());
-
-    mGameController->SetShipFlameSizeAdjustment(
-        mShipFlameSizeAdjustmentSlider->GetValue());
-
-    // Sound
-
-    mSoundController->SetMasterEffectsVolume(
-        mEffectsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterToolsVolume(
-        mToolsVolumeSlider->GetValue());
-
-    mSoundController->SetMasterMusicVolume(
-        mMusicVolumeSlider->GetValue());
-
-    mSoundController->SetPlayBreakSounds(mPlayBreakSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayStressSounds(mPlayStressSoundsCheckBox->IsChecked());
-
-    mSoundController->SetPlayWindSound(mPlayWindSoundCheckBox->IsChecked());
-
-    mSoundController->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->IsChecked());
-
-    // Advanced
-
-    mGameController->SetSpringStiffnessAdjustment(
-        mSpringStiffnessSlider->GetValue());
-
-    mGameController->SetSpringDampingAdjustment(
-        mSpringDampingSlider->GetValue());
-
-    auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
-    if (0 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::None);
-    }
-    else if (1 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Wireframe);
-    }
-    else if (2 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Points);
-    }
-    else if (3 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Springs);
-    }
-    else if (4 == selectedDebugShipRenderMode)
-    {
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::EdgeSprings);
-    }
-    else
-    {
-        assert(5 == selectedDebugShipRenderMode);
-        mGameController->SetDebugShipRenderMode(DebugShipRenderMode::Decay);
-    }
-
-    auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
-    switch (selectedVectorFieldRenderMode)
-    {
-        case 0:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::None);
-            break;
-        }
-
-        case 1:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointVelocity);
-            break;
-        }
-
-        case 2:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointForce);
-            break;
-        }
-
-        case 3:
-        {
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterVelocity);
-            break;
-        }
-
-        default:
-        {
-            assert(4 == selectedVectorFieldRenderMode);
-            mGameController->SetVectorFieldRenderMode(VectorFieldRenderMode::PointWaterMomentum);
-            break;
-        }
-    }
-}
-
 void SettingsDialog::OnLiveSettingsChanged()
 {
     assert(!!mSettingsManager);
@@ -3766,6 +3404,7 @@ void SettingsDialog::OnLiveSettingsChanged()
 
     // Remember that we have changed since we were opened
     mHasBeenDirtyInCurrentSession = true;
+	mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
     ReconcileDirtyState();
 }
 
@@ -3775,5 +3414,6 @@ void SettingsDialog::ReconcileDirtyState()
     // Update buttons' state based on dirty state
     //
 
+	mRevertToDefaultsButton->Enable(mAreSettingsDirtyWrtDefaults);
     mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
 }

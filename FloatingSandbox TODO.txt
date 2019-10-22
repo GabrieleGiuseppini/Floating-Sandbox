@@ -385,6 +385,8 @@ Render:
 			Source: http://incompetech.com/music/royalty-...
 			Artist: http://incompetech.com/
 
+		- See why heat overlay is so expensive now
+
 		= New explosions:
 			- Shader:
 				+ Take frames out of 4K video
@@ -1501,7 +1503,7 @@ Render:
 			+ Run unit tests in Debug
 			= MainFrame:
 				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
-				= Menu: "Reload last played settings"
+				+ Menu: "Reload last played settings"
 					+ Only enabled if "last played settings" exists
 				= Save last-played settings on exit
 					+ If UI Preferences say so
@@ -1515,15 +1517,16 @@ Render:
 					+ Background
 					+ Icon
 					+ Cancel in OnClose
-				= Hookup settings
-					- Get rid of mGameController, mSoundController
-					- Make ReadSettings(Settings const & settings)
-				= Change standard bottom buttons
-					= Add "Restore Defaults", see paper
+				+ Hookup settings
+					+ Make ReadSettings(Settings const & settings)
+				- Get rid of mSoundController
+				- Take IGameControllerSettingsOptions					
+				+ Change standard bottom buttons
+					+ Add "Restore Defaults", see paper
 				- New "Settings Management" tab:
 					- TODOHERE
 				- "Restore Default Terrain" button
-				- Tooltips on buttons
+				+ Tooltips on buttons
 			- Make wind speed smoothed, quite long
 			- Visual notification when last settings loaded
 				- 1) Need boolean returned from SettingsManager
