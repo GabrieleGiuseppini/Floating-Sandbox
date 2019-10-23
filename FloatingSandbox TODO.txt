@@ -385,8 +385,6 @@ Render:
 			Source: http://incompetech.com/music/royalty-...
 			Artist: http://incompetech.com/
 
-		- See why heat overlay is so expensive now
-
 		= New explosions:
 			- Shader:
 				+ Take frames out of 4K video
@@ -997,8 +995,17 @@ Render:
 		- TextRenderContext cares about single-line texts only
 			+ Make sure multiple-line support is not for perf
 			- API exposed:
-				- Caller takes care of positioning, providing NDC coordinates for each single-line "text"
-					- TODO: left vs Right
+				- TODO: screen vs NDC (i.e., do we want font size to change with screen size?)
+				- AddText:
+					- text (1 line)
+					- Justification
+						- TopLeft, TopRight, BottomLeft, BottomRight
+						- Implicit: l/r/t/b margins
+					- screenY 
+						- From vertical component of justification
+						- Also provides getter for height of line for font, and getter for v inset between lines
+					- alpha
+					- font
 			- Cleanup:
 				- Nuke old API
 				- Nuke GameTypes::TextPosition enum
