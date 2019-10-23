@@ -45,7 +45,7 @@ void main()
     #define RainSpatialDensityX 45.0
     #define RainSpatialDensityY 30.0
     #define RainSpeed 20.0
-    #define DropletLength 0.8
+    #define DropletLength 0.65
     #define DropletWidth 0.06
     
     vec2 scaledUV = uv * vec2(RainSpatialDensityX, RainSpatialDensityY);
@@ -66,7 +66,7 @@ void main()
     vec2 inTile = fract(scaledUV);
     
     // Shuffle in-tile X based on its tile coordinates;
-    float rand = fract(1000.0 * sin(77.7 * tileY + 77.7 * tileX));
+    float rand = fract(sin(77.7 * tileY + 77.7 * tileX));
     inTile.x += rand - 0.5;    
     
     // Distance from center of tile
@@ -80,18 +80,15 @@ void main()
     float dropletThickness = (1.0 - clampedXDistance) * smoothstep(1.0 - DropletLength + rand/2.4, 1.0, 1.0 - yDistance);
     
     // Turning off tiles
-    float randOnOff = fract(19047.56 * sin(tileX * 71.0 + tileY * 7.0));
+    float randOnOff = fract(sin(tileX * 71.0 + tileY * 7.0));
     float m = 1.0 - step(paramRainDensity, randOnOff);
     dropletThickness *= m;
 
     //
     // ---------------------------------------------
     //
-    
-    //if (dropletThickness < 0.3)
-    //    discard;
 
-    float alpha = smoothstep(0.4, 1.0, dropletThickness);
+    float alpha = .8 * smoothstep(0.4, 1.0, dropletThickness);
     vec3 c = vec3(dropletThickness, dropletThickness, dropletThickness) * paramEffectiveAmbientLightIntensity;
 
     // Output to screen
