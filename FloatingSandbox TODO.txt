@@ -360,9 +360,9 @@ Render:
 			- Do blog post
 
 		- Fix guy's name in Aurora:
-			- Need:
-				- Name
-				- URL
+			+ Need:
+				+ Name: HummeL
+				+ URL: https://www.youtube.com/c/HummeL_Prog
 			- Ship
 			- AboutBox
 	
@@ -1013,7 +1013,7 @@ Render:
 				- UpdateText: different versions for:
 					- text only
 					- alpha only
-					- screenY only
+					- offsets only
 				- RemoveText
 			- Cleanup:
 				- Nuke old API
@@ -1113,7 +1113,14 @@ Render:
 				= Rain
 					= Shader
 						+ Try with more spatial density
+						- Try:
+							    #define RainSpatialDensityX 45.0
+							    #define RainSpatialDensityY 30.0
+							    #define RainSpeed 7.0
+							    #define DropletLength 0.65
+							    #define DropletWidth 0.08
 						- Discard
+							- See if it helps with perf
 					+ Sound (continuous, like wind)
 				+ Thunders
 					+ Others random with same distribution as wind gusts
@@ -1121,6 +1128,9 @@ Render:
 					+ Sounds (N, one shot)
 				- Lightnings
 					- TODO
+					= Shader
+						= Txt
+						- RenderCore and glsl
 			+ Storm::Parameters:
 				+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 					+ OceanSurface: gets in indirectly and makes waves

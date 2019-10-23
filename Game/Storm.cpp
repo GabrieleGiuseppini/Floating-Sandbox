@@ -13,7 +13,7 @@
 namespace Physics {
 
 // The number of thunders we want per second
-float constexpr ThunderRate = 1.0f / 25.0f;
+float constexpr ThunderRate = 1.0f / 20.0f;
 
 // The number of poisson samples we perform in a second
 float constexpr PoissonSampleRate = 4.0f;
@@ -65,7 +65,7 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr CloudsUpEnd = 0.1f;
     float constexpr WindUpEnd = 0.12f;
     float constexpr AmbientDarkeningUpEnd = 0.125f;
-	float constexpr RainUpEnd = 0.25f;
+	float constexpr RainUpEnd = 0.35f;
         
 	float constexpr RainDownStart = 0.75f;
     float constexpr CloudsDownStart = 0.8f;
@@ -81,6 +81,8 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr MaxClouds = 50.0f;
     float constexpr MinCloudSize = 1.85f;
     float constexpr MaxCloudSize = 2.5f;
+
+	float constexpr MaxRainDensity = 0.6f;
 
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
@@ -115,9 +117,7 @@ void Storm::Update(GameParameters const & gameParameters)
 
 		// Rain
 		float rainLinearProgress = Clamp((upProgress - RainUpStart) / (RainUpEnd - RainUpStart), 0.0f, 1.0f);
-		mParameters.RainDensity = rainLinearProgress;
-
-        // TODO: other phases
+		mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
     }
     else
     {
@@ -141,9 +141,7 @@ void Storm::Update(GameParameters const & gameParameters)
 
 		// Rain
 		float rainLinearProgress = 1.0f - Clamp((downProgress - RainDownStart) / (RainDownEnd - RainDownStart), 0.0f, 1.0f);
-		mParameters.RainDensity = rainLinearProgress;
-
-        // TODO: other phases
+		mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
     }
 
 
