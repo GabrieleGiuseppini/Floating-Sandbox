@@ -995,7 +995,13 @@ Render:
 			+ Given by GameController, who takes it from RenderContext
 			! RenderContext will forfait wrapping of text API's
 		- TextRenderContext cares about single-line texts only
-			- Make sure multiple-line support is not for perf
+			+ Make sure multiple-line support is not for perf
+			- API exposed:
+				- Caller takes care of positioning, providing NDC coordinates for each single-line "text"
+					- TODO: left vs Right
+			- Cleanup:
+				- Nuke old API
+				- Nuke GameTypes::TextPosition enum
 			
 		- GameController:
 			- Use mTextLayer for tsunami

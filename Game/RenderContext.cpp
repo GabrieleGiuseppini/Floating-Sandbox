@@ -795,9 +795,6 @@ void RenderContext::RenderStart()
     // Reset fire extinguisher spray, it's uploaded as needed
     mFireExtinguisherSprayShaderToRender.reset();
 
-    // Communicate start to child contextes
-    mTextRenderContext->RenderStart();
-
     // Reset stats
     mRenderStatistics.Reset();
 }
@@ -1100,8 +1097,8 @@ void RenderContext::RenderEnd()
     // Render world end
     RenderWorldBorder();
 
-    // Communicate end to child contextes
-    mTextRenderContext->RenderEnd();
+    // Render text
+    mTextRenderContext->Render();
 
     // Flush all pending commands (but not the GPU buffer)
     GameOpenGL::Flush();

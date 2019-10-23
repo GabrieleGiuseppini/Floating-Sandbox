@@ -21,8 +21,7 @@ TextRenderContext::TextRenderContext(
     , mTextSlots()
     , mCurrentTextSlotGeneration(0)
     , mAreTextSlotsDirty(false)
-    , mAreTextSlotVertexBuffersDirty(false)
-    , mFontRenderInfos()
+    , mFontRenderContexts()
 {
     //
     // Load fonts
@@ -48,7 +47,7 @@ TextRenderContext::TextRenderContext(
     mShaderManager.ActivateProgram<ProgramType::TextNDC>();
     mShaderManager.SetTextureParameters<ProgramType::TextNDC>();
 
-    // Initialize fonts
+    // Initialize font render contexts
     for (Font & font : fonts)
     {
         //
@@ -108,7 +107,7 @@ TextRenderContext::TextRenderContext(
         // Store font info
         //
 
-        mFontRenderInfos.emplace_back(
+        mFontRenderContexts.emplace_back(
             font.Metadata,
             textureOpenGLHandle,
             vertexBufferVBOHandle,
@@ -133,11 +132,7 @@ void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
         mEffectiveAmbientLightIntensity);
 }
 
-void TextRenderContext::RenderStart()
-{
-}
-
-void TextRenderContext::RenderEnd()
+void TextRenderContext::Render()
 {
     if (mAreTextSlotsDirty)
     {
@@ -146,9 +141,9 @@ void TextRenderContext::RenderEnd()
         //
 
         // Cleanup
-        for (auto & textRenderInfo : mFontRenderInfos)
+        for (auto & context : mFontRenderContexts)
         {
-            textRenderInfo.GetVertexBuffer().clear();
+			context.GetVertexBuffer().clear();
         }
 
         // Process all slots
@@ -160,8 +155,9 @@ void TextRenderContext::RenderEnd()
                 // Create vertices for this text
                 //
 
-                FontRenderInfo & fontRenderInfo = mFontRenderInfos[static_cast<size_t>(mTextSlots[slot].Font)];
-                FontMetadata const & fontMetadata = fontRenderInfo.GetFontMetadata();
+                FontRenderContext & fontRenderContext = mFontRenderContexts[static_cast<size_t>(mTextSlots[slot].Font)];
+
+                FontMetadata const & fontMetadata = fontRenderContext.GetFontMetadata();
 
                 //
                 // Calculate cursor position
@@ -229,7 +225,7 @@ void TextRenderContext::RenderEnd()
                     }
                 }
 
-                mTextSlots[slot].VertexBufferIndexStart = fontRenderInfo.GetVertexBuffer().size();
+                mTextSlots[slot].VertexBufferIndexStart = fontRenderContext.GetVertexBuffer().size();
                 mTextSlots[slot].VertexBufferCount = 0;
 
                 float lineOffsetNdc = 0.0f;
@@ -244,68 +240,68 @@ void TextRenderContext::RenderEnd()
                         mTextSlots[slot].Alpha,
                         mScreenToNdcX,
                         mScreenToNdcY,
-                        fontRenderInfo.GetVertexBuffer());
+						fontRenderContext.GetVertexBuffer());
 
                     mTextSlots[slot].VertexBufferCount += vertexCount;
 
                     lineOffsetNdc += lineHeightIncrementNdc;
                 }
+
+
+				//
+				// Remember that this font's render context vertex buffers are dirty now
+				//
+
+				fontRenderContext.SetVertexBufferDirty(true);
             }
         }
-
-        // Remember vertex buffers are dirty now
-        mAreTextSlotVertexBuffersDirty = true;
 
         // Remember slots are not dirty anymore
         mAreTextSlotsDirty = false;
     }
 
-    if (mAreTextSlotVertexBuffersDirty)
-    {
-        //
-        // Re-upload all vertex buffers for each font
-        //
-
-        for (auto const & fontRenderInfo : mFontRenderInfos)
-        {
-            auto const & vertexBuffer = fontRenderInfo.GetVertexBuffer();
-            if (!vertexBuffer.empty())
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, fontRenderInfo.GetVerticesVBOHandle());
-
-                glBufferData(
-                    GL_ARRAY_BUFFER,
-                    vertexBuffer.size() * sizeof(TextQuadVertex),
-                    vertexBuffer.data(),
-                    GL_DYNAMIC_DRAW);
-
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-                CheckOpenGLError();
-            }
-        }
-
-        // Remember vertex buffers are not dirty anymore
-        mAreTextSlotVertexBuffersDirty = false;
-    }
-
 
     //
-    // Render vertices
+    // Render all fonts
     //
 
     bool isFirst = true;
 
-    for (auto const & fontRenderInfo : mFontRenderInfos)
+    for (auto & context : mFontRenderContexts)
     {
-        auto const & vertexBuffer = fontRenderInfo.GetVertexBuffer();
+		auto const & vertexBuffer = context.GetVertexBuffer();
+
+		//
+		// Re-upload vertex buffer if dirty
+		//
+
+		if (context.IsVertexBufferDirty())
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());			
+
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				vertexBuffer.size() * sizeof(TextQuadVertex),
+				vertexBuffer.data(),
+				GL_DYNAMIC_DRAW);
+			CheckOpenGLError();
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			context.SetVertexBufferDirty(false);
+		}
+
+		//
+		// Render
+		//
+
         if (!vertexBuffer.empty())
         {
             //
             // Render the vertices for this font
             //
 
-            glBindVertexArray(fontRenderInfo.GetVAOHandle());
+            glBindVertexArray(context.GetVAOHandle());
 
             if (isFirst)
             {
@@ -319,7 +315,7 @@ void TextRenderContext::RenderEnd()
             }
 
             // Bind texture
-            glBindTexture(GL_TEXTURE_2D, fontRenderInfo.GetFontTextureHandle());
+            glBindTexture(GL_TEXTURE_2D, context.GetFontTextureHandle());
             CheckOpenGLError();
 
             // Draw vertices
