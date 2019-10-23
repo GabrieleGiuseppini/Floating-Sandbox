@@ -995,17 +995,26 @@ Render:
 		- TextRenderContext cares about single-line texts only
 			+ Make sure multiple-line support is not for perf
 			- API exposed:
-				- TODO: screen vs NDC (i.e., do we want font size to change with screen size?)
 				- AddText:
 					- text (1 line)
 					- Justification
 						- TopLeft, TopRight, BottomLeft, BottomRight
-						- Implicit: l/r/t/b margins
-					- screenY 
-						- From vertical component of justification
-						- Also provides getter for height of line for font, and getter for v inset between lines
+						- Implicit: l/r/t/b (screen-)margins
+					- offsetScreenX
+						- Meant to be distance from horizontal component of justification
+						- Margin is added implicitly
+						- For effects
+					- offsetScreenY 
+						- Meant to be distance from vertical component of justification
+						- Margin is added implicitly
+						- Also provides getter for (screen-)height of line for font, and getter for fixed (screen-)v inset between lines
 					- alpha
 					- font
+				- UpdateText: different versions for:
+					- text only
+					- alpha only
+					- screenY only
+				- RemoveText
 			- Cleanup:
 				- Nuke old API
 				- Nuke GameTypes::TextPosition enum

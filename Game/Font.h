@@ -22,11 +22,27 @@ namespace Render
 
 static constexpr char FontBaseCharacter = ' ';
 
+/*
+ * This class encapsulates all the information about a font, and exposes the
+ * font's rendering primitives.
+ */
 class FontMetadata
 {
 public:
 
-    inline ImageSize CalculateTextExtent(
+	/*
+	 * Returns the height - in screen coordinates, i.e. pixels - of this font.
+	 */
+	inline int GetLineScreenHeight() const
+	{
+		return mCellSize.Height;
+	}
+
+	/*
+	 * Calculates the dimensions of the specified line in screen
+	 * coordinates.
+	 */
+    inline ImageSize CalculateTextLineScreenExtent(
         char const * text,
         size_t length) const
     {
@@ -37,6 +53,9 @@ public:
         return ImageSize(width, mCellSize.Height);
     }
 
+	/*
+	 * Populates quad vertices for all the characters in the string.
+	 */
     inline size_t EmitQuadVertices(
         char const * text,
         size_t length,
@@ -127,12 +146,12 @@ private:
         float glyphTextureWidth,
         float glyphTextureHeight);
 
-    ImageSize mCellSize;
-    std::array<uint8_t, 256> mGlyphWidths;
+    ImageSize const mCellSize;
+    std::array<uint8_t, 256> const mGlyphWidths;
     std::array<vec2f, 256> mGlyphTextureOrigins; // Bottom-left
-    int mGlyphsPerTextureRow;
-    float mGlyphTextureWidth;
-    float mGlyphTextureHeight;
+    int const mGlyphsPerTextureRow;
+    float const mGlyphTextureWidth;
+    float const mGlyphTextureHeight;
 };
 
 struct Font

@@ -21,6 +21,14 @@
 namespace Render
 {
 
+/*
+ * This class implements the state of text rendering, 
+ * and provides primitives to manipulate the state.
+ *
+ * The class reasons in screen coordinates. We stick to screen coordinates
+ * (one font pixel is one screen pixel) as the font doesn't look nice when 
+ * scaled up or down and using a cheap texture filtering. 
+ */
 class TextRenderContext
 {
 public:
@@ -48,7 +56,13 @@ public:
 	// Text management
 	//
 
-	// TODOOLD: nuke
+	inline int GetLineScreenHeight(FontType font) const
+	{
+		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(font)];
+		return fontRenderContext.GetFontMetadata().GetLineScreenHeight();
+	}
+
+	// TODOOLD
 
 	RenderedTextHandle AddText(
 		std::vector<std::string> const & textLines,
@@ -105,16 +119,21 @@ public:
 
 		mTextSlots[textHandle].Alpha = alpha;
 
-		// Update all alpha's in this text's vertex buffer
-		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(mTextSlots[textHandle].Font)];
-		TextQuadVertex * vertexBuffer = &(fontRenderContext.GetVertexBuffer()[mTextSlots[textHandle].VertexBufferIndexStart]);
-		for (size_t v = 0; v < mTextSlots[textHandle].VertexBufferCount; ++v)
+		// Optimization: update alpha's in-place, but only if so far we don't
+		// need to re-generate all vertex buffers
+		if (!mAreTextSlotsDirty)
 		{
-			vertexBuffer[v].alpha = alpha;
-		}
+			// Update all alpha's in this text's vertex buffer
+			auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(mTextSlots[textHandle].Font)];
+			TextQuadVertex * vertexBuffer = &(fontRenderContext.GetVertexBuffer()[mTextSlots[textHandle].VertexBufferIndexStart]);
+			for (size_t v = 0; v < mTextSlots[textHandle].VertexBufferCount; ++v)
+			{
+				vertexBuffer[v].alpha = alpha;
+			}
 
-		// Remember this font's vertex buffers are dirty now
-		fontRenderContext.SetVertexBufferDirty(true);
+			// Remember this font's vertex buffers are dirty now
+			fontRenderContext.SetVertexBufferDirty(true);
+		}
 	}
 
 	void ClearText(RenderedTextHandle textHandle)

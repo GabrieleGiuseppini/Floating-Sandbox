@@ -171,7 +171,7 @@ void TextRenderContext::Render()
                 int lineHeightIncrement = 0;
                 for (auto const & line : mTextSlots[slot].TextLines)
                 {
-                    auto const lineExtent = fontMetadata.CalculateTextExtent(
+                    auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                         line.c_str(),
                         line.length());
 
