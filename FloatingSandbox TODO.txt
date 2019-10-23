@@ -1071,7 +1071,7 @@ Render:
 			+ Another physics component
 			+ Game wall-clock based
 			- State machine with concentric phases:
-				= Wind (and thus waves)
+				+ Wind (and thus waves)
 					+ Make clouds more sensible to speed - should go faster at higher speeds
 					+ No zero state while there is storm
 					+ Test storm wind on top of wind modulation					
@@ -1110,8 +1110,8 @@ Render:
 							+ map into NDC
 							+ Remove test overrides
 					+ See if can enlarge small cloud
-				= Rain
-					= Shader
+				+ Rain
+					+ Shader
 						+ Try with more spatial density
 						+ Discard
 							+ See if it helps with perf: NO
