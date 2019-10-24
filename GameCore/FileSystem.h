@@ -103,13 +103,18 @@ public:
     {
         std::vector<std::filesystem::path> filePaths;
 
-        for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
-        {
-            if (std::filesystem::is_regular_file(entryIt.path()))
-            {
-                filePaths.push_back(entryIt.path());
-            }
-        }
+		// Be robust to users messing up
+		if (std::filesystem::exists(directoryPath)
+			&& std::filesystem::is_directory(directoryPath))
+		{
+			for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+			{
+				if (std::filesystem::is_regular_file(entryIt.path()))
+				{
+					filePaths.push_back(entryIt.path());
+				}
+			}
+		}
 
         return filePaths;
     }

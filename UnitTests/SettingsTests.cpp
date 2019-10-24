@@ -419,7 +419,7 @@ TEST(SettingsTests, Storage_DeleteDeletesAllStreamsAndSettings)
 
     ASSERT_EQ(4, testFileSystem->GetFileMap().size());
 
-    storage.Delete(PersistedSettingsKey("Test Name", StorageTypes::User));
+    storage.Delete(PersistedSettingsKey("Test Name", PersistedSettingsStorageTypes::User));
 
     ASSERT_EQ(1, testFileSystem->GetFileMap().size());
     EXPECT_EQ(1, testFileSystem->GetFileMap().count(TestRootUserDirectory / "Test Namez.yulp.abracadabra"));
@@ -458,13 +458,13 @@ TEST(SettingsTests, Storage_ListSettings)
             return lhs.Key.Name < rhs.Key.Name;
         });
 
-    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Super Settings", StorageTypes::User));
+    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Super Settings", PersistedSettingsStorageTypes::User));
     EXPECT_EQ(settings[0].Description, "This is a description");
 
-    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("System Settings", StorageTypes::System));
+    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("System Settings", PersistedSettingsStorageTypes::System));
     EXPECT_EQ(settings[1].Description, "");
 
-    EXPECT_EQ(settings[2].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
+    EXPECT_EQ(settings[2].Key, PersistedSettingsKey("Test Name 1", PersistedSettingsStorageTypes::User));
     EXPECT_EQ(settings[2].Description, "");
 }
 
@@ -496,7 +496,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -597,7 +597,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -663,7 +663,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -747,7 +747,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -766,7 +766,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization)
 
     {
         SettingsDeserializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             storage);
 
         settings2.Deserialize(sContext);
@@ -814,7 +814,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_rgbColor)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -832,7 +832,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_rgbColor)
 
     {
         SettingsDeserializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             storage);
 
         settings2.Deserialize(sContext);
@@ -891,7 +891,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_Enum)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -909,7 +909,7 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_Enum)
 
     {
         SettingsDeserializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             storage);
 
         settings2.Deserialize(sContext);
@@ -948,7 +948,7 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -967,7 +967,7 @@ TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)
 
     {
         SettingsDeserializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             storage);
 
         settings2.Deserialize(sContext);
@@ -1007,7 +1007,7 @@ TEST(SettingsTests, Serialization_CustomNonDeserializedSettingIsClean)
 
     {
         SettingsSerializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             "Test description",
             storage);
 
@@ -1026,7 +1026,7 @@ TEST(SettingsTests, Serialization_CustomNonDeserializedSettingIsClean)
 
     {
         SettingsDeserializationContext sContext(
-            PersistedSettingsKey("Test Settings", StorageTypes::User),
+            PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
             storage);
 
         settings2.Deserialize(sContext);
@@ -1265,8 +1265,8 @@ TEST(SettingsTests, BaseSettingsManager_ListPersistedSettings)
             return lhs.Key.Name < rhs.Key.Name;
         });
 
-    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
-    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("Test Name 2", StorageTypes::User));
+    EXPECT_EQ(settings[0].Key, PersistedSettingsKey("Test Name 1", PersistedSettingsStorageTypes::User));
+    EXPECT_EQ(settings[1].Key, PersistedSettingsKey("Test Name 2", PersistedSettingsStorageTypes::User));
 }
 
 TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByVal)
@@ -1291,7 +1291,7 @@ TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByVal)
     // Load settings
     //
 
-    Settings<TestSettings> settings2 = sm.LoadPersistedSettings(PersistedSettingsKey("TestName", StorageTypes::User));
+    Settings<TestSettings> settings2 = sm.LoadPersistedSettings(PersistedSettingsKey("TestName", PersistedSettingsStorageTypes::User));
 
     //
     // Verify
@@ -1330,7 +1330,7 @@ TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByRef)
     Settings<TestSettings> settings2(MakeTestSettings());
 
     sm.LoadPersistedSettings(
-        PersistedSettingsKey("TestName", StorageTypes::User),
+        PersistedSettingsKey("TestName", PersistedSettingsStorageTypes::User),
         settings2);
 
     //
@@ -1394,8 +1394,8 @@ TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings)
             return lhs.Key.Name < rhs.Key.Name;
         });
 
-    EXPECT_EQ(persistedSettings2[0].Key, PersistedSettingsKey("Test Name 1", StorageTypes::User));
-    EXPECT_EQ(persistedSettings2[1].Key, PersistedSettingsKey("Test Name 3", StorageTypes::User));
+    EXPECT_EQ(persistedSettings2[0].Key, PersistedSettingsKey("Test Name 1", PersistedSettingsStorageTypes::User));
+    EXPECT_EQ(persistedSettings2[1].Key, PersistedSettingsKey("Test Name 3", PersistedSettingsStorageTypes::User));
 }
 
 TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings_All)

@@ -39,6 +39,7 @@ SettingsDialog::SettingsDialog(
     // State
     , mLiveSettings(mSettingsManager->MakeSettings())
     , mCheckpointSettings(mSettingsManager->MakeSettings())
+	, mPersistedSettings(mSettingsManager->ListPersistedSettings())
 {
     Create(
         mParent,
@@ -167,6 +168,17 @@ SettingsDialog::SettingsDialog(
     PopulateAdvancedPanel(advancedPanel);
 
     notebook->AddPage(advancedPanel, "Advanced");
+
+
+	//
+	// Settings Management
+	//
+
+	wxPanel * settingsManagementPanel = new wxPanel(notebook);
+
+	PopulateSettingsManagementPanel(settingsManagementPanel);
+
+	notebook->AddPage(settingsManagementPanel, "Settings Management");
 
 
 
@@ -559,6 +571,70 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event)
 {
 	mLiveSettings.SetValue(GameSettings::PlaySinkingMusic, event.IsChecked());
     OnLiveSettingsChanged();
+}
+
+void SettingsDialog::OnPersistedSettingsListBoxSelected(wxCommandEvent & event)
+{
+	ReconciliateLoadPersistedSettings();
+}
+
+void SettingsDialog::OnPersistedSettingsListBoxDoubleClicked(wxCommandEvent & event)
+{
+	LoadPersistedSettings(event.GetSelection());
+}
+
+void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
+{
+	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+
+	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+	assert(selectedIndex < mPersistedSettings.size());
+
+	// TODO
+}
+
+void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/)
+{
+	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+
+	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+	assert(selectedIndex < mPersistedSettings.size());
+	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+
+	// TODO: overwrite
+
+	// TODO: update mPersistedSettings
+
+	ReconciliateLoadPersistedSettings();
+}
+
+void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
+{
+	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+
+	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+	assert(selectedIndex < mPersistedSettings.size());
+	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+
+	if (selectedIndex != wxNOT_FOUND)
+	{
+		// Ask user whether they're sure
+		auto result = wxMessageBox(
+			"Are you sure you want to delete settings \"" + mPersistedSettings[selectedIndex].Key.Name + "\"?",
+			"Warning",
+			wxCANCEL | wxOK);
+
+		if (result == wxOK)
+		{
+			// TODO: delete
+
+			// TODO: remove from list box
+
+			// TODO: remove from mPersistedSettings
+
+			ReconciliateLoadPersistedSettings();
+		}
+	}
 }
 
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
@@ -3047,6 +3123,219 @@ void SettingsDialog::PopulateAdvancedPanel(wxPanel * panel)
     panel->SetSizerAndFit(controlsSizer);
 }
 
+void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
+{
+	wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+	//
+	// Load settings
+	//
+
+	{
+		wxStaticBox * loadSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Load Settings"));
+
+		wxBoxSizer * loadSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
+		loadSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
+
+		{
+			wxBoxSizer * loadSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
+
+			// Col 1
+
+			{
+				// Prepare choices
+				std::vector<wxString> choices;
+				for (auto const & ps : mPersistedSettings)
+				{
+					choices.emplace_back(ps.Key.Name);
+				}
+
+				mPersistedSettingsListBox = new wxListBox(
+					loadSettingsBox,
+					wxID_ANY,
+					wxDefaultPosition,
+					wxSize(250, 370),
+					static_cast<int>(choices.size()),
+					choices.data(),
+					wxLB_SINGLE | wxLB_NEEDED_SB);
+
+				if (!choices.empty())
+				{
+					// Select first item
+					mPersistedSettingsListBox->SetSelection(0);
+				}
+
+				mPersistedSettingsListBox->Bind(wxEVT_LISTBOX, &SettingsDialog::OnPersistedSettingsListBoxSelected, this);
+				mPersistedSettingsListBox->Bind(wxEVT_LISTBOX_DCLICK, &SettingsDialog::OnPersistedSettingsListBoxDoubleClicked, this);
+
+				loadSettingsBoxHSizer->Add(mPersistedSettingsListBox, 0, wxALL | wxEXPAND, 5);
+			}
+
+			// Col 2
+
+			{
+				wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
+
+				{
+					auto label = new wxStaticText(loadSettingsBox, wxID_ANY, "Description:");
+
+					col2BoxSizer->Add(label, 0, wxALL | wxEXPAND | wxALIGN_LEFT, 5);
+				}
+
+				{
+					// TODO: text area
+				}
+
+				{
+					mLoadAndApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Load and Apply");
+					mLoadAndApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them to the game.");
+					mLoadAndApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnLoadAndApplyPersistedSettingsButton, this);
+
+					col2BoxSizer->Add(mLoadAndApplyPersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+
+					mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace with Current");
+					mReplacePersistedSettingsButton->SetToolTip("Overwrites the selected settings with the current settings.");
+					mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
+
+					col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+
+					mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Settings");
+					mDeletePersistedSettingsButton->SetToolTip("Deletes the selected settings.");
+					mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
+
+					col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+				}
+
+				loadSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
+			}
+
+			loadSettingsBoxVSizer->Add(loadSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
+		}
+
+		loadSettingsBox->SetSizerAndFit(loadSettingsBoxVSizer);
+
+		gridSizer->Add(
+			loadSettingsBox,
+			wxGBPosition(0, 0),
+			wxGBSpan(2, 1),
+			wxEXPAND | wxALL,
+			CellBorder);
+
+		ReconciliateLoadPersistedSettings();
+	}
+
+	//
+	// Save settings
+	//
+
+	{
+		wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Save Settings"));
+
+		wxBoxSizer * saveSettingsBoxSizer = new wxBoxSizer(wxVERTICAL);
+		saveSettingsBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+		{
+			/* TODOHERE
+			wxGridBagSizer * mechanicsSizer = new wxGridBagSizer(0, 0);
+
+			// Simulation Quality
+			{
+				mMechanicalQualitySlider = new SliderControl<float>(
+					mechanicsBox,
+					SliderWidth,
+					SliderHeight,
+					"Simulation Quality",
+					"Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
+					[this](float value)
+					{
+						this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
+						this->OnLiveSettingsChanged();
+					},
+					std::make_unique<FixedTickSliderCore>(
+						0.5f,
+						mGameControllerSettingsOptions->GetMinNumMechanicalDynamicsIterationsAdjustment(),
+						mGameControllerSettingsOptions->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+						mWarningIcon.get());
+
+				mechanicsSizer->Add(
+					mMechanicalQualitySlider,
+					wxGBPosition(0, 0),
+					wxGBSpan(1, 1),
+					wxEXPAND | wxALL,
+					CellBorder);
+			}
+
+			// Strength
+			{
+				mStrengthSlider = new SliderControl<float>(
+					mechanicsBox,
+					SliderWidth,
+					SliderHeight,
+					"Strength Adjust",
+					"Adjusts the strength of springs.",
+					[this](float value)
+					{
+						this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
+						this->OnLiveSettingsChanged();
+					},
+					std::make_unique<ExponentialSliderCore>(
+						mGameControllerSettingsOptions->GetMinSpringStrengthAdjustment(),
+						1.0f,
+						mGameControllerSettingsOptions->GetMaxSpringStrengthAdjustment()));
+
+				mechanicsSizer->Add(
+					mStrengthSlider,
+					wxGBPosition(0, 1),
+					wxGBSpan(1, 1),
+					wxEXPAND | wxALL,
+					CellBorder);
+			}
+
+			// Rot Accelerator
+			{
+				mRotAcceler8rSlider = new SliderControl<float>(
+					mechanicsBox,
+					SliderWidth,
+					SliderHeight,
+					"Rot Acceler8r",
+					"Adjusts the speed with which materials rot when exposed to sea water.",
+					[this](float value)
+					{
+						this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
+						this->OnLiveSettingsChanged();
+					},
+					std::make_unique<ExponentialSliderCore>(
+						mGameControllerSettingsOptions->GetMinRotAcceler8r(),
+						1.0f,
+						mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
+
+				mechanicsSizer->Add(
+					mRotAcceler8rSlider,
+					wxGBPosition(0, 2),
+					wxGBSpan(1, 1),
+					wxEXPAND | wxALL,
+					CellBorder);
+			}
+
+			mechanicsBoxSizer->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
+			*/
+		}
+
+		saveSettingsBox->SetSizerAndFit(saveSettingsBoxSizer);
+
+		gridSizer->Add(
+			saveSettingsBox,
+			wxGBPosition(0, 1),
+			wxGBSpan(1, 1),
+			wxEXPAND | wxALL,
+			CellBorder);
+	}
+
+	// Finalize panel
+
+	panel->SetSizerAndFit(gridSizer);
+}
+
 void SettingsDialog::SyncSettingsWithControls(Settings<GameSettings> const & settings)
 {
     // Mechanics, Fluids, Lights
@@ -3414,4 +3703,40 @@ void SettingsDialog::ReconcileDirtyState()
 
 	mRevertToDefaultsButton->Enable(mAreSettingsDirtyWrtDefaults);
     mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
+}
+
+void SettingsDialog::LoadPersistedSettings(int index)
+{
+	// TODO
+}
+
+void SettingsDialog::ReconciliateLoadPersistedSettings()
+{
+	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+
+	assert(selectedIndex == wxNOT_FOUND || selectedIndex < mPersistedSettings.size());
+
+	// Enable as long as there's a selection
+	mLoadAndApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
+
+	// Enable as long as there's a selection for a user setting that's not the "last-played" setting
+	mReplacePersistedSettingsButton->Enable(
+		selectedIndex != wxNOT_FOUND
+		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
+		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastPlayedSettingsKey());
+
+	// Enable as long as there's a selection for a user setting that's not the "last-played" setting
+	mDeletePersistedSettingsButton->Enable(
+		selectedIndex != wxNOT_FOUND
+		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
+		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastPlayedSettingsKey());
+
+	if (selectedIndex != wxNOT_FOUND)
+	{
+		// TODO: set description content
+	}
+	else
+	{
+		// TODO: clear description content
+	}
 }

@@ -37,7 +37,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-enum class StorageTypes
+enum class PersistedSettingsStorageTypes
 {
     System,
     User
@@ -49,11 +49,11 @@ enum class StorageTypes
 struct PersistedSettingsKey
 {
     std::string Name;
-    StorageTypes StorageType;
+	PersistedSettingsStorageTypes StorageType;
 
     PersistedSettingsKey(
         std::string const & name,
-        StorageTypes storageType)
+		PersistedSettingsStorageTypes storageType)
         : Name(name)
         , StorageType(storageType)
     {}
@@ -64,9 +64,14 @@ struct PersistedSettingsKey
             && StorageType == other.StorageType;
     }
 
+	bool operator!=(PersistedSettingsKey const & other) const
+	{
+		return !(*this == other);
+	}
+
     static PersistedSettingsKey MakeLastPlayedSettingsKey()
     {
-        return PersistedSettingsKey("Last Played", StorageTypes::User);
+        return PersistedSettingsKey("Last Played", PersistedSettingsStorageTypes::User);
     }
 };
 
@@ -138,7 +143,7 @@ private:
 
     void ListSettings(
         std::filesystem::path directoryPath,
-        StorageTypes storageType,
+		PersistedSettingsStorageTypes storageType,
         std::vector<PersistedSettingsMetadata> & outPersistedSettingsMetadata) const;
 
     std::filesystem::path MakeFilePath(
@@ -146,7 +151,7 @@ private:
         std::string const & streamName,
         std::string const & extension) const;
 
-    std::filesystem::path GetRootPath(StorageTypes storageType) const;
+    std::filesystem::path GetRootPath(PersistedSettingsStorageTypes storageType) const;
 
     std::filesystem::path const mRootSystemSettingsDirectoryPath;
     std::filesystem::path const mRootUserSettingsDirectoryPath;
@@ -945,7 +950,7 @@ public:
         SettingsSerializationContext ctx(
             PersistedSettingsKey(
                 name,
-                StorageTypes::User),
+				PersistedSettingsStorageTypes::User),
             description, 
             mStorage);
 

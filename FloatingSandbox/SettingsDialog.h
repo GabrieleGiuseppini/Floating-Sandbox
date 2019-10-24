@@ -11,14 +11,18 @@
 #include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ResourceLoader.h>
 
+#include <GameCore/Settings.h>
+
 #include <wx/bitmap.h>
 #include <wx/bmpcbox.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/clrpicker.h>
+#include <wx/listbox.h>
 #include <wx/radiobox.h>
 
 #include <memory>
+#include <vector>
 
 class SettingsDialog : public wxFrame
 {
@@ -67,6 +71,12 @@ private:
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
+
+	void OnPersistedSettingsListBoxSelected(wxCommandEvent & event);
+	void OnPersistedSettingsListBoxDoubleClicked(wxCommandEvent & event);
+	void OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & event);
+	void OnReplacePersistedSettingsButton(wxCommandEvent & event);
+	void OnDeletePersistedSettingsButton(wxCommandEvent & event);
 
 	void OnRevertToDefaultsButton(wxCommandEvent& event);
     void OnOkButton(wxCommandEvent & event);
@@ -183,6 +193,12 @@ private:
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
+	// Settings Management
+	wxListBox * mPersistedSettingsListBox;
+	wxButton * mLoadAndApplyPersistedSettingsButton;
+	wxButton * mReplacePersistedSettingsButton;
+	wxButton * mDeletePersistedSettingsButton;	
+
     //////////////////////////////////////////////////////
 
     // Buttons
@@ -207,6 +223,7 @@ private:
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundPanel(wxPanel * panel);
     void PopulateAdvancedPanel(wxPanel * panel);
+	void PopulateSettingsManagementPanel(wxPanel * panel);
 
     void SyncSettingsWithControls(Settings<GameSettings> const & settings);
 
@@ -214,8 +231,10 @@ private:
     void ReconciliateLandRenderModeSettings();
 
     void OnLiveSettingsChanged();
-
     void ReconcileDirtyState();
+
+	void LoadPersistedSettings(int index);
+	void ReconciliateLoadPersistedSettings();
 
 private:
 
@@ -238,7 +257,12 @@ private:
     // settings have not been modified.
     bool mHasBeenDirtyInCurrentSession;
 
-	// Tracks whether the current settings are dirty wrt the defaults
-	// (best effort, we assume all changes deviate from the default)
+	// Tracks whether the current settings are (possibly) dirty wrt the defaults.
+	// Best effort, we assume all changes deviate from the default.
 	bool mAreSettingsDirtyWrtDefaults;
+
+	// The persisted settings currently displayed in the LoadSettings list;
+	// maintained in-sync with the SettingsManager's official list of
+	// persisted settings, and used to hold metadata for the list.
+	std::vector<PersistedSettingsMetadata> mPersistedSettings;
 };

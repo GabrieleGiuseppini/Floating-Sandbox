@@ -32,12 +32,12 @@ std::vector<PersistedSettingsMetadata> SettingsStorage::ListSettings() const
 
     ListSettings(
         mRootSystemSettingsDirectoryPath,
-        StorageTypes::System,
+		PersistedSettingsStorageTypes::System,
         persistedSettingsMetadata);
 
     ListSettings(
         mRootUserSettingsDirectoryPath,
-        StorageTypes::User,
+		PersistedSettingsStorageTypes::User,
         persistedSettingsMetadata);
 
     return persistedSettingsMetadata;
@@ -91,7 +91,7 @@ std::shared_ptr<std::ostream> SettingsStorage::OpenOutputStream(
 
 void SettingsStorage::ListSettings(
     std::filesystem::path directoryPath,
-    StorageTypes storageType,
+	PersistedSettingsStorageTypes storageType,
     std::vector<PersistedSettingsMetadata> & outPersistedSettingsMetadata) const
 {
     static std::regex const SettingsFilenameRegex("^([^\\.]+)\\." + SettingsStreamName + "\\." + SettingsExtension + "$");
@@ -139,14 +139,14 @@ std::filesystem::path SettingsStorage::MakeFilePath(
     return GetRootPath(settingsKey.StorageType) / (settingsKey.Name + "." + streamName + "." + extension);
 }
 
-std::filesystem::path SettingsStorage::GetRootPath(StorageTypes storageType) const
+std::filesystem::path SettingsStorage::GetRootPath(PersistedSettingsStorageTypes storageType) const
 {
     switch (storageType)
     {
-        case StorageTypes::System:
+        case PersistedSettingsStorageTypes::System:
             return mRootSystemSettingsDirectoryPath;
 
-        case StorageTypes::User:
+        case PersistedSettingsStorageTypes::User:
             return mRootUserSettingsDirectoryPath;
     }
 
