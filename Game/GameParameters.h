@@ -214,6 +214,16 @@ struct GameParameters
 
     std::chrono::seconds StormDuration;
 
+	float StormMaxWindSpeed;
+	static float constexpr MinStormMaxWindSpeed = 35.0f;
+	static float constexpr MaxStormMaxWindSpeed = 80.0f;
+
+	float LightningRate; // Seconds
+	static float constexpr MinLightningRate = 1.0f;
+	static float constexpr MaxLightningRate = 50.0f;
+
+	bool DoRainWithStorm;
+
     // Heat and combustion
 
     static float constexpr InitialTemperature = 298.15f; // 25C

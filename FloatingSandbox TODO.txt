@@ -1142,8 +1142,7 @@ Render:
 					- TBD
 			+ Manual storm trigger
 			- SettingsDialog: 
-				- Storm rate and storm length 
-				- Enable rain
+				- Four parameters
 			- Cleanup:
 				- Do perf analysis
 				- Clouds shader: TODO: it's now per-cloud; redo: 

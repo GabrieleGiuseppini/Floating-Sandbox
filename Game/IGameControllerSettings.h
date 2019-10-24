@@ -13,6 +13,7 @@
 #include <GameCore/UniqueBuffer.h>
 #include <GameCore/Vectors.h>
 
+#include <chrono>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -77,6 +78,20 @@ struct IGameControllerSettings
 
     virtual float GetWindSpeedMaxFactor() const = 0;
     virtual void SetWindSpeedMaxFactor(float value) = 0;
+
+	// Storm
+
+	virtual std::chrono::seconds GetStormDuration() const = 0;
+	virtual void SetStormDuration(std::chrono::seconds value) = 0;
+
+	virtual float GetStormMaxWindSpeed() const = 0;
+	virtual void SetStormMaxWindSpeed(float value) = 0;
+
+	virtual float GetLightningRate() const = 0;
+	virtual void SetLightningRate(float value) = 0;
+
+	virtual bool GetDoRainWithStorm() const = 0;
+	virtual void SetDoRainWithStorm(bool value) = 0;
 
     // Heat
 

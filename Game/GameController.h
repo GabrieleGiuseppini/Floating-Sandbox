@@ -288,6 +288,24 @@ public:
     float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
     float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
+	// Storm
+
+	virtual std::chrono::seconds GetStormDuration() const override { return mGameParameters.StormDuration; }
+	virtual void SetStormDuration(std::chrono::seconds value) override { mGameParameters.StormDuration = value; }
+
+	virtual float GetStormMaxWindSpeed() const override { return mGameParameters.StormMaxWindSpeed; }
+	virtual void SetStormMaxWindSpeed(float value) override { mGameParameters.StormMaxWindSpeed = value; }
+	virtual float GetMinStormMaxWindSpeed() const override { return GameParameters::MinStormMaxWindSpeed; }
+	virtual float GetMaxStormMaxWindSpeed() const override { return GameParameters::MaxStormMaxWindSpeed; }
+
+	virtual float GetLightningRate() const override { return mGameParameters.LightningRate; }
+	virtual void SetLightningRate(float value) override { mGameParameters.LightningRate = value; }
+	virtual float GetMinLightningRate() const override { return GameParameters::MinLightningRate; }
+	virtual float GetMaxLightningRate() const override { return GameParameters::MaxLightningRate; }
+
+	virtual bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
+	virtual void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
+
     // Heat
 
     float GetAirTemperature() const override { return mGameParameters.AirTemperature; }

@@ -103,7 +103,7 @@ void Storm::Update(GameParameters const & gameParameters)
 
         // Wind
         float windSmoothProgress = SmoothStep(WindUpStart, WindUpEnd, upProgress);
-        mParameters.WindSpeed = windSmoothProgress * 40.0f;
+        mParameters.WindSpeed = windSmoothProgress * gameParameters.StormMaxWindSpeed;
 
         // Clouds
         float cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f);
@@ -116,8 +116,15 @@ void Storm::Update(GameParameters const & gameParameters)
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
 
 		// Rain
-		float rainLinearProgress = Clamp((upProgress - RainUpStart) / (RainUpEnd - RainUpStart), 0.0f, 1.0f);
-		mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+		if (gameParameters.DoRainWithStorm)
+		{
+			float rainLinearProgress = Clamp((upProgress - RainUpStart) / (RainUpEnd - RainUpStart), 0.0f, 1.0f);
+			mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+		}
+		else
+		{
+			mParameters.RainDensity = 0.0f;
+		}
     }
     else
     {
@@ -126,7 +133,7 @@ void Storm::Update(GameParameters const & gameParameters)
 
         // Wind
         float windSmoothProgress = 1.0f - SmoothStep(WindDownStart, WindDownEnd, downProgress);
-        mParameters.WindSpeed = windSmoothProgress * 40.0f;
+        mParameters.WindSpeed = windSmoothProgress * gameParameters.StormMaxWindSpeed;
 
         // Clouds
         // from 1.0 to 0.0
@@ -140,8 +147,15 @@ void Storm::Update(GameParameters const & gameParameters)
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
 
 		// Rain
-		float rainLinearProgress = 1.0f - Clamp((downProgress - RainDownStart) / (RainDownEnd - RainDownStart), 0.0f, 1.0f);
-		mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+		if (gameParameters.DoRainWithStorm)
+		{
+			float rainLinearProgress = 1.0f - Clamp((downProgress - RainDownStart) / (RainDownEnd - RainDownStart), 0.0f, 1.0f);
+			mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+		}
+		else
+		{
+			mParameters.RainDensity = 0.0f;
+		}
     }
 
 

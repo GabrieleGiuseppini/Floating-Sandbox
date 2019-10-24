@@ -36,6 +36,9 @@ GameParameters::GameParameters()
     , RogueWaveRate(2.0f)
     // Storm
     , StormDuration(60 * 4) // 4 minutes
+	, StormMaxWindSpeed(40.0f)
+	, LightningRate(20.0f)
+	, DoRainWithStorm(true)
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C
