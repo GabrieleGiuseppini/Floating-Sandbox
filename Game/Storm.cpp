@@ -13,7 +13,7 @@
 namespace Physics {
 
 // The number of thunders we want per second
-float constexpr ThunderRate = 1.0f / 20.0f;
+float constexpr ThunderRate = 1.0f / 10.0f;
 
 // The number of poisson samples we perform in a second
 float constexpr PoissonSampleRate = 4.0f;
@@ -69,9 +69,9 @@ void Storm::Update(GameParameters const & gameParameters)
         
 	float constexpr RainDownStart = 0.75f;
     float constexpr CloudsDownStart = 0.8f;
+	float constexpr ThunderEnd = 0.83f;
     float constexpr CloudsDownEnd = 0.88f;
-    float constexpr WindDownStart = 0.88f;
-	float constexpr ThunderEnd = 0.88f;
+    float constexpr WindDownStart = 0.88f;	
 	float constexpr AmbientDarkeningDownStart = 0.9f;	
 	float constexpr RainDownEnd = 0.905f;
     float constexpr AmbientDarkeningDownEnd = 0.97f;
@@ -80,7 +80,7 @@ void Storm::Update(GameParameters const & gameParameters)
 
     float constexpr MaxClouds = 50.0f;
     float constexpr MinCloudSize = 1.85f;
-    float constexpr MaxCloudSize = 2.5f;
+    float constexpr MaxCloudSize = 3.2f;
 
 	float constexpr MaxRainDensity = 0.6f;
 

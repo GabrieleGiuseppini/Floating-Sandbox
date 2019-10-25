@@ -20,6 +20,7 @@
 #include <wx/clrpicker.h>
 #include <wx/listbox.h>
 #include <wx/radiobox.h>
+#include <wx/textctrl.h>
 
 #include <memory>
 #include <vector>
@@ -77,6 +78,8 @@ private:
 	void OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & event);
 	void OnReplacePersistedSettingsButton(wxCommandEvent & event);
 	void OnDeletePersistedSettingsButton(wxCommandEvent & event);
+	void OnSaveSettingsTextEdited(wxCommandEvent & event);
+	void OnSaveSettingsButton(wxCommandEvent & event);
 
 	void OnRevertToDefaultsButton(wxCommandEvent& event);
     void OnOkButton(wxCommandEvent & event);
@@ -195,9 +198,13 @@ private:
 
 	// Settings Management
 	wxListBox * mPersistedSettingsListBox;
+	wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
 	wxButton * mLoadAndApplyPersistedSettingsButton;
 	wxButton * mReplacePersistedSettingsButton;
-	wxButton * mDeletePersistedSettingsButton;	
+	wxButton * mDeletePersistedSettingsButton;
+	wxTextCtrl * mSaveSettingsNameTextCtrl;
+	wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
+	wxButton * mSaveSettingsButton;
 
     //////////////////////////////////////////////////////
 
@@ -235,6 +242,8 @@ private:
 
 	void LoadPersistedSettings(int index);
 	void ReconciliateLoadPersistedSettings();
+	void SaveNewPersistedSettings(PersistedSettingsMetadata const & metadata);
+	void ReconciliateSavePersistedSettings();
 
 private:
 

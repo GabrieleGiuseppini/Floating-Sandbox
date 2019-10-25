@@ -20,6 +20,8 @@
 #include <wx/stattext.h>
 #include <wx/string.h>
 
+#include <algorithm>
+
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
 static int constexpr SliderBorder = 10;
@@ -590,7 +592,7 @@ void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*ev
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
 	assert(selectedIndex < mPersistedSettings.size());
 
-	// TODO
+	LoadPersistedSettings(selectedIndex);
 }
 
 void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/)
@@ -601,11 +603,18 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
 	assert(selectedIndex < mPersistedSettings.size());
 	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
-	// TODO: overwrite
+	auto result = wxMessageBox(
+		"Are you sure you want to replace settings \"" + mPersistedSettings[selectedIndex].Key.Name + "\" with the current settings?",
+		"Warning",
+		wxCANCEL | wxOK);
 
-	// TODO: update mPersistedSettings
+	if (result == wxOK)
+	{
+		// TODO: overwrite
 
-	ReconciliateLoadPersistedSettings();
+		// Reconciliate load UI
+		ReconciliateLoadPersistedSettings();
+	}
 }
 
 void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
@@ -635,6 +644,60 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 			ReconciliateLoadPersistedSettings();
 		}
 	}
+}
+
+void SettingsDialog::OnSaveSettingsTextEdited(wxCommandEvent & /*event*/)
+{
+	ReconciliateSavePersistedSettings();
+}
+
+void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
+{
+	assert(!mSaveSettingsNameTextCtrl->IsEmpty()); // Guaranteed by UI
+
+	if (mSaveSettingsNameTextCtrl->IsEmpty())
+		return;
+
+	auto settingsMetadata = PersistedSettingsMetadata(
+		PersistedSettingsKey(
+			mSaveSettingsNameTextCtrl->GetValue().ToStdString(),
+			PersistedSettingsStorageTypes::User),
+		mSaveSettingsDescriptionTextCtrl->GetValue().ToStdString());
+
+		
+	//
+	// Check if settings with this name already exist
+	//
+
+	auto it = std::find_if(
+		mPersistedSettings.cbegin(),
+		mPersistedSettings.cend(),
+		[&settingsMetadata](auto const & sm)
+		{
+			return sm.Key == settingsMetadata.Key;
+		});
+
+	if (it != mPersistedSettings.cend())
+	{
+		// Ask user if sure
+		auto result = wxMessageBox(
+			"Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
+			"Warning",
+			wxCANCEL | wxOK);
+
+		if (result == wxCANCEL)
+		{
+			// Abort
+			return;
+		}
+	}
+
+
+	//
+	// Save settings
+	//
+
+	SaveNewPersistedSettings(settingsMetadata);	
 }
 
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
@@ -3179,11 +3242,19 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 				{
 					auto label = new wxStaticText(loadSettingsBox, wxID_ANY, "Description:");
 
-					col2BoxSizer->Add(label, 0, wxALL | wxEXPAND | wxALIGN_LEFT, 5);
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
 				}
 
 				{
-					// TODO: text area
+					mPersistedSettingsDescriptionTextCtrl = new wxTextCtrl(
+						loadSettingsBox,						
+						wxID_ANY,
+						_(""),
+						wxDefaultPosition,
+						wxSize(250, 120),
+						wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
+
+					col2BoxSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
 				}
 
 				{
@@ -3231,97 +3302,80 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 	{
 		wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Save Settings"));
 
-		wxBoxSizer * saveSettingsBoxSizer = new wxBoxSizer(wxVERTICAL);
-		saveSettingsBoxSizer->AddSpacer(StaticBoxTopMargin);
+		wxBoxSizer * saveSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
+		saveSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
 
 		{
-			/* TODOHERE
-			wxGridBagSizer * mechanicsSizer = new wxGridBagSizer(0, 0);
+			wxBoxSizer * saveSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-			// Simulation Quality
 			{
-				mMechanicalQualitySlider = new SliderControl<float>(
-					mechanicsBox,
-					SliderWidth,
-					SliderHeight,
-					"Simulation Quality",
-					"Higher values improve the rigidity of simulated structures, at the expense of longer computation times.",
-					[this](float value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<FixedTickSliderCore>(
-						0.5f,
-						mGameControllerSettingsOptions->GetMinNumMechanicalDynamicsIterationsAdjustment(),
-						mGameControllerSettingsOptions->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-						mWarningIcon.get());
+				wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
 
-				mechanicsSizer->Add(
-					mMechanicalQualitySlider,
-					wxGBPosition(0, 0),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
+				{
+					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Name:");
+
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
+				}
+
+				{
+					wxTextValidator validator(wxFILTER_INCLUDE_CHAR_LIST);					
+					validator.SetCharIncludes(
+						"abcdefghijklmnopqrstuvwxyz"
+						"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+						"0123456789"
+						" "
+						"_-");
+					validator.SuppressBellOnError();
+
+					mSaveSettingsNameTextCtrl = new wxTextCtrl(
+						saveSettingsBox,
+						wxID_ANY,
+						_(""),
+						wxDefaultPosition,
+						wxDefaultSize,
+						0,
+						validator);
+
+					mSaveSettingsNameTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
+
+					col2BoxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+				}
+
+				{
+					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Description:");
+
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
+				}
+
+				{
+					mSaveSettingsDescriptionTextCtrl = new wxTextCtrl(
+						saveSettingsBox,
+						wxID_ANY,
+						_(""),
+						wxDefaultPosition,
+						wxSize(250, 120),
+						wxTE_MULTILINE | wxTE_WORDWRAP);
+
+					mSaveSettingsDescriptionTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
+
+					col2BoxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+				}
+
+				{
+					mSaveSettingsButton = new wxButton(saveSettingsBox, wxID_ANY, "Save Current Settings");
+					mSaveSettingsButton->SetToolTip("Saves the current settings using the specified name.");
+					mSaveSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnSaveSettingsButton, this);
+
+					col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+				}
+
+				saveSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
 			}
 
-			// Strength
-			{
-				mStrengthSlider = new SliderControl<float>(
-					mechanicsBox,
-					SliderWidth,
-					SliderHeight,
-					"Strength Adjust",
-					"Adjusts the strength of springs.",
-					[this](float value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<ExponentialSliderCore>(
-						mGameControllerSettingsOptions->GetMinSpringStrengthAdjustment(),
-						1.0f,
-						mGameControllerSettingsOptions->GetMaxSpringStrengthAdjustment()));
-
-				mechanicsSizer->Add(
-					mStrengthSlider,
-					wxGBPosition(0, 1),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
-
-			// Rot Accelerator
-			{
-				mRotAcceler8rSlider = new SliderControl<float>(
-					mechanicsBox,
-					SliderWidth,
-					SliderHeight,
-					"Rot Acceler8r",
-					"Adjusts the speed with which materials rot when exposed to sea water.",
-					[this](float value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<ExponentialSliderCore>(
-						mGameControllerSettingsOptions->GetMinRotAcceler8r(),
-						1.0f,
-						mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
-
-				mechanicsSizer->Add(
-					mRotAcceler8rSlider,
-					wxGBPosition(0, 2),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
-
-			mechanicsBoxSizer->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
-			*/
+			saveSettingsBoxVSizer->Add(saveSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
 		}
 
-		saveSettingsBox->SetSizerAndFit(saveSettingsBoxSizer);
+		saveSettingsBox->SetSizerAndFit(saveSettingsBoxVSizer);
 
 		gridSizer->Add(
 			saveSettingsBox,
@@ -3329,6 +3383,8 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 			wxGBSpan(1, 1),
 			wxEXPAND | wxALL,
 			CellBorder);
+
+		ReconciliateSavePersistedSettings();
 	}
 
 	// Finalize panel
@@ -3733,10 +3789,47 @@ void SettingsDialog::ReconciliateLoadPersistedSettings()
 
 	if (selectedIndex != wxNOT_FOUND)
 	{
-		// TODO: set description content
+		// Set description content
+		mPersistedSettingsDescriptionTextCtrl->SetValue(mPersistedSettings[selectedIndex].Description);
 	}
 	else
 	{
-		// TODO: clear description content
+		// Clear description content
+		mPersistedSettingsDescriptionTextCtrl->Clear();
 	}
+}
+
+void SettingsDialog::SaveNewPersistedSettings(PersistedSettingsMetadata const & metadata)
+{
+	// Save settings
+	mSettingsManager->SaveDirtySettings(
+		metadata.Key.Name,
+		metadata.Description,
+		mLiveSettings);
+
+	// Add to persisted settings
+	mPersistedSettings.push_back(metadata);
+
+	// Add to list control
+	mPersistedSettingsListBox->Append(metadata.Key.Name);
+
+	// Reconciliate load UI
+	ReconciliateLoadPersistedSettings();
+
+	// Clear name and description
+	mSaveSettingsNameTextCtrl->Clear();
+	mSaveSettingsDescriptionTextCtrl->Clear();
+
+	// Reconciliate save UI
+	ReconciliateSavePersistedSettings();
+}
+
+void SettingsDialog::ReconciliateSavePersistedSettings()
+{
+	// TODO: enable boxes if TODO: check paper
+
+	// Enable save button if we have name and description
+	mSaveSettingsButton->Enable(
+		!mSaveSettingsNameTextCtrl->IsEmpty()
+		&& !mSaveSettingsDescriptionTextCtrl->IsEmpty());
 }
