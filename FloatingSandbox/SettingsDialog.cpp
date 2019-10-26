@@ -21,6 +21,7 @@
 #include <wx/string.h>
 
 #include <algorithm>
+#include <stdexcept>
 
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
@@ -29,6 +30,31 @@ static int constexpr SliderBorder = 10;
 static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
 static int constexpr CellBorder = 8;
+
+namespace /* anonymous */ {
+
+	struct PersistedSettingsComparer
+	{
+		bool operator()(PersistedSettingsMetadata const & m1, PersistedSettingsMetadata const & m2)
+		{
+			// m1 < m2
+			// Rules:
+			// - All user first, system next
+			// - Among user, LastPlayed is last
+
+			if (m1.Key.StorageType != m2.Key.StorageType)
+				return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
+
+			assert(m1.Key.StorageType == m2.Key.StorageType);
+
+			if (m1.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey())
+				return m2.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey();
+
+			return m1.Key.Name < m2.Key.Name;
+		}
+	};
+
+}
 
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
@@ -41,7 +67,7 @@ SettingsDialog::SettingsDialog(
     // State
     , mLiveSettings(mSettingsManager->MakeSettings())
     , mCheckpointSettings(mSettingsManager->MakeSettings())
-	, mPersistedSettings(mSettingsManager->ListPersistedSettings())
+	, mPersistedSettings()
 {
     Create(
         mParent,
@@ -57,6 +83,18 @@ SettingsDialog::SettingsDialog(
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     SetIcon(wxICON(AAA_SHIP_ICON));
+
+
+	//
+	// Populate and sort persisted settings
+	//
+
+	mPersistedSettings = mSettingsManager->ListPersistedSettings();
+	PersistedSettingsComparer cmp;
+	std::sort(
+		mPersistedSettings.begin(),
+		mPersistedSettings.end(),
+		cmp);
 
 
     //
@@ -224,7 +262,7 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
-        dialogVSizer->Add(buttonsSizer, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 0);
+        dialogVSizer->Add(buttonsSizer, 0, wxEXPAND, 0);
     }
 
     dialogVSizer->AddSpacer(20);
@@ -575,7 +613,7 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPersistedSettingsListBoxSelected(wxCommandEvent & event)
+void SettingsDialog::OnPersistedSettingsListBoxSelected(wxCommandEvent & /*event*/)
 {
 	ReconciliateLoadPersistedSettings();
 }
@@ -592,7 +630,10 @@ void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*ev
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
 	assert(selectedIndex < mPersistedSettings.size());
 
-	LoadPersistedSettings(selectedIndex);
+	if (selectedIndex != wxNOT_FOUND)
+	{
+		LoadPersistedSettings(selectedIndex);
+	}
 }
 
 void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/)
@@ -603,17 +644,23 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
 	assert(selectedIndex < mPersistedSettings.size());
 	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
-	auto result = wxMessageBox(
-		"Are you sure you want to replace settings \"" + mPersistedSettings[selectedIndex].Key.Name + "\" with the current settings?",
-		"Warning",
-		wxCANCEL | wxOK);
-
-	if (result == wxOK)
+	if (selectedIndex != wxNOT_FOUND)
 	{
-		// TODO: overwrite
+		auto const & metadata = mPersistedSettings[selectedIndex];
 
-		// Reconciliate load UI
-		ReconciliateLoadPersistedSettings();
+		auto result = wxMessageBox(
+			"Are you sure you want to replace settings \"" + metadata.Key.Name + "\" with the current settings?",
+			"Warning",
+			wxCANCEL | wxOK);
+
+		if (result == wxOK)
+		{
+			// Save
+			SavePersistedSettings(metadata);
+
+			// Reconciliate load UI
+			ReconciliateLoadPersistedSettings();
+		}
 	}
 }
 
@@ -627,20 +674,34 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 
 	if (selectedIndex != wxNOT_FOUND)
 	{
+		auto const & metadata = mPersistedSettings[selectedIndex];
+
 		// Ask user whether they're sure
 		auto result = wxMessageBox(
-			"Are you sure you want to delete settings \"" + mPersistedSettings[selectedIndex].Key.Name + "\"?",
+			"Are you sure you want to delete settings \"" + metadata.Key.Name + "\"?",
 			"Warning",
 			wxCANCEL | wxOK);
 
 		if (result == wxOK)
 		{
-			// TODO: delete
+			try
+			{
+				// Delete
+				mSettingsManager->DeletePersistedSettings(metadata.Key);
+			}
+			catch (std::runtime_error const & ex)
+			{
+				OnPersistenceError(std::string("Error deleting settings: ") + ex.what());
+				return;
+			}
 
-			// TODO: remove from list box
+			// Remove from list box
+			mPersistedSettingsListBox->Delete(selectedIndex);
 
-			// TODO: remove from mPersistedSettings
+			// Remove from mPersistedSettings
+			mPersistedSettings.erase(mPersistedSettings.cbegin() + selectedIndex);
 
+			// Reconciliate with UI
 			ReconciliateLoadPersistedSettings();
 		}
 	}
@@ -669,35 +730,76 @@ void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
 	// Check if settings with this name already exist
 	//
 
-	auto it = std::find_if(
-		mPersistedSettings.cbegin(),
-		mPersistedSettings.cend(),
-		[&settingsMetadata](auto const & sm)
-		{
-			return sm.Key == settingsMetadata.Key;
-		});
-
-	if (it != mPersistedSettings.cend())
 	{
-		// Ask user if sure
-		auto result = wxMessageBox(
-			"Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
-			"Warning",
-			wxCANCEL | wxOK);
+		auto it = std::find_if(
+			mPersistedSettings.cbegin(),
+			mPersistedSettings.cend(),
+			[&settingsMetadata](auto const & sm)
+			{
+				return sm.Key == settingsMetadata.Key;
+			});
 
-		if (result == wxCANCEL)
+		if (it != mPersistedSettings.cend())
 		{
-			// Abort
-			return;
+			// Ask user if sure
+			auto result = wxMessageBox(
+				"Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
+				"Warning",
+				wxCANCEL | wxOK);
+
+			if (result == wxCANCEL)
+			{
+				// Abort
+				return;
+			}
 		}
 	}
-
 
 	//
 	// Save settings
 	//
 
-	SaveNewPersistedSettings(settingsMetadata);	
+	// Save
+	SavePersistedSettings(settingsMetadata);
+
+	// Find index for insertion
+	PersistedSettingsComparer cmp;
+	auto const it = std::lower_bound(
+		mPersistedSettings.begin(),
+		mPersistedSettings.end(),
+		settingsMetadata,
+		cmp);	
+
+	if (it != mPersistedSettings.end()
+		&& it->Key == settingsMetadata.Key)
+	{
+		// It's a replace
+
+		// Replace in persisted settings
+		it->Description = settingsMetadata.Description;
+	}
+	else
+	{
+		// It's an insert
+
+		auto const insertIdx = std::distance(mPersistedSettings.begin(), it);
+
+		// Insert into persisted settings
+		mPersistedSettings.insert(it, settingsMetadata);
+
+		// Insert in list control
+		mPersistedSettingsListBox->Insert(settingsMetadata.Key.Name, insertIdx);
+	}
+
+	// Reconciliate load UI
+	ReconciliateLoadPersistedSettings();
+
+	// Clear name and description
+	mSaveSettingsNameTextCtrl->Clear();
+	mSaveSettingsDescriptionTextCtrl->Clear();
+
+	// Reconciliate save UI
+	ReconciliateSavePersistedSettings();
 }
 
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
@@ -710,10 +812,11 @@ void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
 
 	// Do not update checkpoint, allow user to revert to it
 
-	// Enforce anything as a safety net
+	// Enforce everything as a safety net
 	mLiveSettings.MarkAllAsDirty();
 	mSettingsManager->EnforceDirtySettings(mLiveSettings);
 
+	// We are back in sync
 	mLiveSettings.ClearAllDirty();
 
 	assert(mSettingsManager->Pull() == mLiveSettings);
@@ -3242,7 +3345,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 				{
 					auto label = new wxStaticText(loadSettingsBox, wxID_ANY, "Description:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
 				}
 
 				{
@@ -3254,7 +3357,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 						wxSize(250, 120),
 						wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
 
-					col2BoxSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
 				}
 
 				{
@@ -3262,19 +3365,19 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 					mLoadAndApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them to the game.");
 					mLoadAndApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnLoadAndApplyPersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mLoadAndApplyPersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mLoadAndApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
 					mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace with Current");
 					mReplacePersistedSettingsButton->SetToolTip("Overwrites the selected settings with the current settings.");
 					mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
 					mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Settings");
 					mDeletePersistedSettingsButton->SetToolTip("Deletes the selected settings.");
 					mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 				}
 
 				loadSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
@@ -3314,7 +3417,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 				{
 					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Name:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
 				}
 
 				{
@@ -3338,13 +3441,13 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
 					mSaveSettingsNameTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
 
-					col2BoxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND, 5);
 				}
 
 				{
 					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Description:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND | wxALIGN_LEFT, 5);
+					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
 				}
 
 				{
@@ -3358,7 +3461,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
 					mSaveSettingsDescriptionTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
 
-					col2BoxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
 				}
 
 				{
@@ -3366,7 +3469,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 					mSaveSettingsButton->SetToolTip("Saves the current settings using the specified name.");
 					mSaveSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnSaveSettingsButton, this);
 
-					col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 5);
+					col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
 				}
 
 				saveSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
@@ -3763,7 +3866,18 @@ void SettingsDialog::ReconcileDirtyState()
 
 void SettingsDialog::LoadPersistedSettings(int index)
 {
-	// TODO
+	assert(index < mPersistedSettings.size());
+
+	if (index < mPersistedSettings.size())
+	{
+		// Load
+		//
+		// Only loaded settings will be marked as dirty on output
+		mLiveSettings = mSettingsManager->LoadPersistedSettings(mPersistedSettings[index].Key);
+
+		// Enforce and reconcile
+		OnLiveSettingsChanged();
+	}
 }
 
 void SettingsDialog::ReconciliateLoadPersistedSettings()
@@ -3799,37 +3913,39 @@ void SettingsDialog::ReconciliateLoadPersistedSettings()
 	}
 }
 
-void SettingsDialog::SaveNewPersistedSettings(PersistedSettingsMetadata const & metadata)
+void SettingsDialog::SavePersistedSettings(PersistedSettingsMetadata const & metadata)
 {
+	// Only save settings different than default
+	mLiveSettings.SetDirtyWithDiff(mSettingsManager->GetDefaults());
+
 	// Save settings
-	mSettingsManager->SaveDirtySettings(
-		metadata.Key.Name,
-		metadata.Description,
-		mLiveSettings);
+	try
+	{
+		// Save dirty settings
+		mSettingsManager->SaveDirtySettings(
+			metadata.Key.Name,
+			metadata.Description,
+			mLiveSettings);
+	}
+	catch (std::runtime_error const & ex)
+	{
+		OnPersistenceError(std::string("Error saving settings: ") + ex.what());
+		return;
+	}
 
-	// Add to persisted settings
-	mPersistedSettings.push_back(metadata);
-
-	// Add to list control
-	mPersistedSettingsListBox->Append(metadata.Key.Name);
-
-	// Reconciliate load UI
-	ReconciliateLoadPersistedSettings();
-
-	// Clear name and description
-	mSaveSettingsNameTextCtrl->Clear();
-	mSaveSettingsDescriptionTextCtrl->Clear();
-
-	// Reconciliate save UI
-	ReconciliateSavePersistedSettings();
+	// We are in sync (well, we were even before saving)
+	mLiveSettings.ClearAllDirty();
 }
 
 void SettingsDialog::ReconciliateSavePersistedSettings()
 {
-	// TODO: enable boxes if TODO: check paper
-
 	// Enable save button if we have name and description
 	mSaveSettingsButton->Enable(
 		!mSaveSettingsNameTextCtrl->IsEmpty()
 		&& !mSaveSettingsDescriptionTextCtrl->IsEmpty());
+}
+
+void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
+{
+	wxMessageBox(errorMessage, wxT("Error"), wxICON_ERROR);
 }

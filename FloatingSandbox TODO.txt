@@ -1144,7 +1144,7 @@ Render:
 			- SettingsDialog: 
 				- Four parameters
 			- Cleanup:
-				- Do perf analysis
+				- Do perf analysis - Andrea Gail slows down a lot
 				- Clouds shader: TODO: it's now per-cloud; redo: 
 					- if cloudDarkening param is only used to multiply with ambient light, then
 					  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
@@ -1497,16 +1497,16 @@ Render:
 	- Ship descriptions: use Mike's drawings
 
 	= SettingsManager: save settings, defaults, and real-time changes (*)
-		- Spec: 
-			- Game starts always with default settings; user has the ability though to load named settings and to load
+		= Spec: 
+			+ Game starts always with default settings; user has the ability though to load named settings and to load
 			  the last-played settings
-			- Changing settings in the GUI puts them in effect immediately
+			= Changing settings in the GUI puts them in effect immediately
 				- ...and GameController will smooth them
-			- Loaded settings go to GameController
+			= Loaded settings go to GameController
 				- ...and GameController will smooth them
-			- Dialog:
-				- Control values are meant to always be in sync with real game params
-					- Handlers enforce values immediately
+			+ Dialog:
+				+ Control values are meant to always be in sync with real game params
+					+ Handlers enforce values immediately
 		- Plan:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
@@ -1562,14 +1562,31 @@ Render:
 				+ Take IGameControllerSettingsOptions					
 				+ Change standard bottom buttons
 					+ Add "Restore Defaults", see paper
-				- New "Settings Management" tab:
-					- TODOHERE
+				+ New "Settings Management" tab:
+					+ Keep entries sorted
+						+ @ Insert
+						+ @ Remove
+					+ Catch FS exceptions, & OnPersistenceError(msg)
+					+ Fix overwrite
+					+ Test:
+						+ Replace (overwrite)
+							+ Via replace button
+							+ Via save
+						+ Delete
+							+ First
+							+ Mid
+							+ Last
+						+ Insert
+							+ First
+							+ Mid
+							+ Last (need to nuke LastPlayed for test)
 				- "Restore Default Terrain" button
 				+ Tooltips on buttons
 			- Make wind speed smoothed (@ GameController), quite long
 			- Visual notification when last settings loaded
 				+ 1) Need boolean returned from SettingsManager
-				- 2) Do StatusText replacement
+				- 2) Do StatusText replacement (*)
+				- 3) Do notification (@GameController)
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench

@@ -242,8 +242,10 @@ private:
 
 	void LoadPersistedSettings(int index);
 	void ReconciliateLoadPersistedSettings();
-	void SaveNewPersistedSettings(PersistedSettingsMetadata const & metadata);
+	void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
 	void ReconciliateSavePersistedSettings();
+
+	void OnPersistenceError(std::string const & errorMessage) const;
 
 private:
 
