@@ -47,6 +47,7 @@ private:
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
+	void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnTextureOceanChanged(wxCommandEvent & event);

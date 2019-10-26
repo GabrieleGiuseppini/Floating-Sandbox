@@ -354,6 +354,17 @@ void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
     mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
 }
 
+void SettingsDialog::OnRestoreDefaultTerrainButton(wxCommandEvent & /*event*/)
+{
+	mLiveSettings.ClearAllDirty();
+
+	mLiveSettings.SetValue<OceanFloorTerrain>(
+		GameSettings::OceanFloorTerrain,
+		mSettingsManager->GetDefaults().GetValue<OceanFloorTerrain>(GameSettings::OceanFloorTerrain));
+
+	OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
 	if (mTextureOceanRenderModeRadioButton->GetValue())
@@ -1706,6 +1717,8 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
         {
             wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
 
+			oceanSizer->AddGrowableRow(0, 1); // Slider above button
+
             // Ocean Depth
             {
                 mOceanDepthSlider = new SliderControl<float>(
@@ -1727,7 +1740,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                 oceanSizer->Add(
                     mOceanDepthSlider,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -1752,7 +1765,7 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                 oceanSizer->Add(
                     mOceanFloorBumpinessSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -1762,9 +1775,9 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                 mOceanFloorDetailAmplificationSlider = new SliderControl<float>(
                     oceanBox,
                     SliderWidth,
-                    SliderHeight,
+                    -1,
                     "Ocean Floor Detail",
-                    "Adjusts the jaggedness of the ocean floor irregularities.",                    
+                    "Adjusts the contrast of the user-drawn ocean floor terrain",
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);
@@ -1782,6 +1795,20 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
                     wxEXPAND | wxALL,
                     CellBorder);
             }
+
+			// Restore Ocean Floor Terrain
+			{
+				wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, "Restore Default Terrain");
+				restoreDefaultTerrainButton->SetToolTip("Reverts the user-drawn ocean floor terrain to the default terrain.");
+				restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
+
+				oceanSizer->Add(
+					restoreDefaultTerrainButton,
+					wxGBPosition(1, 2),
+					wxGBSpan(1, 1),
+					wxEXPAND | wxALL,
+					CellBorder);
+			}
 
             oceanBoxSizer->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
         }

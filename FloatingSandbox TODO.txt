@@ -1580,9 +1580,11 @@ Render:
 							+ First
 							+ Mid
 							+ Last (need to nuke LastPlayed for test)
-				- "Restore Default Terrain" button
+				+ "Restore Default Terrain" button
+					+ "Adjusts the jaggedness of the ocean floor irregularities."
+					  -> "Adjusts the contrast of the user-drawn ocean floor profile"
 				+ Tooltips on buttons
-			- Make wind speed smoothed (@ GameController), quite long
+				- Float on Parent issue: clicking back moves it back
 			- Visual notification when last settings loaded
 				+ 1) Need boolean returned from SettingsManager
 				- 2) Do StatusText replacement (*)
