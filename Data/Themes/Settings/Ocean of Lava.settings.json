@@ -1,0 +1,11 @@
+{
+  "description": "Make your ship float in an ocean of scorching hot lava!",
+  "settings": {
+    "flat_sky_color": "ff c4 9f",
+    "heat_dissipation_adjustment": 9.7450218200683594,
+    "texture_land_texture_index": 11,
+    "texture_ocean_texture_index": 10,
+    "water_temperature": 1824
+  },
+  "version": "1.13.0.4"
+}

@@ -1537,9 +1537,9 @@ Render:
 				+ 1) Need boolean returned from SettingsManager
 				+ 2) Do StatusText replacement (*)
 				+ 3) Do notification (@GameController)
-			- Data\Themes:
-				- Ocean of Lava
-					- See PM's suggestion on Discord
+			= Data\Themes:
+				= Ocean of Lava
+					+ See PM's suggestion on Discord
 				- Marianas Trench
 					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
 
