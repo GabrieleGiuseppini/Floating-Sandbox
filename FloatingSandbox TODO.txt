@@ -219,7 +219,6 @@ Render:
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
-	- GameJolt post w/screenshot with gradient, at night
 	- Video of Titanic under Mariannes' Trench
 		+ After water contrast
 
@@ -372,7 +371,6 @@ Render:
 			- Leave menu entries, they now talk to UIPreferencesManager
 				- Refresh status after window closed
 
-
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
 			- Add the three songs
@@ -384,6 +382,8 @@ Render:
 			Long Note Four by Kevin MacLeod is licensed under a Creative Commons Attribution licence (https://creativecommons.org/licenses/...)
 			Source: http://incompetech.com/music/royalty-...
 			Artist: http://incompetech.com/
+
+		- Print speed (in m/s) after throwing objects with both move tools
 
 		= New explosions:
 			- Shader:
@@ -415,8 +415,6 @@ Render:
 				- RC
 				- Timer
 			- Start workitem for explosive combustion
-
-		- Print speed (in m/s) after throwing objects with both move tools
 
 		- Video:
 			- Sparkles: before and after
@@ -552,8 +550,7 @@ Render:
 		+ After including redo
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
-	+ Sound controller: complain if find extraneous files (had issue with ".flc")
-
+	+ Sound controller: complain if find extraneous files (had issue with ".flc"
 	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
@@ -1036,7 +1033,7 @@ Render:
 					  stormDarkening is different than current
 					+ Invoke from storm
 					+ Test combined changes in intensities
-			= Clouds
+			+ Clouds
 				+ Rearc clouds: 
 					+ Clouds:
 						+ Position is maintained into x=[-1.5, +1.5]
@@ -1058,8 +1055,7 @@ Render:
 						+ map into NDC
 						+ Remove test overrides
 				+ See if can enlarge small cloud
-				- See if may hijack normal clouds (for size) to cover sky fully
-					- Then, see if may lower # of storm clouds
+				+ See if may make storm clouds larger, so to cover whole sky
 			+ Rain
 				+ Shader
 					+ Try with more spatial density
@@ -1444,55 +1440,6 @@ Render:
 		- How to Guide
 
 - UI:
-	= StatusText/TextLayer replacement (*)
-		! Slot-ification of text in text layer, with exhausted slots scrolling up
-		+ Replace GameLib::StatusText with new TextLayer class
-			+ Owned by GameController
-			+ Talks directly to TextRenderContext (see below)
-			+ Two sets of methods:
-				+ 1: State-modifying:
-					+ TextLayer::SetStatusTextes()/Enable
-					+ TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
-						+ Standard fade-in/stay/fade-out
-						+ Handles slots and their rotation
-				+ 2: void Update()
-					+ Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
-		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
-			+ Given by GameController, who takes it from RenderContext
-			! RenderContext will forfait wrapping of text API's
-		= TextRenderContext cares about single-line texts only
-			+ Make sure multiple-line support is not for perf
-			+ API exposed:
-				+ AddText:
-					- text (1 line)
-					- Justification
-						- TopLeft, TopRight, BottomLeft, BottomRight
-						- Implicit: l/r/t/b (screen-)margins
-					- offsetScreenX
-						- Meant to be distance from horizontal component of justification
-						- Margin is added implicitly
-						- For effects
-					- offsetScreenY 
-						- Meant to be distance from vertical component of justification
-						- Margin is added implicitly
-						- Also provides getter for (screen-)height of line for font, and getter for fixed (screen-)v inset between lines
-					- alpha
-					- font
-				+ UpdateText: different versions for:
-					+ text only
-					+ alpha only
-					+ offsets only
-				+ RemoveText
-			+ Cleanup:
-				+ Nuke old API
-				+ Remove RenderContext's forwarding of API's
-			+ Optimize alpha+offset update
-			- Merge disappear and fading out
-		+ GameController:
-			+ Use mTextLayer::ephemeral text for tsunami
-			+ Nuke StatusText
-				+ Also source files
-			+ Expose DisplayLoadedLastPlayedSettingsNotification()
 
 	- Ship descriptions: use Mike's drawings
 
@@ -1500,14 +1447,14 @@ Render:
 		= Spec: 
 			+ Game starts always with default settings; user has the ability though to load named settings and to load
 			  the last-played settings
-			= Changing settings in the GUI puts them in effect immediately
-				- ...and GameController will smooth them
+			+ Changing settings in the GUI puts them in effect immediately
+				+ ...and GameController will smooth them
 			= Loaded settings go to GameController
 				- ...and GameController will smooth them
 			+ Dialog:
 				+ Control values are meant to always be in sync with real game params
 					+ Handlers enforce values immediately
-		- Plan:
+		= Plan:
 			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
 				+ Via StandardSystemPaths class
 			+ ResourceLoader::GetThemeSettingsRootFilepath()
@@ -1549,7 +1496,7 @@ Render:
 					+ Verify ocean floor
 				+ Fix crash
 				+ Fix Preferences Dialog
-			= SettingsDialog:
+			+ SettingsDialog:
 				+ Frame:
 					+ See if appears in Taskbar
 					+ Minimize
@@ -1592,6 +1539,7 @@ Render:
 				+ 3) Do notification (@GameController)
 			- Data\Themes:
 				- Ocean of Lava
+					- See PM's suggestion on Discord
 				- Marianas Trench
 					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
 
@@ -2890,6 +2838,54 @@ IF WX:
 			+ @ Smoothed params
 		+ Finalize ParameterSmoothing
 		+ Fix unit tests
+	+ StatusText/TextLayer replacement (*)
+		! Slot-ification of text in text layer, with exhausted slots scrolling up
+		+ Replace GameLib::StatusText with new TextLayer class
+			+ Owned by GameController
+			+ Talks directly to TextRenderContext (see below)
+			+ Two sets of methods:
+				+ 1: State-modifying:
+					+ TextLayer::SetStatusTextes()/Enable
+					+ TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
+						+ Standard fade-in/stay/fade-out
+						+ Handles slots and their rotation
+				+ 2: void Update()
+					+ Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
+		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
+			+ Given by GameController, who takes it from RenderContext
+			! RenderContext will forfait wrapping of text API's
+		+ TextRenderContext cares about single-line texts only
+			+ Make sure multiple-line support is not for perf
+			+ API exposed:
+				+ AddText:
+					- text (1 line)
+					- Justification
+						- TopLeft, TopRight, BottomLeft, BottomRight
+						- Implicit: l/r/t/b (screen-)margins
+					- offsetScreenX
+						- Meant to be distance from horizontal component of justification
+						- Margin is added implicitly
+						- For effects
+					- offsetScreenY 
+						- Meant to be distance from vertical component of justification
+						- Margin is added implicitly
+						- Also provides getter for (screen-)height of line for font, and getter for fixed (screen-)v inset between lines
+					- alpha
+					- font
+				+ UpdateText: different versions for:
+					+ text only
+					+ alpha only
+					+ offsets only
+				+ RemoveText
+			+ Cleanup:
+				+ Nuke old API
+				+ Remove RenderContext's forwarding of API's
+			+ Optimize alpha+offset update
+		+ GameController:
+			+ Use mTextLayer::ephemeral text for tsunami
+			+ Nuke StatusText
+				+ Also source files
+			+ Expose DisplayLoadedLastPlayedSettingsNotification()
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
