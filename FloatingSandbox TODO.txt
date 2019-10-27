@@ -1067,88 +1067,89 @@ Render:
 			- "gunpowder" and "diesel"
 
 	= Storms
-		- Spec:
-			+ Another physics component
-			+ Game wall-clock based
-			- State machine with concentric phases:
-				+ Wind (and thus waves)
-					+ Make clouds more sensible to speed - should go faster at higher speeds
-					+ No zero state while there is storm
-					+ Test storm wind on top of wind modulation					
-				+ Cloud Darkening
-				+ Darknening
-					+ Out of phase with cloud darkening, to avoid ugly crossing
-					+ RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
-					  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
-						+ Rename shaders' param
-							+ RenderCore
-							+ Shaders
-							+ RenderContext.h
-						+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
-						  stormDarkening is different than current
-						+ Invoke from storm
-						+ Test combined changes in intensities
-				+ Clouds
-					+ Rearc clouds: 
-						+ Clouds:
-							+ Position is maintained into x=[-1.5, +1.5]
-							+ Normal clouds: 
-								+ New clouds: random
-								+ Old clouds: removed
-								+ Roll clouds around
-							+ Storm clouds:
-								+ New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
-								  at +1.5 or -1.5 depending on total wind speed sign
-									+ Higher scale range, with median larger with progress
-								+ Old clouds: removed when rolled over
-								+ Roll clouds around
-							+ Cloud darkening:
-								+ Per-cloud, storm only
-								+ Use values: 0.3, 0.56, 0.93
-								+ Shader		
-						+ RenderContext:
-							+ map into NDC
-							+ Remove test overrides
-					+ See if can enlarge small cloud
-				+ Rain
-					+ Shader
-						+ Try with more spatial density
-						+ Discard
-							+ See if it helps with perf: NO
-					+ Sound (continuous, like wind)
-				+ Thunders
-					+ Others random with same distribution as wind gusts
-					+ Events
-					+ Sounds (N, one shot)
-				- Lightnings
-					- TODO
-					= Shader
-						= Txt
-						- RenderCore and glsl
-			+ Storm::Parameters:
-				+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
-					+ OceanSurface: gets in indirectly and makes waves
-				+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
-					+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
-						+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
-					+ Shader
-			+ Wind volume: start with storm
-				+ Need additional arg to wind event
-			- Triggers lightnings:
-				- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
-				- TBD: Storms' lightning state machine should hit Ship (for fire)
-					- What about: via handler owned (implemented) and passed by World?
-				- Shader:
-					- TBD
-			+ Manual storm trigger
-			- SettingsDialog: 
-				- Four parameters
-			- Cleanup:
-				- Do perf analysis - Andrea Gail slows down a lot
-				- Clouds shader: TODO: it's now per-cloud; redo: 
-					- if cloudDarkening param is only used to multiply with ambient light, then
-					  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
-					  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
+		+ Another physics component
+		+ Game wall-clock based
+		- State machine with concentric phases:
+			+ Wind (and thus waves)
+				+ Make clouds more sensible to speed - should go faster at higher speeds
+				+ No zero state while there is storm
+				+ Test storm wind on top of wind modulation					
+			+ Cloud Darkening
+			+ Darknening
+				+ Out of phase with cloud darkening, to avoid ugly crossing
+				+ RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
+				  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
+					+ Rename shaders' param
+						+ RenderCore
+						+ Shaders
+						+ RenderContext.h
+					+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
+					  stormDarkening is different than current
+					+ Invoke from storm
+					+ Test combined changes in intensities
+			= Clouds
+				+ Rearc clouds: 
+					+ Clouds:
+						+ Position is maintained into x=[-1.5, +1.5]
+						+ Normal clouds: 
+							+ New clouds: random
+							+ Old clouds: removed
+							+ Roll clouds around
+						+ Storm clouds:
+							+ New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
+							  at +1.5 or -1.5 depending on total wind speed sign
+								+ Higher scale range, with median larger with progress
+							+ Old clouds: removed when rolled over
+							+ Roll clouds around
+						+ Cloud darkening:
+							+ Per-cloud, storm only
+							+ Use values: 0.3, 0.56, 0.93
+							+ Shader		
+					+ RenderContext:
+						+ map into NDC
+						+ Remove test overrides
+				+ See if can enlarge small cloud
+				- See if may hijack normal clouds (for size) to cover sky fully
+					- Then, see if may lower # of storm clouds
+			+ Rain
+				+ Shader
+					+ Try with more spatial density
+					+ Discard
+						+ See if it helps with perf: NO
+				+ Sound (continuous, like wind)
+			+ Thunders
+				+ Others random with same distribution as wind gusts
+				+ Events
+				+ Sounds (N, one shot)
+			- Lightnings
+				- TODO
+				= Shader
+					= Txt
+					- RenderCore and glsl
+		+ Storm::Parameters:
+			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
+				+ OceanSurface: gets in indirectly and makes waves
+			+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
+				+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
+					+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+				+ Shader
+		+ Wind volume: start with storm
+			+ Need additional arg to wind event
+		- Triggers lightnings:
+			- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
+			- TBD: Storms' lightning state machine should hit Ship (for fire)
+				- What about: via handler owned (implemented) and passed by World?
+			- Shader:
+				- TBD
+		+ Manual storm trigger
+		- SettingsDialog: 
+			- Four parameters
+		- Cleanup:
+			- Do perf analysis - Andrea Gail slows down a lot
+			- Clouds shader: TODO: it's now per-cloud; redo: 
+				- if cloudDarkening param is only used to multiply with ambient light, then
+				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
+				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
@@ -1584,7 +1585,8 @@ Render:
 					+ "Adjusts the jaggedness of the ocean floor irregularities."
 					  -> "Adjusts the contrast of the user-drawn ocean floor profile"
 				+ Tooltips on buttons
-				- Float on Parent issue: clicking back moves it back
+				+ Float on Parent issue: clicking back moves it back
+					+ See if may use wxSTAY_ON_TOP, & if that is also broken with colour picker
 			- Visual notification when last settings loaded
 				+ 1) Need boolean returned from SettingsManager
 				- 2) Do StatusText replacement (*)

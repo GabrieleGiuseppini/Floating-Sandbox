@@ -75,7 +75,8 @@ SettingsDialog::SettingsDialog(
         _("Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | /* wxFRAME_FLOAT_ON_PARENT | */ wxFRAME_NO_TASKBAR, // See https://trac.wxwidgets.org/ticket/18535
+        wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
+			| /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
         _T("Settings Window"));
 
     this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
