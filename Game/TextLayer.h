@@ -9,6 +9,7 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <array>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -23,15 +24,9 @@ public:
         bool isStatusTextEnabled,
         bool isExtendedStatusTextEnabled);
 
-    void SetStatusTextEnabled(bool isEnabled)
-	{
-		mIsStatusTextEnabled = isEnabled;
-	}
+	void SetStatusTextEnabled(bool isEnabled);
 
-	void SetExtendedStatusTextEnabled(bool isEnabled)
-	{
-		mIsExtendedStatusTextEnabled = isEnabled;
-	}
+	void SetExtendedStatusTextEnabled(bool isEnabled);
 
     void SetStatusTexts(
         float immediateFps,
@@ -48,6 +43,16 @@ public:
 
 private:
 
+	struct StatusTextLine;
+
+	void UpdateStatusTextLine(
+		StatusTextLine & line,
+		bool isEnabled,
+		bool arePositionsDirty,
+		int & ordinal);
+
+private:
+
 	std::shared_ptr<Render::TextRenderContext> mTextRenderContext;
 
 
@@ -57,8 +62,26 @@ private:
 
     bool mIsStatusTextEnabled;
     bool mIsExtendedStatusTextEnabled;
-    std::vector<std::string> mTextLines;
-    RenderedTextHandle mTextHandle;
-    bool mIsTextDirty;
+
+	struct StatusTextLine
+	{
+		RenderedTextHandle Handle;
+		std::string Text;		
+		bool IsTextDirty;
+
+		StatusTextLine()
+			: StatusTextLine("")
+		{}
+
+		StatusTextLine(std::string text)
+			: Handle(NoneRenderedTextHandle)
+			, Text(text)
+			, IsTextDirty(true) // Start dirty
+		{}
+	};
+	
+	std::array<StatusTextLine, 3> mStatusTextLines;
+
+	bool mAreStatusTextLinePositionsDirty;
 };
 

@@ -976,56 +976,6 @@ Render:
 	- Different materials have different rotting speed
 		- For instance, Cardboard would soften and break apart in water within a minute or so
 
-	= StatusText/TextLayer replacement (*)
-		! Slot-ification of text in text layer, with exhausted slots scrolling up
-		= Replace GameLib::StatusText with new TextLayer class
-			+ Owned by GameController
-			- Talks directly to TextRenderContext (see below)
-			- Two sets of methods:
-				- 1: State-modifying:
-					+ TextLayer::SetStatusTextes()/Enable
-					- TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
-						- Standard fade-in/stay/fade-out
-						- Handles slots and their rotation
-				- 2: void Update()
-					- Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
-		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
-			+ Given by GameController, who takes it from RenderContext
-			! RenderContext will forfait wrapping of text API's
-		- TextRenderContext cares about single-line texts only
-			+ Make sure multiple-line support is not for perf
-			- API exposed:
-				- AddText:
-					- text (1 line)
-					- Justification
-						- TopLeft, TopRight, BottomLeft, BottomRight
-						- Implicit: l/r/t/b (screen-)margins
-					- offsetScreenX
-						- Meant to be distance from horizontal component of justification
-						- Margin is added implicitly
-						- For effects
-					- offsetScreenY 
-						- Meant to be distance from vertical component of justification
-						- Margin is added implicitly
-						- Also provides getter for (screen-)height of line for font, and getter for fixed (screen-)v inset between lines
-					- alpha
-					- font
-				- UpdateText: different versions for:
-					- text only
-					- alpha only
-					- offsets only
-				- RemoveText
-			- Cleanup:
-				- Nuke old API
-				- Nuke GameTypes::TextPosition enum
-			
-		- GameController:
-			- Use mTextLayer for tsunami
-				- Remove RenderContext's forwarding of API's
-			+ Nuke StatusText
-				+ Also source files
-
-
 	- Underwater currents
 		- Implicit function of x defines trajectory 
 			- To try:
@@ -1040,7 +990,6 @@ Render:
 		- Rendered (via option):
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
-
 	
 	- Try to re-instate square velocity drag (*)
 		- Goal: falling ship should break upon impact with water
@@ -1495,6 +1444,53 @@ Render:
 		- How to Guide
 
 - UI:
+	= StatusText/TextLayer replacement (*)
+		! Slot-ification of text in text layer, with exhausted slots scrolling up
+		= Replace GameLib::StatusText with new TextLayer class
+			+ Owned by GameController
+			+ Talks directly to TextRenderContext (see below)
+			= Two sets of methods:
+				= 1: State-modifying:
+					+ TextLayer::SetStatusTextes()/Enable
+					- TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
+						- Standard fade-in/stay/fade-out
+						- Handles slots and their rotation
+				= 2: void Update()
+					- Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
+		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
+			+ Given by GameController, who takes it from RenderContext
+			! RenderContext will forfait wrapping of text API's
+		= TextRenderContext cares about single-line texts only
+			+ Make sure multiple-line support is not for perf
+			+ API exposed:
+				+ AddText:
+					- text (1 line)
+					- Justification
+						- TopLeft, TopRight, BottomLeft, BottomRight
+						- Implicit: l/r/t/b (screen-)margins
+					- offsetScreenX
+						- Meant to be distance from horizontal component of justification
+						- Margin is added implicitly
+						- For effects
+					- offsetScreenY 
+						- Meant to be distance from vertical component of justification
+						- Margin is added implicitly
+						- Also provides getter for (screen-)height of line for font, and getter for fixed (screen-)v inset between lines
+					- alpha
+					- font
+				+ UpdateText: different versions for:
+					- text only
+					- alpha only
+					- offsets only
+				+ RemoveText
+			- Cleanup:
+				- Nuke old API
+				- Remove RenderContext's forwarding of API's
+		- GameController:
+			- Use mTextLayer::ephemeral text for tsunami
+			+ Nuke StatusText
+				+ Also source files
+
 	- Ship descriptions: use Mike's drawings
 
 	= SettingsManager: save settings, defaults, and real-time changes (*)

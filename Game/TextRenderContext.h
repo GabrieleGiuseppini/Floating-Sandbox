@@ -14,7 +14,9 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/ProgressCallback.h>
 
+#include <algorithm>
 #include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,6 +49,7 @@ public:
         mScreenToNdcY = 2.0f / static_cast<float>(height);
 
         // Re-create vertices next time
+		mAreLinesDirty = true;
         mAreTextSlotsDirty = true;
     }
 
@@ -62,8 +65,105 @@ public:
 		return fontRenderContext.GetFontMetadata().GetLineScreenHeight();
 	}
 
-	// TODOOLD
+	RenderedTextHandle AddTextLine(
+		std::string const & text,
+		TextPositionType anchor,
+		vec2f const & screenOffset,
+		float alpha,
+		FontType font)
+	{
+		RenderedTextHandle handle = ++mLastRenderedTextHandle;
 
+		// Store text		
+		mLines.emplace_back(
+			std::make_unique<TextLine>(
+				handle,
+				text,
+				anchor,
+				screenOffset,
+				alpha,
+				font));
+
+		// Remember we're dirty now
+		mAreLinesDirty = true;
+
+		return handle;
+	}
+
+	void UpdateTextLine(
+		RenderedTextHandle lineHandle,
+		std::string const & text,
+		vec2f const & screenOffset)
+	{
+		auto it = std::find_if(
+			mLines.begin(),
+			mLines.end(),
+			[lineHandle](auto const & l)
+			{
+				return l->Handle == lineHandle;
+			});
+
+		assert(it != mLines.end());
+
+		(*it)->Text = text;
+		(*it)->ScreenOffset = screenOffset;
+
+		// Remember we're dirty now
+		mAreLinesDirty = true;
+	}
+
+	void UpdateTextLine(
+		RenderedTextHandle lineHandle,
+		float alpha)
+	{
+		auto it = std::find_if(
+			mLines.begin(),
+			mLines.end(),
+			[lineHandle](auto const & l)
+			{
+				return l->Handle == lineHandle;
+			});
+
+		assert(it != mLines.end());
+
+		(*it)->Alpha = alpha;
+
+		// Optimization: update alpha's in-place, but only if so far we don't
+		// need to re-generate all vertex buffers
+		if (!mAreLinesDirty)
+		{
+			// Update all alpha's in this text's vertex buffer
+			auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>((*it)->Font)];
+			TextQuadVertex * vertexBuffer = &(fontRenderContext.GetVertexBuffer()[(*it)->FontVertexBufferIndexStart]);
+			for (size_t v = 0; v < (*it)->FontVertexBufferCount; ++v)
+			{
+				vertexBuffer[v].alpha = alpha;
+			}
+
+			// Remember this font's vertex buffers are dirty now
+			fontRenderContext.SetVertexBufferDirty(true);
+		}
+	}
+
+	void ClearTextLine(RenderedTextHandle lineHandle)
+	{
+		auto it = std::find_if(
+			mLines.begin(),
+			mLines.end(),
+			[lineHandle](auto const & l)
+			{
+				return l->Handle == lineHandle;
+			});
+
+		assert(it != mLines.end());
+
+		mLines.erase(it);
+
+		// Remember we're dirty now
+		mAreLinesDirty = true;
+	}
+
+	// TODOOLD
 	RenderedTextHandle AddText(
 		std::vector<std::string> const & textLines,
 		TextPositionType position,
@@ -161,6 +261,7 @@ private:
 
     float mEffectiveAmbientLightIntensity;
 
+private:
 
 	//
 	// A single line of text being rendered
@@ -168,18 +269,45 @@ private:
 
 	struct TextLine
 	{
+		RenderedTextHandle const Handle;
+
 		std::string Text;
-		vec2f NdcCoordinates;
+		TextPositionType Anchor;
+		vec2f ScreenOffset;
 		float Alpha;
 		FontType Font;
 
 		// Position and number of vertices for this line in the font's vertex buffer
 		size_t FontVertexBufferIndexStart;
 		size_t FontVertexBufferCount;
+
+		TextLine(
+			RenderedTextHandle handle,
+			std::string const & text,
+			TextPositionType anchor,
+			vec2f screenOffset,
+			float alpha,
+			FontType font)
+			: Handle(handle)
+			, Text(text)
+			, Anchor(anchor)
+			, ScreenOffset(screenOffset)
+			, Alpha(alpha)
+			, Font(font)
+			, FontVertexBufferIndexStart(std::numeric_limits<size_t>::max())
+			, FontVertexBufferCount(std::numeric_limits<size_t>::max())
+		{}
 	};
 
-	// Map associating handle to TextLine
-	// TODOHERE
+	// All the lines currently being rendered
+	std::vector<std::unique_ptr<TextLine>> mLines;
+
+	// The handle value we have last used
+	RenderedTextHandle mLastRenderedTextHandle;
+
+	// Flag remembering whether there have been changes to the lines
+	// which require re-calculating vertex buffers
+	bool mAreLinesDirty;
 
 
 	// TODOOLD: nuke

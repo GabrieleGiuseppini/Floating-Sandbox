@@ -17,10 +17,25 @@ TextLayer::TextLayer(
 	// StatusText state
 	, mIsStatusTextEnabled(isStatusTextEnabled)
 	, mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
-    , mTextLines()
-    , mTextHandle(NoneRenderedTextHandle)
-    , mIsTextDirty(false)
+    , mStatusTextLines()
+	, mAreStatusTextLinePositionsDirty(false)
 {
+}
+
+void TextLayer::SetStatusTextEnabled(bool isEnabled)
+{
+	mIsStatusTextEnabled = isEnabled;
+
+	// Positions need to be recalculated
+	mAreStatusTextLinePositionsDirty = true;
+}
+
+void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
+{
+	mIsExtendedStatusTextEnabled = isEnabled;
+
+	// Positions need to be recalculated
+	mAreStatusTextLinePositionsDirty = true;
 }
 
 void TextLayer::SetStatusTexts(
@@ -42,8 +57,6 @@ void TextLayer::SetStatusTexts(
     // Build text
     //
 
-    mTextLines.clear();
-
     if (mIsStatusTextEnabled)
     {
         std::ostringstream ss;
@@ -57,7 +70,8 @@ void TextLayer::SetStatusTexts(
         if (isPaused)
             ss << " (PAUSED)";
 
-        mTextLines.emplace_back(ss.str());
+		mStatusTextLines[0].Text = ss.str();
+		mStatusTextLines[0].IsTextDirty = true;
     }
 
     if (mIsExtendedStatusTextEnabled)
@@ -71,7 +85,8 @@ void TextLayer::SetStatusTexts(
             << " ZOOM:" << zoom
             << " CAM:" << camera.x << ", " << camera.y;
 
-        mTextLines.emplace_back(ss.str());
+		mStatusTextLines[1].Text = ss.str();
+		mStatusTextLines[1].IsTextDirty = true;
 
         ss.str("");
 
@@ -84,41 +99,86 @@ void TextLayer::SetStatusTexts(
             << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
             << " FLM:" << renderStatistics.LastRenderedShipFlames;
 
-        mTextLines.emplace_back(ss.str());
+		mStatusTextLines[2].Text = ss.str();
+		mStatusTextLines[2].IsTextDirty = true;
     }
-
-    mIsTextDirty = true;
 }
 
 void TextLayer::Update(float /*now*/)
 {
-    // Check whether we need to flip the state of the status text
-    if (mIsStatusTextEnabled || mIsExtendedStatusTextEnabled)
-    {
-        if (NoneRenderedTextHandle == mTextHandle)
-        {
-            // Create status text
-            mTextHandle = mTextRenderContext->AddText(
-                mTextLines,
-                TextPositionType::TopLeft,
-                1.0f,
-                FontType::StatusText);
-        }
-        else if (mIsTextDirty)
-        {
-            // Update status text
-			mTextRenderContext->UpdateText(
-                mTextHandle,
-                mTextLines,
-                1.0f);
-        }
+	//
+	// Status text
+	//
 
-        mIsTextDirty = false;
-    }
-    else if (NoneRenderedTextHandle != mTextHandle)
-    {
-        // Turn off status text
-		mTextRenderContext->ClearText(mTextHandle);
-        mTextHandle = NoneRenderedTextHandle;
-    }
+	{
+		int ordinal = 0;
+
+		UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+
+		for (size_t i = 1; i <= 2; ++i)
+		{
+			UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+		}
+
+		mAreStatusTextLinePositionsDirty = false;
+	}
+}
+
+void TextLayer::UpdateStatusTextLine(
+	StatusTextLine & line,
+	bool isEnabled,
+	bool arePositionsDirty,
+	int & ordinal)
+{
+	// Check whether we need to flip the state of the status text
+	if (isEnabled)
+	{
+		//
+		// This line is enabled
+		//
+
+		vec2f offset(
+			0.0f,
+			static_cast<float>(ordinal++) * mTextRenderContext->GetLineScreenHeight(FontType::StatusText));
+
+		if (NoneRenderedTextHandle == line.Handle)
+		{
+			// Create status text
+			line.Handle = mTextRenderContext->AddTextLine(
+				line.Text,
+				TextPositionType::TopLeft,
+				offset,
+				1.0f,
+				FontType::StatusText);
+
+			line.IsTextDirty = false;
+		}
+		else if (line.IsTextDirty || arePositionsDirty)
+		{
+			// Update status text
+			mTextRenderContext->UpdateTextLine(
+				line.Handle,
+				line.Text,
+				offset);
+
+			line.IsTextDirty = false;
+		}		
+	}
+	else 
+	{
+		//
+		// This line is not enabled
+		//
+
+		if (NoneRenderedTextHandle != line.Handle)
+		{
+			// Turn off line altogether
+			mTextRenderContext->ClearTextLine(line.Handle);
+			line.Handle = NoneRenderedTextHandle;
+
+			// Initialize text
+			line.Text = "";
+			line.IsTextDirty = false;
+		}
+	}
 }
