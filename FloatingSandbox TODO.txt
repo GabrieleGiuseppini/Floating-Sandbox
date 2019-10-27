@@ -1446,17 +1446,17 @@ Render:
 - UI:
 	= StatusText/TextLayer replacement (*)
 		! Slot-ification of text in text layer, with exhausted slots scrolling up
-		= Replace GameLib::StatusText with new TextLayer class
+		+ Replace GameLib::StatusText with new TextLayer class
 			+ Owned by GameController
 			+ Talks directly to TextRenderContext (see below)
-			= Two sets of methods:
-				= 1: State-modifying:
+			+ Two sets of methods:
+				+ 1: State-modifying:
 					+ TextLayer::SetStatusTextes()/Enable
-					- TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
-						- Standard fade-in/stay/fade-out
-						- Handles slots and their rotation
-				= 2: void Update()
-					- Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
+					+ TextLayer::AddEphemeralText(lines[], float lifetimeSeconds)
+						+ Standard fade-in/stay/fade-out
+						+ Handles slots and their rotation
+				+ 2: void Update()
+					+ Does things againts TextRenderContext, which will be rendered autonomously later by TextRenderContext
 		+ TextLayer takes shared_ptr<TextRenderContext> in cctor
 			+ Given by GameController, who takes it from RenderContext
 			! RenderContext will forfait wrapping of text API's
@@ -1479,17 +1479,20 @@ Render:
 					- alpha
 					- font
 				+ UpdateText: different versions for:
-					- text only
-					- alpha only
-					- offsets only
+					+ text only
+					+ alpha only
+					+ offsets only
 				+ RemoveText
-			- Cleanup:
-				- Nuke old API
-				- Remove RenderContext's forwarding of API's
-		- GameController:
-			- Use mTextLayer::ephemeral text for tsunami
+			+ Cleanup:
+				+ Nuke old API
+				+ Remove RenderContext's forwarding of API's
+			+ Optimize alpha+offset update
+			- Merge disappear and fading out
+		+ GameController:
+			+ Use mTextLayer::ephemeral text for tsunami
 			+ Nuke StatusText
 				+ Also source files
+			+ Expose DisplayLoadedLastPlayedSettingsNotification()
 
 	- Ship descriptions: use Mike's drawings
 
@@ -1583,10 +1586,10 @@ Render:
 				+ Tooltips on buttons
 				+ Float on Parent issue: clicking back moves it back
 					+ See if may use wxSTAY_ON_TOP, & if that is also broken with colour picker
-			- Visual notification when last settings loaded
+			+ Visual notification when last settings loaded
 				+ 1) Need boolean returned from SettingsManager
-				- 2) Do StatusText replacement (*)
-				- 3) Do notification (@GameController)
+				+ 2) Do StatusText replacement (*)
+				+ 3) Do notification (@GameController)
 			- Data\Themes:
 				- Ocean of Lava
 				- Marianas Trench

@@ -121,13 +121,14 @@ public:
     void Render() override;
 
     //
-    // Game Control
+    // Game Control and notifications
     //
 
     void SetPaused(bool isPaused) override;
     void SetMoveToolEngaged(bool isEngaged) override;
     void SetStatusTextEnabled(bool isEnabled) override;
     void SetExtendedStatusTextEnabled(bool isEnabled) override;
+	void DisplayLoadedLastPlayedSettingsNotification() override;
 
     //
     // World probing

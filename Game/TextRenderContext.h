@@ -50,7 +50,6 @@ public:
 
         // Re-create vertices next time
 		mAreLinesDirty = true;
-        mAreTextSlotsDirty = true;
     }
 
     void UpdateEffectiveAmbientLightIntensity(float effectiveAmbientLightIntensity);
@@ -145,6 +144,46 @@ public:
 		}
 	}
 
+	void UpdateTextLine(
+		RenderedTextHandle lineHandle,
+		vec2f const & screenOffset,
+		float alpha)
+	{
+		auto it = std::find_if(
+			mLines.begin(),
+			mLines.end(),
+			[lineHandle](auto const & l)
+			{
+				return l->Handle == lineHandle;
+			});
+
+		assert(it != mLines.end());
+
+		if (!mAreLinesDirty)
+		{
+			// Optimization: update offsets and alpha's in-place
+
+			float const deltaNdcX = (screenOffset.x - (*it)->ScreenOffset.x) * mScreenToNdcX;
+			float const deltaNdcY = (screenOffset.y - (*it)->ScreenOffset.y) * mScreenToNdcY;
+
+			auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>((*it)->Font)];
+			TextQuadVertex * vertexBuffer = &(fontRenderContext.GetVertexBuffer()[(*it)->FontVertexBufferIndexStart]);
+
+			for (size_t v = 0; v < (*it)->FontVertexBufferCount; ++v)
+			{
+				vertexBuffer[v].positionNdcX += deltaNdcX;
+				vertexBuffer[v].positionNdcY -= deltaNdcY;
+				vertexBuffer[v].alpha = alpha;
+			}
+
+			// Remember this font's vertex buffers are dirty now
+			fontRenderContext.SetVertexBufferDirty(true);
+		}
+
+		(*it)->ScreenOffset = screenOffset;
+		(*it)->Alpha = alpha;
+	}
+
 	void ClearTextLine(RenderedTextHandle lineHandle)
 	{
 		auto it = std::find_if(
@@ -161,89 +200,6 @@ public:
 
 		// Remember we're dirty now
 		mAreLinesDirty = true;
-	}
-
-	// TODOOLD
-	RenderedTextHandle AddText(
-		std::vector<std::string> const & textLines,
-		TextPositionType position,
-		float alpha,
-		FontType font)
-	{
-		// Find oldest slot
-		size_t oldestSlotIndex = 0;
-		uint64_t oldestSlotGeneration = std::numeric_limits<uint64_t>::max();
-		for (size_t slotIndex = 0; slotIndex < mTextSlots.size(); ++slotIndex)
-		{
-			if (mTextSlots[slotIndex].Generation < oldestSlotGeneration)
-			{
-				oldestSlotIndex = slotIndex;
-				oldestSlotGeneration = mTextSlots[slotIndex].Generation;
-			}
-		}
-
-		// Store info
-		mTextSlots[oldestSlotIndex].TextLines = textLines;
-		mTextSlots[oldestSlotIndex].Position = position;
-		mTextSlots[oldestSlotIndex].Alpha = alpha;
-		mTextSlots[oldestSlotIndex].Font = font;
-		mTextSlots[oldestSlotIndex].Generation = ++mCurrentTextSlotGeneration;
-		mTextSlots[oldestSlotIndex].VertexBufferIndexStart = 0;
-		mTextSlots[oldestSlotIndex].VertexBufferCount = 0;
-
-		// Remember we're dirty now
-		mAreTextSlotsDirty = true;
-
-		return static_cast<RenderedTextHandle>(oldestSlotIndex);
-	}
-
-	void UpdateText(
-		RenderedTextHandle textHandle,
-		std::vector<std::string> const & textLines,
-		float alpha)
-	{
-		assert(textHandle < mTextSlots.size());
-
-		mTextSlots[textHandle].TextLines = textLines;
-		mTextSlots[textHandle].Alpha = alpha;
-
-		// Remember we're dirty now
-		mAreTextSlotsDirty = true;
-	}
-
-	void UpdateText(
-		RenderedTextHandle textHandle,
-		float alpha)
-	{
-		assert(textHandle < mTextSlots.size());
-
-		mTextSlots[textHandle].Alpha = alpha;
-
-		// Optimization: update alpha's in-place, but only if so far we don't
-		// need to re-generate all vertex buffers
-		if (!mAreTextSlotsDirty)
-		{
-			// Update all alpha's in this text's vertex buffer
-			auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(mTextSlots[textHandle].Font)];
-			TextQuadVertex * vertexBuffer = &(fontRenderContext.GetVertexBuffer()[mTextSlots[textHandle].VertexBufferIndexStart]);
-			for (size_t v = 0; v < mTextSlots[textHandle].VertexBufferCount; ++v)
-			{
-				vertexBuffer[v].alpha = alpha;
-			}
-
-			// Remember this font's vertex buffers are dirty now
-			fontRenderContext.SetVertexBufferDirty(true);
-		}
-	}
-
-	void ClearText(RenderedTextHandle textHandle)
-	{
-		assert(textHandle < mTextSlots.size());
-
-		mTextSlots[textHandle].Generation = 0;
-
-		// Remember we're dirty now
-		mAreTextSlotsDirty = true;
 	}
 
 	//
@@ -308,32 +264,6 @@ private:
 	// Flag remembering whether there have been changes to the lines
 	// which require re-calculating vertex buffers
 	bool mAreLinesDirty;
-
-
-	// TODOOLD: nuke
-
-    //
-    // Text state slots
-    //
-
-    struct TextSlot
-    {
-        uint64_t Generation;
-
-        std::vector<std::string> TextLines;
-        TextPositionType Position;
-        float Alpha;
-        FontType Font;
-
-        // Position and number of vertices for this slot in the font's vertex buffer
-        size_t VertexBufferIndexStart;
-        size_t VertexBufferCount;
-    };
-
-    std::array<TextSlot, 8> mTextSlots;
-    uint64_t mCurrentTextSlotGeneration;
-    bool mAreTextSlotsDirty;
-
 
 
     //

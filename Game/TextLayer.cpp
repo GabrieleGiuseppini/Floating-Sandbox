@@ -5,9 +5,13 @@
 ***************************************************************************************/
 #include "TextLayer.h"
 
+#include <GameCore/GameWallClock.h>
+
 #include <cassert>
 #include <iomanip>
 #include <sstream>
+
+using namespace std::literals::chrono_literals;
 
 TextLayer::TextLayer(
 	std::shared_ptr<Render::TextRenderContext> textRenderContext,
@@ -19,6 +23,8 @@ TextLayer::TextLayer(
 	, mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
     , mStatusTextLines()
 	, mAreStatusTextLinePositionsDirty(false)
+	// Ephemeral text
+	, mEphemeralTextLines()
 {
 }
 
@@ -104,7 +110,25 @@ void TextLayer::SetStatusTexts(
     }
 }
 
-void TextLayer::Update(float /*now*/)
+void TextLayer::AddEphemeralTextLine(
+	std::string const & text,
+	std::chrono::duration<float> lifetime)
+{
+	// Create text
+	auto handle = mTextRenderContext->AddTextLine(
+		text,
+		TextPositionType::TopRight,
+		vec2f::zero(), // for now
+		0.0f, // for now
+		FontType::GameText);
+
+	// Store ephemeral line
+	mEphemeralTextLines.emplace_back(
+		handle,
+		lifetime);
+}
+
+void TextLayer::Update(float now)
 {
 	//
 	// Status text
@@ -121,6 +145,125 @@ void TextLayer::Update(float /*now*/)
 		}
 
 		mAreStatusTextLinePositionsDirty = false;
+	}
+
+
+	//
+	// Ephemeral lines
+	//
+
+	// 1) Trim first lines if we've got too many
+	while (mEphemeralTextLines.size() > 8)
+	{
+		assert(mEphemeralTextLines.front().Handle != NoneRenderedTextHandle);
+		mTextRenderContext->ClearTextLine(mEphemeralTextLines.front().Handle);
+		mEphemeralTextLines.pop_front();
+	}
+
+	// 2) Update state of remaining ones
+	vec2f screenOffset; // Cumulative vertical offset
+	float const lineHeight = static_cast<float>(mTextRenderContext->GetLineScreenHeight(FontType::GameText));
+	for (auto it = mEphemeralTextLines.begin(); it != mEphemeralTextLines.end(); )
+	{
+		bool doDeleteLine = false;
+
+		switch (it->State)
+		{
+			case EphemeralTextLine::StateType::Initial:
+			{
+				// Initialize fade-in
+				it->State = EphemeralTextLine::StateType::FadingIn;
+				it->CurrentStateStartTimestamp = now;
+
+				[[fallthrough]];
+			}
+
+			case EphemeralTextLine::StateType::FadingIn:
+			{
+				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+				// Update text
+				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, std::min(1.0f, progress));
+
+				// See if time to transition
+				if (progress >= 1.0f)
+				{
+					it->State = EphemeralTextLine::StateType::Displaying;
+					it->CurrentStateStartTimestamp = now;
+				}
+
+				// Update offset of next line
+				screenOffset.y += lineHeight;
+
+				break;
+			}
+
+			case EphemeralTextLine::StateType::Displaying:
+			{
+				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
+
+				// Update text
+				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f);
+
+				// See if time to transition
+				if (progress >= 1.0f)
+				{
+					it->State = EphemeralTextLine::StateType::FadingOut;
+					it->CurrentStateStartTimestamp = now;
+				}
+
+				// Update offset of next line
+				screenOffset.y += lineHeight;
+
+				break;
+			}
+
+			case EphemeralTextLine::StateType::FadingOut:
+			{
+				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+				// Update text
+				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f - std::min(1.0f, progress));
+
+				// See if time to transition
+				if (progress >= 1.0f)
+				{
+					it->State = EphemeralTextLine::StateType::Disappearing;
+					it->CurrentStateStartTimestamp = now;
+				}
+
+				// Update offset of next line
+				screenOffset.y += lineHeight;
+
+				break;
+			}
+
+			case EphemeralTextLine::StateType::Disappearing:
+			{
+				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+				// See if time to turn off
+				if (progress >= 1.0f)
+				{
+					doDeleteLine = true;
+				}
+
+				// Update offset of next line
+				screenOffset.y += lineHeight * (1.0f - std::min(1.0f, progress));
+
+				break;
+			}
+		}
+
+		// Advance
+		if (doDeleteLine)
+		{
+			it = mEphemeralTextLines.erase(it);
+		}
+		else
+		{
+			++it;
+		}
 	}
 }
 

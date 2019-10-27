@@ -1364,55 +1364,8 @@ public:
         mShips[shipId]->RenderEnd();
     }
 
-    void RenderShipsEnd();
-
-
-    /////////////////////////////////////////////////////////////////////////
-    // Text
-    /////////////////////////////////////////////////////////////////////////
-
-    RenderedTextHandle AddText(
-        std::vector<std::string> const & textLines,
-        TextPositionType position,
-        float alpha,
-        FontType font)
-    {
-        assert(!!mTextRenderContext);
-        return mTextRenderContext->AddText(
-            textLines,
-            position,
-            alpha,
-            font);
-    }
-
-    void UpdateText(
-        RenderedTextHandle textHandle,
-        std::vector<std::string> const & textLines,
-        float alpha)
-    {
-        assert(!!mTextRenderContext);
-        mTextRenderContext->UpdateText(
-            textHandle,
-            textLines,
-            alpha);
-    }
-
-    void UpdateText(
-        RenderedTextHandle textHandle,
-        float alpha)
-    {
-        assert(!!mTextRenderContext);
-        mTextRenderContext->UpdateText(
-            textHandle,
-            alpha);
-    }
-
-    void ClearText(RenderedTextHandle textHandle)
-    {
-        assert(!!mTextRenderContext);
-        mTextRenderContext->ClearText(textHandle);
-    }
-
+    void RenderShipsEnd();	
+    
 
     //
     // Final

@@ -11,6 +11,7 @@
 
 #include <array>
 #include <chrono>
+#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
@@ -39,6 +40,10 @@ public:
         float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
 
+	void AddEphemeralTextLine(
+		std::string const & text,
+		std::chrono::duration<float> lifetime);
+
     void Update(float now);
 
 private:
@@ -55,9 +60,8 @@ private:
 
 	std::shared_ptr<Render::TextRenderContext> mTextRenderContext;
 
-
 	//
-	// Status text state
+	// Status text
 	//
 
     bool mIsStatusTextEnabled;
@@ -83,5 +87,41 @@ private:
 	std::array<StatusTextLine, 3> mStatusTextLines;
 
 	bool mAreStatusTextLinePositionsDirty;
+
+	//
+	// Ephemeral text
+	//
+
+	struct EphemeralTextLine
+	{
+		RenderedTextHandle Handle;
+		std::chrono::duration<float> Lifetime;
+
+		enum class StateType
+		{
+			Initial,
+			FadingIn,
+			Displaying,
+			FadingOut,
+			Disappearing
+		};
+
+		StateType State;
+		float CurrentStateStartTimestamp;
+
+		EphemeralTextLine(
+			RenderedTextHandle handle,
+			std::chrono::duration<float> const lifetime)
+			: Handle(handle)
+			, Lifetime(lifetime)
+			, State(StateType::Initial)
+			, CurrentStateStartTimestamp(0.0f)
+		{}
+
+		EphemeralTextLine(EphemeralTextLine && other) = default;
+		EphemeralTextLine & operator=(EphemeralTextLine && other) = default;
+	};
+
+	std::deque<EphemeralTextLine> mEphemeralTextLines;
 };
 

@@ -1435,8 +1435,10 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & /*event*/)
 {
     assert(!!mSettingsManager);
-
     mSettingsManager->LoadAndEnforceLastPlayedSettings();
+
+	assert(!!mGameController);
+	mGameController->DisplayLoadedLastPlayedSettingsNotification();
 }
 
 void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1464,6 +1466,7 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mEventTickerPanel);
+
     if (mShowEventTickerMenuItem->IsChecked())
     {
         mMainFrameSizer->Show(mEventTickerPanel.get());
@@ -1479,6 +1482,7 @@ void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mProbePanel);
+
     if (mShowProbePanelMenuItem->IsChecked())
     {
         mMainFrameSizer->Show(mProbePanel.get());

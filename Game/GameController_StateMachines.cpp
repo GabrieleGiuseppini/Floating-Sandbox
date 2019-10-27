@@ -13,7 +13,9 @@
 
 struct GameController::TsunamiNotificationStateMachine
 {
-    TsunamiNotificationStateMachine(std::shared_ptr<Render::RenderContext> renderContext);
+    TsunamiNotificationStateMachine(
+		std::shared_ptr<Render::RenderContext> renderContext,
+		std::shared_ptr<TextLayer> textLayer);
 
     ~TsunamiNotificationStateMachine();
 
@@ -25,16 +27,13 @@ struct GameController::TsunamiNotificationStateMachine
 private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
-    RenderedTextHandle mTextHandle;
+	std::shared_ptr<TextLayer> mTextLayer;
 
     enum class StateType
     {
         RumblingFadeIn,
         Rumbling1,
-        WarningFadeIn,
-        Warning,
-        WarningFadeOut,
-        Rumbling2,
+        Rumbling2, // Warning comes out here
         RumblingFadeOut
     };
 
@@ -48,25 +47,18 @@ void GameController::TsunamiNotificationStateMachineDeleter::operator()(TsunamiN
 }
 
 GameController::TsunamiNotificationStateMachine::TsunamiNotificationStateMachine(
-    std::shared_ptr<Render::RenderContext> renderContext)
+    std::shared_ptr<Render::RenderContext> renderContext,
+	std::shared_ptr<TextLayer> textLayer)
     : mRenderContext(std::move(renderContext))
+	, mTextLayer(std::move(textLayer))
     , mCurrentState(StateType::RumblingFadeIn)
     , mCurrentStateStartTime(GameWallClock::GetInstance().NowAsFloat())
 {
-    // Create text
-    mTextHandle = mRenderContext->AddText(
-        { "TSUNAMI WARNING!" },
-        TextPositionType::TopRight,
-        0.0f,
-        FontType::GameText);
 }
 
 GameController::TsunamiNotificationStateMachine::~TsunamiNotificationStateMachine()
 {
     mRenderContext->ResetPixelOffset();
-
-    assert(NoneRenderedTextHandle != mTextHandle);
-    mRenderContext->ClearText(mTextHandle);
 }
 
 bool GameController::TsunamiNotificationStateMachine::Update()
@@ -105,67 +97,12 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             // See if time to transition
             if (progress >= 1.0f)
             {
-                mCurrentState = StateType::WarningFadeIn;
-                mCurrentStateStartTime = now;
-            }
+				// Send warning
+				mTextLayer->AddEphemeralTextLine(
+					"TSUNAMI WARNING!",
+					5s);
 
-            return true;
-        }
-
-        case StateType::WarningFadeIn:
-        {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
-
-            // Set tremor
-            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
-
-            // Fade-in text
-            mRenderContext->UpdateText(
-                mTextHandle,
-                std::min(progress, 1.0f));
-
-            // See if time to transition
-            if (progress >= 1.0f)
-            {
-                mCurrentState = StateType::Warning;
-                mCurrentStateStartTime = now;
-            }
-
-            return true;
-        }
-
-        case StateType::Warning:
-        {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 5s);
-
-            // Set tremor
-            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
-
-            // See if time to transition
-            if (progress >= 1.0f)
-            {
-                mCurrentState = StateType::WarningFadeOut;
-                mCurrentStateStartTime = now;
-            }
-
-            return true;
-        }
-
-        case StateType::WarningFadeOut:
-        {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
-
-            // Fade-out text
-            mRenderContext->UpdateText(
-                mTextHandle,
-                1.0f - std::min(progress, 1.0f));
-
-            // Set tremor
-            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
-
-            // See if time to transition
-            if (progress >= 1.0f)
-            {
+				// Transition
                 mCurrentState = StateType::Rumbling2;
                 mCurrentStateStartTime = now;
             }
@@ -218,7 +155,10 @@ void GameController::StartTsunamiNotificationStateMachine(float x)
     mGameEventDispatcher->OnTsunamiNotification(x);
 
     // Start state machine
-    mTsunamiNotificationStateMachine.reset(new TsunamiNotificationStateMachine(mRenderContext));
+    mTsunamiNotificationStateMachine.reset(
+		new TsunamiNotificationStateMachine(
+			mRenderContext,
+			mTextLayer));
 }
 
 ////////////////////////////////////////////////////////////////////////

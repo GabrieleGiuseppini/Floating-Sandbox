@@ -466,6 +466,12 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
 	mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
+void GameController::DisplayLoadedLastPlayedSettingsNotification()
+{
+	assert(!!mTextLayer);
+	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED", 1s);
+}
+
 float GameController::GetCurrentSimulationTime() const
 {
     return mWorld->GetCurrentSimulationTime();
