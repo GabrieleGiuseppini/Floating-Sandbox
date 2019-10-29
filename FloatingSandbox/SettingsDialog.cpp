@@ -625,19 +625,19 @@ void SettingsDialog::OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnPersistedSettingsListBoxSelected(wxCommandEvent & /*event*/)
+void SettingsDialog::OnPersistedSettingsListCtrlSelected(wxListEvent & /*event*/)
 {
 	ReconciliateLoadPersistedSettings();
 }
 
-void SettingsDialog::OnPersistedSettingsListBoxDoubleClicked(wxCommandEvent & event)
+void SettingsDialog::OnPersistedSettingsListCtrlActivated(wxListEvent & event)
 {
-	LoadPersistedSettings(event.GetSelection());
+	LoadPersistedSettings(event.GetIndex());
 }
 
 void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
 	assert(selectedIndex < mPersistedSettings.size());
@@ -650,8 +650,8 @@ void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*ev
 
 void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
-
+	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+	
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
 	assert(selectedIndex < mPersistedSettings.size());
 	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
@@ -678,7 +678,7 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
 
 void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
 	assert(selectedIndex < mPersistedSettings.size());
@@ -708,7 +708,7 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 			}
 
 			// Remove from list box
-			mPersistedSettingsListBox->Delete(selectedIndex);
+			mPersistedSettingsListCtrl->DeleteItem(selectedIndex);
 
 			// Remove from mPersistedSettings
 			mPersistedSettings.erase(mPersistedSettings.cbegin() + selectedIndex);
@@ -800,7 +800,7 @@ void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
 		mPersistedSettings.insert(it, settingsMetadata);
 
 		// Insert in list control
-		mPersistedSettingsListBox->Insert(settingsMetadata.Key.Name, insertIdx);
+		InsertPersistedSettingInCtrl(insertIdx, settingsMetadata.Key);
 	}
 
 	// Reconciliate load UI
@@ -3337,32 +3337,33 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 			// Col 1
 
 			{
-				// Prepare choices
-				std::vector<wxString> choices;
-				for (auto const & ps : mPersistedSettings)
-				{
-					choices.emplace_back(ps.Key.Name);
-				}
-
-				mPersistedSettingsListBox = new wxListBox(
+				mPersistedSettingsListCtrl = new wxListCtrl(
 					loadSettingsBox,
 					wxID_ANY,
 					wxDefaultPosition,
 					wxSize(250, 370),
-					static_cast<int>(choices.size()),
-					choices.data(),
-					wxLB_SINGLE | wxLB_NEEDED_SB);
+					wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
 
-				if (!choices.empty())
+				mPersistedSettingsListCtrl->AppendColumn(
+					"",
+					wxLIST_FORMAT_LEFT,
+					wxLIST_AUTOSIZE_USEHEADER);
+
+				for (size_t p = 0; p < mPersistedSettings.size(); ++p)
 				{
-					// Select first item
-					mPersistedSettingsListBox->SetSelection(0);
+					InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
 				}
 
-				mPersistedSettingsListBox->Bind(wxEVT_LISTBOX, &SettingsDialog::OnPersistedSettingsListBoxSelected, this);
-				mPersistedSettingsListBox->Bind(wxEVT_LISTBOX_DCLICK, &SettingsDialog::OnPersistedSettingsListBoxDoubleClicked, this);
+				if (!mPersistedSettings.empty())
+				{
+					// Select first item
+					mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+				}
 
-				loadSettingsBoxHSizer->Add(mPersistedSettingsListBox, 0, wxALL | wxEXPAND, 5);
+				mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_SELECTED, &SettingsDialog::OnPersistedSettingsListCtrlSelected, this);
+				mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SettingsDialog::OnPersistedSettingsListCtrlActivated, this);
+
+				loadSettingsBoxHSizer->Add(mPersistedSettingsListCtrl, 0, wxALL | wxEXPAND, 5);
 			}
 
 			// Col 2
@@ -3892,6 +3893,29 @@ void SettingsDialog::ReconcileDirtyState()
     mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
 }
 
+long SettingsDialog::GetSelectedPersistedSettingIndexFromCtrl() const
+{
+	return mPersistedSettingsListCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+}
+
+void SettingsDialog::InsertPersistedSettingInCtrl(
+	int index,
+	PersistedSettingsKey const & psKey)
+{
+	mPersistedSettingsListCtrl->InsertItem(
+		index,
+		psKey.Name);
+
+	if (psKey.StorageType == PersistedSettingsStorageTypes::System
+		|| psKey == PersistedSettingsKey::MakeLastPlayedSettingsKey())
+	{
+		// Make it bold
+		auto font = mPersistedSettingsListCtrl->GetItemFont(index);
+		font.SetWeight(wxFONTWEIGHT_BOLD);
+		mPersistedSettingsListCtrl->SetItemFont(index, font);
+	}
+}
+
 void SettingsDialog::LoadPersistedSettings(int index)
 {
 	assert(index < mPersistedSettings.size());
@@ -3910,7 +3934,7 @@ void SettingsDialog::LoadPersistedSettings(int index)
 
 void SettingsDialog::ReconciliateLoadPersistedSettings()
 {
-	auto selectedIndex = mPersistedSettingsListBox->GetSelection();
+	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex == wxNOT_FOUND || selectedIndex < mPersistedSettings.size());
 

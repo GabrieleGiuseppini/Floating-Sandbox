@@ -367,6 +367,8 @@ Render:
 	
 		= Settings Manager (*)
 
+		- SpinCtrl at SliderControl
+
 		- Move status text toggles to UIPreferences, so that they're save-able
 			- Leave menu entries, they now talk to UIPreferencesManager
 				- Refresh status after window closed
@@ -1056,11 +1058,12 @@ Render:
 						+ Remove test overrides
 				+ See if can enlarge small cloud
 				+ See if may make storm clouds larger, so to cover whole sky
-			+ Rain
-				+ Shader
+			= Rain
+				= Shader
 					+ Try with more spatial density
 					+ Discard
 						+ See if it helps with perf: NO
+					- Make droplets
 				+ Sound (continuous, like wind)
 			+ Thunders
 				+ Others random with same distribution as wind gusts
@@ -1071,6 +1074,8 @@ Render:
 				= Shader
 					= Txt
 					- RenderCore and glsl
+				- Halo
+					- With blending, or with simple white-blue with alpha
 		+ Storm::Parameters:
 			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 				+ OceanSurface: gets in indirectly and makes waves
@@ -1444,13 +1449,13 @@ Render:
 	- Ship descriptions: use Mike's drawings
 
 	= SettingsManager: save settings, defaults, and real-time changes (*)
-		= Spec: 
+		+ Spec: 
 			+ Game starts always with default settings; user has the ability though to load named settings and to load
 			  the last-played settings
 			+ Changing settings in the GUI puts them in effect immediately
 				+ ...and GameController will smooth them
-			= Loaded settings go to GameController
-				- ...and GameController will smooth them
+			+ Loaded settings go to GameController
+				+ ...and GameController will smooth them
 			+ Dialog:
 				+ Control values are meant to always be in sync with real game params
 					+ Handlers enforce values immediately
@@ -1538,11 +1543,25 @@ Render:
 				+ 2) Do StatusText replacement (*)
 				+ 3) Do notification (@GameController)
 			= Data\Themes:
-				= Ocean of Lava
+				+ Ocean of Lava
 					+ See PM's suggestion on Discord
 				- Marianas Trench
 					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
-
+				+ See if need bold for system settings
+					+ Need wxListCtrl
+		- See if should have two ways of loading settings:
+			- 1) Apply settings to current settings (i.e. current behavior)
+			- 2) Enforce {Defaults+Loaded} rather than just Loaded
+		- Make "last-played" really "last-modified"; i.e.:
+			- Settings.h/cpp: 
+				- Rename
+				- Rename in key
+				- SettingsManager:
+					- When loaded, apply all {Defaults+Loaded} rather than just Loaded (see above)
+			- Rename in menu
+			- Rename in *find*
+		- See if may upgrade to wx 3.1.3
+			- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
 		- Run unit tests in debug
 
 

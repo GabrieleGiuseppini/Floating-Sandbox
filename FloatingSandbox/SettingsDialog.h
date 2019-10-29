@@ -18,7 +18,7 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/clrpicker.h>
-#include <wx/listbox.h>
+#include <wx/listctrl.h>
 #include <wx/radiobox.h>
 #include <wx/textctrl.h>
 
@@ -74,8 +74,8 @@ private:
     void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
-	void OnPersistedSettingsListBoxSelected(wxCommandEvent & event);
-	void OnPersistedSettingsListBoxDoubleClicked(wxCommandEvent & event);
+	void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
+	void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
 	void OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & event);
 	void OnReplacePersistedSettingsButton(wxCommandEvent & event);
 	void OnDeletePersistedSettingsButton(wxCommandEvent & event);
@@ -198,7 +198,7 @@ private:
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
 	// Settings Management
-	wxListBox * mPersistedSettingsListBox;
+	wxListCtrl * mPersistedSettingsListCtrl;
 	wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
 	wxButton * mLoadAndApplyPersistedSettingsButton;
 	wxButton * mReplacePersistedSettingsButton;
@@ -241,6 +241,8 @@ private:
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 
+	long GetSelectedPersistedSettingIndexFromCtrl() const;
+	void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
 	void LoadPersistedSettings(int index);
 	void ReconciliateLoadPersistedSettings();
 	void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
