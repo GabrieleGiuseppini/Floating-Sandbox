@@ -578,6 +578,8 @@ Render:
 		+ Give SamminAter another RelWithDebInfo + pdb
 		- Other issues:
 			- No fullscreen mode
+	- See if may upgrade to wx 3.1.3
+		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
 
 - Simulation Optimizations:
 
@@ -1549,20 +1551,28 @@ Render:
 					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
 				+ See if need bold for system settings
 					+ Need wxListCtrl
-		- See if should have two ways of loading settings:
-			- 1) Apply settings to current settings (i.e. current behavior)
-			- 2) Enforce {Defaults+Loaded} rather than just Loaded
-		- Make "last-played" really "last-modified"; i.e.:
-			- Settings.h/cpp: 
-				- Rename
-				- Rename in key
-				- SettingsManager:
-					- When loaded, apply all {Defaults+Loaded} rather than just Loaded (see above)
-			- Rename in menu
-			- Rename in *find*
-		- See if may upgrade to wx 3.1.3
-			- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
-		- Run unit tests in debug
+		+ Small rearc:
+			+ SettingsManager:
+				+ From:
+					! void LoadPersistedSettings(key, settings &)
+					! void LoadAndEnforceLastPlayedSettings()
+				+ To:
+					! void LoadPersistedSettings(key, settings &) // only loaded dirty on output
+					+ void EnforceDefaultsAndPersistedSettings(key) -> Settings (all clean)
+					+ void EnforceDefaultsAndLastModifiedSettings() -> void
+						+ Just calls above w/standard key
+			+ See why ocean floor settings appear to be superimposed
+				+ It's just OceanDepth for one, and custom for other
+			+ Have two different "load" buttons:
+				+ 1) "Apply Settings": "Loads the settings and applies them on top of the current settings." (i.e. current behavior)
+				+ 2) "Revert to Settings": "Reverts all settings to the saved settings." (i.e. enforce {Defaults+Loaded} rather than just Loaded)
+			+ Make "last-played" really "Last-Modified"; i.e.:
+				+ Settings.h/cpp: 
+					+ Rename
+					+ Rename in key
+				+ Rename in menu
+				+ Rename in *find*
+		+ Run unit tests in debug
 
 
 		- OLD:

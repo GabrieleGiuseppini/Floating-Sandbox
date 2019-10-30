@@ -69,9 +69,9 @@ struct PersistedSettingsKey
 		return !(*this == other);
 	}
 
-    static PersistedSettingsKey MakeLastPlayedSettingsKey()
+    static PersistedSettingsKey MakeLastModifiedSettingsKey()
     {
-        return PersistedSettingsKey("Last Played", PersistedSettingsStorageTypes::User);
+        return PersistedSettingsKey("Last Modified", PersistedSettingsStorageTypes::User);
     }
 };
 
@@ -90,19 +90,19 @@ struct PersistedSettingsMetadata
         , Description(std::move(description))
     {}
 
-    static PersistedSettingsMetadata MakeLastPlayedSettingsMetadata()
+    static PersistedSettingsMetadata MakeLastModifiedSettingsMetadata()
     {
         auto now = std::chrono::system_clock::now();
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
         std::stringstream ss;
         ss
-            << "The settings that were used when the game was last played on "
+            << "The settings that were used when the game was played on "
             << std::put_time(std::localtime(&now_c), "%F at %T") 
             << ".";
 
         return PersistedSettingsMetadata(
-            PersistedSettingsKey::MakeLastPlayedSettingsKey(),
+            PersistedSettingsKey::MakeLastModifiedSettingsKey(),
             ss.str());
     }
 };
@@ -916,28 +916,15 @@ public:
      * Loads the settings with the specified key.
      *
      * On output only loaded settings will be marked as dirty - the others
-     * will be clear.
+     * will be clear and left to the values they had before this method call.
      */
-    void LoadPersistedSettings(
-        PersistedSettingsKey const & key,
-        Settings<TEnum> & settings) const
-    {
-        SettingsDeserializationContext ctx(key, mStorage);
-        settings.Deserialize(ctx);
-    }
-
-    /*
-     * Loads the settings with the specified key.
-     *
-     * On output only loaded settings will be marked as dirty - the others
-     * will be clear.
-     */
-    Settings<TEnum> LoadPersistedSettings(PersistedSettingsKey const & key) const
-    {
-        auto settings = mTemplateSettings;
-        LoadPersistedSettings(key, settings);
-        return settings;
-    }
+	void LoadPersistedSettings(
+		PersistedSettingsKey const & key,
+		Settings<TEnum> & settings) const
+	{
+		SettingsDeserializationContext ctx(key, mStorage);
+		settings.Deserialize(ctx);
+	}
 
     /*
      * Saves all and only the settings that are marked as dirty.
@@ -963,18 +950,51 @@ public:
     }
 
     /*
-     * Checks whether the settings used in the previous session
-     * are available for being loaded.
+     * Checks whether the last-modified settings are available for 
+	 * being loaded.
      */
-    bool HasLastPlayedSettingsPersisted() const
+    bool HasLastModifiedSettingsPersisted() const
     {
-        return mStorage.HasSettings(PersistedSettingsKey::MakeLastPlayedSettingsKey());
+        return mStorage.HasSettings(PersistedSettingsKey::MakeLastModifiedSettingsKey());
     }
 
+	/*
+	 * If the last-modified settings exist, enforces default settings with, on top of them, 
+	 * the last-modified settings, and returns true. Otherwise, returns false.
+	 */
+	bool EnforceDefaultsAndLastModifiedSettings()
+	{
+		if (HasLastModifiedSettingsPersisted())
+		{
+			// Get default settings
+			Settings<TEnum> settings = mDefaultSettings;
+
+			// Load settings on top of defaults
+			{
+				SettingsDeserializationContext ctx(
+					PersistedSettingsKey::MakeLastModifiedSettingsKey(), 
+					mStorage);
+
+				settings.Deserialize(ctx);
+			}
+
+			// Enforce all settings
+			settings.MarkAllAsDirty();
+			EnforceDirtySettings(settings);
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
     /*
-     * Saves the currently-enforced settings as the standard "last-played" settings.
+     * Saves the currently-enforced settings as the standard "last-modified" settings,
+	 * if at least one setting is different than the defaults.
      */
-    void SaveLastPlayedSettings()
+    bool SaveLastModifiedSettings()
     {
         // Take snapshot
         auto settings = mTemplateSettings;
@@ -983,29 +1003,20 @@ public:
         // Diff with defaults
         settings.SetDirtyWithDiff(mDefaultSettings);
 
-        // Save
-        {
-            SettingsSerializationContext ctx(
-                PersistedSettingsMetadata::MakeLastPlayedSettingsMetadata(),
-                mStorage);
+		// Check if there's anything different than the defaults
+		if (settings.IsAtLeastOneDirty())
+		{
+			// Save settings that are different than defaults
+			{
+				SettingsSerializationContext ctx(
+					PersistedSettingsMetadata::MakeLastModifiedSettingsMetadata(),
+					mStorage);
 
-            settings.SerializeDirty(ctx);
-        }
-    }
-
-    /*
-     * Enforces the last played settings, if they are persisted.
-     */
-    bool LoadAndEnforceLastPlayedSettings()
-    {
-        if (HasLastPlayedSettingsPersisted())
-        {
-            EnforceDirtySettings(
-                LoadPersistedSettings(
-                    PersistedSettingsKey::MakeLastPlayedSettingsKey()));
+				settings.SerializeDirty(ctx);
+			}
 
 			return true;
-        }
+		}
 		else
 		{
 			return false;

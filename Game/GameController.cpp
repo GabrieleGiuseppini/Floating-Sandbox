@@ -466,7 +466,7 @@ void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
 	mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
 }
 
-void GameController::DisplayLoadedLastPlayedSettingsNotification()
+void GameController::DisplaySettingsLoadedNotification()
 {
 	assert(!!mTextLayer);
 	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED", 1s);

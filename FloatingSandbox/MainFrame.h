@@ -77,7 +77,7 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
-    wxMenuItem * mReloadLastPlayedSettingsMenuItem;
+    wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mShowStatusTextMenuItem;
@@ -174,7 +174,7 @@ private:
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
-    void OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & event);
+    void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
     void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent& event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent& event);
     void OnShowEventTickerMenuItemSelected(wxCommandEvent& event);

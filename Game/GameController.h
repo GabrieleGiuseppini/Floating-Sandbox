@@ -128,7 +128,7 @@ public:
     void SetMoveToolEngaged(bool isEngaged) override;
     void SetStatusTextEnabled(bool isEnabled) override;
     void SetExtendedStatusTextEnabled(bool isEnabled) override;
-	void DisplayLoadedLastPlayedSettingsNotification() override;
+	void DisplaySettingsLoadedNotification() override;
 
     //
     // World probing

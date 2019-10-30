@@ -53,7 +53,7 @@ struct IGameController
     virtual void SetMoveToolEngaged(bool isEngaged) = 0;
     virtual void SetStatusTextEnabled(bool isEnabled) = 0;
     virtual void SetExtendedStatusTextEnabled(bool isEnabled) = 0;
-	virtual void DisplayLoadedLastPlayedSettingsNotification() = 0;
+	virtual void DisplaySettingsLoadedNotification() = 0;
 
     //
     // World Probing

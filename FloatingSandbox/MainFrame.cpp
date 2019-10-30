@@ -79,7 +79,7 @@ long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 long const ID_TRIGGERSTORM_MENUITEM = wxNewId();
 
 long const ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
-long const ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM = wxNewId();
+long const ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM = wxNewId();
 long const ID_OPEN_PREFERENCES_WINDOW_MENUITEM = wxNewId();
 long const ID_OPEN_LOG_WINDOW_MENUITEM = wxNewId();
 long const ID_SHOW_EVENT_TICKER_MENUITEM = wxNewId();
@@ -402,9 +402,9 @@ MainFrame::MainFrame(wxApp * mainApp)
     optionsMenu->Append(openSettingsWindowMenuItem);
     Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
 
-    mReloadLastPlayedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM, _("Reload Last Played Settings\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(mReloadLastPlayedSettingsMenuItem);
-    Connect(ID_RELOAD_LAST_PLAYED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnReloadLastPlayedSettingsMenuItem);
+    mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Settings\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
+    optionsMenu->Append(mReloadLastModifiedSettingsMenuItem);
+    Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnReloadLastModifiedSettingsMenuItem);
 
     wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Preferences...\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openPreferencesWindowMenuItem);
@@ -646,8 +646,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mResourceLoader->GetThemeSettingsRootFilepath(),
         StandardSystemPaths::GetInstance().GetUserGameSettingsRootFilepath());
 
-    // Enable "Reload Last Played Settings" menu if we have last-played settings
-    mReloadLastPlayedSettingsMenuItem->Enable(mSettingsManager->HasLastPlayedSettingsPersisted());
+    // Enable "Reload Last Modified Settings" menu if we have last-modified settings
+    mReloadLastModifiedSettingsMenuItem->Enable(mSettingsManager->HasLastModifiedSettingsPersisted());
 
 
     //
@@ -767,10 +767,10 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
     if (!!mLowFrequencyTimer)
         mLowFrequencyTimer->Stop();
 
-    // Save last-played settings, if enabled
+    // Save last-modified settings, if enabled
     if (!!mUIPreferencesManager && mUIPreferencesManager->GetSaveSettingsOnExit())
         if (!!mSettingsManager)
-            mSettingsManager->SaveLastPlayedSettings();
+            mSettingsManager->SaveLastModifiedSettings();
 
     Destroy();
 }
@@ -1432,13 +1432,14 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
     mSettingsDialog->Open();
 }
 
-void MainFrame::OnReloadLastPlayedSettingsMenuItem(wxCommandEvent & /*event*/)
+void MainFrame::OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & /*event*/)
 {
     assert(!!mSettingsManager);
-    mSettingsManager->LoadAndEnforceLastPlayedSettings();
-
-	assert(!!mGameController);
-	mGameController->DisplayLoadedLastPlayedSettingsNotification();
+	if (mSettingsManager->EnforceDefaultsAndLastModifiedSettings())
+	{
+		assert(!!mGameController);
+		mGameController->DisplaySettingsLoadedNotification();
+	}
 }
 
 void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event*/)

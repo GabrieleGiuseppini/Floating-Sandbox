@@ -295,7 +295,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
     {
         mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
 
-        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-played settings when exiting the game.");
+        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-modified settings when exiting the game.");
 
         mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
 

@@ -1275,43 +1275,7 @@ TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByVal)
     TestSettingsManager sm(testFileSystem);
 
     //
-    // Save settings
-    //
-
-    Settings<TestSettings> settings1(MakeTestSettings());
-    settings1.SetValue<float>(TestSettings::Setting1_float, 242.0f);
-    settings1.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
-    settings1.SetValue<bool>(TestSettings::Setting3_bool, false);
-    settings1.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
-    settings1.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
-
-    sm.SaveDirtySettings("TestName", "TestDescription", settings1);
-
-    //
-    // Load settings
-    //
-
-    Settings<TestSettings> settings2 = sm.LoadPersistedSettings(PersistedSettingsKey("TestName", PersistedSettingsStorageTypes::User));
-
-    //
-    // Verify
-    //
-
-    EXPECT_EQ(242.0f, settings2.GetValue<float>(TestSettings::Setting1_float));
-    EXPECT_EQ(999u, settings2.GetValue<uint32_t>(TestSettings::Setting2_uint32));
-    EXPECT_EQ(false, settings2.GetValue<bool>(TestSettings::Setting3_bool));
-    EXPECT_EQ(std::string("Test!"), settings2.GetValue<std::string>(TestSettings::Setting4_string));
-    EXPECT_EQ(std::string("Foo"), settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Str);
-    EXPECT_EQ(123, settings2.GetValue<CustomValue>(TestSettings::Setting5_custom).Int);
-}
-
-TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByRef)
-{
-    auto testFileSystem = std::make_shared<TestFileSystem>();
-    TestSettingsManager sm(testFileSystem);
-
-    //
-    // Save settings
+    // Save settings - make all dirty
     //
 
     Settings<TestSettings> settings1(MakeTestSettings());
@@ -1328,10 +1292,9 @@ TEST(SettingsTests, BaseSettingsManager_E2E_SaveAndLoadPersistedSettings_ByRef)
     //
 
     Settings<TestSettings> settings2(MakeTestSettings());
-
-    sm.LoadPersistedSettings(
-        PersistedSettingsKey("TestName", PersistedSettingsStorageTypes::User),
-        settings2);
+	sm.LoadPersistedSettings(
+		PersistedSettingsKey("TestName", PersistedSettingsStorageTypes::User),
+		settings2);
 
     //
     // Verify
@@ -1432,7 +1395,7 @@ TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings_All)
     EXPECT_EQ(0u, persistedSettings2.size());
 }
 
-TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
+TEST(SettingsTests, BaseSettingsManager_E2E_LastModifiedSettings)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
@@ -1453,29 +1416,29 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
     TestSettingsManager sm(testFileSystem);
 
     //
-    // Last played do not exist by default
+    // Last-modified do not exist by default
     //
 
-    EXPECT_FALSE(sm.HasLastPlayedSettingsPersisted());
+    EXPECT_FALSE(sm.HasLastModifiedSettingsPersisted());
 
     //
-    // Change last played settings
+    // Change last-modified settings
     //
 
     GlobalSettings.setting2 = 243;
     GlobalSettings.setting5 = CustomValue("MyVal", 51);
 
     //
-    // Save last played settings
+    // Save last-modified settings
     //
 
-    sm.SaveLastPlayedSettings();
+    sm.SaveLastModifiedSettings();
 
     //
-    // Last played exist now
+    // Last-modified exist now
     //
 
-    EXPECT_TRUE(sm.HasLastPlayedSettingsPersisted());
+    EXPECT_TRUE(sm.HasLastModifiedSettingsPersisted());
 
     //
     // Change enforced settings again
@@ -1484,16 +1447,16 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
     GlobalSettings.setting2 = 244;
     GlobalSettings.setting5 = CustomValue("MyVal", 52);
 
-    // These are to verify that we only saved delta with default
+    // These are to verify that we overwrite all with default
     GlobalSettings.setting1 = 200.0f;
     GlobalSettings.setting3 = false;
     GlobalSettings.setting4 = "The Drowning Man";
 
     //
-    // Load and enforce last played settings
+    // Load and enforce defaults and last-modified settings
     //
 
-    auto ret = sm.LoadAndEnforceLastPlayedSettings();
+    auto ret = sm.EnforceDefaultsAndLastModifiedSettings();
 
 	EXPECT_TRUE(ret);
 
@@ -1501,10 +1464,10 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastPlayedSettings)
     // Verify enforced settings
     //
 
-    EXPECT_EQ(200.0f, GlobalSettings.setting1); // From before
+    EXPECT_EQ(789.5f, GlobalSettings.setting1); // From defaults
     EXPECT_EQ(243u, GlobalSettings.setting2); // Saved
-    EXPECT_EQ(false, GlobalSettings.setting3); // From before
-    EXPECT_EQ("The Drowning Man", GlobalSettings.setting4); // From before
+    EXPECT_EQ(true, GlobalSettings.setting3); // From defaults
+    EXPECT_EQ("A Forest", GlobalSettings.setting4); // From defaults
     EXPECT_EQ("MyVal", GlobalSettings.setting5.Str); // Saved
     EXPECT_EQ(51, GlobalSettings.setting5.Int); // Saved
 }

@@ -40,15 +40,15 @@ namespace /* anonymous */ {
 			// m1 < m2
 			// Rules:
 			// - All user first, system next
-			// - Among user, LastPlayed is last
+			// - Among user, LastModified is last
 
 			if (m1.Key.StorageType != m2.Key.StorageType)
 				return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
 
 			assert(m1.Key.StorageType == m2.Key.StorageType);
 
-			if (m1.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey())
-				return m2.Key == PersistedSettingsKey::MakeLastPlayedSettingsKey();
+			if (m1.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey())
+				return m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey();
 
 			return m1.Key.Name < m2.Key.Name;
 		}
@@ -301,7 +301,7 @@ void SettingsDialog::Open()
     mCheckpointSettings = mLiveSettings;
 
     // Populate controls with live settings
-	SyncSettingsWithControls(mLiveSettings);
+	SyncControlsWithSettings(mLiveSettings);
 
     // Remember that the user hasn't changed anything yet in this session
     mHasBeenDirtyInCurrentSession = false;    
@@ -632,10 +632,10 @@ void SettingsDialog::OnPersistedSettingsListCtrlSelected(wxListEvent & /*event*/
 
 void SettingsDialog::OnPersistedSettingsListCtrlActivated(wxListEvent & event)
 {
-	LoadPersistedSettings(event.GetIndex());
+	LoadPersistedSettings(event.GetIndex(), true);
 }
 
-void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
+void SettingsDialog::OnApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
 {
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
@@ -644,7 +644,20 @@ void SettingsDialog::OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & /*ev
 
 	if (selectedIndex != wxNOT_FOUND)
 	{
-		LoadPersistedSettings(selectedIndex);
+		LoadPersistedSettings(selectedIndex, false);
+	}
+}
+
+void SettingsDialog::OnRevertToPersistedSettingsButton(wxCommandEvent & /*event*/)
+{
+	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+
+	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+	assert(selectedIndex < mPersistedSettings.size());
+
+	if (selectedIndex != wxNOT_FOUND)
+	{
+		LoadPersistedSettings(selectedIndex, true);
 	}
 }
 
@@ -834,7 +847,7 @@ void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
 	assert(mSettingsManager->Pull() == mLiveSettings);
 
 	// Re-populate controls with new values
-	SyncSettingsWithControls(mLiveSettings);
+	SyncControlsWithSettings(mLiveSettings);
 
 	// Remember user has made changes wrt checkpoint
 	mHasBeenDirtyInCurrentSession = true;
@@ -875,7 +888,7 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
     assert(mSettingsManager->Pull() == mCheckpointSettings);
 
     // Re-populate controls with new values
-	SyncSettingsWithControls(mLiveSettings);
+	SyncControlsWithSettings(mLiveSettings);
 
     // Remember we are clean now
     mHasBeenDirtyInCurrentSession = false;
@@ -3390,19 +3403,25 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 				}
 
 				{
-					mLoadAndApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Load and Apply");
-					mLoadAndApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them to the game.");
-					mLoadAndApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnLoadAndApplyPersistedSettingsButton, this);
+					mApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Apply Saved Settings");
+					mApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them on top of the current settings.");
+					mApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnApplyPersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mLoadAndApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+					col2BoxSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-					mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace with Current");
+					mRevertToPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Revert to Saved Settings");
+					mRevertToPersistedSettingsButton->SetToolTip("Reverts all settings to the selected settings.");
+					mRevertToPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToPersistedSettingsButton, this);
+
+					col2BoxSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+
+					mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace Saved Settings with Current");
 					mReplacePersistedSettingsButton->SetToolTip("Overwrites the selected settings with the current settings.");
 					mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
 
 					col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-					mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Settings");
+					mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Saved Settings");
 					mDeletePersistedSettingsButton->SetToolTip("Deletes the selected settings.");
 					mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
 
@@ -3524,7 +3543,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 	panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::SyncSettingsWithControls(Settings<GameSettings> const & settings)
+void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
     // Mechanics, Fluids, Lights
 
@@ -3907,7 +3926,7 @@ void SettingsDialog::InsertPersistedSettingInCtrl(
 		psKey.Name);
 
 	if (psKey.StorageType == PersistedSettingsStorageTypes::System
-		|| psKey == PersistedSettingsKey::MakeLastPlayedSettingsKey())
+		|| psKey == PersistedSettingsKey::MakeLastModifiedSettingsKey())
 	{
 		// Make it bold
 		auto font = mPersistedSettingsListCtrl->GetItemFont(index);
@@ -3916,19 +3935,43 @@ void SettingsDialog::InsertPersistedSettingInCtrl(
 	}
 }
 
-void SettingsDialog::LoadPersistedSettings(int index)
+void SettingsDialog::LoadPersistedSettings(int index, bool withDefaults)
 {
 	assert(index < mPersistedSettings.size());
 
 	if (index < mPersistedSettings.size())
 	{
-		// Load
-		//
-		// Only loaded settings will be marked as dirty on output
-		mLiveSettings = mSettingsManager->LoadPersistedSettings(mPersistedSettings[index].Key);
+		if (withDefaults)
+		{
+			//
+			// Apply loaded settings to {Defaults}
+			//
+
+			mLiveSettings = mSettingsManager->GetDefaults();
+
+			mSettingsManager->LoadPersistedSettings(
+				mPersistedSettings[index].Key,
+				mLiveSettings);
+
+			// Make sure we enforce everything
+			mLiveSettings.MarkAllAsDirty();
+		}
+		else
+		{
+			//
+			// Apply loaded settings to {Current}
+			//
+
+			mSettingsManager->LoadPersistedSettings(
+				mPersistedSettings[index].Key,
+				mLiveSettings);
+		}
 
 		// Enforce and reconcile
 		OnLiveSettingsChanged();
+
+		// Re-populate controls
+		SyncControlsWithSettings(mLiveSettings);
 	}
 }
 
@@ -3939,19 +3982,20 @@ void SettingsDialog::ReconciliateLoadPersistedSettings()
 	assert(selectedIndex == wxNOT_FOUND || selectedIndex < mPersistedSettings.size());
 
 	// Enable as long as there's a selection
-	mLoadAndApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
+	mApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
+	mRevertToPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
 
-	// Enable as long as there's a selection for a user setting that's not the "last-played" setting
+	// Enable as long as there's a selection for a user setting that's not the "last-modified" setting
 	mReplacePersistedSettingsButton->Enable(
 		selectedIndex != wxNOT_FOUND
 		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
-		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastPlayedSettingsKey());
+		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
 
-	// Enable as long as there's a selection for a user setting that's not the "last-played" setting
+	// Enable as long as there's a selection for a user setting that's not the "last-modified" setting
 	mDeletePersistedSettingsButton->Enable(
 		selectedIndex != wxNOT_FOUND
 		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
-		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastPlayedSettingsKey());
+		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
 
 	if (selectedIndex != wxNOT_FOUND)
 	{

@@ -76,7 +76,8 @@ private:
 
 	void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
 	void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
-	void OnLoadAndApplyPersistedSettingsButton(wxCommandEvent & event);
+	void OnApplyPersistedSettingsButton(wxCommandEvent & event);
+	void OnRevertToPersistedSettingsButton(wxCommandEvent & event);
 	void OnReplacePersistedSettingsButton(wxCommandEvent & event);
 	void OnDeletePersistedSettingsButton(wxCommandEvent & event);
 	void OnSaveSettingsTextEdited(wxCommandEvent & event);
@@ -200,7 +201,8 @@ private:
 	// Settings Management
 	wxListCtrl * mPersistedSettingsListCtrl;
 	wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
-	wxButton * mLoadAndApplyPersistedSettingsButton;
+	wxButton * mApplyPersistedSettingsButton;
+	wxButton * mRevertToPersistedSettingsButton;
 	wxButton * mReplacePersistedSettingsButton;
 	wxButton * mDeletePersistedSettingsButton;
 	wxTextCtrl * mSaveSettingsNameTextCtrl;
@@ -233,7 +235,7 @@ private:
     void PopulateAdvancedPanel(wxPanel * panel);
 	void PopulateSettingsManagementPanel(wxPanel * panel);
 
-    void SyncSettingsWithControls(Settings<GameSettings> const & settings);
+    void SyncControlsWithSettings(Settings<GameSettings> const & settings);
 
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
@@ -243,7 +245,7 @@ private:
 
 	long GetSelectedPersistedSettingIndexFromCtrl() const;
 	void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
-	void LoadPersistedSettings(int index);
+	void LoadPersistedSettings(int index, bool withDefaults);
 	void ReconciliateLoadPersistedSettings();
 	void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
 	void ReconciliateSavePersistedSettings();
