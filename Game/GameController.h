@@ -371,8 +371,8 @@ public:
 
     // Misc
 
-    OceanFloorTerrain GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
-    void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mWorld->SetOceanFloorTerrain(value); }
+    OceanFloorTerrain GetOceanFloorTerrain() const override { return mOceanFloorTerrainParameterSmoother->GetValue(); }
+    void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mOceanFloorTerrainParameterSmoother->SetValue(value); }
 
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
@@ -655,6 +655,8 @@ private:
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
+
+	std::unique_ptr<ParameterSmoother<OceanFloorTerrain>> mOceanFloorTerrainParameterSmoother;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;

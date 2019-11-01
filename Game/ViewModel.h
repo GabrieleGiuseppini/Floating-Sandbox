@@ -56,7 +56,7 @@ public:
         RecalculateAttributes();
     }
 
-    float GetZoom() const
+    float const & GetZoom() const
     {
         return mZoom;
     }
@@ -64,8 +64,10 @@ public:
     /*
      * Clamps the specified zoom so that the resulting view is still within the maximum world boundaries.
      */
-    float ClampZoom(float zoom) const
+    float ClampZoom(float const & zoom) const
     {
+		float clampedZoom = zoom;
+
         //
         // Width
         //
@@ -73,17 +75,17 @@ public:
         float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
         float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
-        float visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+        float visibleWorldWidth = CalculateVisibleWorldWidth(clampedZoom);
 
         if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
         {
-            zoom = visibleWorldWidth * zoom / ((mCam.x - MaxWorldLeft) * 2.0f);
-            visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+			clampedZoom = visibleWorldWidth * clampedZoom / ((mCam.x - MaxWorldLeft) * 2.0f);
+            visibleWorldWidth = CalculateVisibleWorldWidth(clampedZoom);
         }
 
         if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
         {
-            zoom = visibleWorldWidth * zoom / ((MaxWorldRight - mCam.x) * 2.0f);
+			clampedZoom = visibleWorldWidth * clampedZoom / ((MaxWorldRight - mCam.x) * 2.0f);
         }
 
         //
@@ -93,28 +95,28 @@ public:
         float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
         float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
-        float visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        float visibleWorldHeight = CalculateVisibleWorldHeight(clampedZoom);
 
         if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
         {
-            zoom = visibleWorldHeight * zoom / ((MaxWorldTop - mCam.y) * 2.0f);
-            visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+			clampedZoom = visibleWorldHeight * clampedZoom / ((MaxWorldTop - mCam.y) * 2.0f);
+            visibleWorldHeight = CalculateVisibleWorldHeight(clampedZoom);
         }
 
         if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
         {
-            zoom = visibleWorldHeight * zoom / ((mCam.y - MaxWorldBottom) * 2.0f);
+			clampedZoom = visibleWorldHeight * clampedZoom / ((mCam.y - MaxWorldBottom) * 2.0f);
         }
 
-        if (zoom > MaxZoom)
+        if (clampedZoom > MaxZoom)
         {
-            zoom = MaxZoom;
+			clampedZoom = MaxZoom;
         }
 
-        return zoom;
+        return clampedZoom;
     }
 
-    float SetZoom(float zoom)
+    float const & SetZoom(float zoom)
     {
         float newZoom = ClampZoom(zoom);
 
@@ -122,7 +124,7 @@ public:
 
         RecalculateAttributes();
 
-        return zoom;
+        return mZoom;
     }
 
     vec2f const & GetCameraWorldPosition() const
@@ -150,7 +152,7 @@ public:
         return clampedPos;
     }
 
-    vec2f SetCameraWorldPosition(vec2f const & pos)
+    vec2f const & SetCameraWorldPosition(vec2f const & pos)
     {
         vec2f newPos = ClampCameraWorldPosition(pos);
 
@@ -158,7 +160,7 @@ public:
 
         RecalculateAttributes();
 
-        return newPos;
+        return mCam;
     }
 
     int GetCanvasWidth() const

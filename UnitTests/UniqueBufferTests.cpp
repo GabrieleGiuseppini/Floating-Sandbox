@@ -130,6 +130,73 @@ TEST(UniqueBufferTests, Comparison)
     EXPECT_NE(b1, b4);
     EXPECT_NE(b4, b1);
 }
+
+TEST(UniqueBufferTests, UnaryAddition)
+{
+	unique_buffer<float> b1(3);
+	b1[0] = 4.0f;
+	b1[1] = 8.0f;
+	b1[2] = 16.0f;
+
+	unique_buffer<float> b2(3);
+	b2[0] = 14.0f;
+	b2[1] = 18.0f;
+	b2[2] = 116.0f;
+
+	b1 += b2;
+
+	EXPECT_FLOAT_EQ(18.0f, b1[0]);
+	EXPECT_FLOAT_EQ(26.0f, b1[1]);
+	EXPECT_FLOAT_EQ(132.0f, b1[2]);
+}
+
+TEST(UniqueBufferTests, UnarySubtraction)
+{
+	unique_buffer<float> b1(3);
+	b1[0] = 4.0f;
+	b1[1] = 8.0f;
+	b1[2] = 116.0f;
+
+	unique_buffer<float> b2(3);
+	b2[0] = 14.0f;
+	b2[1] = 18.0f;
+	b2[2] = 16.0f;
+
+	b1 -= b2;
+
+	EXPECT_FLOAT_EQ(-10.0f, b1[0]);
+	EXPECT_FLOAT_EQ(-10.0f, b1[1]);
+	EXPECT_FLOAT_EQ(100.0f, b1[2]);
+}
+
+TEST(UniqueBufferTests, ScalarUnaryMultiplication)
+{
+	unique_buffer<float> b1(3);
+	b1[0] = 4.0f;
+	b1[1] = 8.0f;
+	b1[2] = 116.0f;
+
+	b1 *= 2.0f;
+
+	EXPECT_FLOAT_EQ(8.0f, b1[0]);
+	EXPECT_FLOAT_EQ(16.0f, b1[1]);
+	EXPECT_FLOAT_EQ(232.0f, b1[2]);
+}
+
+TEST(UniqueBufferTests, ScalarUnaryDivision)
+{
+	unique_buffer<float> b1(3);
+	b1[0] = 4.0f;
+	b1[1] = 8.0f;
+	b1[2] = 116.0f;
+
+	b1 /= 2.0f;
+
+	EXPECT_FLOAT_EQ(2.0f, b1[0]);
+	EXPECT_FLOAT_EQ(4.0f, b1[1]);
+	EXPECT_FLOAT_EQ(58.0f, b1[2]);
+}
+
 TEST(UniqueBufferTests, ConvertCopy_LargerToSmaller)
 {
     unique_buffer<float> b1(3);

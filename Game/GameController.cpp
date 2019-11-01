@@ -82,6 +82,7 @@ GameController::GameController(
     , mMaterialDatabase(std::move(materialDatabase))
     // Smoothing
     , mFloatParameterSmoothers()
+	, mOceanFloorTerrainParameterSmoother()
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Stats
@@ -107,11 +108,11 @@ GameController::GameController(
    
     assert(mFloatParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mGameParameters.SpringStiffnessAdjustment;
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mGameParameters.SpringStiffnessAdjustment = value;
         },
@@ -119,11 +120,11 @@ GameController::GameController(
 
     assert(mFloatParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mGameParameters.SpringStrengthAdjustment;
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mGameParameters.SpringStrengthAdjustment = value;
         },
@@ -131,11 +132,11 @@ GameController::GameController(
 
     assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mGameParameters.SeaDepth;
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mGameParameters.SeaDepth = value;
         },
@@ -143,11 +144,11 @@ GameController::GameController(
 
     assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mGameParameters.OceanFloorBumpiness;
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mGameParameters.OceanFloorBumpiness = value;
         },
@@ -155,11 +156,11 @@ GameController::GameController(
 
     assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mGameParameters.OceanFloorDetailAmplification;
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mGameParameters.OceanFloorDetailAmplification = value;
         },
@@ -167,43 +168,55 @@ GameController::GameController(
 
     assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
-        [this]()
+        [this]() -> float const &
         {
             return this->mRenderContext->GetShipFlameSizeAdjustment();
         },
-        [this](float value)
+        [this](float const & value)
         {
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
         ParameterSmoothingTrajectoryTime);
 
+	mOceanFloorTerrainParameterSmoother = std::make_unique<ParameterSmoother<OceanFloorTerrain>>(
+		[this]() -> OceanFloorTerrain const &
+		{
+			return this->mWorld->GetOceanFloorTerrain();
+		},
+		[this](OceanFloorTerrain const & value)
+		{
+			mWorld->SetOceanFloorTerrain(value);
+		},
+		ParameterSmoothingTrajectoryTime);
+
+
     std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
 
     mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
-        [this]()
+        [this]() -> float const &
         {
             return this->mRenderContext->GetZoom();
         },
-        [this](float value)
+        [this](float const & value) -> float const &
         {
             return this->mRenderContext->SetZoom(value);
         },
-        [this](float value)
+        [this](float const & value)
         {
             return this->mRenderContext->ClampZoom(value);
         },
         ControlParameterSmoothingTrajectoryTime);
 
     mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
-        [this]()
+        [this]() -> vec2f const &
         {
             return this->mRenderContext->GetCameraWorldPosition();
         },
-        [this](vec2f value)
+        [this](vec2f const & value) -> vec2f const &
         {
             return this->mRenderContext->SetCameraWorldPosition(value);
         },
-        [this](vec2f value)
+        [this](vec2f const & value)
         {
             return this->mRenderContext->ClampCameraWorldPosition(value);
         },
@@ -992,13 +1005,17 @@ void GameController::InternalUpdate()
     float const now = GameWallClock::GetInstance().NowAsFloat();
 
     // Update parameter smoothers
-    std::for_each(
-        mFloatParameterSmoothers.begin(),
-        mFloatParameterSmoothers.end(),
-        [now](auto & ps)
-        {
-            ps.Update(now);
-        });
+	{
+		std::for_each(
+			mFloatParameterSmoothers.begin(),
+			mFloatParameterSmoothers.end(),
+			[now](auto & ps)
+			{
+				ps.Update(now);
+			});
+
+		mOceanFloorTerrainParameterSmoother->Update(now);
+	}
 
     // Update world
     assert(!!mWorld);

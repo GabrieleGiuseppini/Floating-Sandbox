@@ -54,6 +54,42 @@ public:
         return mTerrainBuffer == other.mTerrainBuffer;
     }
 
+	friend OceanFloorTerrain operator+(
+		OceanFloorTerrain lhs,
+		OceanFloorTerrain const & rhs)
+	{
+		lhs.mTerrainBuffer += rhs.mTerrainBuffer;
+
+		return lhs;
+	}
+
+	friend OceanFloorTerrain operator-(
+		OceanFloorTerrain lhs,
+		OceanFloorTerrain const & rhs)
+	{
+		lhs.mTerrainBuffer -= rhs.mTerrainBuffer;
+
+		return lhs;
+	}
+
+	friend OceanFloorTerrain operator*(
+		OceanFloorTerrain lhs,
+		float rhs)
+	{
+		lhs.mTerrainBuffer *= rhs;
+
+		return lhs;
+	}
+
+	friend OceanFloorTerrain operator/(
+		OceanFloorTerrain lhs,
+		float rhs)
+	{
+		lhs.mTerrainBuffer /= rhs;
+
+		return lhs;
+	}
+
     inline float operator[](size_t index) const
     {
         return mTerrainBuffer[index];

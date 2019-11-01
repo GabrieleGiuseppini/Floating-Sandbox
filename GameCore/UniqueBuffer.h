@@ -89,6 +89,42 @@ public:
         return !(*this == other);
     }
 
+	unique_buffer<TValue> & operator+=(unique_buffer<TValue> const & rhs)
+	{
+		assert(mSize == rhs.mSize);
+
+		for (size_t i = 0; i < mSize; ++i)
+			mBuffer[i] += rhs.mBuffer[i];
+
+		return *this;
+	}
+
+	unique_buffer<TValue> & operator-=(unique_buffer<TValue> const & rhs)
+	{
+		assert(mSize == rhs.mSize);
+
+		for (size_t i = 0; i < mSize; ++i)
+			mBuffer[i] -= rhs.mBuffer[i];
+
+		return *this;
+	}
+
+	unique_buffer<TValue> & operator*=(float rhs)
+	{
+		for (size_t i = 0; i < mSize; ++i)
+			mBuffer[i] *= rhs;
+
+		return *this;
+	}
+
+	unique_buffer<TValue> & operator/=(float rhs)
+	{
+		for (size_t i = 0; i < mSize; ++i)
+			mBuffer[i] /= rhs;
+
+		return *this;
+	}
+
     inline size_t size() const noexcept
     {
         return mSize;

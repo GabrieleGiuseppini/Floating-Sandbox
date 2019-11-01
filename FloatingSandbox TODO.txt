@@ -1065,6 +1065,8 @@ Render:
 					+ Try with more spatial density
 					+ Discard
 						+ See if it helps with perf: NO
+					= See double-speed
+					- Discard if tile off - see perf impact
 					- Make droplets
 				+ Sound (continuous, like wind)
 			+ Thunders
@@ -1096,6 +1098,7 @@ Render:
 		+ Manual storm trigger
 		- SettingsDialog: 
 			- Four parameters
+		- Rain extinguishes fire
 		- Cleanup:
 			- Do perf analysis - Andrea Gail slows down a lot
 			- Clouds shader: TODO: it's now per-cloud; redo: 
@@ -1547,8 +1550,9 @@ Render:
 			= Data\Themes:
 				+ Ocean of Lava
 					+ See PM's suggestion on Discord
-				- Marianas Trench
-					- https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
+				= Marianas Trench
+					+ https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
+					= Make OceanFloor ParameterSmoother, which interpolates
 				+ See if need bold for system settings
 					+ Need wxListCtrl
 		+ Small rearc:

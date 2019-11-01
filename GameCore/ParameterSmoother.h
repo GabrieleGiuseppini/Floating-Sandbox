@@ -17,17 +17,17 @@ class ParameterSmoother
 public:
 
     ParameterSmoother(
-        std::function<TValue()> getter,
-        std::function<void(TValue)> setter,
+        std::function<TValue const &()> getter,
+        std::function<void(TValue const &)> setter,
         std::chrono::milliseconds trajectoryTime)
         : ParameterSmoother(
             getter,
-            [setter](TValue value) -> TValue
+            [setter](TValue const & value) -> TValue const &
             {
                 setter(value);
                 return value;
             },
-            [](TValue value) -> TValue
+            [](TValue const & value) -> TValue
             {
                 return value;
             },
@@ -35,34 +35,34 @@ public:
     {}
 
     ParameterSmoother(
-        std::function<TValue()> getter,
-        std::function<TValue(TValue)> setter,
-        std::function<TValue(TValue)> clamper,
+        std::function<TValue const &()> getter,
+        std::function<TValue const &(TValue const &)> setter,
+        std::function<TValue(TValue const &)> clamper,
         std::chrono::milliseconds trajectoryTime)
         : mGetter(std::move(getter))
         , mSetter(std::move(setter))
         , mClamper(std::move(clamper))
         , mTrajectoryTime(std::chrono::duration_cast<std::chrono::duration<float>>(trajectoryTime).count())
     {
-        mStartValue = mTargetValue = mCurrentValue = mGetter();
+        mStartValue = mTargetValue = mGetter();
         mStartTimestamp = mCurrentTimestamp = mEndTimestamp = 0.0f;
     }
 
     /*
      * Returns the current value, which is the target value as smoothing is assumed to happen "offline".
      */
-    TValue GetValue() const
+    TValue const & GetValue() const
     {
         return mTargetValue;
     }
 
-    void SetValue(TValue value)
+    void SetValue(TValue const & value)
     {
         SetValue(value, GameWallClock::GetInstance().NowAsFloat());
     }
 
     void SetValue(
-        TValue value,
+        TValue const & value,
         float now)
     {
         if (mCurrentTimestamp < mEndTimestamp
@@ -77,7 +77,7 @@ public:
 
             // Advance time
             mCurrentTimestamp = now;
-            mCurrentValue = GetValueAt(mCurrentTimestamp);
+            TValue currentValue = GetValueAt(mCurrentTimestamp);
 
             // Calculate current timestamp as fraction of current timespan
             //
@@ -107,7 +107,7 @@ public:
             //  newStartValue = currentValue - f(newEndValue - newStartValue)
             float const valueFraction = SmoothStep(0.0f, 1.0f, progressFraction);
             mStartValue =
-                (mCurrentValue - mTargetValue * valueFraction)
+                (currentValue - mTargetValue * valueFraction)
                 / (1.0f - valueFraction);
         }
         else
@@ -115,8 +115,7 @@ public:
             // We are not smoothing...
             // ...start a new smoothing
 
-            mCurrentValue = mTargetValue; // Just in case
-            mStartValue = mCurrentValue;
+            mStartValue = mTargetValue;
 
             mStartTimestamp = now;
             mCurrentTimestamp = now;
@@ -127,9 +126,9 @@ public:
         }
     }
 
-    void SetValueImmediate(TValue value)
+    void SetValueImmediate(TValue const & value)
     {
-        mCurrentValue = mTargetValue = mSetter(value);
+        mTargetValue = mSetter(value);
         mCurrentTimestamp = mEndTimestamp; // Prevent Update from advancing
     }
 
@@ -141,9 +140,9 @@ public:
 
             mCurrentTimestamp = std::min(now, mEndTimestamp);
 
-            mCurrentValue = GetValueAt(mCurrentTimestamp);
+            auto currentValue = GetValueAt(mCurrentTimestamp);
 
-            mSetter(mCurrentValue);
+            mSetter(currentValue);
 
             // In case conditions have changed, we pickup the new target value
             // and we will return the correct value
@@ -174,14 +173,13 @@ private:
 
 private:
 
-    std::function<TValue()> const mGetter;
-    std::function<TValue(TValue)> const mSetter;
-    std::function<TValue(TValue)> const mClamper;
+    std::function<TValue const & ()> const mGetter;
+    std::function<TValue const &(TValue const &)> const mSetter;
+    std::function<TValue(TValue const &)> const mClamper;
     float const mTrajectoryTime;
 
     TValue mStartValue;
     TValue mTargetValue;
-    TValue mCurrentValue;
     float mStartTimestamp;
     float mCurrentTimestamp;
     float mEndTimestamp;

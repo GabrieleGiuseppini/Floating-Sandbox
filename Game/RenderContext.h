@@ -63,7 +63,7 @@ public:
     // World and view properties
     //
 
-    float GetZoom() const
+    float const & GetZoom() const
     {
         return mViewModel.GetZoom();
     }
@@ -73,16 +73,16 @@ public:
         return mViewModel.ClampZoom(zoom);
     }
 
-    float SetZoom(float zoom)
+    float const & SetZoom(float zoom)
     {
-        auto const newZoom = mViewModel.SetZoom(zoom);
+        float const & newZoom = mViewModel.SetZoom(zoom);
 
         OnViewModelUpdated();
 
         return newZoom;
     }
 
-    vec2f GetCameraWorldPosition() const
+    vec2f const & GetCameraWorldPosition() const
     {
         return mViewModel.GetCameraWorldPosition();
     }
@@ -92,9 +92,9 @@ public:
         return mViewModel.ClampCameraWorldPosition(pos);
     }
 
-    vec2f SetCameraWorldPosition(vec2f const & pos)
+    vec2f const & SetCameraWorldPosition(vec2f const & pos)
     {
-        auto const newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
+        vec2f const & newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
 
         OnViewModelUpdated();
 
@@ -457,7 +457,7 @@ public:
         OnShipFlameRenderModeUpdated();
     }
 
-    float GetShipFlameSizeAdjustment() const
+    float const & GetShipFlameSizeAdjustment() const
     {
         return mShipFlameSizeAdjustment;
     }
