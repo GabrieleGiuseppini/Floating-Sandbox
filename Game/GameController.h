@@ -371,7 +371,12 @@ public:
 
     // Misc
 
-    OceanFloorTerrain GetOceanFloorTerrain() const override { return mOceanFloorTerrainParameterSmoother->GetValue(); }
+	// TODOTEST
+	// Note: here we retrieve the value directly from its holder, as 1) it gets modified in-place,
+	// and 2) setting it via GameController is really just a corner case, for when the user loads
+	// persisted settings
+    //OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mOceanFloorTerrainParameterSmoother->GetValue(); }
+	OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
     void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mOceanFloorTerrainParameterSmoother->SetValue(value); }
 
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }

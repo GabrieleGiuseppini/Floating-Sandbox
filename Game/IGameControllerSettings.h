@@ -133,7 +133,7 @@ struct IGameControllerSettings
 
     // Misc
 
-    virtual OceanFloorTerrain GetOceanFloorTerrain() const = 0;
+    virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;
     virtual void SetOceanFloorTerrain(OceanFloorTerrain const & value) = 0;
 
     virtual float GetSeaDepth() const = 0;

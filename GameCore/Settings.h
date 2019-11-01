@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "Log.h"
 #include "Utils.h"
 #include "Version.h"
 
@@ -379,6 +380,11 @@ public:
         mIsDirty = false;
     }
 
+	std::string GetName() const
+	{
+		return mName;
+	}
+
     virtual std::type_info const & GetType() const = 0;
 
     virtual bool IsEqual(BaseSetting const & other) const = 0;
@@ -395,11 +401,6 @@ protected:
         : mName(std::move(name))
         , mIsDirty(false)
     {}
-
-    std::string GetName() const
-    {
-        return mName;
-    }
 
 private:
 
