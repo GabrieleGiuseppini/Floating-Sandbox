@@ -354,18 +354,18 @@ Render:
 				+ More thick
 		+ Lights perf improvement (*)	
 		+ Settings Manager (*)
+		+ Fix guy's name in Aurora:
+			+ Need:
+				+ Name: HummeL
+				+ URL: https://www.youtube.com/c/HummeL_Prog
+			+ Ship
+			+ AboutBox
+
 
 		~ Send for testing
 			- Disable storm first
 
 		- Print speed (in m/s) after throwing objects with both move tools
-
-		- Fix guy's name in Aurora:
-			+ Need:
-				+ Name: HummeL
-				+ URL: https://www.youtube.com/c/HummeL_Prog
-			- Ship
-			- AboutBox
 
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
