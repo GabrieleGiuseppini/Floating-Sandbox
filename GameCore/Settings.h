@@ -98,7 +98,7 @@ struct PersistedSettingsMetadata
 
         std::stringstream ss;
         ss
-            << "The settings that were used when the game was played on "
+            << "The settings that were last modified when the game was played on "
             << std::put_time(std::localtime(&now_c), "%F at %T") 
             << ".";
 

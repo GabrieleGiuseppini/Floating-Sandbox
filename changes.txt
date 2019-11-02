@@ -1,4 +1,5 @@
 1.13.0
+- Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings
 - Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps 
 - Improved performance of "load ship" window - no more freezing when browsing a large number of ships!
 - Reworked sparkles generated when using the chainsaw (slice) tool

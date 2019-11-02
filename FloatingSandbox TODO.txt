@@ -352,11 +352,10 @@ Render:
 				+ GameRandomEngine renames
 			+ Try:
 				+ More thick
+		+ Lights perf improvement (*)	
+		+ Settings Manager (*)
 
 		= Unix build break
-
-		= Lights perf improvement (*)
-			- Do blog post
 
 		- Fix guy's name in Aurora:
 			+ Need:
@@ -364,8 +363,6 @@ Render:
 				+ URL: https://www.youtube.com/c/HummeL_Prog
 			- Ship
 			- AboutBox
-	
-		= Settings Manager (*)
 
 		- SpinCtrl at SliderControl
 
@@ -1452,281 +1449,6 @@ Render:
 - UI:
 
 	- Ship descriptions: use Mike's drawings
-
-	= SettingsManager: save settings, defaults, and real-time changes (*)
-		+ Spec: 
-			+ Game starts always with default settings; user has the ability though to load named settings and to load
-			  the last-played settings
-			+ Changing settings in the GUI puts them in effect immediately
-				+ ...and GameController will smooth them
-			+ Loaded settings go to GameController
-				+ ...and GameController will smooth them
-			+ Dialog:
-				+ Control values are meant to always be in sync with real game params
-					+ Handlers enforce values immediately
-		= Plan:
-			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-				+ Via StandardSystemPaths class
-			+ ResourceLoader::GetThemeSettingsRootFilepath()
-			+ Settings framework
-			+ OceanFloor:
-				+ OceanFloorTerrain
-					+ Has unique_buffer<float>
-					+ other notebook methods
-				+ OceanFloor contains and owns OceanFloorTerrain
-					+ Needs it as a member as it exposes reference to it
-				+ OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
-				  from World who takes it from GameController as &&
-					+ GameController provides the initial one loaded via 
-					  OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
-				+ GameController::Reset():
-					+ First takes current terrain, via World
-					+ Then, passes it back to World's cctor, as &&
-				+ Crash when reloading after having written last sample
-				+ IGameController (and OceanFloor):
-					+ Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
-					+ Set[OceanFloor]Terrain(OceanFloorTerrain const &)
-				+ Test:
-					+ Default terrain at beginning
-						+ Double-check interpolation we do at image->terrain algo					
-					+ Precision of adjusted terrain
-					+ Reset: maintains manually-adjusted terrain				
-			+ FloatingSandbox/SettingsManager.h
-				+ BaseSetting specialization for OceanFloorTerrain
-					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
-				+ Static factory maker
-				+ Massage name to make it lower-case and underscore-separated
-			+ Run unit tests in Debug
-			+ MainFrame:
-				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
-				+ Menu: "Reload last played settings"
-					+ Only enabled if "last played settings" exists
-				+ Save last-played settings on exit
-					+ If UI Preferences say so
-					+ Verify ocean floor
-				+ Fix crash
-				+ Fix Preferences Dialog
-			+ SettingsDialog:
-				+ Frame:
-					+ See if appears in Taskbar
-					+ Minimize
-					+ Background
-					+ Icon
-					+ Cancel in OnClose
-				+ Hookup settings
-					+ Make ReadSettings(Settings const & settings)
-				+ Get rid of mSoundController
-				+ Take IGameControllerSettingsOptions					
-				+ Change standard bottom buttons
-					+ Add "Restore Defaults", see paper
-				+ New "Settings Management" tab:
-					+ Keep entries sorted
-						+ @ Insert
-						+ @ Remove
-					+ Catch FS exceptions, & OnPersistenceError(msg)
-					+ Fix overwrite
-					+ Test:
-						+ Replace (overwrite)
-							+ Via replace button
-							+ Via save
-						+ Delete
-							+ First
-							+ Mid
-							+ Last
-						+ Insert
-							+ First
-							+ Mid
-							+ Last (need to nuke LastPlayed for test)
-				+ "Restore Default Terrain" button
-					+ "Adjusts the jaggedness of the ocean floor irregularities."
-					  -> "Adjusts the contrast of the user-drawn ocean floor profile"
-				+ Tooltips on buttons
-				+ Float on Parent issue: clicking back moves it back
-					+ See if may use wxSTAY_ON_TOP, & if that is also broken with colour picker
-			+ Visual notification when last settings loaded
-				+ 1) Need boolean returned from SettingsManager
-				+ 2) Do StatusText replacement (*)
-				+ 3) Do notification (@GameController)
-			+ Data\Themes:
-				+ Ocean of Lava
-					+ See PM's suggestion on Discord
-				+ Marianas Trench
-					+ https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
-					+ Fix sudden ocean floor:
-						+ ParameterSmoother has SetImmediate(.)
-							+ Stops smoothing, updates mTargetValue with clamped value, and sets
-							- Unit tests, w/subsequent Update() call which should be nop
-						+ I/GameController has also SetOceanDepthImmediate(.)
-						+ BaseSettingsManager has two enforcers, second one is "Immediate"
-							+ Exposes new EnforceDirtySettings"Immediate"(.)
-							+ EnforceDefaultsAndLastModifiedSettings(.) calls "Immediate"
-							+ Unit tests, verify each is called only when expected and not when not expected
-						+ All callers of (Base)SettingsManager::EnforceDirtySettings(.) should check whether they need
-						  to call EnforceDirtySettings"Immediate"(.) instead
-							+ SettingsDialog: all but OnLiveSettingsChanged(.)
-						+ SettingsManager populates second "Immediate" set of enforcers
-				+ See if need bold for system settings
-					+ Need wxListCtrl
-		+ Small rearc:
-			+ SettingsManager:
-				+ From:
-					! void LoadPersistedSettings(key, settings &)
-					! void LoadAndEnforceLastPlayedSettings()
-				+ To:
-					! void LoadPersistedSettings(key, settings &) // only loaded dirty on output
-					+ void EnforceDefaultsAndPersistedSettings(key) -> Settings (all clean)
-					+ void EnforceDefaultsAndLastModifiedSettings() -> void
-						+ Just calls above w/standard key
-			+ See why ocean floor settings appear to be superimposed
-				+ It's just OceanDepth for one, and custom for other
-			+ Have two different "load" buttons:
-				+ 1) "Apply Settings": "Loads the settings and applies them on top of the current settings." (i.e. current behavior)
-				+ 2) "Revert to Settings": "Reverts all settings to the saved settings." (i.e. enforce {Defaults+Loaded} rather than just Loaded)
-			+ Make "last-played" really "Last-Modified"; i.e.:
-				+ Settings.h/cpp: 
-					+ Rename
-					+ Rename in key
-				+ Rename in menu
-				+ Rename in *find*
-		+ Run unit tests in debug
-
-
-		- OLD:
-			- Spec: 
-				- Game starts always with default settings; user has the ability though to load named settings
-					- Where "defaults" is hardcoded name for default settings
-				- Game also comes with own "themes" settings
-					- Under Data\Themes
-					- Managed by SettingsDialog (not by SettingsManager)
-					- Read-only (marked as "system" settings to avoid overwriting)
-				- Saved settings have a name, which is the one shown to the user
-				  and a description
-					- Names are unique
-						- UI makes sure names only contain FS-allowed chars
-					- User may overwrite non-system saved settings only
-				- Saved settings do not have necessarily all settings 
-				  (e.g. to allow for graphical themes, which only specify certain render properties)
-					- We track individual settings' dirtyness wrt defaults, so users may save subsets of settings
-				- Ocean floor is just another setting
-					- GameController exposes ocean floor as OceanFloorTerrain
-						- Actual parameter is owned by OceanFloor
-					- GameController::cctor takes it
-					- MainFrame provides the initial one loaded via OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
-					- SettingsManager saves it in binary file (specific to ocean floor; other buffer settings will have their own binary file) next to user settings' json file,
-					  w/same name but different extension
-				- Saved settings are thus:
-					- settings_name.settings.json
-					- settings_name.stream_name.dat
-				- Changing settings in the GUI puts them in effect immediately
-					- ...and GameController will smooth them
-				- Loaded settings go to GameController
-					- ...and GameController will smooth them
-
-				- TODO: Now review the below based on this 
-
-				- SettingsManager (@FloatingSandbox):
-					- Has GameController, SoundController, etc.
-					- Defines struct with all customizable setting members
-					- Maintains two instances of struct:
-						- Defaults
-						- Last (last settings when the dialog was opened, i.e. before user has changed them in this settings session)
-							- TODO: really needed? Can't caller (SettingsDialog) ask SettingsManager to make/return_current struct?
-					- Currently-enforced settings live at their place, i.e. at GameController, SoundController, UISettings, etc.
-					- Manages saving and loading customizable settings to and from json
-					- Created by MainFrame on startup
-						- Initializes here --TODONUKE:, loading settings if present
-					- Exposes getters and setters for all customizable properties, used by SettingsDialog
-						- get(): from their place
-						- set(): to their place
-					- cctor (actually, CreateInstance()->uq_ptr which MainFrame makes shared):
-						- Makes defaults (in Defaults), asking member providers for their (compile-time default) values
-						- --TODONUKE: Then if personal_settings.json exists:
-							- Loads it to temp struct - via Load(filepath)->temp struct
-							- Then applies temp struct - via ApplyToGame(temp struct)
-					- CreateCheckpoint():
-						- Makes Last by reading from GameController, SoundController, etc.
-					- Load(filepath)
-						- Loads from path into temp struct - via Load(filepath)->temp struct
-						- Then applies temp struct via ApplyToGame(temp struct)
-					- --TODONUKE: Save()
-						- Save(path of personal_settings.json)
-					- Save(filepath)
-						- Reads current from their place into temp struct - via ReadFromGame()->temp struct
-						- Saves temp struct to filepath
-					- RevertToCheckpoint()
-						- Applies Last
-					- RestoreDefaults():
-						- Applies Default
-					- --TODONUKE:RestorePersonalSettings():
-						- Load(path of personal_settings.json)
-					- Internal helpers:
-						- ApplyToGame(struct)
-							- Applies struct to GameController, SoundController, etc.
-						- ReadFromGame()->struct
-							- Reads all from GameController, SoundController, etc. into struct
-								- struct cctor has all vals
-						- Save(struct, filepath)
-						- Load(filepath) -> struct
-			- Impl:
-				+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
-					+ Via StandardSystemPaths class
-				+ ResourceLoader::GetThemeSettingsRootFilepath()
-				= Settings framework
-				- OceanFloor:
-					- OceanFloor contains and own OceanFloorTerrain
-						- OceanFloorTerrain has unique_buffer
-						- OceanFloorTerrain exposes Load(.) X2 (png, floatbin)
-						- SettingsManager has BaseSetting specialization for OceanFloorTerrain
-					- OceanFloor cctor needs to take default OceanFloorTerrain from outside, i.e.
-					  from GameController, who takes it from MainFrame - see above
-					- GameController::SetOceanFloorTerrain(.) in turn invokes on OceanFloor
-						- As it would be too expensive for OceanFloor to detect changes @ Update() time
-			- Dialog:
-				- Control values are meant to always be in sync with real game params
-					- Handlers write value directly to SettingsManager
-					- Then mark dialog as dirty
-						- Dirty means there have been changes, which might get wiped (by restoring Last) if Cancel is pressed
-				- UI:
-					- Remove Apply 
-					- Buttons: OK, Revert Changes (iff dirty), Cancel (iff dirty)
-					- File Menu (TODO: no menu, buttons and drop-down): --TODONUKESave As Defaults, Save Preferences..., Load Preferences..., --TODONUKE:Restore Defaults, Restore Factory Defaults
-				- OnShow():
-					- Calls SettingsManager::CreateCheckpoint()
-					- Reads all control values from SettingsManager
-					- Does not mark self as dirty
-				- --TODONUKE:SaveAsDefaults: saves current to personal_settings.json
-					- Calls SettingsManager::Save()
-					- Stays dirty if it was dirty
-				- SavePreferences: saves with filename
-					- Calls SettingsManager::Save(filepath)
-					- Stays dirty if it was dirty
-				- LoadPreferences: loads with filename, changes settings
-					- Calls SettingsManager::Load(filepath)
-					- Reads all control values from SettingsManager
-					- Marks self as dirty
-				- --TODONUKE:RestoreDefaults: we set everything to personal_settings, but don't commit - allow Revert
-					- Calls SettingsManager::RestorePersonalSettings()
-					- Reads all control values from SettingsManager
-					- Sets dirty
-				- RestoreFactoryDefaults: we set everything to default, but don't commit - allow Revert
-					- Calls SettingsManager::RestoreDefaults()
-					- Reads all control values from SettingsManager
-					- Sets dirty
-				- OK:
-					- Close dialog
-				- Revert Changes: 
-					- Calls SettingsManager::RevertToCheckpoint()
-					- Reads all control values from SettingsManager
-					- Cleans dirty - via MarkAsDirty(bool)
-				- Cancel (only shown if dirty)/Close
-					- Calls SettingsManager::RevertToCheckpoint()
-					- Close dialog
-				- Helpers:
-					- MarkAsDirty(bool)
-						- Stores flag
-						- Enables/Disabled buttons and menus
-
-	= Save ocean floor terrain and load it at startup
 
 	- ShipLoadDialog:
 		- Ship preview database/cache
@@ -2931,6 +2653,143 @@ IF WX:
 			+ Nuke StatusText
 				+ Also source files
 			+ Expose DisplayLoadedLastPlayedSettingsNotification()
+	+ SettingsManager: save settings, defaults, and real-time changes (*)
+		+ Spec: 
+			+ Game starts always with default settings; user has the ability though to load named settings and to load
+			  the last-played settings
+			+ Changing settings in the GUI puts them in effect immediately
+				+ ...and GameController will smooth them
+			+ Loaded settings go to GameController
+				+ ...and GameController will smooth them
+			+ Dialog:
+				+ Control values are meant to always be in sync with real game params
+					+ Handlers enforce values immediately
+		+ Plan:
+			+ Standard paths: http://docs.wxwidgets.org/3.1/classwx_standard_paths.html#a4752213ef4d7bdc71170b9e5c3691f0f
+				+ Via StandardSystemPaths class
+			+ ResourceLoader::GetThemeSettingsRootFilepath()
+			+ Settings framework
+			+ OceanFloor:
+				+ OceanFloorTerrain
+					+ Has unique_buffer<float>
+					+ other notebook methods
+				+ OceanFloor contains and owns OceanFloorTerrain
+					+ Needs it as a member as it exposes reference to it
+				+ OceanFloor cctor needs to take default OceanFloorTerrain as && from outside, i.e.
+				  from World who takes it from GameController as &&
+					+ GameController provides the initial one loaded via 
+					  OceanFloorTerrain::LoadFromImage(ResourceManager::path of default system one)
+				+ GameController::Reset():
+					+ First takes current terrain, via World
+					+ Then, passes it back to World's cctor, as &&
+				+ Crash when reloading after having written last sample
+				+ IGameController (and OceanFloor):
+					+ Get[OceanFloor]Terrain() const -> OceanFloorTerrain const &
+					+ Set[OceanFloor]Terrain(OceanFloorTerrain const &)
+				+ Test:
+					+ Default terrain at beginning
+						+ Double-check interpolation we do at image->terrain algo					
+					+ Precision of adjusted terrain
+					+ Reset: maintains manually-adjusted terrain				
+			+ FloatingSandbox/SettingsManager.h
+				+ BaseSetting specialization for OceanFloorTerrain
+					+ Does it need OceanFloorTerrain to expose Load(...istream...) ?
+				+ Static factory maker
+				+ Massage name to make it lower-case and underscore-separated
+			+ Run unit tests in Debug
+			+ MainFrame:
+				+ Creates shared_ptr<SettingsManager> after it has all storages (GC, SoundController, etc.)
+				+ Menu: "Reload last played settings"
+					+ Only enabled if "last played settings" exists
+				+ Save last-played settings on exit
+					+ If UI Preferences say so
+					+ Verify ocean floor
+				+ Fix crash
+				+ Fix Preferences Dialog
+			+ SettingsDialog:
+				+ Frame:
+					+ See if appears in Taskbar
+					+ Minimize
+					+ Background
+					+ Icon
+					+ Cancel in OnClose
+				+ Hookup settings
+					+ Make ReadSettings(Settings const & settings)
+				+ Get rid of mSoundController
+				+ Take IGameControllerSettingsOptions					
+				+ Change standard bottom buttons
+					+ Add "Restore Defaults", see paper
+				+ New "Settings Management" tab:
+					+ Keep entries sorted
+						+ @ Insert
+						+ @ Remove
+					+ Catch FS exceptions, & OnPersistenceError(msg)
+					+ Fix overwrite
+					+ Test:
+						+ Replace (overwrite)
+							+ Via replace button
+							+ Via save
+						+ Delete
+							+ First
+							+ Mid
+							+ Last
+						+ Insert
+							+ First
+							+ Mid
+							+ Last (need to nuke LastPlayed for test)
+				+ "Restore Default Terrain" button
+					+ "Adjusts the jaggedness of the ocean floor irregularities."
+					  -> "Adjusts the contrast of the user-drawn ocean floor profile"
+				+ Tooltips on buttons
+				+ Float on Parent issue: clicking back moves it back
+					+ See if may use wxSTAY_ON_TOP, & if that is also broken with colour picker
+			+ Visual notification when last settings loaded
+				+ 1) Need boolean returned from SettingsManager
+				+ 2) Do StatusText replacement (*)
+				+ 3) Do notification (@GameController)
+			+ Data\Themes:
+				+ Ocean of Lava
+					+ See PM's suggestion on Discord
+				+ Marianas Trench
+					+ https://clasticdetritus.files.wordpress.com/2008/11/profile-mariana.jpg
+					+ Fix sudden ocean floor:
+						+ ParameterSmoother has SetImmediate(.)
+							+ Stops smoothing, updates mTargetValue with clamped value, and sets
+							- Unit tests, w/subsequent Update() call which should be nop
+						+ I/GameController has also SetOceanDepthImmediate(.)
+						+ BaseSettingsManager has two enforcers, second one is "Immediate"
+							+ Exposes new EnforceDirtySettings"Immediate"(.)
+							+ EnforceDefaultsAndLastModifiedSettings(.) calls "Immediate"
+							+ Unit tests, verify each is called only when expected and not when not expected
+						+ All callers of (Base)SettingsManager::EnforceDirtySettings(.) should check whether they need
+						  to call EnforceDirtySettings"Immediate"(.) instead
+							+ SettingsDialog: all but OnLiveSettingsChanged(.)
+						+ SettingsManager populates second "Immediate" set of enforcers
+				+ See if need bold for system settings
+					+ Need wxListCtrl
+		+ Small rearc:
+			+ SettingsManager:
+				+ From:
+					! void LoadPersistedSettings(key, settings &)
+					! void LoadAndEnforceLastPlayedSettings()
+				+ To:
+					! void LoadPersistedSettings(key, settings &) // only loaded dirty on output
+					+ void EnforceDefaultsAndPersistedSettings(key) -> Settings (all clean)
+					+ void EnforceDefaultsAndLastModifiedSettings() -> void
+						+ Just calls above w/standard key
+			+ See why ocean floor settings appear to be superimposed
+				+ It's just OceanDepth for one, and custom for other
+			+ Have two different "load" buttons:
+				+ 1) "Apply Settings": "Loads the settings and applies them on top of the current settings." (i.e. current behavior)
+				+ 2) "Revert to Settings": "Reverts all settings to the saved settings." (i.e. enforce {Defaults+Loaded} rather than just Loaded)
+			+ Make "last-played" really "Last-Modified"; i.e.:
+				+ Settings.h/cpp: 
+					+ Rename
+					+ Rename in key
+				+ Rename in menu
+				+ Rename in *find*
+		+ Run unit tests in debug
+	+ Save ocean floor terrain and load it at startup
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
