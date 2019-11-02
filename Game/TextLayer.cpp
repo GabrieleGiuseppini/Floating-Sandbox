@@ -13,14 +13,11 @@
 
 using namespace std::literals::chrono_literals;
 
-TextLayer::TextLayer(
-	std::shared_ptr<Render::TextRenderContext> textRenderContext,
-    bool isStatusTextEnabled,
-    bool isExtendedStatusTextEnabled)
+TextLayer::TextLayer(std::shared_ptr<Render::TextRenderContext> textRenderContext)
     : mTextRenderContext(std::move(textRenderContext))
 	// StatusText state
-	, mIsStatusTextEnabled(isStatusTextEnabled)
-	, mIsExtendedStatusTextEnabled(isExtendedStatusTextEnabled)
+	, mIsStatusTextEnabled(true)
+	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
 	, mAreStatusTextLinePositionsDirty(false)
 	// Ephemeral text

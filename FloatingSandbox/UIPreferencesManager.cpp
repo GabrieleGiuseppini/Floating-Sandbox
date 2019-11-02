@@ -223,6 +223,28 @@ void UIPreferencesManager::LoadPreferences()
         {
             mPanIncrement = static_cast<float>(panIncrementIt->second.get<double>());
         }
+
+		//
+		// Show status text
+		//
+
+		auto showStatusTextIt = preferencesRootObject.find("show_status_text");
+		if (showStatusTextIt != preferencesRootObject.end()
+			&& showStatusTextIt->second.is<bool>())
+		{
+			mGameController->SetShowStatusText(showStatusTextIt->second.get<bool>());
+		}
+
+		//
+		// Show extended status text
+		//
+
+		auto showExtendedStatusTextIt = preferencesRootObject.find("show_extended_status_text");
+		if (showExtendedStatusTextIt != preferencesRootObject.end()
+			&& showExtendedStatusTextIt->second.is<bool>())
+		{
+			mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
+		}
     }
 }
 
@@ -274,6 +296,12 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add pan increment
     preferencesRootObject["pan_increment"] = picojson::value(static_cast<double>(mPanIncrement));
+
+	// Add show status text
+	preferencesRootObject["show_status_text"] = picojson::value(mGameController->GetShowStatusText());
+
+	// Add show extended status text
+	preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
 
     // Save
     Utils::SaveJSONFile(

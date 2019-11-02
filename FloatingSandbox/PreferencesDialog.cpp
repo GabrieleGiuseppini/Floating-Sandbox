@@ -15,9 +15,11 @@ static constexpr int MaxPanIncrementPosition = 200;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager)
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+	std::function<void()> onChangeCallback)
     : mParent(parent)
     , mUIPreferencesManager(std::move(uiPreferencesManager))
+	, mOnChangeCallback(std::move(onChangeCallback))
 {
     Create(
         mParent,
@@ -86,12 +88,16 @@ void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -103,36 +109,64 @@ void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent
     {
         mUIPreferencesManager->ResetUpdateBlacklist();
     }
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
+
+	mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+	assert(!!mUIPreferencesManager);
+	mUIPreferencesManager->SetShowStatusText(mShowStatusTextCheckBox->GetValue());
+
+	mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+	assert(!!mUIPreferencesManager);
+	mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextCheckBox->GetValue());
+
+	mOnChangeCallback();
 }
 
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -307,6 +341,21 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
             Border);
     }
 
+	{
+		mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+
+		mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
+
+		mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+
+		gridSizer->Add(
+			mShowStatusTextCheckBox,
+			wxGBPosition(4, 2),
+			wxGBSpan(1, 2),
+			wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+			Border);
+	}
+
     //
     // Row 6
     //
@@ -325,6 +374,21 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
+
+	{
+		mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+
+		mShowExtendedStatusTextCheckBox->SetToolTip("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered.");
+
+		mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
+
+		gridSizer->Add(
+			mShowExtendedStatusTextCheckBox,
+			wxGBPosition(5, 2),
+			wxGBSpan(1, 2),
+			wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+			Border);
+	}
 
     //
     // Row 7
@@ -375,6 +439,8 @@ void PreferencesDialog::ReadSettings()
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
+	mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
+	mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
 }
 
 float PreferencesDialog::ZoomIncrementSpinToZoomIncrement(int spinPosition)

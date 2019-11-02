@@ -48,8 +48,6 @@ class GameController final
 public:
 
     static std::unique_ptr<GameController> Create(
-        bool isStatusTextEnabled,
-        bool isExtendedStatusTextEnabled,
         std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<ResourceLoader> resourceLoader,
         ProgressCallback const & progressCallback);
@@ -126,9 +124,12 @@ public:
 
     void SetPaused(bool isPaused) override;
     void SetMoveToolEngaged(bool isEngaged) override;
-    void SetStatusTextEnabled(bool isEnabled) override;
-    void SetExtendedStatusTextEnabled(bool isEnabled) override;
 	void DisplaySettingsLoadedNotification() override;
+
+	bool GetShowStatusText() const override;
+	void SetShowStatusText(bool value) override;
+	bool GetShowExtendedStatusText() const override;
+	void SetShowExtendedStatusText(bool value) override;
 
     //
     // World probing

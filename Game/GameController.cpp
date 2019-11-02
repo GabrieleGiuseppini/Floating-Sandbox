@@ -12,8 +12,6 @@
 #include <sstream>
 
 std::unique_ptr<GameController> GameController::Create(
-    bool isStatusTextEnabled,
-    bool isExtendedStatusTextEnabled,
     std::function<void()> swapRenderBuffersFunction,
     std::shared_ptr<ResourceLoader> resourceLoader,
     ProgressCallback const & progressCallback)
@@ -33,10 +31,7 @@ std::unique_ptr<GameController> GameController::Create(
         });
 
 	// Create text layer
-	std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(
-		renderContext->GetTextRenderContext(),
-		isStatusTextEnabled,
-		isExtendedStatusTextEnabled);
+	std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(renderContext->GetTextRenderContext());
 
     //
     // Create controller
@@ -458,22 +453,34 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
     mIsMoveToolEngaged = isEngaged;
 }
 
-void GameController::SetStatusTextEnabled(bool isEnabled)
-{
-    assert(!!mTextLayer);
-	mTextLayer->SetStatusTextEnabled(isEnabled);
-}
-
-void GameController::SetExtendedStatusTextEnabled(bool isEnabled)
-{
-    assert(!!mTextLayer);
-	mTextLayer->SetExtendedStatusTextEnabled(isEnabled);
-}
-
 void GameController::DisplaySettingsLoadedNotification()
 {
 	assert(!!mTextLayer);
 	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED", 1s);
+}
+
+bool GameController::GetShowStatusText() const
+{
+	assert(!!mTextLayer);
+	return mTextLayer->IsStatusTextEnabled();
+}
+
+void GameController::SetShowStatusText(bool value)
+{
+	assert(!!mTextLayer);
+	mTextLayer->SetStatusTextEnabled(value);
+}
+
+bool GameController::GetShowExtendedStatusText() const
+{
+	assert(!!mTextLayer);
+	return mTextLayer->IsExtendedStatusTextEnabled();
+}
+
+void GameController::SetShowExtendedStatusText(bool value)
+{
+	assert(!!mTextLayer);
+	mTextLayer->SetExtendedStatusTextEnabled(value);
 }
 
 float GameController::GetCurrentSimulationTime() const

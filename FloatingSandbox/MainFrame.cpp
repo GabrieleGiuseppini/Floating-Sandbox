@@ -387,9 +387,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(triggerRogueWaveMenuItem);
     Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
+	/* TODOTEST
     wxMenuItem * triggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(triggerStormMenuItem);
     Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
+	*/
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -428,12 +430,10 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowStatusTextMenuItem);
-    mShowStatusTextMenuItem->Check(StartWithStatusText);
     Connect(ID_SHOW_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowStatusTextMenuItemSelected);
 
     mShowExtendedStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, _("Show Extended Status Text\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowExtendedStatusTextMenuItem);
-    mShowExtendedStatusTextMenuItem->Check(StartWithExtendedStatusText);
     Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
 
     optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
@@ -584,8 +584,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mGameController = GameController::Create(
-            StartWithStatusText,
-            StartWithExtendedStatusText,
             [this]()
             {
                 assert(!!mMainGLCanvas);
@@ -655,6 +653,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     mUIPreferencesManager = std::make_shared<UIPreferencesManager>(mGameController);
+
+	ReconcileWithUIPreferences();
+
 
 
     //
@@ -1450,7 +1451,11 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
     {
         mPreferencesDialog = std::make_unique<PreferencesDialog>(
             this,
-            mUIPreferencesManager);
+            mUIPreferencesManager,
+			[this]()
+			{
+				this->ReconcileWithUIPreferences();
+			});
     }
 
     mPreferencesDialog->Open();
@@ -1500,14 +1505,14 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnShowStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mGameController);
-    mGameController->SetStatusTextEnabled(mShowStatusTextMenuItem->IsChecked());
+    assert(!!mUIPreferencesManager);
+	mUIPreferencesManager->SetShowStatusText(mShowStatusTextMenuItem->IsChecked());
 }
 
 void MainFrame::OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mGameController);
-    mGameController->SetExtendedStatusTextEnabled(mShowExtendedStatusTextMenuItem->IsChecked());
+	assert(!!mUIPreferencesManager);
+	mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextMenuItem->IsChecked());
 }
 
 void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1710,4 +1715,10 @@ void MainFrame::SetPaused(bool isPaused)
             mStepMenuItem->Enable(false);
         }
     }
+}
+
+void MainFrame::ReconcileWithUIPreferences()
+{
+	mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
+	mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
 }

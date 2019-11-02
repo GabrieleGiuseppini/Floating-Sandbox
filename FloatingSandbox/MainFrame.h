@@ -47,8 +47,6 @@ class MainFrame
 public:
 
     static constexpr bool StartInFullScreenMode = true;
-    static constexpr bool StartWithStatusText = true;
-    static constexpr bool StartWithExtendedStatusText = false;
     static constexpr int CursorStep = 30;
     static constexpr int PowerBarThickness = 2;
 
@@ -285,6 +283,8 @@ private:
     void StartLowFrequencyTimer();
 
     void SetPaused(bool isPaused);
+
+	void ReconcileWithUIPreferences();
 
 private:
 

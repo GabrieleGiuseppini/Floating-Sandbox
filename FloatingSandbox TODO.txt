@@ -361,13 +361,17 @@ Render:
 			+ Ship
 			+ AboutBox
 		+ Print speed (in m/s) after throwing objects with both move tools
-
-		- Move status text toggles to UIPreferences, so that they're save-able
-			- Leave menu entries, they now talk to UIPreferencesManager
-				- Refresh status after window closed
+		+ Move status text toggles to UIPreferences, so that they're save-able
+			+ Leave menu entries, they now talk to UIPreferencesManager
+				+ Refresh status after each change
 
 		~ Send for testing
 			- Disable storm first
+
+		~ Bump version
+		~ Re-enable storm
+
+		- Test wxWidget fix (& keep it!)
 
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
@@ -379,8 +383,6 @@ Render:
 		= Storm (*)
 
 		- SpinCtrl at SliderControl
-
-		= Unix build break
 
 		- Music?
 			Long Note Four by Kevin MacLeod is licensed under a Creative Commons Attribution licence (https://creativecommons.org/licenses/...)

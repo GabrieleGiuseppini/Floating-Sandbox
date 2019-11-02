@@ -20,13 +20,12 @@ class TextLayer
 {
 public:
 
-	TextLayer(
-		std::shared_ptr<Render::TextRenderContext> textRenderContext,
-        bool isStatusTextEnabled,
-        bool isExtendedStatusTextEnabled);
+	TextLayer(std::shared_ptr<Render::TextRenderContext> textRenderContext);
 
+	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
 
+	bool IsExtendedStatusTextEnabled() const { return mIsExtendedStatusTextEnabled; }
 	void SetExtendedStatusTextEnabled(bool isEnabled);
 
     void SetStatusTexts(

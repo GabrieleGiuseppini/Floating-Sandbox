@@ -172,6 +172,26 @@ public:
         mPanIncrement = value;
     }
 
+	bool GetShowStatusText() const
+	{
+		return mGameController->GetShowStatusText();
+	}
+
+	void SetShowStatusText(bool value)
+	{
+		mGameController->SetShowStatusText(value);
+	}
+
+	bool GetShowExtendedStatusText() const
+	{
+		return mGameController->GetShowExtendedStatusText();
+	}
+
+	void SetShowExtendedStatusText(bool value)
+	{
+		mGameController->SetShowExtendedStatusText(value);
+	}
+
 private:
 
     void LoadPreferences();
@@ -200,6 +220,4 @@ private:
 
     float mZoomIncrement;
     float mPanIncrement;
-
-
 };

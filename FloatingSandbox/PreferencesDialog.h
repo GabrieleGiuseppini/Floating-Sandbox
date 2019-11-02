@@ -11,6 +11,7 @@
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
+#include <functional>
 #include <memory>
 
 class PreferencesDialog : public wxDialog
@@ -19,7 +20,8 @@ public:
 
     PreferencesDialog(
         wxWindow * parent,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+		std::function<void()> onChangeCallback);
 
     virtual ~PreferencesDialog();
 
@@ -35,6 +37,8 @@ private:
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
+	void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
+	void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -61,6 +65,8 @@ private:
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
+	wxCheckBox * mShowStatusTextCheckBox;
+	wxCheckBox * mShowExtendedStatusTextCheckBox;
 
     // Buttons
     wxButton * mOkButton;
@@ -69,4 +75,5 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+	std::function<void()> mOnChangeCallback;
 };
