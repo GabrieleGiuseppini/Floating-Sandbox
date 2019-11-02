@@ -355,7 +355,10 @@ Render:
 		+ Lights perf improvement (*)	
 		+ Settings Manager (*)
 
-		= Unix build break
+		~ Send for testing
+			- Disable storm first
+
+		- Print speed (in m/s) after throwing objects with both move tools
 
 		- Fix guy's name in Aurora:
 			+ Need:
@@ -364,12 +367,6 @@ Render:
 			- Ship
 			- AboutBox
 
-		- SpinCtrl at SliderControl
-
-		- Move status text toggles to UIPreferences, so that they're save-able
-			- Leave menu entries, they now talk to UIPreferencesManager
-				- Refresh status after window closed
-
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
 			- Add the three songs
@@ -377,12 +374,18 @@ Render:
 			- Add to about box
 				- Ask name & url
 
+		- SpinCtrl at SliderControl
+
+		- Move status text toggles to UIPreferences, so that they're save-able
+			- Leave menu entries, they now talk to UIPreferencesManager
+				- Refresh status after window closed
+
+		= Unix build break
+
 		- Music?
 			Long Note Four by Kevin MacLeod is licensed under a Creative Commons Attribution licence (https://creativecommons.org/licenses/...)
 			Source: http://incompetech.com/music/royalty-...
 			Artist: http://incompetech.com/
-
-		- Print speed (in m/s) after throwing objects with both move tools
 
 		= New explosions:
 			- Shader:
