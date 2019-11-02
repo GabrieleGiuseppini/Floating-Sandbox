@@ -360,12 +360,14 @@ Render:
 				+ URL: https://www.youtube.com/c/HummeL_Prog
 			+ Ship
 			+ AboutBox
+		+ Print speed (in m/s) after throwing objects with both move tools
 
+		- Move status text toggles to UIPreferences, so that they're save-able
+			- Leave menu entries, they now talk to UIPreferencesManager
+				- Refresh status after window closed
 
 		~ Send for testing
 			- Disable storm first
-
-		- Print speed (in m/s) after throwing objects with both move tools
 
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
@@ -374,11 +376,9 @@ Render:
 			- Add to about box
 				- Ask name & url
 
-		- SpinCtrl at SliderControl
+		= Storm (*)
 
-		- Move status text toggles to UIPreferences, so that they're save-able
-			- Leave menu entries, they now talk to UIPreferencesManager
-				- Refresh status after window closed
+		- SpinCtrl at SliderControl
 
 		= Unix build break
 

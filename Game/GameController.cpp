@@ -8,6 +8,9 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
+#include <iomanip>
+#include <sstream>
+
 std::unique_ptr<GameController> GameController::Create(
     bool isStatusTextEnabled,
     bool isExtendedStatusTextEnabled,
@@ -527,6 +530,12 @@ void GameController::MoveBy(
         worldOffset,
         inertialVelocity,
         mGameParameters);
+
+	// Eventually display inertial velocity
+	if (worldOffset.length() == 0.0f)
+	{
+		DisplayInertialVelocity(inertialVelocity.length());
+	}
 }
 
 void GameController::MoveBy(
@@ -544,6 +553,12 @@ void GameController::MoveBy(
         worldOffset,
         inertialVelocity,
         mGameParameters);
+
+	// Eventually display velocity
+	if (worldOffset.length() == 0.0f)
+	{
+		DisplayInertialVelocity(inertialVelocity.length());
+	}
 }
 
 void GameController::RotateBy(
@@ -1171,4 +1186,18 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         totalURRatio,
         lastURRatio,
         mRenderContext->GetStatistics());
+}
+
+void GameController::DisplayInertialVelocity(float inertialVelocityMagnitude)
+{
+	if (inertialVelocityMagnitude >= 5.0f)
+	{
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(2)
+			<< inertialVelocityMagnitude
+			<< " M/SEC";
+
+		assert(!!mTextLayer);
+		mTextLayer->AddEphemeralTextLine(ss.str(), 1s);
+	}
 }

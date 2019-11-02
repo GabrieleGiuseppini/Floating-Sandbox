@@ -579,6 +579,8 @@ private:
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
+	void DisplayInertialVelocity(float inertialVelocityMagnitude);
+
 private:
 
     //
