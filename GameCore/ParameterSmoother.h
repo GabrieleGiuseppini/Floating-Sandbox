@@ -179,7 +179,7 @@ private:
     float const mTrajectoryTime;
 
     TValue mStartValue;
-    TValue mTargetValue;
+    TValue mTargetValue; // This is also the new official storage of the parameter value
     float mStartTimestamp;
     float mCurrentTimestamp;
     float mEndTimestamp;

@@ -82,7 +82,6 @@ GameController::GameController(
     , mMaterialDatabase(std::move(materialDatabase))
     // Smoothing
     , mFloatParameterSmoothers()
-	, mOceanFloorTerrainParameterSmoother()
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Stats
@@ -177,17 +176,6 @@ GameController::GameController(
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
         ParameterSmoothingTrajectoryTime);
-
-	mOceanFloorTerrainParameterSmoother = std::make_unique<ParameterSmoother<OceanFloorTerrain>>(
-		[this]() -> OceanFloorTerrain const &
-		{
-			return this->mWorld->GetOceanFloorTerrain();
-		},
-		[this](OceanFloorTerrain const & value)
-		{
-			mWorld->SetOceanFloorTerrain(value);
-		},
-		ParameterSmoothingTrajectoryTime);
 
 
     std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
@@ -1005,17 +993,13 @@ void GameController::InternalUpdate()
     float const now = GameWallClock::GetInstance().NowAsFloat();
 
     // Update parameter smoothers
-	{
-		std::for_each(
-			mFloatParameterSmoothers.begin(),
-			mFloatParameterSmoothers.end(),
-			[now](auto & ps)
-			{
-				ps.Update(now);
-			});
-
-		mOceanFloorTerrainParameterSmoother->Update(now);
-	}
+	std::for_each(
+		mFloatParameterSmoothers.begin(),
+		mFloatParameterSmoothers.end(),
+		[now](auto & ps)
+		{
+			ps.Update(now);
+		});
 
     // Update world
     assert(!!mWorld);

@@ -837,9 +837,9 @@ void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
 
 	// Do not update checkpoint, allow user to revert to it
 
-	// Enforce everything as a safety net
+	// Enforce everything as a safety net, immediately
 	mLiveSettings.MarkAllAsDirty();
-	mSettingsManager->EnforceDirtySettings(mLiveSettings);
+	mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
 
 	// We are back in sync
 	mLiveSettings.ClearAllDirty();
@@ -879,9 +879,10 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
 
     mLiveSettings = mCheckpointSettings;
 
-    // Just enforce anything in the checkpoint that is different than the current settings
+    // Just enforce anything in the checkpoint that is different than the current settings,
+	// immediately
     mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
-    mSettingsManager->EnforceDirtySettings(mLiveSettings);
+    mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
 
     mLiveSettings.ClearAllDirty();
 
@@ -914,9 +915,10 @@ void SettingsDialog::DoCancel()
 
         mLiveSettings = mCheckpointSettings;
 
-        // Just enforce anything in the checkpoint that is different than the current settings
+        // Just enforce anything in the checkpoint that is different than the current settings,
+		// immediately
         mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
-        mSettingsManager->EnforceDirtySettings(mLiveSettings);
+        mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
     }
 
     //
@@ -3896,10 +3898,10 @@ void SettingsDialog::OnLiveSettingsChanged()
     // We're back in sync
     mLiveSettings.ClearAllDirty();
 
-    // Remember that we have changed since we were opened
-    mHasBeenDirtyInCurrentSession = true;
+	// Remember that we have changed since we were opened
+	mHasBeenDirtyInCurrentSession = true;
 	mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
-    ReconcileDirtyState();
+	ReconcileDirtyState();
 }
 
 void SettingsDialog::ReconcileDirtyState()
@@ -3967,8 +3969,16 @@ void SettingsDialog::LoadPersistedSettings(int index, bool withDefaults)
 				mLiveSettings);
 		}
 
-		// Enforce and reconcile
-		OnLiveSettingsChanged();
+		// Enforce, immediate 
+		mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
+
+		// We're back in sync
+		mLiveSettings.ClearAllDirty();
+
+		// Remember that we have changed since we were opened
+		mHasBeenDirtyInCurrentSession = true;
+		mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
+		ReconcileDirtyState();
 
 		// Re-populate controls
 		SyncControlsWithSettings(mLiveSettings);

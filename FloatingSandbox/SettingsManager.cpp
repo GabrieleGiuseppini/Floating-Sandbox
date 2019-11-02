@@ -15,14 +15,24 @@ std::string MangleSettingName(std::string && settingName);
         GameSettings::##name,                           \
         MangleSettingName(#name),                       \
         [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
-        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
+        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
+		[gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
+
+#define ADD_GC_SETTING_WITH_IMMEDIATE(type, name)       \
+    factory.AddSetting<type>(                           \
+        GameSettings::##name,                           \
+        MangleSettingName(#name),                       \
+        [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
+        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
+		[gameControllerSettings](auto const & v) { gameControllerSettings->Set##name ## Immediate(v); });
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::##name,                           \
         MangleSettingName(#name),                       \
-        [soundController]() -> type { return soundController->Get##name(); }, \
-        [soundController](auto const & v) { soundController->Set##name(v); });
+        [soundController]() -> type { return soundController->Get##name(); },	\
+        [soundController](auto const & v) { soundController->Set##name(v); },	\
+		[soundController](auto const & v) { soundController->Set##name(v); });
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
     std::shared_ptr<IGameControllerSettings> gameControllerSettings,
@@ -66,9 +76,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
-    ADD_GC_SETTING(float, SeaDepth);
+    ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
     ADD_GC_SETTING(float, OceanFloorBumpiness);
-    ADD_GC_SETTING(float, OceanFloorDetailAmplification);
+	ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
     ADD_GC_SETTING(float, RepairSpeedAdjustment);

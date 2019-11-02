@@ -735,6 +735,8 @@ public:
 
     virtual void Enforce(BaseSetting const & setting) const = 0;
 
+	virtual void EnforceImmediate(BaseSetting const & setting) const = 0;
+
     virtual void Pull(BaseSetting & setting) const = 0;
 };
 
@@ -745,12 +747,15 @@ public:
 
     using Getter = std::function<TValue ()>;
     using Setter = std::function<void(TValue const &)>;
+	using SetterImmediate = std::function<void(TValue const &)>;
 
     SettingEnforcer(
         Getter getter,
-        Setter setter)
+        Setter setter,
+		Setter setterImmediate)
         : mGetter(std::move(getter))
         , mSetter(std::move(setter))
+		, mSetterImmediate(std::move(setterImmediate))
     {}
 
     void Enforce(BaseSetting const & setting) const override
@@ -760,6 +765,14 @@ public:
         auto const & s = dynamic_cast<Setting<TValue> const &>(setting);
         mSetter(s.GetValue());
     }
+
+	void EnforceImmediate(BaseSetting const & setting) const override
+	{
+		assert(setting.GetType() == typeid(TValue));
+
+		auto const & s = dynamic_cast<Setting<TValue> const &>(setting);
+		mSetterImmediate(s.GetValue());
+	}
 
     void Pull(BaseSetting & setting) const override
     {
@@ -773,6 +786,7 @@ private:
 
     Getter const mGetter;
     Setter const mSetter;
+	Setter const mSetterImmediate;
 };
 
 /*
@@ -838,6 +852,21 @@ public:
         }
     }
 
+	/*
+	 * Enforces all and only the settings that are marked as dirty,
+	 * using the "immediate" setters.
+	 */
+	void EnforceDirtyImmediate(Settings<TEnum> const & settings) const
+	{
+		for (size_t e = 0; e < static_cast<size_t>(TEnum::_Last) + 1; ++e)
+		{
+			if (settings[static_cast<TEnum>(e)].IsDirty())
+			{
+				mEnforcers[e]->EnforceImmediate(settings[static_cast<TEnum>(e)]);
+			}
+		}
+	}
+
     /*
      * Pulls all settings and marks all of them as dirty, unconditionally.
      */
@@ -885,6 +914,15 @@ public:
     {
         mEnforcers.EnforceDirty(settings);
     }
+
+	/*
+	 * Enforces all and only the settings that are marked as dirty, using the
+	 * "immediate" setters.
+	 */
+	void EnforceDirtySettingsImmediate(Settings<TEnum> const & settings) const
+	{
+		mEnforcers.EnforceDirtyImmediate(settings);
+	}
 
     /*
      * Pulls all settings and marks all of them as dirty, unconditionally.
@@ -962,6 +1000,8 @@ public:
 	/*
 	 * If the last-modified settings exist, enforces default settings with, on top of them, 
 	 * the last-modified settings, and returns true. Otherwise, returns false.
+	 *
+	 * Enforcement is done with the "immediate" setters.
 	 */
 	bool EnforceDefaultsAndLastModifiedSettings()
 	{
@@ -979,9 +1019,9 @@ public:
 				settings.Deserialize(ctx);
 			}
 
-			// Enforce all settings
+			// Enforce all settings, using the "immediate" setters
 			settings.MarkAllAsDirty();
-			EnforceDirtySettings(settings);
+			EnforceDirtySettingsImmediate(settings);
 
 			return true;
 		}
@@ -1035,14 +1075,15 @@ protected:
             TEnum settingId,
             std::string && name,
             typename SettingEnforcer<TValue>::Getter && getter,
-            typename SettingEnforcer<TValue>::Setter && setter)
+            typename SettingEnforcer<TValue>::Setter && setter,
+			typename SettingEnforcer<TValue>::Setter && setterImmediate)
         {
             assert(mSettings.size() == static_cast<size_t>(settingId));
             assert(mEnforcers.size() == static_cast<size_t>(settingId));
             (void)settingId;
 
             mSettings.emplace_back(new Setting<TValue>(std::move(name)));
-            mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter)));
+            mEnforcers.emplace_back(new SettingEnforcer<TValue>(std::move(getter), std::move(setter), std::move(setterImmediate)));
         }
 
     private:

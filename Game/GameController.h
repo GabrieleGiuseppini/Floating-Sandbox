@@ -371,16 +371,12 @@ public:
 
     // Misc
 
-	// TODOTEST
-	// Note: here we retrieve the value directly from its holder, as 1) it gets modified in-place,
-	// and 2) setting it via GameController is really just a corner case, for when the user loads
-	// persisted settings
-    //OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mOceanFloorTerrainParameterSmoother->GetValue(); }
 	OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
-    void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mOceanFloorTerrainParameterSmoother->SetValue(value); }
+    void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mWorld->SetOceanFloorTerrain(value); }
 
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
+	void SetSeaDepthImmediate(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValueImmediate(value); }
     float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }
     float GetMaxSeaDepth() const override { return GameParameters::MaxSeaDepth; }
 
@@ -391,6 +387,7 @@ public:
 
     float GetOceanFloorDetailAmplification() const override { return mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
     void SetOceanFloorDetailAmplification(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
+	void SetOceanFloorDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValueImmediate(value); }
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
@@ -660,8 +657,6 @@ private:
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
-
-	std::unique_ptr<ParameterSmoother<OceanFloorTerrain>> mOceanFloorTerrainParameterSmoother;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;

@@ -138,12 +138,14 @@ struct IGameControllerSettings
 
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;
+	virtual void SetSeaDepthImmediate(float value) = 0;
 
     virtual float GetOceanFloorBumpiness() const = 0;
     virtual void SetOceanFloorBumpiness(float value) = 0;
 
     virtual float GetOceanFloorDetailAmplification() const = 0;
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
+	virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
 
     virtual float GetDestroyRadius() const = 0;
     virtual void SetDestroyRadius(float value) = 0;

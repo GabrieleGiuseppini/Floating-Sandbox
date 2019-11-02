@@ -1053,7 +1053,8 @@ TEST(SettingsTests, Enforcer_Enforce)
     Setting<float> fSetting("");
     fSetting.SetValue(5.0f);
 
-    float valueBeingSet = 0.0f;
+    float valueBeingSet = 20.0f;
+	float valueBeingSetImmediate = 20.0f;
 
     SettingEnforcer<float> e(
         [&valueBeingSet]() -> float const &
@@ -1063,11 +1064,23 @@ TEST(SettingsTests, Enforcer_Enforce)
         [&valueBeingSet](float const & value)
         {
             valueBeingSet = value;
-        });
+        },
+		[&valueBeingSetImmediate](float const & value)
+		{
+			valueBeingSetImmediate = value;
+		});
 
     e.Enforce(fSetting);
 
     EXPECT_EQ(valueBeingSet, 5.0f);
+	EXPECT_EQ(valueBeingSetImmediate, 20.0f);
+
+	valueBeingSet = 20.0f;
+
+	e.EnforceImmediate(fSetting);
+
+	EXPECT_EQ(valueBeingSet, 20.0f);
+	EXPECT_EQ(valueBeingSetImmediate, 5.0f);
 }
 
 TEST(SettingsTests, Enforcer_Pull)
@@ -1085,7 +1098,11 @@ TEST(SettingsTests, Enforcer_Pull)
         [&valueBeingSet](float const & value)
         {
             valueBeingSet = value;
-        });
+        },
+		[&valueBeingSet](float const & value)
+		{
+			valueBeingSet = value;
+		});
 
     fSetting.ClearDirty();
 
@@ -1110,6 +1127,7 @@ struct TestGlobalSettings
 };
 
 static TestGlobalSettings GlobalSettings;
+static TestGlobalSettings GlobalSettingsImmediate;
 
 class TestSettingsManager : public BaseSettingsManager<TestSettings, TestFileSystem>
 {
@@ -1123,31 +1141,36 @@ public:
             TestSettings::Setting1_float,
             "setting1_float",
             []() -> float { return GlobalSettings.setting1; },
-            [](auto const & v) { GlobalSettings.setting1 = v; });
+            [](auto const & v) { GlobalSettings.setting1 = v; },
+			[](auto const & v) { GlobalSettingsImmediate.setting1 = v; });
 
         factory.AddSetting<uint32_t>(
             TestSettings::Setting2_uint32,
             "setting2_uint32",
             []() -> uint32_t { return GlobalSettings.setting2; },
-            [](auto const & v) { GlobalSettings.setting2 = v; });
+            [](auto const & v) { GlobalSettings.setting2 = v; },
+			[](auto const & v) { GlobalSettingsImmediate.setting2 = v; });
 
         factory.AddSetting<bool>(
             TestSettings::Setting3_bool,
             "setting3_bool",
             []() -> bool { return GlobalSettings.setting3; },
-            [](auto const & v) { GlobalSettings.setting3 = v; });
+            [](auto const & v) { GlobalSettings.setting3 = v; },
+			[](auto const & v) { GlobalSettingsImmediate.setting3 = v; });
 
         factory.AddSetting<std::string>(
             TestSettings::Setting4_string,
             "setting4_string",
             []() -> std::string { return GlobalSettings.setting4; },
-            [](auto const & v) { GlobalSettings.setting4 = v; });
+            [](auto const & v) { GlobalSettings.setting4 = v; },
+			[](auto const & v) { GlobalSettingsImmediate.setting4 = v; });
 
         factory.AddSetting<CustomValue>(
             TestSettings::Setting5_custom,
             "setting5_custom",
             []() -> CustomValue { return GlobalSettings.setting5; },
-            [](auto const & v) { GlobalSettings.setting5 = v; });
+            [](auto const & v) { GlobalSettings.setting5 = v; },
+			[](auto const & v) { GlobalSettingsImmediate.setting5 = v; });
 
         return factory;
     }
@@ -1189,12 +1212,19 @@ TEST(SettingsTests, BaseSettingsManager_Enforces)
     auto testFileSystem = std::make_shared<TestFileSystem>();
     TestSettingsManager sm(testFileSystem);
 
-    // Set currently-enforced
+    // Set baseline
     GlobalSettings.setting1 = 789.5f;
     GlobalSettings.setting2 = 242;
     GlobalSettings.setting3 = true;
     GlobalSettings.setting4 = "A Forest";
     GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
+	// Set baseline immediate
+	GlobalSettingsImmediate.setting1 = 0.0f;
+	GlobalSettingsImmediate.setting2 = 0;
+	GlobalSettingsImmediate.setting3 = false;
+	GlobalSettingsImmediate.setting4 = "";
+	GlobalSettingsImmediate.setting5 = CustomValue("", 0);
 
     // Prepare settings
     Settings<TestSettings> settings(MakeTestSettings());
@@ -1216,6 +1246,63 @@ TEST(SettingsTests, BaseSettingsManager_Enforces)
     EXPECT_EQ(std::string("Test!"), GlobalSettings.setting4);
     EXPECT_EQ(std::string("Foo"), GlobalSettings.setting5.Str);
     EXPECT_EQ(123, GlobalSettings.setting5.Int);
+
+	// Verify immediate are left where they were
+	EXPECT_EQ(0.0f, GlobalSettingsImmediate.setting1);
+	EXPECT_EQ(0u, GlobalSettingsImmediate.setting2);
+	EXPECT_EQ(false, GlobalSettingsImmediate.setting3);
+	EXPECT_EQ(std::string(""), GlobalSettingsImmediate.setting4);
+	EXPECT_EQ(std::string(""), GlobalSettingsImmediate.setting5.Str);
+	EXPECT_EQ(0, GlobalSettingsImmediate.setting5.Int);
+}
+
+TEST(SettingsTests, BaseSettingsManager_Enforces_Immediate)
+{
+	auto testFileSystem = std::make_shared<TestFileSystem>();
+	TestSettingsManager sm(testFileSystem);
+
+	// Set baseline
+	GlobalSettings.setting1 = 789.5f;
+	GlobalSettings.setting2 = 242;
+	GlobalSettings.setting3 = true;
+	GlobalSettings.setting4 = "A Forest";
+	GlobalSettings.setting5 = CustomValue("MyVal", 50);
+
+	// Set baseline immediate
+	GlobalSettingsImmediate.setting1 = 0.0f;
+	GlobalSettingsImmediate.setting2 = 0;
+	GlobalSettingsImmediate.setting3 = true;
+	GlobalSettingsImmediate.setting4 = "";
+	GlobalSettingsImmediate.setting5 = CustomValue("", 0);
+
+	// Prepare settings
+	Settings<TestSettings> settings(MakeTestSettings());
+	settings.SetValue<float>(TestSettings::Setting1_float, 242.0f);
+	settings.SetValue<uint32_t>(TestSettings::Setting2_uint32, 999);
+	settings.ClearAllDirty();
+	// Only the following will be enforced
+	settings.SetValue<bool>(TestSettings::Setting3_bool, false);
+	settings.SetValue<std::string>(TestSettings::Setting4_string, std::string("Test!"));
+	settings.SetValue<CustomValue>(TestSettings::Setting5_custom, CustomValue("Foo", 123));
+
+	// Enforce dirty
+	sm.EnforceDirtySettingsImmediate(settings);
+
+	// Verify
+	EXPECT_EQ(789.5f, GlobalSettings.setting1);
+	EXPECT_EQ(242u, GlobalSettings.setting2);
+	EXPECT_EQ(true, GlobalSettings.setting3);
+	EXPECT_EQ(std::string("A Forest"), GlobalSettings.setting4);
+	EXPECT_EQ(std::string("MyVal"), GlobalSettings.setting5.Str);
+	EXPECT_EQ(50, GlobalSettings.setting5.Int);
+
+	// Verify immediate
+	EXPECT_EQ(0.0f, GlobalSettingsImmediate.setting1);
+	EXPECT_EQ(0u, GlobalSettingsImmediate.setting2);
+	EXPECT_EQ(false, GlobalSettingsImmediate.setting3);
+	EXPECT_EQ(std::string("Test!"), GlobalSettingsImmediate.setting4);
+	EXPECT_EQ(std::string("Foo"), GlobalSettingsImmediate.setting5.Str);
+	EXPECT_EQ(123, GlobalSettingsImmediate.setting5.Int);
 }
 
 TEST(SettingsTests, BaseSettingsManager_Pulls)
@@ -1408,7 +1495,7 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastModifiedSettings)
     GlobalSettings.setting3 = true;
     GlobalSettings.setting4 = "A Forest";
     GlobalSettings.setting5 = CustomValue("MyVal", 50);
-
+	
     //
     // Create settings manager - defaults are taken here
     //
@@ -1441,16 +1528,20 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastModifiedSettings)
     EXPECT_TRUE(sm.HasLastModifiedSettingsPersisted());
 
     //
-    // Change enforced settings again
+    // Change settings again
     //
 
-    GlobalSettings.setting2 = 244;
-    GlobalSettings.setting5 = CustomValue("MyVal", 52);
+	GlobalSettings.setting1 = 0.0f;
+	GlobalSettings.setting2 = 0;
+	GlobalSettings.setting3 = false;
+	GlobalSettings.setting4 = "";
+	GlobalSettings.setting5 = CustomValue("", 0);
 
-    // These are to verify that we overwrite all with default
-    GlobalSettings.setting1 = 200.0f;
-    GlobalSettings.setting3 = false;
-    GlobalSettings.setting4 = "The Drowning Man";
+    GlobalSettingsImmediate.setting1 = 200.0f;
+	GlobalSettingsImmediate.setting1 = 200;
+    GlobalSettingsImmediate.setting3 = false;
+	GlobalSettingsImmediate.setting4 = "";
+	GlobalSettingsImmediate.setting5 = CustomValue("", 0);
 
     //
     // Load and enforce defaults and last-modified settings
@@ -1464,10 +1555,17 @@ TEST(SettingsTests, BaseSettingsManager_E2E_LastModifiedSettings)
     // Verify enforced settings
     //
 
-    EXPECT_EQ(789.5f, GlobalSettings.setting1); // From defaults
-    EXPECT_EQ(243u, GlobalSettings.setting2); // Saved
-    EXPECT_EQ(true, GlobalSettings.setting3); // From defaults
-    EXPECT_EQ("A Forest", GlobalSettings.setting4); // From defaults
-    EXPECT_EQ("MyVal", GlobalSettings.setting5.Str); // Saved
-    EXPECT_EQ(51, GlobalSettings.setting5.Int); // Saved
+    EXPECT_EQ(0.0f, GlobalSettings.setting1);
+    EXPECT_EQ(0u, GlobalSettings.setting2);
+    EXPECT_EQ(false, GlobalSettings.setting3);
+    EXPECT_EQ("", GlobalSettings.setting4);
+    EXPECT_EQ("", GlobalSettings.setting5.Str);
+    EXPECT_EQ(0, GlobalSettings.setting5.Int);
+
+	EXPECT_EQ(789.5f, GlobalSettingsImmediate.setting1); // From defaults
+	EXPECT_EQ(243u, GlobalSettingsImmediate.setting2); // Saved
+	EXPECT_EQ(true, GlobalSettingsImmediate.setting3); // From defaults
+	EXPECT_EQ("A Forest", GlobalSettingsImmediate.setting4); // From defaults
+	EXPECT_EQ("MyVal", GlobalSettingsImmediate.setting5.Str); // Saved
+	EXPECT_EQ(51, GlobalSettingsImmediate.setting5.Int); // Saved
 }
