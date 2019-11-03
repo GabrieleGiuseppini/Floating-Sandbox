@@ -78,12 +78,9 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr WindDownEnd = 1.0f;
 
 
-    //float constexpr MaxClouds = 50.0f;
-	float constexpr MaxClouds = 30.0f;
+	float constexpr MaxClouds = 35.0f;
     float constexpr MinCloudSize = 1.85f;
     float constexpr MaxCloudSize = 5.2f;
-
-	float constexpr MaxRainDensity = 0.4f;
 
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
@@ -120,7 +117,7 @@ void Storm::Update(GameParameters const & gameParameters)
 		if (gameParameters.DoRainWithStorm)
 		{
 			float rainSmoothProgress = SmoothStep(RainUpStart, RainUpEnd, upProgress);
-			mParameters.RainDensity = MaxRainDensity * rainSmoothProgress;
+			mParameters.RainDensity = rainSmoothProgress;
 		}
 		else
 		{
@@ -151,7 +148,7 @@ void Storm::Update(GameParameters const & gameParameters)
 		if (gameParameters.DoRainWithStorm)
 		{
 			float rainSmoothProgress = 1.0f - SmoothStep(RainDownStart, RainDownEnd, downProgress);
-			mParameters.RainDensity = MaxRainDensity * rainSmoothProgress;
+			mParameters.RainDensity = rainSmoothProgress;
 		}
 		else
 		{
