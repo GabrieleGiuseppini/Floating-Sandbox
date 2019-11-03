@@ -373,6 +373,7 @@ Render:
 				+ Refresh status after each change
 
 		~ Check if all testers are in the About box
+			~ Asked sinking_feeling for name:
 
 		~ Test wxWidget fix (& keep it!)
 

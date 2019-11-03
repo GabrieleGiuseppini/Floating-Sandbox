@@ -143,6 +143,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Wreno - https://discordapp.com/" },
         {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
         {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
+		{"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
 
         {"Webmaster:\t\t", "Maximord - https://discordapp.com/" },
 
