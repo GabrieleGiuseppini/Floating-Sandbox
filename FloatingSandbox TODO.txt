@@ -371,27 +371,20 @@ Render:
 		+ Move status text toggles to UIPreferences, so that they're save-able
 			+ Leave menu entries, they now talk to UIPreferencesManager
 				+ Refresh status after each change
-
-		~ Check if all testers are in the About box
-			~ Asked sinking_feeling for name:
-
-		~ Test wxWidget fix (& keep it!)
-
-		- Music from Officer TimCan:
-			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
-			- Add the three songs
-				- SleepingSun should however be very rare!
-			- Add to about box
-				- Ask name & url
+		+ Music from Officer TimCan:
+			+ Convert SleepingSun full and see if may fit in FS; if not, take the short version
+			+ Add the three songs
+			+ Add to about box
 
 		= Storm (*)
 
 		- SpinCtrl at SliderControl
 
 		- Music?
-			Long Note Four by Kevin MacLeod is licensed under a Creative Commons Attribution licence (https://creativecommons.org/licenses/...)
-			Source: http://incompetech.com/music/royalty-...
-			Artist: http://incompetech.com/
+			- Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
+			- Licensed under a Creative Commons Attribution licence
+			- Source: http://incompetech.com/music/royalty-...
+			- Artist: http://incompetech.com/
 
 		= New explosions:
 			- Shader:
@@ -423,6 +416,8 @@ Render:
 				- RC
 				- Timer
 			- Start workitem for explosive combustion
+
+		- Lights/materials breaking under pressure (*)
 
 		- Video (see Marketing above)
 
@@ -869,6 +864,9 @@ Render:
 
 - Gfx:
 
+	- Fog
+		- And fog horn
+
 	- Continuous auto-focus (*)
 		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 		- Spec:
@@ -964,6 +962,19 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
+
+	- Lights/materials breaking under pressure (*)
+		- Idea:
+			- All structural materials have max pressure delta after which they break, with some randomness
+			- ...but only glass, lights, and may be a few others have reasonable values - others are basically indestructible, and they
+			  will destroy with the "other" external pressure work which is tied with frontier
+		- Impl:
+			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
+				- Pressure delta between current water at point and external Y
+				- With probability growing in a band around max pressure delta
+
+	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
+		- Just sets points as leaking
 
 	- Move tool:
 		- Allow for moving orhpaned points
@@ -1130,14 +1141,6 @@ Render:
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)
 		- Make ship with lifeboats, using multiple clamps to keep it
-
-	- Lights breaking under pressure
-		- Idea:
-			- All structural materials have max pressure delta after which they break, with some randomness
-		- Impl:
-			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
-				- Pressure delta between current water at point and external Y
-				- With probability growing in a band around max pressure delta
 
 	- Ocean floor deforming/breaking up upon impact
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
@@ -1469,6 +1472,19 @@ Render:
 
 - Sounds:
 
+	- Sounds that play before ship starts sinking
+		- SOS, bell, sailor screaming, etc.
+		- Office TimCan provides the sounds
+
+	- Sounds playable by user via key
+		- Bell, horn, etc.
+		- Office TimCan provides the sounds
+
+	- Morse code sound when it's about to sink (early sink detection)
+		- Or at first drop of water
+		- Morse code: text-to-morse encoder would be cool
+			- Default "S.O.S.", also customizable via ship property
+
 	- Do air bubbles sounds, very low volume
 		- At creation and at expiry
 		- New events at IGameEventHandler
@@ -1480,10 +1496,6 @@ Render:
 		- ShipSoundsForFS (in Scratch)
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
-	- Morse code sound when it's about to sink (early sink detection)
-		- Or at first drop of water
-		- Morse code: text-to-morse encoder would be cool
-			- Default "S.O.S.", also customizable via ship property
 	- Volume of effects should depend on distance/zoom
 	- Global mute setting
 

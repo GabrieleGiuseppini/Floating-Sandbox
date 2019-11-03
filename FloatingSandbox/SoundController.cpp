@@ -95,16 +95,39 @@ SoundController::SoundController(
         // Parse filename
         //
 
-        static std::regex const MusicNameRegex(R"((.+)(?:_\d+)?)");
-        std::smatch musicNameMatch;
-        if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
-        {
-            throw GameException("Music filename \"" + musicName + "\" is not recognized");
-        }
+		static std::regex const MusicNameRegex(R"(([^_]+)_([^_]+)(?:_\d+))");
 
-        assert(musicNameMatch.size() == 1 + 1);
+		std::smatch musicNameMatch;
+		if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
+		{
+			throw GameException("Music filename \"" + musicName + "\" is not recognized");
+		}
 
-        mSinkingMusic.AddAlternative(mResourceLoader->GetMusicFilepath(musicName));
+		assert(musicNameMatch.size() == 1 + 3);
+
+		// Parse Size
+		SizeType sizeType = StrToSizeType(musicNameMatch[2].str());
+		switch (sizeType)
+		{
+			case SizeType::Small:
+			{
+				// Normal frequency
+				mSinkingMusic.AddAlternative(mResourceLoader->GetMusicFilepath(musicName), false);
+				break;
+			}
+
+			case SizeType::Medium:
+			{
+				throw GameException("Medium-sized music is not yet supported");
+			}
+
+			case SizeType::Large:
+			{
+				// Rare
+				mSinkingMusic.AddAlternative(mResourceLoader->GetMusicFilepath(musicName), true);
+				break;
+			}
+		}
     }
 
 
@@ -1312,7 +1335,7 @@ void SoundController::OnWindSpeedUpdated(
 void SoundController::OnRainUpdated(float density)
 {
 	// Set the volume - starts automatically if greater than zero
-	mRainSound.SetVolume(density * 80.0f);
+	mRainSound.SetVolume(density * 90.0f);
 }
 
 void SoundController::OnThunder()

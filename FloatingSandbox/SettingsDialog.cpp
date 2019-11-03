@@ -1196,8 +1196,9 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinWaterIntakeAdjustment(),
+						1.0f,
                         mGameControllerSettingsOptions->GetMaxWaterIntakeAdjustment()));
 
                 fluidsSizer->Add(

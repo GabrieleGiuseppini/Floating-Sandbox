@@ -375,9 +375,14 @@ public:
         InternalSetVolume();
     }
 
-    void AddAlternative(std::filesystem::path const & filepath)
+    void AddAlternative(
+		std::filesystem::path const & filepath,
+		bool isRare)
     {
-        mAlternatives.push_back(filepath);
+		if (!isRare)
+			mAlternatives.push_back(filepath);
+		else
+			mRareAlternatives.push_back(filepath);
     }
 
     void SetVolume(float volume)
@@ -421,13 +426,27 @@ public:
         InternalSetVolume();
 
         // Choose alternative
-        auto alternativeToPlay = GameRandomEngine::GetInstance().Choose(mAlternatives.size());
+		if (mRareAlternatives.empty()
+			|| GameRandomEngine::GetInstance().GenerateUniformBoolean(0.975f))
+		{
+			auto alternativeToPlay = GameRandomEngine::GetInstance().Choose(mAlternatives.size());
 
-        // Play
-        if (!mMusic.openFromFile(mAlternatives[alternativeToPlay].string()))
-        {
-            throw GameException("Cannot load \"" + mAlternatives[alternativeToPlay].string() + "\" music");
-        }
+			// Play
+			if (!mMusic.openFromFile(mAlternatives[alternativeToPlay].string()))
+			{
+				throw GameException("Cannot load \"" + mAlternatives[alternativeToPlay].string() + "\" music");
+			}
+		}
+		else
+		{
+			auto alternativeToPlay = GameRandomEngine::GetInstance().Choose(mRareAlternatives.size());
+
+			// Play
+			if (!mMusic.openFromFile(mRareAlternatives[alternativeToPlay].string()))
+			{
+				throw GameException("Cannot load \"" + mRareAlternatives[alternativeToPlay].string() + "\" music");
+			}
+		}
 
         mMusic.play();
 
@@ -541,6 +560,7 @@ private:
     std::optional<GameWallClock::time_point> mFadeOutStartTimestamp;
 
     std::vector<std::filesystem::path> mAlternatives;
+	std::vector<std::filesystem::path> mRareAlternatives;
 };
 
 

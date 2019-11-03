@@ -130,7 +130,7 @@ struct GameParameters
     static float constexpr MaxWaterDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
 
     float WaterIntakeAdjustment;
-    static float constexpr MinWaterIntakeAdjustment = 0.1f;
+    static float constexpr MinWaterIntakeAdjustment = 0.001f;
     static float constexpr MaxWaterIntakeAdjustment = 10.0f;
 
     float WaterDiffusionSpeedAdjustment;
