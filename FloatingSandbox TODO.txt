@@ -475,10 +475,10 @@ Render:
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- Ship Packs:
 		- HummeL: asked for deliverables
-		- Waallrus: have all
-			- Test
-		- MasterGarfield: have all
-			- Test
+		- Mr. Woldemar: waiting for deliverables
+			+ I keep donations
+		+ Waallrus: have all
+		+ MasterGarfield: have all
 			+ Have also his PayPal email
 	- New ships:
 		- To test:
