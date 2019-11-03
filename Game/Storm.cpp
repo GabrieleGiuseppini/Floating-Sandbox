@@ -237,11 +237,15 @@ void Storm::TurnStormOn(GameWallClock::time_point now)
     mIsInStorm = true;
     mCurrentStormProgress = 0.0f;
     mLastStormUpdateTimestamp = now;
+
+	mGameEventHandler->OnStormBegin();
 }
 
 void Storm::TurnStormOff()
 {
     mIsInStorm = false;
+
+	mGameEventHandler->OnStormEnd();
 }
 
 }

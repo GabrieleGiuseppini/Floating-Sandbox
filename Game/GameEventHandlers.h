@@ -112,6 +112,16 @@ struct IStatisticsGameEventHandler
 
 struct IAtmosphereGameEventHandler
 {
+	virtual void OnStormBegin()
+	{
+		// Default-implemented
+	}
+
+	virtual void OnStormEnd()
+	{
+		// Default-implemented
+	}
+
 	virtual void OnWindSpeedUpdated(
 		float const /*zeroSpeedMagnitude*/,
 		float const /*baseSpeedMagnitude*/,

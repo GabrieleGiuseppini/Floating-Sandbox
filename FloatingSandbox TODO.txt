@@ -1102,7 +1102,7 @@ Render:
 					- RenderCore and glsl
 				- Halo
 					- With blending, or with simple white-blue with alpha
-		- MainFrame: disable menu during storm
+		+ MainFrame: disable menu during storm
 		+ Storm::Parameters:
 			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 				+ OceanSurface: gets in indirectly and makes waves

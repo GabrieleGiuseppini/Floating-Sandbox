@@ -170,7 +170,7 @@ public:
     }
 
     virtual void OnUpdateToRenderRatioUpdated(
-        float immediateURRatio)
+        float immediateURRatio) override
     {
         for (auto sink : mStatisticsSinks)
         {
@@ -182,6 +182,22 @@ public:
 	//
 	// Atmosphere
 	//
+
+	virtual void OnStormBegin() override
+	{
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnStormBegin();
+		}
+	}
+
+	virtual void OnStormEnd() override
+	{
+		for (auto sink : mAtmosphereSinks)
+		{
+			sink->OnStormEnd();
+		}
+	}
 
 	virtual void OnWindSpeedUpdated(
 		float const zeroSpeedMagnitude,

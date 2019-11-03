@@ -42,6 +42,7 @@
 class MainFrame
     : public wxFrame
     , public ILifecycleGameEventHandler
+	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -75,6 +76,7 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
+	wxMenuItem * mTriggerStormMenuItem;
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -195,6 +197,7 @@ private:
     void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
+		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -218,6 +221,16 @@ private:
 
         UpdateFrameTitle();
     }
+
+	virtual void OnStormBegin() override
+	{
+		mTriggerStormMenuItem->Enable(false);
+	}
+
+	virtual void OnStormEnd() override
+	{
+		mTriggerStormMenuItem->Enable(true);
+	}
 
     virtual void OnBombPlaced(
         BombId /*bombId*/,
