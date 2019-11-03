@@ -78,7 +78,7 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr WindDownEnd = 1.0f;
 
 
-	float constexpr MaxClouds = 35.0f;
+	float constexpr MaxClouds = 30.0f;
     float constexpr MinCloudSize = 1.85f;
     float constexpr MaxCloudSize = 5.2f;
 

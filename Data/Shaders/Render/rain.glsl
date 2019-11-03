@@ -44,6 +44,7 @@ void main()
     
     #define RainSpatialDensityX 45.0
     #define RainSpatialDensityY 30.0
+    #define RainMaxDensity .4
     #define RainSpeed 30.0
     #define DropletLength .9
     #define DropletWidth .08
@@ -68,7 +69,7 @@ void main()
 
     // Decide whether tile is turned off
     float randOnOff = fract(sin(tileX * 71. + tileY * 7.));
-    float onOffThickness = 1. - step(paramRainDensity, randOnOff);
+    float onOffThickness = 1. - step(paramRainDensity  * RainMaxDensity, randOnOff);
 
     // Shortcut
     if (onOffThickness == 0.)

@@ -1082,16 +1082,14 @@ Render:
 						+ Remove test overrides
 				+ See if can enlarge small cloud
 				+ See if may make storm clouds larger, so to cover whole sky
-			= Rain
-				= Shader
+			+ Rain
+				+ Shader
 					+ Try with more spatial density
 					+ Discard
 						+ See if it helps with perf: NO
 					+ See double-speed
 					+ Discard if tile off - see perf impact
-					= Lower density (and thus up volume)
-						- SoundController: figure out how to grow faster
-					- Make droplets?
+					+ Lower density (and thus up volume)
 				+ Sound (continuous, like wind)
 			+ Thunders
 				+ Others random with same distribution as wind gusts
@@ -1104,6 +1102,7 @@ Render:
 					- RenderCore and glsl
 				- Halo
 					- With blending, or with simple white-blue with alpha
+		- MainFrame: disable menu during storm
 		+ Storm::Parameters:
 			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
 				+ OceanSurface: gets in indirectly and makes waves
