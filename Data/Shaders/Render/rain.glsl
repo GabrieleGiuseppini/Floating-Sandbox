@@ -67,6 +67,7 @@ void main()
     float randOnOff = fract(sin(tileX * 71. + tileY * 7.));
     float onOffThickness = 1. - step(paramRainDensity, randOnOff);
 
+    // Shortcut
     if (onOffThickness == 0.)
         discard;
     
@@ -91,7 +92,7 @@ void main()
     // ---------------------------------------------
     //
 
-    float alpha = .7 * smoothstep(.4, 1., dropletThickness);
+    float alpha = .4 * smoothstep(.4, 1., dropletThickness);
     vec3 c = vec3(dropletThickness, dropletThickness, dropletThickness) * paramEffectiveAmbientLightIntensity;
 
     // Output to screen
