@@ -12,6 +12,7 @@
 #include <wx/sizer.h>
 
 constexpr int MinDirCtrlWidth = 260;
+constexpr int MaxDirComboWidth = 650;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
@@ -138,6 +139,8 @@ ShipLoadDialog::ShipLoadDialog(
                 wxDefaultSize,
                 emptyComboChoices,
                 wxCB_DROPDOWN | wxCB_READONLY);
+
+			mRecentDirectoriesComboBox->SetMaxSize(wxSize(MaxDirComboWidth, -1));
             mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
 
             hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxALIGN_CENTRE_VERTICAL);
@@ -171,13 +174,14 @@ ShipLoadDialog::ShipLoadDialog(
                 wxSize(-1, 24),
                 0);
 
-            mShipSearchCtrl->ShowCancelButton(true);
-
+			mShipSearchCtrl->ShowCancelButton(true);
             mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
             mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
             mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
 
             hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+
+			// Search button
 
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
             wxBitmap searchNextBitmap(resourceLoader.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
