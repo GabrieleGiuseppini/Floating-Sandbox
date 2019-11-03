@@ -83,7 +83,7 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr MinCloudSize = 1.85f;
     float constexpr MaxCloudSize = 5.2f;
 
-	float constexpr MaxRainDensity = 0.6f;
+	float constexpr MaxRainDensity = 0.4f;
 
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end

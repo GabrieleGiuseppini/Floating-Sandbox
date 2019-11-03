@@ -1088,8 +1088,10 @@ Render:
 					+ Discard
 						+ See if it helps with perf: NO
 					+ See double-speed
-					= Discard if tile off - see perf impact
-					- Make droplets
+					+ Discard if tile off - see perf impact
+					= Lower density (and thus up volume)
+						- SoundController: figure out how to grow faster
+					- Make droplets?
 				+ Sound (continuous, like wind)
 			+ Thunders
 				+ Others random with same distribution as wind gusts
@@ -1123,10 +1125,7 @@ Render:
 		- Rain extinguishes fire
 		- Cleanup:
 			- Do perf analysis - Andrea Gail slows down a lot
-			- Clouds shader: TODO: it's now per-cloud; redo: 
-				- if cloudDarkening param is only used to multiply with ambient light, then
-				  dedicate a param for it (cloudAmbientLightIntensity) and set it, pre-multiplied, at both 
-				  OnAmbientLightIntensityUpdated() and at OnCloudDarkeningUpdated()			
+				- Also give crash to MS
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)

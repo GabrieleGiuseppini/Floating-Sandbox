@@ -55,7 +55,10 @@ void main()
     
 	// Offset Y based off time, and in two different ways to provide 
     // a sense of depth
-    scaledUV.y += paramTime * RainSpeed * (.8 + mod(tileX, 2.) * .2);
+    scaledUV.y += 
+        paramTime 
+        * RainSpeed 
+        * (.8 + mod(tileX, 3.) * .1);
                 
     // Offset Y randomly based off its tile X coordinate
     scaledUV.y += 407.567 * fract(351.5776456 * tileX);

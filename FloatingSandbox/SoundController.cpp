@@ -1335,7 +1335,7 @@ void SoundController::OnWindSpeedUpdated(
 void SoundController::OnRainUpdated(float density)
 {
 	// Set the volume - starts automatically if greater than zero
-	mRainSound.SetVolume(density * 90.0f);
+	mRainSound.SetVolume(density * 100.0f);
 }
 
 void SoundController::OnThunder()
