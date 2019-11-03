@@ -219,9 +219,16 @@ Render:
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
-	- Video of Titanic under Mariannes' Trench
-		+ After water contrast
+	- Video for 1.13:
+		- Titanic under Mariannes' Trench
+		- Sparkles: before and after
+			- Titanic at night, from afar
 
+	- Post discord servers:
+		- Floating Sandbox Discord Server: "The Floating Sandbox server is a place where anyone can share ships, interact with the community, learn more about the game, participate in contests and suggest new ideas."
+			- https://discord.gg/eT2R5aw
+		- Sinking Simulators Community Hub: "A community for the Sinking Simulators fans."
+			- https://discord.gg/h2ycGkC
 - Roadmap:
 
 	= 1.13.0
@@ -365,13 +372,9 @@ Render:
 			+ Leave menu entries, they now talk to UIPreferencesManager
 				+ Refresh status after each change
 
-		~ Send for testing
-			- Disable storm first
+		~ Check if all testers are in the About box
 
-		~ Bump version
-		~ Re-enable storm
-
-		- Test wxWidget fix (& keep it!)
+		~ Test wxWidget fix (& keep it!)
 
 		- Music from Officer TimCan:
 			- Convert SleepingSun full and see if may fit in FS; if not, take the short version
@@ -420,9 +423,7 @@ Render:
 				- Timer
 			- Start workitem for explosive combustion
 
-		- Video:
-			- Sparkles: before and after
-				- Titanic at night, from afar
+		- Video (see Marketing above)
 
 		- Cached quantities (*)
 		
@@ -471,6 +472,13 @@ Render:
 		# sum wulf gurl: Artica
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
+	- Ship Packs:
+		- HummeL: asked for deliverables
+		- Waallrus: have all
+			- Test
+		- MasterGarfield: have all
+			- Test
+			+ Have also his PayPal email
 	- New ships:
 		- To test:
 			- mrpasta444_ship_pack

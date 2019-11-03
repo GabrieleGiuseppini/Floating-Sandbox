@@ -387,11 +387,9 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(triggerRogueWaveMenuItem);
     Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
-	/* TODOTEST
     wxMenuItem * triggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(triggerStormMenuItem);
     Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
-	*/
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 

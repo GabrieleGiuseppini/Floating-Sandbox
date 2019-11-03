@@ -3042,7 +3042,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mShowStressCheckBox = new wxCheckBox(shipBox, wxID_ANY,
                     _("Show Stress"), wxDefaultPosition, wxDefaultSize);
                 mShowStressCheckBox->SetToolTip("Enables or disables highlighting of the springs that are under heavy stress and close to rupture.");
-                mShowStressCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnSeeShipThroughOceanCheckBoxClick, this);
+                mShowStressCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnShowStressCheckBoxClick, this);
 
                 shipSizer->Add(
                     mShowStressCheckBox,
