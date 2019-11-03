@@ -1087,8 +1087,8 @@ Render:
 					+ Try with more spatial density
 					+ Discard
 						+ See if it helps with perf: NO
-					= See double-speed
-					- Discard if tile off - see perf impact
+					+ See double-speed
+					= Discard if tile off - see perf impact
 					- Make droplets
 				+ Sound (continuous, like wind)
 			+ Thunders

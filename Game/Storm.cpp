@@ -119,8 +119,8 @@ void Storm::Update(GameParameters const & gameParameters)
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
-			float rainLinearProgress = Clamp((upProgress - RainUpStart) / (RainUpEnd - RainUpStart), 0.0f, 1.0f);
-			mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+			float rainSmoothProgress = SmoothStep(RainUpStart, RainUpEnd, upProgress);
+			mParameters.RainDensity = MaxRainDensity * rainSmoothProgress;
 		}
 		else
 		{
@@ -150,8 +150,8 @@ void Storm::Update(GameParameters const & gameParameters)
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
-			float rainLinearProgress = 1.0f - Clamp((downProgress - RainDownStart) / (RainDownEnd - RainDownStart), 0.0f, 1.0f);
-			mParameters.RainDensity = MaxRainDensity * rainLinearProgress;
+			float rainSmoothProgress = 1.0f - SmoothStep(RainDownStart, RainDownEnd, downProgress);
+			mParameters.RainDensity = MaxRainDensity * rainSmoothProgress;
 		}
 		else
 		{
