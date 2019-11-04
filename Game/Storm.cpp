@@ -232,6 +232,12 @@ void Storm::TriggerStorm()
     }
 }
 
+void Storm::TriggerLightning()
+{
+	// TODOHERE
+	mGameEventHandler->OnLightning();
+}
+
 void Storm::TurnStormOn(GameWallClock::time_point now)
 {
     mIsInStorm = true;

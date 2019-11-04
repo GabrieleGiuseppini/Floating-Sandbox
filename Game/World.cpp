@@ -532,6 +532,11 @@ void World::TriggerStorm()
     mStorm.TriggerStorm();
 }
 
+void World::TriggerLightning()
+{
+	mStorm.TriggerLightning();
+}
+
 void World::TriggerRogueWave()
 {
     mOceanSurface.TriggerRogueWave(

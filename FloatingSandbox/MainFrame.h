@@ -172,6 +172,7 @@ private:
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent& event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent& event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
+	void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent& event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);

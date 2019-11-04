@@ -217,6 +217,8 @@ public:
 
     void TriggerStorm();
 
+	void TriggerLightning();
+
     void SetSilence(float silenceAmount);
 
 public:

@@ -29,6 +29,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
+	else if (lstr == "lightning")
+		return ProgramType::Lightning;
     else if (lstr == "ocean_depth")
         return ProgramType::OceanDepth;
     else if (lstr == "ocean_flat")
@@ -107,6 +109,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
+	case ProgramType::Lightning:
+		return "Lightning";
     case ProgramType::OceanDepth:
         return "OceanDepth";
     case ProgramType::OceanFlat:
@@ -304,6 +308,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     // World
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
+	else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
+		return VertexAttributeType::Lightning1;
+	else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
+		return VertexAttributeType::Lightning2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
         return VertexAttributeType::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))

@@ -174,6 +174,7 @@ public:
     void TriggerTsunami() override;
     void TriggerRogueWave() override;
     void TriggerStorm() override;
+	void TriggerLightning() override;
 
     //
     // Render controls

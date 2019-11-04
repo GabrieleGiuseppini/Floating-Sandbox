@@ -520,27 +520,6 @@ public:
 
     void RenderStart();
 
-    //
-    // World
-    //
-
-    inline void UploadStormAmbientDarkening(float darkening)
-    {
-        if (darkening != mCurrentStormAmbientDarkening)
-        {
-            mCurrentStormAmbientDarkening = darkening;
-            OnEffectiveAmbientLightIntensityUpdated();
-        }
-    }
-
-	inline void UploadRain(float density)
-	{
-		if (density != mCurrentRainDensity)
-		{
-			mCurrentRainDensity = density;
-			OnRainDensityUpdated();
-		}
-	}
 
     //
     // Sky
@@ -564,6 +543,46 @@ public:
     }
 
     void UploadStarsEnd();
+
+
+	inline void UploadStormAmbientDarkening(float darkening)
+	{
+		if (darkening != mCurrentStormAmbientDarkening)
+		{
+			mCurrentStormAmbientDarkening = darkening;
+			OnEffectiveAmbientLightIntensityUpdated();
+		}
+	}
+
+	inline void UploadRain(float density)
+	{
+		if (density != mCurrentRainDensity)
+		{
+			mCurrentRainDensity = density;
+			OnRainDensityUpdated();
+		}
+	}
+
+
+	void UploadLightningsStart(
+		size_t backgroundLightningsCount,
+		size_t foregroundLightningsCount);
+
+	inline void UploadBackgroundLightning(
+		float ndcX,
+		float progress)
+	{
+		// TODOHERE
+	}
+
+	inline void UploadForegroundLightning(
+		vec2f tipWorldCoordinates,
+		float progress)
+	{
+		// TODOHERE
+	}
+
+	void UploadLightningsEnd();
 
 
     void UploadCloudsStart(size_t cloudCount);
@@ -1356,7 +1375,6 @@ public:
 
 
 
-
     void RenderShipEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1375,11 +1393,102 @@ public:
 
 private:
 
+	inline void StoreLightningVertices(
+		float ndcX,
+		float ndcBottomY,
+		float progress,
+		size_t & vertexBufferIndex)
+	{
+		// TODOHERE
+
+		/*
+		float const leftX = -frame.FrameMetadata.AnchorWorldX;
+		float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
+		float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorWorldY;
+		float const bottomY = -frame.FrameMetadata.AnchorWorldY;
+
+		// Append vertices - two triangles
+
+		// Triangle 1
+
+		// Top-left
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(leftX, topY),
+			vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+
+		// Top-Right
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(rightX, topY),
+			frame.TextureCoordinatesTopRight,
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+
+		// Bottom-left
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(leftX, bottomY),
+			frame.TextureCoordinatesBottomLeft,
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+
+		// Triangle 2
+
+		// Top-Right
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(rightX, topY),
+			frame.TextureCoordinatesTopRight,
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+
+		// Bottom-left
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(leftX, bottomY),
+			frame.TextureCoordinatesBottomLeft,
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+
+		// Bottom-right
+		vertexBuffer.emplace_back(
+			position,
+			vec2f(rightX, bottomY),
+			vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+			static_cast<float>(planeId),
+			scale,
+			-angleCw,
+			alpha,
+			lightSensitivity);
+		*/
+	}
+
+private:
+
     void RenderOcean(bool opaquely);
 
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();
+	void RenderForegroundLightnings();
 	void RenderRain();
     void RenderWorldBorder();
 
@@ -1429,6 +1538,25 @@ private:
             , brightness(_brightness)
         {}
     };
+
+	struct LightningVertex
+	{
+		vec2f ndc;
+		vec2f spacePosition;
+		float bottomY;
+		float progress;
+
+		LightningVertex(
+			vec2f _ndc,
+			vec2f _spacePosition,
+			float _bottomY,
+			float _progress)
+			: ndc(_ndc)
+			, spacePosition(_spacePosition)
+			, bottomY(_bottomY)
+			, progress(_progress)
+		{}
+	};
 
     struct CloudVertex
     {
@@ -1548,6 +1676,11 @@ private:
     BoundedVector<StarVertex> mStarVertexBuffer;
     GameOpenGLVBO mStarVBO;
 
+	GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
+	size_t mBackgroundLightningVertexCount;
+	size_t mForegroundLightningVertexCount;
+	GameOpenGLVBO mLightningVBO;
+
     GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
 
@@ -1578,6 +1711,7 @@ private:
     //
 
     GameOpenGLVAO mStarVAO;
+	GameOpenGLVAO mLightningVAO;
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
@@ -1603,7 +1737,7 @@ private:
     size_t mLoadedLandTextureIndex;
 
     //
-    // World
+    // Misc Parameters
     //
 
     float mCurrentStormAmbientDarkening;

@@ -59,6 +59,8 @@ public:
 
     void TriggerStorm();
 
+	void TriggerLightning();
+
 private:
 
     void TurnStormOn(GameWallClock::time_point now);

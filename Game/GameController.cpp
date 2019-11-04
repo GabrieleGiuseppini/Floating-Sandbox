@@ -934,6 +934,12 @@ void GameController::TriggerStorm()
     mWorld->TriggerStorm();
 }
 
+void GameController::TriggerLightning()
+{
+	assert(!!mWorld);
+	mWorld->TriggerLightning();
+}
+
 //
 // Render controls
 //

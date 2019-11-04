@@ -32,6 +32,7 @@ enum class ProgramType
     HeatBlasterFlameHeat,
     LandFlat,
     LandTexture,
+	Lightning,
     OceanDepth,
     OceanFlat,
     OceanTexture,
@@ -119,6 +120,9 @@ enum class VertexAttributeType : GLuint
     //
 
     Star = 0,
+
+	Lightning1 = 0,
+	Lightning2 = 1,
 
     Cloud1 = 0,
     Cloud2 = 1,

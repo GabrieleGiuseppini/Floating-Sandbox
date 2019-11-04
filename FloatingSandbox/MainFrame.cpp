@@ -77,6 +77,7 @@ long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
 long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 long const ID_TRIGGERSTORM_MENUITEM = wxNewId();
+long const ID_TRIGGERLIGHTNING_MENUITEM = wxNewId();
 
 long const ID_OPEN_SETTINGS_WINDOW_MENUITEM = wxNewId();
 long const ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM = wxNewId();
@@ -391,6 +392,10 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(mTriggerStormMenuItem);
     Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
 	mTriggerStormMenuItem->Enable(true);
+
+	wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning\tALT+L"), wxEmptyString, wxITEM_NORMAL);
+	mToolsMenu->Append(triggerLightningMenuItem);
+	Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -1416,6 +1421,12 @@ void MainFrame::OnTriggerStormMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->TriggerStorm();
+}
+
+void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
+{
+	assert(!!mGameController);
+	mGameController->TriggerLightning();
 }
 
 //////////
