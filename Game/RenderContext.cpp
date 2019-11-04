@@ -867,26 +867,24 @@ void RenderContext::UploadStarsEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::UploadLightningsStart(
-	size_t backgroundLightningsCount,
-	size_t foregroundLightningsCount)
+void RenderContext::UploadLightningsStart(size_t lightningCount)
 {
 	//
 	// Prepare buffer
-	//
+	//	
 
-	size_t const totalLightningCount = backgroundLightningsCount + foregroundLightningsCount;
-	if (totalLightningCount > 0)
+	if (lightningCount > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-		if (mLightningVertexBuffer.size() != 6 * totalLightningCount)
+		auto const nVertices = 6 * lightningCount;
+		if (mLightningVertexBuffer.size() != nVertices)
 		{
-			glBufferData(GL_ARRAY_BUFFER, 6 * totalLightningCount * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
 			CheckOpenGLError();
 		}
 
-		mLightningVertexBuffer.map(6 * totalLightningCount);
+		mLightningVertexBuffer.map(nVertices);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -894,6 +892,9 @@ void RenderContext::UploadLightningsStart(
 	{
 		mLightningVertexBuffer.reset();
 	}
+
+	mBackgroundLightningVertexCount = 0;
+	mForegroundLightningVertexCount = 0;
 }
 
 void RenderContext::UploadLightningsEnd()

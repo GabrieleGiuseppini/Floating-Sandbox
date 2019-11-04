@@ -10,6 +10,10 @@
 #include "RenderContext.h"
 
 #include <GameCore/GameWallClock.h>
+#include <GameCore/Vectors.h>
+
+#include <memory>
+#include <vector>
 
 namespace Physics
 {
@@ -19,7 +23,9 @@ class Storm
 
 public:
 
-	Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+	Storm(
+		World & parentWorld,
+		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(GameParameters const & gameParameters);
 
@@ -68,13 +74,98 @@ private:
 
 private:
 
+	World & mParentWorld;
 	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
-    Parameters mParameters;
+	//
+	// Lightning state machine
+	//
+
+	class BaseLightningStateMachine
+	{
+	public:
+
+		virtual ~BaseLightningStateMachine()
+		{}
+
+		bool Update(
+			GameWallClock::time_point now,
+			GameParameters const & /*gameParameters*/)
+		{
+			static constexpr float LightningDuration = 4.0f; // TODOTEST
+
+			// Calculate progress of lightning: 0.0f = beginning, 1.0f = end
+			mProgress = std::min(1.0f,				
+				std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(now - mStartTimestamp).count()
+				/ LightningDuration);
+
+			return (mProgress == 1.0f);
+		}
+
+		virtual void Upload(Render::RenderContext & renderContext) const = 0;
+
+	protected:
+
+		BaseLightningStateMachine(GameWallClock::time_point startTimestamp)
+			: mProgress(0.0f)
+			, mStartTimestamp(startTimestamp)
+		{}
+
+		float mProgress;
+
+	private:
+
+		GameWallClock::time_point const mStartTimestamp;
+	};
+
+	class BackgroundLightningStateMachine final : public BaseLightningStateMachine
+	{
+	public:
+
+		BackgroundLightningStateMachine(
+			GameWallClock::time_point startTimestamp,
+			float ndcX)
+			: BaseLightningStateMachine(startTimestamp)
+			, mNdcX(ndcX)
+		{}
+
+		void Upload(Render::RenderContext & renderContext) const override
+		{
+			renderContext.UploadBackgroundLightning(mNdcX, mProgress);
+		}
+
+	private:
+
+		float const mNdcX;
+	};
+
+	class ForegroundLightningStateMachine final : public BaseLightningStateMachine
+	{
+	public:
+
+		ForegroundLightningStateMachine(
+			GameWallClock::time_point startTimestamp,
+			vec2f targetWorldPosition)
+			: BaseLightningStateMachine(startTimestamp)
+			, mTargetWorldPosition(targetWorldPosition)
+		{}
+
+		void Upload(Render::RenderContext & renderContext) const override
+		{
+			renderContext.UploadForegroundLightning(mTargetWorldPosition, mProgress);
+		}
+
+	private:
+
+		vec2f const mTargetWorldPosition;
+	};
 
     //
-    // State machine
+    // Storm state machine
     //
+
+	// The storm output
+	Parameters mParameters;
 
     // Flag indicating whether we are in a storm or waiting for one
     bool mIsInStorm;
@@ -82,14 +173,17 @@ private:
     // The current progress of the storm, when in a storm: [0.0, 1.0]
     float mCurrentStormProgress;
 
+	// The timestamp at which we last did a storm update
+	GameWallClock::time_point mLastStormUpdateTimestamp;
+
 	// The CDF for thunders
 	float const mThunderCdf;
 
 	// The next timestamp at which to sample the Poisson distribution for deciding thunders
 	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;
 
-    // The timestamp at which we last did a storm update
-    GameWallClock::time_point mLastStormUpdateTimestamp;
+	// The current lightnings' state machines
+	std::vector<std::unique_ptr<BaseLightningStateMachine>> mLightnings;
 };
 
 }

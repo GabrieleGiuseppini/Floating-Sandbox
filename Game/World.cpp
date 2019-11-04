@@ -21,7 +21,7 @@ World::World(
     : mCurrentSimulationTime(0.0f)
     , mAllShips()
     , mStars()
-    , mStorm(gameEventDispatcher)
+    , mStorm(*this, gameEventDispatcher)
     , mWind(gameEventDispatcher)
     , mClouds()
     , mOceanSurface(gameEventDispatcher)

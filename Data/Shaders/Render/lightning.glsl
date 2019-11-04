@@ -14,6 +14,7 @@ in vec4 inLightning1; // Position (vec2), SpacePosition (vec2)
 in vec2 inLightning2; // BottomY, Progress
 
 // Outputs
+// TODOHERE
 out vec2 uv;
 
 void main()
@@ -33,8 +34,6 @@ void main()
 in vec2 uv;
 
 // Parameters        
-uniform float paramEffectiveAmbientLightIntensity;
-uniform float paramRainDensity;
 uniform float paramTime;
 
 void main()

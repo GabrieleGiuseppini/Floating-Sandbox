@@ -20,22 +20,47 @@ float constexpr PoissonSampleRate = 4.0f;
 GameWallClock::duration constexpr PoissonSampleDeltaT = std::chrono::duration_cast<GameWallClock::duration>(
 	std::chrono::duration<float>(1.0f / PoissonSampleRate));
 
-Storm::Storm(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-	: mGameEventHandler(std::move(gameEventDispatcher))
+Storm::Storm(
+	World & parentWorld,
+	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+	: mParentWorld(parentWorld)
+	, mGameEventHandler(std::move(gameEventDispatcher))
 	, mParameters()
 	, mIsInStorm(false)
 	, mCurrentStormProgress(0.0f)
+	, mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
 	// We want ThunderRate thunders every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
 	// hence we want 1/PoissonSampleRate thunders per sample interval
 	, mThunderCdf(1.0f - exp(-ThunderRate / PoissonSampleRate))
-	, mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
 	, mNextThunderPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
+	, mLightnings()
 {
 }
 
 void Storm::Update(GameParameters const & gameParameters)
 {
     auto const now = GameWallClock::GetInstance().Now();
+
+	//
+	// Lightnings state machines
+	//
+
+	for (auto it = mLightnings.begin(); it != mLightnings.end(); /*incremented in loop*/)
+	{
+		bool isCompleted = (*it)->Update(now, gameParameters);
+		if (isCompleted)
+		{
+			it = mLightnings.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	//
+	// Storm state machine
+	//
 
     if (!mIsInStorm)
     {
@@ -93,6 +118,8 @@ void Storm::Update(GameParameters const & gameParameters)
 	//
 	// Concentric stages
 	//
+
+	// TODO: use (just current) gameParameters.StormForce to modulate maxes
 
     if (mCurrentStormProgress < 0.5f)
     { 
@@ -182,6 +209,7 @@ void Storm::Update(GameParameters const & gameParameters)
 	// Lightning stage
 	//
 
+	// TODO
 
 
     //
@@ -214,13 +242,30 @@ void Storm::Update(GameParameters const & gameParameters)
 
 void Storm::Upload(Render::RenderContext & renderContext) const
 {
+	//
     // Upload ambient darkening
+	//
+
     renderContext.UploadStormAmbientDarkening(mParameters.AmbientDarkening);
 
+	//
 	// Upload rain
+	//
+
 	renderContext.UploadRain(mParameters.RainDensity);
 
-    // TODO: lightnings
+	//
+	// Upload lightnings
+	//
+
+	renderContext.UploadLightningsStart(mLightnings.size());
+
+	for (auto const & l : mLightnings)	
+	{
+		l->Upload(renderContext);
+	}
+
+	renderContext.UploadLightningsEnd();
 }
 
 void Storm::TriggerStorm()

@@ -564,9 +564,7 @@ public:
 	}
 
 
-	void UploadLightningsStart(
-		size_t backgroundLightningsCount,
-		size_t foregroundLightningsCount);
+	void UploadLightningsStart(size_t lightningCount);
 
 	inline void UploadBackgroundLightning(
 		float ndcX,
