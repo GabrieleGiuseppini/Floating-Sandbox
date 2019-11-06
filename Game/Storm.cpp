@@ -15,6 +15,9 @@ namespace Physics {
 // The number of thunders we want per second
 float constexpr ThunderRate = 1.0f / 10.0f;
 
+// The number of lightnings we want per second
+float constexpr LightningRate = 1.0f / 10.0f;
+
 // The number of poisson samples we perform in a second
 float constexpr PoissonSampleRate = 4.0f;
 GameWallClock::duration constexpr PoissonSampleDeltaT = std::chrono::duration_cast<GameWallClock::duration>(
@@ -29,10 +32,13 @@ Storm::Storm(
 	, mIsInStorm(false)
 	, mCurrentStormProgress(0.0f)
 	, mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
-	// We want ThunderRate thunders every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
-	// hence we want 1/PoissonSampleRate thunders per sample interval
+	// We want XRate things every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
+	// hence we want 1/PoissonSampleRate things per sample interval
 	, mThunderCdf(1.0f - exp(-ThunderRate / PoissonSampleRate))
+	, mLightningCdf(1.0f - exp(-LightningRate / PoissonSampleRate))
 	, mNextThunderPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
+	, mNextBackgroundLightningPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
+	, mNextForegroundLightningPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
 	, mLightnings()
 {
 }
@@ -88,13 +94,17 @@ void Storm::Update(GameParameters const & gameParameters)
     float constexpr AmbientDarkeningUpStart = 0.09f;    	
 	float constexpr RainUpStart = 0.09f;
     float constexpr CloudsUpEnd = 0.1f;
+	float constexpr BackgroundLightningStart = 0.11f;
     float constexpr WindUpEnd = 0.12f;
     float constexpr AmbientDarkeningUpEnd = 0.125f;
 	float constexpr RainUpEnd = 0.35f;
+	float constexpr ForegroundLightningStart = 0.4f;
         
+	float constexpr ForegroundLightningEnd = 0.7f;
 	float constexpr RainDownStart = 0.75f;
     float constexpr CloudsDownStart = 0.8f;
-	float constexpr ThunderEnd = 0.83f;
+	float constexpr BackgroundLightningEnd = 0.8f;
+	float constexpr ThunderEnd = 0.83f;	
     float constexpr CloudsDownEnd = 0.88f;
     float constexpr WindDownStart = 0.88f;	
 	float constexpr AmbientDarkeningDownStart = 0.9f;	
@@ -205,11 +215,55 @@ void Storm::Update(GameParameters const & gameParameters)
 		}
 	}
 
+
 	//
 	// Lightning stage
 	//
 
-	// TODO
+	// See if should trigger a background lightning
+	bool hasTriggeredLightning = false;
+	if (mCurrentStormProgress >= BackgroundLightningStart && mCurrentStormProgress <= BackgroundLightningEnd)
+	{
+		// Check if it's time to sample poisson
+		if (now >= mNextBackgroundLightningPoissonSampleTimestamp)
+		{
+			// Check if we should do a lightning
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mLightningCdf))
+			{
+				// Do background lightning!
+				DoTriggerBackgroundLightning(now);
+				hasTriggeredLightning = true;
+			}
+
+			// Schedule next poisson sampling
+			mNextBackgroundLightningPoissonSampleTimestamp = now + PoissonSampleDeltaT;
+		}
+	}
+
+	// See if should trigger a foreground lightning
+	if (!hasTriggeredLightning
+		&& mCurrentStormProgress >= ForegroundLightningStart && mCurrentStormProgress <= ForegroundLightningEnd)
+	{
+		// Check if it's time to sample poisson
+		if (now >= mNextForegroundLightningPoissonSampleTimestamp)
+		{
+			// Check if we should do a lightning
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mLightningCdf))
+			{
+				// Check whether we do have a target
+				auto const target = mParentWorld.FindSuitableLightningTarget();
+				if (!!target)
+				{
+					// Do foreground lightning!
+					DoTriggerForegroundLightning(now, *target);
+					hasTriggeredLightning = true;
+				}
+			}
+
+			// Schedule next poisson sampling
+			mNextForegroundLightningPoissonSampleTimestamp = now + PoissonSampleDeltaT;
+		}
+	}
 
 
     //
@@ -279,8 +333,19 @@ void Storm::TriggerStorm()
 
 void Storm::TriggerLightning()
 {
-	// TODOHERE
-	mGameEventHandler->OnLightning();
+	// Do a foreground lightning if we have a target and if we feel like doing it	
+	if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f))
+	{
+		auto target = mParentWorld.FindSuitableLightningTarget();
+		if (!!target)
+		{
+			DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), *target);
+			return;
+		}
+	}
+
+	// No luck, do a background lightning
+	DoTriggerBackgroundLightning(GameWallClock::GetInstance().Now());
 }
 
 void Storm::TurnStormOn(GameWallClock::time_point now)
@@ -297,6 +362,37 @@ void Storm::TurnStormOff()
     mIsInStorm = false;
 
 	mGameEventHandler->OnStormEnd();
+}
+
+void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
+{
+	// Choose NDC x
+	float const ndcX = GameRandomEngine::GetInstance().GenerateUniformReal(-0.95f, +0.95f);
+
+	// Enqueue state machine
+	mLightnings.emplace_back(
+		std::make_unique<BackgroundLightningStateMachine>(
+			now,
+			ndcX,
+			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal()));
+
+	// Notify
+	mGameEventHandler->OnLightning();
+}
+
+void Storm::DoTriggerForegroundLightning(
+	GameWallClock::time_point now,
+	vec2f const & targetWorldPosition)
+{
+	// Enqueue state machine
+	mLightnings.emplace_back(
+		std::make_unique<ForegroundLightningStateMachine>(
+			now,
+			targetWorldPosition,
+			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal()));
+
+	// Notify
+	mGameEventHandler->OnLightning();
 }
 
 }

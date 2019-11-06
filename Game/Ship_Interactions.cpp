@@ -30,7 +30,7 @@ namespace Physics {
 
 std::optional<ElementIndex> Ship::PickPointToMove(
     vec2f const & pickPosition,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters) const
 {
     //
     // Find closest non-ephemeral, non-orphaned point within the radius
@@ -1169,6 +1169,20 @@ bool Ship::QueryNearestPointAt(
     }
 
     return false;
+}
+
+std::optional<vec2f> Ship::FindSuitableLightningTarget() const
+{
+	// TODOHERE
+	return mPoints.GetPosition(0);
+}
+
+void Ship::ApplyLightning(
+	vec2f const & targetPos,
+	GameParameters const & gameParameters)
+{
+	// TODOHERE
+	LogMessage("ApplyLighthning: ", targetPos.toString());
 }
 
 }

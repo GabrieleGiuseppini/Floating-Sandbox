@@ -568,14 +568,54 @@ public:
 
 	inline void UploadBackgroundLightning(
 		float ndcX,
-		float progress)
+		float progress,
+		float personalitySeed)
 	{
 		// TODOHERE
+		mLightningVertexBuffer.emplace_back(
+			vec2f(-0.1f, 1.0f),
+			vec2f(-0.1f, 1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+		mLightningVertexBuffer.emplace_back(
+			vec2f(-0.1f, -1.0f),
+			vec2f(-0.1f, -1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+		mLightningVertexBuffer.emplace_back(
+			vec2f(0.1f, -1.0f),
+			vec2f(0.1f, -1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+		mLightningVertexBuffer.emplace_back(
+			vec2f(-0.1f, -1.0f),
+			vec2f(-0.1f, -1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+		mLightningVertexBuffer.emplace_back(
+			vec2f(0.1f, -1.0f),
+			vec2f(0.1f, -1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+		mLightningVertexBuffer.emplace_back(
+			vec2f(0.1f, 1.0f),
+			vec2f(0.1f, 1.0f),
+			0.0f,
+			progress,
+			personalitySeed);
+
+		mBackgroundLightningVertexCount += 6;
 	}
 
 	inline void UploadForegroundLightning(
 		vec2f tipWorldCoordinates,
-		float progress)
+		float progress,
+		float personalitySeed)
 	{
 		// TODOHERE
 	}
@@ -1395,6 +1435,7 @@ private:
 		float ndcX,
 		float ndcBottomY,
 		float progress,
+		float personalitySeed,
 		size_t & vertexBufferIndex)
 	{
 		// TODOHERE
@@ -1541,18 +1582,21 @@ private:
 	{
 		vec2f ndc;
 		vec2f spacePosition;
-		float bottomY;
+		float bottomY;		
 		float progress;
+		float personalitySeed;
 
 		LightningVertex(
 			vec2f _ndc,
 			vec2f _spacePosition,
 			float _bottomY,
-			float _progress)
+			float _progress,
+			float _personalitySeed)
 			: ndc(_ndc)
 			, spacePosition(_spacePosition)
 			, bottomY(_bottomY)
 			, progress(_progress)
+			, personalitySeed(_personalitySeed)
 		{}
 	};
 

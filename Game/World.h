@@ -74,7 +74,8 @@ public:
     inline OceanFloorTerrain const & GetOceanFloorTerrain() const
     {
         return mOceanFloor.GetTerrain();
-    }
+    }	
+
 
     //
     // Interactions
@@ -83,7 +84,7 @@ public:
     void PickPointToMove(
         vec2f const & pickPosition,
         std::optional<ElementId> & elementId,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters) const;
 
     void MoveBy(
         ElementId elementId,
@@ -209,7 +210,13 @@ public:
 
     void QueryNearestPointAt(
         vec2f const & targetPos,
-        float radius) const;
+        float radius) const;	
+
+	std::optional<vec2f> FindSuitableLightningTarget() const;
+
+	void ApplyLightning(
+		vec2f const & targetPos,
+		GameParameters const & gameParameters);
 
     void TriggerTsunami();
 

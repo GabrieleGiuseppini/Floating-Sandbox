@@ -76,7 +76,7 @@ public:
 
     std::optional<ElementIndex> PickPointToMove(
         vec2f const & pickPosition,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters) const;
 
     void MoveBy(
         ElementIndex pointElementIndex,
@@ -197,6 +197,12 @@ public:
     bool QueryNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
+
+	std::optional<vec2f> FindSuitableLightningTarget() const;
+
+	void ApplyLightning(
+		vec2f const & targetPos,
+		GameParameters const & gameParameters);
 
 public:
 

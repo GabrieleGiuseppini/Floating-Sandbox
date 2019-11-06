@@ -1095,8 +1095,10 @@ Render:
 				+ Others random with same distribution as wind gusts
 				+ Events
 				+ Sounds (N, one shot)
-			- Lightnings
-				- TODO
+			= Lightnings
+				= Storm state machine
+					- SM's need two progresses: development and duration (the latter not necessarily a member, just
+					  a timestamp check)
 				= Shader
 					= Txt
 					- RenderCore and glsl
@@ -1112,15 +1114,13 @@ Render:
 				+ Shader
 		+ Wind volume: start with storm
 			+ Need additional arg to wind event
-		- Triggers lightnings:
-			- Communicated to RenderContext by Storms::Upload(...), for each step of the lightning state machine
-			- TBD: Storms' lightning state machine should hit Ship (for fire)
-				- What about: via handler owned (implemented) and passed by World?
-			- Shader:
-				- TBD
 		+ Manual storm trigger
+		+ Manual lightning trigger
+		- Storm"~Strength"
+			- GameParameters
+			- Use at Storm
 		- SettingsDialog: 
-			- Four parameters
+			- Five parameters
 		- Rain extinguishes fire
 		- Cleanup:
 			- Do perf analysis - Andrea Gail slows down a lot

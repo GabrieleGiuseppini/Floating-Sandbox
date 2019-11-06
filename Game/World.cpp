@@ -76,7 +76,7 @@ size_t World::GetShipPointCount(ShipId shipId) const
 void World::PickPointToMove(
     vec2f const & pickPosition,
     std::optional<ElementId> & elementId,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters) const
 {
     for (auto & ship : mAllShips)
     {
@@ -520,6 +520,30 @@ void World::QueryNearestPointAt(
         if ((*it)->QueryNearestPointAt(targetPos, radius))
             return;
     }
+}
+
+std::optional<vec2f> World::FindSuitableLightningTarget() const
+{
+	// Try all ships until a target is found
+	for (auto const & ship : mAllShips)
+	{
+		auto target = ship->FindSuitableLightningTarget();
+		if (!!target)
+			return target;
+	}
+
+	return std::nullopt;
+}
+
+void World::ApplyLightning(
+	vec2f const & targetPos,
+	GameParameters const & gameParameters)
+{
+	// Apply to all ships
+	for (auto & ship : mAllShips)
+	{
+		ship->ApplyLightning(targetPos, gameParameters);
+	}
 }
 
 void World::TriggerTsunami()

@@ -72,6 +72,11 @@ private:
     void TurnStormOn(GameWallClock::time_point now);
     void TurnStormOff();
 
+	void DoTriggerBackgroundLightning(GameWallClock::time_point now);
+	void DoTriggerForegroundLightning(
+		GameWallClock::time_point now,
+		vec2f const & targetWorldPosition);
+
 private:
 
 	World & mParentWorld;
@@ -106,12 +111,16 @@ private:
 
 	protected:
 
-		BaseLightningStateMachine(GameWallClock::time_point startTimestamp)
+		BaseLightningStateMachine(
+			GameWallClock::time_point startTimestamp,
+			float personalitySeed)
 			: mProgress(0.0f)
+			, mPersonalitySeed(personalitySeed)
 			, mStartTimestamp(startTimestamp)
 		{}
 
 		float mProgress;
+		float const mPersonalitySeed;
 
 	private:
 
@@ -124,14 +133,15 @@ private:
 
 		BackgroundLightningStateMachine(
 			GameWallClock::time_point startTimestamp,
-			float ndcX)
-			: BaseLightningStateMachine(startTimestamp)
+			float ndcX,
+			float personalitySeed)
+			: BaseLightningStateMachine(startTimestamp, personalitySeed)
 			, mNdcX(ndcX)
 		{}
 
 		void Upload(Render::RenderContext & renderContext) const override
 		{
-			renderContext.UploadBackgroundLightning(mNdcX, mProgress);
+			renderContext.UploadBackgroundLightning(mNdcX, mProgress, mPersonalitySeed);
 		}
 
 	private:
@@ -145,14 +155,15 @@ private:
 
 		ForegroundLightningStateMachine(
 			GameWallClock::time_point startTimestamp,
-			vec2f targetWorldPosition)
-			: BaseLightningStateMachine(startTimestamp)
+			vec2f targetWorldPosition,
+			float personalitySeed)
+			: BaseLightningStateMachine(startTimestamp, personalitySeed)
 			, mTargetWorldPosition(targetWorldPosition)
 		{}
 
 		void Upload(Render::RenderContext & renderContext) const override
 		{
-			renderContext.UploadForegroundLightning(mTargetWorldPosition, mProgress);
+			renderContext.UploadForegroundLightning(mTargetWorldPosition, mProgress, mPersonalitySeed);
 		}
 
 	private:
@@ -179,8 +190,13 @@ private:
 	// The CDF for thunders
 	float const mThunderCdf;
 
-	// The next timestamp at which to sample the Poisson distribution for deciding thunders
+	// The CDF for lightnings
+	float const mLightningCdf;
+
+	// The next timestamp at which to sample the Poisson distribution for deciding various things
 	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;
+	GameWallClock::time_point mNextBackgroundLightningPoissonSampleTimestamp;
+	GameWallClock::time_point mNextForegroundLightningPoissonSampleTimestamp;
 
 	// The current lightnings' state machines
 	std::vector<std::unique_ptr<BaseLightningStateMachine>> mLightnings;

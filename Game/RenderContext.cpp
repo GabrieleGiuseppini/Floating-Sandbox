@@ -288,7 +288,7 @@ RenderContext::RenderContext(
 	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning1));
 	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning1), 4, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)0);
 	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning2));
-	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning2), 2, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)(4 * sizeof(float)));
+	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning2), 3, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)(4 * sizeof(float)));
 	CheckOpenGLError();
 
 	glBindVertexArray(0);
@@ -878,7 +878,7 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 		glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
 		auto const nVertices = 6 * lightningCount;
-		if (mLightningVertexBuffer.size() != nVertices)
+		if (nVertices > mLightningVertexBuffer.size())
 		{
 			glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
 			CheckOpenGLError();
@@ -981,7 +981,6 @@ void RenderContext::RenderSkyEnd()
 		mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
 		// Set time parameter
-		// TODOHERE: really needed?
 		mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
 			ProgramType::Lightning,
 			GameWallClock::GetInstance().NowAsFloat());
@@ -1320,7 +1319,6 @@ void RenderContext::RenderForegroundLightnings()
 	mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
 	// Set time parameter
-	// TODOHERE: really needed?
 	mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
 		ProgramType::Lightning,
 		GameWallClock::GetInstance().NowAsFloat());
