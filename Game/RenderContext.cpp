@@ -980,11 +980,6 @@ void RenderContext::RenderSkyEnd()
 
 		mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-		// Set time parameter
-		mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-			ProgramType::Lightning,
-			GameWallClock::GetInstance().NowAsFloat());
-
 		LogMessage("TODOHERE:BG: bg#=", mBackgroundLightningVertexCount, " fg#=", mForegroundLightningVertexCount,
 			" bufSize=", mLightningVertexBuffer.size(), " bufMaxSize=", mLightningVertexBuffer.max_size());
 
@@ -1320,11 +1315,6 @@ void RenderContext::RenderForegroundLightnings()
 	glBindVertexArray(*mLightningVAO);
 
 	mShaderManager->ActivateProgram<ProgramType::Lightning>();
-
-	// Set time parameter
-	mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-		ProgramType::Lightning,
-		GameWallClock::GetInstance().NowAsFloat());
 
 	glDrawArrays(GL_TRIANGLES, 
 		static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount), 
