@@ -42,7 +42,7 @@ void main()
     //
 
     float t = 1. - abs(uv.x - .2) / .2;
-    t *= 1. - abs(uv.y - .2) / .2;
+    t += 1. - abs(uv.y - .2) / .2;
 
     t *= paramTime / paramTime;
     

@@ -878,13 +878,13 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 		glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
 		auto const nVertices = 6 * lightningCount;
-		if (nVertices > mLightningVertexBuffer.size())
+		if (nVertices > mLightningVertexBuffer.max_size())
 		{
 			glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
 			CheckOpenGLError();
 		}
 
-		mLightningVertexBuffer.map(nVertices);
+		mLightningVertexBuffer.map_and_fill(nVertices);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -984,6 +984,9 @@ void RenderContext::RenderSkyEnd()
 		mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
 			ProgramType::Lightning,
 			GameWallClock::GetInstance().NowAsFloat());
+
+		LogMessage("TODOHERE:BG: bg#=", mBackgroundLightningVertexCount, " fg#=", mForegroundLightningVertexCount,
+			" bufSize=", mLightningVertexBuffer.size(), " bufMaxSize=", mLightningVertexBuffer.max_size());
 
 		glDrawArrays(GL_TRIANGLES, 
 			0, 
@@ -1324,7 +1327,7 @@ void RenderContext::RenderForegroundLightnings()
 		GameWallClock::GetInstance().NowAsFloat());
 
 	glDrawArrays(GL_TRIANGLES, 
-		static_cast<GLsizei>(mBackgroundLightningVertexCount), 
+		static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount), 
 		static_cast<GLsizei>(mForegroundLightningVertexCount));
 	CheckOpenGLError();
 }

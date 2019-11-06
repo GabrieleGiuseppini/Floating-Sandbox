@@ -103,6 +103,11 @@ public:
         return mSize;
     }
 
+	inline size_t max_size() const noexcept
+	{
+		return mAllocatedSize;
+	}
+
 private:
 
     void * mMappedBuffer;

@@ -239,6 +239,16 @@ public:
     // Coordinate transformations
     //
 
+	/*
+	 * Equivalent of the transformation we usually perform in vertex shaders.
+	 */
+	inline vec2f WorldToNdc(vec2f const & worldCoordinates)
+	{
+		return vec2f(
+			worldCoordinates.x * mKernelOrthoMatrix[0][0] + mKernelOrthoMatrix[3][0],
+			worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
+	}
+
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
     {
         return vec2f(

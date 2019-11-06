@@ -571,43 +571,16 @@ public:
 		float progress,
 		float personalitySeed)
 	{
-		// TODOHERE
-		mLightningVertexBuffer.emplace_back(
-			vec2f(-0.1f, 1.0f),
-			vec2f(-0.1f, 1.0f),
-			0.0f,
+		// Get NDC coordinates of world y=0 (i.e. sea level)
+		float const ndcSeaLevel = mViewModel.WorldToNdc(vec2f::zero()).y;
+
+		// Store vertices
+		StoreLightningVertices(
+			ndcX,
+			ndcSeaLevel,
 			progress,
-			personalitySeed);
-		mLightningVertexBuffer.emplace_back(
-			vec2f(-0.1f, -1.0f),
-			vec2f(-0.1f, -1.0f),
-			0.0f,
-			progress,
-			personalitySeed);
-		mLightningVertexBuffer.emplace_back(
-			vec2f(0.1f, -1.0f),
-			vec2f(0.1f, -1.0f),
-			0.0f,
-			progress,
-			personalitySeed);
-		mLightningVertexBuffer.emplace_back(
-			vec2f(-0.1f, -1.0f),
-			vec2f(-0.1f, -1.0f),
-			0.0f,
-			progress,
-			personalitySeed);
-		mLightningVertexBuffer.emplace_back(
-			vec2f(0.1f, -1.0f),
-			vec2f(0.1f, -1.0f),
-			0.0f,
-			progress,
-			personalitySeed);
-		mLightningVertexBuffer.emplace_back(
-			vec2f(0.1f, 1.0f),
-			vec2f(0.1f, 1.0f),
-			0.0f,
-			progress,
-			personalitySeed);
+			personalitySeed,
+			mBackgroundLightningVertexCount);
 
 		mBackgroundLightningVertexCount += 6;
 	}
@@ -617,7 +590,18 @@ public:
 		float progress,
 		float personalitySeed)
 	{
-		// TODOHERE
+		// Get NDC coordinates of tip point
+		vec2f const ndcTip = mViewModel.WorldToNdc(tipWorldCoordinates);
+
+		// Store vertices		
+		StoreLightningVertices(
+			ndcTip.x,
+			ndcTip.y,
+			progress,
+			personalitySeed,
+			mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 1) * 6);
+
+		mForegroundLightningVertexCount += 6;
 	}
 
 	void UploadLightningsEnd();
@@ -1436,88 +1420,76 @@ private:
 		float ndcBottomY,
 		float progress,
 		float personalitySeed,
-		size_t & vertexBufferIndex)
+		size_t vertexBufferIndex)
 	{
-		// TODOHERE
+		if (ndcBottomY > 1.0)
+			return; // Above top, discard
 
-		/*
-		float const leftX = -frame.FrameMetadata.AnchorWorldX;
-		float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
-		float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorWorldY;
-		float const bottomY = -frame.FrameMetadata.AnchorWorldY;
+		float constexpr LightningQuadWidth = 0.3f; // TODOTEST
+		float const leftX = ndcX - LightningQuadWidth / 2.0f;
+		float const rightX = ndcX + LightningQuadWidth / 2.0f;
+		float const topY = 1.0f;
+		float const bottomY = ndcBottomY;
 
 		// Append vertices - two triangles
 
 		// Triangle 1
 
 		// Top-left
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(leftX, topY),
-			vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
+			vec2f(-1.0f, topY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 
 		// Top-Right
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(rightX, topY),
-			frame.TextureCoordinatesTopRight,
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
+			vec2f(1.0f, topY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 
 		// Bottom-left
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(leftX, bottomY),
-			frame.TextureCoordinatesBottomLeft,
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
+			vec2f(-1.0f, bottomY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 
 		// Triangle 2
 
 		// Top-Right
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(rightX, topY),
-			frame.TextureCoordinatesTopRight,
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
+			vec2f(1.0f, topY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 
 		// Bottom-left
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(leftX, bottomY),
-			frame.TextureCoordinatesBottomLeft,
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
+			vec2f(-1.0f, bottomY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 
 		// Bottom-right
-		vertexBuffer.emplace_back(
-			position,
+		mLightningVertexBuffer.emplace_at(
+			vertexBufferIndex++,
 			vec2f(rightX, bottomY),
-			vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
-			static_cast<float>(planeId),
-			scale,
-			-angleCw,
-			alpha,
-			lightSensitivity);
-		*/
+			vec2f(1.0f, bottomY),
+			ndcBottomY,
+			progress,
+			personalitySeed);
 	}
 
 private:
