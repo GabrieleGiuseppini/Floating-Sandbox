@@ -54,8 +54,10 @@ void main()
 {
     #define ZigZagRate 8.
     #define ZigZagDensity1 .105   
-    #define ZigZagDensity2 .65
-    
+    #define ZigZagAmplitude1 .2
+    #define ZigZagDensity2 1.1
+    #define ZigZagAmplitude2 .2 * .3
+        
     float randomSeed = personalitySeed * 77.7;
             
     // Get noise (2 octaves) for this fragment's y and time
@@ -65,8 +67,8 @@ void main()
         
     // Calculate deviation based on noise
     float deviation = 
-        fragmentNoise1 * .08
-        + fragmentNoise2 * .08 * .2;
+        fragmentNoise1 * ZigZagAmplitude1
+        + fragmentNoise2 * ZigZagAmplitude2;
     
     // Calculate the bottom Y of the lightning at this moment:
     // - Low progress: close to the top, i.e. 1.
@@ -84,13 +86,14 @@ void main()
     float thickness = exp(k * abs(spacePosition.x + deviation)); // Deviate laterally
     
     // Make pointy at bottom
-    thickness *= smoothstep(variableBottomY, variableBottomY + .2, spacePosition.y);
+    thickness *= smoothstep(variableBottomY - .01, variableBottomY + .2, spacePosition.y);
         
     
     //
     // Emit
     //
     
-    vec3 col1 = mix(vec3(0.0, 0.0, 0.0), vec3(0.6, 0.8, 1.0), thickness);
+    //vec3 col1 = mix(vec3(0.0, 0.0, 0.0), vec3(0.6, 0.8, 1.0), thickness);
+    vec3 col1 = vec3(0.6, 0.8, 1.0);
     gl_FragColor = vec4(col1, thickness);
 } 

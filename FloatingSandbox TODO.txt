@@ -1097,11 +1097,11 @@ Render:
 				+ Sounds (N, one shot)
 			= Lightnings
 				= Storm state machine
-					- SM's need two progresses: development and duration (the latter not necessarily a member, just
-					  a timestamp check)
+					- Finalize duration
+					- See crash
 				= Shader
-					= Txt
-					- RenderCore and glsl
+					- Save one attribute (space Y, which is == position Y)
+					- Figure out daylight colors
 				- Halo
 					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm
