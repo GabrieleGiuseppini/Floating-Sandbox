@@ -1098,7 +1098,6 @@ Render:
 			= Lightnings
 				= Storm state machine
 					- Finalize duration
-					- See crash
 				= Shader
 					- Save one attribute (space Y, which is == position Y)
 					- Figure out daylight colors
