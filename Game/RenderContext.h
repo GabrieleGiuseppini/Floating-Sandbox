@@ -599,7 +599,7 @@ public:
 			ndcTip.y,
 			progress,
 			personalitySeed,
-			mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 1) * 6);
+			mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
 
 		mForegroundLightningVertexCount += 6;
 	}

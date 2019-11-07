@@ -103,7 +103,7 @@ SoundController::SoundController(
 			throw GameException("Music filename \"" + musicName + "\" is not recognized");
 		}
 
-		assert(musicNameMatch.size() == 1 + 3);
+		assert(musicNameMatch.size() == 1 + 2);
 
 		// Parse Size
 		SizeType sizeType = StrToSizeType(musicNameMatch[2].str());

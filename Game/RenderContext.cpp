@@ -1452,6 +1452,10 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
+	mShaderManager->ActivateProgram<ProgramType::Lightning>();
+	mShaderManager->SetProgramParameter<ProgramType::Lightning, ProgramParameterType::EffectiveAmbientLightIntensity>(
+		mEffectiveAmbientLightIntensity);
+
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
     mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
