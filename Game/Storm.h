@@ -109,6 +109,7 @@ private:
 		std::optional<vec2f> const TargetWorldPosition;
 		float Progress;
 		float RenderProgress;
+		bool HasNotifiedTouchdown;
 
 		LightningStateMachine(
 			LightningType type,
@@ -123,6 +124,7 @@ private:
 			, TargetWorldPosition(targetWorldPosition)
 			, Progress(0.0f)
 			, RenderProgress(0.0f)
+			, HasNotifiedTouchdown(false)
 		{}
 	};
 

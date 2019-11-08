@@ -399,10 +399,11 @@ void Storm::UpdateLightnings(
 		// Complete vertical development at t=0.3
 		it->RenderProgress = SmoothStep(-0.1f, 0.3f, it->Progress);
 
-		if (it->RenderProgress == 1.0f)
+		if (it->RenderProgress == 1.0f
+			&& !it->HasNotifiedTouchdown)
 		{
 			//
-			// Notify, as many times as necessary
+			// Notify
 			//
 
 			mGameEventHandler->OnLightningTouchdown();
@@ -412,6 +413,8 @@ void Storm::UpdateLightnings(
 				assert(!!(it->TargetWorldPosition));
 				mParentWorld.ApplyLightning(*(it->TargetWorldPosition), gameParameters);
 			}
+
+			it->HasNotifiedTouchdown = true;
 		}
 
 		if (it->Progress == 1.0f)
