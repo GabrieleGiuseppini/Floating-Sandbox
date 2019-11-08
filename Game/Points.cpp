@@ -1133,7 +1133,9 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Sparkle:
             {
-                vec2f const velocityVector = -GetVelocity(pointIndex) / GameParameters::MaxSparkleParticlesVelocity;
+                vec2f const velocityVector = 
+					-GetVelocity(pointIndex) 
+					/ GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
                 renderContext.UploadShipSparkle(
                     shipId,

@@ -202,6 +202,7 @@ public:
 
 	void ApplyLightning(
 		vec2f const & targetPos,
+		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
 public:
@@ -318,12 +319,17 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void GenerateSparkles(
+    void GenerateSparklesForCut(
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,
         vec2f const & cutDirectionEndPos,
         float currentSimulationTime,
         GameParameters const & gameParameters);
+
+	void GenerateSparklesForLightning(
+		ElementIndex pointElementIndex,
+		float currentSimulationTime,
+		GameParameters const & gameParameters);
 
     template<typename TForceField, typename... TArgs>
     void AddForceField(TArgs&&... args)

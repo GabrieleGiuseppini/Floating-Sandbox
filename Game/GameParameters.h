@@ -153,13 +153,20 @@ struct GameParameters
     static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(400);
     static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(900);
 
-    bool DoGenerateSparkles;
-    static constexpr unsigned int MinSparkleParticlesPerEvent = 4;
-    static constexpr unsigned int MaxSparkleParticlesPerEvent = 10;
-    static float constexpr MinSparkleParticlesVelocity = 75.0f;
-    static float constexpr MaxSparkleParticlesVelocity = 150.0f;
-    static constexpr std::chrono::milliseconds MinSparkleParticlesLifetime = std::chrono::milliseconds(200);
-    static constexpr std::chrono::milliseconds MaxSparkleParticlesLifetime = std::chrono::milliseconds(500);
+    bool DoGenerateSparklesForCuts;
+    static constexpr unsigned int MinSparkleParticlesForCutEvent = 4;
+    static constexpr unsigned int MaxSparkleParticlesForCutEvent = 10;
+    static float constexpr MinSparkleParticlesForCutVelocity = 75.0f;
+    static float constexpr MaxSparkleParticlesForCutVelocity = 150.0f;
+    static constexpr std::chrono::milliseconds MinSparkleParticlesForCutLifetime = std::chrono::milliseconds(200);
+    static constexpr std::chrono::milliseconds MaxSparkleParticlesForCutLifetime = std::chrono::milliseconds(500);
+
+	static constexpr unsigned int MinSparkleParticlesForLightningEvent = 4;
+	static constexpr unsigned int MaxSparkleParticlesForLightningEvent = 10;
+	static float constexpr MinSparkleParticlesForLightningVelocity = 75.0f;
+	static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
+	static constexpr std::chrono::milliseconds MinSparkleParticlesForLightningLifetime = std::chrono::milliseconds(200);
+	static constexpr std::chrono::milliseconds MaxSparkleParticlesForLightningLifetime = std::chrono::milliseconds(500);
 
     bool DoGenerateAirBubbles;
     float CumulatedIntakenWaterThresholdForAirBubbles;
@@ -221,6 +228,10 @@ struct GameParameters
 	float LightningDuration; // Seconds
 	static float constexpr MinLightningDuration = 0.1f;
 	static float constexpr MaxLightningDuration = 5.0f;
+
+	float LightningBlastRadius;
+
+	float LightningBlastHeat; // KJoules/sec
 
 	bool DoRainWithStorm;
 

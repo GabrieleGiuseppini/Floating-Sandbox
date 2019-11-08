@@ -333,9 +333,9 @@ void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnGenerateSparklesCheckBoxClick(wxCommandEvent & event)
+void SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event)
 {
-	mLiveSettings.SetValue(GameSettings::DoGenerateSparkles, event.IsChecked());
+	mLiveSettings.SetValue(GameSettings::DoGenerateSparklesForCuts, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
@@ -2525,11 +2525,11 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                     checkboxesSizer->AddSpacer(5);
 
-                    mGenerateSparklesCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
-                    mGenerateSparklesCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
-					mGenerateSparklesCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesCheckBoxClick, this);
+                    mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
+					mGenerateSparklesForCutsCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
+					mGenerateSparklesForCutsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick, this);
 
-                    checkboxesSizer->Add(mGenerateSparklesCheckBox, 0, wxALIGN_LEFT, 0);
+                    checkboxesSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
 
                     checkboxesSizer->AddStretchSpacer(1);
                 }
@@ -3649,7 +3649,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
 
-    mGenerateSparklesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparkles));
+    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 

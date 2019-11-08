@@ -1096,21 +1096,26 @@ Render:
 				+ Events
 				+ Sounds (N, one shot)
 			= Lightnings
-				= Storm state machine
+				+ Storm state machine
 					+ Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
 						+ In which case, externalize state machine as we need to emit event
 						  during progress
 						+ Upload also renderProgress
 							+ Save one attribute (space Y, which is == position Y)
-					= Finalize duration
-					- Rename OnLightningTouchdown to OnLightning, if emission is ok
-				- Storm damage
+					+ Finalize duration
+				= Candidate choice: 
+					+ Exclude orphaned points 
+					- Candidates should be further apart
+				= Storm damage
+					+ See if speed of sparkles is ok
+					+ Heat
+					- See how it sounds if only first breakage makes sound
 				+ Shader				
 					+ Figure out daylight colors
 					+ Review zig-zag density (before & after duration finalized)
-				- Test:
-					- Lightning above top
-					- Lightning touching well below
+				+ Test:
+					+ Lightning above top
+					+ Lightning touching well below
 				- Halo
 					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm
@@ -1130,6 +1135,7 @@ Render:
 			- Use at Storm
 		- SettingsDialog: 
 			- All interesting parameters
+		- Storm: complete auto-triggering
 		- Rain extinguishes fire
 		- Cleanup:
 			- Do perf analysis - Andrea Gail slows down a lot

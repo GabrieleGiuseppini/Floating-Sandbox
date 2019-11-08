@@ -43,7 +43,7 @@ private:
 
     void OnUltraViolentCheckBoxClick(wxCommandEvent & event);
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
-    void OnGenerateSparklesCheckBoxClick(wxCommandEvent & event);
+    void OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
@@ -150,7 +150,7 @@ private:
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
-    wxCheckBox * mGenerateSparklesCheckBox;
+    wxCheckBox * mGenerateSparklesForCutsCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
     SliderControl<float> * mAirBubbleDensitySlider;
 

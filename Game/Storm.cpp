@@ -43,7 +43,9 @@ Storm::Storm(
 {
 }
 
-void Storm::Update(GameParameters const & gameParameters)
+void Storm::Update(
+	float currentSimulationTime,
+	GameParameters const & gameParameters)
 {
     auto const now = GameWallClock::GetInstance().Now();
 
@@ -51,7 +53,7 @@ void Storm::Update(GameParameters const & gameParameters)
 	// Lightnings state machines
 	//
 
-	UpdateLightnings(now, gameParameters);
+	UpdateLightnings(now, currentSimulationTime, gameParameters);
 
 
 	//
@@ -361,7 +363,7 @@ void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
 		std::nullopt);
 
 	// Notify
-	mGameEventHandler->OnLightningTouchdown();
+	mGameEventHandler->OnLightning();
 }
 
 void Storm::DoTriggerForegroundLightning(
@@ -377,11 +379,12 @@ void Storm::DoTriggerForegroundLightning(
 		targetWorldPosition);
 
 	// Notify
-	mGameEventHandler->OnLightningTouchdown();
+	mGameEventHandler->OnLightning();
 }
 
 void Storm::UpdateLightnings(
 	GameWallClock::time_point now,
+	float currentSimulationTime,
 	GameParameters const & gameParameters)
 {
 	for (auto it = mLightnings.begin(); it != mLightnings.end(); /*incremented in loop*/)
@@ -404,7 +407,10 @@ void Storm::UpdateLightnings(
 			{
 				// Notify touchdown on world
 				assert(!!(it->TargetWorldPosition));
-				mParentWorld.ApplyLightning(*(it->TargetWorldPosition), gameParameters);
+				mParentWorld.ApplyLightning(
+					*(it->TargetWorldPosition), 
+					currentSimulationTime,
+					gameParameters);
 			}
 
 			it->HasNotifiedTouchdown = true;

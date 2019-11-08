@@ -713,7 +713,7 @@ void Ship::SawThrough(
                 if (isMetal)
                 {
                     // Emit sparkles
-                    GenerateSparkles(
+                    GenerateSparklesForCut(
                         springIndex,
                         startPos,
                         endPos,
@@ -817,13 +817,13 @@ bool Ship::ExtinguishFireAt(
                 //
 
                 float const strength = 1.0f - SmoothStep(
-                    0.0f,
+					squareRadius / 2.0f,
                     squareRadius,
                     pointSquareDistance);
 
                 mPoints.AddHeat(
                     pointIndex,
-                    -750000.0f * strength);
+                    -800000.0f * strength);
             }
 
             // Remember we've found a point
@@ -1184,7 +1184,9 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 
 	for (auto pointIndex : mPoints.NonEphemeralPoints())
 	{
-		if (mPoints.IsActive(pointIndex))
+		// Non-deleted, non-orphaned point
+		if (mPoints.IsActive(pointIndex)
+			&& !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
 		{
 			auto const & pos = mPoints.GetPosition(pointIndex);
 
@@ -1219,10 +1221,100 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 
 void Ship::ApplyLightning(
 	vec2f const & targetPos,
+	float currentSimulationTime,
 	GameParameters const & gameParameters)
 {
-	// TODOHERE
-	LogMessage("ApplyLighthning: ", targetPos.toString());
+	float const searchRadius = 
+		gameParameters.LightningBlastRadius
+		* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+	// Note: we don't consider the simulation dt here as the lightning touch-down
+	// happens in one frame only, rather than being splattered across multiple frames
+	float const lightningHeat =
+		gameParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
+		* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+	//
+	// Find the (non-ephemeral) points in the radius
+	//
+
+	float const searchSquareRadius = searchRadius * searchRadius;
+	float const searchSquareRadiusBlast = searchSquareRadius / 2.0f;
+	float const searchSquareRadiusHeat = searchSquareRadius;
+
+	for (auto pointIndex : mPoints.NonEphemeralPoints())
+	{
+		float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+
+		bool wasDestroyed = false;
+
+		if (squareDistance < searchSquareRadiusBlast)
+		{
+			//
+			// Calculate destroy probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
+			// however, we always destroy if we're in a very small fraction of the radius
+			//
+
+			float destroyProbability =
+				(searchSquareRadiusBlast < 1.0f)
+				? 1.0f
+				: (1.0f - (squareDistance / searchSquareRadiusBlast)) * (1.0f - (squareDistance / searchSquareRadiusBlast));
+
+			if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+			{
+				//
+				// Destroy
+				//
+
+				// Choose a detach velocity - using the same distribution as Debris
+				vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+					GameParameters::MinDebrisParticlesVelocity,
+					GameParameters::MaxDebrisParticlesVelocity);
+
+				// Detach
+				mPoints.Detach(
+					pointIndex,
+					detachVelocity,
+					Points::DetachOptions::GenerateDebris
+					| Points::DetachOptions::FireDestroyEvent,
+					currentSimulationTime,
+					gameParameters);
+
+				// Generate sparkles
+				GenerateSparklesForLightning(
+					pointIndex,
+					currentSimulationTime,
+					gameParameters);
+
+				wasDestroyed = true;
+			}
+		}
+
+		if (!wasDestroyed
+			&& squareDistance < searchSquareRadiusHeat)
+		{
+			//
+			// Apply heat
+			//
+
+			// Smooth heat out for radius
+			float const smoothing = 1.0f - SmoothStep(
+				searchSquareRadiusHeat * 3.0f / 4.0f,
+				searchSquareRadiusHeat,
+				squareDistance);
+
+			// Calc temperature delta
+			// T = Q/HeatCapacity
+			float deltaT =
+				lightningHeat * smoothing
+				/ mPoints.GetMaterialHeatCapacity(pointIndex);
+
+			// Increase/lower temperature
+			mPoints.SetTemperature(
+				pointIndex,
+				std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+		}
+	}
 }
 
 }

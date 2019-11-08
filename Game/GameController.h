@@ -444,8 +444,8 @@ public:
     bool GetDoGenerateDebris() const override { return mGameParameters.DoGenerateDebris; }
     void SetDoGenerateDebris(bool value) override { mGameParameters.DoGenerateDebris = value; }
 
-    bool GetDoGenerateSparkles() const override { return mGameParameters.DoGenerateSparkles; }
-    void SetDoGenerateSparkles(bool value) override { mGameParameters.DoGenerateSparkles = value; }
+    bool GetDoGenerateSparklesForCuts() const override { return mGameParameters.DoGenerateSparklesForCuts; }
+    void SetDoGenerateSparklesForCuts(bool value) override { mGameParameters.DoGenerateSparklesForCuts = value; }
 
     bool GetDoGenerateAirBubbles() const override { return mGameParameters.DoGenerateAirBubbles; }
     void SetDoGenerateAirBubbles(bool value) override { mGameParameters.DoGenerateAirBubbles = value; }

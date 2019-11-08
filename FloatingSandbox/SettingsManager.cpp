@@ -91,7 +91,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, LightSpreadAdjustment);
     ADD_GC_SETTING(bool, UltraViolentMode);
     ADD_GC_SETTING(bool, DoGenerateDebris);
-    ADD_GC_SETTING(bool, DoGenerateSparkles);
+    ADD_GC_SETTING(bool, DoGenerateSparklesForCuts);
     ADD_GC_SETTING(bool, DoGenerateAirBubbles);
     ADD_GC_SETTING(float, AirBubblesDensity);
     ADD_GC_SETTING(unsigned int, NumberOfStars);

@@ -180,8 +180,8 @@ struct IGameControllerSettings
     virtual bool GetDoGenerateDebris() const = 0;
     virtual void SetDoGenerateDebris(bool value) = 0;
 
-    virtual bool GetDoGenerateSparkles() const = 0;
-    virtual void SetDoGenerateSparkles(bool value) = 0;
+    virtual bool GetDoGenerateSparklesForCuts() const = 0;
+    virtual void SetDoGenerateSparklesForCuts(bool value) = 0;
 
     virtual bool GetDoGenerateAirBubbles() const = 0;
     virtual void SetDoGenerateAirBubbles(bool value) = 0;

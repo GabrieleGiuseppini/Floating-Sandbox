@@ -28,7 +28,9 @@ public:
 		World & parentWorld,
 		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
-    void Update(GameParameters const & gameParameters);
+    void Update(
+		float currentSimulationTime,
+		GameParameters const & gameParameters);
 
     void Upload(Render::RenderContext & renderContext) const;
 
@@ -79,6 +81,7 @@ private:
 		vec2f const & targetWorldPosition);
 	void UpdateLightnings(
 		GameWallClock::time_point now,
+		float currentSimulationTime,
 		GameParameters const & gameParameters);
 	void UploadLightnings(Render::RenderContext & renderContext) const;
 

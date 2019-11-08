@@ -216,6 +216,7 @@ public:
 
 	void ApplyLightning(
 		vec2f const & targetPos,
+		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
     void TriggerTsunami();

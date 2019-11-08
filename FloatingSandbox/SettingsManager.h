@@ -64,7 +64,7 @@ enum class GameSettings : size_t
     LightSpreadAdjustment,
     UltraViolentMode,
     DoGenerateDebris,
-    DoGenerateSparkles,
+    DoGenerateSparklesForCuts,
     DoGenerateAirBubbles,
     AirBubblesDensity,
     NumberOfStars,

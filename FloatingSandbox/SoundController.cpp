@@ -1346,7 +1346,7 @@ void SoundController::OnThunder()
 		true);
 }
 
-void SoundController::OnLightningTouchdown()
+void SoundController::OnLightning()
 {
 	PlayOneShotMultipleChoiceSound(
 		SoundType::Lightning,

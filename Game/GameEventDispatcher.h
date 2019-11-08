@@ -238,12 +238,12 @@ public:
 		}
 	}
 
-	virtual void OnLightningTouchdown() override
+	virtual void OnLightning() override
 	{
 		// No need to aggregate this one
 		for (auto sink : mAtmosphereSinks)
 		{
-			sink->OnLightningTouchdown();
+			sink->OnLightning();
 		}
 	}
 

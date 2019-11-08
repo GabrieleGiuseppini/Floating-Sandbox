@@ -2187,21 +2187,21 @@ void Ship::GenerateDebris(
     }
 }
 
-void Ship::GenerateSparkles(
+void Ship::GenerateSparklesForCut(
     ElementIndex springElementIndex,
     vec2f const & cutDirectionStartPos,
     vec2f const & cutDirectionEndPos,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    if (gameParameters.DoGenerateSparkles)
+    if (gameParameters.DoGenerateSparklesForCuts)
     {
         //
         // Choose number of particles
         //
 
         unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-            GameParameters::MinSparkleParticlesPerEvent, GameParameters::MaxSparkleParticlesPerEvent); 
+            GameParameters::MinSparkleParticlesForCutEvent, GameParameters::MaxSparkleParticlesForCutEvent); 
 
 
         //
@@ -2220,7 +2220,7 @@ void Ship::GenerateSparkles(
         {
             // Velocity magnitude
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-                GameParameters::MinSparkleParticlesVelocity, GameParameters::MaxSparkleParticlesVelocity);
+                GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
 
             // Velocity angle: gaussian centered around central angle
             float const velocityAngleCw =
@@ -2230,8 +2230,8 @@ void Ship::GenerateSparkles(
             // Choose a lifetime
             std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
                 GameRandomEngine::GetInstance().GenerateUniformInteger(
-                    GameParameters::MinSparkleParticlesLifetime.count(),
-                    GameParameters::MaxSparkleParticlesLifetime.count()));
+                    GameParameters::MinSparkleParticlesForCutLifetime.count(),
+                    GameParameters::MaxSparkleParticlesForCutLifetime.count()));
 
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
@@ -2243,6 +2243,49 @@ void Ship::GenerateSparkles(
                 mSprings.GetPlaneId(springElementIndex, mPoints));
         }
     }
+}
+
+void Ship::GenerateSparklesForLightning(
+	ElementIndex pointElementIndex,
+	float currentSimulationTime,
+	GameParameters const & /*gameParameters*/)
+{
+	//
+	// Choose number of particles
+	//
+
+	unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
+		GameParameters::MinSparkleParticlesForLightningEvent, GameParameters::MaxSparkleParticlesForLightningEvent);
+
+
+	//
+	// Create particles
+	//
+
+	for (unsigned int d = 0; d < sparkleParticleCount; ++d)
+	{
+		// Velocity magnitude
+		float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
+			GameParameters::MinSparkleParticlesForLightningVelocity, GameParameters::MaxSparkleParticlesForLightningVelocity);
+
+		// Velocity angle: uniform
+		float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
+
+		// Choose a lifetime
+		std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
+			GameRandomEngine::GetInstance().GenerateUniformInteger(
+				GameParameters::MinSparkleParticlesForLightningLifetime.count(),
+				GameParameters::MaxSparkleParticlesForLightningLifetime.count()));
+
+		// Create sparkle
+		mPoints.CreateEphemeralParticleSparkle(
+			mPoints.GetPosition(pointElementIndex),
+			vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
+			mPoints.GetStructuralMaterial(pointElementIndex),
+			currentSimulationTime,
+			maxLifetime,
+			mPoints.GetPlaneId(pointElementIndex));
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////

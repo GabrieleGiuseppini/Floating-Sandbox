@@ -30,7 +30,7 @@ World::World(
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
-    mStorm.Update(gameParameters);
+    mStorm.Update(mCurrentSimulationTime, gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
@@ -537,12 +537,13 @@ std::optional<vec2f> World::FindSuitableLightningTarget() const
 
 void World::ApplyLightning(
 	vec2f const & targetPos,
+	float currentSimulationTime,
 	GameParameters const & gameParameters)
 {
 	// Apply to all ships
 	for (auto & ship : mAllShips)
 	{
-		ship->ApplyLightning(targetPos, gameParameters);
+		ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
 	}
 }
 
@@ -586,7 +587,7 @@ void World::Update(
 
     // Update world parts
     mStars.Update(gameParameters);
-    mStorm.Update(gameParameters);
+    mStorm.Update(mCurrentSimulationTime, gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
