@@ -45,6 +45,9 @@ in float personalitySeed;
 // Textures
 uniform sampler2D paramNoiseTexture2;
 
+// Parameters
+uniform float paramEffectiveAmbientLightIntensity;
+
 float GetNoise(float v) // -> (-1.0, 1.0)
 {
     return (texture2D(paramNoiseTexture2, vec2(.2, v)).r - .5) * 2.;
@@ -73,6 +76,7 @@ void main()
     // Calculate the bottom Y of the lightning at this moment:
     // - Low progress: close to the top, i.e. 1.
     // - High progress: close the desired bottom Y
+    //   - Touches bottom at progress=.3
     float variableBottomY = 1. + (bottomY - 1.) * smoothstep(-.1, .3, progress);
     
     // Taper deviation up and down    
@@ -92,8 +96,7 @@ void main()
     //
     // Emit
     //
-    
-    //vec3 col1 = mix(vec3(0.0, 0.0, 0.0), vec3(0.6, 0.8, 1.0), thickness);
-    vec3 col1 = vec3(0.6, 0.8, 1.0);
-    gl_FragColor = vec4(col1, thickness);
+
+    vec3 lightningColor = mix(vec3(1.), vec3(0.6, 0.8, 1.0), 1.0 - paramEffectiveAmbientLightIntensity);
+    gl_FragColor = vec4(lightningColor, thickness);
 } 

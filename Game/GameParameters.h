@@ -218,9 +218,9 @@ struct GameParameters
 	static float constexpr MinStormMaxWindSpeed = 35.0f;
 	static float constexpr MaxStormMaxWindSpeed = 80.0f;
 
-	float LightningRate; // Seconds
-	static float constexpr MinLightningRate = 1.0f;
-	static float constexpr MaxLightningRate = 50.0f;
+	float LightningDuration; // Seconds
+	static float constexpr MinLightningDuration = 0.1f;
+	static float constexpr MaxLightningDuration = 5.0f;
 
 	bool DoRainWithStorm;
 

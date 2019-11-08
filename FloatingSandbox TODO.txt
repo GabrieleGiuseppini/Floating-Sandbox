@@ -1097,10 +1097,18 @@ Render:
 				+ Sounds (N, one shot)
 			= Lightnings
 				= Storm state machine
+					= Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
+						= In which case, externalize state machine as we need to emit event
+						  during progress
+						- Upload also renderProgress
+							- Save one attribute (space Y, which is == position Y)
 					- Finalize duration
-				= Shader
-					- Save one attribute (space Y, which is == position Y)
-					- Figure out daylight colors
+				- Shader					
+					+ Figure out daylight colors
+					- Review zig-zag density (before & after duration finalized)
+				- Test:
+					- Lightning above top
+					- Lightning touching well below
 				- Halo
 					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm

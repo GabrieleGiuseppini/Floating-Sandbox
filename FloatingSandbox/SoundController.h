@@ -258,7 +258,7 @@ public:
 
 	virtual void OnThunder() override;
 
-	virtual void OnLightning() override;
+	virtual void OnLightningTouchdown() override;
 
     virtual void OnSilenceStarted() override;
 

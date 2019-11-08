@@ -569,6 +569,7 @@ public:
 	inline void UploadBackgroundLightning(
 		float ndcX,
 		float progress,
+		float renderProgress,
 		float personalitySeed)
 	{
 		// Get NDC coordinates of world y=0 (i.e. sea level)
@@ -579,6 +580,7 @@ public:
 			ndcX,
 			ndcSeaLevel,
 			progress,
+			renderProgress,
 			personalitySeed,
 			mBackgroundLightningVertexCount);
 
@@ -588,16 +590,21 @@ public:
 	inline void UploadForegroundLightning(
 		vec2f tipWorldCoordinates,
 		float progress,
+		float renderProgress,
 		float personalitySeed)
 	{
-		// Get NDC coordinates of tip point
-		vec2f const ndcTip = mViewModel.WorldToNdc(tipWorldCoordinates);
+		// Get NDC coordinates of tip point, a few metres down, 
+		// to make sure tip touches visually the point
+		vec2f const ndcTip = mViewModel.WorldToNdc(
+			tipWorldCoordinates
+			+ vec2f(0.0f, -3.0f));
 
 		// Store vertices		
 		StoreLightningVertices(
 			ndcTip.x,
 			ndcTip.y,
 			progress,
+			renderProgress,
 			personalitySeed,
 			mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
 
@@ -1419,6 +1426,7 @@ private:
 		float ndcX,
 		float ndcBottomY,
 		float progress,
+		float renderProgress,
 		float personalitySeed,
 		size_t vertexBufferIndex)
 	{

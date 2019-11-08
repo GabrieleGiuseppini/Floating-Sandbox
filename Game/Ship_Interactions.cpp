@@ -1173,8 +1173,48 @@ bool Ship::QueryNearestPointAt(
 
 std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 {
-	// TODOHERE
-	return mPoints.GetPosition(0);
+	//
+	// Find top N points
+	//
+
+	constexpr size_t MaxCandidates = 4;
+
+	// Sorted by y, largest first
+	std::vector<vec2f> candidatePositions;
+
+	for (auto pointIndex : mPoints.NonEphemeralPoints())
+	{
+		if (mPoints.IsActive(pointIndex))
+		{
+			auto const & pos = mPoints.GetPosition(pointIndex);
+
+			candidatePositions.insert(
+				std::upper_bound(
+					candidatePositions.begin(),
+					candidatePositions.end(),
+					pos,
+					[](auto const & candidatePos, auto const & pos)
+					{
+						return candidatePos.y > pos.y;
+					}),
+				pos);
+
+			if (candidatePositions.size() > MaxCandidates)
+			{
+				candidatePositions.pop_back();
+				assert(candidatePositions.size() == MaxCandidates);
+			}
+		}
+	}
+
+	if (candidatePositions.empty())
+		return std::nullopt;
+
+	//
+	// Choose
+	//
+
+	return candidatePositions[GameRandomEngine::GetInstance().Choose(candidatePositions.size())];
 }
 
 void Ship::ApplyLightning(

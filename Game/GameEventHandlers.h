@@ -143,7 +143,7 @@ struct IAtmosphereGameEventHandler
 		// Default-implemented
 	}
 
-	virtual void OnLightning()
+	virtual void OnLightningTouchdown()
 	{
 		// Default-implemented
 	}

@@ -51,18 +51,8 @@ void Storm::Update(GameParameters const & gameParameters)
 	// Lightnings state machines
 	//
 
-	for (auto it = mLightnings.begin(); it != mLightnings.end(); /*incremented in loop*/)
-	{
-		bool isCompleted = (*it)->Update(now, gameParameters);
-		if (isCompleted)
-		{
-			it = mLightnings.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
+	UpdateLightnings(now, gameParameters);
+
 
 	//
 	// Storm state machine
@@ -312,14 +302,7 @@ void Storm::Upload(Render::RenderContext & renderContext) const
 	// Upload lightnings
 	//
 
-	renderContext.UploadLightningsStart(mLightnings.size());
-
-	for (auto const & l : mLightnings)	
-	{
-		l->Upload(renderContext);
-	}
-
-	renderContext.UploadLightningsEnd();
+	UploadLightnings(renderContext);
 }
 
 void Storm::TriggerStorm()
@@ -371,13 +354,15 @@ void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
 
 	// Enqueue state machine
 	mLightnings.emplace_back(
-		std::make_unique<BackgroundLightningStateMachine>(
-			now,
-			ndcX,
-			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal()));
+		LightningStateMachine::LightningType::Background,
+		GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
+		now,
+		ndcX,
+		std::nullopt);
 
+	// TODO: move to UpdateLightnings
 	// Notify
-	mGameEventHandler->OnLightning();
+	//mGameEventHandler->OnLightning();
 }
 
 void Storm::DoTriggerForegroundLightning(
@@ -386,13 +371,97 @@ void Storm::DoTriggerForegroundLightning(
 {
 	// Enqueue state machine
 	mLightnings.emplace_back(
-		std::make_unique<ForegroundLightningStateMachine>(
-			now,
-			targetWorldPosition,
-			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal()));
+		LightningStateMachine::LightningType::Foreground,
+		GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
+		now,
+		std::nullopt,
+		targetWorldPosition);
 
+	// TODO: move to UpdateLightnings
 	// Notify
-	mGameEventHandler->OnLightning();
+	// mGameEventHandler->OnLightning();
+}
+
+void Storm::UpdateLightnings(
+	GameWallClock::time_point now,
+	GameParameters const & gameParameters)
+{
+	for (auto it = mLightnings.begin(); it != mLightnings.end(); /*incremented in loop*/)
+	{
+		//
+		// Calculate progress of lightning: 0.0f = beginning, 1.0f = end
+		//
+
+		it->Progress = std::min(1.0f,
+			std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(now - it->StartTimestamp).count()
+			/ gameParameters.LightningDuration);
+
+		it->RenderProgress = SmoothStep(-1.0f, 0.3, it->Progress);
+
+		if (it->RenderProgress == 1.0f)
+		{
+			//
+			// Notify, as many times as necessary
+			//
+
+			mGameEventHandler->OnLightningTouchdown();
+
+			if (LightningStateMachine::LightningType::Foreground == it->Type)
+			{
+				assert(!!(it->TargetWorldPosition));
+				mParentWorld.ApplyLightning(*(it->TargetWorldPosition), gameParameters);
+			}
+		}
+
+		if (it->Progress == 1.0f)
+		{
+			// This lightning is complete
+			it = mLightnings.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
+void Storm::UploadLightnings(Render::RenderContext & renderContext) const
+{
+	renderContext.UploadLightningsStart(mLightnings.size());
+
+	for (auto const & l : mLightnings)
+	{
+		switch (l.Type)
+		{
+			case LightningStateMachine::LightningType::Background:
+			{
+				assert(!!(l.NdcX));
+
+				renderContext.UploadBackgroundLightning(
+					*(l.NdcX),
+					l.Progress,
+					l.RenderProgress,
+					l.PersonalitySeed);
+
+				break;
+			}
+
+			case LightningStateMachine::LightningType::Foreground:
+			{
+				assert(!!(l.TargetWorldPosition));
+
+				renderContext.UploadForegroundLightning(
+					*(l.TargetWorldPosition),
+					l.Progress,
+					l.RenderProgress,
+					l.PersonalitySeed);
+
+				break;
+			}
+		}
+	}
+
+	renderContext.UploadLightningsEnd();
 }
 
 }

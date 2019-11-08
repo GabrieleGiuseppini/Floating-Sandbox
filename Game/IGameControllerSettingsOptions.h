@@ -80,9 +80,6 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinStormMaxWindSpeed() const = 0;
 	virtual float GetMaxStormMaxWindSpeed() const = 0;
 
-	virtual float GetMinLightningRate() const = 0;
-	virtual float GetMaxLightningRate() const = 0;
-
 	// Heat
 
 	virtual float GetMinAirTemperature() const = 0;

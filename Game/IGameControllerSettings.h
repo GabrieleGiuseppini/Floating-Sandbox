@@ -87,9 +87,6 @@ struct IGameControllerSettings
 	virtual float GetStormMaxWindSpeed() const = 0;
 	virtual void SetStormMaxWindSpeed(float value) = 0;
 
-	virtual float GetLightningRate() const = 0;
-	virtual void SetLightningRate(float value) = 0;
-
 	virtual bool GetDoRainWithStorm() const = 0;
 	virtual void SetDoRainWithStorm(bool value) = 0;
 

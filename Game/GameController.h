@@ -301,11 +301,6 @@ public:
 	virtual float GetMinStormMaxWindSpeed() const override { return GameParameters::MinStormMaxWindSpeed; }
 	virtual float GetMaxStormMaxWindSpeed() const override { return GameParameters::MaxStormMaxWindSpeed; }
 
-	virtual float GetLightningRate() const override { return mGameParameters.LightningRate; }
-	virtual void SetLightningRate(float value) override { mGameParameters.LightningRate = value; }
-	virtual float GetMinLightningRate() const override { return GameParameters::MinLightningRate; }
-	virtual float GetMaxLightningRate() const override { return GameParameters::MaxLightningRate; }
-
 	virtual bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
 	virtual void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
 

@@ -37,7 +37,7 @@ GameParameters::GameParameters()
     // Storm
     , StormDuration(60 * 4) // 4 minutes
 	, StormMaxWindSpeed(40.0f)
-	, LightningRate(20.0f)
+	, LightningDuration(4.0f) // TODOTEST
 	, DoRainWithStorm(true)
     // Heat and combustion
     , AirTemperature(298.15f) // 25C

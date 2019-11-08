@@ -13,6 +13,7 @@
 #include <GameCore/Vectors.h>
 
 #include <memory>
+#include <list>
 #include <vector>
 
 namespace Physics
@@ -76,6 +77,10 @@ private:
 	void DoTriggerForegroundLightning(
 		GameWallClock::time_point now,
 		vec2f const & targetWorldPosition);
+	void UpdateLightnings(
+		GameWallClock::time_point now,
+		GameParameters const & gameParameters);
+	void UploadLightnings(Render::RenderContext & renderContext) const;
 
 private:
 
@@ -86,89 +91,39 @@ private:
 	// Lightning state machine
 	//
 
-	class BaseLightningStateMachine
+	class LightningStateMachine
 	{
 	public:
 
-		virtual ~BaseLightningStateMachine()
-		{}
-
-		bool Update(
-			GameWallClock::time_point now,
-			GameParameters const & /*gameParameters*/)
+		enum class LightningType
 		{
-			static constexpr float LightningDuration = 4.0f; // TODOTEST
+			Background,
+			Foreground
+		};
 
-			// Calculate progress of lightning: 0.0f = beginning, 1.0f = end
-			mProgress = std::min(1.0f,				
-				std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(now - mStartTimestamp).count()
-				/ LightningDuration);
+		LightningType const Type;
+		float const PersonalitySeed;
+		GameWallClock::time_point const StartTimestamp;
 
-			return (mProgress == 1.0f);
-		}
+		std::optional<float> const NdcX;
+		std::optional<vec2f> const TargetWorldPosition;
+		float Progress;
+		float RenderProgress;
 
-		virtual void Upload(Render::RenderContext & renderContext) const = 0;
-
-	protected:
-
-		BaseLightningStateMachine(
+		LightningStateMachine(
+			LightningType type,
+			float personalitySeed,
 			GameWallClock::time_point startTimestamp,
-			float personalitySeed)
-			: mProgress(0.0f)
-			, mPersonalitySeed(personalitySeed)
-			, mStartTimestamp(startTimestamp)
+			std::optional<float> ndcX,
+			std::optional<vec2f> targetWorldPosition)
+			: Type(type)
+			, PersonalitySeed(personalitySeed)
+			, StartTimestamp(startTimestamp)
+			, NdcX(ndcX)
+			, TargetWorldPosition(targetWorldPosition)
+			, Progress(0.0f)
+			, RenderProgress(0.0f)
 		{}
-
-		float mProgress;
-		float const mPersonalitySeed;
-
-	private:
-
-		GameWallClock::time_point const mStartTimestamp;
-	};
-
-	class BackgroundLightningStateMachine final : public BaseLightningStateMachine
-	{
-	public:
-
-		BackgroundLightningStateMachine(
-			GameWallClock::time_point startTimestamp,
-			float ndcX,
-			float personalitySeed)
-			: BaseLightningStateMachine(startTimestamp, personalitySeed)
-			, mNdcX(ndcX)
-		{}
-
-		void Upload(Render::RenderContext & renderContext) const override
-		{
-			renderContext.UploadBackgroundLightning(mNdcX, mProgress, mPersonalitySeed);
-		}
-
-	private:
-
-		float const mNdcX;
-	};
-
-	class ForegroundLightningStateMachine final : public BaseLightningStateMachine
-	{
-	public:
-
-		ForegroundLightningStateMachine(
-			GameWallClock::time_point startTimestamp,
-			vec2f targetWorldPosition,
-			float personalitySeed)
-			: BaseLightningStateMachine(startTimestamp, personalitySeed)
-			, mTargetWorldPosition(targetWorldPosition)
-		{}
-
-		void Upload(Render::RenderContext & renderContext) const override
-		{
-			renderContext.UploadForegroundLightning(mTargetWorldPosition, mProgress, mPersonalitySeed);
-		}
-
-	private:
-
-		vec2f const mTargetWorldPosition;
 	};
 
     //
@@ -199,7 +154,7 @@ private:
 	GameWallClock::time_point mNextForegroundLightningPoissonSampleTimestamp;
 
 	// The current lightnings' state machines
-	std::vector<std::unique_ptr<BaseLightningStateMachine>> mLightnings;
+	std::list<LightningStateMachine> mLightnings;
 };
 
 }
