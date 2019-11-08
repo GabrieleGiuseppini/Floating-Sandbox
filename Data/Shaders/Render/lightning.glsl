@@ -58,16 +58,15 @@ float GetNoise(float v) // -> (-1.0, 1.0)
 
 void main()
 {
-    #define ZigZagRate 8.
-    #define ZigZagDensity1 .105   
-    #define ZigZagAmplitude1 .2
-    #define ZigZagDensity2 1.1
-    #define ZigZagAmplitude2 .2 * .3
+    #define ZigZagDensity1 .4
+    #define ZigZagAmplitude1 .25
+    #define ZigZagDensity2 2.1
+    #define ZigZagAmplitude2 .2 * .2
         
     float randomSeed = personalitySeed * 77.7;
             
     // Get noise (2 octaves) for this fragment's y and time
-    float variableNoiseOffset = floor(progress * ZigZagRate) / .567 + randomSeed;
+    float variableNoiseOffset = floor(progress * 8.) / .567 + randomSeed;
     float fragmentNoise1 = GetNoise(spacePosition.y * ZigZagDensity1 + variableNoiseOffset);
     float fragmentNoise2 = GetNoise(spacePosition.y * ZigZagDensity2 + variableNoiseOffset);
         
