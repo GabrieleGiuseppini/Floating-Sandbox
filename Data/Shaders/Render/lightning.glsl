@@ -10,20 +10,22 @@
 //
 
 // Inputs
-in vec4 inLightning1; // Position (vec2), SpacePosition (vec2)
-in vec3 inLightning2; // BottomY, Progress, PersonalitySeed
+in vec4 inLightning1; // Position (vec2), SpacePositionX, BottomY
+in vec3 inLightning2; // Progress, RenderProgress, PersonalitySeed
 
 // Outputs
 out vec2 spacePosition;
 out float bottomY;
 out float progress;
+out float renderProgress;
 out float personalitySeed;
 
 void main()
 {
-    spacePosition = inLightning1.zw;
-    bottomY = inLightning2.x;
-    progress = inLightning2.y;
+    spacePosition = vec2(inLightning1.z, inLightning1.y);
+    bottomY = inLightning1.w;
+    progress = inLightning2.x;
+    renderProgress = inLightning2.y;
     personalitySeed = inLightning2.z;
 
     gl_Position = vec4(inLightning1.xy, -1.0, 1.0);
@@ -40,6 +42,7 @@ void main()
 in vec2 spacePosition;
 in float bottomY;
 in float progress;
+in float renderProgress;
 in float personalitySeed;
 
 // Textures
@@ -77,7 +80,7 @@ void main()
     // - Low progress: close to the top, i.e. 1.
     // - High progress: close the desired bottom Y
     //   - Touches bottom at progress=.3
-    float variableBottomY = 1. + (bottomY - 1.) * smoothstep(-.1, .3, progress);
+    float variableBottomY = 1. + (bottomY - 1.) * renderProgress;
     
     // Taper deviation up and down    
     deviation *= smoothstep(variableBottomY, variableBottomY + .2, spacePosition.y); // Bottom

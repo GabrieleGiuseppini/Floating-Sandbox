@@ -396,7 +396,8 @@ void Storm::UpdateLightnings(
 			std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1>>>(now - it->StartTimestamp).count()
 			/ gameParameters.LightningDuration);
 
-		it->RenderProgress = SmoothStep(-1.0f, 0.3, it->Progress);
+		// Complete vertical development at t=0.3
+		it->RenderProgress = SmoothStep(-0.1f, 0.3f, it->Progress);
 
 		if (it->RenderProgress == 1.0f)
 		{

@@ -1097,15 +1097,16 @@ Render:
 				+ Sounds (N, one shot)
 			= Lightnings
 				= Storm state machine
-					= Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
-						= In which case, externalize state machine as we need to emit event
+					+ Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
+						+ In which case, externalize state machine as we need to emit event
 						  during progress
-						- Upload also renderProgress
-							- Save one attribute (space Y, which is == position Y)
+						+ Upload also renderProgress
+							+ Save one attribute (space Y, which is == position Y)
 					- Finalize duration
 				- Shader					
 					+ Figure out daylight colors
 					- Review zig-zag density (before & after duration finalized)
+						- And may be review lightning width
 				- Test:
 					- Lightning above top
 					- Lightning touching well below

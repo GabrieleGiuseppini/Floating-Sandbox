@@ -1447,27 +1447,30 @@ private:
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(leftX, topY),
-			vec2f(-1.0f, topY),
+			-1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 
 		// Top-Right
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(rightX, topY),
-			vec2f(1.0f, topY),
+			1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 
 		// Bottom-left
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(leftX, bottomY),
-			vec2f(-1.0f, bottomY),
+			-1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 
 		// Triangle 2
@@ -1476,27 +1479,30 @@ private:
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(rightX, topY),
-			vec2f(1.0f, topY),
+			1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 
 		// Bottom-left
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(leftX, bottomY),
-			vec2f(-1.0f, bottomY),
+			-1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 
 		// Bottom-right
 		mLightningVertexBuffer.emplace_at(
 			vertexBufferIndex++,
 			vec2f(rightX, bottomY),
-			vec2f(1.0f, bottomY),
+			1.0f,
 			ndcBottomY,
 			progress,
+			renderProgress,
 			personalitySeed);
 	}
 
@@ -1561,21 +1567,24 @@ private:
 	struct LightningVertex
 	{
 		vec2f ndc;
-		vec2f spacePosition;
-		float bottomY;		
+		float spacePositionX;
+		float ndcBottomY;		
 		float progress;
+		float renderProgress;
 		float personalitySeed;
 
 		LightningVertex(
 			vec2f _ndc,
-			vec2f _spacePosition,
-			float _bottomY,
+			float _spacePositionX,
+			float _ndcBottomY,
 			float _progress,
+			float _renderProgress,
 			float _personalitySeed)
 			: ndc(_ndc)
-			, spacePosition(_spacePosition)
-			, bottomY(_bottomY)
+			, spacePositionX(_spacePositionX)
+			, ndcBottomY(_ndcBottomY)
 			, progress(_progress)
+			, renderProgress(_renderProgress)
 			, personalitySeed(_personalitySeed)
 		{}
 	};
