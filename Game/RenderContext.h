@@ -1433,7 +1433,8 @@ private:
 		if (ndcBottomY > 1.0)
 			return; // Above top, discard
 
-		float constexpr LightningQuadWidth = 0.5f; // TODOTEST
+		float constexpr LightningQuadWidth = 0.5f;
+
 		float const leftX = ndcX - LightningQuadWidth / 2.0f;
 		float const rightX = ndcX + LightningQuadWidth / 2.0f;
 		float const topY = 1.0f;

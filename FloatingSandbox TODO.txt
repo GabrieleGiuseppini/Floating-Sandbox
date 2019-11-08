@@ -1102,11 +1102,12 @@ Render:
 						  during progress
 						+ Upload also renderProgress
 							+ Save one attribute (space Y, which is == position Y)
-					- Finalize duration
-				- Shader					
+					= Finalize duration
+					- Rename OnLightningTouchdown to OnLightning, if emission is ok
+				- Storm damage
+				+ Shader				
 					+ Figure out daylight colors
-					- Review zig-zag density (before & after duration finalized)
-						- And may be review lightning width
+					+ Review zig-zag density (before & after duration finalized)
 				- Test:
 					- Lightning above top
 					- Lightning touching well below
@@ -1128,7 +1129,7 @@ Render:
 			- GameParameters
 			- Use at Storm
 		- SettingsDialog: 
-			- Five parameters
+			- All interesting parameters
 		- Rain extinguishes fire
 		- Cleanup:
 			- Do perf analysis - Andrea Gail slows down a lot

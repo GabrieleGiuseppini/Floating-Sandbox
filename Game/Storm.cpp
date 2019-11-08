@@ -360,9 +360,8 @@ void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
 		ndcX,
 		std::nullopt);
 
-	// TODO: move to UpdateLightnings
 	// Notify
-	//mGameEventHandler->OnLightning();
+	mGameEventHandler->OnLightningTouchdown();
 }
 
 void Storm::DoTriggerForegroundLightning(
@@ -377,9 +376,8 @@ void Storm::DoTriggerForegroundLightning(
 		std::nullopt,
 		targetWorldPosition);
 
-	// TODO: move to UpdateLightnings
 	// Notify
-	// mGameEventHandler->OnLightning();
+	mGameEventHandler->OnLightningTouchdown();
 }
 
 void Storm::UpdateLightnings(
@@ -402,14 +400,9 @@ void Storm::UpdateLightnings(
 		if (it->RenderProgress == 1.0f
 			&& !it->HasNotifiedTouchdown)
 		{
-			//
-			// Notify
-			//
-
-			mGameEventHandler->OnLightningTouchdown();
-
 			if (LightningStateMachine::LightningType::Foreground == it->Type)
 			{
+				// Notify touchdown on world
 				assert(!!(it->TargetWorldPosition));
 				mParentWorld.ApplyLightning(*(it->TargetWorldPosition), gameParameters);
 			}
