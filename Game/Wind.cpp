@@ -315,7 +315,9 @@ void Wind::RecalculateParameters(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
-    mZeroSpeedMagnitude = stormParameters.WindSpeed;
+	mZeroSpeedMagnitude = (gameParameters.WindSpeedBase >= 0.0f)
+		? stormParameters.WindSpeed
+		: -stormParameters.WindSpeed;
     mBaseSpeedMagnitude = gameParameters.WindSpeedBase;
     mBaseAndStormSpeedMagnitude = (gameParameters.WindSpeedBase >= 0.0f)
         ? mBaseSpeedMagnitude + stormParameters.WindSpeed
