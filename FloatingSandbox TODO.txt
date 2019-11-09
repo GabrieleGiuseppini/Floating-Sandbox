@@ -1046,7 +1046,7 @@ Render:
 	= Storms
 		+ Another physics component
 		+ Game wall-clock based
-		- State machine with concentric phases:
+		+ State machine with concentric phases:
 			+ Wind (and thus waves)
 				+ Make clouds more sensible to speed - should go faster at higher speeds
 				+ No zero state while there is storm
@@ -1100,7 +1100,7 @@ Render:
 				+ Others random with same distribution as wind gusts
 				+ Events
 				+ Sounds (N, one shot)
-			= Lightnings
+			+ Lightnings
 				+ Storm state machine
 					+ Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
 						+ In which case, externalize state machine as we need to emit event
@@ -1111,12 +1111,11 @@ Render:
 				+ Candidate choice: 
 					+ Exclude orphaned points 
 					+ Candidates should be further apart
-				= Storm damage
+				+ Storm damage
 					+ See if speed of sparkles is ok
 					+ Heat
-					- See how it sounds if only first (N) breakage(s) make sound
-					- Or, make 1-3 mixes manually of each material, and make new event ("OnLightningHit(material)")
-						- Mixes: various combinations of Destroy Small sounds
+					+ Sound: make 1-3 mixes manually of each material, and make new event ("OnLightningHit(material)")
+						+ Mixes: various combinations of Destroy Small sounds
 				+ Shader				
 					+ Figure out daylight colors
 					+ Review zig-zag density (before & after duration finalized)
@@ -1126,8 +1125,6 @@ Render:
 				+ See how to make bg lightnings visible during storm
 					+ Just less clouds? NO
 					+ Render: if exist background lightnings, draw last X clouds afterwards
-				- Halo
-					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm
 		+ Storm::Parameters:
 			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations

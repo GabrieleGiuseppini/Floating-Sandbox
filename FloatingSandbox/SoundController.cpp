@@ -47,6 +47,7 @@ SoundController::SoundController(
     , mWindVolumeRunningAverage()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
+	, mMOneShotMultipleChoiceSounds()
     , mDslUOneShotMultipleChoiceSounds()
     , mUOneShotMultipleChoiceSounds()
     , mOneShotMultipleChoiceSounds()
@@ -359,8 +360,11 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::Break || soundType == SoundType::Destroy || soundType == SoundType::Stress
-                || soundType == SoundType::RepairSpring || soundType == SoundType::RepairTriangle)
+        else if (soundType == SoundType::Break 
+				|| soundType == SoundType::Destroy 
+				|| soundType == SoundType::Stress
+                || soundType == SoundType::RepairSpring 
+				|| soundType == SoundType::RepairTriangle)
         {
             //
             // MSU sound
@@ -399,6 +403,32 @@ SoundController::SoundController(
             //
 
             mMSUOneShotMultipleChoiceSounds[std::make_tuple(soundType, materialSound, sizeType, isUnderwater)]
+                .SoundBuffers.emplace_back(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::LightningHit)
+        {
+            //
+            // M sound
+            //
+
+            std::regex mRegex(R"(([^_]+)_([^_]+)_\d+)");
+            std::smatch mMatch;
+            if (!std::regex_match(soundName, mMatch, mRegex))
+            {
+                throw GameException("M sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(mMatch.size() == 1 + 2);
+
+            // 1. Parse MaterialSoundType
+            StructuralMaterial::MaterialSoundType materialSound = StructuralMaterial::StrToMaterialSoundType(mMatch[2].str());
+
+
+            //
+            // Store sound buffer
+            //
+
+            mMOneShotMultipleChoiceSounds[std::make_tuple(soundType, materialSound)]
                 .SoundBuffers.emplace_back(std::move(soundBuffer));
         }
         else if (soundType == SoundType::LightFlicker)
@@ -1073,6 +1103,18 @@ void SoundController::OnDestroy(
     }
 }
 
+void SoundController::OnLightningHit(StructuralMaterial const & structuralMaterial)
+{
+	if (!!(structuralMaterial.MaterialSound))
+	{
+		PlayMOneShotMultipleChoiceSound(
+			SoundType::LightningHit,
+			*(structuralMaterial.MaterialSound),
+			70.0f,
+			true);
+	}
+}
+
 void SoundController::OnSpringRepaired(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
@@ -1579,6 +1621,41 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
         it->second,
         volume,
         isInterruptible);
+}
+
+void SoundController::PlayMOneShotMultipleChoiceSound(
+	SoundType soundType,
+	StructuralMaterial::MaterialSoundType materialSound,
+	float volume,
+	bool isInterruptible)
+{
+	LogDebug("MSound: <",
+		static_cast<int>(soundType),
+		",",
+		static_cast<int>(materialSound),
+		">");
+
+	//
+	// Find vector
+	//
+
+	auto it = mMOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound));
+	if (it == mMOneShotMultipleChoiceSounds.end())
+	{
+		// No luck
+		return;
+	}
+
+
+	//
+	// Play sound
+	//
+
+	ChooseAndPlayOneShotMultipleChoiceSound(
+		soundType,
+		it->second,
+		volume,
+		isInterruptible);
 }
 
 void SoundController::PlayDslUOneShotMultipleChoiceSound(

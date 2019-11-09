@@ -1278,8 +1278,7 @@ void Ship::ApplyLightning(
 				mPoints.Detach(
 					pointIndex,
 					detachVelocity,
-					Points::DetachOptions::GenerateDebris
-					| Points::DetachOptions::FireDestroyEvent,
+					Points::DetachOptions::GenerateDebris,
 					currentSimulationTime,
 					gameParameters);
 
@@ -1288,6 +1287,9 @@ void Ship::ApplyLightning(
 					pointIndex,
 					currentSimulationTime,
 					gameParameters);
+
+				// Notify
+				mGameEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
 
 				wasDestroyed = true;
 			}

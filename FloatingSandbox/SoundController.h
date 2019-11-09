@@ -219,6 +219,8 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+	virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override;
+
     virtual void OnSpringRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
@@ -331,6 +333,12 @@ private:
         float volume,
         bool isInterruptible);
 
+	void PlayMOneShotMultipleChoiceSound(
+		SoundType soundType,
+		StructuralMaterial::MaterialSoundType materialSound,
+		float volume,
+		bool isInterruptible);
+
     void PlayDslUOneShotMultipleChoiceSound(
         SoundType soundType,
         DurationShortLongType duration,
@@ -438,6 +446,10 @@ private:
     unordered_tuple_map<
         std::tuple<SoundType, StructuralMaterial::MaterialSoundType, SizeType, bool>,
         OneShotMultipleChoiceSound> mMSUOneShotMultipleChoiceSounds;
+
+	unordered_tuple_map<
+		std::tuple<SoundType, StructuralMaterial::MaterialSoundType>,
+		OneShotMultipleChoiceSound> mMOneShotMultipleChoiceSounds;
 
     unordered_tuple_map<
         std::tuple<SoundType, DurationShortLongType, bool>,

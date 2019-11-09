@@ -147,6 +147,11 @@ struct IAtmosphereGameEventHandler
 	{
 		// Default-implemented
 	}
+
+	virtual void OnLightningHit(StructuralMaterial const & /*structuralMaterial*/)
+	{
+		// Default-implemented
+	}
 };
 
 struct IGenericGameEventHandler

@@ -247,6 +247,11 @@ public:
 		}
 	}
 
+	virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override
+	{
+		mLightningHitEvents[std::make_tuple(&structuralMaterial)] += 1;
+	}
+
     //
     // Generic
     //
@@ -525,6 +530,16 @@ public:
         mRCBombPingEvents.clear();
         mTimerBombDefusedEvents.clear();
         mTimerBombDefusedEvents.clear();
+
+		for (auto * sink : mAtmosphereSinks)
+		{
+			for (auto const & entry : mLightningHitEvents)
+			{
+				sink->OnLightningHit(*(std::get<0>(entry.first)));
+			}
+		}
+
+		mLightningHitEvents.clear();
     }
 
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
@@ -569,6 +584,7 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
+	unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;

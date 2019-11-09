@@ -29,6 +29,7 @@ enum class SoundType
 {
     Break,
     Destroy,
+	LightningHit,
     RepairSpring,
     RepairTriangle,
     Draw,
