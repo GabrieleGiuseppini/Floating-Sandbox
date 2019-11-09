@@ -32,7 +32,7 @@ GameParameters::GameParameters()
     , BasalWaveHeightAdjustment(1.0f)
     , BasalWaveLengthAdjustment(1.0f)
     , BasalWaveSpeedAdjustment(4.0f)
-    , TsunamiRate(20.0f)
+    , TsunamiRate(25.0f)
     , RogueWaveRate(2.0f)
     // Storm
     , StormDuration(60 * 4) // 4 minutes

@@ -42,6 +42,7 @@ public:
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterStatisticsEventHandler(this);
+		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 

@@ -90,9 +90,9 @@ void Storm::Update(
     float constexpr WindUpEnd = 0.12f;
     float constexpr AmbientDarkeningUpEnd = 0.125f;
 	float constexpr RainUpEnd = 0.35f;
-	float constexpr ForegroundLightningStart = 0.4f;
+	float constexpr ForegroundLightningStart = 0.36f;
         
-	float constexpr ForegroundLightningEnd = 0.7f;
+	float constexpr ForegroundLightningEnd = 0.74f;
 	float constexpr RainDownStart = 0.75f;
     float constexpr CloudsDownStart = 0.8f;
 	float constexpr BackgroundLightningEnd = 0.8f;
@@ -108,6 +108,7 @@ void Storm::Update(
 	float constexpr MinCloudSize = 1.85f;
 	float constexpr MaxCloudSize = 5.2f;
 
+	float constexpr MaxDarkening = 1.0f / 4.0f;
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =
@@ -139,7 +140,7 @@ void Storm::Update(
 
         // Ambient darkening
         float ambientDarkeningSmoothProgress = SmoothStep(AmbientDarkeningUpStart, AmbientDarkeningUpEnd, upProgress);
-        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * MaxDarkening;
 
 		// Rain
 		if (gameParameters.DoRainWithStorm)
@@ -170,7 +171,7 @@ void Storm::Update(
         
         // Ambient darkening
         float ambientDarkeningSmoothProgress = 1.0f - SmoothStep(AmbientDarkeningDownStart, AmbientDarkeningDownEnd, downProgress);
-        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress / 5.0f;
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * MaxDarkening;
 
 		// Rain
 		if (gameParameters.DoRainWithStorm)
@@ -238,8 +239,8 @@ void Storm::Update(
 		// Check if it's time to sample poisson
 		if (now >= mNextForegroundLightningPoissonSampleTimestamp)
 		{
-			// Check if we should do a lightning
-			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mLightningCdf))
+			// Check if we should do a lightning - lower rate than background lightnings
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mLightningCdf / 1.8f))
 			{
 				// Check whether we do have a target
 				auto const target = mParentWorld.FindSuitableLightningTarget();

@@ -1123,9 +1123,9 @@ Render:
 				+ Test:
 					+ Lightning above top
 					+ Lightning touching well below
-				- See how to make bg lightnings visible during storm
+				+ See how to make bg lightnings visible during storm
 					+ Just less clouds? NO
-					- Render: if exist background lightnings, draw last X clouds afterwards
+					+ Render: if exist background lightnings, draw last X clouds afterwards
 				- Halo
 					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm

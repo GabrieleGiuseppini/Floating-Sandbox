@@ -1612,6 +1612,7 @@ void MainFrame::ResetState()
 
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
+	mTriggerStormMenuItem->Enable(true);
 }
 
 void MainFrame::UpdateFrameTitle()

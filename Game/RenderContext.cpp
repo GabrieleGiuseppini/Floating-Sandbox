@@ -971,6 +971,30 @@ void RenderContext::RenderSkyEnd()
     CheckOpenGLError();
 
 	////////////////////////////////////////////////////
+	// Draw background clouds, iff there are background lightnings
+	////////////////////////////////////////////////////
+
+	// The number of clouds we want to draw *over* background
+	// lightnings
+	size_t constexpr cloudsOverLightnings = 5; 
+	GLsizei cloudsOverLightningVertexStart = 0;
+
+	if (mBackgroundLightningVertexCount > 0
+		&& mCloudVertexBuffer.size() > 6 * cloudsOverLightnings)
+	{
+		glBindVertexArray(*mCloudVAO);
+
+		mShaderManager->ActivateProgram<ProgramType::Clouds>();
+
+		if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+			glLineWidth(0.1f);
+
+		cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - 6 * cloudsOverLightnings;
+		glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
+		CheckOpenGLError();
+	}
+
+	////////////////////////////////////////////////////
 	// Draw background lightnings
 	////////////////////////////////////////////////////
 
@@ -999,7 +1023,7 @@ void RenderContext::RenderSkyEnd()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCloudVertexBuffer.size()));
+        glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVertexBuffer.size()) - cloudsOverLightningVertexStart);
         CheckOpenGLError();
     }
 
