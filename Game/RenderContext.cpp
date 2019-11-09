@@ -980,9 +980,6 @@ void RenderContext::RenderSkyEnd()
 
 		mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-		LogMessage("TODOHERE:BG: bg#=", mBackgroundLightningVertexCount, " fg#=", mForegroundLightningVertexCount,
-			" bufSize=", mLightningVertexBuffer.size(), " bufMaxSize=", mLightningVertexBuffer.max_size());
-
 		glDrawArrays(GL_TRIANGLES, 
 			0, 
 			static_cast<GLsizei>(mBackgroundLightningVertexCount));

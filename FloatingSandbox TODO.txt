@@ -378,13 +378,18 @@ Render:
 
 		= Storm (*)
 
+		- Text when repair completed: "Completely Repaired!"
+			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
+			  exists and no more destroyed triangles exist
+				- Maintain counts during visit
+
 		- SpinCtrl at SliderControl
 
 		- Music?
 			- Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
-			- Licensed under a Creative Commons Attribution licence
-			- Source: http://incompetech.com/music/royalty-...
-			- Artist: http://incompetech.com/
+				- Licensed under a Creative Commons Attribution licence
+				- Source: http://incompetech.com/music/royalty-...
+				- Artist: http://incompetech.com/
 
 		= New explosions:
 			- Shader:
@@ -1103,19 +1108,24 @@ Render:
 						+ Upload also renderProgress
 							+ Save one attribute (space Y, which is == position Y)
 					+ Finalize duration
-				= Candidate choice: 
+				+ Candidate choice: 
 					+ Exclude orphaned points 
-					- Candidates should be further apart
+					+ Candidates should be further apart
 				= Storm damage
 					+ See if speed of sparkles is ok
 					+ Heat
-					- See how it sounds if only first breakage makes sound
+					- See how it sounds if only first (N) breakage(s) make sound
+					- Or, make 1-3 mixes manually of each material, and make new event ("OnLightningHit(material)")
+						- Mixes: various combinations of Destroy Small sounds
 				+ Shader				
 					+ Figure out daylight colors
 					+ Review zig-zag density (before & after duration finalized)
 				+ Test:
 					+ Lightning above top
 					+ Lightning touching well below
+				- See how to make bg lightnings visible during storm
+					+ Just less clouds? NO
+					- Render: if exist background lightnings, draw last X clouds afterwards
 				- Halo
 					- With blending, or with simple white-blue with alpha
 		+ MainFrame: disable menu during storm
