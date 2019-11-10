@@ -121,6 +121,10 @@ public:
         return vec2f::fromPolar(magnitude, angle);
     }
 
+	/*
+	 * Returns true with the specified probability. A probability of zero implies
+	 * that true is never returned.
+	 */
     inline bool GenerateUniformBoolean(float trueProbability)
     {
         return GenerateNormalizedUniformReal() < trueProbability;

@@ -409,6 +409,8 @@ public:
         , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Repair
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
+		// Randomness
+		, mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsWholeColorBufferDirty(true)
@@ -524,7 +526,8 @@ public:
         ElementIndex electricalElementIndex,
         bool isLeaking,
         vec4f const & color,
-        vec2f const & textureCoordinates);
+        vec2f const & textureCoordinates,
+		float randomNormalizedUniformFloat);
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
@@ -570,6 +573,7 @@ public:
         ElementIndex pointStride,
         float currentSimulationTime,
         float dt,
+		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void UpdateCombustionHighFrequency(
@@ -1455,6 +1459,12 @@ private:
     //
 
     Buffer<RepairState> mRepairStateBuffer;
+
+	//
+	// Randomness
+	//
+
+	Buffer<float> mRandomNormalizedUniformFloatBuffer;
 
     //
     // Immutable render attributes

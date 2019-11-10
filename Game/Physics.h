@@ -25,12 +25,13 @@ namespace Physics
 
 #include <GameCore/ElementContainer.h>
 
+#include "Storm.h"
+
 #include "Points.h"
 #include "Springs.h"
 #include "Triangles.h"
 #include "ElectricalElements.h"
 
-#include "Storm.h"
 #include "Clouds.h"
 #include "Stars.h"
 #include "OceanFloor.h"

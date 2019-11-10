@@ -161,6 +161,21 @@ protected:
             fillValue);
     }
 
+	BaseBuffer(
+		TElement * buffer,
+		size_t size,
+		size_t fillStart,
+		std::function<TElement(size_t)> fillFunction)
+		: BaseBuffer(
+			buffer,
+			size)
+	{
+		assert(fillStart <= mSize);
+
+		for (size_t i = fillStart; i < mSize; ++i)
+			mBuffer[i] = fillFunction(i);
+	}
+
     BaseBuffer(BaseBuffer && other) noexcept
         : mBuffer(other.mBuffer)
         , mSize(other.mSize)
@@ -211,6 +226,18 @@ public:
     {
     }
 
+	Buffer(
+		size_t size,
+		size_t fillStart,
+		std::function<TElement(size_t)> fillFunction)
+		: Buffer(
+			make_unique_buffer_aligned_to_vectorization_word<TElement>(size),
+			size,
+			fillStart,
+			fillFunction)
+	{
+	}
+
     Buffer(Buffer && other) noexcept
         : BaseBuffer<TElement>(std::move(other))
         , mAllocatedBuffer(std::move(other.mAllocatedBuffer))
@@ -248,6 +275,20 @@ private:
         , mAllocatedBuffer(std::move(allocatedBuffer))
     {
     }
+
+	Buffer(
+		unique_aligned_buffer<TElement> allocatedBuffer,
+		size_t size,
+		size_t fillStart,
+		std::function<TElement(size_t)> fillFunction)
+		: BaseBuffer<TElement>(
+			reinterpret_cast<TElement *>(allocatedBuffer.get()),
+			size,
+			fillStart,
+			fillFunction)
+		, mAllocatedBuffer(std::move(allocatedBuffer))
+	{
+	}
 
     // The buffer owned by us
     unique_aligned_buffer<TElement> mAllocatedBuffer;

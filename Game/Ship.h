@@ -61,6 +61,7 @@ public:
 
     void Update(
         float currentSimulationTime,
+		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
 
@@ -257,11 +258,13 @@ public:
 
     void UpdateHeatDynamics(
         float currentSimulationTime,
+		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void PropagateHeat(
         float currentSimulationTime,
         float dt,
+		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     // Misc

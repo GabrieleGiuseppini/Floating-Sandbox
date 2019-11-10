@@ -846,7 +846,8 @@ Points ShipBuilder::CreatePoints(
             electricalElementIndex,
             pointInfo.IsLeaking,
             pointInfo.RenderColor,
-            pointInfo.TextureCoordinates);
+            pointInfo.TextureCoordinates,
+			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
     }
 
     return points;

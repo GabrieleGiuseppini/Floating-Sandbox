@@ -160,7 +160,7 @@ public:
         , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mMaterialLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, {})
+        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, 8U>())
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())

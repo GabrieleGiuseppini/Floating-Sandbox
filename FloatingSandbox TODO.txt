@@ -614,7 +614,11 @@ Render:
 			- Underwater depth 
 				- Valid as long as points don't move
 					- Do DEBUG work above
-				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation, breaking materials for pressure
+				- Used by: 
+					- UpdateWaterIntake (for leaking points only)
+					- Heat dissipation
+					- Breaking materials for pressure
+					- Points::UpdateCombustionHighFrequency
 	
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
@@ -918,11 +922,6 @@ Render:
 				- Only non-leaking points (broken edge of glass ball should not break again)
 				- Pressure delta between current water at point and external Y
 					- With added randomness based off random personality seed
-						- Points: RandomPersonalitySeed
-							- At Add(), passed from outside
-							- Also use at other places where we need a per-point random number
-								- Flames?
-								- TBD: Others?
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
@@ -1097,9 +1096,14 @@ Render:
 		+ SettingsDialog: 
 			+ All interesting parameters
 			+ Verify saved
-		- Rain extinguishes fire
-			- Do personality seed work, spec'd elsewhere here
-			- Use seed also at combustion state machines
+		= Rain extinguishes fire and dissipates heat
+			+ Do personality seed work:
+				+ Points: RandomPersonalitySeed
+					+ At Add(), passed from outside
+					+ Also use at other places where we need a per-point random number
+			= Combustion state machine: rain extinguishes fire
+				- Try with other type of smothering
+			+ Heat dissipation
 		- Cleanup:
 			- If StormRate is OK in minutes, make it also for tsunami and rogue wave
 			- See perf at Lightning hit when UltraViolent on
@@ -1158,7 +1162,7 @@ Render:
 			- i.e. always end up applying one buoyancy, either water or air
 		- IEphemeralParticleEmitter (*) implementation: SmokeEphemeralParticleEmitter
 		- Research particle motion - inject random walk in smoke and bubbles
-			- https://core.ac.uk/download/pdf/337937.pdf !!!
+			- https://core.ac.uk/download/pdf/337937.pdf !!! (Random Walk Models of Turbulent Dispersion)
 			- http://orbit.dtu.dk/files/3706687/Visser6.pdf
 			- @ Smoke
 				- http://matthias-mueller-fischer.ch/publications/sca03.pdf

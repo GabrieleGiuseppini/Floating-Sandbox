@@ -598,6 +598,7 @@ void World::Update(
     {
         ship->Update(
             mCurrentSimulationTime,
+			mStorm.GetParameters(),
             gameParameters,
             renderContext);
     }

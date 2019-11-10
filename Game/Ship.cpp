@@ -120,6 +120,7 @@ Ship::~Ship()
 
 void Ship::Update(
     float currentSimulationTime,
+	Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
@@ -236,6 +237,7 @@ void Ship::Update(
 
     UpdateHeatDynamics(
         currentSimulationTime,
+		stormParameters,
         gameParameters);
 
 
@@ -1349,6 +1351,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 
 void Ship::UpdateHeatDynamics(
     float currentSimulationTime,
+	Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -1358,6 +1361,7 @@ void Ship::UpdateHeatDynamics(
     PropagateHeat(
         currentSimulationTime,
         GameParameters::SimulationStepTimeDuration<float>,
+		stormParameters,
         gameParameters);
 
     //
@@ -1371,6 +1375,7 @@ void Ship::UpdateHeatDynamics(
             4,
             currentSimulationTime,
             GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+			stormParameters,
             gameParameters);
     }
     else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
@@ -1380,6 +1385,7 @@ void Ship::UpdateHeatDynamics(
             4,
             currentSimulationTime,
             GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+			stormParameters,
             gameParameters);
     }
     else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
@@ -1389,6 +1395,7 @@ void Ship::UpdateHeatDynamics(
             4,
             currentSimulationTime,
             GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+			stormParameters,
             gameParameters);
     }
     else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
@@ -1398,6 +1405,7 @@ void Ship::UpdateHeatDynamics(
             4,
             currentSimulationTime,
             GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+			stormParameters,
             gameParameters);
     }
 
@@ -1414,6 +1422,7 @@ void Ship::UpdateHeatDynamics(
 void Ship::PropagateHeat(
     float /*currentSimulationTime*/,
     float dt,
+	Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -1529,10 +1538,12 @@ void Ship::PropagateHeat(
 
     float const waterTemperature = gameParameters.WaterTemperature;
 
-    float const effectiveAirConvectiveHeatTransferCoefficient =
-        GameParameters::AirConvectiveHeatTransferCoefficient
-        * dt
-        * gameParameters.HeatDissipationAdjustment;
+	// We include rain in air
+	float const effectiveAirConvectiveHeatTransferCoefficient =
+		GameParameters::AirConvectiveHeatTransferCoefficient
+		* dt
+		* gameParameters.HeatDissipationAdjustment
+		+ FastPow(stormParameters.RainDensity, 0.3f) * effectiveWaterConvectiveHeatTransferCoefficient;
 
     float const airTemperature = gameParameters.AirTemperature;
 
@@ -2145,7 +2156,7 @@ void Ship::GenerateAirBubbles(
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
-        0.3f,
+        0.3f, // Magic number
         vortexAmplitude,
         vortexPeriod,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),

@@ -22,7 +22,8 @@ void Points::Add(
     ElementIndex electricalElementIndex,
     bool isLeaking,
     vec4f const & color,
-    vec2f const & textureCoordinates)
+    vec2f const & textureCoordinates,
+	float randomNormalizedUniformFloat)
 {
     ElementIndex const pointIndex = static_cast<ElementIndex>(mMaterialsBuffer.GetCurrentPopulatedSize());
 
@@ -83,15 +84,22 @@ void Points::Add(
     mConnectedTrianglesBuffer.emplace_back();
     mFactoryConnectedTrianglesBuffer.emplace_back();
 
+	// Connectivity
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
     mPlaneIdFloatBuffer.emplace_back(0.0f);
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
+	// Pinning
     mIsPinnedBuffer.emplace_back(false);
 
+	// Repair state
     mRepairStateBuffer.emplace_back();
 
+	// Randomness
+	mRandomNormalizedUniformFloatBuffer.emplace_back(randomNormalizedUniformFloat);
+
+	// Immutable render attributes
     mColorBuffer.emplace_back(color);
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
@@ -310,8 +318,8 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
 
     if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
     {
-        mCombustionStateBuffer[pointElementIndex].FlameDevelopment = GameRandomEngine::GetInstance()
-            .GenerateUniformReal(0.1f, 0.14f);
+        mCombustionStateBuffer[pointElementIndex].FlameDevelopment = 
+			0.1f + 0.04f * mRandomNormalizedUniformFloatBuffer[pointElementIndex];
     }
 }
 
@@ -375,6 +383,7 @@ void Points::UpdateCombustionLowFrequency(
     ElementIndex pointStride,
     float /*currentSimulationTime*/,
     float dt,
+	Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -404,6 +413,8 @@ void Points::UpdateCombustionLowFrequency(
             float const effectiveIgnitionTemperature =
                 mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
 
+			// Note: we don't check for rain on purpose: we allow flames to develop even if it rains,
+			// we'll eventually smother them later 
             if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureHighWatermark
                 && !mParentWorld.IsUnderwater(GetPosition(pointIndex))
                 && GetWater(pointIndex) < GameParameters::SmotheringWaterLowWatermark
@@ -423,12 +434,12 @@ void Points::UpdateCombustionLowFrequency(
 
             // ...for water or sea: we do this check at high frequency
 
-            // ...for temperature or decay:
+            // ...for temperature or decay or rain: we check it here
 
             float const effectiveIgnitionTemperature =
                 mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
 
-            if (GetTemperature(pointIndex) <= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureLowWatermark
+            if (GetTemperature(pointIndex) <= (effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureLowWatermark)
                 || GetDecay(pointIndex) < GameParameters::SmotheringDecayLowWatermark)
             {
                 //
@@ -440,6 +451,14 @@ void Points::UpdateCombustionLowFrequency(
                 // Notify combustion end
                 mGameEventHandler->OnPointCombustionEnd();
             }
+			else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(stormParameters.RainDensity))
+			{
+				//
+				// Transition to Extinguishing - by smothering
+				//
+
+				SmotherCombustion(pointIndex);
+			}
             else
             {
                 // Apply effects of burning
@@ -524,7 +543,7 @@ void Points::UpdateCombustionLowFrequency(
             0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mIgnitionCandidates[i]));
 
         // Assign a personality, we'll use it for noise
-        mCombustionStateBuffer[pointIndex].Personality = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+		mCombustionStateBuffer[pointIndex].Personality = mRandomNormalizedUniformFloatBuffer[pointIndex];
 
         // Max development: random and depending on number of springs connected to this point
         // (so chains have smaller flames)

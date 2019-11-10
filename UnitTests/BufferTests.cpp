@@ -77,7 +77,7 @@ TEST(BufferTests, Buffer_Fill)
     EXPECT_EQ(242, buf[63]);
 }
 
-TEST(BufferTests, Buffer_FillAtCctor)
+TEST(BufferTests, Buffer_FillAtCctor_Constant)
 {
     Buffer<int> buf(64, 12, 242);
 
@@ -86,6 +86,17 @@ TEST(BufferTests, Buffer_FillAtCctor)
 
     EXPECT_EQ(242, buf[12]);
     EXPECT_EQ(242, buf[63]);
+}
+
+TEST(BufferTests, Buffer_FillAtCctor_Function)
+{
+	Buffer<int> buf(64, 12, [](size_t i) { return static_cast<int>(i); });
+
+	buf.emplace_back(566);
+	EXPECT_EQ(1u, buf.GetCurrentPopulatedSize());
+
+	EXPECT_EQ(12, buf[12]);
+	EXPECT_EQ(63, buf[63]);
 }
 
 TEST(BufferTests, Buffer_Swap)
