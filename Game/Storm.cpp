@@ -29,21 +29,23 @@ Storm::Storm(
 	: mParentWorld(parentWorld)
 	, mGameEventHandler(std::move(gameEventDispatcher))
 	, mParameters()
-	, mIsInStorm(false)
+	, mNextStormTimestamp(GameWallClock::duration::max())
 	, mCurrentStormProgress(0.0f)
 	, mLastStormUpdateTimestamp(GameWallClock::GetInstance().Now())
+	, mMaxWindSpeed(0.0f)
+	, mMaxRainDensity(0.0f)
+	, mMaxDarkening(0.0f)
 	// We want XRate things every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
 	// hence we want 1/PoissonSampleRate things per sample interval
-	, mMinThunderCdf(1.0f - exp(-(ThunderRate / 2.0f) / PoissonSampleRate))
-	, mOneThunderCdf(1.0f - exp(-ThunderRate / PoissonSampleRate))
-	, mMaxThunderCdf(1.0f - exp(-(ThunderRate * 4.0f) / PoissonSampleRate))
-	, mMinLightningCdf(1.0f - exp(-(LightningRate / 2.0f) / PoissonSampleRate))
-	, mOneLightningCdf(1.0f - exp(-LightningRate / PoissonSampleRate))
-	, mMaxLightningCdf(1.0f - exp(-(LightningRate * 4.0f) / PoissonSampleRate))
+	, mThunderCdf(0.0f)
 	, mNextThunderPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
+	, mBackgroundLightningCdf(0.0f)
+	, mForegroundLightningCdf(0.0f)
 	, mNextBackgroundLightningPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
 	, mNextForegroundLightningPoissonSampleTimestamp(GameWallClock::GetInstance().Now())
 	, mLightnings()
+	, mCurrentStormRate(std::chrono::minutes::max())
+	, mCurrentStormStrengthAdjustment(std::numeric_limits<float>::max())
 {
 }
 
@@ -54,28 +56,42 @@ void Storm::Update(
     auto const now = GameWallClock::GetInstance().Now();
 
 	//
-	// Lightnings state machines
+	// Check whether parameters have changed
+	//
+
+	if (mCurrentStormRate != gameParameters.StormRate
+		|| mCurrentStormStrengthAdjustment != gameParameters.StormStrengthAdjustment)
+	{
+		RecalculateCoefficients(now, gameParameters);
+	}
+
+
+	//
+	// Advance lightnings' state machines
 	//
 
 	UpdateLightnings(now, currentSimulationTime, gameParameters);
 
 
 	//
-	// Storm state machine
+	// Advance storm state machine
 	//
 
-    if (!mIsInStorm)
+    if (!!mNextStormTimestamp)
     {
         //
-        // Decide whether we want to trigger a storm or not
+        // See if it's time to trigger a storm
         //
 
-        // TODOHERE
-        return;
-        /*
-        TurnStormOn(now);
-        */
-    }
+		if (now < *mNextStormTimestamp)
+		{
+			// Not yet
+			return;
+		}
+
+		// Storm!
+		TurnStormOn(now);
+	}
 
 
     //
@@ -108,23 +124,9 @@ void Storm::Update(
     float constexpr AmbientDarkeningDownEnd = 0.97f;
     float constexpr WindDownEnd = 1.0f;
 
-	float const maxWindSpeed =
-		40.0f
-		* gameParameters.StormStrengthAdjustment
-		* (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 	float constexpr MaxClouds = 30.0f;
 	float constexpr MinCloudSize = 1.85f;
 	float constexpr MaxCloudSize = 5.2f;
-	float const maxRainDensity = MixPiecewiseLinear(
-		0.1f, 0.4f, 0.9f,
-		GameParameters::MinStormStrengthAdjustment, 
-		GameParameters::MaxStormStrengthAdjustment, 
-		gameParameters.StormStrengthAdjustment);
-	float const maxDarkening = MixPiecewiseLinear(
-		0.01f, 0.25f, 0.75f,
-		GameParameters::MinStormStrengthAdjustment,
-		GameParameters::MaxStormStrengthAdjustment,
-		gameParameters.StormStrengthAdjustment);
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =
@@ -144,7 +146,7 @@ void Storm::Update(
 
         // Wind
         float windSmoothProgress = SmoothStep(WindUpStart, WindUpEnd, upProgress);
-        mParameters.WindSpeed = windSmoothProgress * maxWindSpeed;
+        mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
         float cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f);
@@ -154,13 +156,13 @@ void Storm::Update(
 
         // Ambient darkening
         float ambientDarkeningSmoothProgress = SmoothStep(AmbientDarkeningUpStart, AmbientDarkeningUpEnd, upProgress);
-        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * maxDarkening;
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * mMaxDarkening;
 
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
 			float rainSmoothProgress = SmoothStep(RainUpStart, RainUpEnd, upProgress);
-			mParameters.RainDensity = rainSmoothProgress * maxRainDensity;
+			mParameters.RainDensity = rainSmoothProgress * mMaxRainDensity;
 		}
 		else
 		{
@@ -174,7 +176,7 @@ void Storm::Update(
 
         // Wind
         float windSmoothProgress = 1.0f - SmoothStep(WindDownStart, WindDownEnd, downProgress);
-        mParameters.WindSpeed = windSmoothProgress * maxWindSpeed;
+        mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
         // from 1.0 to 0.0
@@ -185,13 +187,13 @@ void Storm::Update(
         
         // Ambient darkening
         float ambientDarkeningSmoothProgress = 1.0f - SmoothStep(AmbientDarkeningDownStart, AmbientDarkeningDownEnd, downProgress);
-        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * maxDarkening;
+        mParameters.AmbientDarkening = 1.0f - ambientDarkeningSmoothProgress * mMaxDarkening;
 
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
 			float rainSmoothProgress = 1.0f - SmoothStep(RainDownStart, RainDownEnd, downProgress);
-			mParameters.RainDensity = rainSmoothProgress * maxRainDensity;
+			mParameters.RainDensity = rainSmoothProgress * mMaxRainDensity;
 		}
 		else
 		{
@@ -213,15 +215,7 @@ void Storm::Update(
 			// Check if we should do a thunder
 			//
 
-			float const thunderCdf = MixPiecewiseLinear(
-				mMinThunderCdf,
-				mOneThunderCdf,
-				mMaxThunderCdf,
-				GameParameters::MinStormStrengthAdjustment,
-				GameParameters::MaxStormStrengthAdjustment,
-				gameParameters.StormStrengthAdjustment);
-
-			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(thunderCdf))
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mThunderCdf))
 			{
 				// Do thunder!
 				mGameEventHandler->OnThunder();
@@ -248,15 +242,7 @@ void Storm::Update(
 			// Check if we should do a background lightning
 			// 
 
-			float const backgroundLightningCdf = MixPiecewiseLinear(
-				mMinLightningCdf,
-				mOneLightningCdf,
-				mMaxLightningCdf,
-				GameParameters::MinStormStrengthAdjustment,
-				GameParameters::MaxStormStrengthAdjustment,
-				gameParameters.StormStrengthAdjustment);
-
-			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(backgroundLightningCdf))
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mBackgroundLightningCdf))
 			{
 				// Do background lightning!
 				DoTriggerBackgroundLightning(now);
@@ -279,17 +265,7 @@ void Storm::Update(
 			// Check if we should do a foreground lightning
 			// 
 
-			float const foregroundLightningCdf = 
-				MixPiecewiseLinear(
-					mMinLightningCdf,
-					mOneLightningCdf,
-					mMaxLightningCdf,
-					GameParameters::MinStormStrengthAdjustment,
-					GameParameters::MaxStormStrengthAdjustment,
-					gameParameters.StormStrengthAdjustment)
-				/ 1.8f;
-
-			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(foregroundLightningCdf))
+			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mForegroundLightningCdf))
 			{
 				// Check whether we do have a target
 				auto const target = mParentWorld.FindSuitableLightningTarget();
@@ -314,7 +290,7 @@ void Storm::Update(
     if (mCurrentStormProgress >= 1.0f)
     {
         // Turn off storm
-        TurnStormOff();
+        TurnStormOff(now);
 
         // Reset storm parameters
         mParameters.Reset();
@@ -358,9 +334,9 @@ void Storm::Upload(Render::RenderContext & renderContext) const
 
 void Storm::TriggerStorm()
 {
-    if (!mIsInStorm)
+    if (!!mNextStormTimestamp)
     {
-        // Turn on storm
+        // Turn on storm now
         TurnStormOn(GameWallClock::GetInstance().Now());
     }
 }
@@ -382,18 +358,124 @@ void Storm::TriggerLightning()
 	DoTriggerBackgroundLightning(GameWallClock::GetInstance().Now());
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+void Storm::RecalculateCoefficients(
+	GameWallClock::time_point now,
+	GameParameters const & gameParameters)
+{
+	if (!!mNextStormTimestamp)
+	{
+		mNextStormTimestamp = CalculateNextStormTimestamp(now, gameParameters.StormRate);
+	}
+
+	mMaxWindSpeed = 
+		MixPiecewiseLinear(
+			0.01f, 40.0f, 80.0f,
+			GameParameters::MinStormStrengthAdjustment,
+			GameParameters::MaxStormStrengthAdjustment,
+			gameParameters.StormStrengthAdjustment)
+		* (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+	
+	mMaxRainDensity = MixPiecewiseLinear(
+		0.1f, 0.4f, 0.9f,
+		GameParameters::MinStormStrengthAdjustment,
+		GameParameters::MaxStormStrengthAdjustment,
+		gameParameters.StormStrengthAdjustment);
+
+	mMaxDarkening = MixPiecewiseLinear(
+		0.01f, 0.25f, 0.75f,
+		GameParameters::MinStormStrengthAdjustment,
+		GameParameters::MaxStormStrengthAdjustment,
+		gameParameters.StormStrengthAdjustment);
+
+	float const durationMultiplier =
+		std::min(
+			1.0f,
+			static_cast<float>(gameParameters.StormDuration.count())
+			/ 240.0f); // 4 minutes is the value we used when we fine-tuned all parameters here
+
+	mThunderCdf = MixPiecewiseLinear(
+		1.0f - exp(-(ThunderRate / (durationMultiplier * 2.0f)) / PoissonSampleRate),
+		1.0f - exp(-(ThunderRate / durationMultiplier) / PoissonSampleRate),
+		1.0f - exp(-(ThunderRate / (durationMultiplier * 0.1f)) / PoissonSampleRate),
+		GameParameters::MinStormStrengthAdjustment,
+		GameParameters::MaxStormStrengthAdjustment,
+		gameParameters.StormStrengthAdjustment);
+
+	float const minLightningCdf = 1.0f - exp(-(LightningRate / (durationMultiplier * 2.0f)) / PoissonSampleRate);
+	float const oneLightningCdf = 1.0f - exp(-(LightningRate / durationMultiplier) / PoissonSampleRate);
+	float const maxLightningCdf = 1.0f - exp(-(LightningRate / (durationMultiplier * 0.2f)) / PoissonSampleRate);
+
+	mBackgroundLightningCdf = 
+		MixPiecewiseLinear(
+			minLightningCdf,
+			oneLightningCdf,
+			maxLightningCdf,
+			GameParameters::MinStormStrengthAdjustment,
+			GameParameters::MaxStormStrengthAdjustment,
+			gameParameters.StormStrengthAdjustment);
+
+	mForegroundLightningCdf =
+		MixPiecewiseLinear(
+			minLightningCdf,
+			oneLightningCdf,
+			maxLightningCdf,
+			GameParameters::MinStormStrengthAdjustment,
+			GameParameters::MaxStormStrengthAdjustment,
+			gameParameters.StormStrengthAdjustment)
+		/ 1.8f;
+
+
+	//
+	// Store new parameter values that we are now current with
+	//
+
+	mCurrentStormRate = gameParameters.StormRate;
+	mCurrentStormStrengthAdjustment = gameParameters.StormStrengthAdjustment;
+}
+
+GameWallClock::time_point Storm::CalculateNextStormTimestamp(
+	GameWallClock::time_point lastTimestamp,
+	std::chrono::minutes rate)
+{
+	if (rate.count() > 0)
+	{
+		float const rateSeconds = 60.0f * static_cast<float>(rate.count());
+
+		// Grace period between storms - depending on storm rate
+		float const gracePeriod = (rateSeconds >= 120.0f)
+			? 90.0f
+			: 20.0f;
+
+		return lastTimestamp
+			+ std::chrono::duration_cast<GameWallClock::duration>(
+				std::chrono::duration<float>(
+					gracePeriod
+					+ GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
+	}
+	else
+	{
+		return GameWallClock::time_point::max();
+	}
+}
+
 void Storm::TurnStormOn(GameWallClock::time_point now)
 {
-    mIsInStorm = true;
+	mNextStormTimestamp.reset();
     mCurrentStormProgress = 0.0f;
     mLastStormUpdateTimestamp = now;
 
 	mGameEventHandler->OnStormBegin();
 }
 
-void Storm::TurnStormOff()
+void Storm::TurnStormOff(GameWallClock::time_point now)
 {
-    mIsInStorm = false;
+	// Calculate next timestamp
+	assert(!mNextStormTimestamp);
+	mNextStormTimestamp = CalculateNextStormTimestamp(
+		now, 
+		mCurrentStormRate);
 
 	mGameEventHandler->OnStormEnd();
 }

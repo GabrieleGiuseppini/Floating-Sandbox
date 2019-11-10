@@ -1083,20 +1083,23 @@ Render:
 			+ Need additional arg to wind event
 		+ Manual storm trigger
 		+ Manual lightning trigger
-		= StormStrengthAdjustment:
+		+ Storm: complete auto-triggering
+		+ StormStrengthAdjustment:
 			+ GameParameters
-			= Use at Storm for:
-				= Replacement of StormMaxWindSpeed
-					- Make max wind smaller at Adjustment=Max
-				= Adjustment to rain density
+			+ Use at Storm for:
+				+ Replacement of StormMaxWindSpeed
+					+ Make max wind smaller at Adjustment=Max
+				+ Adjustment to rain density
 					+ Change shader
-				= Adjustment to darkening
-				= Adjustment to lightning and thunder rates
-			= Also include ultra-violent mode
-		= SettingsDialog: 
-			= All interesting parameters
-		- Storm: complete auto-triggering
+				+ Adjustment to darkening
+				+ Adjustment to lightning and thunder rates
+			+ Also include ultra-violent mode
+		+ SettingsDialog: 
+			+ All interesting parameters
+			+ Verify saved
 		- Rain extinguishes fire
+			- Do personality seed work, spec'd elsewhere here
+			- Use seed also at combustion state machines
 		- Cleanup:
 			- If StormRate is OK in minutes, make it also for tsunami and rogue wave
 			- See perf at Lightning hit when UltraViolent on

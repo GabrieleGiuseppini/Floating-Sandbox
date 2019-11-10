@@ -72,8 +72,16 @@ public:
 
 private:
 
+	void RecalculateCoefficients(
+		GameWallClock::time_point now,
+		GameParameters const & gameParameters);
+
+	static GameWallClock::time_point CalculateNextStormTimestamp(
+		GameWallClock::time_point lastTimestamp,
+		std::chrono::minutes rate);
+
     void TurnStormOn(GameWallClock::time_point now);
-    void TurnStormOff();
+    void TurnStormOff(GameWallClock::time_point now);
 
 	void DoTriggerBackgroundLightning(GameWallClock::time_point now);
 	void DoTriggerForegroundLightning(
@@ -138,8 +146,9 @@ private:
 	// The storm output
 	Parameters mParameters;
 
-    // Flag indicating whether we are in a storm or waiting for one
-    bool mIsInStorm;
+	// The timestamp at which we'll start the next storm, or not
+	// set when we are in a storm
+	std::optional<GameWallClock::time_point> mNextStormTimestamp;
 
     // The current progress of the storm, when in a storm: [0.0, 1.0]
     float mCurrentStormProgress;
@@ -147,23 +156,27 @@ private:
 	// The timestamp at which we last did a storm update
 	GameWallClock::time_point mLastStormUpdateTimestamp;
 
+	// Pre-calculated coefficients
+	float mMaxWindSpeed;
+	float mMaxRainDensity;
+	float mMaxDarkening;
+
 	// The CDF's for thunders
-	float const mMinThunderCdf;
-	float const mOneThunderCdf;
-	float const mMaxThunderCdf;
+	float mThunderCdf;
+	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;
 
 	// The CDF's for lightnings
-	float const mMinLightningCdf;
-	float const mOneLightningCdf;
-	float const mMaxLightningCdf;
-
-	// The next timestamp at which to sample the Poisson distribution for deciding various things
-	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;
+	float mBackgroundLightningCdf;
+	float mForegroundLightningCdf;
 	GameWallClock::time_point mNextBackgroundLightningPoissonSampleTimestamp;
 	GameWallClock::time_point mNextForegroundLightningPoissonSampleTimestamp;
 
 	// The current lightnings' state machines
 	std::list<LightningStateMachine> mLightnings;
+
+	// Parameters that the calculated values are current with
+	std::chrono::minutes mCurrentStormRate;
+	float mCurrentStormStrengthAdjustment;
 };
 
 }
