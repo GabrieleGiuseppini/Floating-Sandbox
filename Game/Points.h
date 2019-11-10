@@ -105,7 +105,8 @@ private:
             Developing_2,
             Burning,
             Extinguishing_Consumed,
-            Extinguishing_Smothered
+            Extinguishing_SmotheredRain,
+            Extinguishing_SmotheredWater
         };
 
     public:
@@ -984,7 +985,9 @@ public:
             || combustionState == CombustionState::StateType::Extinguishing_Consumed;
     }
 
-    void SmotherCombustion(ElementIndex pointElementIndex)
+    void SmotherCombustion(
+        ElementIndex pointElementIndex,
+        bool isWater)
     {
         assert(IsBurningForSmothering(pointElementIndex));
 
@@ -997,7 +1000,9 @@ public:
             mGameEventHandler->OnPointCombustionEnd();
 
         // Transition
-        mCombustionStateBuffer[pointElementIndex].State = CombustionState::StateType::Extinguishing_Smothered;
+        mCombustionStateBuffer[pointElementIndex].State = isWater
+            ? CombustionState::StateType::Extinguishing_SmotheredWater
+            : CombustionState::StateType::Extinguishing_SmotheredRain;
 
         // Notify sizzling
         mGameEventHandler->OnCombustionSmothered();

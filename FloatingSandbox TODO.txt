@@ -376,6 +376,9 @@ Render:
 			+ Add the three songs
 			+ Add to about box
 
+		- Officer TimCan's bug:
+			- "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
+
 		= Storm (*)
 
 		- Text when repair completed: "Completely Repaired!"
@@ -427,6 +430,8 @@ Render:
 		- Video (see Marketing above)
 
 	- 1.14.0
+
+		- Interleaving Update's with Render's (*)
 
 		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
@@ -791,7 +796,7 @@ Render:
 
 	- See if Z test and ocean before clouds buys us anything
 
-	- Try interleaving Update's with Render's
+	- Try interleaving Update's with Render's (*)
 		- First, quick and dirty: do at stars, clouds, ocean
 					
 	- Lights on the GPU with instanced drawing
@@ -1096,13 +1101,13 @@ Render:
 		+ SettingsDialog: 
 			+ All interesting parameters
 			+ Verify saved
-		= Rain extinguishes fire and dissipates heat
+		+ Rain extinguishes fire and dissipates heat
 			+ Do personality seed work:
 				+ Points: RandomPersonalitySeed
 					+ At Add(), passed from outside
 					+ Also use at other places where we need a per-point random number
-			= Combustion state machine: rain extinguishes fire
-				- Try with other type of smothering
+			+ Combustion state machine: rain extinguishes fire
+				+ Smothering is too fast: try with consumed instead of smothering, or add SlowSmothered
 			+ Heat dissipation
 		- Cleanup:
 			- If StormRate is OK in minutes, make it also for tsunami and rogue wave

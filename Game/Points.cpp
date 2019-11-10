@@ -318,7 +318,7 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
 
     if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
     {
-        mCombustionStateBuffer[pointElementIndex].FlameDevelopment = 
+        mCombustionStateBuffer[pointElementIndex].FlameDevelopment =
 			0.1f + 0.04f * mRandomNormalizedUniformFloatBuffer[pointElementIndex];
     }
 }
@@ -399,6 +399,9 @@ void Points::UpdateCombustionLowFrequency(
     // Decay rate - the higher this value, the slower fire consumes materials
     float const effectiveCombustionDecayRate = (90.0f / (gameParameters.CombustionSpeedAdjustment * dt));
 
+    // The cdf for rain: we stop burning with a probability equal to this
+    float const rainExtinguishCdf = FastPow(stormParameters.RainDensity, 0.5f);
+
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
     for (ElementIndex pointIndex = pointOffset; pointIndex < mShipPointCount; pointIndex += pointStride)
@@ -414,7 +417,7 @@ void Points::UpdateCombustionLowFrequency(
                 mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
 
 			// Note: we don't check for rain on purpose: we allow flames to develop even if it rains,
-			// we'll eventually smother them later 
+			// we'll eventually smother them later
             if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureHighWatermark
                 && !mParentWorld.IsUnderwater(GetPosition(pointIndex))
                 && GetWater(pointIndex) < GameParameters::SmotheringWaterLowWatermark
@@ -451,13 +454,13 @@ void Points::UpdateCombustionLowFrequency(
                 // Notify combustion end
                 mGameEventHandler->OnPointCombustionEnd();
             }
-			else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(stormParameters.RainDensity))
+			else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(rainExtinguishCdf))
 			{
 				//
-				// Transition to Extinguishing - by smothering
+				// Transition to Extinguishing - by smothering for rain
 				//
 
-				SmotherCombustion(pointIndex);
+				SmotherCombustion(pointIndex, false);
 			}
             else
             {
@@ -606,10 +609,10 @@ void Points::UpdateCombustionHighFrequency(
                 || GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark))
         {
             //
-            // Transition to Extinguishing - by smothering
+            // Transition to Extinguishing - by smothering for water
             //
 
-            SmotherCombustion(pointIndex);
+            SmotherCombustion(pointIndex, true);
         }
         else if (currentState == CombustionState::StateType::Burning)
         {
@@ -700,7 +703,8 @@ void Points::UpdateCombustionHighFrequency(
             }
 
             case CombustionState::StateType::Extinguishing_Consumed:
-            case CombustionState::StateType::Extinguishing_Smothered:
+            case CombustionState::StateType::Extinguishing_SmotheredRain:
+            case CombustionState::StateType::Extinguishing_SmotheredWater:
             {
                 //
                 // Un-develop
@@ -717,8 +721,20 @@ void Points::UpdateCombustionHighFrequency(
                         0.0625f
                         * (mCombustionStateBuffer[pointIndex].MaxFlameDevelopment - mCombustionStateBuffer[pointIndex].FlameDevelopment + 0.01f);
                 }
+                else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_SmotheredRain)
+                {
+                    //
+                    // f(n-1) - 0.105*f(n-1): when starting from 1, after 35 steps (0.7s) it's under 0.02
+                    // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.3*f(n-1)&target=0&endTarget=25&range=true
+                    //
+
+                    mCombustionStateBuffer[pointIndex].FlameDevelopment -=
+                        0.105f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                }
                 else
                 {
+                    assert(mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_SmotheredWater);
+
                     //
                     // f(n-1) - 0.3*f(n-1): when starting from 1, after 10 steps (0.2s) it's under 0.02
                     // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.3*f(n-1)&target=0&endTarget=25&range=true
@@ -1152,8 +1168,8 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Sparkle:
             {
-                vec2f const velocityVector = 
-					-GetVelocity(pointIndex) 
+                vec2f const velocityVector =
+					-GetVelocity(pointIndex)
 					/ GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
                 renderContext.UploadShipSparkle(

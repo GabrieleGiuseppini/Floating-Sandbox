@@ -806,10 +806,10 @@ bool Ship::ExtinguishFireAt(
             if (mPoints.IsBurningForSmothering(pointIndex))
             {
                 //
-                // Extinguish point
+                // Extinguish point - fake it's with water
                 //
 
-                mPoints.SmotherCombustion(pointIndex);
+                mPoints.SmotherCombustion(pointIndex, true);
 
                 //
                 // Also lower the point's temperature, or else it'll start burning
@@ -1230,7 +1230,7 @@ void Ship::ApplyLightning(
 	float currentSimulationTime,
 	GameParameters const & gameParameters)
 {
-	float const searchRadius = 
+	float const searchRadius =
 		gameParameters.LightningBlastRadius
 		* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
