@@ -128,11 +128,32 @@ inline T Mix(
 inline float SmoothStep(
     float lEdge,
     float rEdge,
-    float x)
+    float x) noexcept
 {
     assert(lEdge <= rEdge);
 
     x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 
     return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
+}
+
+/*
+ * Maps a x value, belonging to [minX, maxX], to [minOutput, maxOutput],
+ * such that when x is 1.0, output is oneOutput. 
+ */
+inline float MixPiecewiseLinear(
+	float minOutput,
+	float oneOutput,
+	float maxOutput,
+	float minX,
+	float maxX,
+	float x) noexcept
+{
+	assert((minOutput < oneOutput) && (oneOutput < maxOutput));
+	assert(minX <= x && x <= maxX);
+	assert(minX < 1.0 && 1.0 < maxX);
+
+	return x <= 1.0f
+		? minOutput + (oneOutput - minOutput) * (x - minX) / (1.0f - minX)
+		: oneOutput + (maxOutput - oneOutput) * (x - 1.0f) / (maxX - 1.0f);
 }

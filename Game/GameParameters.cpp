@@ -35,9 +35,9 @@ GameParameters::GameParameters()
     , TsunamiRate(25.0f)
     , RogueWaveRate(2.0f)
     // Storm
+	, StormRate(30)
     , StormDuration(60 * 4) // 4 minutes
-	, StormMaxWindSpeed(40.0f)
-	, LightningDuration(0.6f)
+	, StormStrengthAdjustment(1.0f)
 	, LightningBlastRadius(8.0f)
 	, LightningBlastHeat(4000.0f)
 	, DoRainWithStorm(true)

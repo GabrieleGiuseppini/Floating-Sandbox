@@ -157,6 +157,7 @@ TEST(SettingsTests, Setting_ClearDirty)
 
     EXPECT_FALSE(fSetting.IsDirty());
 }
+
 TEST(SettingsTests, Setting_Type)
 {
     Setting<float> fSetting("");
@@ -923,6 +924,71 @@ TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_Enum)
     EXPECT_EQ(TestEnum::Value2, settings2.GetValue<TestEnum>(EnumTestSettings::Setting1));
     EXPECT_EQ(TestEnum::Value4, settings2.GetValue<TestEnum>(EnumTestSettings::Setting2));
     EXPECT_EQ(TestEnum::Value5, settings2.GetValue<TestEnum>(EnumTestSettings::Setting3));
+}
+
+enum class ChronoTestSettings : size_t
+{
+	Setting1 = 0,
+	Setting2 = 1,
+	_Last = Setting2
+};
+
+TEST(SettingsTests, Serialization_E2E_SerializationAndDeserialization_chrono)
+{
+	//
+	// 1. Serialize
+	//
+
+	auto testFileSystem = std::make_shared<TestFileSystem>();
+
+	SettingsStorage storage(
+		TestRootSystemDirectory,
+		TestRootUserDirectory,
+		testFileSystem);
+
+	std::vector<std::unique_ptr<BaseSetting>> testSettings;
+	testSettings.emplace_back(new Setting<std::chrono::seconds>("setting1"));
+	testSettings.emplace_back(new Setting<std::chrono::minutes>("setting2"));
+
+	Settings<ChronoTestSettings> settings1(testSettings);
+	settings1.ClearAllDirty();
+
+	settings1.SetValue<std::chrono::seconds>(ChronoTestSettings::Setting1, std::chrono::seconds(7));
+	settings1.SetValue<std::chrono::minutes>(ChronoTestSettings::Setting2, std::chrono::minutes(42));
+
+	{
+		SettingsSerializationContext sContext(
+			PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
+			"Test description",
+			storage);
+
+		settings1.SerializeDirty(sContext);
+		// Context destruction happens here
+	}
+
+
+	//
+	// 2. De-serialize
+	//
+
+	Settings<ChronoTestSettings> settings2(testSettings);
+	settings2.MarkAllAsDirty();
+
+	{
+		SettingsDeserializationContext sContext(
+			PersistedSettingsKey("Test Settings", PersistedSettingsStorageTypes::User),
+			storage);
+
+		settings2.Deserialize(sContext);
+	}
+
+
+	//
+	// 3. Verify
+	//
+
+	EXPECT_EQ(std::chrono::seconds(7), settings2.GetValue<std::chrono::seconds>(ChronoTestSettings::Setting1));
+	EXPECT_EQ(std::chrono::minutes(42), settings2.GetValue<std::chrono::minutes>(ChronoTestSettings::Setting2));
 }
 
 TEST(SettingsTests, Serialization_DeserializedSettingsAreMarkedAsDirty)

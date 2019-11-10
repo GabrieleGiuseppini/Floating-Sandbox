@@ -298,3 +298,57 @@ bool SettingSerializer::Deserialize<rgbColor>(
 
     return false;
 }
+
+// std::chrono::seconds 
+
+template<>
+void SettingSerializer::Serialize<std::chrono::seconds>(
+	SettingsSerializationContext & context,
+	std::string const & settingName,
+	std::chrono::seconds const & value)
+{
+	context.GetSettingsRoot()[settingName] = picojson::value(static_cast<int64_t>(value.count()));
+}
+
+template<>
+bool SettingSerializer::Deserialize<std::chrono::seconds>(
+	SettingsDeserializationContext const & context,
+	std::string const & settingName,
+	std::chrono::seconds & value)
+{
+	auto jsonValue = Utils::GetOptionalJsonMember<std::int64_t>(context.GetSettingsRoot(), settingName);
+	if (!!jsonValue)
+	{
+		value = std::chrono::seconds(*jsonValue);
+		return true;
+	}
+
+	return false;
+}
+
+// std::chrono::minutes 
+
+template<>
+void SettingSerializer::Serialize<std::chrono::minutes>(
+	SettingsSerializationContext & context,
+	std::string const & settingName,
+	std::chrono::minutes const & value)
+{
+	context.GetSettingsRoot()[settingName] = picojson::value(static_cast<int64_t>(value.count()));
+}
+
+template<>
+bool SettingSerializer::Deserialize<std::chrono::minutes>(
+	SettingsDeserializationContext const & context,
+	std::string const & settingName,
+	std::chrono::minutes & value)
+{
+	auto jsonValue = Utils::GetOptionalJsonMember<std::int64_t>(context.GetSettingsRoot(), settingName);
+	if (!!jsonValue)
+	{
+		value = std::chrono::minutes(*jsonValue);
+		return true;
+	}
+
+	return false;
+}

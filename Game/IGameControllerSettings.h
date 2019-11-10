@@ -81,11 +81,14 @@ struct IGameControllerSettings
 
 	// Storm
 
+	virtual std::chrono::minutes GetStormRate() const = 0;
+	virtual void SetStormRate(std::chrono::minutes value) = 0;
+
 	virtual std::chrono::seconds GetStormDuration() const = 0;
 	virtual void SetStormDuration(std::chrono::seconds value) = 0;
 
-	virtual float GetStormMaxWindSpeed() const = 0;
-	virtual void SetStormMaxWindSpeed(float value) = 0;
+	virtual float GetStormStrengthAdjustment() const = 0;
+	virtual void SetStormStrengthAdjustment(float value) = 0;
 
 	virtual bool GetDoRainWithStorm() const = 0;
 	virtual void SetDoRainWithStorm(bool value) = 0;

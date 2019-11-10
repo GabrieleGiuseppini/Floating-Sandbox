@@ -147,11 +147,15 @@ private:
 	// The timestamp at which we last did a storm update
 	GameWallClock::time_point mLastStormUpdateTimestamp;
 
-	// The CDF for thunders
-	float const mThunderCdf;
+	// The CDF's for thunders
+	float const mMinThunderCdf;
+	float const mOneThunderCdf;
+	float const mMaxThunderCdf;
 
-	// The CDF for lightnings
-	float const mLightningCdf;
+	// The CDF's for lightnings
+	float const mMinLightningCdf;
+	float const mOneLightningCdf;
+	float const mMaxLightningCdf;
 
 	// The next timestamp at which to sample the Poisson distribution for deciding various things
 	GameWallClock::time_point mNextThunderPoissonSampleTimestamp;

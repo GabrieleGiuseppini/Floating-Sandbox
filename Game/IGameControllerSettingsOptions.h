@@ -77,8 +77,14 @@ struct IGameControllerSettingsOptions
 
 	// Storm
 
-	virtual float GetMinStormMaxWindSpeed() const = 0;
-	virtual float GetMaxStormMaxWindSpeed() const = 0;
+	virtual std::chrono::minutes GetMinStormRate() const = 0;
+	virtual std::chrono::minutes GetMaxStormRate() const = 0;
+
+	virtual std::chrono::seconds GetMinStormDuration() const = 0;
+	virtual std::chrono::seconds GetMaxStormDuration() const = 0;
+
+	virtual float GetMinStormStrengthAdjustment() const = 0;
+	virtual float GetMaxStormStrengthAdjustment() const = 0;
 
 	// Heat
 

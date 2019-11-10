@@ -33,6 +33,12 @@ enum class GameSettings : size_t
     WindSpeedBase,
     WindSpeedMaxFactor,
 
+	// Storm
+	StormRate,
+	StormDuration,
+	StormStrengthAdjustment,
+	DoRainWithStorm,
+
     // Heat
     AirTemperature,
     WaterTemperature,

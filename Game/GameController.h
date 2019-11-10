@@ -293,16 +293,23 @@ public:
 
 	// Storm
 
-	virtual std::chrono::seconds GetStormDuration() const override { return mGameParameters.StormDuration; }
-	virtual void SetStormDuration(std::chrono::seconds value) override { mGameParameters.StormDuration = value; }
+	std::chrono::minutes GetStormRate() const override { return mGameParameters.StormRate; }
+	void SetStormRate(std::chrono::minutes value) override { mGameParameters.StormRate = value; }
+	std::chrono::minutes GetMinStormRate() const override { return GameParameters::MinStormRate; }
+	std::chrono::minutes GetMaxStormRate() const override { return GameParameters::MaxStormRate; }
 
-	virtual float GetStormMaxWindSpeed() const override { return mGameParameters.StormMaxWindSpeed; }
-	virtual void SetStormMaxWindSpeed(float value) override { mGameParameters.StormMaxWindSpeed = value; }
-	virtual float GetMinStormMaxWindSpeed() const override { return GameParameters::MinStormMaxWindSpeed; }
-	virtual float GetMaxStormMaxWindSpeed() const override { return GameParameters::MaxStormMaxWindSpeed; }
+	std::chrono::seconds GetStormDuration() const override { return mGameParameters.StormDuration; }
+	void SetStormDuration(std::chrono::seconds value) override { mGameParameters.StormDuration = value; }
+	std::chrono::seconds GetMinStormDuration() const override { return GameParameters::MinStormDuration; }
+	std::chrono::seconds GetMaxStormDuration() const override { return GameParameters::MaxStormDuration; }
 
-	virtual bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
-	virtual void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
+	float GetStormStrengthAdjustment() const override { return mGameParameters.StormStrengthAdjustment; }
+	void SetStormStrengthAdjustment(float value) override { mGameParameters.StormStrengthAdjustment = value; }
+	float GetMinStormStrengthAdjustment() const override { return GameParameters::MinStormStrengthAdjustment; }
+	float GetMaxStormStrengthAdjustment() const override { return GameParameters::MaxStormStrengthAdjustment; }
+
+	bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
+	void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
 
     // Heat
 

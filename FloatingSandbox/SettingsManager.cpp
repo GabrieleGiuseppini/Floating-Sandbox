@@ -60,6 +60,12 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WindSpeedBase);
     ADD_GC_SETTING(float, WindSpeedMaxFactor);
 
+	// Storm
+	ADD_GC_SETTING(std::chrono::minutes, StormRate);
+	ADD_GC_SETTING(std::chrono::seconds, StormDuration);
+	ADD_GC_SETTING(float, StormStrengthAdjustment);
+	ADD_GC_SETTING(bool, DoRainWithStorm);
+
     // Heat
     ADD_GC_SETTING(float, AirTemperature);
     ADD_GC_SETTING(float, WaterTemperature);

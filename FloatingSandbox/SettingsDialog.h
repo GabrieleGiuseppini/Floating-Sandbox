@@ -47,7 +47,9 @@ private:
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
+
 	void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
+	void OnDoRainWithStormCheckBoxClick(wxCommandEvent & event);
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnTextureOceanChanged(wxCommandEvent & event);
@@ -128,6 +130,10 @@ private:
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
     SliderControl<unsigned int> * mNumberOfStarsSlider;
     SliderControl<unsigned int> * mNumberOfCloudsSlider;
+	SliderControl<float> * mStormStrengthAdjustmentSlider;
+	wxCheckBox* mDoRainWithStormCheckBox;
+	SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
+	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;	
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;

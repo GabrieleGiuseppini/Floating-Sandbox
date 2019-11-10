@@ -426,6 +426,14 @@ Render:
 
 		- Video (see Marketing above)
 
+	- 1.14.0
+
+		- Spring and NonSpring force separation optimization (*)
+		- Try with SpringRelaxation updating only positions (*)
+		- Attempt to re-instate square water drag (*)
+		- Attempt to use total point masses for springs (*)
+		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
+
 		- Cached quantities (*)
 		
 		- Break lights when structure gets "broken"
@@ -435,16 +443,10 @@ Render:
 		- Do shader at Anti-Matter bomb pre-implosion
 			- Corona with random noise inside circle
 
-		- Spring and NonSpring force separation optimization (*)
-		- Try with SpringRelaxation updating only positions (*)
-		- Attempt to re-instate square water drag (*)
-		- Attempt to use total point masses for springs (*)
-		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
-
 		- Underwater currents (*)
-		
-		- Electrical layer view (*)
 
+		- IEphemeralParticleEmitter's (*)
+		
 		- Continuous Auto-focus (*)
 
 		- Batisphere with pumps and propulsion (*)
@@ -453,16 +455,13 @@ Render:
 			- Pumps (*)
 			- Propulsion (*)
 			- Batisphere ship
+			- Electrical layer view (*)
 
-	- 1.14.0
+	- 1.15.0
 
-		- Smoke (*)
+		- Spring relaxation with intrinsics
 
-		- Libsimdpp spring relaxation (*)
 		- Frontier (*)
-		- Resource Packs (*)
-
-		- Backgrounds (*)
 
 - Ship making:
 	# Credit names:
@@ -596,10 +595,10 @@ Render:
 
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 
-		- Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
+		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
 		- Cache quantities in Update loop that comes first or last
-			- Make it clear that the Update function calculates them: TBD
+			- Make it clear that the Update function calculates them: TBD in name
 			- Alternatively, use lambda
 				- Verify with assembly that there's no overhead with empty lambda
 			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
@@ -614,7 +613,8 @@ Render:
 						- Heat
 			- Underwater depth 
 				- Valid as long as points don't move
-				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation
+					- Do DEBUG work above
+				- Used by: UpdateWaterIntake (for leaking points only), heat dissipation, breaking materials for pressure
 	
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
@@ -764,67 +764,6 @@ Render:
 		- Points: Position with Velocity and Force
 			- Affects Integrate and Rendering
 
-	= Do SSE with libsimdpp:
-		- First check out alternative: https://xsimd.readthedocs.io/en/latest/
-		- Prepare sources:
-			- GameLib/LibSimdPp.h
-				- Defines macro for SSE3 and includes simd.h
-					- So that we have a single place for the macro
-				- Then defines VECTORIZATION_FLOAT32_SIZE as SIMDPP_FAST_FLOAT32_SIZE, and VECTORIZATION_INT32_SIZE as ...INT32...
-					- Allowing us to change it in one place to experiment with loop unrolling
-				- SSE code will use VECTORIZATION_FLOAT32_SIZE as the batch size, via SysSpecifics.h (see below)
-
-				- #define SIMDPP_NO_DISPATCHER
-				- CMake:
-					- register_external(libsimdpp x_libsimdpp) à libsimdpp_path = /../../../ x_libsimdpp
-					= target_include_directories(common_models_lib SYSTEM PUBLIC ${libsimdpp_path})
-			- Merge FloatingPoint.h into SysSpecifics.h and nuke FloatingPoint.h
-			- SysSpecifics.h:
-				- Includes LibSimdPp.h
-				- make_aligned_element_count: local static constexpr for word size, choosing max of VECTORIZATION_FLOAT32_SIZE & VECTORIZATION_INT32_SIZE
-
-		= UpdateSpringForces:
-			+ Version 0/Optimization 1:
-				UpdateSpringForces_Naive_mean                     566158909 ns  553803550 ns          1
-				UpdateSpringForces_Naive_median                   564963849 ns  561603600 ns          1
-				UpdateSpringForces_Naive_stddev                     4619531 ns   18596554 ns          1
-				-
-				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    431502311 ns  409502625 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_median  415921334 ns  409502625 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev   35247735 ns   18160977 ns          2
-			+ Optimization 2 (SpringDir less divisions):
-				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    419323870 ns  408332618 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_median  418272468 ns  405602600 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    6254057 ns    7279802 ns          2
-			+ First NaN avoidance:
-				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    424542593 ns  402872582 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_median  412086262 ns  401702575 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev   39465568 ns   11672674 ns          2
-					and
-				UpdateSpringForces_LibSimdPpAndIntrinsics_mean    416146077 ns  398192553 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_median  410967797 ns  397802550 ns          2
-				UpdateSpringForces_LibSimdPpAndIntrinsics_stddev    9809876 ns    9628195 ns          2
-			- Try rearranging instructions for cache
-
-		- Use at IntegratePointDynamics, to guarantee SSE2
-			- Verify with asm
-			- Add to credits
-
-		- Use at Ship::MoveBy(), to guarantee SSE2
-			- Verify with asm
-			- Add to credits
-
-		+ Avoiding if's for divisor==0
-			+ No 0.0 checks for divisions, but + 0.00001
-				+ Verify behavior of float::max/float::min
-				+ Do benchmark: worse
-				+ Conclusion: should be used only for SSE vectorization, and when dividend has same
-				  magnitude as divisor (e.g. for normalized vector, len==0 <-> x==0 && y==0)
-			+ Should investigate masking at the same time, might be faster
-		+ Try with different cache optimization heuristics
-			+ Starting point: Spring ACMR: original=0.516807, optimized=0.325156
-			+ Choose springs with largest numbers of points in cache
-
 	- UpdateWaterDynamics:
 		- Test turning it around into (multiple) spring visits, rather than point visits
 			- Multiple because of need to normalize outgoing for each point
@@ -972,11 +911,18 @@ Render:
 		- Idea:
 			- All structural materials have max pressure delta after which they break, with some randomness
 			- ...but only glass, lights, and may be a few others have reasonable values - others are basically indestructible, and they
-			  will destroy with the "other" external pressure work which is tied with frontier
+			  will destroy with the "other" external pressure work which is tied with frontier			 
 		- Impl:
+			- Better done after cached quantities - underwater depth (*)
 			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
+				- Only non-leaking points (broken edge of glass ball should not break again)
 				- Pressure delta between current water at point and external Y
-				- With probability growing in a band around max pressure delta
+					- With added randomness based off random personality seed
+						- Points: RandomPersonalitySeed
+							- At Add(), passed from outside
+							- Also use at other places where we need a per-point random number
+								- Flames?
+								- TBD: Others?
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
@@ -1137,14 +1083,24 @@ Render:
 			+ Need additional arg to wind event
 		+ Manual storm trigger
 		+ Manual lightning trigger
-		- Storm"~Strength"
-			- GameParameters
-			- Use at Storm
-		- SettingsDialog: 
-			- All interesting parameters
+		= StormStrengthAdjustment:
+			+ GameParameters
+			= Use at Storm for:
+				= Replacement of StormMaxWindSpeed
+					- Make max wind smaller at Adjustment=Max
+				= Adjustment to rain density
+					+ Change shader
+				= Adjustment to darkening
+				= Adjustment to lightning and thunder rates
+			= Also include ultra-violent mode
+		= SettingsDialog: 
+			= All interesting parameters
 		- Storm: complete auto-triggering
 		- Rain extinguishes fire
 		- Cleanup:
+			- If StormRate is OK in minutes, make it also for tsunami and rogue wave
+			- See perf at Lightning hit when UltraViolent on
+				- Is it GenerateSparkles?
 			- Do perf analysis - Andrea Gail slows down a lot
 				- Also give crash to MS
 	
@@ -1190,8 +1146,8 @@ Render:
 		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
 			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
 		
-	- Smoke: (*)
-		- New material: smoke emitter
+	- Smoke:
+		- New material: (smoke) emitter - "subclass" of "particle emitter"
 			- Recognized by ship builder via "particle_emitter_properties" sub-object
 		- New material: smoke
 			- Lighter than air
@@ -1207,7 +1163,7 @@ Render:
 			- Do shader
 
 	- Fireworks
-		- New emitter material, much like smoke emitters (*)
+		- New emitter material, much like smoke emitter (*)
 		- Fires when wet for the first time
 
 	- Switches:
@@ -1544,7 +1500,7 @@ Render:
 			- Histogram pointWaterHistogram
 			- ...
 
-- Resource Packs (*)
+- Resource Packs
 
 	- Resource pack contains:
 		- Subset of textures

@@ -219,15 +219,17 @@ struct GameParameters
 
     // Storm
 
+	std::chrono::minutes StormRate;
+	static std::chrono::minutes constexpr MinStormRate = std::chrono::minutes(0);
+	static std::chrono::minutes constexpr MaxStormRate = std::chrono::minutes(60);
+
     std::chrono::seconds StormDuration;
+	static std::chrono::seconds constexpr MinStormDuration = std::chrono::seconds(10);
+	static std::chrono::seconds constexpr MaxStormDuration = std::chrono::seconds(60 * 20);
 
-	float StormMaxWindSpeed;
-	static float constexpr MinStormMaxWindSpeed = 35.0f;
-	static float constexpr MaxStormMaxWindSpeed = 80.0f;
-
-	float LightningDuration; // Seconds
-	static float constexpr MinLightningDuration = 0.1f;
-	static float constexpr MaxLightningDuration = 5.0f;
+	float StormStrengthAdjustment;
+	static float constexpr MinStormStrengthAdjustment = 0.1f;
+	static float constexpr MaxStormStrengthAdjustment = 10.0f;
 
 	float LightningBlastRadius;
 
