@@ -49,13 +49,13 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterDragAdjustment);
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
     ADD_GC_SETTING(float, WaterCrazyness);
-    ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);    
+    ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
 
     ADD_GC_SETTING(float, BasalWaveHeightAdjustment);
     ADD_GC_SETTING(float, BasalWaveLengthAdjustment);
     ADD_GC_SETTING(float, BasalWaveSpeedAdjustment);
-    ADD_GC_SETTING(float, TsunamiRate);
-    ADD_GC_SETTING(float, RogueWaveRate);
+    ADD_GC_SETTING(std::chrono::minutes, TsunamiRate);
+    ADD_GC_SETTING(std::chrono::minutes, RogueWaveRate);
     ADD_GC_SETTING(bool, DoModulateWind);
     ADD_GC_SETTING(float, WindSpeedBase);
     ADD_GC_SETTING(float, WindSpeedMaxFactor);
@@ -136,7 +136,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
     ADD_SC_SETTING(bool, PlaySinkingMusic);
-    
+
     return factory;
 }
 
@@ -199,7 +199,7 @@ std::string MangleSettingName(std::string && settingName)
             ss << static_cast<char>(std::tolower(ch));
         }
         else
-        { 
+        {
             ss << ch;
         }
 

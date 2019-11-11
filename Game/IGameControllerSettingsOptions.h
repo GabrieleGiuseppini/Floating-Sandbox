@@ -63,11 +63,11 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinBasalWaveSpeedAdjustment() const = 0;
 	virtual float GetMaxBasalWaveSpeedAdjustment() const = 0;
 
-	virtual float GetMinTsunamiRate() const = 0;
-	virtual float GetMaxTsunamiRate() const = 0;
+	virtual std::chrono::minutes GetMinTsunamiRate() const = 0;
+	virtual std::chrono::minutes GetMaxTsunamiRate() const = 0;
 
-	virtual float GetMinRogueWaveRate() const = 0;
-	virtual float GetMaxRogueWaveRate() const = 0;
+	virtual std::chrono::minutes GetMinRogueWaveRate() const = 0;
+	virtual std::chrono::minutes GetMaxRogueWaveRate() const = 0;
 
 	virtual float GetMinWindSpeedBase() const = 0;
 	virtual float GetMaxWindSpeedBase() const = 0;
@@ -184,7 +184,7 @@ struct IGameControllerSettingsOptions
 	virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const = 0;
 
 	virtual std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const = 0;
-	
+
 	virtual float GetMinShipFlameSizeAdjustment() const = 0;
 	virtual float GetMaxShipFlameSizeAdjustment() const = 0;
 };

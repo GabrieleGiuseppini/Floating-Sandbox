@@ -268,15 +268,15 @@ public:
     float GetMinBasalWaveSpeedAdjustment() const override { return GameParameters::MinBasalWaveSpeedAdjustment; }
     float GetMaxBasalWaveSpeedAdjustment() const override { return GameParameters::MaxBasalWaveSpeedAdjustment; }
 
-    float GetTsunamiRate() const override { return mGameParameters.TsunamiRate; }
-    void SetTsunamiRate(float value) override { mGameParameters.TsunamiRate = value; }
-    float GetMinTsunamiRate() const override { return GameParameters::MinTsunamiRate; }
-    float GetMaxTsunamiRate() const override { return GameParameters::MaxTsunamiRate; }
+    std::chrono::minutes GetTsunamiRate() const override { return mGameParameters.TsunamiRate; }
+    void SetTsunamiRate(std::chrono::minutes value) override { mGameParameters.TsunamiRate = value; }
+    std::chrono::minutes GetMinTsunamiRate() const override { return GameParameters::MinTsunamiRate; }
+    std::chrono::minutes GetMaxTsunamiRate() const override { return GameParameters::MaxTsunamiRate; }
 
-    float GetRogueWaveRate() const override { return mGameParameters.RogueWaveRate; }
-    void SetRogueWaveRate(float value) override { mGameParameters.RogueWaveRate = value; }
-    float GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
-    float GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
+    std::chrono::minutes GetRogueWaveRate() const override { return mGameParameters.RogueWaveRate; }
+    void SetRogueWaveRate(std::chrono::minutes value) override { mGameParameters.RogueWaveRate = value; }
+    std::chrono::minutes GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
+    std::chrono::minutes GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
 
     bool GetDoModulateWind() const override { return mGameParameters.DoModulateWind; }
     void SetDoModulateWind(bool value) override { mGameParameters.DoModulateWind = value; }
@@ -563,7 +563,7 @@ private:
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
-        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,        
+        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
 		std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader);
@@ -666,7 +666,7 @@ private:
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
-    
+
 
     //
     // Stats

@@ -64,11 +64,11 @@ struct IGameControllerSettings
     virtual float GetBasalWaveSpeedAdjustment() const = 0;
     virtual void SetBasalWaveSpeedAdjustment(float value) = 0;
 
-    virtual float GetTsunamiRate() const = 0;
-    virtual void SetTsunamiRate(float value) = 0;
+    virtual std::chrono::minutes GetTsunamiRate() const = 0;
+    virtual void SetTsunamiRate(std::chrono::minutes value) = 0;
 
-    virtual float GetRogueWaveRate() const = 0;
-    virtual void SetRogueWaveRate(float value) = 0;
+    virtual std::chrono::minutes GetRogueWaveRate() const = 0;
+    virtual void SetRogueWaveRate(std::chrono::minutes value) = 0;
 
     virtual bool GetDoModulateWind() const = 0;
     virtual void SetDoModulateWind(bool value) = 0;

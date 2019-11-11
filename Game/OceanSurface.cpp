@@ -69,8 +69,8 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     , mBasalWaveHeightAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
-    , mTsunamiRate(std::numeric_limits<float>::max())
-    , mRogueWaveRate(std::numeric_limits<float>::max())
+    , mTsunamiRate(std::chrono::minutes::max())
+    , mRogueWaveRate(std::chrono::minutes::max())
     ////////
     , mHeightField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
@@ -176,7 +176,7 @@ void OceanSurface::Update(
             // Reset automatically-generated tsunamis
             mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.TsunamiRate * 60.0f);
+                gameParameters.TsunamiRate);
         }
     }
 
@@ -213,7 +213,7 @@ void OceanSurface::Update(
             // Reset automatically-generated rogue waves
             mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.RogueWaveRate * 60.0f);
+                gameParameters.RogueWaveRate);
         }
     }
 
@@ -540,22 +540,22 @@ void OceanSurface::RecalculateCoefficients(
     // Abnormal wave timestamps
     //
 
-    if (gameParameters.TsunamiRate > 0.0f)
+    if (gameParameters.TsunamiRate.count() > 0)
     {
         mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastTsunamiTimestamp,
-            gameParameters.TsunamiRate * 60.0f);
+            gameParameters.TsunamiRate);
     }
     else
     {
         mNextTsunamiTimestamp = GameWallClock::time_point::max();
     }
 
-    if (gameParameters.RogueWaveRate > 0.0f)
+    if (gameParameters.RogueWaveRate.count() > 0)
     {
         mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastRogueWaveTimestamp,
-            gameParameters.RogueWaveRate * 60.0f);
+            gameParameters.RogueWaveRate);
     }
     else
     {
@@ -575,10 +575,13 @@ void OceanSurface::RecalculateCoefficients(
     mRogueWaveRate = gameParameters.RogueWaveRate;
 }
 
+template<typename TDuration>
 GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
     GameWallClock::time_point lastTimestamp,
-    float rateSeconds)
+    TDuration rate)
 {
+    float const rateSeconds = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(rate).count());
+
     return lastTimestamp
         + std::chrono::duration_cast<GameWallClock::duration>(
             std::chrono::duration<float>(

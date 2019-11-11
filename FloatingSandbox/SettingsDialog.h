@@ -67,7 +67,7 @@ private:
 
     void OnShipRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
-    void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);    
+    void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
 
@@ -133,7 +133,7 @@ private:
 	SliderControl<float> * mStormStrengthAdjustmentSlider;
 	wxCheckBox* mDoRainWithStormCheckBox;
 	SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
-	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;	
+	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;
@@ -142,8 +142,8 @@ private:
     SliderControl<float> * mBasalWaveHeightAdjustmentSlider;
     SliderControl<float> * mBasalWaveLengthAdjustmentSlider;
     SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
-    SliderControl<float> * mTsunamiRateSlider;
-    SliderControl<float> * mRogueWaveRateSlider;
+    SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
+    SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
@@ -274,7 +274,7 @@ private:
     // The settings when the dialog was last opened
     Settings<GameSettings> mCheckpointSettings;
 
-    // Tracks whether the user has changed any settings since the dialog 
+    // Tracks whether the user has changed any settings since the dialog
     // was last opened. When false there's a guarantee that the current live
     // settings have not been modified.
     bool mHasBeenDirtyInCurrentSession;

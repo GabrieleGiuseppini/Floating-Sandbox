@@ -209,13 +209,13 @@ struct GameParameters
     static float constexpr MinBasalWaveSpeedAdjustment = 0.75f;
     static float constexpr MaxBasalWaveSpeedAdjustment = 20.0f;
 
-    float TsunamiRate; // Minutes
-    static float constexpr MinTsunamiRate = 0.0f;
-    static float constexpr MaxTsunamiRate = 60.0f;
+    std::chrono::minutes TsunamiRate;
+    static std::chrono::minutes constexpr MinTsunamiRate = std::chrono::minutes(0);
+    static std::chrono::minutes constexpr MaxTsunamiRate = std::chrono::minutes(60);
 
-    float RogueWaveRate; // Minutes
-    static float constexpr MinRogueWaveRate = 0.0f;
-    static float constexpr MaxRogueWaveRate = 15.0f;
+    std::chrono::minutes RogueWaveRate;
+    static std::chrono::minutes constexpr MinRogueWaveRate = std::chrono::minutes(0);
+    static std::chrono::minutes constexpr MaxRogueWaveRate = std::chrono::minutes(15);
 
     // Storm
 

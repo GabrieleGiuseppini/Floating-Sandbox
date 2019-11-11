@@ -56,7 +56,7 @@ struct IGameController
 	virtual bool GetShowStatusText() const = 0;
     virtual void SetShowStatusText(bool value) = 0;
 	virtual bool GetShowExtendedStatusText() const = 0;
-	virtual void SetShowExtendedStatusText(bool value) = 0;	
+	virtual void SetShowExtendedStatusText(bool value) = 0;
 
     //
     // World Probing

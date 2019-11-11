@@ -111,9 +111,10 @@ private:
         Wind const & wind,
         GameParameters const & gameParameters);
 
+    template<typename TDuration>
     static GameWallClock::time_point CalculateNextAbnormalWaveTimestamp(
         GameWallClock::time_point lastTimestamp,
-        float rateSeconds);
+        TDuration rate);
 
     void ApplyDampingBoundaryConditions();
     void UpdateFields();
@@ -160,8 +161,8 @@ private:
     float mBasalWaveHeightAdjustment;
     float mBasalWaveLengthAdjustment;
     float mBasalWaveSpeedAdjustment;
-    float mTsunamiRate;
-    float mRogueWaveRate;
+    std::chrono::minutes mTsunamiRate;
+    std::chrono::minutes mRogueWaveRate;
 
 
     //
