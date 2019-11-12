@@ -1278,7 +1278,7 @@ void Ship::ApplyLightning(
 					GameParameters::MaxDebrisParticlesVelocity);
 
 				// Detach
-				mPoints.Detach(
+                mPoints.Detach(
 					pointIndex,
 					detachVelocity,
 					Points::DetachOptions::GenerateDebris,
@@ -1286,7 +1286,7 @@ void Ship::ApplyLightning(
 					gameParameters);
 
 				// Generate sparkles
-				GenerateSparklesForLightning(
+                GenerateSparklesForLightning(
 					pointIndex,
 					currentSimulationTime,
 					gameParameters);

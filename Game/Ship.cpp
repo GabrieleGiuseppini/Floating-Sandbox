@@ -2212,7 +2212,7 @@ void Ship::GenerateSparklesForCut(
         //
 
         unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-            GameParameters::MinSparkleParticlesForCutEvent, GameParameters::MaxSparkleParticlesForCutEvent); 
+            GameParameters::MinSparkleParticlesForCutEvent, GameParameters::MaxSparkleParticlesForCutEvent);
 
 
         //
