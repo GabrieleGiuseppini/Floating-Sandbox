@@ -375,7 +375,7 @@ void Ship::RepairAt(
 
                         //
                         // 1. Find nearest CW spring and nearest CCW spring
-                        // (which might and up being the same spring in case there's only one spring)
+                        // (which might end up being the same spring in case there's only one spring)
                         //
 
                         int nearestCWSpringIndex = -1;
@@ -584,7 +584,7 @@ void Ship::RepairAt(
 
 
                         //
-                        // Dry the ohter endpoint, if we've messed with it
+                        // Dry the other endpoint, if we've messed with it
                         //
 
                         if (hasOtherEndpointPointBeenMoved)

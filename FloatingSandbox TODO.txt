@@ -384,7 +384,10 @@ Render:
 		- Text when repair completed: "Completely Repaired!"
 			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
 			  exists and no more destroyed triangles exist
-				- Maintain counts during visit
+				- Maintain flags during visit
+				- Maintain per-ship counts of broken springs and triangles, updated at:
+					- SpringDestroyHandler and TriangleDestroyHandler
+					- Repair
 
 		- SpinCtrl at SliderControl
 
