@@ -381,6 +381,8 @@ Render:
 
 		= Storm (*)
 
+		- Wate bubbles: try with allowing CumulatedIntakenWater to go negative
+
 		- Text when repair completed: "Completely Repaired!"
 			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
 			  exists and no more destroyed triangles exist
@@ -1118,10 +1120,11 @@ Render:
 				+ Destroy vs. Heat: it's Destroy
 				= Destroy:
 					- Detach: 10%
-					- Sparkles: 70%
+					= Sparkles: 70%
 						= CreateEphemeralSparkleLightning
-							- Reduce reset quantities
+							= Reduce reset quantities
 							- See if may agglomerate buffers for ephemeral particles
+								- >= 3000 bubbles: FPS = 23.8-24.something
 						+ Rendering: 0%
 					+ Notify: NO
 			- Do perf analysis - Andrea Gail slows down a lot

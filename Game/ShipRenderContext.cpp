@@ -1010,7 +1010,8 @@ void ShipRenderContext::UploadPointMutableAttributesStart()
 void ShipRenderContext::UploadPointMutableAttributes(
     vec2f const * position,
     float const * light,
-    float const * water)
+    float const * water,
+    size_t lightAndWaterCount)
 {
     // Interleave positions into AttributeGroup1 buffer
     vec4f * restrict pDst1 = mPointAttributeGroup1Buffer.get();
@@ -1032,7 +1033,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
     vec4f * restrict pDst2 = mPointAttributeGroup2Buffer.get();
     float const * restrict pSrc1 = light;
     float const * restrict pSrc2 = water;
-    for (size_t i = 0; i < mPointCount; ++i)
+    for (size_t i = 0; i < lightAndWaterCount; ++i)
     {
         pDst2[i].x = pSrc1[i];
         pDst2[i].y = pSrc2[i];

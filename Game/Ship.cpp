@@ -826,8 +826,10 @@ void Ship::UpdateWaterInflow(
     //
     // Intake/outtake water into/from all the leaking nodes that are underwater
     //
+    // Ephemeral points are never leaking, hence we ignore them
+    //
 
-    for (auto pointIndex : mPoints)
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         if (mPoints.IsLeaking(pointIndex))
         {
@@ -956,7 +958,7 @@ void Ship::UpdateWaterVelocities(
 
     auto pointFreenessFactorBuffer = mPoints.AllocateWorkBufferFloat();
     float * restrict pointFreenessFactorBufferData = pointFreenessFactorBuffer->data();
-    for (auto pointIndex : mPoints)
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         pointFreenessFactorBufferData[pointIndex] =
             FastExp(-oldPointWaterBufferData[pointIndex] * 10.0f);
@@ -964,10 +966,12 @@ void Ship::UpdateWaterVelocities(
 
 
     //
-    // Visit all points and move water and its momenta
+    // Visit all non-ephemeral points and move water and its momenta
+    //
+    // No need to visit ephemeral points as they have no springs
     //
 
-    for (auto pointIndex : mPoints)
+    for (auto pointIndex : mPoints.NonEphemeralPoints())
     {
         //
         // 1) Calculate water momenta along all springs connected to this point
@@ -1333,7 +1337,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     Algorithms::DiffuseLight_Vectorized(
         mPoints.GetPositionBufferAsVec2(),
         mPoints.GetPlaneIdBufferAsPlaneId(),
-        mPoints.GetBufferElementCount(),
+        mPoints.GetShipPointCount(), // No real reason to skip ephemerals, other than they're not expected to have light
         lampPositions.data(),
         lampPlaneIds.data(),
         lampDistanceCoeffs.data(),
@@ -1612,8 +1616,9 @@ void Ship::RotPoints(
         ? alphaMax * 0.995f
         : 1.0f;
 
-    // Process all points - including ephemerals
-    for (auto p : mPoints)
+    // Process all non-ephemeral points - no real reason to exclude ephemerals, other
+    // than they're not expected to rot
+    for (auto p : mPoints.NonEphemeralPoints())
     {
         float waterEquivalent =
             mPoints.GetWater(p)

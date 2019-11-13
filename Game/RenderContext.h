@@ -593,13 +593,13 @@ public:
 		float renderProgress,
 		float personalitySeed)
 	{
-		// Get NDC coordinates of tip point, a few metres down, 
+		// Get NDC coordinates of tip point, a few metres down,
 		// to make sure tip touches visually the point
 		vec2f const ndcTip = mViewModel.WorldToNdc(
 			tipWorldCoordinates
 			+ vec2f(0.0f, -3.0f));
 
-		// Store vertices		
+		// Store vertices
 		StoreLightningVertices(
 			ndcTip.x,
 			ndcTip.y,
@@ -1009,14 +1009,16 @@ public:
         ShipId shipId,
         vec2f const * position,
         float const * light,
-        float const * water)
+        float const * water,
+        size_t lightAndWaterCount)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointMutableAttributes(
             position,
             light,
-            water);
+            water,
+            lightAndWaterCount);
     }
 
     void UploadShipPointMutableAttributesPlaneId(
@@ -1251,7 +1253,7 @@ public:
     inline void UploadShipSparkle(
         ShipId shipId,
         PlaneId planeId,
-        vec2f const & position,        
+        vec2f const & position,
         vec2f const & velocityVector,
         float progress)
     {
@@ -1411,8 +1413,8 @@ public:
         mShips[shipId]->RenderEnd();
     }
 
-    void RenderShipsEnd();	
-    
+    void RenderShipsEnd();
+
 
     //
     // Final
@@ -1540,7 +1542,7 @@ private:
 
     void UpdateWorldBorder();
     vec4f CalculateWaterColor() const;
-    
+
 private:
 
     //
@@ -1569,7 +1571,7 @@ private:
 	{
 		vec2f ndc;
 		float spacePositionX;
-		float ndcBottomY;		
+		float ndcBottomY;
 		float progress;
 		float renderProgress;
 		float personalitySeed;
@@ -1747,7 +1749,7 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
-    GameOpenGLVAO mCrossOfLightVAO;	
+    GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mFireExtinguisherSprayVAO;
 	GameOpenGLVAO mRainVAO;
@@ -1758,7 +1760,7 @@ private:
     //
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;    
+    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
 
     std::vector<TextureFrameSpecification> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;

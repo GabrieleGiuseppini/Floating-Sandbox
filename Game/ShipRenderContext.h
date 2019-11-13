@@ -165,7 +165,8 @@ public:
     void UploadPointMutableAttributes(
         vec2f const * position,
         float const * light,
-        float const * water);
+        float const * water,
+        size_t lightAndWaterCount);
 
     void UploadPointMutableAttributesPlaneId(
         float const * planeId,
@@ -373,7 +374,7 @@ public:
 
     inline void UploadSparkle(
         PlaneId planeId,
-        vec2f const & position,        
+        vec2f const & position,
         vec2f const & velocityVector,
         float progress)
     {

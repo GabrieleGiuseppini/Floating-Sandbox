@@ -127,28 +127,35 @@ void Points::CreateEphemeralParticleAirBubble(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
-    mDecayBuffer[pointIndex] = 1.0f;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
-    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
+    //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    assert(mWaterBuffer[pointIndex] == 0.0f);
+    //mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
+    //mIsLeakingBuffer[pointIndex] = false;
 
-    mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
-    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
-    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
-    mCombustionStateBuffer[pointIndex] = CombustionState();
+    assert(mTemperatureBuffer[pointIndex] == 0.0f);
+    //mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
+    //mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
 
-    mLightBuffer[pointIndex] = 0.0f;
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
 
-    mMaterialWindReceptivityBuffer[pointIndex] = 0.0f;
+    mMaterialWindReceptivityBuffer[pointIndex] = 0.0f; // Air bubbles (underwater) do not care about wind
 
-    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
+    // TODOHERE
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::AirBubble;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
     mEphemeralMaxLifetimeBuffer[pointIndex] = std::numeric_limits<float>::max();
@@ -189,27 +196,33 @@ void Points::CreateEphemeralParticleDebris(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
-    mDecayBuffer[pointIndex] = 1.0f;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
+    //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    assert(mWaterBuffer[pointIndex] == 0.0f);
+    //mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
+    //mIsLeakingBuffer[pointIndex] = false;
 
-    mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
-    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
-    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
-    mCombustionStateBuffer[pointIndex] = CombustionState();
+    assert(mTemperatureBuffer[pointIndex] == 0.0f);
+    //mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
+    //mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
 
-    mLightBuffer[pointIndex] = 0.0f;
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris are susceptible to wind
 
-    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Debris;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -250,27 +263,33 @@ void Points::CreateEphemeralParticleSparkle(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
-    mDecayBuffer[pointIndex] = 1.0f;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
-    mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
-    mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
-    mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    mWaterBuffer[pointIndex] = 0.0f;
+    //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
+    assert(mWaterBuffer[pointIndex] == 0.0f);
+    //mWaterBuffer[pointIndex] = 0.0f;
     assert(false == mIsLeakingBuffer[pointIndex]);
+    //mIsLeakingBuffer[pointIndex] = false;
 
-    mTemperatureBuffer[pointIndex] = 773.15f; // 500 Celsius, arbitrary
-    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
-    mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
-    mCombustionStateBuffer[pointIndex] = CombustionState();
+    assert(mTemperatureBuffer[pointIndex] == 0.0f);
+    //mTemperatureBuffer[pointIndex] = GameParameters::InitialTemperature;
+    //mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
 
-    mLightBuffer[pointIndex] = 0.0f;
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
 
     mMaterialWindReceptivityBuffer[pointIndex] = 20.0f; // Sparkles are susceptible to wind
 
-    mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
 
     mEphemeralTypeBuffer[pointIndex] = EphemeralType::Sparkle;
     mEphemeralStartTimeBuffer[pointIndex] = currentSimulationTime;
@@ -953,13 +972,18 @@ void Points::UploadAttributes(
     // Upload mutable attributes
     //
 
+    // We only upload all points for the first upload; for subsequent uploads,
+    // depending on the buffer we only need to upload non-ephemeral points
+    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mShipPointCount : mAllPointCount;
+
     renderContext.UploadShipPointMutableAttributesStart(shipId);
 
     renderContext.UploadShipPointMutableAttributes(
         shipId,
         mPositionBuffer.data(),
         mLightBuffer.data(),
-        mWaterBuffer.data());
+        mWaterBuffer.data(),
+        partialPointCount);
 
     if (mIsPlaneIdBufferNonEphemeralDirty)
     {
@@ -1007,7 +1031,7 @@ void Points::UploadAttributes(
             shipId,
             mDecayBuffer.data(),
             0,
-            mAllPointCount);
+            partialPointCount);
 
         mIsDecayBufferDirty = false;
     }
@@ -1018,10 +1042,12 @@ void Points::UploadAttributes(
             shipId,
             mTemperatureBuffer.data(),
             0,
-            mAllPointCount);
+            partialPointCount);
     }
 
     renderContext.UploadShipPointMutableAttributesEnd(shipId);
+
+    mHaveWholeBuffersBeenUploadedOnce = true;
 }
 
 void Points::UploadNonEphemeralPointElements(

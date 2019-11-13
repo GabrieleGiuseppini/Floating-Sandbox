@@ -427,6 +427,7 @@ public:
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mDetachHandler()
         , mEphemeralParticleDestroyHandler()
+        , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
@@ -448,7 +449,7 @@ public:
         return ElementIndexRangeIterable(0, mShipPointCount);
     }
 
-    size_t const GetShipPointCount() const
+    ElementCount const GetShipPointCount() const
     {
         return mShipPointCount;
     }
@@ -875,7 +876,8 @@ public:
         vec2f * const restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
-        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
+        // No need to visit ephemerals, as they don't get water
+        for (ElementIndex p = 0; p < mShipPointCount; ++p)
         {
             waterMomentumBuffer[p] =
                 waterVelocityBuffer[p]
@@ -889,7 +891,8 @@ public:
         vec2f * restrict waterVelocityBuffer = mWaterVelocityBuffer.data();
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
-        for (ElementIndex p = 0; p < mBufferElementCount; ++p)
+        // No need to visit ephemerals, as they don't get water
+        for (ElementIndex p = 0; p < mShipPointCount; ++p)
         {
             if (waterBuffer[p] != 0.0f)
             {
@@ -1034,13 +1037,6 @@ public:
     float *restrict GetLightBufferAsFloat()
     {
         return mLightBuffer.data();
-    }
-
-    inline void SetLight(
-        ElementIndex pointElementIndex,
-        float light)
-    {
-        mLightBuffer[pointElementIndex] = light;
     }
 
     //
@@ -1359,7 +1355,7 @@ private:
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
-    bool mutable mIsDecayBufferDirty;
+    bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
     Buffer<vec2f> mIntegrationFactorBuffer;
@@ -1502,6 +1498,11 @@ private:
 
     // The handler registered for ephemeral particle destroy's
     EphemeralParticleDestroyHandler mEphemeralParticleDestroyHandler;
+
+    // Flag remembering whether or not we've uploaded *entire*
+    // (as opposed to just non-ephemeral portion) buffers at
+    // least once
+    bool mutable mHaveWholeBuffersBeenUploadedOnce;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation
