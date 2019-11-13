@@ -1123,6 +1123,7 @@ Render:
 					= Sparkles: 70%
 						= CreateEphemeralSparkleLightning
 							= Reduce reset quantities
+							- Run in debug and verify
 							- See if may agglomerate buffers for ephemeral particles
 								- >= 3000 bubbles: FPS = 23.8-24.something
 						+ Rendering: 0%

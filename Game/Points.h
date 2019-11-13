@@ -421,6 +421,7 @@ public:
         // Container
         //////////////////////////////////
         , mShipPointCount(shipPointCount)
+        , mShipPointCountAligned(make_aligned_float_element_count(shipPointCount))
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
         , mAllPointCount(mShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
@@ -449,9 +450,14 @@ public:
         return ElementIndexRangeIterable(0, mShipPointCount);
     }
 
-    ElementCount const GetShipPointCount() const
+    ElementCount GetShipPointCount() const
     {
         return mShipPointCount;
+    }
+
+    ElementCount GetShipPointCountAligned() const
+    {
+        return mShipPointCountAligned;
     }
 
     /*
@@ -1483,6 +1489,7 @@ private:
 
     // Count of ship points; these are followed by ephemeral points
     ElementCount const mShipPointCount;
+    ElementCount const mShipPointCountAligned;
 
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;

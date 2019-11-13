@@ -1337,7 +1337,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     Algorithms::DiffuseLight_Vectorized(
         mPoints.GetPositionBufferAsVec2(),
         mPoints.GetPlaneIdBufferAsPlaneId(),
-        mPoints.GetShipPointCount(), // No real reason to skip ephemerals, other than they're not expected to have light
+        mPoints.GetShipPointCountAligned(), // No real reason to skip ephemerals, other than they're not expected to have light
         lampPositions.data(),
         lampPlaneIds.data(),
         lampDistanceCoeffs.data(),
