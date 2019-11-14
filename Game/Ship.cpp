@@ -337,7 +337,7 @@ void Ship::Render(
 
         renderContext.UploadShipElementsEnd(
             mId,
-            !mPoints.AreEphemeralPointsDirty()); // Finalize ephemeral points only if there are no subsequent ephemeral point uploads
+            !mPoints.AreEphemeralPointsDirtyForRendering()); // Finalize ephemeral points only if there are no subsequent ephemeral point uploads
     }
 
 
@@ -2161,7 +2161,6 @@ void Ship::GenerateAirBubbles(
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
-        0.3f, // Magic number
         vortexAmplitude,
         vortexPeriod,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),

@@ -381,7 +381,12 @@ Render:
 
 		= Storm (*)
 
-		- Wate bubbles: try with allowing CumulatedIntakenWater to go negative
+		- Water bubbles: try with allowing CumulatedIntakenWater to go negative
+
+		- Ocean darkening:
+			- See if may do exponential, and if so fix marianas trench
+		- Ocean depth adjust:
+			- See if at zero there's no tool; if so: make minimum > 0
 
 		- Text when repair completed: "Completely Repaired!"
 			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
@@ -629,6 +634,8 @@ Render:
 					- Heat dissipation
 					- Breaking materials for pressure
 					- Points::UpdateCombustionHighFrequency
+					- Points::UpdateEphemeralParticles (AirBubbles)
+						- Need to do vortex with forces, though
 	
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
@@ -1120,12 +1127,13 @@ Render:
 				+ Destroy vs. Heat: it's Destroy
 				= Destroy:
 					- Detach: 10%
-					= Sparkles: 70%
-						= CreateEphemeralSparkleLightning
-							= Reduce reset quantities
-							- Run in debug and verify
-							- See if may agglomerate buffers for ephemeral particles
-								- >= 3000 bubbles: FPS = 23.8-24.something
+					+ Sparkles: 70%
+						+ CreateEphemeralSparkleLightning
+							+ Reduce reset quantities
+							+ Run in debug and verify
+							+ See if may agglomerate buffers for ephemeral particles
+								! Baseline: >= 3000 bubbles: FPS = 23.8-24.something
+								+ Now: >= 3000 bubbles: FPS = 24.something-25.something
 						+ Rendering: 0%
 					+ Notify: NO
 			- Do perf analysis - Andrea Gail slows down a lot

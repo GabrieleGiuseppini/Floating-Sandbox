@@ -125,7 +125,6 @@ private:
         {}
     };
 
-
     /*
      * The state of ephemeral particles.
      */
@@ -133,8 +132,6 @@ private:
     {
         struct AirBubbleState
         {
-            TextureFrameIndex FrameIndex;
-            float InitialSize;
             float VortexAmplitude;
             float NormalizedVortexAngularVelocity;
 
@@ -146,13 +143,9 @@ private:
             {}
 
             AirBubbleState(
-                TextureFrameIndex frameIndex,
-                float initialSize,
                 float vortexAmplitude,
                 float vortexPeriod)
-                : FrameIndex(frameIndex)
-                , InitialSize(initialSize)
-                , VortexAmplitude(vortexAmplitude)
+                : VortexAmplitude(vortexAmplitude)
                 , NormalizedVortexAngularVelocity(1.0f / vortexPeriod) // (2PI/vortexPeriod)/2PI
                 , CurrentDeltaY(0.0f)
                 , Progress(0.0f)
@@ -196,6 +189,37 @@ private:
 
         EphemeralState(SparkleState sparkle)
             : Sparkle(sparkle)
+        {}
+    };
+
+    /*
+     * First cluster of ephemeral particle attributes that are used
+     * always together, mostly when looking for free ephemeral
+     * particle slots.
+     */
+    struct EphemeralParticleAttributes1
+    {
+        EphemeralType Type;
+        float StartTime;
+
+        EphemeralParticleAttributes1()
+            : Type(EphemeralType::None)
+            , StartTime(0.0f)
+        {}
+    };
+
+    /*
+     * Second cluster of ephemeral particle attributes that are used
+     * (almost) always together.
+     */
+    struct EphemeralParticleAttributes2
+    {
+        EphemeralState State;
+        float MaxLifetime;
+
+        EphemeralParticleAttributes2()
+            : State(EphemeralState::DebrisState()) // Arbitrary
+            , MaxLifetime(0.0f)
         {}
     };
 
@@ -323,7 +347,6 @@ private:
         }
     };
 
-
     /*
      * The materials of this point.
      */
@@ -390,10 +413,8 @@ public:
         // Rust dynamics
         , mMaterialRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Ephemeral particles
-        , mEphemeralTypeBuffer(mBufferElementCount, shipPointCount, EphemeralType::None)
-        , mEphemeralStartTimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mEphemeralMaxLifetimeBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mEphemeralStateBuffer(mBufferElementCount, shipPointCount, EphemeralState::DebrisState())
+        , mEphemeralParticleAttributes1Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes1())
+        , mEphemeralParticleAttributes2Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes2())
         // Structure
         , mConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
         , mFactoryConnectedSpringsBuffer(mBufferElementCount, shipPointCount, ConnectedSpringsVector())
@@ -436,7 +457,7 @@ public:
         , mIgnitionCandidates(mShipPointCount)
         , mBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
-        , mAreEphemeralPointsDirty(false)
+        , mAreEphemeralPointsDirtyForRendering(false)
     {
     }
 
@@ -484,7 +505,7 @@ public:
     inline bool IsActive(ElementIndex pointIndex) const
     {
         return pointIndex < mShipPointCount
-            || EphemeralType::None != mEphemeralTypeBuffer[pointIndex];
+            || EphemeralType::None != mEphemeralParticleAttributes1Buffer[pointIndex].Type;
     }
 
     inline bool IsEphemeral(ElementIndex pointIndex) const
@@ -539,7 +560,6 @@ public:
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
-        float initialSize,
         float vortexAmplitude,
         float vortexPeriod,
         StructuralMaterial const & structuralMaterial,
@@ -618,9 +638,9 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
-    bool AreEphemeralPointsDirty() const
+    inline bool AreEphemeralPointsDirtyForRendering() const noexcept
     {
-        return mAreEphemeralPointsDirty;
+        return mAreEphemeralPointsDirtyForRendering;
     }
 
     void UploadEphemeralParticles(
@@ -1069,7 +1089,7 @@ public:
 
     EphemeralType GetEphemeralType(ElementIndex pointElementIndex) const
     {
-        return mEphemeralTypeBuffer[pointElementIndex];
+        return mEphemeralParticleAttributes1Buffer[pointElementIndex].Type;
     }
 
     //
@@ -1338,7 +1358,8 @@ private:
         // Hide this particle from ephemeral particles; this will prevent this particle from:
         // - Being rendered
         // - Being updated
-        mEphemeralTypeBuffer[pointElementIndex] = EphemeralType::None;
+        // ...and it will allow its slot to be chosen for a new ephemeral particle
+        mEphemeralParticleAttributes1Buffer[pointElementIndex].Type = EphemeralType::None;
     }
 
 private:
@@ -1430,10 +1451,8 @@ private:
     // Ephemeral Particles
     //
 
-    Buffer<EphemeralType> mEphemeralTypeBuffer;
-    Buffer<float> mEphemeralStartTimeBuffer;
-    Buffer<float> mEphemeralMaxLifetimeBuffer;
-    Buffer<EphemeralState> mEphemeralStateBuffer;
+    Buffer<EphemeralParticleAttributes1> mEphemeralParticleAttributes1Buffer;
+    Buffer<EphemeralParticleAttributes2> mEphemeralParticleAttributes2Buffer;
 
     //
     // Structure
@@ -1489,7 +1508,7 @@ private:
 
     // Count of ship points; these are followed by ephemeral points
     ElementCount const mShipPointCount;
-    ElementCount const mShipPointCountAligned;
+    ElementCount const mShipPointCountAligned; // Technically not explicitly allocated - spilling over into ephemeral particles' area
 
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;
@@ -1534,8 +1553,10 @@ private:
 
     // Flag remembering whether the set of ephemeral points is dirty
     // (i.e. whether there are more or less points than previously
-    // reported to the rendering engine)
-    bool mutable mAreEphemeralPointsDirty;
+    // reported to the rendering engine); only tracks dirtyness
+    // of ephemeral types that are uploaded as ephemeral points
+    // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
+    bool mutable mAreEphemeralPointsDirtyForRendering;
 };
 
 }
