@@ -1238,7 +1238,7 @@ void Ship::ApplyLightning(
 	// happens in one frame only, rather than being splattered across multiple frames
 	float const lightningHeat =
 		gameParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
-		* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+		* (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
 
 	//
 	// Find the (non-ephemeral) points in the radius
@@ -1281,7 +1281,7 @@ void Ship::ApplyLightning(
                 mPoints.Detach(
 					pointIndex,
 					detachVelocity,
-					Points::DetachOptions::GenerateDebris,
+                    Points::DetachOptions::GenerateDebris,
 					currentSimulationTime,
 					gameParameters);
 

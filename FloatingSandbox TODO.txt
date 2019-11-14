@@ -1123,10 +1123,10 @@ Render:
 			+ Heat dissipation
 		= Cleanup:
 			+ If StormRate is OK in minutes, make it also for tsunami and rogue wave
-			= See perf at Lightning hit when UltraViolent on (is it GenerateSparkles?)
+			+ See perf at Lightning hit when UltraViolent on
 				+ Destroy vs. Heat: it's Destroy
-				= Destroy:
-					- Detach: 10%
+				+ Destroy:
+					+ Detach: 10%
 					+ Sparkles: 70%
 						+ CreateEphemeralSparkleLightning
 							+ Reduce reset quantities
