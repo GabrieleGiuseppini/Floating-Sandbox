@@ -1009,140 +1009,6 @@ Render:
 			- Shader might then replace bombs' texture explosions
 		- New materials:
 			- "gunpowder" and "diesel"
-
-	= Storms
-		+ Another physics component
-		+ Game wall-clock based
-		+ State machine with concentric phases:
-			+ Wind (and thus waves)
-				+ Make clouds more sensible to speed - should go faster at higher speeds
-				+ No zero state while there is storm
-				+ Test storm wind on top of wind modulation					
-			+ Cloud Darkening
-			+ Darknening
-				+ Out of phase with cloud darkening, to avoid ugly crossing
-				+ RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
-				  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
-					+ Rename shaders' param
-						+ RenderCore
-						+ Shaders
-						+ RenderContext.h
-					+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
-					  stormDarkening is different than current
-					+ Invoke from storm
-					+ Test combined changes in intensities
-			+ Clouds
-				+ Rearc clouds: 
-					+ Clouds:
-						+ Position is maintained into x=[-1.5, +1.5]
-						+ Normal clouds: 
-							+ New clouds: random
-							+ Old clouds: removed
-							+ Roll clouds around
-						+ Storm clouds:
-							+ New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
-							  at +1.5 or -1.5 depending on total wind speed sign
-								+ Higher scale range, with median larger with progress
-							+ Old clouds: removed when rolled over
-							+ Roll clouds around
-						+ Cloud darkening:
-							+ Per-cloud, storm only
-							+ Use values: 0.3, 0.56, 0.93
-							+ Shader		
-					+ RenderContext:
-						+ map into NDC
-						+ Remove test overrides
-				+ See if can enlarge small cloud
-				+ See if may make storm clouds larger, so to cover whole sky
-			+ Rain
-				+ Shader
-					+ Try with more spatial density
-					+ Discard
-						+ See if it helps with perf: NO
-					+ See double-speed
-					+ Discard if tile off - see perf impact
-					+ Lower density (and thus up volume)
-				+ Sound (continuous, like wind)
-			+ Thunders
-				+ Others random with same distribution as wind gusts
-				+ Events
-				+ Sounds (N, one shot)
-			+ Lightnings
-				+ Storm state machine
-					+ Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
-						+ In which case, externalize state machine as we need to emit event
-						  during progress
-						+ Upload also renderProgress
-							+ Save one attribute (space Y, which is == position Y)
-					+ Finalize duration
-				+ Candidate choice: 
-					+ Exclude orphaned points 
-					+ Candidates should be further apart
-				+ Storm damage
-					+ See if speed of sparkles is ok
-					+ Heat
-					+ Sound: make 1-3 mixes manually of each material, and make new event ("OnLightningHit(material)")
-						+ Mixes: various combinations of Destroy Small sounds
-				+ Shader				
-					+ Figure out daylight colors
-					+ Review zig-zag density (before & after duration finalized)
-				+ Test:
-					+ Lightning above top
-					+ Lightning touching well below
-				+ See how to make bg lightnings visible during storm
-					+ Just less clouds? NO
-					+ Render: if exist background lightnings, draw last X clouds afterwards
-		+ MainFrame: disable menu during storm
-		+ Storm::Parameters:
-			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
-				+ OceanSurface: gets in indirectly and makes waves
-			+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
-				+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
-					+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
-				+ Shader
-		+ Wind volume: start with storm
-			+ Need additional arg to wind event
-		+ Manual storm trigger
-		+ Manual lightning trigger
-		+ Storm: complete auto-triggering
-		+ StormStrengthAdjustment:
-			+ GameParameters
-			+ Use at Storm for:
-				+ Replacement of StormMaxWindSpeed
-					+ Make max wind smaller at Adjustment=Max
-				+ Adjustment to rain density
-					+ Change shader
-				+ Adjustment to darkening
-				+ Adjustment to lightning and thunder rates
-			+ Also include ultra-violent mode
-		+ SettingsDialog: 
-			+ All interesting parameters
-			+ Verify saved
-		+ Rain extinguishes fire and dissipates heat
-			+ Do personality seed work:
-				+ Points: RandomPersonalitySeed
-					+ At Add(), passed from outside
-					+ Also use at other places where we need a per-point random number
-			+ Combustion state machine: rain extinguishes fire
-				+ Smothering is too fast: try with consumed instead of smothering, or add SlowSmothered
-			+ Heat dissipation
-		= Cleanup:
-			+ If StormRate is OK in minutes, make it also for tsunami and rogue wave
-			+ See perf at Lightning hit when UltraViolent on
-				+ Destroy vs. Heat: it's Destroy
-				+ Destroy:
-					+ Detach: 10%
-					+ Sparkles: 70%
-						+ CreateEphemeralSparkleLightning
-							+ Reduce reset quantities
-							+ Run in debug and verify
-							+ See if may agglomerate buffers for ephemeral particles
-								! Baseline: >= 3000 bubbles: FPS = 23.8-24.something
-								+ Now: >= 3000 bubbles: FPS = 24.something-25.something
-						+ Rendering: 0%
-					+ Notify: NO
-			= Do perf analysis - Andrea Gail slows down a lot
-				+ Also give crash to MS
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
@@ -5476,6 +5342,139 @@ IF WX:
 			+ Radius setting
 			+ Apply heat (& Ultra-Violent mode)
 		+ Update changes.txt
+	+ Storms
+		+ Another physics component
+		+ Game wall-clock based
+		+ State machine with concentric phases:
+			+ Wind (and thus waves)
+				+ Make clouds more sensible to speed - should go faster at higher speeds
+				+ No zero state while there is storm
+				+ Test storm wind on top of wind modulation					
+			+ Cloud Darkening
+			+ Darknening
+				+ Out of phase with cloud darkening, to avoid ugly crossing
+				+ RenderContext exposes UploadStormDarkening(float), which is used as multiplier with ambient light
+				  and triggers a param update for shaders' effectiveAmbientLightIntensity (rename)
+					+ Rename shaders' param
+						+ RenderCore
+						+ Shaders
+						+ RenderContext.h
+					+ Add RenderContext method and trigger EffectiveAmbientLightIntensity param update if 
+					  stormDarkening is different than current
+					+ Invoke from storm
+					+ Test combined changes in intensities
+			+ Clouds
+				+ Rearc clouds: 
+					+ Clouds:
+						+ Position is maintained into x=[-1.5, +1.5]
+						+ Normal clouds: 
+							+ New clouds: random
+							+ Old clouds: removed
+							+ Roll clouds around
+						+ Storm clouds:
+							+ New clouds: at spaced intervals, checked w/last in vector (arbitrarily),
+							  at +1.5 or -1.5 depending on total wind speed sign
+								+ Higher scale range, with median larger with progress
+							+ Old clouds: removed when rolled over
+							+ Roll clouds around
+						+ Cloud darkening:
+							+ Per-cloud, storm only
+							+ Use values: 0.3, 0.56, 0.93
+							+ Shader		
+					+ RenderContext:
+						+ map into NDC
+						+ Remove test overrides
+				+ See if can enlarge small cloud
+				+ See if may make storm clouds larger, so to cover whole sky
+			+ Rain
+				+ Shader
+					+ Try with more spatial density
+					+ Discard
+						+ See if it helps with perf: NO
+					+ See double-speed
+					+ Discard if tile off - see perf impact
+					+ Lower density (and thus up volume)
+				+ Sound (continuous, like wind)
+			+ Thunders
+				+ Others random with same distribution as wind gusts
+				+ Events
+				+ Sounds (N, one shot)
+			+ Lightnings
+				+ Storm state machine
+					+ Invoke both OnLightning("Touchdown") and mParentWorld.ApplyLightning after .3 of progress
+						+ In which case, externalize state machine as we need to emit event
+						  during progress
+						+ Upload also renderProgress
+							+ Save one attribute (space Y, which is == position Y)
+					+ Finalize duration
+				+ Candidate choice: 
+					+ Exclude orphaned points 
+					+ Candidates should be further apart
+				+ Storm damage
+					+ See if speed of sparkles is ok
+					+ Heat
+					+ Sound: make 1-3 mixes manually of each material, and make new event ("OnLightningHit(material)")
+						+ Mixes: various combinations of Destroy Small sounds
+				+ Shader				
+					+ Figure out daylight colors
+					+ Review zig-zag density (before & after duration finalized)
+				+ Test:
+					+ Lightning above top
+					+ Lightning touching well below
+				+ See how to make bg lightnings visible during storm
+					+ Just less clouds? NO
+					+ Render: if exist background lightnings, draw last X clouds afterwards
+		+ MainFrame: disable menu during storm
+		+ Storm::Parameters:
+			+ Given to Wind, who uses its WindSpeed = [0.0 ... +INF] to increase wind in calculations
+				+ OceanSurface: gets in indirectly and makes waves
+			+ Given to Clouds, who uses its StormMagnitude for darkness of clouds
+				+ Param at shader, passed to RenderContext at RenderContext::UploadCloudsStart(...) via new "CloudDarkness" float param
+					+ RenderContext::UploadCloudsStart: only sets param when val != mCurrentCloudDarkness
+				+ Shader
+		+ Wind volume: start with storm
+			+ Need additional arg to wind event
+		+ Manual storm trigger
+		+ Manual lightning trigger
+		+ Storm: complete auto-triggering
+		+ StormStrengthAdjustment:
+			+ GameParameters
+			+ Use at Storm for:
+				+ Replacement of StormMaxWindSpeed
+					+ Make max wind smaller at Adjustment=Max
+				+ Adjustment to rain density
+					+ Change shader
+				+ Adjustment to darkening
+				+ Adjustment to lightning and thunder rates
+			+ Also include ultra-violent mode
+		+ SettingsDialog: 
+			+ All interesting parameters
+			+ Verify saved
+		+ Rain extinguishes fire and dissipates heat
+			+ Do personality seed work:
+				+ Points: RandomPersonalitySeed
+					+ At Add(), passed from outside
+					+ Also use at other places where we need a per-point random number
+			+ Combustion state machine: rain extinguishes fire
+				+ Smothering is too fast: try with consumed instead of smothering, or add SlowSmothered
+			+ Heat dissipation
+		+ Cleanup:
+			+ If StormRate is OK in minutes, make it also for tsunami and rogue wave
+			+ See perf at Lightning hit when UltraViolent on
+				+ Destroy vs. Heat: it's Destroy
+				+ Destroy:
+					+ Detach: 10%
+					+ Sparkles: 70%
+						+ CreateEphemeralSparkleLightning
+							+ Reduce reset quantities
+							+ Run in debug and verify
+							+ See if may agglomerate buffers for ephemeral particles
+								! Baseline: >= 3000 bubbles: FPS = 23.8-24.something
+								+ Now: >= 3000 bubbles: FPS = 24.something-25.something
+						+ Rendering: 0%
+					+ Notify: NO
+			+ Do perf analysis - Andrea Gail slows down a lot
+				+ Also give crash to MS
 
 + Water
 	+ Water
