@@ -1,6 +1,7 @@
 1.13.0
 - Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings
-- Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps 
+- Added storms, complete with rain and lightnings
+- Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps
 - Improved performance of "load ship" window - no more freezing when browsing a large number of ships!
 - Reworked sparkles generated when using the chainsaw (slice) tool
 - Added "Lava" ocean textures (thanks to Pac0master!) and a few more ocean textures
@@ -8,6 +9,7 @@
 - From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
 	- Save your ships first - if you've added ships to the game's Ships directory - or else they'll be lost with the upgrade!
 - ...and a few more small improvements here and there
+- Musical theme for this release: Samaris
 
 1.12.0
 - Added heat and combustion physics sub-systems, and coupled them with most of the other sub-systems (bombs, springs, electrical, decay, etc.)
@@ -70,7 +72,6 @@
 - ...and a few more small improvements here and there
 
 1.8.0
-- Musical theme for this release: Coldplay, "A Rush of Blood to the Head"
 - Added ability to specify ships' characteristics with multiple layers (structural, electrical, ropes)
 	- Electrical properties can now be specified on top of any material - no more weak electrical cables!
 - Added cloth material (sails and flags!)
@@ -83,6 +84,7 @@
 - Redesigned entire buoyancy simulation (see https://gabrielegiuseppini.wordpress.com/2018/12/22/a-physics-puzzle/)
 - Lowered friction of ships on the sea floor
 - Fixed bug when mouse moves out of the game window while a tool is engaged
+- Musical theme for this release: Coldplay, "A Rush of Blood to the Head"
 
 1.7.5
 - Added impact bomb - now can trigger explosions on collisions!
@@ -94,7 +96,6 @@
 - Fixed bug with alignment of texture and structure in multi-layer ships
 
 1.7.0
-- Musical theme for this release: Chemical Brothers, "We Are the Night"
 - Added ephemeral particles sub-system, and used it for debris and sparkles from the chainsaw
 - Improved quality of the rigidity simulation - bodies are now stiffer
 - Revisited simulations of water drag (now correctly proportional to *square* of particle velocity) and collisions with ocean floor
@@ -104,9 +105,9 @@
 - Many more physical and graphical parameters are now adjustable
 - Added separate volume control for tools' sounds
 - Fixed bug with line artifacts on textures under some GPUs
+- Musical theme for this release: Chemical Brothers, "We Are the Night"
 
 1.6.0
-- Musical theme for this release: Blonde Redhead, "23"
 - Added anti-matter bomb
 - Added more control over sound effects and music
 - Game now starts in full-screen mode, and user can switch back and forth between full-screen mode and normal-screen mode
@@ -114,6 +115,7 @@
 - Another 10% performance improvement in the water and land contour interpolation
 - Revised bomb blast simulations
 - Lots of new ships, thanks to many contributors
+- Musical theme for this release: Blonde Redhead, "23"
 
 1.5.0
 - Completely redesigned water flooding, and added splash sounds when waves break inside a physical body

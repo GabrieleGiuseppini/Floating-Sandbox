@@ -1,7 +1,7 @@
 {
   "description": "Do you dare to float your ship above the deepest pit of the Marianas Trench? Based on actual topographic data of the Marianas Trench.",
   "settings": {
-    "ocean_darkening_rate": 0.015625,
+    "ocean_darkening_rate": 0.010064959526062012,
     "ocean_floor_bumpiness": 0,
     "sea_depth": 10000,
     "texture_land_texture_index": 1

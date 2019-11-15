@@ -375,23 +375,23 @@ Render:
 			+ Convert SleepingSun full and see if may fit in FS; if not, take the short version
 			+ Add the three songs
 			+ Add to about box
+		+ Storm (*)
+		+ Ocean darkening:
+			+ See if may do exponential
+			+ If so, fix marianas trench
+		+ Ocean detail adjust:
+			+ See if at zero there's no tool; if so: make minimum > 0
 
 		= Officer TimCan's bug:
 			! "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
 			- Ask if could be ocean detail at 0
 		- SettingsWindow bug
-			- Give instrumented binary, after update
+			- Give instrumented binary, after update		
 
-		= Storm (*)
-			- Need to align Points' first ShipElementCount elements
-				- Check all references to mShipPointsCounts et al
+		- Need to align Points' first ShipElementCount elements
+			- Check all references to mShipPointsCounts et al
 
 		- Water bubbles: try with allowing CumulatedIntakenWater to go negative
-
-		- Ocean darkening:
-			- See if may do exponential, and if so fix marianas trench
-		- Ocean detail adjust:
-			- See if at zero there's no tool; if so: make minimum > 0
 
 		- Text when repair completed: "Completely Repaired!"
 			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
@@ -403,11 +403,14 @@ Render:
 
 		- SpinCtrl at SliderControl
 
-		- Music?
+		- Background Music?
 			- Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
 				- Licensed under a Creative Commons Attribution licence
 				- Source: http://incompetech.com/music/royalty-...
 				- Artist: http://incompetech.com/
+			- Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
+			  is fading out
+				- All done by SoundController, as long as mPlayBackgroundMusic is on
 
 		= New explosions:
 			- Shader:

@@ -2839,8 +2839,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         0.0f,
+                        0.2f,
                         1.0f));
 
                 oceanSizer->Add(

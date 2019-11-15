@@ -318,7 +318,7 @@ struct GameParameters
     static float constexpr MaxOceanFloorBumpiness = 6.0f;
 
     float OceanFloorDetailAmplification;
-    static float constexpr MinOceanFloorDetailAmplification = 0.0f;
+    static float constexpr MinOceanFloorDetailAmplification = 1.0f;
     static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
     float LuminiscenceAdjustment;

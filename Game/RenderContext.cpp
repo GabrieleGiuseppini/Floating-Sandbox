@@ -37,7 +37,7 @@ RenderContext::RenderContext(
     , mOceanSegmentBufferAllocatedSize(0u)
     , mOceanVBO()
     , mCrossOfLightVertexBuffer()
-    , mCrossOfLightVBO()	
+    , mCrossOfLightVBO()
     , mHeatBlasterFlameVBO()
     , mFireExtinguisherSprayVBO()
 	, mRainVBO()
@@ -49,7 +49,7 @@ RenderContext::RenderContext(
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
-    , mCrossOfLightVAO()	
+    , mCrossOfLightVAO()
     , mHeatBlasterFlameVAO()
     , mFireExtinguisherSprayVAO()
 	, mRainVAO()
@@ -87,7 +87,7 @@ RenderContext::RenderContext(
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
     , mAmbientLightIntensity(1.0f)
     , mOceanTransparency(0.8125f)
-    , mOceanDarkeningRate(0.359375f)
+    , mOceanDarkeningRate(0.356993f)
     , mShowShipThroughOcean(false)
     , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
@@ -247,7 +247,7 @@ RenderContext::RenderContext(
     mCloudVBO = vbos[2];
     mLandVBO = vbos[3];
     mOceanVBO = vbos[4];
-    mCrossOfLightVBO = vbos[5];	
+    mCrossOfLightVBO = vbos[5];
     mHeatBlasterFlameVBO = vbos[6];
     mFireExtinguisherSprayVBO = vbos[7];
 	mRainVBO = vbos[8];
@@ -871,7 +871,7 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 {
 	//
 	// Prepare buffer
-	//	
+	//
 
 	if (lightningCount > 0)
 	{
@@ -976,7 +976,7 @@ void RenderContext::RenderSkyEnd()
 
 	// The number of clouds we want to draw *over* background
 	// lightnings
-	size_t constexpr cloudsOverLightnings = 5; 
+	size_t constexpr cloudsOverLightnings = 5;
 	GLsizei cloudsOverLightningVertexStart = 0;
 
 	if (mBackgroundLightningVertexCount > 0
@@ -1004,8 +1004,8 @@ void RenderContext::RenderSkyEnd()
 
 		mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-		glDrawArrays(GL_TRIANGLES, 
-			0, 
+		glDrawArrays(GL_TRIANGLES,
+			0,
 			static_cast<GLsizei>(mBackgroundLightningVertexCount));
 		CheckOpenGLError();
 	}
@@ -1337,8 +1337,8 @@ void RenderContext::RenderForegroundLightnings()
 
 	mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-	glDrawArrays(GL_TRIANGLES, 
-		static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount), 
+	glDrawArrays(GL_TRIANGLES,
+		static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),
 		static_cast<GLsizei>(mForegroundLightningVertexCount));
 	CheckOpenGLError();
 }
