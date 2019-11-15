@@ -117,16 +117,16 @@ void Storm::Update(
     float constexpr CloudsDownStart = 0.8f;
 	float constexpr BackgroundLightningEnd = 0.8f;
 	float constexpr ThunderEnd = 0.83f;
+    float constexpr AmbientDarkeningDownStart = 0.85f;
     float constexpr CloudsDownEnd = 0.88f;
     float constexpr WindDownStart = 0.88f;
-	float constexpr AmbientDarkeningDownStart = 0.9f;
 	float constexpr RainDownEnd = 0.905f;
-    float constexpr AmbientDarkeningDownEnd = 0.97f;
+    float constexpr AmbientDarkeningDownEnd = 0.95f;
     float constexpr WindDownEnd = 1.0f;
 
 	float constexpr MaxClouds = 30.0f;
-	float constexpr MinCloudSize = 1.85f;
-	float constexpr MaxCloudSize = 5.2f;
+	float constexpr MinCloudSize = 2.85f;
+	float constexpr MaxCloudSize = 4.5f;
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
     float progressStep =

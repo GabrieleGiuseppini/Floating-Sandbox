@@ -737,12 +737,12 @@ void Points::UpdateCombustionHighFrequency(
                 else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_SmotheredRain)
                 {
                     //
-                    // f(n-1) - 0.105*f(n-1): when starting from 1, after 35 steps (0.7s) it's under 0.02
-                    // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.3*f(n-1)&target=0&endTarget=25&range=true
+                    // f(n-1) - 0.075*f(n-1): when starting from 1, after 50 steps (1.0s) it's under 0.02
+                    // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.075*f(n-1)&target=0&endTarget=75&range=true
                     //
 
                     mCombustionStateBuffer[pointIndex].FlameDevelopment -=
-                        0.105f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                        0.075f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
                 }
                 else
                 {

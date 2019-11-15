@@ -1143,10 +1143,6 @@ Render:
 					+ Notify: NO
 			= Do perf analysis - Andrea Gail slows down a lot
 				+ Also give crash to MS
-				- Comment out pieces and see which one is most responsible:
-					- Baseline: TODOHERE -> TODO
-					- No cloud rendering:
-					- No rain rendering:
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
