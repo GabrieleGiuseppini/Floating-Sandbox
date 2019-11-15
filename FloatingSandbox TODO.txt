@@ -403,14 +403,13 @@ Render:
 
 		- SpinCtrl at SliderControl
 
-		- Background Music?
-			- Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
-				- Licensed under a Creative Commons Attribution licence
-				- Source: http://incompetech.com/music/royalty-...
-				- Artist: http://incompetech.com/
+		- Background Music
+			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
 			- Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
 			  is fading out
 				- All done by SoundController, as long as mPlayBackgroundMusic is on
+				- Default: TBD
+			- Add him to credits
 
 		= New explosions:
 			- Shader:
