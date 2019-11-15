@@ -376,16 +376,21 @@ Render:
 			+ Add the three songs
 			+ Add to about box
 
-		- Officer TimCan's bug:
-			- "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
+		= Officer TimCan's bug:
+			! "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
+			- Ask if could be ocean detail at 0
+		- SettingsWindow bug
+			- Give instrumented binary, after update
 
 		= Storm (*)
+			- Need to align Points' first ShipElementCount elements
+				- Check all references to mShipPointsCounts et al
 
 		- Water bubbles: try with allowing CumulatedIntakenWater to go negative
 
 		- Ocean darkening:
 			- See if may do exponential, and if so fix marianas trench
-		- Ocean depth adjust:
+		- Ocean detail adjust:
 			- See if at zero there's no tool; if so: make minimum > 0
 
 		- Text when repair completed: "Completely Repaired!"
@@ -1136,8 +1141,12 @@ Render:
 								+ Now: >= 3000 bubbles: FPS = 24.something-25.something
 						+ Rendering: 0%
 					+ Notify: NO
-			- Do perf analysis - Andrea Gail slows down a lot
-				- Also give crash to MS
+			= Do perf analysis - Andrea Gail slows down a lot
+				+ Also give crash to MS
+				- Comment out pieces and see which one is most responsible:
+					- Baseline: TODOHERE -> TODO
+					- No cloud rendering:
+					- No rain rendering:
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
