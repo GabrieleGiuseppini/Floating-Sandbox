@@ -41,7 +41,7 @@ std::optional<ElementIndex> Ship::PickPointToMove(
     float bestSquareDistance = std::numeric_limits<float>::max();
     ElementIndex bestPoint = NoneElementIndex;
 
-    for (auto p : mPoints.NonEphemeralPoints())
+    for (auto p : mPoints.RawShipPoints())
     {
         if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
         {
@@ -284,7 +284,7 @@ void Ship::RepairAt(
     float const squareSearchRadius = searchRadius * searchRadius;
 
     // Visit all non-ephemeral points
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
@@ -751,8 +751,11 @@ bool Ship::ApplyHeatBlasterAt(
     float const squareRadius = radius * radius;
 
     // Search all non-ephemeral points within the radius
+    //
+    // No real reason to skip ephemeral points, other than they're not currently
+    // subject to temperature
     bool atLeastOnePointFound = false;
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (pointSquareDistance < squareRadius)
@@ -796,8 +799,11 @@ bool Ship::ExtinguishFireAt(
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Search for burning points within the radius
+    //
+    // No real reason to ignore ephemeral points, other than they're currently
+    // not expected to burn
     bool atLeastOnePointFound = false;
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (pointSquareDistance < squareRadius)
@@ -915,7 +921,7 @@ bool Ship::FloodAt(
     float const searchSquareRadius = searchRadius * searchRadius;
 
     bool anyHasFlooded = false;
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         if (!mPoints.GetMaterialIsHull(pointIndex))
         {
@@ -1003,9 +1009,10 @@ bool Ship::ScrubThrough(
         std::max(startPos.y, endPos.y) + scrubRadius,   // Top
         std::min(startPos.y, endPos.y) - scrubRadius);  // Bottom
 
-    // Visit all points (excluding ephemerals, we don't want to scrub air bubbles)
+    // Visit all points (excluding ephemerals, they don't rot and
+    // thus we don't need to scrub them!)
     bool hasScrubbed = false;
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
@@ -1073,10 +1080,9 @@ void Ship::ApplyThanosSnap(
         direction = 1.0f;
     }
 
-
     // Visit all points (excluding ephemerals, there's nothing to detach there)
     bool atLeastOneDetached = false;
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         auto const x = mPoints.GetPosition(pointIndex).x;
         if (leftX <= x
@@ -1182,7 +1188,7 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 	// Sorted by y, largest first
 	std::vector<vec2f> candidatePositions;
 
-	for (auto pointIndex : mPoints.NonEphemeralPoints())
+	for (auto pointIndex : mPoints.RawShipPoints())
 	{
 		// Non-deleted, non-orphaned point
 		if (mPoints.IsActive(pointIndex)
@@ -1248,7 +1254,7 @@ void Ship::ApplyLightning(
 	float const searchSquareRadiusBlast = searchSquareRadius / 2.0f;
 	float const searchSquareRadiusHeat = searchSquareRadius;
 
-	for (auto pointIndex : mPoints.NonEphemeralPoints())
+	for (auto pointIndex : mPoints.RawShipPoints())
 	{
 		float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
 

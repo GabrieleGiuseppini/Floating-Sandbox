@@ -829,7 +829,7 @@ void Ship::UpdateWaterInflow(
     // Ephemeral points are never leaking, hence we ignore them
     //
 
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         if (mPoints.IsLeaking(pointIndex))
         {
@@ -924,7 +924,7 @@ void Ship::UpdateWaterVelocities(
     float & waterSplashed)
 {
     //
-    // For each point, move each spring's outgoing water momentum to
+    // For each (non-ephemeral) point, move each spring's outgoing water momentum to
     // its destination point
     //
     // Implementation of https://gabrielegiuseppini.wordpress.com/2018/09/08/momentum-based-simulation-of-water-flooding-2d-spaces/
@@ -958,7 +958,7 @@ void Ship::UpdateWaterVelocities(
 
     auto pointFreenessFactorBuffer = mPoints.AllocateWorkBufferFloat();
     float * restrict pointFreenessFactorBufferData = pointFreenessFactorBuffer->data();
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         pointFreenessFactorBufferData[pointIndex] =
             FastExp(-oldPointWaterBufferData[pointIndex] * 10.0f);
@@ -971,7 +971,7 @@ void Ship::UpdateWaterVelocities(
     // No need to visit ephemeral points as they have no springs
     //
 
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         //
         // 1) Calculate water momenta along all springs connected to this point
@@ -1230,7 +1230,7 @@ void Ship::UpdateSinking()
 
     size_t wetPointCount = 0;
 
-    for (auto p : mPoints.NonEphemeralPoints())
+    for (auto p : mPoints.RawShipPoints())
     {
         if (mPoints.GetWater(p) >= 0.5f) // Magic number - we only count a point as wet if its water is above this threshold
             ++wetPointCount;
@@ -1238,7 +1238,7 @@ void Ship::UpdateSinking()
 
     if (!mIsSinking)
     {
-        if (wetPointCount > mPoints.GetShipPointCount() * 3 / 10)
+        if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10) // High watermark
         {
             // Started sinking
             mGameEventHandler->OnSinkingBegin(mId);
@@ -1247,7 +1247,7 @@ void Ship::UpdateSinking()
     }
     else
     {
-        if (wetPointCount < mPoints.GetShipPointCount() * 1 / 10)
+        if (wetPointCount < mPoints.GetRawShipPointCount() * 1 / 10) // Low watermark
         {
             // Stopped sinking
             mGameEventHandler->OnSinkingEnd(mId);
@@ -1337,7 +1337,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     Algorithms::DiffuseLight_Vectorized(
         mPoints.GetPositionBufferAsVec2(),
         mPoints.GetPlaneIdBufferAsPlaneId(),
-        mPoints.GetShipPointCountAligned(), // No real reason to skip ephemerals, other than they're not expected to have light
+        mPoints.GetAlignedShipPointCount(), // No real reason to skip ephemerals, other than they're not expected to have light
         lampPositions.data(),
         lampPlaneIds.data(),
         lampDistanceCoeffs.data(),
@@ -1448,7 +1448,7 @@ void Ship::PropagateHeat(
     // temperature is not relevant to ephemeral particles
     //
 
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         // Temperature of this point
         float const pointTemperature = oldPointTemperatureBufferData[pointIndex];
@@ -1551,7 +1551,7 @@ void Ship::PropagateHeat(
 
     float const airTemperature = gameParameters.AirTemperature;
 
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         // Heat lost in this time quantum (positive when outgoing)
         float heatLost;
@@ -1618,7 +1618,7 @@ void Ship::RotPoints(
 
     // Process all non-ephemeral points - no real reason to exclude ephemerals, other
     // than they're not expected to rot
-    for (auto p : mPoints.NonEphemeralPoints())
+    for (auto p : mPoints.RawShipPoints())
     {
         float waterEquivalent =
             mPoints.GetWater(p)
@@ -1695,7 +1695,7 @@ void Ship::RunConnectivityVisit()
     mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
 
     // Visit all non-ephemeral points
-    for (auto pointIndex : mPoints.NonEphemeralPointsReverse())
+    for (auto pointIndex : mPoints.RawShipPointsReverse())
     {
         // Don't re-visit already-visited points
         if (mPoints.GetCurrentConnectivityVisitSequenceNumber(pointIndex) != visitSequenceNumber)
@@ -2345,7 +2345,7 @@ void Ship::DoBombExplosion(
         * 1.5f; // Larger radius, so to heat parts that are not swept by the blast and stay behind
 
     // Search all non-ephemeral points within the radius
-    for (auto pointIndex : mPoints.NonEphemeralPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - blastPosition).squareLength();
         if (pointSquareDistance < blastHeatSquareRadius)

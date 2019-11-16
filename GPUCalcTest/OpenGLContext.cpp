@@ -49,9 +49,6 @@ OpenGLContext::OpenGLContext()
 
     // Take context for this canvas
     mGLContext = std::make_unique<wxGLContext>(mGLCanvas.get());
-
-    // TODOTEST
-    //mFrame->Show();
 }
 
 OpenGLContext::~OpenGLContext()

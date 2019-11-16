@@ -381,15 +381,10 @@ Render:
 			+ If so, fix marianas trench
 		+ Ocean detail adjust:
 			+ See if at zero there's no tool; if so: make minimum > 0
-
-		= Officer TimCan's bug:
-			! "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
-			- Ask if could be ocean detail at 0
-		- SettingsWindow bug
-			- Give instrumented binary, after update		
-
-		- Need to align Points' first ShipElementCount elements
-			- Check all references to mShipPointsCounts et al
+		+ Need to align Points' first ShipElementCount elements
+			+ Check all references to mShipPointsCounts et al
+			+ Run in debug
+		+ Nuke unused water bubble texture
 
 		- Water bubbles: try with allowing CumulatedIntakenWater to go negative
 
@@ -399,16 +394,25 @@ Render:
 				- Maintain flags during visit
 				- Maintain per-ship counts of broken springs and triangles, updated at:
 					- SpringDestroyHandler and TriangleDestroyHandler
-					- Repair
+					- Repair handlers
 
-		- SpinCtrl at SliderControl
+		- SpinCtrl at SliderControl?
+			- Range is slider's range, and SpinCtrl is coupled with slider
+
+		- Send for testing
+
+		= Officer TimCan's bug:
+			! "just load in a preset, then go into the terrain generation tool, and as you use the tool you will see that the tool doesnt work"
+			- Ask if could be ocean detail at 0
+		- SettingsWindow bug
+			- Give instrumented binary, after update		
 
 		- Background Music
 			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
 			- Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
 			  is fading out
 				- All done by SoundController, as long as mPlayBackgroundMusic is on
-				- Default: TBD
+				- Default: off
 			- Add him to credits
 
 		= New explosions:
@@ -442,8 +446,6 @@ Render:
 				- Timer
 			- Start workitem for explosive combustion
 
-		- Lights/materials breaking under pressure (*)
-
 		- Video (see Marketing above)
 
 	- 1.14.0
@@ -457,6 +459,8 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Cached quantities (*)
+
+		- Lights/materials breaking under pressure (*)
 		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints

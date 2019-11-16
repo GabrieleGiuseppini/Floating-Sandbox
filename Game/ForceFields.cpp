@@ -65,7 +65,7 @@ void BlastForceField::Apply(
     ElementIndex closestPointIndex = NoneElementIndex;
 
     // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
-    for (auto pointIndex : points.NonEphemeralPoints())
+    for (auto pointIndex : points.RawShipPoints())
     {
         vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
         float squarePointDistance = pointRadius.squareLength();

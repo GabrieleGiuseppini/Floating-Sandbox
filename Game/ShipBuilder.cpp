@@ -311,7 +311,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     //
 
     LogMessage("Created ship: W=", shipDefinition.StructuralLayerImage.Size.Width, ", H=", shipDefinition.StructuralLayerImage.Size.Height, ", ",
-        points.GetShipPointCount(), " points, ", springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
+        points.GetRawShipPointCount(), "/", points.GetBufferElementCount(), " points, ",
+        springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements.");
 
     return std::make_unique<Ship>(
@@ -1134,7 +1135,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     for (auto pointIndex : points)
     {
         if (NoneElementIndex != points.GetElectricalElement(pointIndex))
-        {            
+        {
             electricalElementPointIndices.push_back(pointIndex);
 
             if (ElectricalMaterial::ElectricalElementType::Lamp == points.GetElectricalMaterial(pointIndex)->ElectricalType)
@@ -1253,7 +1254,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
 
     // LogMessage(" Leftover points: ", pointInfos1.size() - pointInfos2.size() , " springs: ", springInfos1.size() - springInfos2.size());
 
-    // Here we use a greedy algorithm: for each not-yet-reordered point we add 
+    // Here we use a greedy algorithm: for each not-yet-reordered point we add
     // all of its connected springs that are still not reordered
     for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
     {
@@ -1371,7 +1372,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
 
         //
         // 3. Add/sort all not yet reordered points among all these points
-        // 
+        //
 
         for (ElementIndex pointIndex1 : stripePointIndices1)
         {
@@ -1450,7 +1451,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
     //  - Springs: spring connecting points on left edge of ship with points SW of those points, and rope springs
     //
 
-    // Here we use a greedy algorithm: for each not-yet-reordered point we add 
+    // Here we use a greedy algorithm: for each not-yet-reordered point we add
     // all of its connected springs that are still not reordered
     for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
     {
@@ -1549,7 +1550,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
 
             //
             // 2. Add/sort all existing, not-yet-reordered springs among all these points
-            // 
+            //
 
             for (size_t i1 = 0; i1 < squarePointIndices1.size() - 1; ++i1)
             {
@@ -1573,7 +1574,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
 
             //
             // 3. Add/sort all not yet reordered points among all these points
-            // 
+            //
 
             for (ElementIndex pointIndex1 : squarePointIndices1)
             {

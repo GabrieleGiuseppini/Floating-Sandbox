@@ -378,7 +378,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
     if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
     {
         // Randomize cumulated water intaken for each leaking point
-        for (ElementIndex i : NonEphemeralPoints())
+        for (ElementIndex i : RawShipPoints())
         {
             if (IsLeaking(i))
             {
@@ -417,7 +417,7 @@ void Points::UpdateCombustionLowFrequency(
 
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
-    for (ElementIndex pointIndex = pointOffset; pointIndex < mShipPointCount; pointIndex += pointStride)
+    for (ElementIndex pointIndex = pointOffset; pointIndex < mRawShipPointCount; pointIndex += pointStride)
     {
         auto const currentState = mCombustionStateBuffer[pointIndex].State;
         if (currentState == CombustionState::StateType::NotBurning)
@@ -959,8 +959,8 @@ void Points::UploadAttributes(
         // Only upload ephemeral particle portion
         renderContext.UploadShipPointColors(
             shipId,
-            &(mColorBuffer.data()[mShipPointCount]),
-            mShipPointCount,
+            &(mColorBuffer.data()[mAlignedShipPointCount]),
+            mAlignedShipPointCount,
             mEphemeralPointCount);
     }
 
@@ -970,7 +970,7 @@ void Points::UploadAttributes(
 
     // We only upload all points for the first upload; for subsequent uploads,
     // depending on the buffer we only need to upload non-ephemeral points
-    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mShipPointCount : mAllPointCount;
+    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
     renderContext.UploadShipPointMutableAttributesStart(shipId);
 
@@ -1003,7 +1003,7 @@ void Points::UploadAttributes(
                 shipId,
                 mPlaneIdFloatBuffer.data(),
                 0,
-                mShipPointCount);
+                mRawShipPointCount);
         }
 
         mIsPlaneIdBufferNonEphemeralDirty = false;
@@ -1014,8 +1014,8 @@ void Points::UploadAttributes(
 
         renderContext.UploadShipPointMutableAttributesPlaneId(
             shipId,
-            &(mPlaneIdFloatBuffer.data()[mShipPointCount]),
-            mShipPointCount,
+            &(mPlaneIdFloatBuffer.data()[mAlignedShipPointCount]),
+            mAlignedShipPointCount,
             mEphemeralPointCount);
 
         mIsPlaneIdBufferEphemeralDirty = false;
@@ -1050,9 +1050,9 @@ void Points::UploadNonEphemeralPointElements(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    bool doUploadAllPoints = (DebugShipRenderMode::Points == renderContext.GetDebugShipRenderMode());
+    bool const doUploadAllPoints = (DebugShipRenderMode::Points == renderContext.GetDebugShipRenderMode());
 
-    for (ElementIndex pointIndex : NonEphemeralPoints())
+    for (ElementIndex pointIndex : RawShipPoints())
     {
         if (doUploadAllPoints
             || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
@@ -1296,7 +1296,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
             // Remember to start after this one next time
             mFreeEphemeralParticleSearchStartIndex = p + 1;
             if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-                mFreeEphemeralParticleSearchStartIndex = mShipPointCount;
+                mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
 
             return p;
         }
@@ -1312,7 +1312,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
         // Advance
         ++p;
         if (p >= mAllPointCount)
-            p = mShipPointCount;
+            p = mAlignedShipPointCount;
 
         if (p == mFreeEphemeralParticleSearchStartIndex)
         {
@@ -1338,7 +1338,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     // Remember to start after this one next time
     mFreeEphemeralParticleSearchStartIndex = oldestParticle + 1;
     if (mFreeEphemeralParticleSearchStartIndex >= mAllPointCount)
-        mFreeEphemeralParticleSearchStartIndex = mShipPointCount;
+        mFreeEphemeralParticleSearchStartIndex = mAlignedShipPointCount;
 
     return oldestParticle;
 }

@@ -370,7 +370,7 @@ public:
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
-        : ElementContainer(shipPointCount + GameParameters::MaxEphemeralParticles)
+        : ElementContainer(make_aligned_float_element_count(shipPointCount) + GameParameters::MaxEphemeralParticles)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -441,10 +441,10 @@ public:
         //////////////////////////////////
         // Container
         //////////////////////////////////
-        , mShipPointCount(shipPointCount)
-        , mShipPointCountAligned(make_aligned_float_element_count(shipPointCount))
+        , mRawShipPointCount(shipPointCount)
+        , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
-        , mAllPointCount(mShipPointCount + mEphemeralPointCount)
+        , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mDetachHandler()
@@ -454,9 +454,9 @@ public:
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
-        , mIgnitionCandidates(mShipPointCount)
+        , mIgnitionCandidates(mRawShipPointCount)
         , mBurningPoints()
-        , mFreeEphemeralParticleSearchStartIndex(mShipPointCount)
+        , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
     {
     }
@@ -464,29 +464,29 @@ public:
     Points(Points && other) = default;
 
     /*
-     * Returns an iterator for the non-ephemeral (ship) points only.
+     * Returns an iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
      */
-    inline auto const NonEphemeralPoints() const
+    inline auto const RawShipPoints() const
     {
-        return ElementIndexRangeIterable(0, mShipPointCount);
+        return ElementIndexRangeIterable(0, mRawShipPointCount);
     }
 
-    ElementCount GetShipPointCount() const
+    ElementCount GetRawShipPointCount() const
     {
-        return mShipPointCount;
+        return mRawShipPointCount;
     }
 
-    ElementCount GetShipPointCountAligned() const
+    ElementCount GetAlignedShipPointCount() const
     {
-        return mShipPointCountAligned;
+        return mAlignedShipPointCount;
     }
 
     /*
-     * Returns a reverse iterator for the non-ephemeral (ship) points only.
+     * Returns a reverse iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
      */
-    inline auto const NonEphemeralPointsReverse() const
+    inline auto const RawShipPointsReverse() const
     {
-        return ElementIndexReverseRangeIterable(0, mShipPointCount);
+        return ElementIndexReverseRangeIterable(0, mRawShipPointCount);
     }
 
     /*
@@ -494,7 +494,7 @@ public:
      */
     inline auto const EphemeralPoints() const
     {
-        return ElementIndexRangeIterable(mShipPointCount, mAllPointCount);
+        return ElementIndexRangeIterable(mAlignedShipPointCount, mAllPointCount);
     }
 
     /*
@@ -504,13 +504,13 @@ public:
      */
     inline bool IsActive(ElementIndex pointIndex) const
     {
-        return pointIndex < mShipPointCount
+        return pointIndex < mRawShipPointCount
             || EphemeralType::None != mEphemeralParticleAttributes1Buffer[pointIndex].Type;
     }
 
     inline bool IsEphemeral(ElementIndex pointIndex) const
     {
-        return pointIndex >= mShipPointCount;
+        return pointIndex >= mAlignedShipPointCount;
     }
 
     /*
@@ -903,7 +903,7 @@ public:
         vec2f * restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
         // No need to visit ephemerals, as they don't get water
-        for (ElementIndex p = 0; p < mShipPointCount; ++p)
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
         {
             waterMomentumBuffer[p] =
                 waterVelocityBuffer[p]
@@ -918,7 +918,7 @@ public:
         vec2f * const restrict waterMomentumBuffer = mWaterMomentumBuffer.data();
 
         // No need to visit ephemerals, as they don't get water
-        for (ElementIndex p = 0; p < mShipPointCount; ++p)
+        for (ElementIndex p = 0; p < mRawShipPointCount; ++p)
         {
             if (waterBuffer[p] != 0.0f)
             {
@@ -1507,13 +1507,13 @@ private:
     //////////////////////////////////////////////////////////
 
     // Count of ship points; these are followed by ephemeral points
-    ElementCount const mShipPointCount;
-    ElementCount const mShipPointCountAligned; // Technically not explicitly allocated - spilling over into ephemeral particles' area
+    ElementCount const mRawShipPointCount;
+    ElementCount const mAlignedShipPointCount;
 
     // Count of ephemeral points
     ElementCount const mEphemeralPointCount;
 
-    // Count of all points (sum of two above)
+    // Count of all points (sum of two above, including ship point padding, but not aligned)
     ElementCount const mAllPointCount;
 
     World & mParentWorld;
