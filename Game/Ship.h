@@ -447,6 +447,11 @@ private:
     // to the rendering context
     bool mIsStructureDirty;
 
+    // Counts of elements currently broken - update each time an element is broken
+    // or restored
+    ElementCount mBrokenSpringsCount;
+    ElementCount mBrokenTrianglesCount;
+
     // Sinking detection
     bool mIsSinking;
 

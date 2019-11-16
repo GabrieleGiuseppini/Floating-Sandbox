@@ -43,6 +43,7 @@ class GameController final
     : public IGameController
 	, public IGameControllerSettings
 	, public IGameControllerSettingsOptions
+    , public ILifecycleGameEventHandler
     , public IWavePhenomenaGameEventHandler
 {
 public:
@@ -51,12 +52,6 @@ public:
         std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<ResourceLoader> resourceLoader,
         ProgressCallback const & progressCallback);
-
-    std::shared_ptr<GameEventDispatcher> GetGameEventDispatcher()
-    {
-        assert(!!mGameEventDispatcher);
-        return mGameEventDispatcher;
-    }
 
 public:
 
@@ -560,6 +555,16 @@ public:
 
 private:
 
+    //
+    // Event handlers
+    //
+
+    virtual void OnTsunami(float x) override;
+
+    virtual void OnShipRepaired(ShipId shipId) override;
+
+private:
+
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
@@ -567,8 +572,6 @@ private:
 		std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader);
-
-    virtual void OnTsunami(float x) override;
 
     void InternalUpdate();
 

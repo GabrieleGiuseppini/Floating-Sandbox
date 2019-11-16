@@ -91,6 +91,8 @@ Ship::Ship(
     , mCurrentElectricalVisitSequenceNumber()
     , mConnectedComponentSizes()
     , mIsStructureDirty(true)
+    , mBrokenSpringsCount(0)
+    , mBrokenTrianglesCount(0)
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
@@ -2041,6 +2043,9 @@ void Ship::SpringDestroyHandler(
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
+
+    // Update count of broken springs
+    ++mBrokenSpringsCount;
 }
 
 void Ship::SpringRestoreHandler(
@@ -2076,6 +2081,10 @@ void Ship::SpringRestoreHandler(
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
+
+    // Update count of broken springs
+    assert(mBrokenSpringsCount > 0);
+    --mBrokenSpringsCount;
 }
 
 void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
@@ -2104,6 +2113,9 @@ void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
+
+    // Update count of broken triangles
+    ++mBrokenTrianglesCount;
 }
 
 void Ship::TriangleRestoreHandler(ElementIndex triangleElementIndex)
@@ -2140,6 +2152,10 @@ void Ship::TriangleRestoreHandler(ElementIndex triangleElementIndex)
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
+
+    // Update count of broken triangles
+    assert(mBrokenTrianglesCount > 0);
+    --mBrokenTrianglesCount;
 }
 
 void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex*/)

@@ -95,14 +95,15 @@ GameController::GameController(
     , mSkippedFirstStatPublishes(0)
 {
     // Register ourselves as event handler for the events we care about
+    mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
 
     //
     // Initialize parameter smoothers
     //
-    
+
     std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
-   
+
     assert(mFloatParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
@@ -210,7 +211,7 @@ GameController::GameController(
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
-{    
+{
     assert(!!mWorld);
 
     // Create a new world
@@ -456,7 +457,7 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 void GameController::DisplaySettingsLoadedNotification()
 {
 	assert(!!mTextLayer);
-	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED", 1s);
+	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED");
 }
 
 bool GameController::GetShowStatusText() const
@@ -1016,6 +1017,13 @@ void GameController::OnTsunami(float x)
     }
 }
 
+void GameController::OnShipRepaired(ShipId /*shipId*/)
+{
+    mTextLayer->AddEphemeralTextLine("SHIP REPAIRED!");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 void GameController::InternalUpdate()
 {
     float const now = GameWallClock::GetInstance().NowAsFloat();
@@ -1211,6 +1219,6 @@ void GameController::DisplayInertialVelocity(float inertialVelocityMagnitude)
 			<< " M/SEC";
 
 		assert(!!mTextLayer);
-		mTextLayer->AddEphemeralTextLine(ss.str(), 1s);
+		mTextLayer->AddEphemeralTextLine(ss.str());
 	}
 }

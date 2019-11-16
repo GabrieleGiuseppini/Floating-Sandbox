@@ -85,6 +85,14 @@ public:
         }
     }
 
+    virtual void OnShipRepaired(ShipId shipId) override
+    {
+        for (auto sink : mLifecycleSinks)
+        {
+            sink->OnShipRepaired(shipId);
+        }
+    }
+
     //
     // Structural
     //

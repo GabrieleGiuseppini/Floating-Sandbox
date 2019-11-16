@@ -42,6 +42,11 @@ struct ILifecycleGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnShipRepaired(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IStructuralGameEventHandler

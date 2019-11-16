@@ -41,7 +41,7 @@ public:
 
 	void AddEphemeralTextLine(
 		std::string const & text,
-		std::chrono::duration<float> lifetime);
+		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
     void Update(float now);
 
@@ -69,7 +69,7 @@ private:
 	struct StatusTextLine
 	{
 		RenderedTextHandle Handle;
-		std::string Text;		
+		std::string Text;
 		bool IsTextDirty;
 
 		StatusTextLine()
@@ -82,7 +82,7 @@ private:
 			, IsTextDirty(true) // Start dirty
 		{}
 	};
-	
+
 	std::array<StatusTextLine, 3> mStatusTextLines;
 
 	bool mAreStatusTextLinePositionsDirty;
@@ -123,4 +123,3 @@ private:
 
 	std::deque<EphemeralTextLine> mEphemeralTextLines;
 };
-
