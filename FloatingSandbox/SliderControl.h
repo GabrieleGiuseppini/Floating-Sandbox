@@ -11,6 +11,7 @@
 
 #include <wx/bitmap.h>
 #include <wx/slider.h>
+#include <wx/spinbutt.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/tooltip.h>
@@ -119,92 +120,125 @@ public:
         if (!toolTipLabel.empty())
             SetToolTip(toolTipLabel);
 
-        wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
         //
         // Slider
         //
 
-        mSlider = std::make_unique<wxSlider>(
-            this,
-            wxNewId(),
-            0, // Start value
-            0,
-            mSliderCore->GetNumberOfTicks(),
-            wxDefaultPosition,
-            wxSize(-1, height),
-            wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS, wxDefaultValidator);
+        {
+            mSlider = new wxSlider(
+                this,
+                wxNewId(),
+                0, // Start value
+                0,
+                mSliderCore->GetNumberOfTicks(),
+                wxDefaultPosition,
+                wxSize(-1, height),
+                wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS, wxDefaultValidator);
 
-        mSlider->SetTickFreq(4);
+            mSlider->SetTickFreq(4);
 
-        // Removed as it was getting in the way when moving the slider
-        //
-        //if (!toolTipLabel.empty())
-        //    mSlider->SetToolTip(toolTipLabel);
-        //
+            // Removed as it was getting in the way when moving the slider
+            //
+            //if (!toolTipLabel.empty())
+            //    mSlider->SetToolTip(toolTipLabel);
+            //
 
-        mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
+            mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
-        sizer->Add(mSlider.get(), 1, wxALIGN_CENTER_HORIZONTAL);
+            vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
+        }
 
 
         //
         // Label
         //
 
-        wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
-        if (!toolTipLabel.empty())
-            labelStaticText->SetToolTip(toolTipLabel);
-
-        if (nullptr == warningIcon)
         {
-            // Just add label
-            sizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL);
-        }
-        else
-        {
-            // Create icon
-            wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
+            wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
             if (!toolTipLabel.empty())
-                icon->SetToolTip(toolTipLabel);
+                labelStaticText->SetToolTip(toolTipLabel);
 
-            // Add label and icon
-            wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
-            hSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_VERTICAL);
-            hSizer->AddSpacer(2);
-            hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
+            if (nullptr == warningIcon)
+            {
+                // Just add label
+                vSizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL);
+            }
+            else
+            {
+                // Add label and icon
 
-            sizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL);
+                wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+                hSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_VERTICAL);
+
+                hSizer->AddSpacer(2);
+
+                // Create icon
+                wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
+                if (!toolTipLabel.empty())
+                    icon->SetToolTip(toolTipLabel);
+
+                hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
+
+                vSizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL);
+            }
         }
 
-
         //
-        // Text control
+        // Text control and spin button
         //
 
-		mTextCtrlValidator = TextValidatorFactory::CreateInstance<TValue>(
-            mSliderCore->GetMinValue(), 
-            mSliderCore->GetMaxValue());
+        {
+            wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        mTextCtrl = std::make_unique<wxTextCtrl>(
-            this, 
-            wxID_ANY, 
-            _(""), 
-            wxDefaultPosition, 
-            wxDefaultSize, 
-            wxTE_CENTRE | wxTE_PROCESS_ENTER,
-            *mTextCtrlValidator);
+            // Text control
+            {
+                mTextCtrlValidator = TextValidatorFactory::CreateInstance<TValue>(
+                    mSliderCore->GetMinValue(),
+                    mSliderCore->GetMaxValue());
 
-        mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+                mTextCtrl = new wxTextCtrl(
+                    this,
+                    wxID_ANY,
+                    _(""),
+                    wxDefaultPosition,
+                    wxDefaultSize,
+                    wxTE_CENTRE | wxTE_PROCESS_ENTER,
+                    *mTextCtrlValidator);
 
-        mTextCtrl->Bind(wxEVT_TEXT_ENTER, &SliderControl::OnTextEnter, this);
+                mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-        if (!toolTipLabel.empty())
-            mTextCtrl->SetToolTip(toolTipLabel);
+                mTextCtrl->Bind(wxEVT_TEXT_ENTER, &SliderControl::OnTextEnter, this);
 
-        sizer->Add(mTextCtrl.get(), 0, wxALIGN_CENTER_HORIZONTAL);
+                if (!toolTipLabel.empty())
+                    mTextCtrl->SetToolTip(toolTipLabel);
 
-        this->SetSizerAndFit(sizer);
+                hSizer->Add(mTextCtrl, 0, wxALIGN_CENTER_VERTICAL);
+            }
+
+            // Spin button
+            {
+                mSpinButton = new wxSpinButton(
+                    this,
+                    wxID_ANY,
+                    wxDefaultPosition,
+                    wxSize(-1, 22),
+                    wxSP_VERTICAL | wxSP_ARROW_KEYS);
+
+                mSpinButton->SetRange(0, mSliderCore->GetNumberOfTicks());
+                mSpinButton->SetValue(mSlider->GetValue());
+
+                mSpinButton->Bind(wxEVT_SPIN, &SliderControl::OnSpinButton, this);
+
+                hSizer->Add(mSpinButton, 0, wxALIGN_CENTRE_VERTICAL);
+            }
+
+            vSizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL);
+        }
+
+        this->SetSizerAndFit(vSizer);
     }
 
     TValue GetValue() const
@@ -214,20 +248,21 @@ public:
 
     void SetValue(TValue value)
     {
-        mSlider->SetValue(mSliderCore->ValueToTick(value));
+        auto const tickValue = mSliderCore->ValueToTick(value);
+
+        mSlider->SetValue(tickValue);
         mTextCtrl->SetValue(std::to_string(value));
+        mSpinButton->SetValue(tickValue);
     }
 
 private:
 
     void OnSliderScroll(wxScrollEvent & /*event*/)
     {
-        TValue value = mSliderCore->TickToValue(mSlider->GetValue());
+        auto const tickValue = mSlider->GetValue();
 
-        mTextCtrl->SetValue(std::to_string(value));
-
-        // Notify value
-        mOnValueChanged(value);
+        SetTickValue(tickValue);
+        mSpinButton->SetValue(tickValue);
     }
 
     void OnTextEnter(wxCommandEvent & /*event*/)
@@ -241,22 +276,48 @@ private:
             value = std::max(value, mSliderCore->GetMinValue());
             value = std::min(value, mSliderCore->GetMaxValue());
 
+            auto const tickValue = mSliderCore->ValueToTick(value);
+
             // Set slider to value
-            mSlider->SetValue(mSliderCore->ValueToTick(value));
+            mSlider->SetValue(tickValue);
 
             // Set text ctrl back to value
             mTextCtrl->SetValue(std::to_string(value));
+
+            // Set SpinButton to value
+            mSpinButton->SetValue(tickValue);
 
             // Notify value
             mOnValueChanged(value);
         }
     }
 
+    void OnSpinButton(wxSpinEvent & event)
+    {
+        auto const tickValue = event.GetValue();
+
+        SetTickValue(tickValue);
+        mSlider->SetValue(tickValue);
+    }
+
 private:
 
-    std::unique_ptr<wxSlider> mSlider;
-    std::unique_ptr<wxTextCtrl> mTextCtrl;
+    void SetTickValue(int tick)
+    {
+        TValue const value = mSliderCore->TickToValue(tick);
+
+        mTextCtrl->SetValue(std::to_string(value));
+
+        // Notify value
+        mOnValueChanged(value);
+    }
+
+private:
+
+    wxSlider * mSlider;
+    wxTextCtrl * mTextCtrl;
     std::unique_ptr<wxValidator> mTextCtrlValidator;
+    wxSpinButton * mSpinButton;
 
     std::function<void(TValue)> const mOnValueChanged;
     std::unique_ptr<ISliderCore<TValue>> const mSliderCore;
