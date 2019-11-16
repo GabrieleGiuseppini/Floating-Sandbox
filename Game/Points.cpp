@@ -1284,7 +1284,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     ElementIndex oldestParticle = NoneElementIndex;
     float oldestParticleLifetime = 0.0f;
 
-    assert(mFreeEphemeralParticleSearchStartIndex >= mShipPointCount
+    assert(mFreeEphemeralParticleSearchStartIndex >= mAlignedShipPointCount
         && mFreeEphemeralParticleSearchStartIndex < mAllPointCount);
 
     for (ElementIndex p = mFreeEphemeralParticleSearchStartIndex; ; /*incremented in loop*/)

@@ -385,8 +385,7 @@ Render:
 			+ Check all references to mShipPointsCounts et al
 			+ Run in debug
 		+ Nuke unused water bubble texture
-
-		- Water bubbles: try with allowing CumulatedIntakenWater to go negative
+		+ Water bubbles: try with allowing CumulatedIntakenWater to go negative: NO CHANGE
 
 		- Text when repair completed: "Completely Repaired!"
 			- At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
