@@ -411,7 +411,7 @@ Render:
 				+ Global mute
 				+ Game music: volume, playSinkingMusic
 				+ Background music: volume, playBackgroundMusic
-				- Center sliders and their checkboxes
+				+ Center sliders and their checkboxes
 			= PreferencesDialog:
 				+ Same as UIPreferencesManager
 			= SettingsDialog: remove music volume, music mute, playSinkingMusic
@@ -427,6 +427,7 @@ Render:
 				= MainFrame
 			- Remove all TODOTEST's
 			- Run in Debug
+			- Update changes.txt, also w/new location of global sound settings
 
 		- SettingsWindow bug
 			- Give instrumented binary, after update		

@@ -492,8 +492,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
 void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
 {
-    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
-
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
     //
     // Row 1
@@ -508,11 +507,10 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
 
             mGlobalMuteCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnGlobalMuteCheckBoxClicked, this);
 
-            gridSizer->Add(
+            vSizer->Add(
                 mGlobalMuteCheckBox,
-                wxGBPosition(0, 0),
-                wxGBSpan(1, 5),
-                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                0,
+                wxALIGN_LEFT | wxALL,
                 Border);
         }
     }
@@ -522,130 +520,147 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
     //
 
     {
-        // Background music volume
+
+        wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+
         {
-            mBackgroundMusicVolumeSlider = new SliderControl<float>(
-                panel,
-                SliderWidth,
-                SliderHeight,
-                "Background Music Volume",
-                "Adjusts the volume of background music.",
-                [this](float value)
+            //
+            // Row 1
+            //
+
+            {
+                // Background music volume
                 {
-                    this->mUIPreferencesManager->SetBackgroundMusicVolume(value);
-                    this->mOnChangeCallback();
-                },
-                std::make_unique<LinearSliderCore>(
-                    0.0f,
-                    100.0f));
+                    mBackgroundMusicVolumeSlider = new SliderControl<float>(
+                        panel,
+                        SliderWidth,
+                        SliderHeight,
+                        "Background Music Volume",
+                        "Adjusts the volume of background music.",
+                        [this](float value)
+                        {
+                            this->mUIPreferencesManager->SetBackgroundMusicVolume(value);
+                            this->mOnChangeCallback();
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            0.0f,
+                            100.0f));
 
-            gridSizer->Add(
-                mBackgroundMusicVolumeSlider,
-                wxGBPosition(1, 1),
-                wxGBSpan(1, 1),
-                wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
-                Border);
-        }
+                    gridSizer->Add(
+                        mBackgroundMusicVolumeSlider,
+                        wxGBPosition(0, 1),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                        Border);
+                }
 
-        // Sinking Music Volume
-        {
-            mSinkingMusicVolumeSlider = new SliderControl<float>(
-                panel,
-                SliderWidth,
-                SliderHeight,
-                "Farewell Music Volume",
-                "Adjusts the volume of the music played when a ship is sinking.",
-                [this](float value)
+                // Sinking Music Volume
                 {
-                    this->mUIPreferencesManager->SetGameMusicVolume(value);
-                    this->mOnChangeCallback();
-                },
-                std::make_unique<LinearSliderCore>(
-                    0.0f,
-                    100.0f));
+                    mSinkingMusicVolumeSlider = new SliderControl<float>(
+                        panel,
+                        SliderWidth,
+                        SliderHeight,
+                        "Farewell Music Volume",
+                        "Adjusts the volume of the music played when a ship is sinking.",
+                        [this](float value)
+                        {
+                            this->mUIPreferencesManager->SetGameMusicVolume(value);
+                            this->mOnChangeCallback();
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            0.0f,
+                            100.0f));
 
+                    gridSizer->Add(
+                        mSinkingMusicVolumeSlider,
+                        wxGBPosition(0, 3),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                        Border);
+                }
+            }
+
+            //
+            // Row 2
+            //
+
+            {
+                // Play background music
+                {
+                    mPlayBackgroundMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Background Music"), wxDefaultPosition, wxDefaultSize, 0);
+
+                    mPlayBackgroundMusicCheckBox->SetToolTip("Enables or disables background music while playing the game.");
+
+                    mPlayBackgroundMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked, this);
+
+                    gridSizer->Add(
+                        mPlayBackgroundMusicCheckBox,
+                        wxGBPosition(1, 1),
+                        wxGBSpan(1, 1),
+                        wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                        Border);
+                }
+
+                // Play sinking music
+                {
+                    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0);
+
+                    mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing sorrow music when a ship starts sinking.");
+
+                    mPlaySinkingMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked, this);
+
+                    gridSizer->Add(
+                        mPlaySinkingMusicCheckBox,
+                        wxGBPosition(1, 3),
+                        wxGBSpan(1, 1),
+                        wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                        Border);
+                }
+            }
+
+
+            //
+            // Add spacers
+            //
+
+            // Col 0
             gridSizer->Add(
-                mSinkingMusicVolumeSlider,
-                wxGBPosition(1, 3),
-                wxGBSpan(1, 1),
-                wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
-                Border);
+                1,
+                0,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxEXPAND);
+
+            // Col 2
+            gridSizer->Add(
+                1,
+                0,
+                wxGBPosition(0, 2),
+                wxGBSpan(2, 1),
+                wxEXPAND);
+
+            // Col 4
+            gridSizer->Add(
+                1,
+                0,
+                wxGBPosition(0, 4),
+                wxGBSpan(2, 1),
+                wxEXPAND);
+
+            gridSizer->AddGrowableCol(0);
+            gridSizer->AddGrowableCol(2);
+            gridSizer->AddGrowableCol(4);
         }
+
+        vSizer->Add(
+            gridSizer,
+            1,
+            wxEXPAND,
+            0);
     }
-
-    //
-    // Row 3
-    //
-
-    {
-        // Play background music
-        {
-            mPlayBackgroundMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Background Music"), wxDefaultPosition, wxDefaultSize, 0);
-
-            mPlayBackgroundMusicCheckBox->SetToolTip("Enables or disables background music while playing the game.");
-
-            mPlayBackgroundMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked, this);
-
-            gridSizer->Add(
-                mPlayBackgroundMusicCheckBox,
-                wxGBPosition(2, 1),
-                wxGBSpan(1, 1),
-                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
-                Border);
-        }
-
-        // Play sinking music
-        {
-            mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0);
-
-            mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing sorrow music when a ship starts sinking.");
-
-            mPlaySinkingMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked, this);
-
-            gridSizer->Add(
-                mPlaySinkingMusicCheckBox,
-                wxGBPosition(2, 3),
-                wxGBSpan(1, 1),
-                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
-                Border);
-        }
-    }
-
-
-    //
-    // Add spacers
-    //
-
-    // Col 0
-    gridSizer->Add(
-        30,
-        0,
-        wxGBPosition(0, 0),
-        wxGBSpan(4, 1),
-        wxEXPAND);
-
-    // Col 2
-    gridSizer->Add(
-        30,
-        0,
-        wxGBPosition(0, 2),
-        wxGBSpan(4, 1),
-        wxEXPAND);
-
-    // Col 4
-    gridSizer->Add(
-        30,
-        0,
-        wxGBPosition(0, 4),
-        wxGBSpan(4, 1),
-        wxEXPAND);
-
-    gridSizer->AddGrowableCol(0);
-    gridSizer->AddGrowableCol(2);
-    gridSizer->AddGrowableCol(4);
 
     // Finalize panel
-    panel->SetSizerAndFit(gridSizer);
+    panel->SetSizerAndFit(vSizer);
 }
 
 void PreferencesDialog::ReadSettings()
