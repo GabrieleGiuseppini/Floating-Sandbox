@@ -30,8 +30,7 @@
 #include <vector>
 
 class SoundController
-    : public ILifecycleGameEventHandler
-    , public IWavePhenomenaGameEventHandler
+    : public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
     , public IStructuralGameEventHandler
 	, public IAtmosphereGameEventHandler
@@ -40,7 +39,7 @@ class SoundController
 public:
 
     SoundController(
-        std::shared_ptr<ResourceLoader> resourceLoader,
+        ResourceLoader & resourceLoader,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();
@@ -50,8 +49,6 @@ public:
     //
 
     void SetPaused(bool isPaused);
-
-    void SetMuted(bool isMuted);
 
     // Master effects
 
@@ -85,22 +82,6 @@ public:
 
     void SetMasterToolsMuted(bool isMuted);
 
-    // Master Music
-
-    float GetMasterMusicVolume() const
-    {
-        return mMasterMusicVolume;
-    }
-
-    void SetMasterMusicVolume(float volume);
-
-    bool GetMasterMusicMuted() const
-    {
-        return mMasterMusicMuted;
-    }
-
-    void SetMasterMusicMuted(bool isMuted);
-
     // Misc
 
     bool GetPlayBreakSounds() const
@@ -123,13 +104,6 @@ public:
     }
 
     void SetPlayWindSound(bool playWindSound);
-
-    bool GetPlaySinkingMusic() const
-    {
-        return mPlaySinkingMusic;
-    }
-
-    void SetPlaySinkingMusic(bool playSinkingMusic);
 
     void PlayDrawSound(bool isUnderwater);
     void StopDrawSound();
@@ -184,17 +158,12 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
         gameController.RegisterCombustionEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
-
-    virtual void OnSinkingBegin(ShipId shipId) override;
-
-    virtual void OnSinkingEnd(ShipId shipId) override;
 
     virtual void OnTsunamiNotification(float x) override;
 
@@ -261,10 +230,6 @@ public:
 	virtual void OnThunder() override;
 
 	virtual void OnLightning() override;
-
-    virtual void OnSilenceStarted() override;
-
-    virtual void OnSilenceLifted() override;
 
     virtual void OnBombPlaced(
         BombId bombId,
@@ -375,9 +340,6 @@ private:
 
 private:
 
-    std::shared_ptr<ResourceLoader> mResourceLoader;
-
-
     //
     // State
     //
@@ -386,13 +348,10 @@ private:
     bool mMasterEffectsMuted;
     float mMasterToolsVolume;
     bool mMasterToolsMuted;
-    float mMasterMusicVolume;
-    bool mMasterMusicMuted;
 
     bool mPlayBreakSounds;
     bool mPlayStressSounds;
     bool mPlayWindSound;
-    bool mPlaySinkingMusic;
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
@@ -493,10 +452,4 @@ private:
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
     ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
-
-    //
-    // Music
-    //
-
-    GameMusic mSinkingMusic;
 };

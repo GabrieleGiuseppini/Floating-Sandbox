@@ -9,6 +9,7 @@
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
 #include "LoggingDialog.h"
+#include "MusicController.h"
 #include "PreferencesDialog.h"
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
@@ -286,7 +287,7 @@ private:
 
     void ResetState();
 
-    void UpdateFrameTitle();    
+    void UpdateFrameTitle();
 
     void OnError(
         std::string const & message,
@@ -311,6 +312,7 @@ private:
     std::shared_ptr<ResourceLoader> mResourceLoader;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
+    std::shared_ptr<MusicController> mMusicController;
     std::unique_ptr<ToolController> mToolController;
     std::shared_ptr<SettingsManager> mSettingsManager;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;

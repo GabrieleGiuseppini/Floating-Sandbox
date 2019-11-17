@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "AudioController.h"
+#include "MusicController.h"
+
 #include <Game/IGameController.h>
 
 #include <GameCore/Version.h>
@@ -24,7 +27,9 @@ class UIPreferencesManager
 {
 public:
 
-    UIPreferencesManager(std::shared_ptr<IGameController> gameController);
+    UIPreferencesManager(
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<MusicController> musicController);
 
     ~UIPreferencesManager();
 
@@ -192,6 +197,60 @@ public:
 		mGameController->SetShowExtendedStatusText(value);
 	}
 
+    //
+    // Sounds
+    //
+
+    bool GetGlobalMute() const
+    {
+        return AudioController::GetGlobalMute();
+    }
+
+    void SetGlobalMute(bool value)
+    {
+        AudioController::SetGlobalMute(value);
+    }
+
+    float GetBackgroundMusicVolume() const
+    {
+        return mMusicController->GetBackgroundMusicVolume();
+    }
+
+    void SetBackgroundMusicVolume(float value)
+    {
+        mMusicController->SetBackgroundMusicVolume(value);
+    }
+
+    bool GetPlayBackgroundMusic() const
+    {
+        return mMusicController->GetPlayBackgroundMusic();
+    }
+
+    void SetPlayBackgroundMusic(bool value)
+    {
+        mMusicController->SetPlayBackgroundMusic(value);
+    }
+
+    float GetGameMusicVolume() const
+    {
+        return mMusicController->GetGameMusicVolume();
+    }
+
+    void SetGameMusicVolume(float value)
+    {
+        mMusicController->SetGameMusicVolume(value);
+    }
+
+    bool GetPlaySinkingMusic() const
+    {
+        return mMusicController->GetPlaySinkingMusic();
+    }
+
+    void SetPlaySinkingMusic(bool value)
+    {
+        mMusicController->SetPlaySinkingMusic(value);
+    }
+
 private:
 
     void LoadPreferences();
@@ -204,6 +263,7 @@ private:
 
     // The owners/storage of our properties
     std::shared_ptr<IGameController> mGameController;
+    std::shared_ptr<MusicController> mMusicController;
 
     //
     // The preferences for which we are the owners/storage

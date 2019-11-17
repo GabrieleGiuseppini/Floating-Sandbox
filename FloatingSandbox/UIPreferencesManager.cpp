@@ -13,9 +13,12 @@
 
 const std::string Filename = "ui_preferences.json";
 
-UIPreferencesManager::UIPreferencesManager(std::shared_ptr<IGameController> gameController)
+UIPreferencesManager::UIPreferencesManager(
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<MusicController> musicController)
     : mDefaultShipLoadDirectory(ResourceLoader::GetInstalledShipFolderPath())
     , mGameController(std::move(gameController))
+    , mMusicController(std::move(musicController))
 {
     //
     // Set defaults for our preferences
@@ -245,6 +248,52 @@ void UIPreferencesManager::LoadPreferences()
 		{
 			mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
 		}
+
+        //
+        // Sound
+        //
+
+        {
+            // Global mute
+            auto globalMuteIt = preferencesRootObject.find("global_mute");
+            if (globalMuteIt != preferencesRootObject.end()
+                && globalMuteIt->second.is<bool>())
+            {
+                AudioController::SetGlobalMute(globalMuteIt->second.get<bool>());
+            }
+
+            // Background music volume
+            auto backgroundMusicVolumeIt = preferencesRootObject.find("background_music_volume");
+            if (backgroundMusicVolumeIt != preferencesRootObject.end()
+                && backgroundMusicVolumeIt->second.is<double>())
+            {
+                mMusicController->SetBackgroundMusicVolume(static_cast<float>(backgroundMusicVolumeIt->second.get<double>()));
+            }
+
+            // Play background music
+            auto playBackgroundMusicIt = preferencesRootObject.find("play_background_music");
+            if (playBackgroundMusicIt != preferencesRootObject.end()
+                && playBackgroundMusicIt->second.is<bool>())
+            {
+                mMusicController->SetPlayBackgroundMusic(playBackgroundMusicIt->second.get<bool>());
+            }
+
+            // Game music volume
+            auto gameMusicVolumeIt = preferencesRootObject.find("game_music_volume");
+            if (gameMusicVolumeIt != preferencesRootObject.end()
+                && gameMusicVolumeIt->second.is<double>())
+            {
+                mMusicController->SetGameMusicVolume(static_cast<float>(gameMusicVolumeIt->second.get<double>()));
+            }
+
+            // Play sinking music
+            auto playSinkingMusicIt = preferencesRootObject.find("play_sinking_music");
+            if (playSinkingMusicIt != preferencesRootObject.end()
+                && playSinkingMusicIt->second.is<bool>())
+            {
+                mMusicController->SetPlaySinkingMusic(playSinkingMusicIt->second.get<bool>());
+            }
+        }
     }
 }
 
@@ -302,6 +351,22 @@ void UIPreferencesManager::SavePreferences() const
 
 	// Add show extended status text
 	preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
+
+    //
+    // Sounds
+    //
+
+    {
+        preferencesRootObject["global_mute"] = picojson::value(AudioController::GetGlobalMute());
+
+        preferencesRootObject["background_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetBackgroundMusicVolume()));
+
+        preferencesRootObject["play_background_music"] = picojson::value(mMusicController->GetPlayBackgroundMusic());
+
+        preferencesRootObject["game_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetGameMusicVolume()));
+
+        preferencesRootObject["play_sinking_music"] = picojson::value(mMusicController->GetPlaySinkingMusic());
+    }
 
     // Save
     Utils::SaveJSONFile(

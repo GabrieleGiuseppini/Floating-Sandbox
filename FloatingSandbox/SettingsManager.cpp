@@ -131,11 +131,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // Sound
     ADD_SC_SETTING(float, MasterEffectsVolume);
     ADD_SC_SETTING(float, MasterToolsVolume);
-    ADD_SC_SETTING(float, MasterMusicVolume);
     ADD_SC_SETTING(bool, PlayBreakSounds);
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
-    ADD_SC_SETTING(bool, PlaySinkingMusic);
 
     return factory;
 }

@@ -104,13 +104,11 @@ enum class GameSettings : size_t
     // Sound
     MasterEffectsVolume,
     MasterToolsVolume,
-    MasterMusicVolume,
     PlayBreakSounds,
     PlayStressSounds,
     PlayWindSound,
-    PlaySinkingMusic,
 
-    _Last = PlaySinkingMusic
+    _Last = PlayWindSound
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

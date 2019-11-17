@@ -5,10 +5,17 @@
  ***************************************************************************************/
 #include "PreferencesDialog.h"
 
+#include <GameCore/LinearSliderCore.h>
+
 #include <wx/gbsizer.h>
+#include <wx/notebook.h>
 #include <wx/stattext.h>
 
 static constexpr int Border = 10;
+
+static int constexpr SliderWidth = 40;
+static int constexpr SliderHeight = 140;
+static int constexpr SliderBorder = 10;
 
 static constexpr int MaxZoomIncrementPosition = 200;
 static constexpr int MaxPanIncrementPosition = 200;
@@ -30,6 +37,8 @@ PreferencesDialog::PreferencesDialog(
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
         _T("Preferences Window"));
 
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+
 
     //
     // Lay the dialog out
@@ -37,11 +46,36 @@ PreferencesDialog::PreferencesDialog(
 
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxPanel * mainPanel = new wxPanel(this);
-    mainPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
-    PopulateMainPanel(mainPanel);
+    wxNotebook * notebook = new wxNotebook(
+        this,
+        wxID_ANY,
+        wxPoint(-1, -1),
+        wxSize(-1, -1),
+        wxNB_TOP);
 
-    dialogVSizer->Add(mainPanel, 1, wxEXPAND);
+    //
+    // Game Preferences
+    //
+
+    wxPanel * gamePanel = new wxPanel(notebook);
+
+    PopulateGamePanel(gamePanel);
+
+    notebook->AddPage(gamePanel, "Game Preferences");
+
+
+    //
+    // Global Sound and Music
+    //
+
+    wxPanel * musicPanel = new wxPanel(notebook);
+
+    PopulateMusicPanel(musicPanel);
+
+    notebook->AddPage(musicPanel, "Global Sound and Music");
+
+
+    dialogVSizer->Add(notebook, 1, wxEXPAND);
 
     dialogVSizer->AddSpacer(20);
 
@@ -169,19 +203,49 @@ void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent &
 	mOnChangeCallback();
 }
 
+void PreferencesDialog::OnGlobalMuteCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetGlobalMute(mGlobalMuteCheckBox->GetValue());
+
+    ReconcileSoundSettings();
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetPlayBackgroundMusic(mPlayBackgroundMusicCheckBox->GetValue());
+
+    ReconcileSoundSettings();
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->GetValue());
+
+    ReconcileSoundSettings();
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
     // Close ourselves
     this->Close();
 }
 
-void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
+void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
     gridSizer->SetFlexibleDirection(wxHORIZONTAL);
     gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
-    
+
 
     //
     // Row 1
@@ -189,7 +253,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
     {
         wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
-        
+
         gridSizer->Add(
             screenshotDirStaticText,
             wxGBPosition(0, 0),
@@ -335,7 +399,7 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
 
         gridSizer->Add(
             mSaveSettingsOnExitCheckBox,
-            wxGBPosition(4, 0), 
+            wxGBPosition(4, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -426,6 +490,164 @@ void PreferencesDialog::PopulateMainPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
+void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
+{
+    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+
+
+    //
+    // Row 1
+    //
+
+    {
+        // Global mute
+        {
+            mGlobalMuteCheckBox = new wxCheckBox(panel, wxID_ANY, _("Mute All Sounds"), wxDefaultPosition, wxDefaultSize, 0);
+
+            mGlobalMuteCheckBox->SetToolTip("Mutes or allows all sounds.");
+
+            mGlobalMuteCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnGlobalMuteCheckBoxClicked, this);
+
+            gridSizer->Add(
+                mGlobalMuteCheckBox,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 5),
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                Border);
+        }
+    }
+
+    //
+    // Row 2
+    //
+
+    {
+        // Background music volume
+        {
+            mBackgroundMusicVolumeSlider = new SliderControl<float>(
+                panel,
+                SliderWidth,
+                SliderHeight,
+                "Background Music Volume",
+                "Adjusts the volume of background music.",
+                [this](float value)
+                {
+                    this->mUIPreferencesManager->SetBackgroundMusicVolume(value);
+                    this->mOnChangeCallback();
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    100.0f));
+
+            gridSizer->Add(
+                mBackgroundMusicVolumeSlider,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                Border);
+        }
+
+        // Sinking Music Volume
+        {
+            mSinkingMusicVolumeSlider = new SliderControl<float>(
+                panel,
+                SliderWidth,
+                SliderHeight,
+                "Farewell Music Volume",
+                "Adjusts the volume of the music played when a ship is sinking.",
+                [this](float value)
+                {
+                    this->mUIPreferencesManager->SetGameMusicVolume(value);
+                    this->mOnChangeCallback();
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    100.0f));
+
+            gridSizer->Add(
+                mSinkingMusicVolumeSlider,
+                wxGBPosition(1, 3),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                Border);
+        }
+    }
+
+    //
+    // Row 3
+    //
+
+    {
+        // Play background music
+        {
+            mPlayBackgroundMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Background Music"), wxDefaultPosition, wxDefaultSize, 0);
+
+            mPlayBackgroundMusicCheckBox->SetToolTip("Enables or disables background music while playing the game.");
+
+            mPlayBackgroundMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked, this);
+
+            gridSizer->Add(
+                mPlayBackgroundMusicCheckBox,
+                wxGBPosition(2, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                Border);
+        }
+
+        // Play sinking music
+        {
+            mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0);
+
+            mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing sorrow music when a ship starts sinking.");
+
+            mPlaySinkingMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked, this);
+
+            gridSizer->Add(
+                mPlaySinkingMusicCheckBox,
+                wxGBPosition(2, 3),
+                wxGBSpan(1, 1),
+                wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL,
+                Border);
+        }
+    }
+
+
+    //
+    // Add spacers
+    //
+
+    // Col 0
+    gridSizer->Add(
+        30,
+        0,
+        wxGBPosition(0, 0),
+        wxGBSpan(4, 1),
+        wxEXPAND);
+
+    // Col 2
+    gridSizer->Add(
+        30,
+        0,
+        wxGBPosition(0, 2),
+        wxGBSpan(4, 1),
+        wxEXPAND);
+
+    // Col 4
+    gridSizer->Add(
+        30,
+        0,
+        wxGBPosition(0, 4),
+        wxGBSpan(4, 1),
+        wxEXPAND);
+
+    gridSizer->AddGrowableCol(0);
+    gridSizer->AddGrowableCol(2);
+    gridSizer->AddGrowableCol(4);
+
+    // Finalize panel
+    panel->SetSizerAndFit(gridSizer);
+}
+
 void PreferencesDialog::ReadSettings()
 {
     assert(!!mUIPreferencesManager);
@@ -441,6 +663,14 @@ void PreferencesDialog::ReadSettings()
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
 	mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
 	mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
+
+    mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
+    mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());
+    mPlayBackgroundMusicCheckBox->SetValue(mUIPreferencesManager->GetPlayBackgroundMusic());
+    mSinkingMusicVolumeSlider->SetValue(mUIPreferencesManager->GetGameMusicVolume());
+    mPlaySinkingMusicCheckBox->SetValue(mUIPreferencesManager->GetPlaySinkingMusic());
+
+    ReconcileSoundSettings();
 }
 
 float PreferencesDialog::ZoomIncrementSpinToZoomIncrement(int spinPosition)
@@ -461,4 +691,10 @@ float PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
 int PreferencesDialog::PanIncrementToPanIncrementSpin(float panIncrement)
 {
     return static_cast<int>(panIncrement);
+}
+
+void PreferencesDialog::ReconcileSoundSettings()
+{
+    mBackgroundMusicVolumeSlider->Enable(!mGlobalMuteCheckBox->GetValue() && mPlayBackgroundMusicCheckBox->GetValue());
+    mSinkingMusicVolumeSlider->Enable(!mGlobalMuteCheckBox->GetValue() && mPlaySinkingMusicCheckBox->GetValue());
 }

@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "SliderControl.h"
 #include "UIPreferencesManager.h"
 
 #include <wx/filepicker.h>
@@ -40,11 +41,16 @@ private:
 	void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
 	void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
 
+    void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
+    void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
+    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
+
     void OnOkButton(wxCommandEvent & event);
 
 private:
 
-    void PopulateMainPanel(wxPanel * panel);
+    void PopulateGamePanel(wxPanel * panel);
+    void PopulateMusicPanel(wxPanel * panel);
 
     void ReadSettings();
 
@@ -54,9 +60,11 @@ private:
     static float PanIncrementSpinToPanIncrement(int spinPosition);
     static int PanIncrementToPanIncrementSpin(float panIncrement);
 
+    void ReconcileSoundSettings();
+
 private:
 
-    // Main panel
+    // Game panel
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
@@ -67,6 +75,13 @@ private:
     wxSpinCtrl * mPanIncrementSpinCtrl;
 	wxCheckBox * mShowStatusTextCheckBox;
 	wxCheckBox * mShowExtendedStatusTextCheckBox;
+
+    // Global Sound and Music
+    wxCheckBox * mGlobalMuteCheckBox;
+    SliderControl<float> * mBackgroundMusicVolumeSlider;
+    wxCheckBox * mPlayBackgroundMusicCheckBox;
+    SliderControl<float> * mSinkingMusicVolumeSlider;
+    wxCheckBox * mPlaySinkingMusicCheckBox;
 
     // Buttons
     wxButton * mOkButton;

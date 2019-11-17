@@ -147,7 +147,7 @@ public:
 
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
-            vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
+            vSizer->Add(mSlider, 0, wxALIGN_CENTER_HORIZONTAL);
         }
 
 
@@ -171,16 +171,21 @@ public:
 
                 wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-                hSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_VERTICAL);
+                // Label
+                {
+                    hSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_VERTICAL);
+                }
 
                 hSizer->AddSpacer(2);
 
-                // Create icon
-                wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
-                if (!toolTipLabel.empty())
-                    icon->SetToolTip(toolTipLabel);
+                // Icon
+                {
+                    wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
+                    if (!toolTipLabel.empty())
+                        icon->SetToolTip(toolTipLabel);
 
-                hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
+                    hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
+                }
 
                 vSizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL);
             }

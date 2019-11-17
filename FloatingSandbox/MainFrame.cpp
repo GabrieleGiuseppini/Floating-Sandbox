@@ -107,6 +107,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
     , mSoundController()
+    , mMusicController()
     , mToolController()
     , mSettingsManager()
     , mUIPreferencesManager()
@@ -619,10 +620,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mSoundController = std::make_shared<SoundController>(
-            mResourceLoader,
+            *mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
-                splash->UpdateProgress(0.5f + progress / 2.0f, message);
+                splash->UpdateProgress(0.5f + progress / 3.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -631,6 +632,32 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     catch (std::exception const & e)
     {
         OnError("Error during initialization of sound controller: " + std::string(e.what()), true);
+
+        return;
+    }
+
+    this->mMainApp->Yield();
+
+
+    //
+    // Create Music controller
+    //
+
+    try
+    {
+        mMusicController = std::make_shared<MusicController>(
+            *mResourceLoader,
+            [&splash, this](float progress, std::string const & message)
+            {
+                splash->UpdateProgress(0.5f + 0.33333f + progress / 3.0f, message);
+                this->mMainApp->Yield();
+                this->mMainApp->Yield();
+                this->mMainApp->Yield();
+            });
+    }
+    catch (std::exception const & e)
+    {
+        OnError("Error during initialization of music controller: " + std::string(e.what()), true);
 
         return;
     }
@@ -656,7 +683,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create UI Preferences manager
     //
 
-    mUIPreferencesManager = std::make_shared<UIPreferencesManager>(mGameController);
+    mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
+        mGameController,
+        mMusicController);
 
 	ReconcileWithUIPreferences();
 
@@ -697,6 +726,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mEventTickerPanel->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
+    mMusicController->RegisterEventHandler(*mGameController);
 
 
     //
@@ -935,6 +965,10 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mSoundController);
         mSoundController->Update();
 
+        // Update music controller
+        assert(!!mMusicController);
+        mMusicController->Update();
+
         // Do after-render chores
         AfterGameRender();
     }
@@ -982,6 +1016,14 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
 
     assert(!!mSoundController);
     mSoundController->LowFrequencyUpdate();
+
+
+    //
+    // Update music controller
+    //
+
+    assert(!!mMusicController);
+    mMusicController->LowFrequencyUpdate();
 }
 
 void MainFrame::OnCheckUpdateTimerTrigger(wxTimerEvent & /*event*/)
@@ -1543,8 +1585,8 @@ void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mSoundController);
-    mSoundController->SetMuted(mMuteMenuItem->IsChecked());
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetGlobalMute(mMuteMenuItem->IsChecked());
 }
 
 void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1609,6 +1651,9 @@ void MainFrame::ResetState()
 {
     assert(!!mSoundController);
     mSoundController->Reset();
+
+    assert(!!mMusicController);
+    mMusicController->Reset();
 
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
@@ -1703,6 +1748,9 @@ void MainFrame::SetPaused(bool isPaused)
             if (!!mSoundController)
                 mSoundController->SetPaused(true);
 
+            if (!!mMusicController)
+                mMusicController->SetPaused(true);
+
             mStepMenuItem->Enable(true);
         }
 
@@ -1723,6 +1771,9 @@ void MainFrame::SetPaused(bool isPaused)
             if (!!mSoundController)
                 mSoundController->SetPaused(false);
 
+            if (!!mMusicController)
+                mMusicController->SetPaused(false);
+
             mStepMenuItem->Enable(false);
         }
     }
@@ -1732,4 +1783,5 @@ void MainFrame::ReconcileWithUIPreferences()
 {
 	mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
 	mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
+    mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
 }

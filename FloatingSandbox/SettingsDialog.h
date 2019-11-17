@@ -74,7 +74,6 @@ private:
     void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
     void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
-    void OnPlaySinkingMusicCheckBoxClick(wxCommandEvent & event);
 
 	void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
 	void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
@@ -189,16 +188,12 @@ private:
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
 
-    // Sound
+    // Sound and Advanced
     SliderControl<float> * mEffectsVolumeSlider;
     SliderControl<float> * mToolsVolumeSlider;
-    SliderControl<float> * mMusicVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
-    wxCheckBox * mPlaySinkingMusicCheckBox;
-
-    // Advanced
     SliderControl<float> * mSpringStiffnessSlider;
     SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
@@ -237,8 +232,7 @@ private:
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
-    void PopulateSoundPanel(wxPanel * panel);
-    void PopulateAdvancedPanel(wxPanel * panel);
+    void PopulateSoundAndAdvancedPanel(wxPanel * panel);
 	void PopulateSettingsManagementPanel(wxPanel * panel);
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);

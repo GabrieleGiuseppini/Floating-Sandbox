@@ -6,6 +6,7 @@
 set  (FLOATING_SANDBOX_SOURCES
 	AboutDialog.cpp
 	AboutDialog.h
+	AudioController.h
 	CheckForUpdatesDialog.cpp
 	CheckForUpdatesDialog.h
 	EventTickerPanel.cpp
@@ -17,6 +18,10 @@ set  (FLOATING_SANDBOX_SOURCES
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
+	Music.cpp
+	Music.h
+	MusicController.cpp
+	MusicController.h
 	NewVersionDisplayDialog.cpp
 	NewVersionDisplayDialog.h
 	OpenGLContext.cpp
