@@ -114,8 +114,6 @@ public:
 
 private:
 
-    void OnGameMusicStarted();
-
     void OnGameMusicStopped();
 
 private:

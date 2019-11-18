@@ -15,14 +15,12 @@
 
 using namespace std::chrono_literals;
 
-float constexpr SinkingMusicVolume = 80.0f;
-
 MusicController::MusicController(
     ResourceLoader &  resourceLoader,
     ProgressCallback const & progressCallback)
     : // State
       mIsMuted(false)
-    , mBackgroundMusicVolume(100.0f)
+    , mBackgroundMusicVolume(80.0f)
     , mPlayBackgroundMusic(false)
     , mGameMusicVolume(100.0f)
     , mPlaySinkingMusic(true)
@@ -31,13 +29,13 @@ MusicController::MusicController(
         100.0f,
         mBackgroundMusicVolume,
         mIsMuted,
-        std::chrono::seconds(1),
-        std::chrono::seconds(1))
+        std::chrono::seconds(2),
+        std::chrono::seconds(2))
     , mSinkingMusic(
-        SinkingMusicVolume,
+        80.0f,
         mGameMusicVolume,
         mIsMuted,
-        std::chrono::seconds::zero(),
+        std::chrono::seconds(2),
         std::chrono::seconds(4))
 {
     //
@@ -57,7 +55,7 @@ MusicController::MusicController(
         // Parse filename
         //
 
-		static std::regex const MusicNameRegex(R"(([^_]+)(_[^_]+)?(?:_\d+))");
+		static std::regex const MusicNameRegex(R"(([^_]+)(?:_([^_]+))?(?:_\d+))");
 
 		std::smatch musicNameMatch;
 		if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
@@ -135,7 +133,7 @@ void MusicController::SetPlayBackgroundMusic(bool playBackgroundMusic)
         // Only play background music when sinking music is not playing
         if (LogicalMusicStatus::Stopped == mSinkingMusic.GetLogicalStatus())
         {
-            mBackgroundMusic.Play();
+            mBackgroundMusic.FadeToPlay();
         }
     }
     else
@@ -185,9 +183,16 @@ void MusicController::OnSinkingBegin(ShipId /*shipId*/)
 {
     if (mPlaySinkingMusic)
     {
-        mSinkingMusic.Play();
-
-        OnGameMusicStarted();
+        if (LogicalMusicStatus::Playing == mBackgroundMusic.GetLogicalStatus())
+        {
+            // Smooth transition
+            mBackgroundMusic.FadeToStop();
+            mSinkingMusic.FadeToPlay();
+        }
+        else
+        {
+            mSinkingMusic.Play();
+        }
     }
 }
 
@@ -212,11 +217,6 @@ void MusicController::OnSilenceLifted()
     }
 
     // If we were sinking, we won't resume the music
-}
-
-void MusicController::OnGameMusicStarted()
-{
-    mBackgroundMusic.FadeToStop();
 }
 
 void MusicController::OnGameMusicStopped()

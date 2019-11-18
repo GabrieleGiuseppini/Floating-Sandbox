@@ -374,7 +374,7 @@ public:
 
             // Advance playlist entry
             ++mCurrentPlaylistItem;
-            if (mCurrentPlaylistItem > mPlaylist.size())
+            if (mCurrentPlaylistItem >= mPlaylist.size())
                 mCurrentPlaylistItem = 0;
         }
 
