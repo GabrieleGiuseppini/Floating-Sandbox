@@ -31,6 +31,9 @@ void TextLayer::SetStatusTextEnabled(bool isEnabled)
 
 	// Positions need to be recalculated
 	mAreStatusTextLinePositionsDirty = true;
+
+    // Update immediately
+    UpdateStatusTexts();
 }
 
 void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
@@ -39,6 +42,9 @@ void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
 
 	// Positions need to be recalculated
 	mAreStatusTextLinePositionsDirty = true;
+
+    // Update immediately
+    UpdateStatusTexts();
 }
 
 void TextLayer::SetStatusTexts(
@@ -105,6 +111,9 @@ void TextLayer::SetStatusTexts(
 		mStatusTextLines[2].Text = ss.str();
 		mStatusTextLines[2].IsTextDirty = true;
     }
+
+    // Update immediately
+    UpdateStatusTexts();
 }
 
 void TextLayer::AddEphemeralTextLine(
@@ -131,18 +140,7 @@ void TextLayer::Update(float now)
 	// Status text
 	//
 
-	{
-		int ordinal = 0;
-
-		UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-
-		for (size_t i = 1; i <= 2; ++i)
-		{
-			UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-		}
-
-		mAreStatusTextLinePositionsDirty = false;
-	}
+    UpdateStatusTexts();
 
 
 	//
@@ -264,6 +262,20 @@ void TextLayer::Update(float now)
 	}
 }
 
+void TextLayer::UpdateStatusTexts()
+{
+    int ordinal = 0;
+
+    UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+
+    for (size_t i = 1; i <= 2; ++i)
+    {
+        UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+    }
+
+    mAreStatusTextLinePositionsDirty = false;
+}
+
 void TextLayer::UpdateStatusTextLine(
 	StatusTextLine & line,
 	bool isEnabled,
@@ -302,9 +314,9 @@ void TextLayer::UpdateStatusTextLine(
 				offset);
 
 			line.IsTextDirty = false;
-		}		
+		}
 	}
-	else 
+	else
 	{
 		//
 		// This line is not enabled

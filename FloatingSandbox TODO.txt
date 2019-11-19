@@ -398,8 +398,9 @@ Render:
 		+ Bump up version
 
 		+ Slider's edit box: enforce setting on focus away
+		+ the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
+
 		- "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
-		- the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
 		- loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
 		- i feel that the waves on the "storm" should be a bit smaller
 			- The titanic has a structural problem, In a storm the stern keeps breaking off		

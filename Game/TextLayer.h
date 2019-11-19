@@ -49,6 +49,8 @@ private:
 
 	struct StatusTextLine;
 
+    void UpdateStatusTexts();
+
 	void UpdateStatusTextLine(
 		StatusTextLine & line,
 		bool isEnabled,
