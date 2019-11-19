@@ -215,6 +215,7 @@ public:
 
                 mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
+                mTextCtrl->Bind(wxEVT_KILL_FOCUS, &SliderControl::OnKillFocus, this);
                 mTextCtrl->Bind(wxEVT_TEXT_ENTER, &SliderControl::OnTextEnter, this);
 
                 if (!toolTipLabel.empty())
@@ -270,7 +271,19 @@ private:
         mSpinButton->SetValue(tickValue);
     }
 
+    void OnKillFocus(wxFocusEvent & event)
+    {
+        OnTextUpdated();
+
+        event.Skip();
+    }
+
     void OnTextEnter(wxCommandEvent & /*event*/)
+    {
+        OnTextUpdated();
+    }
+
+    void OnTextUpdated()
     {
         std::string const strValue = mTextCtrl->GetValue().ToStdString();
 
