@@ -36,7 +36,8 @@ void Points::Add(
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mDecayBuffer.emplace_back(1.0f);
-    mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations));
+    mPinnedCoefficientBuffer.emplace_back(1.0f);
+    mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
@@ -88,9 +89,6 @@ void Points::Add(
     mPlaneIdFloatBuffer.emplace_back(0.0f);
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
-	// Pinning
-    mIsPinnedBuffer.emplace_back(false);
-
 	// Repair state
     mRepairStateBuffer.emplace_back();
 
@@ -126,7 +124,8 @@ void Points::CreateEphemeralParticleAirBubble(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
+    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
@@ -164,8 +163,6 @@ void Points::CreateEphemeralParticleAirBubble(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    assert(false == mIsPinnedBuffer[pointIndex]);
-
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
 }
 
@@ -192,7 +189,8 @@ void Points::CreateEphemeralParticleDebris(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
+    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -228,8 +226,6 @@ void Points::CreateEphemeralParticleDebris(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    assert(false == mIsPinnedBuffer[pointIndex]);
-
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
 
     // Remember that ephemeral points are dirty now
@@ -259,7 +255,8 @@ void Points::CreateEphemeralParticleSparkle(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
+    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -294,8 +291,6 @@ void Points::CreateEphemeralParticleSparkle(
     mPlaneIdBuffer[pointIndex] = planeId;
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
-
-    assert(false == mIsPinnedBuffer[pointIndex]);
 }
 
 void Points::Detach(
@@ -317,7 +312,7 @@ void Points::Detach(
     }
 
     // Imprint velocity, unless the point is pinned
-    if (!mIsPinnedBuffer[pointElementIndex])
+    if (!IsPinned(pointElementIndex))
     {
         mVelocityBuffer[pointElementIndex] = velocity;
     }
@@ -367,7 +362,9 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         // Recalc integration factor time coefficients
         for (ElementIndex i : *this)
         {
-            mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(numMechanicalDynamicsIterations);
+            mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(
+                numMechanicalDynamicsIterations,
+                mPinnedCoefficientBuffer[i]);
         }
 
         // Remember the new values
@@ -817,7 +814,7 @@ void Points::UpdateEphemeralParticles(
                 case EphemeralType::AirBubble:
                 {
                     // Do not advance air bubble if it's pinned
-                    if (!mIsPinnedBuffer[pointIndex])
+                    if (!IsPinned(pointIndex))
                     {
                         float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(GetPosition(pointIndex).x);
                         float const deltaY = waterHeight - GetPosition(pointIndex).y;

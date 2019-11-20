@@ -385,6 +385,7 @@ public:
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
+        , mPinnedCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -427,8 +428,6 @@ public:
         , mIsPlaneIdBufferNonEphemeralDirty(true)
         , mIsPlaneIdBufferEphemeralDirty(true)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
-        // Pinning
-        , mIsPinnedBuffer(mBufferElementCount, shipPointCount, false)
         // Repair
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
 		// Randomness
@@ -779,6 +778,29 @@ public:
         mIsDecayBufferDirty = true;
     }
 
+    bool IsPinned(ElementIndex pointElementIndex) const
+    {
+        return (mPinnedCoefficientBuffer[pointElementIndex] == 0.0f);
+    }
+
+    void Pin(ElementIndex pointElementIndex)
+    {
+        assert(1.0f == mPinnedCoefficientBuffer[pointElementIndex]);
+
+        mPinnedCoefficientBuffer[pointElementIndex] = 0.0f;
+
+        Freeze(pointElementIndex); // Sets integration coefficient
+    }
+
+    void Unpin(ElementIndex pointElementIndex)
+    {
+        assert(0.0f == mPinnedCoefficientBuffer[pointElementIndex]);
+
+        mPinnedCoefficientBuffer[pointElementIndex] = 1.0f;
+
+        Thaw(pointElementIndex); // Recalculates integration coefficient
+    }
+
     /*
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
@@ -804,7 +826,9 @@ public:
     void Thaw(ElementIndex pointElementIndex)
     {
         // Re-populate its integration factor time coefficient, thawing point
-        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations);
+        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
+            mCurrentNumMechanicalDynamicsIterations,
+            mPinnedCoefficientBuffer[pointElementIndex]);
     }
 
 
@@ -1266,33 +1290,6 @@ public:
     }
 
     //
-    // Pinning
-    //
-
-    bool IsPinned(ElementIndex pointElementIndex) const
-    {
-        return mIsPinnedBuffer[pointElementIndex];
-    }
-
-    void Pin(ElementIndex pointElementIndex)
-    {
-        assert(false == mIsPinnedBuffer[pointElementIndex]);
-
-        mIsPinnedBuffer[pointElementIndex] = true;
-
-        Freeze(pointElementIndex);
-    }
-
-    void Unpin(ElementIndex pointElementIndex)
-    {
-        assert(true == mIsPinnedBuffer[pointElementIndex]);
-
-        mIsPinnedBuffer[pointElementIndex] = false;
-
-        Thaw(pointElementIndex);
-    }
-
-    //
     // Repair
     //
 
@@ -1333,10 +1330,13 @@ public:
 
 private:
 
-    static inline float CalculateIntegrationFactorTimeCoefficient(float numMechanicalDynamicsIterations)
+    static inline float CalculateIntegrationFactorTimeCoefficient(
+        float numMechanicalDynamicsIterations,
+        float pinnedCoefficient)
     {
         return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
-            * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations);
+            * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
+            * pinnedCoefficient;
     }
 
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
@@ -1383,6 +1383,7 @@ private:
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
+    Buffer<float> mPinnedCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
     Buffer<vec2f> mIntegrationFactorBuffer;
@@ -1473,12 +1474,6 @@ private:
     bool mutable mIsPlaneIdBufferNonEphemeralDirty;
     bool mutable mIsPlaneIdBufferEphemeralDirty;
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
-
-    //
-    // Pinning
-    //
-
-    Buffer<bool> mIsPinnedBuffer;
 
     //
     // Repair state
