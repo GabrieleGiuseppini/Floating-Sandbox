@@ -36,7 +36,7 @@ void Points::Add(
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mDecayBuffer.emplace_back(1.0f);
-    mPinnedCoefficientBuffer.emplace_back(1.0f);
+    mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
@@ -124,7 +124,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -189,7 +189,7 @@ void Points::CreateEphemeralParticleDebris(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -255,7 +255,7 @@ void Points::CreateEphemeralParticleSparkle(
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    assert(mPinnedCoefficientBuffer[pointIndex] == 1.0f);
+    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
@@ -364,7 +364,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         {
             mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(
                 numMechanicalDynamicsIterations,
-                mPinnedCoefficientBuffer[i]);
+                mFrozenCoefficientBuffer[i]);
         }
 
         // Remember the new values

@@ -385,7 +385,7 @@ public:
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
-        , mPinnedCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -780,23 +780,19 @@ public:
 
     bool IsPinned(ElementIndex pointElementIndex) const
     {
-        return (mPinnedCoefficientBuffer[pointElementIndex] == 0.0f);
+        return (mFrozenCoefficientBuffer[pointElementIndex] == 0.0f);
     }
 
     void Pin(ElementIndex pointElementIndex)
     {
-        assert(1.0f == mPinnedCoefficientBuffer[pointElementIndex]);
+        assert(1.0f == mFrozenCoefficientBuffer[pointElementIndex]);
 
-        mPinnedCoefficientBuffer[pointElementIndex] = 0.0f;
-
-        Freeze(pointElementIndex); // Sets integration coefficient
+        Freeze(pointElementIndex); // Recalculates integration coefficient
     }
 
     void Unpin(ElementIndex pointElementIndex)
     {
-        assert(0.0f == mPinnedCoefficientBuffer[pointElementIndex]);
-
-        mPinnedCoefficientBuffer[pointElementIndex] = 1.0f;
+        assert(0.0f == mFrozenCoefficientBuffer[pointElementIndex]);
 
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
@@ -817,18 +813,28 @@ public:
     // and becomes oblivious to forces
     void Freeze(ElementIndex pointElementIndex)
     {
-        // Zero-out integration factor time coefficient and velocity, freezing point
-        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = 0.0f;
+        // Remember this point is now frozen
+        mFrozenCoefficientBuffer[pointElementIndex] = 0.0f;
+
+        // Recalc integration factor time coefficient, freezing point
+        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
+            mCurrentNumMechanicalDynamicsIterations,
+            mFrozenCoefficientBuffer[pointElementIndex]);
+
+        // Also zero-out velocity, wiping all traces of this point moving
         mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
     }
 
     // Changes the point's dynamics so that the point reacts again to forces
     void Thaw(ElementIndex pointElementIndex)
     {
+        // This point is not frozen anymore
+        mFrozenCoefficientBuffer[pointElementIndex] = 1.0f;
+
         // Re-populate its integration factor time coefficient, thawing point
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
-            mPinnedCoefficientBuffer[pointElementIndex]);
+            mFrozenCoefficientBuffer[pointElementIndex]);
     }
 
 
@@ -1332,11 +1338,11 @@ private:
 
     static inline float CalculateIntegrationFactorTimeCoefficient(
         float numMechanicalDynamicsIterations,
-        float pinnedCoefficient)
+        float frozenCoefficient)
     {
         return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
-            * pinnedCoefficient;
+            * frozenCoefficient;
     }
 
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
@@ -1383,7 +1389,7 @@ private:
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
-    Buffer<float> mPinnedCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
+    Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
 
     Buffer<vec2f> mIntegrationFactorBuffer;
