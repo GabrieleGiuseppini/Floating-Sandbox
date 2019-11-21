@@ -395,17 +395,25 @@ Render:
 					+ Repair handlers		
 		+ SpinCtrl at SliderControl?
 			+ Range is slider's range, and SpinCtrl is coupled with slider
+		+ Send for testing
 		+ Bump up version
 
 		+ Slider's edit box: enforce setting on focus away
 		+ the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
+		+ loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
+			+ Definitely repro's with Simulation Quality
+			+ CalculateIntegrationFactorTimeCoefficient needs to take into account mIsPinned
+				+ ...which becomes float
+		+ "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
 
-		- "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
-		- loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
-		- i feel that the waves on the "storm" should be a bit smaller
+		- Improve app icon 
+			- First icon (AAA) has white bg
+				- Verify it's the app (exe) icon
+				- Add verification line post-installer-build, below
+			- Second (AAB) is current, used by SetIcon
+		- "I feel that the waves on the 'storm' should be a bit smaller"
 			- The titanic has a structural problem, In a storm the stern keeps breaking off		
 		- Try Dario's cable suggestions
-		- Improve app icon (white border around black lines)
 
 		= Background Music
 			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
@@ -437,6 +445,8 @@ Render:
 			- Make all music OGG/Vorbis
 			- Run in Debug
 			- Update changes.txt, also w/new location of global sound settings
+
+		- Send for testing
 
 		= New explosions:
 			- Shader:
