@@ -106,8 +106,8 @@ void Storm::Update(
     float constexpr AmbientDarkeningUpStart = 0.09f;
 	float constexpr RainUpStart = 0.09f;
     float constexpr CloudsUpEnd = 0.1f;
+    float constexpr WindUpEnd = 0.1f;
 	float constexpr BackgroundLightningStart = 0.11f;
-    float constexpr WindUpEnd = 0.12f;
     float constexpr AmbientDarkeningUpEnd = 0.125f;
 	float constexpr RainUpEnd = 0.35f;
 	float constexpr ForegroundLightningStart = 0.36f;
@@ -371,7 +371,7 @@ void Storm::RecalculateCoefficients(
 
 	mMaxWindSpeed =
 		MixPiecewiseLinear(
-			0.01f, 40.0f, 80.0f,
+			0.01f, 30.0f, 80.0f,
 			GameParameters::MinStormStrengthAdjustment,
 			GameParameters::MaxStormStrengthAdjustment,
 			gameParameters.StormStrengthAdjustment)

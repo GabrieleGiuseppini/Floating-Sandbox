@@ -405,14 +405,14 @@ Render:
 			+ CalculateIntegrationFactorTimeCoefficient needs to take into account mIsPinned
 				+ ...which becomes float
 		+ "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
+		+ "I feel that the waves on the 'storm' should be a bit smaller"
+			X The titanic has a structural problem, In a storm the stern keeps breaking off		
 
 		- Improve app icon 
 			- First icon (AAA) has white bg
 				- Verify it's the app (exe) icon
 				- Add verification line post-installer-build, below
 			- Second (AAB) is current, used by SetIcon
-		- "I feel that the waves on the 'storm' should be a bit smaller"
-			- The titanic has a structural problem, In a storm the stern keeps breaking off		
 		- Try Dario's cable suggestions
 
 		= Background Music
