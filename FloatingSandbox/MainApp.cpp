@@ -17,8 +17,9 @@
 #include <wx/msgdlg.h>
 
 #ifdef _MSC_VER
+// Nothing to do here - we use RC files
 #else
-#include "Resources/Ship.xpm"
+#include "Resources/ShipBBB.xpm"
 #endif
 
 #ifdef _DEBUG
@@ -103,8 +104,10 @@ bool MainApp::OnInit()
 
     try
     {
-        MainFrame* frame = new MainFrame(this);
-        frame->SetIcon(wxICON(AAA_SHIP_ICON));
+        MainFrame* frame = new MainFrame(
+            this,
+            wxICON(BBB_SHIP_ICON));
+
         SetTopWindow(frame);
 
         return true;

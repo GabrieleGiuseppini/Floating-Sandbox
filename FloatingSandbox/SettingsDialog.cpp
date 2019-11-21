@@ -83,7 +83,7 @@ SettingsDialog::SettingsDialog(
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    SetIcon(wxICON(AAA_SHIP_ICON));
+    SetIcon(wxICON(BBB_SHIP_ICON));
 
 
 	//

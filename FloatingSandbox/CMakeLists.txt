@@ -73,10 +73,12 @@ set(RESOURCE_FILES "")
 if (MSVC)
 	list(APPEND RESOURCE_FILES
 		Resources/FloatingSandbox.rc
-		Resources/Ship.ico)
+		Resources/ShipAAA.ico
+		Resources/ShipBBB.ico)
 else (MSVC)
 	list(APPEND RESOURCE_FILES
-		Resources/Ship.xpm)
+		Resources/ShipAAA.xpm
+		Resources/ShipBBB.xpm)
 endif (MSVC)
 
 source_group("Resources" FILES ${RESOURCE_FILES})

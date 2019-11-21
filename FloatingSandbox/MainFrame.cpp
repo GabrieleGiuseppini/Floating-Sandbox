@@ -102,7 +102,9 @@ long const ID_GAME_TIMER = wxNewId();
 long const ID_LOW_FREQUENCY_TIMER = wxNewId();
 long const ID_CHECK_UPDATE_TIMER = wxNewId();
 
-MainFrame::MainFrame(wxApp * mainApp)
+MainFrame::MainFrame(
+    wxApp * mainApp,
+    wxIcon const & icon)
     : mMainApp(mainApp)
     , mResourceLoader(new ResourceLoader())
     , mGameController()
@@ -128,6 +130,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         wxDEFAULT_FRAME_STYLE,
         _T("Main Frame"));
 
+    SetIcon(icon);
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
     Centre();

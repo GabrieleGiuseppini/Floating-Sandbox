@@ -406,13 +406,12 @@ Render:
 				+ ...which becomes float
 		+ "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
 		+ "I feel that the waves on the 'storm' should be a bit smaller"
-			X The titanic has a structural problem, In a storm the stern keeps breaking off		
+			X The titanic has a structural problem, In a storm the stern keeps breaking off	
+		+ Improve app icon 
+			+ First icon (AAA) has white bg
+				+ Verify it's the app (exe) icon
+			+ Second (AAB) is current, used by SetIcon
 
-		- Improve app icon 
-			- First icon (AAA) has white bg
-				- Verify it's the app (exe) icon
-				- Add verification line post-installer-build, below
-			- Second (AAB) is current, used by SetIcon
 		- Try Dario's cable suggestions
 
 		= Background Music
@@ -447,6 +446,9 @@ Render:
 			- Update changes.txt, also w/new location of global sound settings
 
 		- Send for testing
+
+		- Installer:
+			- New icon for installer itself
 
 		= New explosions:
 			- Shader:
