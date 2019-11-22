@@ -411,8 +411,7 @@ Render:
 			+ First icon (AAA) has white bg
 				+ Verify it's the app (exe) icon
 			+ Second (AAB) is current, used by SetIcon
-
-		- Try Dario's cable suggestions
+		+ Try Dario's cable suggestions
 
 		= Background Music
 			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
