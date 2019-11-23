@@ -438,12 +438,11 @@ Render:
 					+ static bool AudioController::GetGlobalMute()
 						+ check whether sf::Listener volume is > 0.0f
 				+ MainFrame
-			- Test:
-				- Playlist
-			- Remove all TODOTEST's
+			+ Test playlist
+			+ Remove all TODOTEST's
+			+ Update changes.txt, also w/new location of global sound setting
 			- Make all music OGG/Vorbis
 			- Run in Debug
-			- Update changes.txt, also w/new location of global sound settings
 
 		- Send for testing
 

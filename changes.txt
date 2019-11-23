@@ -1,11 +1,13 @@
 1.13.0
 - Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings
-- Added storms, complete with rain and lightnings
+- Added storms
 - Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps
 - Improved performance of "load ship" window - no more freezing when browsing a large number of ships!
 - Reworked sparkles generated when using the chainsaw (slice) tool
 - Added "Lava" ocean textures (thanks to Pac0master!) and a few more ocean textures
 - Zoom increment is now adjustable
+- Added (optional) background music - first score is "Long Note Four" by Kevin MacLeod, more tunes to follow in subsequent releases
+	- Moved all music-related settings from Settings window to Preferences window
 - From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
 	- Save your ships first - if you've added ships to the game's Ships directory - or else they'll be lost with the upgrade!
 - Fixed random crash that occurred after using the Terrain Adjust tool when reloading a ship

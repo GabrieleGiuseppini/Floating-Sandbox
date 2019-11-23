@@ -235,7 +235,6 @@ private:
             {
                 case StateType::FadingIn:
                 {
-                    LogMessage("TODOTEST:TransitionToFadingIn");
                     // Transition
                     mFadeStateStartTimestamp = GameWallClock::GetInstance().Now();
                     mCurrentState = StateType::FadingIn;
@@ -291,7 +290,6 @@ private:
 
                 case StateType::FadingOut:
                 {
-                    LogMessage("TODOTEST:TransitionToFadingOut");
                     // Transition
                     mFadeStateStartTimestamp = AdjustFadeStartTimestamp(mTimeToFadeIn, mTimeToFadeOut);
                     mCurrentState = StateType::FadingOut;
@@ -369,7 +367,6 @@ private:
 
                 case StateType::FadingOut:
                 {
-                    LogMessage("TODOTEST:TransitionToFadingOut");
                     // Transition
                     mFadeStateStartTimestamp = GameWallClock::GetInstance().Now();
                     mCurrentState = StateType::FadingOut;
@@ -416,7 +413,6 @@ private:
             {
                 case StateType::FadingIn:
                 {
-                    LogMessage("TODOTEST:TransitionToFadingIn");
                     // Transition
                     mFadeStateStartTimestamp = AdjustFadeStartTimestamp(mTimeToFadeOut, mTimeToFadeIn);
                     mCurrentState = StateType::FadingIn;
@@ -483,8 +479,6 @@ private:
 
     inline void TransitionToPlaying()
     {
-        LogMessage("TODOTEST:TransitionToPlaying");
-
         mFadeLevel = 1.0f;
         InternalSetVolume();
 
@@ -493,8 +487,6 @@ private:
 
     inline void TransitionToStopped()
     {
-        LogMessage("TODOTEST:TransitionToStopped");
-
         mMusic.stop();
 
         mCurrentState = StateType::Stopped;
@@ -580,36 +572,10 @@ public:
         mPlaylist.push_back(filepath);
     }
 
-    // TODOHERE: Update() has to go and functionality logically moved up
-    // TODOOLD
-    ////void Update()
-    ////{
-    ////    // Check whether we need to start the next entry in the playlist, after
-    ////    // the current entry has finished playing
-    ////    if (mDesiredPlayStatus == true
-    ////        && sf::SoundSource::Status::Stopped == mMusic.getStatus()
-    ////        && !mPlaylist.empty())
-    ////    {
-    ////        LogMessage("TODOTEST: BackgroundMusic::Update: starting new music");
-
-    ////        // Play new entry
-    ////        BaseGameMusic::Play();
-
-    ////        // Advance playlist entry
-    ////        ++mCurrentPlaylistItem;
-    ////        if (mCurrentPlaylistItem >= mPlaylist.size())
-    ////            mCurrentPlaylistItem = 0;
-    ////    }
-
-    ////    BaseGameMusic::Update();
-    ////}
-
 protected:
 
     std::optional<std::filesystem::path> GetNextMusicFileToPlay() override
     {
-        LogMessage("TODOTEST: GetNextMusicFileToPlay");
-
         if (!mPlaylist.empty())
         {
             assert(mCurrentPlaylistItem < mPlaylist.size());
