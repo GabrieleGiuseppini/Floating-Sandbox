@@ -839,14 +839,14 @@
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
-            "nominal_mass": 120
+            "nominal_mass": 30
         }, 
         "melting_temperature": 1000000.0, 
         "name": "Rope", 
         "render_color": "#000000", 
         "sound_type": "Cable", 
         "specific_heat": 1400.0, 
-        "stiffness": 0.95,
+        "stiffness": 0.8,
         "strength": 0.8, 
         "template": {
             "column": 7, 
