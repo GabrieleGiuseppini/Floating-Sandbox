@@ -571,6 +571,8 @@ MainFrame::~MainFrame()
 
 void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 {
+    auto const postInitializeStartTimestamp = std::chrono::steady_clock::now();
+
     //
     // Create splash screen
     //
@@ -786,6 +788,11 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     splash->Close();
 
     UpdateFrameTitle();
+
+    // Log post-initialize duration
+    auto const postInitializeEndTimestamp = std::chrono::steady_clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::duration<float>>(postInitializeEndTimestamp - postInitializeStartTimestamp);
+    LogMessage("Post-Initialize took ", elapsed.count(), "s");
 
 
     //
