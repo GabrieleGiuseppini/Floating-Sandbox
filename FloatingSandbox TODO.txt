@@ -445,6 +445,8 @@ Render:
 
 		- Send for testing
 
+		- Bump up version
+
 		- Installer:
 			- New icon for installer itself
 
