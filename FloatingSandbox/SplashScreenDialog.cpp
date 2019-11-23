@@ -14,12 +14,12 @@
 SplashScreenDialog::SplashScreenDialog(ResourceLoader const & resourceLoader)
 {
 	Create(
-        nullptr,
+        nullptr, // Orphan
 		wxID_ANY,
 		wxEmptyString,
 		wxDefaultPosition,
 		wxSize(800, 400),
-        wxSTAY_ON_TOP,
+        wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR,
 		_T("Splash Screen"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));

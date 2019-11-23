@@ -7,14 +7,14 @@
 
 #include <Game/ResourceLoader.h>
 
-#include <wx/dialog.h>
+#include <wx/frame.h>
 #include <wx/gauge.h>
 #include <wx/stattext.h>
 
 #include <memory>
 #include <string>
 
-class SplashScreenDialog : public wxDialog
+class SplashScreenDialog : public wxFrame
 {
 public:
 
