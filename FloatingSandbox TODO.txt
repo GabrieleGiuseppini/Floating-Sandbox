@@ -444,9 +444,7 @@ Render:
 			+ Run in Debug
 		+ Send for testing
 		+ Bump up version: 1.13.0.7
-
-		- See more gradual wave height
-		- Fix build breaks from Sam
+		+ See more gradual wave height
 
 		= New explosions:
 			- Shader:

@@ -248,8 +248,8 @@ public:
     float GetMinWaterDiffusionSpeedAdjustment() const override { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
     float GetMaxWaterDiffusionSpeedAdjustment() const override { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
 
-    float GetBasalWaveHeightAdjustment() const override { return mGameParameters.BasalWaveHeightAdjustment; }
-    void SetBasalWaveHeightAdjustment(float value) override { mGameParameters.BasalWaveHeightAdjustment = value; }
+    float GetBasalWaveHeightAdjustment() const override { return mFloatParameterSmoothers[BasalWaveHeightAdjustmentParameterSmoother].GetValue(); }
+    void SetBasalWaveHeightAdjustment(float value) override { mFloatParameterSmoothers[BasalWaveHeightAdjustmentParameterSmoother].SetValue(value); }
     float GetMinBasalWaveHeightAdjustment() const override { return GameParameters::MinBasalWaveHeightAdjustment; }
     float GetMaxBasalWaveHeightAdjustment() const override { return GameParameters::MaxBasalWaveHeightAdjustment; }
 
@@ -665,6 +665,7 @@ private:
     static constexpr size_t OceanFloorBumpinessParameterSmoother = 3;
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
+    static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;

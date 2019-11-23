@@ -176,6 +176,19 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
+    assert(mFloatParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mGameParameters.BasalWaveHeightAdjustment;
+        },
+        [this](float const & value)
+        {
+            this->mGameParameters.BasalWaveHeightAdjustment = value;
+        },
+        ParameterSmoothingTrajectoryTime);
+
+    // ---------------------------------
 
     std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
 
