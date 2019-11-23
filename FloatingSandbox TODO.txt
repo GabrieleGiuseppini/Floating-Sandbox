@@ -412,8 +412,7 @@ Render:
 				+ Verify it's the app (exe) icon
 			+ Second (AAB) is current, used by SetIcon
 		+ Try Dario's cable suggestions
-
-		= Background Music
+		+ Background Music
 			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
 			+ Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
 			  is fading out
