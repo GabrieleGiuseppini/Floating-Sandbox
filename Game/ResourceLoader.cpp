@@ -89,7 +89,7 @@ std::vector<std::string> ResourceLoader::GetMusicNames() const
 
 std::filesystem::path ResourceLoader::GetMusicFilepath(std::string const & musicName) const
 {
-    std::filesystem::path localPath = std::filesystem::path("Data") / "Music" / (musicName + ".flac");
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Music" / (musicName + ".ogg");
     return std::filesystem::absolute(localPath);
 }
 

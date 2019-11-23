@@ -441,8 +441,7 @@ Render:
 			+ Test playlist
 			+ Remove all TODOTEST's
 			+ Update changes.txt, also w/new location of global sound setting
-			- Make all sounds OGG/Vorbis
-				- Startup time: from TBD to TBD
+			+ Make all music OGG/Vorbis
 			- Run in Debug
 
 		- Send for testing
