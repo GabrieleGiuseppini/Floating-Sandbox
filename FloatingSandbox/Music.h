@@ -336,7 +336,7 @@ private:
 
         mFadeLevel = std::min(
             1.0f,
-            static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count()));
+            static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeIn.count()));
 
         InternalSetVolume();
 
