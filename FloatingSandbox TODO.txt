@@ -442,13 +442,11 @@ Render:
 			+ Update changes.txt, also w/new location of global sound setting
 			+ Make all music OGG/Vorbis
 			+ Run in Debug
+		+ Send for testing
+		+ Bump up version: 1.13.0.7
 
-		- Send for testing
-
-		- Bump up version
-
-		- Installer:
-			- New icon for installer itself
+		- See more gradual wave height
+		- Fix build breaks from Sam
 
 		= New explosions:
 			- Shader:
@@ -481,6 +479,9 @@ Render:
 				- RC
 				- Timer
 			- Start workitem for explosive combustion
+
+		- Installer:
+			- New icon for installer itself
 
 		- Video (see Marketing above)
 
