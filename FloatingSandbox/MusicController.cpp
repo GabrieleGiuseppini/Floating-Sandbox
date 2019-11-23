@@ -20,7 +20,7 @@ MusicController::MusicController(
     ProgressCallback const & progressCallback)
     : // State
       mIsMuted(false)
-    , mBackgroundMusicVolume(80.0f)
+    , mBackgroundMusicVolume(50.0f)
     , mPlayBackgroundMusic(false)
     , mGameMusicVolume(100.0f)
     , mPlaySinkingMusic(true)
@@ -82,8 +82,6 @@ MusicController::MusicController(
 		    // Parse frequency
             bool isRare = (musicNameMatch[2].str() == "rare");
 
-            LogMessage("TODOTEST: ", musicName, ":", isRare);
-
             mSinkingMusic.AddAlternative(resourceLoader.GetMusicFilepath(musicName), isRare);
         }
     }
@@ -130,11 +128,7 @@ void MusicController::SetPlayBackgroundMusic(bool playBackgroundMusic)
     // See whether we should start or stop the music
     if (playBackgroundMusic)
     {
-        // Only play background music when sinking music is not playing
-        if (LogicalMusicStatus::Stopped == mSinkingMusic.GetLogicalStatus())
-        {
-            mBackgroundMusic.FadeToPlay();
-        }
+        mBackgroundMusic.Play();
     }
     else
     {
@@ -175,6 +169,15 @@ void MusicController::Reset()
 {
     mBackgroundMusic.Reset();
     mSinkingMusic.Reset();
+
+    if (mPlayBackgroundMusic)
+    {
+        mBackgroundMusic.Play();
+    }
+    else
+    {
+        mBackgroundMusic.Stop();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -183,16 +186,8 @@ void MusicController::OnSinkingBegin(ShipId /*shipId*/)
 {
     if (mPlaySinkingMusic)
     {
-        if (LogicalMusicStatus::Playing == mBackgroundMusic.GetLogicalStatus())
-        {
-            // Smooth transition
-            mBackgroundMusic.FadeToStop();
-            mSinkingMusic.FadeToPlay();
-        }
-        else
-        {
-            mSinkingMusic.Play();
-        }
+        mBackgroundMusic.FadeToStop();
+        mSinkingMusic.FadeToPlay();
     }
 }
 

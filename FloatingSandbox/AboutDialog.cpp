@@ -135,7 +135,8 @@ AboutDialog::AboutDialog(
 
         {"Music:\t\t", "Dario Bazzichetto (Soul Heater) - https://soundcloud.com/soul-heater" },
         {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World - https://stuartspianoworld.com/" },
-		{"\t\t\t\t", "Officer TimCan - https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },		
+		{"\t\t\t\t", "Officer TimCan - https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+        {"\t\t\t\t", "Kevin MacLeod - https://incompetech.com/" },
 
         {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
         {"\t\t\t\t", "Maximord - https://discordapp.com/" },

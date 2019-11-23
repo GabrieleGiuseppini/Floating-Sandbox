@@ -23,15 +23,6 @@
 #include <vector>
 
 /*
- * The logical state of music, net of fade in/out, etc.
- */
-enum class LogicalMusicStatus
-{
-    Stopped,
-    Playing
-};
-
-/*
  * Our base wrapper for sf::Music.
  *
  * Provides volume control based on a master volume and a local volume,
@@ -47,16 +38,16 @@ public:
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn,
         std::chrono::milliseconds timeToFadeOut)
-        : mMusic()
+        : mTimeToFadeIn(timeToFadeIn)
+        , mTimeToFadeOut(timeToFadeOut)
+        , mMusic()
         , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mFadeLevel(1.0f)
         , mIsMuted(isMuted)
-        , mLogicalStatus(LogicalMusicStatus::Stopped)
-        , mTimeToFadeIn(timeToFadeIn)
-        , mTimeToFadeOut(timeToFadeOut)
-        , mFadeInStartTimestamp()
-        , mFadeOutStartTimestamp()
+        , mCurrentState(StateType::Stopped)
+        , mDesiredState()
+        , mFadeStateStartTimestamp(GameWallClock::time_point::min())
     {
         InternalSetVolume();
     }
@@ -90,31 +81,12 @@ public:
         InternalSetVolume();
     }
 
-    LogicalMusicStatus GetLogicalStatus() const
-    {
-        return mLogicalStatus;
-    }
-
     /*
      * NOP if already playing.
      */
     void Play()
     {
-        if (mLogicalStatus != LogicalMusicStatus::Playing)
-        {
-            // Reset fade
-            mFadeLevel = 1.0f;
-            InternalSetVolume();
-
-            // Play
-            InternalStart();
-
-            // Reset state
-            mFadeInStartTimestamp.reset();
-            mFadeOutStartTimestamp.reset();
-
-            mLogicalStatus = LogicalMusicStatus::Playing;
-        }
+        mDesiredState.emplace(StateType::Playing);
     }
 
     /*
@@ -122,14 +94,7 @@ public:
      */
     void FadeToPlay()
     {
-        if (mLogicalStatus != LogicalMusicStatus::Playing)
-        {
-            // Reset state
-            mFadeInStartTimestamp = GameWallClock::GetInstance().Now();
-            mFadeOutStartTimestamp.reset();
-
-            mLogicalStatus = LogicalMusicStatus::Playing;
-        }
+        mDesiredState.emplace(StateType::FadingIn);
     }
 
     /*
@@ -137,17 +102,7 @@ public:
      */
     void Stop()
     {
-        if (mLogicalStatus != LogicalMusicStatus::Stopped)
-        {
-            // Stop
-            InternalStop();
-
-            // Reset state
-            mFadeInStartTimestamp.reset();
-            mFadeOutStartTimestamp.reset();
-
-            mLogicalStatus = LogicalMusicStatus::Stopped;
-        }
+        mDesiredState.emplace(StateType::Stopped);
     }
 
     /*
@@ -155,13 +110,7 @@ public:
      */
     void FadeToStop()
     {
-        if (mLogicalStatus != LogicalMusicStatus::Stopped)
-        {
-            mFadeInStartTimestamp.reset();
-            mFadeOutStartTimestamp = GameWallClock::GetInstance().Now();
-
-            mLogicalStatus = LogicalMusicStatus::Stopped;
-        }
+        mDesiredState.emplace(StateType::FadingOut);
     }
 
     /*
@@ -185,66 +134,45 @@ public:
 
     void Reset()
     {
-        Stop();
+        mMusic.stop();
+
+        mCurrentState = StateType::Stopped;
+        mDesiredState.reset();
     }
 
     void Update()
     {
-        if (!!mFadeInStartTimestamp)
+        switch (mCurrentState)
         {
-            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                GameWallClock::GetInstance().Elapsed(*mFadeInStartTimestamp));
-
-            // Check if we're done
-            if (elapsedMillis >= mTimeToFadeIn)
+            case StateType::Stopped:
             {
-                // Reset state
-                mFadeLevel = 1.0f;
-                mFadeInStartTimestamp.reset();
-            }
-            else
-            {
-                // Raise volume
-                mFadeLevel = static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count());
+                Update_Stopped();
+                break;
             }
 
-            InternalSetVolume();
-
-            // Make sure we're playing
-            if (sf::Sound::Status::Stopped == mMusic.getStatus())
+            case StateType::FadingIn:
             {
-                InternalStart();
+                Update_FadingIn();
+                break;
             }
-        }
-        else if (!!mFadeOutStartTimestamp)
-        {
-            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                GameWallClock::GetInstance().Elapsed(*mFadeOutStartTimestamp));
 
-            // Check if we're done
-            if (elapsedMillis >= mTimeToFadeOut)
+            case StateType::Playing:
             {
-                if (sf::Sound::Status::Stopped != mMusic.getStatus())
-                {
-                    InternalStop();
-                }
-
-                // Reset state
-                mFadeInStartTimestamp.reset();
-                mFadeOutStartTimestamp.reset();
+                Update_Playing();
+                break;
             }
-            else
+
+            case StateType::FadingOut:
             {
-                // Lower volume
-                mFadeLevel = (1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count()));
-                InternalSetVolume();
+                Update_FadingOut();
+                break;
             }
         }
     }
 
 protected:
 
-    virtual std::optional<std::filesystem::path> GetMusicFileToPlay() const = 0;
+    virtual std::optional<std::filesystem::path> GetNextMusicFileToPlay() = 0;
 
     sf::Music mMusic;
 
@@ -258,40 +186,367 @@ private:
             mMusic.setVolume(0.0f);
     }
 
-    void InternalStart()
-    {
-        // Load file
-        auto const musicFilePath = GetMusicFileToPlay();
-        if (!!musicFilePath)
-        {
-            if (!mMusic.openFromFile(musicFilePath->string()))
-            {
-                throw GameException("Cannot load \"" + musicFilePath->string() + "\" music");
-            }
+private:
 
-            // Play
-            mMusic.play();
+    enum class StateType;
+
+    inline std::optional<StateType> PopDesiredState()
+    {
+        if (!!mDesiredState)
+        {
+            auto const r = mDesiredState;
+            mDesiredState.reset();
+            return r;
+        }
+        else
+        {
+            return std::nullopt;
         }
     }
 
-    void InternalStop()
+    inline void EnsureMusicIsPlaying()
     {
+        if (sf::SoundSource::Status::Stopped == mMusic.getStatus())
+        {
+            auto const musicFilePath = GetNextMusicFileToPlay();
+            if (!!musicFilePath)
+            {
+                if (!mMusic.openFromFile(musicFilePath->string()))
+                {
+                    throw GameException("Cannot load \"" + musicFilePath->string() + "\" music");
+                }
+
+                // Play
+                mMusic.play();
+            }
+        }
+    }
+
+    void Update_Stopped()
+    {
+        //
+        // Check if we need to transition
+        //
+
+        auto const desiredState = PopDesiredState();
+        if (!!desiredState)
+        {
+            switch (*desiredState)
+            {
+                case StateType::FadingIn:
+                {
+                    LogMessage("TODOTEST:TransitionToFadingIn");
+                    // Transition
+                    mFadeStateStartTimestamp = GameWallClock::GetInstance().Now();
+                    mCurrentState = StateType::FadingIn;
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::FadingOut:
+                {
+                    // Consume and continue
+                    break;
+                }
+
+                case StateType::Playing:
+                {
+                    // Transition
+                    TransitionToPlaying();
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::Stopped:
+                {
+                    // Consume and continue
+                    break;
+                }
+            }
+        }
+    }
+
+    void Update_FadingIn()
+    {
+        //
+        // Check if we need to transition
+        //
+
+        auto const desiredState = PopDesiredState();
+        if (!!desiredState)
+        {
+            switch (*desiredState)
+            {
+                case StateType::FadingIn:
+                {
+                    // Consume and continue
+                    break;
+                }
+
+                case StateType::FadingOut:
+                {
+                    LogMessage("TODOTEST:TransitionToFadingOut");
+                    // Transition
+                    mFadeStateStartTimestamp = AdjustFadeStartTimestamp(mTimeToFadeIn, mTimeToFadeOut);
+                    mCurrentState = StateType::FadingOut;
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::Playing:
+                {
+                    // Transition
+                    TransitionToPlaying();
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::Stopped:
+                {
+                    // Transition
+                    TransitionToStopped();
+
+                    return;
+                }
+            }
+        }
+
+        //
+        // Make sure music is playing
+        //
+
+        EnsureMusicIsPlaying();
+
+        //
+        // Update fade-in state machine
+        //
+
+        auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+            GameWallClock::GetInstance().Elapsed(mFadeStateStartTimestamp));
+
+        mFadeLevel = std::min(
+            1.0f,
+            static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count()));
+
+        InternalSetVolume();
+
+        // Check if we're done
+        if (elapsedMillis >= mTimeToFadeIn)
+        {
+            // Transition
+            TransitionToPlaying();
+        }
+    }
+
+    void Update_Playing()
+    {
+        //
+        // Check if we need to transition
+        //
+
+        auto const desiredState = PopDesiredState();
+        if (!!desiredState)
+        {
+            switch (*desiredState)
+            {
+                case StateType::FadingIn:
+                {
+                    // Consume and continue
+                    break;
+                }
+
+                case StateType::FadingOut:
+                {
+                    LogMessage("TODOTEST:TransitionToFadingOut");
+                    // Transition
+                    mFadeStateStartTimestamp = GameWallClock::GetInstance().Now();
+                    mCurrentState = StateType::FadingOut;
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::Playing:
+                {
+                    // Consume and continue
+                    break;
+                }
+
+                case StateType::Stopped:
+                {
+                    // Transition
+                    TransitionToStopped();
+
+                    return;
+                }
+            }
+        }
+
+        //
+        // Make sure music is playing
+        //
+
+        EnsureMusicIsPlaying();
+    }
+
+    void Update_FadingOut()
+    {
+        //
+        // Check if we need to transition
+        //
+
+        auto const desiredState = PopDesiredState();
+        if (!!desiredState)
+        {
+            switch (*desiredState)
+            {
+                case StateType::FadingIn:
+                {
+                    LogMessage("TODOTEST:TransitionToFadingIn");
+                    // Transition
+                    mFadeStateStartTimestamp = AdjustFadeStartTimestamp(mTimeToFadeOut, mTimeToFadeIn);
+                    mCurrentState = StateType::FadingIn;
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::FadingOut:
+                {
+                    // Consume and continue
+                    break;
+                }
+
+                case StateType::Playing:
+                {
+                    // Transition
+                    TransitionToPlaying();
+
+                    // Start right away
+                    Update();
+
+                    return;
+                }
+
+                case StateType::Stopped:
+                {
+                    // Transition
+                    TransitionToStopped();
+
+                    return;
+                }
+            }
+        }
+
+        //
+        // Make sure music is playing
+        //
+
+        EnsureMusicIsPlaying();
+
+        //
+        // Update fade-out state machine
+        //
+
+        auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+            GameWallClock::GetInstance().Elapsed(mFadeStateStartTimestamp));
+
+        mFadeLevel = std::max(
+            0.0f,
+            (1.0f - static_cast<float>(elapsedMillis.count()) / static_cast<float>(mTimeToFadeOut.count())));
+
+        InternalSetVolume();
+
+        // Check if we're done
+        if (elapsedMillis >= mTimeToFadeOut)
+        {
+            // Transition
+            TransitionToStopped();
+        }
+    }
+
+    inline void TransitionToPlaying()
+    {
+        LogMessage("TODOTEST:TransitionToPlaying");
+
+        mFadeLevel = 1.0f;
+        InternalSetVolume();
+
+        mCurrentState = StateType::Playing;
+    }
+
+    inline void TransitionToStopped()
+    {
+        LogMessage("TODOTEST:TransitionToStopped");
+
         mMusic.stop();
+
+        mCurrentState = StateType::Stopped;
+    }
+
+    inline GameWallClock::time_point AdjustFadeStartTimestamp(
+        std::chrono::milliseconds oldFadeTime,
+        std::chrono::milliseconds newFadeTime) const
+    {
+        auto const now = GameWallClock::GetInstance().Now();
+
+        auto const elapsed = now - mFadeStateStartTimestamp;
+
+        float const remainingFraction = std::max(0.0f,
+            std::chrono::duration_cast<std::chrono::duration<float>>(oldFadeTime - elapsed)
+            / std::chrono::duration_cast<std::chrono::duration<float>>(oldFadeTime));
+
+        // Adjust start timestamp to account for remaining time
+        return now - std::chrono::duration_cast<typename GameWallClock::time_point::duration>(
+            remainingFraction * std::chrono::duration_cast<std::chrono::duration<float>>(newFadeTime));
     }
 
 private:
+
+    std::chrono::milliseconds const mTimeToFadeIn;
+    std::chrono::milliseconds const mTimeToFadeOut;
 
     float mVolume;
     float mMasterVolume;
     float mFadeLevel;
     bool mIsMuted;
 
-    LogicalMusicStatus mLogicalStatus;
+    //
+    // State machine
+    //
 
-    std::chrono::milliseconds const mTimeToFadeIn;
-    std::chrono::milliseconds const mTimeToFadeOut;
-    std::optional<GameWallClock::time_point> mFadeInStartTimestamp;
-    std::optional<GameWallClock::time_point> mFadeOutStartTimestamp;
+    enum class StateType
+    {
+        Stopped,
+        FadingIn,
+        Playing,
+        FadingOut
+    };
+
+    // Current state
+    StateType mCurrentState;
+
+    // Desired state, queued awaiting for an Update()
+    std::optional<StateType> mDesiredState;
+
+    // Timestamp at which the current 'fade' state has started
+    GameWallClock::time_point mFadeStateStartTimestamp;
 };
 
 /*
@@ -316,7 +571,6 @@ public:
             timeToFadeOut)
         , mPlaylist()
         , mCurrentPlaylistItem(0)
-        , mDesiredPlayStatus(false)
     {
         mMusic.setLoop(false);
     }
@@ -326,70 +580,48 @@ public:
         mPlaylist.push_back(filepath);
     }
 
-    void Play()
+    // TODOHERE: Update() has to go and functionality logically moved up
+    // TODOOLD
+    ////void Update()
+    ////{
+    ////    // Check whether we need to start the next entry in the playlist, after
+    ////    // the current entry has finished playing
+    ////    if (mDesiredPlayStatus == true
+    ////        && sf::SoundSource::Status::Stopped == mMusic.getStatus()
+    ////        && !mPlaylist.empty())
+    ////    {
+    ////        LogMessage("TODOTEST: BackgroundMusic::Update: starting new music");
+
+    ////        // Play new entry
+    ////        BaseGameMusic::Play();
+
+    ////        // Advance playlist entry
+    ////        ++mCurrentPlaylistItem;
+    ////        if (mCurrentPlaylistItem >= mPlaylist.size())
+    ////            mCurrentPlaylistItem = 0;
+    ////    }
+
+    ////    BaseGameMusic::Update();
+    ////}
+
+protected:
+
+    std::optional<std::filesystem::path> GetNextMusicFileToPlay() override
     {
-        // Rewind playlist from beginning
-        mCurrentPlaylistItem = 0;
+        LogMessage("TODOTEST: GetNextMusicFileToPlay");
 
-        BaseGameMusic::Play();
-
-        mDesiredPlayStatus = true;
-    }
-
-    void FadeToPlay()
-    {
-        // Resume playing from current playlist entry
-
-        BaseGameMusic::FadeToPlay();
-
-        mDesiredPlayStatus = true;
-    }
-
-    void Stop()
-    {
-        BaseGameMusic::Stop();
-
-        mDesiredPlayStatus = false;
-    }
-
-    void FadeToStop()
-    {
-        BaseGameMusic::FadeToStop();
-
-        mDesiredPlayStatus = false;
-    }
-
-    void Update()
-    {
-        // Check whether we need to start the next entry in the playlist, after
-        // the current entry has finished playing
-        if (mDesiredPlayStatus == true
-            && sf::SoundSource::Status::Stopped == mMusic.getStatus()
-            && !mPlaylist.empty())
+        if (!mPlaylist.empty())
         {
-            LogMessage("TODOTEST: BackgroundMusic::Update: starting new music");
+            assert(mCurrentPlaylistItem < mPlaylist.size());
 
-            // Play new entry
-            BaseGameMusic::Play();
+            auto const musicFileToPlay = mPlaylist[mCurrentPlaylistItem];
 
             // Advance playlist entry
             ++mCurrentPlaylistItem;
             if (mCurrentPlaylistItem >= mPlaylist.size())
                 mCurrentPlaylistItem = 0;
-        }
 
-        BaseGameMusic::Update();
-    }
-
-protected:
-
-    std::optional<std::filesystem::path> GetMusicFileToPlay() const override
-    {
-        if (!mPlaylist.empty())
-        {
-            assert(mCurrentPlaylistItem < mPlaylist.size());
-
-            return mPlaylist[mCurrentPlaylistItem];
+            return musicFileToPlay;
         }
         else
         {
@@ -401,8 +633,6 @@ private:
 
     std::vector<std::filesystem::path> mPlaylist;
     size_t mCurrentPlaylistItem; // The index of the playlist entry that we're playing now
-
-    bool mDesiredPlayStatus;
 };
 
 /*
@@ -444,7 +674,7 @@ public:
 
 protected:
 
-    std::optional<std::filesystem::path> GetMusicFileToPlay() const override
+    std::optional<std::filesystem::path> GetNextMusicFileToPlay() override
     {
         // Choose alternative
 		if (mRareAlternatives.empty()

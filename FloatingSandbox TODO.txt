@@ -415,30 +415,31 @@ Render:
 
 		= Background Music
 			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
-			= Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
+			+ Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
 			  is fading out
 				+ All done by MusicController, as long as mPlayBackgroundMusic is on
 				+ Default: off
-			- Add him to credits
-				- See if may add it with full title - check his instructions again
-			= UIPreferencesManager: 
+			+ Add him to credits
+			+ UIPreferencesManager: 
 				+ Global mute
 				+ Game music: volume, playSinkingMusic
 				+ Background music: volume, playBackgroundMusic
 				+ Center sliders and their checkboxes
-			= PreferencesDialog:
+			+ PreferencesDialog:
 				+ Same as UIPreferencesManager
-			= SettingsDialog: remove music volume, music mute, playSinkingMusic
-				= Also from SettingsManager
-				= Merge Sounds w/Advanced: "Sounds and Advanced"
+			+ SettingsDialog: remove music volume, music mute, playSinkingMusic
+				+ Also from SettingsManager
+				+ Merge Sounds w/Advanced: "Sounds and Advanced"
 					+ And now add static boxes
-			= Global mute:
+			+ Global mute:
 				+ Remove from both SoundController and MusicController
 				+ AudioController:
 					+ static void AudioController::SetGlobalMute(bool)
 					+ static bool AudioController::GetGlobalMute()
 						+ check whether sf::Listener volume is > 0.0f
-				= MainFrame
+				+ MainFrame
+			- Test:
+				- Playlist
 			- Remove all TODOTEST's
 			- Make all music OGG/Vorbis
 			- Run in Debug
