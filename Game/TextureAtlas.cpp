@@ -215,6 +215,73 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
         ImageSize(atlasWidth, atlasHeight));
 }
 
+TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+{
+    //
+    // Verify frames
+    //
+
+    if (inputTextureInfos.empty())
+    {
+        throw GameException("Regular texture atlas cannot consist of an empty set of texture frames");
+    }
+
+    if (inputTextureInfos.size() != ceil_power_of_two(inputTextureInfos.size()))
+    {
+        throw GameException("Number of frames in regular atlas (" + std::to_string(inputTextureInfos.size()) + ") is not a power of two");
+    }
+
+    int const frameWidth = inputTextureInfos[0].Size.Width;
+    int const frameHeight = inputTextureInfos[0].Size.Height;
+    if (frameWidth != ceil_power_of_two(frameWidth)
+        || frameHeight != ceil_power_of_two(frameHeight))
+    {
+        throw GameException("Dimensions of texture frame \"" + inputTextureInfos[0].FrameId.ToString() + "\" are not a power of two");
+    }
+
+    for (auto const & ti : inputTextureInfos)
+    {
+        // Verify tile dimensions are powers of two
+        if (ti.Size.Width != frameWidth
+            || ti.Size.Height != frameHeight)
+        {
+            throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" differ from the dimensions of the other frames");
+        }
+    }
+
+
+    //
+    // Place tiles
+    //
+
+    int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(inputTextureInfos.size()))));
+    assert(numberOfFramesPerSide > 0);
+    int const atlasWidth = numberOfFramesPerSide * frameWidth;
+    int const atlasHeight = numberOfFramesPerSide * frameHeight;
+
+    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    texturePositions.reserve(inputTextureInfos.size());
+
+    for (int i = 0; i < inputTextureInfos.size(); ++i)
+    {
+        int c = i % numberOfFramesPerSide;
+        int r = i / numberOfFramesPerSide;
+
+        texturePositions.emplace_back(
+            inputTextureInfos[i].FrameId,
+            c * frameWidth,
+            r * frameHeight);
+    }
+
+    //
+    // Return atlas
+    //
+
+    return AtlasSpecification(
+        std::move(texturePositions),
+        ImageSize(atlasWidth, atlasHeight));
+}
+
 TextureAtlas TextureAtlasBuilder::BuildAtlas(
     AtlasSpecification const & specification,
     std::function<TextureFrame(TextureFrameId const &)> frameLoader,

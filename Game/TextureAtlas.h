@@ -150,6 +150,14 @@ public:
         ProgressCallback const & progressCallback);
 
     /*
+     * Builds an atlas composed of a power of two number of
+     * frames with identical sizes.
+     */
+    static TextureAtlas BuildRegularAtlas(
+        TextureGroup const & group,
+        ProgressCallback const & progressCallback);
+
+    /*
      * Builds an atlas with the entire content of the specified database.
      */
     static TextureAtlas BuildAtlas(
@@ -231,6 +239,9 @@ private:
     // Unit-tested
     static AtlasSpecification BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
 
+    // Unit-tested
+    static AtlasSpecification BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
+
     static TextureAtlas BuildAtlas(
         AtlasSpecification const & specification,
         std::function<TextureFrame(TextureFrameId const &)> frameLoader,
@@ -261,6 +272,7 @@ private:
     friend class TextureAtlasTests_OneTexture_Test;
     friend class TextureAtlasTests_Placement1_Test;
     friend class TextureAtlasTests_RoundsAtlasSize_Test;
+    friend class TextureAtlasTests_RegularAtlas_Test;
 
 private:
 
