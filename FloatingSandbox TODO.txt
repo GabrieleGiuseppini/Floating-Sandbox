@@ -549,7 +549,6 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
-			- RMS Poseidon from MrGarfield: according to him might replace old one
 			- Hummel: 
 				- Mini Bismarck rar is empty
 		- To take:
@@ -981,6 +980,8 @@ Render:
 
 	- "Lightning rod" material
 		- Has precedence when looking for candidates
+
+	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
 	- "Physics" versions of move-and-rotate tool: act with forces on a (circle around a) point
 		- Smoothing towards the periphery
