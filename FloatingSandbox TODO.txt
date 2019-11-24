@@ -450,9 +450,10 @@ Render:
 			- Shader:
 				+ Take frames out of 4K video
 				- Make atlas just for explosion
-					- Resize frames (512x512) or (256x256)
-					- Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
-				- Cross-linear alpha between two textures
+					- Resize frames (512x512)
+					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
+					- See if may need to boost mask
+				+ Cross-linear alpha between two textures
 				- Discard
 			- Atlas:
 				- RegularAtlas builder method (no optim's, all same size (but not necessarily square))
