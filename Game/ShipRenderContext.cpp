@@ -65,7 +65,7 @@ ShipRenderContext::ShipRenderContext(
     , mFlameForegroundCount(0)
     , mFlameVertexVBO()
     , mWindSpeedMagnitudeRunningAverage(0.0f)
-    , mCurrentWindSpeedMagnitudeAverage(0.0f)
+    , mCurrentWindSpeedMagnitudeAverage(-1.0f) // Make sure we update the param right away
     //
     , mSparkleVertexBuffer()
     , mSparkleVertexVBO()
