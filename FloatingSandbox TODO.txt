@@ -445,7 +445,7 @@ Render:
 		+ Send for testing
 		+ Bump up version: 1.13.0.7
 		+ See more gradual wave height
-
+		+ Clickable links in About box
 
 		- Those last few ships
 
@@ -461,6 +461,12 @@ Render:
 			- Try with a dumb shader
 				- Re-do math in ShaderToy 
 			= Also double-check if mipmapping is different than ocean
+			- See if it's clipping for the quads
+
+		- See why Samsung is so slow
+			! Apparently it's the physics (it's 64FPS with pause)
+			- Add switch to turn off Ship::Update's
+			- Write and run unit tests for denormals
 
 		= New explosions:
 			= Shader:
@@ -505,8 +511,8 @@ Render:
 
 		- Explosive combustion (*)
 
-		- Spring and NonSpring force separation optimization (*)
 		- Try with SpringRelaxation updating only positions (*)
+		- Spring and NonSpring force separation optimization (*)		
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling

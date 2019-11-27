@@ -8,6 +8,7 @@
 #include <GameCore/Version.h>
 
 #include <wx/generic/statbmpg.h>
+#include <wx/hyperlink.h>
 #include <wx/settings.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -95,72 +96,72 @@ AboutDialog::AboutDialog(
     // Populate credits
     //
 
-    std::vector<std::pair<std::string, std::string>> credits
+    std::vector<std::tuple<std::string, std::string, std::string>> credits
     {
-        {"Ship engineers:", "TopHatLemons - https://discordapp.com/" },
-        {"\t\t\t\t", "Truce#3326 - https://discordapp.com/" },
-        {"\t\t\t\t", "RetroGraczzPL - https://discordapp.com/" },
-        {"\t\t\t\t", "SS Nomadavid - https://discordapp.com/" },
-        {"\t\t\t\t", "Wreno - https://discordapp.com/" },
-        {"\t\t\t\t", "Pac0master - https://discordapp.com/" },
-        {"\t\t\t\t", "CorbinPasta93 - https://discordapp.com/" },
-        {"\t\t\t\t", "Yorkie - https://discordapp.com/" },
-        {"\t\t\t\t", "Artica - https://discordapp.com/" },
-        {"\t\t\t\t", "KikoTheBoatBuilder - https://discordapp.com/" },
-        {"\t\t\t\t", "Albert Windsor - https://discordapp.com/" },
-        {"\t\t\t\t", "ShipBuilder1912 - https://discordapp.com/" },
-        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
-        {"\t\t\t\t", "Rockabilly Rebel - https://discordapp.com/" },
-        {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
-        {"\t\t\t\t", "Dumbphones - https://discordapp.com/" },
-        {"\t\t\t\t", "NotTelling - https://discordapp.com/" },
-        {"\t\t\t\t", "Hugo_2503 - https://discordapp.com/" },
-        {"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
-        {"\t\t\t\t", "Serhiiiihres - https://discordapp.com/" },
-        {"\t\t\t\t", "JackTheBrickfilmMaker - https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ" },
-        {"\t\t\t\t", "Pandadude12345 - https://discordapp.com/" },
-        {"\t\t\t\t", "John Smith - https://discordapp.com/" },
-        {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
-        {"\t\t\t\t", "Loree - https://discordapp.com/" },
-        {"\t\t\t\t", "Daewoom - https://discordapp.com/" },
-        {"\t\t\t\t", "Aqua - https://discordapp.com/" },
-        {"\t\t\t\t", "MasterGarfield - https://discordapp.com/" },
-        {"\t\t\t\t", "Darek225 - https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
-        {"\t\t\t\t", "Aurélien WOLFF" },
-		{"\t\t\t\t", "HummeL - https://www.youtube.com/c/HummeL_Prog" },
+        {"Ship engineers:", "TopHatLemons", "https://discordapp.com/" },
+        {"\t\t\t\t", "Truce#3326", "https://discordapp.com/" },
+        {"\t\t\t\t", "RetroGraczzPL", "https://discordapp.com/" },
+        {"\t\t\t\t", "SS Nomadavid", "https://discordapp.com/" },
+        {"\t\t\t\t", "Wreno", "https://discordapp.com/" },
+        {"\t\t\t\t", "Pac0master", "https://discordapp.com/" },
+        {"\t\t\t\t", "CorbinPasta93", "https://discordapp.com/" },
+        {"\t\t\t\t", "Yorkie", "https://discordapp.com/" },
+        {"\t\t\t\t", "Artica", "https://discordapp.com/" },
+        {"\t\t\t\t", "KikoTheBoatBuilder", "https://discordapp.com/" },
+        {"\t\t\t\t", "Albert Windsor", "https://discordapp.com/" },
+        {"\t\t\t\t", "ShipBuilder1912", "https://discordapp.com/" },
+        {"\t\t\t\t", "Michael Bozarth", "https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
+        {"\t\t\t\t", "Rockabilly Rebel", "https://discordapp.com/" },
+        {"\t\t\t\t", "McShooter2018", "https://discordapp.com/" },
+        {"\t\t\t\t", "Dumbphones", "https://discordapp.com/" },
+        {"\t\t\t\t", "NotTelling", "https://discordapp.com/" },
+        {"\t\t\t\t", "Hugo_2503", "https://discordapp.com/" },
+        {"\t\t\t\t", "_ASTYuu_", "https://discordapp.com/" },
+        {"\t\t\t\t", "Serhiiiihres", "https://discordapp.com/" },
+        {"\t\t\t\t", "JackTheBrickfilmMaker", "https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ" },
+        {"\t\t\t\t", "Pandadude12345", "https://discordapp.com/" },
+        {"\t\t\t\t", "John Smith", "https://discordapp.com/" },
+        {"\t\t\t\t", "Dkuz", "https://discordapp.com/" },
+        {"\t\t\t\t", "Loree", "https://discordapp.com/" },
+        {"\t\t\t\t", "Daewoom", "https://discordapp.com/" },
+        {"\t\t\t\t", "Aqua", "https://discordapp.com/" },
+        {"\t\t\t\t", "MasterGarfield", "https://discordapp.com/" },
+        {"\t\t\t\t", "Darek225", "https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
+        {"\t\t\t\t", "Aurélien WOLFF", "" },
+		{"\t\t\t\t", "HummeL", "https://www.youtube.com/c/HummeL_Prog" },
 
-        {"Ship art:\t\t", "OceanLinerOrca - https://www.deviantart.com/oceanlinerorca" },
+        {"Ship art:\t\t", "OceanLinerOrca", "https://www.deviantart.com/oceanlinerorca" },
 
-        {"Chief ship literature officer:", "Maximord - https://discordapp.com/" },
+        {"Chief ship literature officer:", "Maximord", "https://discordapp.com/" },
 
-        {"Music:\t\t", "Dario Bazzichetto (Soul Heater) - https://soundcloud.com/soul-heater" },
-        {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World - https://stuartspianoworld.com/" },
-		{"\t\t\t\t", "Officer TimCan - https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
-        {"\t\t\t\t", "Kevin MacLeod - https://incompetech.com/" },
+        {"Music:\t\t", "Dario Bazzichetto (Soul Heater)", "https://soundcloud.com/soul-heater" },
+        {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World", "https://stuartspianoworld.com/" },
+		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+        {"\t\t\t\t", "Kevin MacLeod", "https://incompetech.com/" },
 
-        {"Testing:\t\t", "Pac0master - https://discordapp.com/" },
-        {"\t\t\t\t", "Maximord - https://discordapp.com/" },
-        {"\t\t\t\t", "The_SamminAter - https://discordapp.com/" },
-        {"\t\t\t\t", "McShooter2018 - https://discordapp.com/" },
-        {"\t\t\t\t", "Wreno - https://discordapp.com/" },
-        {"\t\t\t\t", "Dkuz - https://discordapp.com/" },
-        {"\t\t\t\t", "Michael Bozarth - https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
-		{"\t\t\t\t", "_ASTYuu_ - https://discordapp.com/" },
-		{"\t\t\t\t", "sinking_feeling - https://discordapp.com/" },
-		{"\t\t\t\t", "Officer TimCan - https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+        {"Testing:\t\t", "Pac0master", "https://discordapp.com/" },
+        {"\t\t\t\t", "Maximord", "https://discordapp.com/" },
+        {"\t\t\t\t", "The_SamminAter", "https://discordapp.com/" },
+        {"\t\t\t\t", "McShooter2018", "https://discordapp.com/" },
+        {"\t\t\t\t", "Wreno", "https://discordapp.com/" },
+        {"\t\t\t\t", "Dkuz", "https://discordapp.com/" },
+        {"\t\t\t\t", "Michael Bozarth", "https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
+		{"\t\t\t\t", "_ASTYuu_", "https://discordapp.com/" },
+		{"\t\t\t\t", "sinking_feeling", "https://discordapp.com/" },
+		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
 
-        {"Webmaster:\t\t", "Maximord - https://discordapp.com/" },
+        {"Webmaster:\t\t", "Maximord", "https://discordapp.com/" },
 
-        {"", ""},
+        {"", "", ""},
 
-        {"Textures:\t", "Tune 'Prototstar' Katerungroch"},
-        {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al - https://www.wxwidgets.org/"},
-        {"SFML:\t\t", "Copyright (c) Laurent Gomila - https://www.sfml-dev.org/"},
-        {"DevIL:\t\t", "Denton Woods et al - http://openil.sourceforge.net/" },
-        {"picojson:\t", "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku - https://github.com/kazuho/picojson"},
-        {"Bitmap Font Generator:\t\t", "Copyright (c) 2005-2011 Karl Walsh (Codehead) - http://www.codehead.co.uk/cbfg/" },
-        {"OpenGL tutorial:\t", "Joey de Vries - https://learnopengl.com/" },
-        {"Fast approx:\t", "Copyright (c) 2011 Paul Mineiro - http://www.machinedlearnings.com/"}
+        {"Textures:\t", "Tune 'Prototstar' Katerungroch", ""},
+        {"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al", "https://www.wxwidgets.org/"},
+        {"SFML:\t\t", "Copyright (c) Laurent Gomila", "https://www.sfml-dev.org/"},
+        {"DevIL:\t\t", "Denton Woods et al", "http://openil.sourceforge.net/" },
+        {"picojson:\t", "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku", "https://github.com/kazuho/picojson"},
+        {"Bitmap Font Generator:\t\t", "Copyright (c) 2005-2011 Karl Walsh (Codehead)", "http://www.codehead.co.uk/cbfg/" },
+        {"OpenGL tutorial:\t", "Joey de Vries", "https://learnopengl.com/" },
+        {"Fast approx:\t", "Copyright (c) 2011 Paul Mineiro", "http://www.machinedlearnings.com/"}
     };
 
     wxFont creditsTitleFont(wxFontInfo(8).Bold());
@@ -169,7 +170,7 @@ AboutDialog::AboutDialog(
     wxFlexGridSizer * creditsSizer = new wxFlexGridSizer(4, 0, 2);
     for (auto const & credit : credits)
     {
-        if (credit.first.empty() && credit.second.empty())
+        if (std::get<0>(credit).empty() && std::get<1>(credit).empty() && std::get<2>(credit).empty())
         {
             // Spacer
             creditsSizer->AddSpacer(5);
@@ -181,15 +182,43 @@ AboutDialog::AboutDialog(
         {
             creditsSizer->AddSpacer(5);
 
-            wxStaticText * credits1Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.first, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+            wxStaticText * credits1Label = new wxStaticText(mCreditsPanel, wxID_ANY, std::get<0>(credit), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
             credits1Label->SetFont(creditsTitleFont);
             creditsSizer->Add(credits1Label, 0, wxALIGN_LEFT);
 
             creditsSizer->AddSpacer(5);
 
-            wxStaticText * credits2Label = new wxStaticText(mCreditsPanel, wxID_ANY, credit.second, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-            credits2Label->SetFont(creditsContentFont);
-            creditsSizer->Add(credits2Label, 1, wxALIGN_LEFT);
+            wxPanel * credits23Panel = new wxPanel(mCreditsPanel);
+
+            {
+                wxBoxSizer * credits23Sizer = new wxBoxSizer(wxHORIZONTAL);
+
+                wxStaticText * credits2Label = new wxStaticText(
+                    credits23Panel,
+                    wxID_ANY,
+                    std::get<1>(credit) + (!std::get<2>(credit).empty() ? " - " : ""),
+                    wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                credits2Label->SetFont(creditsContentFont);
+                credits23Sizer->Add(credits2Label, 0, wxALIGN_LEFT);
+
+                if (!std::get<2>(credit).empty())
+                {
+                    wxHyperlinkCtrl * credits3Label = new wxHyperlinkCtrl(
+                        credits23Panel,
+                        wxID_ANY,
+                        std::get<2>(credit),
+                        std::get<2>(credit),
+                        wxDefaultPosition,
+                        wxDefaultSize,
+                        wxHL_ALIGN_LEFT);
+                    credits3Label->SetFont(creditsContentFont);
+                    credits23Sizer->Add(credits3Label, 0, wxALIGN_LEFT);
+                }
+
+                credits23Panel->SetSizer(credits23Sizer);
+            }
+
+            creditsSizer->Add(credits23Panel, 1, wxALIGN_LEFT);
         }
     }
 
