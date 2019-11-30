@@ -11,3 +11,8 @@
         return ::testing::AssertionFailure() << "Result " << a << " too different than expected value " << b;
     }
 }
+
+float DivideByTwo(float value)
+{
+    return value / 2.0f;
+}

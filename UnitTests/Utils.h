@@ -55,7 +55,7 @@ public:
 
     std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) override
     {
-        auto streamBuf = std::make_shared<memory_streambuf>();        
+        auto streamBuf = std::make_shared<memory_streambuf>();
         mFileMap[filePath] = streamBuf;
 
         return std::make_shared<std::ostream>(streamBuf.get());
@@ -94,7 +94,7 @@ private:
         {
             if (childIt == childPath.end() || *childIt != element)
                 return false;
-            
+
             ++childIt;
         }
 
@@ -104,7 +104,7 @@ private:
     FileMap mFileMap;
 };
 
-class MockFileSystem : public IFileSystem 
+class MockFileSystem : public IFileSystem
 {
 public:
 
@@ -115,3 +115,5 @@ public:
     MOCK_METHOD1(ListFiles, std::vector<std::filesystem::path>(std::filesystem::path const & directoryPath));
     MOCK_METHOD1(DeleteFile, void(std::filesystem::path const & filePath));
 };
+
+float DivideByTwo(float value);
