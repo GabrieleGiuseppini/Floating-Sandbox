@@ -448,10 +448,9 @@ Render:
 		+ Video (see Marketing above)
 
 		- Release
-		- Branch
 
 	- 1.14.0
-
+		- Branch
 		- Bumpup version
 
 		- RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
