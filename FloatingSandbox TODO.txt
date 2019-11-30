@@ -475,7 +475,7 @@ Render:
 				+ Take frames out of 4K video
 				= Make 16 textures
 					- Resize frames (512x512)
-						- See if should discard a lot of useless external padding
+						+ See if should discard a lot of useless external padding
 					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
 					- See if may need to boost mask
 				+ Cross-linear alpha between two textures
