@@ -67,6 +67,7 @@ void main()
     
     // Rotation angle is higher the higher we go
     float windAngle = paramFlameWindRotationAngle * flameSpacePosition.y;
+    windAngle += (noiseOffset.x - .5) * windAngle * 1.2; // Randomize with personality seed, +/- 60%
             
     // Rotate around bottom
     vec2 uv = GetRotationMatrix(windAngle) * flameSpacePosition - vec2(0.0, 0.5);

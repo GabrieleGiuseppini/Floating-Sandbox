@@ -1263,7 +1263,7 @@ void ShipRenderContext::UploadFlamesStart(
     {
         // Calculate wind angle: we do this here once instead of doing it for each and every pixel
         float const windRotationAngle = std::copysign(
-            0.8f * SmoothStep(0.0f, 100.0f, std::abs(newWind)),
+            0.6f * SmoothStep(0.0f, 100.0f, std::abs(newWind)),
             -newWind);
 
         switch (mShipFlameRenderMode)

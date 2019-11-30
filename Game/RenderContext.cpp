@@ -1602,6 +1602,9 @@ void RenderContext::OnOceanTextureIndexUpdated()
         // Reload the ocean texture
         //
 
+        // Destroy previous texture
+        mOceanTextureOpenGLHandle.reset();
+
         // Clamp the texture index
         mLoadedOceanTextureIndex = std::min(mSelectedOceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
 
@@ -1614,7 +1617,7 @@ void RenderContext::OnOceanTextureIndexUpdated()
         // Create texture
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
-        mOceanTextureOpenGLHandle = tmpGLuint; // Eventually destroy previous one
+        mOceanTextureOpenGLHandle = tmpGLuint;
 
         // Bind texture
         glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
@@ -1662,6 +1665,9 @@ void RenderContext::OnLandTextureIndexUpdated()
         // Reload the land texture
         //
 
+        // Destroy previous texture
+        mLandTextureOpenGLHandle.reset();
+
         // Clamp the texture index
         mLoadedLandTextureIndex = std::min(mSelectedLandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
 
@@ -1674,7 +1680,7 @@ void RenderContext::OnLandTextureIndexUpdated()
         // Create texture
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
-        mLandTextureOpenGLHandle = tmpGLuint; // Eventually destroy previous one
+        mLandTextureOpenGLHandle = tmpGLuint;
 
         // Bind texture
         glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);

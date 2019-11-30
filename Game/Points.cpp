@@ -555,16 +555,13 @@ void Points::UpdateCombustionLowFrequency(
         mCombustionStateBuffer[pointIndex].FlameDevelopment =
             0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mIgnitionCandidates[i]));
 
-        // Assign a personality, we'll use it for noise
-		mCombustionStateBuffer[pointIndex].Personality = mRandomNormalizedUniformFloatBuffer[pointIndex];
-
         // Max development: random and depending on number of springs connected to this point
         // (so chains have smaller flames)
         float const deltaSizeDueToConnectedSprings =
             static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
             * 0.0625f; // 0.0625 -> 0.50 (@8)
         mCombustionStateBuffer[pointIndex].MaxFlameDevelopment = std::max(
-            0.25f + deltaSizeDueToConnectedSprings + 0.5f * mCombustionStateBuffer[pointIndex].Personality, // 0.25 + dsdtcs -> 0.75 + dsdtcs
+            0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
             mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
         // Add point to vector of burning points, sorted by plane ID
@@ -1078,7 +1075,7 @@ void Points::UploadFlames(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameDevelopment,
-                mCombustionStateBuffer[pointIndex].Personality,
+                mRandomNormalizedUniformFloatBuffer[pointIndex],
                 // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
                 // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
                 mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
