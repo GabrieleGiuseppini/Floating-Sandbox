@@ -219,16 +219,7 @@ Render:
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
-	- Video for 1.13:
-		- Titanic under Mariannes' Trench
-		- Sparkles: before and after
-			- Titanic at night, from afar
 
-	+ Post discord servers:
-		- Floating Sandbox Discord Server: "The Floating Sandbox server is a place where anyone can share ships, interact with the community, learn more about the game, participate in contests and suggest new ideas."
-			- https://discord.gg/eT2R5aw
-		- Sinking Simulators Community Hub: "A community for the Sinking Simulators fans."
-			- https://discord.gg/h2ycGkC
 - Roadmap:
 
 	= 1.13.0
@@ -448,13 +439,27 @@ Render:
 		+ Clickable links in About box
 
 		- Those last few ships
+			- Including Alex02
+				- About box: <TODO:name> <TODO:url>
 
 		- Installer:
 			- New icon for installer itself
 
-		- Video (see Marketing above)
+		+ Video (see Marketing above)
+
+		- Release
+		- Branch
 
 	- 1.14.0
+
+		- Bumpup version
+
+		- RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
+		- Randomize flames' wind bend with personality seed
+
+		- See current C++ flags for perf:
+			- EHsc
+			- GR
 
 		- See why land rendering lowers FPS so much
 			- Compare first with ocean
@@ -1000,6 +1005,8 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 - Dynamics:
+
+	- Consider making world 1.5 times wider
 
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
