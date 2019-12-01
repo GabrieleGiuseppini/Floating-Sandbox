@@ -222,241 +222,13 @@ Render:
 
 - Roadmap:
 
-	= 1.13.0
-		+ Refresh current perf
-		+ Add those 2 Lava textures
-			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
-				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
-				+ Transparency: 0.8125
-				+ Make "Caraibic" version the default
-			+ Add two lava
-		+ Version overhaul
-			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
-			+ Version class:
-				+ No build number but beta instead, with beta=X always < beta=0
-				+ Unit tests
-			+ RC file
-				+ Test with both FileVersion,ProductVersion having the same (w/"beta")
-					+ Beta 1
-					+ Beta 0
-			+ Revert all changes:
-				! We are happy to release 1.13.0.592
-				+ No beta's needed, revert to 4 components, just rename them (patch, build)
-		+ Windows installer: rethink strategy, go for upgrades
-			+ Make UpgradeCode fixed value, that is, the one from 1.12.0
-			+ ProductCode changes for each release
-				+ It's the only one that changes
-			+ Move back component GUIDs from vars to hardcoded attributes, using same as in 1.12.0
-			+ Change HeatPerUser.xslt: "todo" comments for 1.12 fixed
-				! Ideal would be to have version-agnostic reg key as keypath (a new one), but then 1.12.0 components would not seem
-				  to be installed
-			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
-				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
-			+ Try changing keypaths (folder & reg key)
-				+ Rethink their values					
-			+ Tests:
-				! To verify:
-					! Final result
-					! Text of dialogs
-				+ Clean install
-				+ Upgrade
-				+ Maintenance->Repair
-				+ Maintenance->Uninstall
-				+ Upgrade when Ships folder contains additional ship files
-			+ Add to changes.txt
-		+ ShipLoadDialog: Crack ShowModal() puzzle
-			+ ShowModal()
-			+ Try:
-				+ PollQueue: consume 10 events at a time
-				+ Pre-created ShipLoadDialog member
-			+ Cleanup:
-				+ GameController::Pause:
-					+ Move GameWallClock pause here from MainFrame
-				+ Make MainFrame::SetPaused(bool) with content of pause menu handler
-					+ MainFrame has "stack" (counter)
-					+ Invoked by:
-						+ Pause menu handler
-						+ ShipLoad cycle
-				+ Remove "todo" Log's at ShipLoadDialog
-		+ Run with AppVerifier to detect cause of crash at reload
-		+ Make sure we don't copy Temperature buffer twice
-			+ Make Buffer::swap(Buffer<T> & other)
-			+ Pre: 28.1/28.8
-			+ One copy only
-			+ Post: 28.5/28.7
-			+ Do also at Water
-			+ Post: 28.9/29.1
-		+ ShipLoadDialog:
-			! Do own paint, no controls
-			+ Replace paint with overriding OnDraw(), // https://docs.wxwidgets.org/3.0/classwx_scrolled.html
-			  which provides scrolled coords
-				+ But we have to deal with mouse events anyway
-			+ See if we need the mem DC and/or double-buffering 
-				+ Try with double-buffering off
-			+ Mouse events
-				+ Calc tile based off mouse coords, panel position, and vscroll
-				+ Single-click
-				+ Double-click
-			+ Try making panel a wxWindow instead (as it doesn't have child controls)
-			+ Nuke old code and rename ShipPreviewPanel 
-			+ Fix empty bitmap/exception
-			+ Search:
-				+ Test adding author
-				+ Button for "next"
-					+ Do icon
-					+ Functionality				
-					+ Do enable state machine
-			+ Remove TODO Log's
-			+ Fix SS Arizona
-			+ Test:
-				+ Dir changes
-					+ With tree
-					+ With dropdown
-					+ With Home
-			+ Merge into 1.13
-			+ Update changes.txt
-		+ Lava textures
-			+ Update changes.txt
-		+ Benchmark vectorized spring lengths (see Moleskine)
-			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
-		+ Cache layout optimization for points and springs (*)
-		+ Slider text box editable (*)
-		+ Adjustable zoom and pan increments (*)
-		+ Sparkles with shader
-			+ Impl:
-				+ ShipRenderContext
-					+ VBO, VAO
-					+ Shader
-						+ Need sparkleSpace position
-						+ Complete
-							+ See perf (@ShaderToy) w/length instead of length2
-					+ UploadSparkle: make vertices
-						+ Quad size is 4x4
-				+ Ship
-					+ UploadStart/End
-					+ Upload:
-						+ Normalize velocity to (-1,-1) -> (1,1) and adjust sign
-					+ Expire sparkle when underwater
-					+ Simplify sparkle state machine, if there's stuff we don't need anymore
-				+ Watch videos and adjust butterfly
-					+ Use full quad
-					+ Shader
-					+ Butterfly: gaussian around direction opposite to movement
-					+ Faster max (and min) speed: * 1.5
-			+ Cleanup:
-				+ Nuke sparkle texture(s)
-				+ Shader:
-					+ Get rid of velocityVectorAdj
-				+ GameRandomEngine renames
-			+ Try:
-				+ More thick
-		+ Lights perf improvement (*)	
-		+ Settings Manager (*)
-		+ Fix guy's name in Aurora:
-			+ Need:
-				+ Name: HummeL
-				+ URL: https://www.youtube.com/c/HummeL_Prog
-			+ Ship
-			+ AboutBox
-		+ Print speed (in m/s) after throwing objects with both move tools
-		+ Move status text toggles to UIPreferences, so that they're save-able
-			+ Leave menu entries, they now talk to UIPreferencesManager
-				+ Refresh status after each change
-		+ Music from Officer TimCan:
-			+ Convert SleepingSun full and see if may fit in FS; if not, take the short version
-			+ Add the three songs
-			+ Add to about box
-		+ Storm (*)
-		+ Ocean darkening:
-			+ See if may do exponential
-			+ If so, fix marianas trench
-		+ Ocean detail adjust:
-			+ See if at zero there's no tool; if so: make minimum > 0
-		+ Need to align Points' first ShipElementCount elements
-			+ Check all references to mShipPointsCounts et al
-			+ Run in debug
-		+ Nuke unused water bubble texture
-		+ Water bubbles: try with allowing CumulatedIntakenWater to go negative: NO CHANGE
-		+ Text when repair completed: "Completely Repaired!"
-			+ At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
-			  exists and no more destroyed triangles exist
-				+ Maintain flags during visit
-				+ Maintain per-ship counts of broken springs and triangles, updated at:
-					+ SpringDestroyHandler and TriangleDestroyHandler
-					+ Repair handlers		
-		+ SpinCtrl at SliderControl?
-			+ Range is slider's range, and SpinCtrl is coupled with slider
-		+ Send for testing
-		+ Bump up version
-
-		+ Slider's edit box: enforce setting on focus away
-		+ the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
-		+ loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
-			+ Definitely repro's with Simulation Quality
-			+ CalculateIntegrationFactorTimeCoefficient needs to take into account mIsPinned
-				+ ...which becomes float
-		+ "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
-		+ "I feel that the waves on the 'storm' should be a bit smaller"
-			X The titanic has a structural problem, In a storm the stern keeps breaking off	
-		+ Improve app icon 
-			+ First icon (AAA) has white bg
-				+ Verify it's the app (exe) icon
-			+ Second (AAB) is current, used by SetIcon
-		+ Try Dario's cable suggestions
-		+ Background Music
-			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
-			+ Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
-			  is fading out
-				+ All done by MusicController, as long as mPlayBackgroundMusic is on
-				+ Default: off
-			+ Add him to credits
-			+ UIPreferencesManager: 
-				+ Global mute
-				+ Game music: volume, playSinkingMusic
-				+ Background music: volume, playBackgroundMusic
-				+ Center sliders and their checkboxes
-			+ PreferencesDialog:
-				+ Same as UIPreferencesManager
-			+ SettingsDialog: remove music volume, music mute, playSinkingMusic
-				+ Also from SettingsManager
-				+ Merge Sounds w/Advanced: "Sounds and Advanced"
-					+ And now add static boxes
-			+ Global mute:
-				+ Remove from both SoundController and MusicController
-				+ AudioController:
-					+ static void AudioController::SetGlobalMute(bool)
-					+ static bool AudioController::GetGlobalMute()
-						+ check whether sf::Listener volume is > 0.0f
-				+ MainFrame
-			+ Test playlist
-			+ Remove all TODOTEST's
-			+ Update changes.txt, also w/new location of global sound setting
-			+ Make all music OGG/Vorbis
-			+ Run in Debug
-		+ Send for testing
-		+ Bump up version: 1.13.0.7
-		+ See more gradual wave height
-		+ Clickable links in About box
-
-		- Those last few ships
-			+ OfficerTimCan's
-			- Cyclops from Bluefox
-			+ Artica -> Bluefox everywhere
-			- Including Alex02
-				- About box: <TODO:name> <TODO:url>
-
-		- Merge 97f4dfe6d746cdc6aff96a6221ec310e6309683c into master
-
-		- Installer:
-			- New icon for installer itself
-
-		+ Video (see Marketing above)
-
-		- Release
-
-	- 1.14.0
+	= 1.14.0
 		+ Branch
-
+		+ Bump up version
+		+ Ships:
+			+ Cyclops from Bluefox
+			+ Alex02
+				+ About box: "Alex di Roma", No URL
 		+ RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
 		+ Randomize flames' wind bend with personality seed
 
@@ -467,8 +239,6 @@ Render:
 			! It's the double drawing (ocean and land), while when viewing ocean land is implicitly clipped
 				! ...hence the OpenGL wait times increase
 			- Would need to "stack" ocean on top of land, like it was before
-
-		- Bumpup version
 
 		- See why Samsung is so slow
 			! Apparently it's the physics (it's 64FPS with pause)
@@ -7246,5 +7016,224 @@ IF WX:
 		+ Take Mike's music
 			+ Test flac versions
 			+ About box: add Stuart's Piano World, https://stuartspianoworld.com/
+	+ 1.13.0
+		+ Refresh current perf
+		+ Add those 2 Lava textures
+			+ Need to remove blue overlay first, apply to textures directly making a second "Caraibic" version of them
+				+ Color: 87cefa rgbColor(0x87, 0xce, 0xfa), // cornflower blue
+				+ Transparency: 0.8125
+				+ Make "Caraibic" version the default
+			+ Add two lava
+		+ Version overhaul
+			! Goal: "beta" shows up in file details (product version, etc.) and in About Box
+			+ Version class:
+				+ No build number but beta instead, with beta=X always < beta=0
+				+ Unit tests
+			+ RC file
+				+ Test with both FileVersion,ProductVersion having the same (w/"beta")
+					+ Beta 1
+					+ Beta 0
+			+ Revert all changes:
+				! We are happy to release 1.13.0.592
+				+ No beta's needed, revert to 4 components, just rename them (patch, build)
+		+ Windows installer: rethink strategy, go for upgrades
+			+ Make UpgradeCode fixed value, that is, the one from 1.12.0
+			+ ProductCode changes for each release
+				+ It's the only one that changes
+			+ Move back component GUIDs from vars to hardcoded attributes, using same as in 1.12.0
+			+ Change HeatPerUser.xslt: "todo" comments for 1.12 fixed
+				! Ideal would be to have version-agnostic reg key as keypath (a new one), but then 1.12.0 components would not seem
+				  to be installed
+			+ Do <MajorUpgrade> w/AllowSameVersionUpgrades=Yes
+				+ See https://support.firegiant.com/hc/en-us/articles/230912187-Implement-major-upgrade-
+			+ Try changing keypaths (folder & reg key)
+				+ Rethink their values					
+			+ Tests:
+				! To verify:
+					! Final result
+					! Text of dialogs
+				+ Clean install
+				+ Upgrade
+				+ Maintenance->Repair
+				+ Maintenance->Uninstall
+				+ Upgrade when Ships folder contains additional ship files
+			+ Add to changes.txt
+		+ ShipLoadDialog: Crack ShowModal() puzzle
+			+ ShowModal()
+			+ Try:
+				+ PollQueue: consume 10 events at a time
+				+ Pre-created ShipLoadDialog member
+			+ Cleanup:
+				+ GameController::Pause:
+					+ Move GameWallClock pause here from MainFrame
+				+ Make MainFrame::SetPaused(bool) with content of pause menu handler
+					+ MainFrame has "stack" (counter)
+					+ Invoked by:
+						+ Pause menu handler
+						+ ShipLoad cycle
+				+ Remove "todo" Log's at ShipLoadDialog
+		+ Run with AppVerifier to detect cause of crash at reload
+		+ Make sure we don't copy Temperature buffer twice
+			+ Make Buffer::swap(Buffer<T> & other)
+			+ Pre: 28.1/28.8
+			+ One copy only
+			+ Post: 28.5/28.7
+			+ Do also at Water
+			+ Post: 28.9/29.1
+		+ ShipLoadDialog:
+			! Do own paint, no controls
+			+ Replace paint with overriding OnDraw(), // https://docs.wxwidgets.org/3.0/classwx_scrolled.html
+			  which provides scrolled coords
+				+ But we have to deal with mouse events anyway
+			+ See if we need the mem DC and/or double-buffering 
+				+ Try with double-buffering off
+			+ Mouse events
+				+ Calc tile based off mouse coords, panel position, and vscroll
+				+ Single-click
+				+ Double-click
+			+ Try making panel a wxWindow instead (as it doesn't have child controls)
+			+ Nuke old code and rename ShipPreviewPanel 
+			+ Fix empty bitmap/exception
+			+ Search:
+				+ Test adding author
+				+ Button for "next"
+					+ Do icon
+					+ Functionality				
+					+ Do enable state machine
+			+ Remove TODO Log's
+			+ Fix SS Arizona
+			+ Test:
+				+ Dir changes
+					+ With tree
+					+ With dropdown
+					+ With Home
+			+ Merge into 1.13
+			+ Update changes.txt
+		+ Lava textures
+			+ Update changes.txt
+		+ Benchmark vectorized spring lengths (see Moleskine)
+			+ Move VectorNormalization_Vectorized_AndLength_Reciprocal_LibSimDpp to Algorithms
+		+ Cache layout optimization for points and springs (*)
+		+ Slider text box editable (*)
+		+ Adjustable zoom and pan increments (*)
+		+ Sparkles with shader
+			+ Impl:
+				+ ShipRenderContext
+					+ VBO, VAO
+					+ Shader
+						+ Need sparkleSpace position
+						+ Complete
+							+ See perf (@ShaderToy) w/length instead of length2
+					+ UploadSparkle: make vertices
+						+ Quad size is 4x4
+				+ Ship
+					+ UploadStart/End
+					+ Upload:
+						+ Normalize velocity to (-1,-1) -> (1,1) and adjust sign
+					+ Expire sparkle when underwater
+					+ Simplify sparkle state machine, if there's stuff we don't need anymore
+				+ Watch videos and adjust butterfly
+					+ Use full quad
+					+ Shader
+					+ Butterfly: gaussian around direction opposite to movement
+					+ Faster max (and min) speed: * 1.5
+			+ Cleanup:
+				+ Nuke sparkle texture(s)
+				+ Shader:
+					+ Get rid of velocityVectorAdj
+				+ GameRandomEngine renames
+			+ Try:
+				+ More thick
+		+ Lights perf improvement (*)	
+		+ Settings Manager (*)
+		+ Fix guy's name in Aurora:
+			+ Need:
+				+ Name: HummeL
+				+ URL: https://www.youtube.com/c/HummeL_Prog
+			+ Ship
+			+ AboutBox
+		+ Print speed (in m/s) after throwing objects with both move tools
+		+ Move status text toggles to UIPreferences, so that they're save-able
+			+ Leave menu entries, they now talk to UIPreferencesManager
+				+ Refresh status after each change
+		+ Music from Officer TimCan:
+			+ Convert SleepingSun full and see if may fit in FS; if not, take the short version
+			+ Add the three songs
+			+ Add to about box
+		+ Storm (*)
+		+ Ocean darkening:
+			+ See if may do exponential
+			+ If so, fix marianas trench
+		+ Ocean detail adjust:
+			+ See if at zero there's no tool; if so: make minimum > 0
+		+ Need to align Points' first ShipElementCount elements
+			+ Check all references to mShipPointsCounts et al
+			+ Run in debug
+		+ Nuke unused water bubble texture
+		+ Water bubbles: try with allowing CumulatedIntakenWater to go negative: NO CHANGE
+		+ Text when repair completed: "Completely Repaired!"
+			+ At iteration where at least one spring or one triangle has been repaired, and no more fixable springs
+			  exists and no more destroyed triangles exist
+				+ Maintain flags during visit
+				+ Maintain per-ship counts of broken springs and triangles, updated at:
+					+ SpringDestroyHandler and TriangleDestroyHandler
+					+ Repair handlers		
+		+ SpinCtrl at SliderControl?
+			+ Range is slider's range, and SpinCtrl is coupled with slider
+		+ Send for testing
+		+ Bump up version
+
+		+ Slider's edit box: enforce setting on focus away
+		+ the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
+		+ loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
+			+ Definitely repro's with Simulation Quality
+			+ CalculateIntegrationFactorTimeCoefficient needs to take into account mIsPinned
+				+ ...which becomes float
+		+ "here is a bug that I found to where the game crashes. You zoom out, click adjust terrain, remove all terrain, then reset the map by hitting ctrl+r, the game freezes for a second and the crashes."
+		+ "I feel that the waves on the 'storm' should be a bit smaller"
+			X The titanic has a structural problem, In a storm the stern keeps breaking off	
+		+ Improve app icon 
+			+ First icon (AAA) has white bg
+				+ Verify it's the app (exe) icon
+			+ Second (AAB) is current, used by SetIcon
+		+ Try Dario's cable suggestions
+		+ Background Music
+			+ Long Note Four by Kevin MacLeod: https://www.youtube.com/watch?v=mzmfxEcCeic
+			+ Needs to fade out while sinking music is fading-in, and needs to fade-in once sinking music
+			  is fading out
+				+ All done by MusicController, as long as mPlayBackgroundMusic is on
+				+ Default: off
+			+ Add him to credits
+			+ UIPreferencesManager: 
+				+ Global mute
+				+ Game music: volume, playSinkingMusic
+				+ Background music: volume, playBackgroundMusic
+				+ Center sliders and their checkboxes
+			+ PreferencesDialog:
+				+ Same as UIPreferencesManager
+			+ SettingsDialog: remove music volume, music mute, playSinkingMusic
+				+ Also from SettingsManager
+				+ Merge Sounds w/Advanced: "Sounds and Advanced"
+					+ And now add static boxes
+			+ Global mute:
+				+ Remove from both SoundController and MusicController
+				+ AudioController:
+					+ static void AudioController::SetGlobalMute(bool)
+					+ static bool AudioController::GetGlobalMute()
+						+ check whether sf::Listener volume is > 0.0f
+				+ MainFrame
+			+ Test playlist
+			+ Remove all TODOTEST's
+			+ Update changes.txt, also w/new location of global sound setting
+			+ Make all music OGG/Vorbis
+			+ Run in Debug
+		+ Send for testing
+		+ Bump up version: 1.13.0.7
+		+ See more gradual wave height
+		+ Clickable links in About box
+		+ Installer:
+			+ New icon for installer itself
+		+ Video (see Marketing above)
+		+ Release
 
 

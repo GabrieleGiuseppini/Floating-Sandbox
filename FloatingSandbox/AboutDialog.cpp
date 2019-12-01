@@ -129,6 +129,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Darek225", "https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
         {"\t\t\t\t", "Aurélien WOLFF", "" },
         {"\t\t\t\t", "HummeL", "https://www.youtube.com/c/HummeL_Prog" },
+        {"\t\t\t\t", "Alex di Roma", "" },
 
         {"Ship art:\t\t", "OceanLinerOrca", "https://www.deviantart.com/oceanlinerorca" },
 
@@ -149,6 +150,8 @@ AboutDialog::AboutDialog(
 		{"\t\t\t\t", "_ASTYuu_", "https://discordapp.com/" },
 		{"\t\t\t\t", "sinking_feeling", "https://discordapp.com/" },
 		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+        {"\t\t\t\t", "KikoTheBoatBuilder", "https://discordapp.com/" },
+        {"\t\t\t\t", "DioxCode ", "https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ" },
 
         {"Webmaster:\t\t", "Maximord", "https://discordapp.com/" },
 

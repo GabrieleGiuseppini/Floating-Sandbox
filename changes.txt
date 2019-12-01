@@ -1,4 +1,7 @@
-1.13.0
+1.14.0.TODO
+- 11 new ships
+
+1.13.0.7
 - Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings
 - Added storms
 - Greatly improved performance of lighting sub-system - now the simulation lags much less when running ships with many lamps
