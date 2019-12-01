@@ -11,7 +11,7 @@
 - From now on, the installation of newer versions of Floating Sandbox will automatically uninstall older versions
 	- Save your ships first - if you've added ships to the game's Ships directory - or else they'll be lost with the upgrade!
 - Fixed random crash that occurred after using the Terrain Adjust tool when reloading a ship
-- 10 new ships
+- 11 new ships
 - ...and a few more small improvements here and there
 - Musical theme for this release: Samaris
 

@@ -106,7 +106,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Pac0master", "https://discordapp.com/" },
         {"\t\t\t\t", "CorbinPasta93", "https://discordapp.com/" },
         {"\t\t\t\t", "Yorkie", "https://discordapp.com/" },
-        {"\t\t\t\t", "Artica", "https://discordapp.com/" },
+        {"\t\t\t\t", "Bluefox", "https://discordapp.com/" },
         {"\t\t\t\t", "KikoTheBoatBuilder", "https://discordapp.com/" },
         {"\t\t\t\t", "Albert Windsor", "https://discordapp.com/" },
         {"\t\t\t\t", "ShipBuilder1912", "https://discordapp.com/" },
