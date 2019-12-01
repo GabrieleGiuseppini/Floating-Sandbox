@@ -445,6 +445,8 @@ Render:
 			- Including Alex02
 				- About box: <TODO:name> <TODO:url>
 
+		- Merge 97f4dfe6d746cdc6aff96a6221ec310e6309683c into master
+
 		- Installer:
 			- New icon for installer itself
 
