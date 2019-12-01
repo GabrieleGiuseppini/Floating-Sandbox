@@ -439,6 +439,9 @@ Render:
 		+ Clickable links in About box
 
 		- Those last few ships
+			+ OfficerTimCan's
+			- Cyclops from Bluefox
+			+ Artica -> Bluefox everywhere
 			- Including Alex02
 				- About box: <TODO:name> <TODO:url>
 
@@ -1105,6 +1108,11 @@ Render:
 			- Then tell Michael, who could change blimp
 
 	- Dynamite that may be thrown to the ship
+
+	- Dive bomb:
+		- The player drops it the sky and into the sea; the bomb goes below the waves for a bit and then refloats and 
+		  hits the bottom of the ship
+		- Needs frontier
 
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)

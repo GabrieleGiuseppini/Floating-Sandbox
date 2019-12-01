@@ -431,13 +431,13 @@ struct ContinuousSound
         if (count == 0)
         {
             // Stop it
-            Stop(StopMode::WithFadeOut);
+            Stop();
         }
         else
         {
             float volume = 100.0f * (1.0f - exp(-mAggregateRate * static_cast<float>(count)));
             SetVolume(volume);
-            Start(StartMode::WithFadeIn);
+            Start();
         }
     }
 
