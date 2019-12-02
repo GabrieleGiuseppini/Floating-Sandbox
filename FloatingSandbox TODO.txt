@@ -264,10 +264,13 @@ Render:
 						+ float personalitySeed
 							+ Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
 				+ New render step
-			- Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
+			= Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
 			- Commit
-			- Decide whether to keep old explosions as well or not
-				- If want to have multiple explosions: TBD
+			- Make infrastructure for multiple explosions:
+				- Single shader, single atlas
+					- Atlas name: "explosions"
+					- Texture group name: "explosions"
+
 			- Ship: needs own state machine for explosions
 				- Does: rendering; creation of each frame's force field;
 					- i.e. has Update() and Upload()
@@ -277,9 +280,12 @@ Render:
 					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
 				- Expires when progress reaches max lifetime parameter (float seconds)
 			- Replace bombs: (verify all call the same Ship::DoBombExplosion(.))
-				- Impact
-				- RC
-				- Timer
+				- No bomb does anymore Explosion state machine - they all expire at detonation,
+				  after sending Explosion to ship
+				- Do at:
+					- Impact Bomb
+					- RC
+					- Timer
 			- Cleanup:
 				- Nuke old explosion textures
 				- Nuke GameTypes' texture groups for RC and Timer bomb explosions

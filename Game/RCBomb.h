@@ -113,47 +113,21 @@ private:
         mNextStateTransitionTimePoint = currentWallClockTime + FastPingInterval;
     }
 
-    inline void TransitionToExploding(
-        GameWallClock::time_point currentWallClockTime,
-        GameParameters const & gameParameters)
-    {
-        mState = State::Exploding;
-
-        assert(mExplodingStepCounter < ExplosionStepsCount);
-
-        // Check whether we're done
-        if (mExplodingStepCounter == ExplosionStepsCount - 1)
-        {
-            // Transition to expired
-            mState = State::Expired;
-        }
-        else
-        {
-            // Invoke blast handler
-            mPhysicsHandler.DoBombExplosion(
-                GetPosition(),
-                static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
-                gameParameters);
-
-            // Increment counter
-            ++mExplodingStepCounter;
-
-            // Schedule next transition
-            mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
-        }
-    }
-
     State mState;
 
     // The next timestamp at which we'll automatically transition state
     GameWallClock::time_point mNextStateTransitionTimePoint;
 
     // The timestamp at which we'll explode while in detonation lead-in
-    GameWallClock::time_point mExplosionTimePoint;
+    GameWallClock::time_point mExplosionIgnitionTimestamp;
+
+    // The timestamp at which the Explosion state has started,
+    // and the current progress
+    GameWallClock::time_point mExplosionStartTimestamp;
+    float mExplosionProgress;
 
     // The counters for the various states. Fine to rollover!
     uint8_t mPingOnStepCounter;     // Set to one upon entering
-    uint8_t mExplodingStepCounter;  // Set to zero upon entering
 };
 
 }

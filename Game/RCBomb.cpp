@@ -28,9 +28,10 @@ RCBomb::RCBomb(
         shipSprings)
     , mState(State::IdlePingOff)
     , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowPingOffInterval)
-    , mExplosionTimePoint(GameWallClock::time_point::min())
+    , mExplosionIgnitionTimestamp(GameWallClock::time_point::min())
+    , mExplosionStartTimestamp(GameWallClock::time_point::min())
+    , mExplosionProgress(0.0f)
     , mPingOnStepCounter(0u)
-    , mExplodingStepCounter(0u)
 {
 }
 
@@ -98,7 +99,7 @@ bool RCBomb::Update(
         case State::DetonationLeadIn:
         {
             // Check if time to explode
-            if (currentWallClockTime > mExplosionTimePoint)
+            if (currentWallClockTime > mExplosionIgnitionTimestamp)
             {
                 //
                 // Transition to Exploding state
@@ -109,7 +110,8 @@ bool RCBomb::Update(
                 DetachIfAttached();
 
                 // Transition
-                TransitionToExploding(currentWallClockTime, gameParameters);
+                mState = State::Exploding;
+                mExplosionStartTimestamp = currentWallClockTime;
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
@@ -131,13 +133,27 @@ bool RCBomb::Update(
 
         case State::Exploding:
         {
-            if (currentWallClockTime > mNextStateTransitionTimePoint)
-            {
-                //
-                // Transition to Exploding state
-                //
+            // TODOTEST
+            std::chrono::duration<float> constexpr ExplosionDuration(2.0f);
 
-                TransitionToExploding(currentWallClockTime, gameParameters);
+            // Calculate elapsed time and progress
+            auto const elapsed = currentWallClockTime - mExplosionStartTimestamp;
+            mExplosionProgress =
+                std::chrono::duration_cast<std::chrono::duration<float>>(elapsed).count()
+                / ExplosionDuration.count();
+
+            if (mExplosionProgress > 1.0f)
+            {
+                // Transition to expired
+                mState = State::Expired;
+            }
+            else
+            {
+                // Invoke blast handler
+                mPhysicsHandler.DoBombExplosion(
+                    GetPosition(),
+                    mExplosionProgress,
+                    gameParameters);
             }
 
             return true;
@@ -224,6 +240,7 @@ void RCBomb::Upload(
 
         case State::Exploding:
         {
+            /* TODOOLD
             assert(mExplodingStepCounter >= 0);
             assert(mExplodingStepCounter < ExplosionStepsCount);
 
@@ -236,6 +253,15 @@ void RCBomb::Upload(
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
+            */
+
+            renderContext.UploadShipExplosion(
+                shipId,
+                GetPlaneId(),
+                GetPosition(),
+                22.0f, // TODOTEST
+                GetPersonalitySeed(),
+                mExplosionProgress);
 
             break;
         }
@@ -262,7 +288,7 @@ void RCBomb::Detonate()
         TransitionToDetonationLeadIn(currentWallClockTime);
 
         // Schedule explosion
-        mExplosionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
+        mExplosionIgnitionTimestamp = currentWallClockTime + DetonationLeadInToExplosionInterval;
     }
 }
 

@@ -201,6 +201,15 @@ public:
         }
     }
 
+    /*
+     * Returns the personality seed of this bomb, i.e.
+     * a uniform normalized random value.
+     */
+    float GetPersonalitySeed() const
+    {
+        return mPersonalitySeed;
+    }
+
 protected:
 
     Bomb(
@@ -224,6 +233,7 @@ protected:
         , mFrozenMidpointPosition(std::nullopt)
         , mFrozenRotationOffsetAxis(std::nullopt)
         , mFrozenPlaneId(std::nullopt)
+        , mPersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
     {
     }
 
@@ -267,6 +277,9 @@ private:
 
     // The plane ID of this bomb, if the bomb has been detached from its spring; otherwise, none
     std::optional<PlaneId> mFrozenPlaneId;
+
+    // The random personality seed
+    float const mPersonalitySeed;
 };
 
 }
