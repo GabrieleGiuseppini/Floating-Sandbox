@@ -1240,6 +1240,28 @@ public:
     }
 
     //
+    // Explosions
+    //
+
+    inline void UploadShipExplosion(
+        ShipId shipId,
+        PlaneId planeId,
+        vec2f const & centerPosition,
+        float halfQuadSize,
+        float personalitySeed,
+        float progress)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadExplosion(
+            planeId,
+            centerPosition,
+            halfQuadSize,
+            personalitySeed,
+            progress);
+    }
+
+    //
     // Sparkles
     //
 
@@ -1769,6 +1791,10 @@ private:
     std::vector<TextureFrameSpecification> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
+
+    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata> mExplosionTextureAtlasMetadata;
+
 
     //
     // Misc Parameters

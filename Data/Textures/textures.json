@@ -63,6 +63,18 @@
 },
 
 {
+	"groupName": "Explosion1",
+	"comment": "World scaling is irrelevant",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldScaling": 1.0,
+			"filename": "explosion1_.*"
+		}
+	]
+},
+
+{
 	"groupName": "ImpactBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[

@@ -80,7 +80,7 @@ public:
         mValue = T();
     }
 
-    T [[nodiscard]] release() noexcept
+    [[nodiscard]] T release() noexcept
     {
         auto value = mValue;
         mValue = T();

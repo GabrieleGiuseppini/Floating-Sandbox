@@ -301,6 +301,7 @@ enum class TextureGroupType : uint16_t
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
     Cloud,
+    Explosion1,
     ImpactBomb,
     Land,
     Noise,

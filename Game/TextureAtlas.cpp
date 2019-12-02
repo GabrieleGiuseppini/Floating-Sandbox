@@ -34,6 +34,27 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         progressCallback);
 }
 
+TextureAtlas TextureAtlasBuilder::BuildRegularAtlas(
+    TextureGroup const & group,
+    ProgressCallback const & progressCallback)
+{
+    // Build TextureInfo's
+    std::vector<TextureInfo> textureInfos;
+    AddTextureInfos(group, textureInfos);
+
+    // Build specification
+    AtlasSpecification specification = BuildRegularAtlasSpecification(textureInfos);
+
+    // Build atlas
+    return BuildAtlas(
+        specification,
+        [&group](TextureFrameId const & frameId)
+        {
+            return group.LoadFrame(frameId.FrameIndex);
+        },
+        progressCallback);
+}
+
 TextureAtlas TextureAtlasBuilder::BuildAtlas(
     TextureDatabase const & database,
     ProgressCallback const & progressCallback)

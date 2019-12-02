@@ -28,6 +28,8 @@ ShipRenderContext::ShipRenderContext(
     RgbaImageData shipTexture,
     ShipDefinition::TextureOriginType /*textureOrigin*/,
     ShaderManager<ShaderManagerTraits> & shaderManager,
+    GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
+    TextureAtlasMetadata const & explosionTextureAtlasMetadata,
     GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
     TextureAtlasMetadata const & genericTextureAtlasMetadata,
     RenderStatistics & renderStatistics,
@@ -67,14 +69,19 @@ ShipRenderContext::ShipRenderContext(
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentWindSpeedMagnitudeAverage(-1.0f) // Make sure we update the param right away
     //
+    , mExplosionPlaneVertexBuffers()
+    , mExplosionTotalPlaneVertexCount(0)
+    , mExplosionVBO()
+    , mExplosionVBOAllocatedVertexCount(0)
+    //
     , mSparkleVertexBuffer()
     , mSparkleVertexVBO()
     //
     , mAirBubbleVertexBuffer()
     , mGenericTexturePlaneVertexBuffers()
-    , mGenericTextureTotalPlaneQuadCount(0)
+    , mGenericTextureTotalPlaneVertexCount(0)
     , mGenericTextureVBO()
-    , mGenericTextureVBOAllocatedVertexCount()
+    , mGenericTextureVBOAllocatedVertexCount(0)
     //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
@@ -94,12 +101,15 @@ ShipRenderContext::ShipRenderContext(
     // VAOs
     , mShipVAO()
     , mFlameVAO()
+    , mExplosionVAO()
     , mSparkleVAO()
     , mGenericTextureVAO()
     , mVectorArrowVAO()
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
+    , mExplosionTextureAtlasOpenGLHandle(explosionTextureAtlasOpenGLHandle)
+    , mExplosionTextureAtlasMetadata(explosionTextureAtlasMetadata)
     , mGenericTextureAtlasOpenGLHandle(genericTextureAtlasOpenGLHandle)
     , mGenericTextureAtlasMetadata(genericTextureAtlasMetadata)
     // Managers
@@ -133,8 +143,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[9];
-    glGenBuffers(9, vbos);
+    GLuint vbos[10];
+    glGenBuffers(10, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -162,15 +172,20 @@ ShipRenderContext::ShipRenderContext(
 
     mFlameVertexVBO = vbos[5];
 
-    mSparkleVertexVBO = vbos[6];
+    mExplosionVBO = vbos[6];
+    glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
+    mExplosionVBOAllocatedVertexCount = 10 * 6; // Initial guess, might get more
+    glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
+
+    mSparkleVertexVBO = vbos[7];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericTextureVBO = vbos[7];
+    mGenericTextureVBO = vbos[8];
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mGenericTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
     glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
-    mVectorArrowVBO = vbos[8];
+    mVectorArrowVBO = vbos[9];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -263,7 +278,32 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Initialize Sparkle VAO's
+    // Initialize Explosion VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mExplosionVAO = tmpGLuint;
+
+        glBindVertexArray(*mExplosionVAO);
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
+        static_assert(sizeof(ExplosionVertex) == (4 + 4 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion1), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion2), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion3), 1, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4 + 4) * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Sparkle VAO
     //
 
     {
@@ -442,7 +482,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs
     //      - 5: Points
-    //      - 6: Flames - foreground
+    //      - 6: Flames - foreground, and Explosions
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Vectors
@@ -604,7 +644,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
 
     //
-    // Layer 6: Flames - foreground
+    // Layer 6: Flames - foreground, and Explosions
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -622,6 +662,10 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipExplosions, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -957,14 +1001,16 @@ void ShipRenderContext::OnShipFlameSizeAdjustmentUpdated()
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
-    // Reset flames, sparkles, air bubbles, and generic textures
+    // Reset flames, explosions, air bubbles, generic textures
     //
 
     mFlameVertexBuffer.reset();
     mFlameBackgroundCount = 0u;
     mFlameForegroundCount = 0u;
 
-    mSparkleVertexBuffer.clear();
+    mExplosionPlaneVertexBuffers.clear();
+    mExplosionPlaneVertexBuffers.resize(maxMaxPlaneId + 1);
+    mExplosionTotalPlaneVertexCount = 0;
 
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
     mAirBubbleVertexBuffer.map(mGenericTextureVBOAllocatedVertexCount);
@@ -973,7 +1019,7 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 
     mGenericTexturePlaneVertexBuffers.clear();
     mGenericTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericTextureTotalPlaneQuadCount = 0;
+    mGenericTextureTotalPlaneVertexCount = 0;
 
 
     //
@@ -1706,6 +1752,14 @@ void ShipRenderContext::RenderEnd()
 
 
     //
+    // Render explosions
+    //
+
+    RenderExplosions();
+
+
+
+    //
     // Render sparkles
     //
 
@@ -1774,6 +1828,63 @@ void ShipRenderContext::RenderFlames(
     }
 }
 
+void ShipRenderContext::RenderExplosions()
+{
+    if (mExplosionTotalPlaneVertexCount > 0)
+    {
+        glBindVertexArray(*mExplosionVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
+
+        //
+        // Upload to VBO
+        //
+
+        // (Re-)Allocate vertex buffer, if needed
+        if (mExplosionVBOAllocatedVertexCount < mExplosionTotalPlaneVertexCount)
+        {
+            mExplosionVBOAllocatedVertexCount = mExplosionTotalPlaneVertexCount;
+
+            glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+        }
+
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+
+        // Copy all buffers
+        for (auto const & plane : mExplosionPlaneVertexBuffers)
+        {
+            if (!plane.vertexBuffer.empty())
+            {
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(ExplosionVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
+
+                // Advance
+                mappedBuffer += byteCopySize;
+            }
+        }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        //
+        // Render
+        //
+
+        assert(0 == (mExplosionTotalPlaneVertexCount % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mExplosionTotalPlaneVertexCount));
+
+        glBindVertexArray(0);
+    }
+}
+
 void ShipRenderContext::RenderSparkles()
 {
     if (mSparkleVertexBuffer.size() > 0)
@@ -1781,6 +1892,11 @@ void ShipRenderContext::RenderSparkles()
         glBindVertexArray(*mSparkleVAO);
 
         mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
 
         assert(0 == (mSparkleVertexBuffer.size() % 6));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mSparkleVertexBuffer.size()));
@@ -1801,7 +1917,7 @@ void ShipRenderContext::RenderGenericTextures()
     //
 
     if (mAirBubbleVertexBuffer.size() > 0
-        || mGenericTextureTotalPlaneQuadCount > 0)
+        || mGenericTextureTotalPlaneVertexCount > 0)
     {
         glBindVertexArray(*mGenericTextureVAO);
 
@@ -1833,16 +1949,16 @@ void ShipRenderContext::RenderGenericTextures()
         // Generic textures
         //
 
-        if (mGenericTextureTotalPlaneQuadCount > 0)
+        if (mGenericTextureTotalPlaneVertexCount > 0)
         {
             //
             // Upload vertex buffers
             //
 
             // (Re-)Allocate vertex buffer, if needed
-            if (mGenericTextureVBOAllocatedVertexCount < mGenericTextureTotalPlaneQuadCount * 6)
+            if (mGenericTextureVBOAllocatedVertexCount < mGenericTextureTotalPlaneVertexCount)
             {
-                mGenericTextureVBOAllocatedVertexCount = mGenericTextureTotalPlaneQuadCount * 6;
+                mGenericTextureVBOAllocatedVertexCount = mGenericTextureTotalPlaneVertexCount;
 
                 glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
                 CheckOpenGLError();
@@ -1873,14 +1989,15 @@ void ShipRenderContext::RenderGenericTextures()
             // Render
             //
 
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureTotalPlaneQuadCount * 6));
+            assert(0 == (mGenericTextureTotalPlaneVertexCount % 6));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureTotalPlaneVertexCount));
 
 
             //
             // Update stats
             //
 
-            mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureTotalPlaneQuadCount;
+            mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureTotalPlaneVertexCount / 6;
         }
 
         glBindVertexArray(0);

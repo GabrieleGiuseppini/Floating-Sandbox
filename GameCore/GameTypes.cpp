@@ -30,6 +30,8 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::AntiMatterBombSphere;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud"))
         return TextureGroupType::Cloud;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
+        return TextureGroupType::Explosion1;
     else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
         return TextureGroupType::ImpactBomb;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))

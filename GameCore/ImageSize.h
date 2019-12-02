@@ -7,6 +7,8 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <sstream>
+#include <string>
 
 #pragma pack(push)
 struct ImageSize
@@ -65,6 +67,13 @@ public:
         return ImageSize(
             std::max(this->Width, other.Width),
             std::max(this->Height, other.Height));
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << Width << "x" << Height;
+        return ss.str();
     }
 };
 #pragma pack(pop)

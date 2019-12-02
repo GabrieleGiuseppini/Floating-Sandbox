@@ -37,6 +37,7 @@ enum class ProgramType
     OceanFlat,
     OceanTexture,
 	Rain,
+    ShipExplosions,
     ShipFlamesBackground1,
     ShipFlamesBackground2,
     ShipFlamesForeground1,
@@ -70,7 +71,7 @@ ProgramType ShaderFilenameToProgramType(std::string const & str);
 std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
-{    
+{
     EffectiveAmbientLightIntensity = 0,
     FlameSpeed,
     FlameWindRotationAngle,
@@ -94,13 +95,14 @@ enum class ProgramParameterType : uint8_t
 
     // Textures
     SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
-    CloudTexture,                   // 1
-    GenericTexturesAtlasTexture,    // 2
-    LandTexture,                    // 3
-    NoiseTexture1,                  // 4
-    NoiseTexture2,                  // 5
-    OceanTexture,                   // 6
-    WorldBorderTexture,             // 7
+    CloudsAtlasTexture,             // 1
+    ExplosionsAtlasTexture,         // 2
+    GenericTexturesAtlasTexture,    // 3
+    LandTexture,                    // 4
+    NoiseTexture1,                  // 5
+    NoiseTexture2,                  // 6
+    OceanTexture,                   // 7
+    WorldBorderTexture,             // 8
 
     _FirstTexture = SharedTexture,
     _LastTexture = WorldBorderTexture
@@ -150,6 +152,10 @@ enum class VertexAttributeType : GLuint
     ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
     ShipPointColor = 2,
     ShipPointTemperature = 3,
+
+    Explosion1 = 0,
+    Explosion2 = 1,
+    Explosion3 = 2,
 
     Sparkle1 = 0,
     Sparkle2 = 1,

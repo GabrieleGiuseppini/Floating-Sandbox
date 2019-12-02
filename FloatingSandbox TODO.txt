@@ -232,19 +232,6 @@ Render:
 		+ RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
 		+ Randomize flames' wind bend with personality seed
 
-		= See why land rendering lowers FPS so much
-			+ Compare first with ocean
-			+ Try with a dumb shader
-			+ Also double-check if mipmapping is different than ocean
-			! It's the double drawing (ocean and land), while when viewing ocean land is implicitly clipped
-				! ...hence the OpenGL wait times increase
-			- Would need to "stack" ocean on top of land, like it was before
-
-		- See why Samsung is so slow
-			! Apparently it's the physics (it's 64FPS with pause)
-			+ Write and run unit tests for denormals
-			- Add switch to turn off Ship::Update's to verify whether it's pure CPU or not
-
 		= New explosions:
 			= Shader:
 				+ Take frames out of 4K video
@@ -254,22 +241,33 @@ Render:
 					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
 					- See if may need to boost mask
 				+ Cross-linear alpha between two textures
+				- Shader
 				- Discard
 			+ Atlas:
 				+ RegularAtlas builder method (no optim's, all same size (but not necessarily square))
 				+ Unit tests
-			- ShipRenderContext:
-				- New Explosion upload
-					- Args:
-						- vec2 centerPosition
-						- float size
-						- float progress
-						- float personalitySeed
-							- Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
-					- New shader
-					- Own texture (atlas)
-					- Same plane as fire, but will have deterministic deep sort: fire drawn first, explosion next
+			= RenderContext:
+				+ Make atlas and pass to ShipRenderContext
+				- Need the textures mipmapped?
+			+ ShipRenderContext:
+				+ New VBO, VAO, etc.
+					+ Copy from generic textures
+					+ Same plane as fire, but will have deterministic deep sort: fire drawn first, explosion next
+				+ Revert to no start/end
+					+ Clear at RenderStart()
+					+ Upload at RenderExplosions()
+				+ New Explosion upload
+					+ Args:
+						+ vec2 centerPosition
+						+ float halfQuadSize // of quad side
+						+ float progress
+						+ float personalitySeed
+							+ Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
+				+ New render step
 			- Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
+			- Commit
+			- Decide whether to keep old explosions as well or not
+				- If want to have multiple explosions: TBD
 			- Ship: needs own state machine for explosions
 				- Does: rendering; creation of each frame's force field;
 					- i.e. has Update() and Upload()
@@ -282,9 +280,24 @@ Render:
 				- Impact
 				- RC
 				- Timer
-			- Nuke old explosion textures
+			- Cleanup:
+				- Nuke old explosion textures
+				- Nuke GameTypes' texture groups for RC and Timer bomb explosions
 
 		- Interleaving Update's with Render's (*)
+
+		= See why land rendering lowers FPS so much
+			+ Compare first with ocean
+			+ Try with a dumb shader
+			+ Also double-check if mipmapping is different than ocean
+			! It's the double drawing (ocean and land), while when viewing ocean land is implicitly clipped
+				! ...hence the OpenGL wait times increase
+			- Would need to "stack" ocean on top of land, like it was before
+
+		- See why Samsung is so slow
+			! Apparently it's the physics (it's 64FPS with pause)
+			+ Write and run unit tests for denormals
+			- Add switch to turn off Ship::Update's to verify whether it's pure CPU or not
 
 		- Explosive combustion (*)
 

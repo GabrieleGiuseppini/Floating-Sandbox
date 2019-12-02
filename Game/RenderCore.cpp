@@ -39,6 +39,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanTexture;
 	else if (lstr == "rain")
 		return ProgramType::Rain;
+    else if (lstr == "ship_explosions")
+        return ProgramType::ShipExplosions;
     else if (lstr == "ship_flames_background_1")
         return ProgramType::ShipFlamesBackground1;
     else if (lstr == "ship_flames_background_2")
@@ -119,6 +121,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanTexture";
 	case ProgramType::Rain:
 		return "Rain";
+    case ProgramType::ShipExplosions:
+        return "ShipExplosions";
     case ProgramType::ShipFlamesBackground1:
         return "ShipFlamesBackground1";
     case ProgramType::ShipFlamesBackground2:
@@ -174,7 +178,7 @@ std::string ProgramTypeToStr(ProgramType program)
 }
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
-{    
+{
     if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
     else if (str == "FlameSpeed")
@@ -218,8 +222,10 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
-    else if (str == "CloudTexture")
-        return ProgramParameterType::CloudTexture;
+    else if (str == "CloudsAtlasTexture")
+        return ProgramParameterType::CloudsAtlasTexture;
+    else if (str == "ExplosionsAtlasTexture")
+        return ProgramParameterType::ExplosionsAtlasTexture;
     else if (str == "GenericTexturesAtlasTexture")
         return ProgramParameterType::GenericTexturesAtlasTexture;
     else if (str == "LandTexture")
@@ -239,7 +245,7 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
-    {    
+    {
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
     case ProgramParameterType::FlameSpeed:
@@ -283,8 +289,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
-    case ProgramParameterType::CloudTexture:
-        return "CloudTexture";
+    case ProgramParameterType::CloudsAtlasTexture:
+        return "CloudsAtlasTexture";
+    case ProgramParameterType::ExplosionsAtlasTexture:
+        return "ExplosionsAtlasTexture";
     case ProgramParameterType::GenericTexturesAtlasTexture:
         return "GenericTexturesAtlasTexture";
     case ProgramParameterType::LandTexture:
@@ -341,6 +349,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
         return VertexAttributeType::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
+        return VertexAttributeType::Explosion1;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion2"))
+        return VertexAttributeType::Explosion2;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion3"))
+        return VertexAttributeType::Explosion3;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle1"))
         return VertexAttributeType::Sparkle1;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle2"))
