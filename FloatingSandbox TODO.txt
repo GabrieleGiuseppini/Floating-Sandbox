@@ -283,8 +283,8 @@ Render:
 						! Will come at next frame, like now
 				+ Expires when progress reaches max lifetime parameter (float seconds)
 				= StateMachine update:
-					= Blast radius needs to max up earlier than rendering
-						- Make over-linear growth
+					+ Nail down blast
+						+ See if need to force last blast (capped @ blastradius)
 					= Make gfx explosion size match blast radius
 						- Adjust gfx size at ShipRenderContext, if needed
 					- Nail down duration

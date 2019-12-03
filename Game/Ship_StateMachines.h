@@ -22,6 +22,7 @@ public:
 
     float CurrentProgress;
     bool IsFirstFrame;
+    bool IsBlasting;
 
     ExplosionStateMachine(
         float startSimulationTime,
@@ -38,6 +39,7 @@ public:
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
         , CurrentProgress(0.0f)
         , IsFirstFrame(true)
+        , IsBlasting(true)
     {}
 };
 

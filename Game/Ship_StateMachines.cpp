@@ -34,28 +34,22 @@ bool Ship::UpdateExplosionStateMachine(
         return true;
     }
 
-    //
-    // Update explosion
-    //
-
-    vec2f const centerPosition = explosionStateMachine.CenterPosition;
-
-    // Blast progress: reaches max at a fraction of the blast duration,
-    // as the whole duration includes gfx effects
-    float const blastProgress = explosionStateMachine.CurrentProgress * 9.0f;
-
-    if (blastProgress <= 1.0f)
+    if (explosionStateMachine.IsBlasting)
     {
+        //
+        // Update explosion
+        //
+
+        vec2f const centerPosition = explosionStateMachine.CenterPosition;
+
+        // Blast progress: reaches max at a fraction of the blast duration,
+        // as the whole duration includes gfx effects
+        float const blastProgress = explosionStateMachine.CurrentProgress * 9.0f;
+
         // Blast radius: from 0.6 to BlastRadius, linearly
-        // TODOTEST
         float const blastRadius =
             0.6f
-            + (std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f)) * blastProgress;
-        ////float const blastRadius =
-        ////    0.6f
-        ////    + std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f) * 2.0f * SmoothStep(0.0f, 2.0f, blastProgress);
-
-        LogMessage("TODOHERE:", blastRadius);
+            + (std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f)) * std::min(1.0f, blastProgress);
 
         //
         // Blast force
@@ -107,6 +101,12 @@ bool Ship::UpdateExplosionStateMachine(
                     pointIndex,
                     mPoints.GetTemperature(pointIndex) + deltaT);
             }
+        }
+
+        if (blastProgress > 1.0f)
+        {
+            // Stop blasting
+            explosionStateMachine.IsBlasting = false;
         }
     }
 
