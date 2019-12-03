@@ -40,60 +40,73 @@ bool Ship::UpdateExplosionStateMachine(
 
     vec2f const centerPosition = explosionStateMachine.CenterPosition;
 
-    // Blast radius: from 0.6 to BombBlastRadius
-    float const blastRadius = 0.6f +
-        (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f))
-        * explosionStateMachine.CurrentProgress;
+    // Blast progress: reaches max at a fraction of the blast duration,
+    // as the whole duration includes gfx effects
+    float const blastProgress = explosionStateMachine.CurrentProgress * 9.0f;
 
-    //
-    // Blast force
-    //
-
-    float const blastStrength =
-        750.0f
-        * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
-
-    // Store the force field
-    AddForceField<BlastForceField>(
-        centerPosition,
-        blastRadius,
-        blastStrength,
-        explosionStateMachine.IsFirstFrame);
-
-    //
-    // Blast heat
-    //
-
-    // Q = q*dt
-    float const blastHeat =
-        gameParameters.BombBlastHeat * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
-
-    float const blastHeatSquareRadius =
-        blastRadius * blastRadius
-        * 1.5f; // Larger radius, so to heat parts that are not swept by the blast and stay behind
-
-    // Search all non-ephemeral points within the radius
-    for (auto pointIndex : mPoints.RawShipPoints())
+    if (blastProgress <= 1.0f)
     {
-        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - centerPosition).squareLength();
-        if (pointSquareDistance < blastHeatSquareRadius)
+        // Blast radius: from 0.6 to BlastRadius, linearly
+        // TODOTEST
+        float const blastRadius =
+            0.6f
+            + (std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f)) * blastProgress;
+        ////float const blastRadius =
+        ////    0.6f
+        ////    + std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f) * 2.0f * SmoothStep(0.0f, 2.0f, blastProgress);
+
+        LogMessage("TODOHERE:", blastRadius);
+
+        //
+        // Blast force
+        //
+
+        float const blastStrength =
+            750.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+
+        // Store the force field
+        AddForceField<BlastForceField>(
+            centerPosition,
+            blastRadius,
+            blastStrength,
+            explosionStateMachine.IsFirstFrame);
+
+        //
+        // Blast heat
+        //
+
+        // Q = q*dt
+        float const blastHeat =
+            explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
+            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+            * GameParameters::SimulationStepTimeDuration<float>;
+
+        float const blastHeatSquareRadius =
+            blastRadius * blastRadius
+            * 1.5f; // Larger radius, so to heat parts that are not swept by the blast and stay behind
+
+        // Search all non-ephemeral points within the radius
+        for (auto pointIndex : mPoints.RawShipPoints())
         {
-            //
-            // Inject heat at this point
-            //
+            float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - centerPosition).squareLength();
+            if (pointSquareDistance < blastHeatSquareRadius)
+            {
+                //
+                // Inject heat at this point
+                //
 
-            // Calc temperature delta
-            // T = Q/HeatCapacity
-            float const deltaT =
-                blastHeat
-                / mPoints.GetMaterialHeatCapacity(pointIndex);
+                // Calc temperature delta
+                // T = Q/HeatCapacity
+                float const deltaT =
+                    blastHeat
+                    / mPoints.GetMaterialHeatCapacity(pointIndex);
 
-            // Increase temperature
-            mPoints.SetTemperature(
-                pointIndex,
-                mPoints.GetTemperature(pointIndex) + deltaT);
+                // Increase temperature
+                mPoints.SetTemperature(
+                    pointIndex,
+                    mPoints.GetTemperature(pointIndex) + deltaT);
+            }
         }
     }
 
@@ -106,13 +119,14 @@ void Ship::UploadExplosionStateMachine(
     ExplosionStateMachine const & explosionStateMachine,
     Render::RenderContext & renderContext)
 {
-    renderContext.UploadShipExplosion(
-        mId,
-        explosionStateMachine.Plane,
-        explosionStateMachine.CenterPosition,
-        explosionStateMachine.Strength * 25.0f, // Magic number // TODOTEST
-        explosionStateMachine.PersonalitySeed,
-        explosionStateMachine.CurrentProgress);
+    //TODOTEST
+    ////renderContext.UploadShipExplosion(
+    ////    mId,
+    ////    explosionStateMachine.Plane,
+    ////    explosionStateMachine.CenterPosition,
+    ////    explosionStateMachine.BlastRadius,
+    ////    explosionStateMachine.PersonalitySeed,
+    ////    explosionStateMachine.CurrentProgress);
 }
 
 ////////////////////////////////////////////////////////////////////

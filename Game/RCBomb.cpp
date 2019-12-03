@@ -113,7 +113,8 @@ bool RCBomb::Update(
                     currentSimulationTime,
                     GetPlaneId(),
                     GetPosition(),
-                    0.5f, // Strength
+                    gameParameters.BombBlastRadius,
+                    gameParameters.BombBlastHeat,
                     gameParameters);
 
                 // Notify explosion

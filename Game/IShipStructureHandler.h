@@ -19,7 +19,8 @@ struct IShipStructureHandler
         float currentSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
-        float strength, // [0.0 ... 1.0]
+        float blastRadius,
+        float blastHeat,
         GameParameters const & gameParameters) = 0;
 
     //

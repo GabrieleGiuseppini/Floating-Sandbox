@@ -282,13 +282,14 @@ Render:
 					! 3) update bombs& combustion -> trigger explosions
 						! Will come at next frame, like now
 				+ Expires when progress reaches max lifetime parameter (float seconds)
-				- StartBombExplosion:
-					- No strength
-					- BlastRadius - from GameParameters::BombBlastRadius
-				- StateMachine update:
-					- Blast radius needs to max up earlier than rendering
-					- Make explosion size match blast radius
+				= StateMachine update:
+					= Blast radius needs to max up earlier than rendering
+						- Make over-linear growth
+					= Make gfx explosion size match blast radius
+						- Adjust gfx size at ShipRenderContext, if needed
+					- Nail down duration
 			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
+				- Readjust GameParameters::MaxBombBlastRadius
 				- Only explosions are in simulationTime, rest is still wallClockTime
 				- No bomb does anymore Explosion state machine - they all expire at detonation,
 				  after sending Explosion to ship
@@ -317,6 +318,9 @@ Render:
 					- After all, explosions are all uploaded at UploadStateMachines()
 				- Nuke old explosion textures
 				- Nuke GameTypes' texture groups for RC and Timer bomb explosions
+
+		- Rain wetting exposed parts
+			- Every leaking point, that is overwater, gets water in from rain density
 
 		- Interleaving Update's with Render's (*)
 
@@ -7229,7 +7233,6 @@ IF WX:
 			+ Range is slider's range, and SpinCtrl is coupled with slider
 		+ Send for testing
 		+ Bump up version
-
 		+ Slider's edit box: enforce setting on focus away
 		+ the [PAUSE] on the top left corner fails to show up; shows up for 1 second after unpaused, and then disappears after that second has passed
 		+ loading up "last-modified settings," or any settings for that matter, remove the pin's ability to stay in one place, and the pin just falls with the object/vehicle/ship, not keeping anything in place
