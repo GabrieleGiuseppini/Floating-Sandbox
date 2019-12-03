@@ -27,12 +27,13 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IPhysicsHandler & physicsHandler,
+        IShipStructureHandler & shipStructureHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override
@@ -83,10 +84,6 @@ private:
         // before exploding, and ping regularly at short intervals
         DetonationLeadIn,
 
-        // In this state we are exploding, and increment our counter to
-        // match the explosion animation until the animation is over
-        Exploding,
-
         // This is the final state; once this state is reached, we're expired
         Expired
     };
@@ -95,8 +92,6 @@ private:
     static constexpr auto SlowPingOnInterval = 250ms;
     static constexpr auto FastPingInterval = 100ms;
     static constexpr auto DetonationLeadInToExplosionInterval = 1500ms;
-    static constexpr auto ExplosionProgressInterval = 20ms;
-    static constexpr uint8_t ExplosionStepsCount = 9;
     static constexpr int PingFramesCount = 4;
 
     inline void TransitionToDetonationLeadIn(GameWallClock::time_point currentWallClockTime)
@@ -120,11 +115,6 @@ private:
 
     // The timestamp at which we'll explode while in detonation lead-in
     GameWallClock::time_point mExplosionIgnitionTimestamp;
-
-    // The timestamp at which the Explosion state has started,
-    // and the current progress
-    GameWallClock::time_point mExplosionStartTimestamp;
-    float mExplosionProgress;
 
     // The counters for the various states. Fine to rollover!
     uint8_t mPingOnStepCounter;     // Set to one upon entering

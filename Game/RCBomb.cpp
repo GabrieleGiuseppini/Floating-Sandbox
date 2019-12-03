@@ -14,7 +14,7 @@ RCBomb::RCBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipStructureHandler & shipStructureHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,20 +23,19 @@ RCBomb::RCBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipStructureHandler,
         shipPoints,
         shipSprings)
     , mState(State::IdlePingOff)
     , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowPingOffInterval)
     , mExplosionIgnitionTimestamp(GameWallClock::time_point::min())
-    , mExplosionStartTimestamp(GameWallClock::time_point::min())
-    , mExplosionProgress(0.0f)
     , mPingOnStepCounter(0u)
 {
 }
 
 bool RCBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -102,22 +101,32 @@ bool RCBomb::Update(
             if (currentWallClockTime > mExplosionIgnitionTimestamp)
             {
                 //
-                // Transition to Exploding state
+                // Explode
                 //
 
                 // Detach self (or else explosion will move along with ship performing
                 // its blast)
                 DetachIfAttached();
 
-                // Transition
-                mState = State::Exploding;
-                mExplosionStartTimestamp = currentWallClockTime;
+                // Start explosion
+                mShipStructureHandler.StartExplosion(
+                    currentSimulationTime,
+                    GetPlaneId(),
+                    GetPosition(),
+                    0.5f, // Strength
+                    gameParameters);
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     BombType::RCBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
+
+                //
+                // Transition to Expired state
+                //
+
+                mState = State::Expired;
             }
             else if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
@@ -126,34 +135,6 @@ bool RCBomb::Update(
                 //
 
                 TransitionToDetonationLeadIn(currentWallClockTime);
-            }
-
-            return true;
-        }
-
-        case State::Exploding:
-        {
-            // TODOTEST
-            std::chrono::duration<float> constexpr ExplosionDuration(2.0f);
-
-            // Calculate elapsed time and progress
-            auto const elapsed = currentWallClockTime - mExplosionStartTimestamp;
-            mExplosionProgress =
-                std::chrono::duration_cast<std::chrono::duration<float>>(elapsed).count()
-                / ExplosionDuration.count();
-
-            if (mExplosionProgress > 1.0f)
-            {
-                // Transition to expired
-                mState = State::Expired;
-            }
-            else
-            {
-                // Invoke blast handler
-                mPhysicsHandler.DoBombExplosion(
-                    GetPosition(),
-                    mExplosionProgress,
-                    gameParameters);
             }
 
             return true;
@@ -234,34 +215,6 @@ void RCBomb::Upload(
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
-
-            break;
-        }
-
-        case State::Exploding:
-        {
-            /* TODOOLD
-            assert(mExplodingStepCounter >= 0);
-            assert(mExplodingStepCounter < ExplosionStepsCount);
-
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter),
-                GetPosition(),
-                1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-            */
-
-            renderContext.UploadShipExplosion(
-                shipId,
-                GetPlaneId(),
-                GetPosition(),
-                22.0f, // TODOTEST
-                GetPersonalitySeed(),
-                mExplosionProgress);
 
             break;
         }

@@ -267,27 +267,39 @@ Render:
 				+ Single shader, single atlas
 					+ Atlas name: "explosions"
 					+ Texture group name: "explosions"
-			- Ship: needs own state machine for explosions
-				- Does: rendering; creation of each frame's force field;
-					- i.e. has Update() and Upload()
-					- Make sure state is wall clock-time based, as we need to sync with sounds
-				- Replaces normal bombs' blast callback: DoBombExplosion -> StartBombExplosion
-					- Do IHandler while you're at it
-					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
-				- Mechanics update:
-					- 1) go through state machines, insert force fields
-					- 2) ...apply force fields...
-					- 3) update bombs& combustion -> trigger explosions
-						- Will come at next frame, like now
-				- Expires when progress reaches max lifetime parameter (float seconds)
-				- When done, see if may revert to having RenderExplosionsStart()/End()
+			= Ship: needs own state machine for explosions
+				+ Does: rendering; creation of each frame's force field;
+					+ i.e. has Update() and Upload()
+					+ State is simulation-time based, as it's inherently physical
+						! And after all, the current bomb explosions do a fixed number of steps at 20ms intervals,
+						  hence they are basically frame-based
+				+ Replaces normal bombs' blast callback: DoBombExplosion -> StartBombExplosion
+					+ Start IShipStructureHandler while you're at it
+					+ Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
+				+ Mechanics update:
+					+ 1) go through state machines, insert force fields
+					+ 2) ...apply force fields...
+					! 3) update bombs& combustion -> trigger explosions
+						! Will come at next frame, like now
+				+ Expires when progress reaches max lifetime parameter (float seconds)
+				- StartBombExplosion:
+					- No strength
+					- BlastRadius - from GameParameters::BombBlastRadius
+				- StateMachine update:
+					- Blast radius needs to max up earlier than rendering
+					- Make explosion size match blast radius
 			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
+				- Only explosions are in simulationTime, rest is still wallClockTime
 				- No bomb does anymore Explosion state machine - they all expire at detonation,
 				  after sending Explosion to ship
 				- Do at:
 					- Impact Bomb
 					- RC
 					- Timer
+					- ?AntiMatter?Needed?
+				- Remove DoBombExplosion from IShipStructureHandler
+				- Find right strength for all bombs
+					- Starting point: all equal
 			- Gfx improvements:
 				- Test w/very slow progress and make sure all frames are shown
 				- Do discard
@@ -299,6 +311,10 @@ Render:
 				- Do other explosions
 					- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
 			- Cleanup:
+				- Complete IShipStructureHandler
+					- Move "structure handlers" into it
+				- See if may revert to having RenderExplosionsStart()/End()
+					- After all, explosions are all uploaded at UploadStateMachines()
 				- Nuke old explosion textures
 				- Nuke GameTypes' texture groups for RC and Timer bomb explosions
 
@@ -456,7 +472,7 @@ Render:
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc"
-	- Ship: replace handler registrations with points, springs, etc. with IStructureHandler, declared in own .h
+	= Ship: replace handler registrations with points, springs, etc. with IShipStructureHandler, declared in own .h
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Translations:

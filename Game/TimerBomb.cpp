@@ -14,7 +14,7 @@ TimerBomb::TimerBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipStructureHandler & shipStructureHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ TimerBomb::TimerBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipStructureHandler,
         shipPoints,
         shipSprings)
     , mState(State::SlowFuseBurning)
@@ -42,6 +42,7 @@ TimerBomb::TimerBomb(
 
 bool TimerBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -139,7 +140,7 @@ bool TimerBomb::Update(
                 DetachIfAttached();
 
                 // Invoke explosion handler
-                mPhysicsHandler.DoBombExplosion(
+                mShipStructureHandler.DoBombExplosion(
                     GetPosition(),
                     static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                     gameParameters);
@@ -179,7 +180,7 @@ bool TimerBomb::Update(
                     ++mExplodingStepCounter;
 
                     // Invoke explosion handler
-                    mPhysicsHandler.DoBombExplosion(
+                    mShipStructureHandler.DoBombExplosion(
                         GetPosition(),
                         static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
                         gameParameters);

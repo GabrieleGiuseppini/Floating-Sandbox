@@ -27,12 +27,13 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IPhysicsHandler & physicsHandler,
+        IShipStructureHandler & shipStructureHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override

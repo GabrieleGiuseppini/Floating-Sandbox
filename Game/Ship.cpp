@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include "Ship_StateMachines.h"
+
 #include <GameCore/Algorithms.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
@@ -164,6 +166,15 @@ void Ship::Update(
 
 
     //
+    // Update state machines
+    //
+    // May queue force fields!
+    //
+
+    UpdateStateMachines(currentSimulationTime, gameParameters);
+
+
+    //
     // Rot points
     //
 
@@ -173,7 +184,6 @@ void Ship::Update(
             currentSimulationTime,
             gameParameters);
     }
-
 
 
     //
@@ -202,6 +212,7 @@ void Ship::Update(
 
     mBombs.Update(
         currentWallClockTime,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -406,6 +417,13 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
+
+
+    //
+    // Upload state machines
+    //
+
+    UploadStateMachines(renderContext);
 
 
     //
@@ -2320,8 +2338,24 @@ void Ship::GenerateSparklesForLightning(
 }
 
 /////////////////////////////////////////////////////////////////////////
-// Bomb::IPhysicsHandler
+// IShipStructureHandler
 /////////////////////////////////////////////////////////////////////////
+
+void Ship::StartExplosion(
+    float currentSimulationTime,
+    PlaneId planeId,
+    vec2f const & centerPosition,
+    float strength, // [0.0 ... 1.0]
+    GameParameters const & /*gameParameters*/)
+{
+    // Queue state machine
+    mStateMachines.push_back(
+        std::make_unique<ExplosionStateMachine>(
+            currentSimulationTime,
+            planeId,
+            centerPosition,
+            strength));
+}
 
 void Ship::DoBombExplosion(
     vec2f const & blastPosition,

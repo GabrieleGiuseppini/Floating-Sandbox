@@ -7,7 +7,7 @@
 
 namespace Physics
 {
-    class Bombs;    
+    class Bombs;
     class Clouds;
     class ElectricalElements;
     class OceanFloor;
@@ -38,6 +38,8 @@ namespace Physics
 #include "OceanSurface.h"
 #include "Wind.h"
 #include "World.h"
+
+#include "IShipStructureHandler.h"
 
 #include "Bomb.h"
 #include "AntiMatterBomb.h"

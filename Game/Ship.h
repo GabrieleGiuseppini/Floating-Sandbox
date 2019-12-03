@@ -16,6 +16,7 @@
 #include <GameCore/RunningAverage.h>
 #include <GameCore/Vectors.h>
 
+#include <list>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -23,8 +24,7 @@
 namespace Physics
 {
 
-class Ship
-    : public Bomb::IPhysicsHandler
+class Ship : public IShipStructureHandler
 {
 public:
 
@@ -273,6 +273,12 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void UpdateStateMachines(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void UploadStateMachines(Render::RenderContext & renderContext);
+
 private:
 
     void RunConnectivityVisit();
@@ -375,8 +381,15 @@ private:
 private:
 
     /////////////////////////////////////////////////////////////////////////
-    // Bomb::IPhysicsHandler
+    // IShipStructureHandler
     /////////////////////////////////////////////////////////////////////////
+
+    virtual void StartExplosion(
+        float currentSimulationTime,
+        PlaneId planeId,
+        vec2f const & centerPosition,
+        float strength, // [0.0 ... 1.0]
+        GameParameters const & gameParameters) override;
 
     virtual void DoBombExplosion(
         vec2f const & blastPosition,
@@ -403,6 +416,44 @@ private:
 #ifdef _DEBUG
     void VerifyInvariants();
 #endif
+
+private:
+
+    /////////////////////////////////////////////////////////////////////////
+    // State machines
+    /////////////////////////////////////////////////////////////////////////
+
+    enum class StateMachineType
+    {
+        Explosion
+    };
+
+    struct StateMachine
+    {
+    public:
+
+        StateMachineType const Type;
+
+        StateMachine(StateMachineType type)
+            : Type(type)
+        {}
+
+        virtual ~StateMachine()
+        {}
+    };
+
+    struct ExplosionStateMachine;
+
+    inline bool UpdateExplosionStateMachine(
+        ExplosionStateMachine & explosionStateMachine,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    inline void UploadExplosionStateMachine(
+        ExplosionStateMachine const & explosionStateMachine,
+        Render::RenderContext & renderContext);
+
+    std::list<std::unique_ptr<StateMachine>> mStateMachines;
 
 private:
 

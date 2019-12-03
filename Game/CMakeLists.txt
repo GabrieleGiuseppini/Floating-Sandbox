@@ -49,6 +49,7 @@ set  (PHYSICS_SOURCES
 	ForceFields.h
 	ImpactBomb.cpp
 	ImpactBomb.h
+	IShipStructureHandler.h
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp
@@ -62,6 +63,8 @@ set  (PHYSICS_SOURCES
 	RCBomb.h
 	Ship.cpp
 	Ship_Interactions.cpp
+	Ship_StateMachines.cpp
+	Ship_StateMachines.h
 	Ship.h
 	Springs.cpp
 	Springs.h

@@ -14,7 +14,7 @@ ImpactBomb::ImpactBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipStructureHandler & shipStructureHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ ImpactBomb::ImpactBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipStructureHandler,
         shipPoints,
         shipSprings)
     , mState(State::Idle)
@@ -34,6 +34,7 @@ ImpactBomb::ImpactBomb(
 
 bool ImpactBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
     switch (mState)
