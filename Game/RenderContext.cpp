@@ -198,7 +198,7 @@ RenderContext::RenderContext(
         if (TextureGroupType::Land != group.Group
             && TextureGroupType::Ocean != group.Group
             && TextureGroupType::Cloud != group.Group
-            && TextureGroupType::Explosion1 != group.Group
+            && TextureGroupType::Explosions != group.Group
             && TextureGroupType::Noise != group.Group
             && TextureGroupType::WorldBorder != group.Group)
         {
@@ -563,19 +563,19 @@ RenderContext::RenderContext(
 
 
     //
-    // Initialize explosion texture atlas
+    // Initialize explosions texture atlas
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
 
     TextureAtlas explosionTextureAtlas = TextureAtlasBuilder::BuildRegularAtlas(
-        textureDatabase.GetGroup(TextureGroupType::Explosion1),
+        textureDatabase.GetGroup(TextureGroupType::Explosions),
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(
                 (2.0f + TextureDatabaseProgressSteps + GenericTextureProgressSteps + CloudTextureProgressSteps
                 + progress * ExplosionTextureProgressSteps) / TotalProgressSteps,
-                "Loading explosion textures...");
+                "Loading explosions textures...");
         });
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());

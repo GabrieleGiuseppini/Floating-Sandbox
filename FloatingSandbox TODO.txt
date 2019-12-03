@@ -233,22 +233,19 @@ Render:
 		+ Randomize flames' wind bend with personality seed
 
 		= New explosions:
-			= Shader:
+			+ Shader:
 				+ Take frames out of 4K video
-				= Make 16 textures
+				+ Make 16 textures
 					+ Resize frames (512x512)
 						+ See if should discard a lot of useless external padding
-					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background
-					- See if may need to boost mask
+					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background					
 				+ Cross-linear alpha between two textures
-				- Shader
-				- Discard
+				+ Shader
 			+ Atlas:
 				+ RegularAtlas builder method (no optim's, all same size (but not necessarily square))
 				+ Unit tests
-			= RenderContext:
+			+ RenderContext:
 				+ Make atlas and pass to ShipRenderContext
-				- Need the textures mipmapped?
 			+ ShipRenderContext:
 				+ New VBO, VAO, etc.
 					+ Copy from generic textures
@@ -264,28 +261,43 @@ Render:
 						+ float personalitySeed
 							+ Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
 				+ New render step
-			= Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
-			- Commit
-			- Make infrastructure for multiple explosions:
-				- Single shader, single atlas
-					- Atlas name: "explosions"
-					- Texture group name: "explosions"
-
+			+ Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
+			+ Commit
+			+ Make infrastructure for multiple explosions:
+				+ Single shader, single atlas
+					+ Atlas name: "explosions"
+					+ Texture group name: "explosions"
 			- Ship: needs own state machine for explosions
 				- Does: rendering; creation of each frame's force field;
 					- i.e. has Update() and Upload()
 					- Make sure state is wall clock-time based, as we need to sync with sounds
-				- Replaces normal bombs' blast callback: DoBombExplosion
+				- Replaces normal bombs' blast callback: DoBombExplosion -> StartBombExplosion
 					- Do IHandler while you're at it
 					- Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
+				- Mechanics update:
+					- 1) go through state machines, insert force fields
+					- 2) ...apply force fields...
+					- 3) update bombs& combustion -> trigger explosions
+						- Will come at next frame, like now
 				- Expires when progress reaches max lifetime parameter (float seconds)
-			- Replace bombs: (verify all call the same Ship::DoBombExplosion(.))
+				- When done, see if may revert to having RenderExplosionsStart()/End()
+			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
 				- No bomb does anymore Explosion state machine - they all expire at detonation,
 				  after sending Explosion to ship
 				- Do at:
 					- Impact Bomb
 					- RC
 					- Timer
+			- Gfx improvements:
+				- Test w/very slow progress and make sure all frames are shown
+				- Do discard
+					- Test with multiple planes
+				- See if scaling should go or remain
+					- Test 
+				- Need mipmapped atlas? Test w/zoom
+				- See if may need to boost mask at frames
+				- Do other explosions
+					- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
 			- Cleanup:
 				- Nuke old explosion textures
 				- Nuke GameTypes' texture groups for RC and Timer bomb explosions

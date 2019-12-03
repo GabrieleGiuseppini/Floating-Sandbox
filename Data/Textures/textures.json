@@ -63,7 +63,7 @@
 },
 
 {
-	"groupName": "Explosion1",
+	"groupName": "Explosions",
 	"comment": "World scaling is irrelevant",
 	"hasOwnAmbientLight": true,
 	"frames":[
