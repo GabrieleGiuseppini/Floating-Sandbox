@@ -394,8 +394,11 @@ public:
         // Populate the texture quad
         //
 
+        // Calculate render half quad size
+        float const renderHalfQuadSize = halfQuadSize + 13.0f;
+
         // Calculate rotation based off personality seed
-        float angleCcw = personalitySeed * 2.0f * Pi<float>;
+        float const angleCcw = personalitySeed * 2.0f * Pi<float>;
 
         // Append vertices - two triangles
 
@@ -404,7 +407,7 @@ public:
         // Top-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-halfQuadSize, halfQuadSize),
+            vec2f(-renderHalfQuadSize, renderHalfQuadSize),
             vec2f(0.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
@@ -413,7 +416,7 @@ public:
         // Top-Right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(halfQuadSize, halfQuadSize),
+            vec2f(renderHalfQuadSize, renderHalfQuadSize),
             vec2f(1.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
@@ -422,7 +425,7 @@ public:
         // Bottom-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-halfQuadSize, -halfQuadSize),
+            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
             vec2f(0.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,
@@ -433,7 +436,7 @@ public:
         // Top-Right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(halfQuadSize, halfQuadSize),
+            vec2f(renderHalfQuadSize, renderHalfQuadSize),
             vec2f(1.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
@@ -442,7 +445,7 @@ public:
         // Bottom-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-halfQuadSize, -halfQuadSize),
+            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
             vec2f(0.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,
@@ -451,7 +454,7 @@ public:
         // Bottom-right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(halfQuadSize, -halfQuadSize),
+            vec2f(renderHalfQuadSize, -renderHalfQuadSize),
             vec2f(1.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,

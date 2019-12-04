@@ -123,7 +123,7 @@ void Ship::UploadExplosionStateMachine(
         mId,
         explosionStateMachine.Plane,
         explosionStateMachine.CenterPosition,
-        explosionStateMachine.BlastRadius + 10.0f, // TODOTEST; has to be incorporated in ShipRenderContext::UploadExplosion when done
+        explosionStateMachine.BlastRadius,
         explosionStateMachine.PersonalitySeed,
         explosionStateMachine.CurrentProgress);
 }

@@ -267,7 +267,7 @@ Render:
 				+ Single shader, single atlas
 					+ Atlas name: "explosions"
 					+ Texture group name: "explosions"
-			= Ship: needs own state machine for explosions
+			+ Ship: needs own state machine for explosions
 				+ Does: rendering; creation of each frame's force field;
 					+ i.e. has Update() and Upload()
 					+ State is simulation-time based, as it's inherently physical
@@ -282,17 +282,16 @@ Render:
 					! 3) update bombs& combustion -> trigger explosions
 						! Will come at next frame, like now
 				+ Expires when progress reaches max lifetime parameter (float seconds)
-				= StateMachine update:
+				+ StateMachine update:
 					+ Nail down blast
 						+ See if need to force last blast (capped @ blastradius)
-					= Make gfx explosion size match blast radius
-						- Adjust gfx size at ShipRenderContext, if needed
-					= Nail down duration
+					+ Make gfx explosion size match blast radius
+						+ Adjust gfx size at ShipRenderContext, if needed
+					+ Nail down duration
 			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
-				- Readjust GameParameters::MaxBombBlastRadius
-				- Only explosions are in simulationTime, rest is still wallClockTime
 				- No bomb does anymore Explosion state machine - they all expire at detonation,
 				  after sending Explosion to ship
+				- Only explosions are in simulationTime, rest is still wallClockTime
 				- Do at:
 					- Impact Bomb
 					- RC
@@ -328,7 +327,7 @@ Render:
 			+ Compare first with ocean
 			+ Try with a dumb shader
 			+ Also double-check if mipmapping is different than ocean
-			! It's the double drawing (ocean and land), while when viewing ocean land is implicitly clipped
+			! It's the double drawing (ocean and land), while when viewing ocean, land is implicitly clipped
 				! ...hence the OpenGL wait times increase
 			- Would need to "stack" ocean on top of land, like it was before
 
