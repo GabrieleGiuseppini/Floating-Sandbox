@@ -18,11 +18,11 @@ bool Ship::UpdateExplosionStateMachine(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    float constexpr ExplosionDuration = 1.0f;
-
     //
     // Update progress
     //
+
+    float constexpr ExplosionDuration = 1.0f;
 
     explosionStateMachine.CurrentProgress =
         (currentSimulationTime - explosionStateMachine.StartSimulationTime)

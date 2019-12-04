@@ -296,17 +296,17 @@ Render:
 					+ Impact Bomb
 					+ Timer
 				+ Remove DoBombExplosion from IShipStructureHandler
-			- Gfx improvements:
-				- Test temporarily w/very slow progress and make sure all frames are shown
-				- Do discard
-					- Test first with multiple planes
-				- See if scaling should go or remain
-				- Need mipmapped atlas? Test w/zoom
-				- Test without curves at frames (i.e. making them darker)
-				- See if may need to boost mask at frames
-				- Do other explosions
-					- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
-					- [121, 130] (10), 
+			+ Gfx improvements:
+				+ Test temporarily w/very slow progress and make sure all frames are shown
+				+ See if scaling should go or remain
+				+ Need mipmapped atlas? Test w/zoom
+				- Test discard
+					+ Test first with multiple planes
+				- Frames
+					- Test without curves at frames (i.e. making them darker)
+					- Do other explosions
+						- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
+						- [121, 130] (10),
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it
