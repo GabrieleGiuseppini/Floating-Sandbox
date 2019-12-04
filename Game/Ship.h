@@ -392,11 +392,6 @@ private:
         float blastHeat,
         GameParameters const & gameParameters) override;
 
-    virtual void DoBombExplosion(
-        vec2f const & blastPosition,
-        float sequenceProgress,
-        GameParameters const & gameParameters) override;
-
     virtual void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,

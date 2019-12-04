@@ -27,14 +27,12 @@ ImpactBomb::ImpactBomb(
         shipPoints,
         shipSprings)
     , mState(State::Idle)
-    , mNextStateTransitionTimePoint(GameWallClock::time_point::min())
-    , mExplodingStepCounter(0u)
 {
 }
 
 bool ImpactBomb::Update(
-    GameWallClock::time_point currentWallClockTime,
-    float /*currentSimulationTime*/,
+    GameWallClock::time_point /*currentWallClockTime*/,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -49,14 +47,7 @@ bool ImpactBomb::Update(
                     || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
                 {
                     // Triggered...
-
-                    //
-                    // Transition to Exploding state
-                    //
-
-                    TransitionToExploding(
-                        currentWallClockTime,
-                        gameParameters);
+                    mState = State::TriggeringExplosion;
                 }
             }
 
@@ -66,28 +57,22 @@ bool ImpactBomb::Update(
         case State::TriggeringExplosion:
         {
             //
-            // Transition to Exploding state
+            // Explode
             //
 
-            TransitionToExploding(
-                currentWallClockTime,
+            mShipStructureHandler.StartExplosion(
+                currentSimulationTime,
+                GetPlaneId(),
+                GetPosition(),
+                gameParameters.BombBlastRadius,
+                gameParameters.BombBlastHeat * 1.2f, // Just a bit more caustic
                 gameParameters);
 
-            return true;
-        }
+            //
+            // Transition to Expired state
+            //
 
-        case State::Exploding:
-        {
-            if (currentWallClockTime > mNextStateTransitionTimePoint)
-            {
-                //
-                // Transition to Exploding state
-                //
-
-                TransitionToExploding(
-                    currentWallClockTime,
-                    gameParameters);
-            }
+            mState = State::Expired;
 
             return true;
         }
@@ -115,24 +100,6 @@ void ImpactBomb::Upload(
                 TextureFrameId(TextureGroupType::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            break;
-        }
-
-        case State::Exploding:
-        {
-            assert(mExplodingStepCounter >= 0);
-            assert(mExplodingStepCounter < ExplosionStepsCount);
-
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter), // Squat on RC bomb explosion
-                GetPosition(),
-                1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);

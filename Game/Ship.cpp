@@ -2359,67 +2359,6 @@ void Ship::StartExplosion(
             blastHeat));
 }
 
-void Ship::DoBombExplosion(
-    vec2f const & blastPosition,
-    float sequenceProgress,
-    GameParameters const & gameParameters)
-{
-    // Blast radius: from 0.6 to BombBlastRadius
-    float const blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
-
-    //
-    // Blast force
-    //
-
-    float const blastStrength =
-        750.0f
-        * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
-
-    // Store the force field
-    AddForceField<BlastForceField>(
-        blastPosition,
-        blastRadius,
-        blastStrength,
-        sequenceProgress == 0.0f);
-
-    //
-    // Blast heat
-    //
-
-    // Q = q*dt
-    float const blastHeat =
-        gameParameters.BombBlastHeat * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
-
-    float const blastHeatSquareRadius =
-        blastRadius * blastRadius
-        * 1.5f; // Larger radius, so to heat parts that are not swept by the blast and stay behind
-
-    // Search all non-ephemeral points within the radius
-    for (auto pointIndex : mPoints.RawShipPoints())
-    {
-        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - blastPosition).squareLength();
-        if (pointSquareDistance < blastHeatSquareRadius)
-        {
-            //
-            // Inject heat at this point
-            //
-
-            // Calc temperature delta
-            // T = Q/HeatCapacity
-            float const deltaT =
-                blastHeat
-                / mPoints.GetMaterialHeatCapacity(pointIndex);
-
-            // Increase temperature
-            mPoints.SetTemperature(
-                pointIndex,
-                mPoints.GetTemperature(pointIndex) + deltaT);
-        }
-    }
-}
-
 void Ship::DoAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
     float sequenceProgress,

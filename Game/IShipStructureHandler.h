@@ -27,11 +27,6 @@ struct IShipStructureHandler
     // Bombs
     //
 
-    virtual void DoBombExplosion(
-        vec2f const & blastPosition,
-        float sequenceProgress,
-        GameParameters const & gameParameters) = 0;
-
     virtual void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,

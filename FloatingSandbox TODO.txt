@@ -288,28 +288,25 @@ Render:
 					+ Make gfx explosion size match blast radius
 						+ Adjust gfx size at ShipRenderContext, if needed
 					+ Nail down duration
-			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
-				- No bomb does anymore Explosion state machine - they all expire at detonation,
+			+ Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
+				+ No bomb does anymore Explosion state machine - they all expire at detonation,
 				  after sending Explosion to ship
-				- Only explosions are in simulationTime, rest is still wallClockTime
-				- Do at:
-					- Impact Bomb
-					- RC
-					- Timer
-					- ?AntiMatter?Needed?
-				- Remove DoBombExplosion from IShipStructureHandler
-				- Find right strength for all bombs
-					- Starting point: all equal
+				+ Only explosions are in simulationTime, rest is still wallClockTime
+				+ Do at:
+					+ Impact Bomb
+					+ Timer
+				+ Remove DoBombExplosion from IShipStructureHandler
 			- Gfx improvements:
-				- Test w/very slow progress and make sure all frames are shown
+				- Test temporarily w/very slow progress and make sure all frames are shown
 				- Do discard
-					- Test with multiple planes
+					- Test first with multiple planes
 				- See if scaling should go or remain
-					- Test 
 				- Need mipmapped atlas? Test w/zoom
+				- Test without curves at frames (i.e. making them darker)
 				- See if may need to boost mask at frames
 				- Do other explosions
 					- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
+					- [121, 130] (10), 
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it
