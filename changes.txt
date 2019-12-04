@@ -1,4 +1,5 @@
 1.14.0.TODO
+- Re-worked explosion physics and graphics
 - 11 new ships
 
 1.13.0.7
