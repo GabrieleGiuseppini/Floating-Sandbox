@@ -44,19 +44,18 @@ bool Ship::UpdateExplosionStateMachine(
 
         // Blast progress: reaches max at a fraction of the blast duration,
         // as the whole duration includes gfx effects
-        float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
+        float const blastProgress = explosionStateMachine.CurrentProgress * 3.0f;
 
-        // Blast radius: from 0.6 to BlastRadius, linearly
+        // Blast radius: from 0.0 to BlastRadius, linearly
         float const blastRadius =
-            0.6f
-            + (std::max(explosionStateMachine.BlastRadius - 0.6f, 0.0f)) * std::min(1.0f, blastProgress);
+            explosionStateMachine.BlastRadius * std::min(1.0f, blastProgress);
 
         //
         // Blast force
         //
 
         float const blastStrength =
-            750.0f // Magic number
+            500.0f // Magic number
             * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
 
         // Store the force field

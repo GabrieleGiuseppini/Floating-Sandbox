@@ -296,6 +296,7 @@ Render:
 					+ Impact Bomb
 					+ Timer
 				+ Remove DoBombExplosion from IShipStructureHandler
+			+ Explosion physics: smoother, points entering radius at last get too much force
 			+ Gfx improvements:
 				+ Test temporarily w/very slow progress and make sure all frames are shown
 				+ See if scaling should go or remain
