@@ -18,7 +18,7 @@ bool Ship::UpdateExplosionStateMachine(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    float constexpr ExplosionDuration = 1.5f;
+    float constexpr ExplosionDuration = 1.0f;
 
     //
     // Update progress
@@ -44,7 +44,7 @@ bool Ship::UpdateExplosionStateMachine(
 
         // Blast progress: reaches max at a fraction of the blast duration,
         // as the whole duration includes gfx effects
-        float const blastProgress = explosionStateMachine.CurrentProgress * 9.0f;
+        float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
 
         // Blast radius: from 0.6 to BlastRadius, linearly
         float const blastRadius =
@@ -119,14 +119,13 @@ void Ship::UploadExplosionStateMachine(
     ExplosionStateMachine const & explosionStateMachine,
     Render::RenderContext & renderContext)
 {
-    //TODOTEST
-    ////renderContext.UploadShipExplosion(
-    ////    mId,
-    ////    explosionStateMachine.Plane,
-    ////    explosionStateMachine.CenterPosition,
-    ////    explosionStateMachine.BlastRadius,
-    ////    explosionStateMachine.PersonalitySeed,
-    ////    explosionStateMachine.CurrentProgress);
+    renderContext.UploadShipExplosion(
+        mId,
+        explosionStateMachine.Plane,
+        explosionStateMachine.CenterPosition,
+        explosionStateMachine.BlastRadius + 10.0f, // TODOTEST; has to be incorporated in ShipRenderContext::UploadExplosion when done
+        explosionStateMachine.PersonalitySeed,
+        explosionStateMachine.CurrentProgress);
 }
 
 ////////////////////////////////////////////////////////////////////

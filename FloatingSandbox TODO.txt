@@ -287,7 +287,7 @@ Render:
 						+ See if need to force last blast (capped @ blastradius)
 					= Make gfx explosion size match blast radius
 						- Adjust gfx size at ShipRenderContext, if needed
-					- Nail down duration
+					= Nail down duration
 			- Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
 				- Readjust GameParameters::MaxBombBlastRadius
 				- Only explosions are in simulationTime, rest is still wallClockTime
