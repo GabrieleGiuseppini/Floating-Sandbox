@@ -304,8 +304,9 @@ Render:
 				= Frames
 					+ Test without curves at frames (i.e. making them darker)
 					- Do other explosions
-						- Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
-						- [121, 130] (10),
+						+ [121, 130] (10), 133, 137, 140, 144, 147, 151
+						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
+						- Shader: TODOHERE
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it
@@ -316,6 +317,7 @@ Render:
 
 		- Rain wetting exposed parts
 			- Every leaking point, that is overwater, gets water in from rain density
+				-And water out?
 
 		- Interleaving Update's with Render's (*)
 

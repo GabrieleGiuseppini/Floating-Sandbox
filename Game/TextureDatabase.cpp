@@ -50,8 +50,6 @@ TextureDatabase TextureDatabase::Load(
 
     std::vector<FileData> allTextureFiles;
 
-    std::set<std::filesystem::path> matchedTextureFiles;
-
     for (auto const & entryIt : std::filesystem::directory_iterator(texturesRoot))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
@@ -86,6 +84,8 @@ TextureDatabase TextureDatabase::Load(
     float framesLoaded = 0.0f;
 
     std::vector<TextureGroup> textureGroups;
+
+    std::set<std::filesystem::path> matchedTextureFiles;
 
     for (auto const & groupValue : root.get<picojson::array>())
     {
@@ -340,8 +340,8 @@ TextureDatabase TextureDatabase::Load(
     if (matchedTextureFiles.size() != allTextureFiles.size())
     {
         throw GameException(
-            "Texture database: couldn't match " 
-            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size()) 
+            "Texture database: couldn't match "
+            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size())
             + " texture files to texture specifications");
     }
 

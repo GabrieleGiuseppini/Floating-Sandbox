@@ -69,7 +69,7 @@
 	"frames":[
 		{	
 			"worldScaling": 1.0,
-			"filename": "explosion1_.*"
+			"filename": "explosion\\d+_.*"
 		}
 	]
 },
