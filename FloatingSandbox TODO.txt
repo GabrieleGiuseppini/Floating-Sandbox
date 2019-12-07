@@ -304,10 +304,15 @@ Render:
 				= Frames
 					+ Test without curves at frames (i.e. making them darker)
 					+ Do other explosions
-						+ [121, 130] (10), 133, 137, 140, 144, 147, 151
 						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
 						+ RegularAtlas: need to live with incomplete power of two
 							+ Fill-in with first frame
+						= Explosion 2
+							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
+							+ Try without any mask boosting
+							- Then, try with center alpha brushed towards 1.0
+						- Explosion 3
+							- [49, 60] (12), 62, 64, 66, 68
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one
@@ -315,7 +320,6 @@ Render:
 								  no extra bomb explosions)
 							+ Struct, VAO
 							+ Shader
-						- [49, 60] (12), 62, 64, 66, 68
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it
