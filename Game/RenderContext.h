@@ -1249,6 +1249,7 @@ public:
         vec2f const & centerPosition,
         float halfQuadSize,
         float personalitySeed,
+        float explosionIndex,
         float progress)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1258,6 +1259,7 @@ public:
             centerPosition,
             halfQuadSize,
             personalitySeed,
+            explosionIndex,
             progress);
     }
 

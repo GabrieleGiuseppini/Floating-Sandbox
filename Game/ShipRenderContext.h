@@ -380,6 +380,7 @@ public:
         vec2f const & centerPosition,
         float halfQuadSize,
         float personalitySeed,
+        float explosionIndex,
         float progress)
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
@@ -399,9 +400,6 @@ public:
 
         // Calculate rotation based off personality seed
         float const angleCcw = personalitySeed * 2.0f * Pi<float>;
-
-        // TODOTEST: for now explosion index is fixed
-        float const explosionIndex = 1.0;
 
         // Append vertices - two triangles
 

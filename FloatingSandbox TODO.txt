@@ -308,16 +308,18 @@ Render:
 						+ RegularAtlas: need to live with incomplete power of two
 							+ Fill-in with first frame
 						+ Explosion 2
+							+ [49, 60] (12), 62, 64, 66, 68
+						- Explosion 3
+						= Explosion 4
 							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
 							+ Try without any mask boosting
 							+ Then, try with center alpha brushed towards 1.0
-						+ Explosion 3
-							+ [49, 60] (12), 62, 64, 66, 68
-						- Explosion 4
+							+ Reboost center
+							- Save Atlas
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one
-								- Then, takes it as arg
+								= Then, takes it as arg
 									- Bombs: randomly choose between 0 and 1
 							+ Struct, VAO
 							+ Shader
