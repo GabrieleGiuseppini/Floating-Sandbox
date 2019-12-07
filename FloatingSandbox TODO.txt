@@ -303,10 +303,18 @@ Render:
 				+ Need mipmapped atlas? Test w/zoom
 				= Frames
 					+ Test without curves at frames (i.e. making them darker)
-					- Do other explosions
+					+ Do other explosions
 						+ [121, 130] (10), 133, 137, 140, 144, 147, 151
 						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
-						- Shader: TODOHERE
+						+ RegularAtlas: need to live with incomplete power of two
+							+ Fill-in with first frame
+						- Shader: take explosion index as input
+							- ShipRenderContext::UploadExplosion:
+								- For test, set index to one
+								- Then, set it to zero (as new one is for combustion explosion, and atm we have
+								  no extra bomb explosions)
+							- Struct, VAO
+							- Shader
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it

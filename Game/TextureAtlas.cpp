@@ -247,11 +247,6 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
         throw GameException("Regular texture atlas cannot consist of an empty set of texture frames");
     }
 
-    if (inputTextureInfos.size() != ceil_power_of_two(inputTextureInfos.size()))
-    {
-        throw GameException("Number of frames in regular atlas (" + std::to_string(inputTextureInfos.size()) + ") is not a power of two");
-    }
-
     int const frameWidth = inputTextureInfos[0].Size.Width;
     int const frameHeight = inputTextureInfos[0].Size.Height;
     if (frameWidth != ceil_power_of_two(frameWidth)
@@ -275,18 +270,21 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
     // Place tiles
     //
 
-    int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(inputTextureInfos.size()))));
+    // Number of frames, rounded up to next square of a power of two
+    size_t virtualNumberOfFrames = ceil_square_power_of_two(inputTextureInfos.size());
+
+    int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(virtualNumberOfFrames))));
     assert(numberOfFramesPerSide > 0);
     int const atlasWidth = numberOfFramesPerSide * frameWidth;
     int const atlasHeight = numberOfFramesPerSide * frameHeight;
 
     std::vector<AtlasSpecification::TexturePosition> texturePositions;
-    texturePositions.reserve(inputTextureInfos.size());
+    texturePositions.reserve(virtualNumberOfFrames);
 
     for (int i = 0; i < inputTextureInfos.size(); ++i)
     {
-        int c = i % numberOfFramesPerSide;
-        int r = i / numberOfFramesPerSide;
+        int const c = i % numberOfFramesPerSide;
+        int const r = i / numberOfFramesPerSide;
 
         texturePositions.emplace_back(
             inputTextureInfos[i].FrameId,
