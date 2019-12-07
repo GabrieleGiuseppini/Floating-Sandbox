@@ -308,13 +308,14 @@ Render:
 						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
 						+ RegularAtlas: need to live with incomplete power of two
 							+ Fill-in with first frame
-						- Shader: take explosion index as input
-							- ShipRenderContext::UploadExplosion:
-								- For test, set index to one
+						= Shader: take explosion index as input
+							= ShipRenderContext::UploadExplosion:
+								+ For test, set index to one
 								- Then, set it to zero (as new one is for combustion explosion, and atm we have
 								  no extra bomb explosions)
-							- Struct, VAO
-							- Shader
+							+ Struct, VAO
+							+ Shader
+						- [49, 60] (12), 62, 64, 66, 68
 			- Cleanup:
 				- Complete IShipStructureHandler
 					- Move "structure handlers" into it
