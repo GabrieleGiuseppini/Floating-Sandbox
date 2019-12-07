@@ -48,7 +48,7 @@ inline constexpr T ceil_square_power_of_two(T value)
     if ((e % 2) != 0)
         ++e;
 
-    return 1 << e;
+    return T(1) << e;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

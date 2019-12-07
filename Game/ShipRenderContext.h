@@ -395,7 +395,12 @@ public:
         // Populate the texture quad
         //
 
-        // Calculate render half quad size
+        // Resolution of atlas, for dead center calculations
+        float const dTextureX = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Width));
+        float const dTextureY = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Height));
+
+        // Calculate render half quad size - magic offset to account for
+        // empty outskirts of frames
         float const renderHalfQuadSize = halfQuadSize + 13.0f;
 
         // Calculate rotation based off personality seed
@@ -409,7 +414,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(-renderHalfQuadSize, renderHalfQuadSize),
-            vec2f(0.0f, 1.0f),
+            vec2f(0.0f + dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
@@ -419,7 +424,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(renderHalfQuadSize, renderHalfQuadSize),
-            vec2f(1.0f, 1.0f),
+            vec2f(1.0f - dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
@@ -429,7 +434,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
-            vec2f(0.0f, 0.0f),
+            vec2f(0.0f + dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
@@ -441,7 +446,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(renderHalfQuadSize, renderHalfQuadSize),
-            vec2f(1.0f, 1.0f),
+            vec2f(1.0f - dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
@@ -451,7 +456,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
-            vec2f(0.0f, 0.0f),
+            vec2f(0.0f + dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
@@ -461,7 +466,7 @@ public:
         vertexBuffer.emplace_back(
             centerPosition,
             vec2f(renderHalfQuadSize, -renderHalfQuadSize),
-            vec2f(1.0f, 0.0f),
+            vec2f(1.0f - dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,

@@ -316,6 +316,8 @@ Render:
 							+ Then, try with center alpha brushed towards 1.0
 							+ Reboost center
 							- Save Atlas
+						= Shader texture coords dead center: 
+							+ Make dead center at upload
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one

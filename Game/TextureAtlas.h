@@ -48,8 +48,11 @@ class TextureAtlasMetadata
 {
 public:
 
-    TextureAtlasMetadata(std::vector<TextureAtlasFrameMetadata> frames)
-        : mFrameMetadata(frames)
+    TextureAtlasMetadata(
+        ImageSize size,
+        std::vector<TextureAtlasFrameMetadata> frames)
+        : mSize(size)
+        , mFrameMetadata(frames)
         , mFrameMetadataIndices()
     {
         //
@@ -77,6 +80,11 @@ public:
             assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
             mFrameMetadataIndices.back().emplace_back(frameIndex);
         }
+    }
+
+    ImageSize const & GetSize() const
+    {
+        return mSize;
     }
 
     TextureAtlasFrameMetadata const & GetFrameMetadata(TextureFrameId const & textureFrameId) const
@@ -115,6 +123,8 @@ public:
     }
 
 private:
+
+    const ImageSize mSize;
 
     std::vector<TextureAtlasFrameMetadata> mFrameMetadata;
 

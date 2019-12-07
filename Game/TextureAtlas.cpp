@@ -317,11 +317,11 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
 
     // Copy all textures into image, building metadata at the same time
-    std::vector<TextureAtlasFrameMetadata> metadata;
+    std::vector<TextureAtlasFrameMetadata> frameMetadata;
     for (auto const & texturePosition : specification.TexturePositions)
     {
         progressCallback(
-            static_cast<float>(metadata.size()) / static_cast<float>(specification.TexturePositions.size()),
+            static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TexturePositions.size()),
             "Building texture atlas...");
 
         // Load frame
@@ -337,7 +337,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             texturePosition.FrameBottomY);
 
         // Store texture coordinates
-        metadata.emplace_back(
+        frameMetadata.emplace_back(
             // Bottom-left
             vec2f(
                 dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
@@ -361,7 +361,9 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
 
     // Return atlas
     return TextureAtlas(
-        metadata,
+        TextureAtlasMetadata(
+            specification.AtlasSize,
+            frameMetadata),
         std::move(atlasImageData));
 }
 

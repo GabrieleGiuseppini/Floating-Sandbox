@@ -69,18 +69,18 @@ vec4 SampleColor(float frameIndex, vec2 uv)
 
     float c = mod(frameIndex, AtlasSideFrames);
     float r = floor(frameIndex / AtlasSideFrames) + explosionIndexRowStart;
-    
-    // Transform uv into coords of frame in Atlas
-    vec2 atlasSampleCoords = (vec2(c, r) + uv) * FrameSideSize;
-    
-    // Clamp to two rows of this explosion index
-    //atlasSampleCoords = vec2(atlasSampleCoords.x, clamp(0., 1., atlasSampleCoords.y));
-    atlasSampleCoords = vec2(
-        atlasSampleCoords.x, 
+
+    // Coords on frame grid having integral indices,
+    // clamped to the two rows of this explosion index
+    vec2 atlasCoords = vec2(
+        c + uv.x, 
         clamp(
-            explosionIndexRowStart * FrameSideSize,
-            (explosionIndexRowStart + 2.) * FrameSideSize,
-            atlasSampleCoords.y));
+            r + uv.y,
+            explosionIndexRowStart, // Assuming here it's alpha==0 for every x
+            explosionIndexRowStart + 2.));
+    
+    // Transform into texture coords
+    vec2 atlasSampleCoords = atlasCoords * FrameSideSize;
     
     // Sample
     return texture2D(paramExplosionsAtlasTexture, atlasSampleCoords);
@@ -88,16 +88,16 @@ vec4 SampleColor(float frameIndex, vec2 uv)
 
 void main()
 {
-    float sigma = 1./(NExplosionFrames + 1.);
-    float bucket = floor(vertexProgress / sigma);
-    float inBucket = fract(vertexProgress / sigma);
-    
     //
     // At any given moment in time we draw two frames:
     // - Frame 1: index=(bucket - 1.), alpha=(1. - inBucket)
     // - Frame 2: index=(bucket), alpha=(inBucket)    
     //
-        
+
+    float sigma = 1./(NExplosionFrames + 1.);
+    float bucket = floor(vertexProgress / sigma);
+    float inBucket = fract(vertexProgress / sigma);
+            
     
     //
     // Scale
