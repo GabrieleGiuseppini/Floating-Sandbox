@@ -311,8 +311,9 @@ Render:
 							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
 							+ Try without any mask boosting
 							+ Then, try with center alpha brushed towards 1.0
-						- Explosion 3
-							- [49, 60] (12), 62, 64, 66, 68
+						+ Explosion 3
+							+ [49, 60] (12), 62, 64, 66, 68
+						- Explosion 4
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one
