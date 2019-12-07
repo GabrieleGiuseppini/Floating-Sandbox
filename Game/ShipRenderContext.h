@@ -400,6 +400,9 @@ public:
         // Calculate rotation based off personality seed
         float const angleCcw = personalitySeed * 2.0f * Pi<float>;
 
+        // TODOTEST: for now explosion index is fixed
+        float const explosionIndex = 1.0;
+
         // Append vertices - two triangles
 
         // Triangle 1
@@ -411,6 +414,7 @@ public:
             vec2f(0.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Top-Right
@@ -420,6 +424,7 @@ public:
             vec2f(1.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Bottom-left
@@ -429,6 +434,7 @@ public:
             vec2f(0.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Triangle 2
@@ -440,6 +446,7 @@ public:
             vec2f(1.0f, 1.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Bottom-left
@@ -449,6 +456,7 @@ public:
             vec2f(0.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Bottom-right
@@ -458,6 +466,7 @@ public:
             vec2f(1.0f, 0.0f),
             static_cast<float>(planeId),
             angleCcw,
+            explosionIndex,
             progress);
 
         // Update total count of vertices
@@ -856,6 +865,7 @@ private:
         float planeId;
 
         float angle;
+        float explosionIndex;
         float progress;
 
         ExplosionVertex(
@@ -864,12 +874,14 @@ private:
             vec2f _textureCoordinate,
             float _planeId,
             float _angle,
+            float _explosionIndex,
             float _progress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
             , textureCoordinate(_textureCoordinate)
             , planeId(_planeId)
             , angle(_angle)
+            , explosionIndex(_explosionIndex)
             , progress(_progress)
         {}
     };

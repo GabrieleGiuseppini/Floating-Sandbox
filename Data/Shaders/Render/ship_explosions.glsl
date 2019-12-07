@@ -8,10 +8,11 @@
 // Inputs
 in vec4 inExplosion1; // CenterPosition, VertexOffset
 in vec4 inExplosion2; // TextureCoordinates, PlaneId, Angle
-in float inExplosion3; // Progress
+in vec2 inExplosion3; // ExplosionIndex, Progress
 
 // Outputs
 out vec2 vertexTextureCoordinates;
+out float vertexExplosionIndex;
 out float vertexProgress;
 
 // Params
@@ -20,7 +21,8 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexTextureCoordinates = inExplosion2.xy; 
-    vertexProgress = inExplosion3;
+    vertexExplosionIndex = inExplosion3.x;
+    vertexProgress = inExplosion3.y;
 
     float angle = inExplosion2.w;
 
@@ -43,6 +45,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates; // (0.0, 0.0) (bottom-left) -> (1.0, 1.0)
+in float vertexExplosionIndex;
 in float vertexProgress;
 
 // The texture
@@ -50,25 +53,34 @@ uniform sampler2D paramExplosionsAtlasTexture;
 
 // Parameters
 
-// Actual frames, there is also an implicit pre-frame and a post-frame
-#define NTextureFrames 16.
+// Actual frames per explosion, there is also an implicit pre-frame and a post-frame
+#define NExplosionFrames 16.
 
-// Square root of number of frames
-#define AtlasSideSize 4.
+// Number of frames per atlas side
+#define AtlasSideFrames 8.
 
 // Size of a frame side, in texture coords
-#define FrameSizeWidth 1. / AtlasSideSize
+#define FrameSideSize 1. / AtlasSideFrames
 
 vec4 SampleColor(float frameIndex, vec2 uv)
 {   
-    float c = mod(frameIndex, AtlasSideSize);
-    float r = floor(frameIndex / AtlasSideSize);
+    // Row at which the desired explosion starts
+    float explosionIndexRowStart = 2. * vertexExplosionIndex;
+
+    float c = mod(frameIndex, AtlasSideFrames);
+    float r = floor(frameIndex / AtlasSideFrames) + explosionIndexRowStart;
     
     // Transform uv into coords of frame in Atlas
-    vec2 atlasSampleCoords = (vec2(c, r) + uv) * FrameSizeWidth;
+    vec2 atlasSampleCoords = (vec2(c, r) + uv) * FrameSideSize;
     
-    // Clamp
-    atlasSampleCoords = vec2(atlasSampleCoords.x, clamp(0., 1., atlasSampleCoords.y));
+    // Clamp to two rows of this explosion index
+    //atlasSampleCoords = vec2(atlasSampleCoords.x, clamp(0., 1., atlasSampleCoords.y));
+    atlasSampleCoords = vec2(
+        atlasSampleCoords.x, 
+        clamp(
+            explosionIndexRowStart * FrameSideSize,
+            (explosionIndexRowStart + 2.) * FrameSideSize,
+            atlasSampleCoords.y));
     
     // Sample
     return texture2D(paramExplosionsAtlasTexture, atlasSampleCoords);
@@ -76,7 +88,7 @@ vec4 SampleColor(float frameIndex, vec2 uv)
 
 void main()
 {
-    float sigma = 1./(NTextureFrames + 1.);
+    float sigma = 1./(NExplosionFrames + 1.);
     float bucket = floor(vertexProgress / sigma);
     float inBucket = fract(vertexProgress / sigma);
     

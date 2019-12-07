@@ -289,13 +289,13 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
-        static_assert(sizeof(ExplosionVertex) == (4 + 4 + 1) * sizeof(float));
+        static_assert(sizeof(ExplosionVertex) == (4 + 4 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion1), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion2), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4) * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Explosion3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion3), 1, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4 + 4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Explosion3), 2, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
