@@ -22,6 +22,11 @@ public:
         rgbColor const & color,
         float alpha);
 
+    /*
+     * Multiplies the r, g, and b channels by the alpha channel.
+     */
+    static void AlphaPreMultiply(RgbaImageData & imageData);
+
     static inline vec4f SamplePixel(
         RgbaImageData const & imageData,
         float x,
@@ -50,7 +55,7 @@ public:
         return resulty1 * (1.0f - fy) + resulty2 * fy;
     }
 
-    static inline RgbImageData Trim(RgbImageData imageData)
+    static inline RgbImageData TrimWhite(RgbImageData imageData)
     {
         return InternalTrim<rgbColor>(
             std::move(imageData),
@@ -63,7 +68,7 @@ public:
             });
     }
 
-    static inline RgbaImageData Trim(RgbaImageData imageData)
+    static inline RgbaImageData TrimWhiteOrTransparent(RgbaImageData imageData)
     {
         return InternalTrim<rgbaColor>(
             std::move(imageData),
@@ -76,6 +81,10 @@ public:
                     || (c.a == 0);
             });
     }
+
+    static RgbImageData ToRgb(RgbaImageData const & imageData);
+
+    static RgbImageData ToAlpha(RgbaImageData const & imageData);
 
 private:
 

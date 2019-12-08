@@ -124,8 +124,8 @@ void Ship::UploadExplosionStateMachine(
         explosionStateMachine.CenterPosition,
         explosionStateMachine.BlastRadius,
         explosionStateMachine.PersonalitySeed,
-        // TODOTEST: testing large explosion
-        3.0f,
+        // TODOTEST
+        2.0f,
         explosionStateMachine.CurrentProgress);
 }
 

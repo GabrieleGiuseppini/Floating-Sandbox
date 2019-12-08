@@ -70,7 +70,7 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
         previewImageFilePath,
         maxSize);
 
-    auto trimmedPreviewImage = ImageTools::Trim(std::move(previewImage));
+    auto trimmedPreviewImage = ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
 
     return std::unique_ptr<ShipPreview>(
         new ShipPreview(

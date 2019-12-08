@@ -297,10 +297,14 @@ Render:
 					+ Timer
 				+ Remove DoBombExplosion from IShipStructureHandler
 			+ Explosion physics: smoother, points entering radius at last get too much force
-			+ Gfx improvements:
+			= Gfx improvements:
 				+ Test temporarily w/very slow progress and make sure all frames are shown
 				+ See if scaling should go or remain
 				+ Need mipmapped atlas? Test w/zoom
+				+ Fix two issues:
+					+ Frame -1 is visible:
+						+ Try with clamping to dead center
+					+ Dark rectangles
 				= Frames
 					+ Test without curves at frames (i.e. making them darker)
 					+ Do other explosions
@@ -309,20 +313,23 @@ Render:
 							+ Fill-in with first frame
 						+ Explosion 2
 							+ [49, 60] (12), 62, 64, 66, 68
-						- Explosion 3
-						= Explosion 4
+						+ Explosion 3
+							+ Make psd
+						+ Explosion 4
 							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
 							+ Try without any mask boosting
 							+ Then, try with center alpha brushed towards 1.0
 							+ Reboost center
-							- Save Atlas
-						= Shader texture coords dead center: 
+							+ Double-check final fade out
+						+ Shader texture coords dead center: 
 							+ Make dead center at upload
+						- Speedup alpha pre-multiply
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one
 								= Then, takes it as arg
-									- Bombs: randomly choose between 0 and 1
+									- Bombs: randomly choose between 0 and 2
+									- Swap explosions 3 and 4
 							+ Struct, VAO
 							+ Shader
 			- Cleanup:
@@ -339,6 +346,8 @@ Render:
 
 		- Interleaving Update's with Render's (*)
 
+		- Explosive combustion (*)
+
 		= See why land rendering lowers FPS so much
 			+ Compare first with ocean
 			+ Try with a dumb shader
@@ -351,8 +360,6 @@ Render:
 			! Apparently it's the physics (it's 64FPS with pause)
 			+ Write and run unit tests for denormals
 			- Add switch to turn off Ship::Update's to verify whether it's pure CPU or not
-
-		- Explosive combustion (*)
 
 		- Try with SpringRelaxation updating only positions (*)
 		- Spring and NonSpring force separation optimization (*)		

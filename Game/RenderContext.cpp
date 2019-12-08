@@ -580,6 +580,11 @@ RenderContext::RenderContext(
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
 
+    ImageData atlasData = std::move(explosionTextureAtlas.AtlasData);
+
+    // Pre-multiply by alpha, as the explosion shader requires it
+    ImageTools::AlphaPreMultiply(atlasData);
+
     // Create OpenGL handle
     glGenTextures(1, &tmpGLuint);
     mExplosionTextureAtlasOpenGLHandle = tmpGLuint;
@@ -589,9 +594,10 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
+    GameOpenGL::UploadTexture(std::move(atlasData));
 
-    // Set repeat mode
+    // Set repeat mode - we want to clamp, to leverage the fact that
+    // all frames are perfectly transparent at the edges
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     CheckOpenGLError();
