@@ -317,11 +317,9 @@ enum class TextureGroupType : uint16_t
     Ocean,
     PinnedPoint,
     RcBomb,
-    RcBombExplosion,
     RcBombPing,
     TimerBomb,
     TimerBombDefuse,
-    TimerBombExplosion,
     TimerBombFuse,
     WorldBorder,
 

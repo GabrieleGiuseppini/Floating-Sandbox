@@ -49,7 +49,7 @@ set  (PHYSICS_SOURCES
 	ForceFields.h
 	ImpactBomb.cpp
 	ImpactBomb.h
-	IShipStructureHandler.h
+	IShipPhysicsHandler.h
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp

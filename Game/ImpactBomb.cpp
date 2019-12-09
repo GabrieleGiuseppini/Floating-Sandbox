@@ -14,7 +14,7 @@ ImpactBomb::ImpactBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IShipStructureHandler & shipStructureHandler,
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ ImpactBomb::ImpactBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        shipStructureHandler,
+        shipPhysicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::Idle)
@@ -60,7 +60,7 @@ bool ImpactBomb::Update(
             // Explode
             //
 
-            mShipStructureHandler.StartExplosion(
+            mShipPhysicsHandler.StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(),
                 GetPosition(),

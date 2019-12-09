@@ -191,13 +191,13 @@ protected:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IShipStructureHandler & shipStructureHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mId(id)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mShipStructureHandler(shipStructureHandler)
+        , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mRotationBaseAxis(shipSprings.GetEndpointBPosition(springIndex, shipPoints) - shipSprings.GetEndpointAPosition(springIndex, shipPoints))
@@ -220,7 +220,7 @@ protected:
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The handler to invoke for acting on the ship
-    IShipStructureHandler & mShipStructureHandler;
+    IShipPhysicsHandler & mShipPhysicsHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;

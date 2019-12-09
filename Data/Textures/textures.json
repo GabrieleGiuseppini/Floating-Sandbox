@@ -313,18 +313,6 @@
 },
 
 {
-	"groupName": "RCBombExplosion",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 15.4,
-			"worldHeight": 15.4,
-			"filename": "rc_bomb_explosion_\\d+"
-		}
-	]
-},
-
-{
 	"groupName": "RCBombPing",
 	"hasOwnAmbientLight": true,
 	"frames":[
@@ -361,18 +349,6 @@
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
 			"filename": "timer_bomb_defuse_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "TimerBombExplosion",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 15.4,
-			"worldHeight": 15.4,
-			"filename": "timer_bomb_explosion_\\d+"
 		}
 	]
 },

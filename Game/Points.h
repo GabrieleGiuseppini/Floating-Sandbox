@@ -42,16 +42,6 @@ public:
         FireDestroyEvent = 2,
     };
 
-    using DetachHandler = std::function<void(
-        ElementIndex,
-        bool /*generateDebris*/,
-        bool /*fireDestroyEvent*/,
-        float /*currentSimulationTime*/,
-        GameParameters const &)>;
-
-    using EphemeralParticleDestroyHandler = std::function<void(
-        ElementIndex)>;
-
     /*
      * The types of ephemeral particles.
      */
@@ -444,8 +434,7 @@ public:
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mDetachHandler()
-        , mEphemeralParticleDestroyHandler()
+        , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
@@ -510,38 +499,9 @@ public:
         return pointIndex >= mAlignedShipPointCount;
     }
 
-    /*
-     * Sets a (single) handler that is invoked whenever a point is detached.
-     *
-     * The handler is invoked right before the point is modified for the detachment. However,
-     * other elements connected to the soon-to-be-detached point might already have been
-     * deleted.
-     *
-     * The handler is not re-entrant: detaching other points from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterDetachHandler(DetachHandler detachHandler)
+    void RegisterShipPhysicsHandler(IShipPhysicsHandler * shipPhysicsHandler)
     {
-        assert(!mDetachHandler);
-        mDetachHandler = std::move(detachHandler);
-    }
-
-    /*
-     * Sets a (single) handler that is invoked whenever an ephemeral particle is destroyed.
-     *
-     * The handler is invoked right before the particle is modified for the destroy.
-     *
-     * The handler is not re-entrant: destroying other ephemeral particles from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterEphemeralParticleDestroyHandler(EphemeralParticleDestroyHandler ephemeralParticleDestroyHandler)
-    {
-        assert(!mEphemeralParticleDestroyHandler);
-        mEphemeralParticleDestroyHandler = std::move(ephemeralParticleDestroyHandler);
+        mShipPhysicsHandler = shipPhysicsHandler;
     }
 
     void Add(
@@ -1517,12 +1477,7 @@ private:
 
     World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
-
-    // The handler registered for point detachments
-    DetachHandler mDetachHandler;
-
-    // The handler registered for ephemeral particle destroy's
-    EphemeralParticleDestroyHandler mEphemeralParticleDestroyHandler;
+    IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Flag remembering whether or not we've uploaded *entire*
     // (as opposed to just non-ephemeral portion) buffers at

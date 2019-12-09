@@ -282,8 +282,6 @@ void Ship::RepairAt(
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
-    bool hasAnythingBeenRestored = false;
-
     // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -557,9 +555,6 @@ void Ship::RepairAt(
 
                             assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                            // Remember we've restored something at this iteration
-                            hasAnythingBeenRestored = true;
-
                             // Brake the other endpoint
                             mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
 
@@ -660,9 +655,6 @@ void Ship::RepairAt(
                     {
                         // Restore it
                         mTriangles.Restore(fct);
-
-                        // Remember something has been restored at this iteration
-                        hasAnythingBeenRestored = true;
                     }
                 }
             }
@@ -680,15 +672,6 @@ void Ship::RepairAt(
                 mPoints.RestoreFactoryIsLeaking(pointIndex);
             }
         }
-    }
-
-    //
-    // Notify if we've just completely restored the ship
-    //
-
-    if (hasAnythingBeenRestored && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
-    {
-        mGameEventHandler->OnShipRepaired(mId);
     }
 }
 

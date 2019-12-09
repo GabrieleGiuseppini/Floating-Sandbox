@@ -27,7 +27,7 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IShipStructureHandler & shipStructureHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 

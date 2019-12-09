@@ -24,10 +24,6 @@ namespace Physics
 
 class ElectricalElements : public ElementContainer
 {
-public:
-
-    using DestroyHandler = std::function<void(ElementIndex)>;
-
 private:
 
     struct OperatingTemperatures
@@ -178,7 +174,7 @@ public:
         //////////////////////////////////
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mDestroyHandler()
+        , mShipPhysicsHandler(nullptr)
         , mSources()
         , mSinks()
         , mLamps()
@@ -197,22 +193,9 @@ public:
         return mLamps;
     }
 
-    /*
-     * Sets a (single) handler that is invoked whenever an electrical element is destroyed.
-     *
-     * The handler is invoked right before the electrical element is marked as deleted. However,
-     * other elements connected to the soon-to-be-deleted electrical element might already have been
-     * deleted.
-     *
-     * The handler is not re-entrant: destroying other electrical elements from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterDestroyHandler(DestroyHandler destroyHandler)
+    void RegisterShipPhysicsHandler(IShipPhysicsHandler * shipPhysicsHandler)
     {
-        assert(!mDestroyHandler);
-        mDestroyHandler = std::move(destroyHandler);
+        mShipPhysicsHandler = shipPhysicsHandler;
     }
 
     void Add(
@@ -390,7 +373,7 @@ private:
     {
         return materialLightSpread
             * lightSpreadAdjustment
-            + 0.5f; // To ensure spread=0 => lamp is lighted        
+            + 0.5f; // To ensure spread=0 => lamp is lighted
     }
 
     static inline float CalculateLampRawDistanceCoefficient(
@@ -427,7 +410,7 @@ private:
     Buffer<float> mMaterialLuminiscenceBuffer;
     Buffer<vec4f> mMaterialLightColorBuffer;
     Buffer<float> mMaterialLightSpreadBuffer;
-    
+
     // Connected elements
     Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;
 
@@ -450,7 +433,7 @@ private:
     Buffer<float> mLampLightSpreadMaxDistanceBuffer;
     Buffer<vec2f> mLampPositionWorkBuffer;
     Buffer<PlaneId> mLampPlaneIdWorkBuffer;
-    Buffer<float> mLampDistanceCoefficientWorkBuffer; 
+    Buffer<float> mLampDistanceCoefficientWorkBuffer;
 
     //////////////////////////////////////////////////////////
     // Container
@@ -458,9 +441,7 @@ private:
 
     World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
-
-    // The handler registered for electrical element deletions
-    DestroyHandler mDestroyHandler;
+    IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Indices of specific types in this container - just a shortcut
     std::vector<ElementIndex> mSources;

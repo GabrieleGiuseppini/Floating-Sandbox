@@ -332,17 +332,22 @@ Render:
 									+ Swap explosions 3 and 4
 							+ Struct, VAO
 							+ Shader
-			- Cleanup:
-				- Complete IShipStructureHandler
-					- Move "structure handlers" into it
-				- See if may revert to having RenderExplosionsStart()/End()
-					- After all, explosions are all uploaded at UploadStateMachines()
-				- Nuke old explosion textures
-				- Nuke GameTypes' texture groups for RC and Timer bomb explosions
+			= Cleanup:
+				+ Complete IShipPhysicsHandler
+					+ Move "structure handlers" into it
+					+ Register IShipPhysicsHandler with each container
+						+ Test all
+					+ See if may move "Ship repaired" from repair interaction into both spring/triangle
+					  restore handler
+				+ Nuke old explosion textures
+				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
+				- Bake atlas:
+					- TODO
 
 		- Rain wetting exposed parts
 			- Every leaking point, that is overwater, gets water in from rain density
-				-And water out?
+			- TBConfirmed: Just change externalWaterHeight so that it's max of ocean column height at that point, and rain density * constant
+			- Test water bubbles
 
 		- Interleaving Update's with Render's (*)
 
@@ -498,7 +503,7 @@ Render:
 		+ Detect loops with unordered_set<std::string>
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc"
-	= Ship: replace handler registrations with points, springs, etc. with IShipStructureHandler, declared in own .h
+	+ Ship: replace handler registrations with points, springs, etc. with IShipPhysicsHandler, declared in own .h
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Translations:

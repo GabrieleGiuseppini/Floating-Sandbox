@@ -300,16 +300,14 @@ void Points::Detach(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    // Invoke detach handler
-    if (!!mDetachHandler)
-    {
-        mDetachHandler(
-            pointElementIndex,
-            !!(detachOptions & Points::DetachOptions::GenerateDebris),
-            !!(detachOptions & Points::DetachOptions::FireDestroyEvent),
-            currentSimulationTime,
-            gameParameters);
-    }
+    // Invoke ship detach handler
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandlePointDetach(
+        pointElementIndex,
+        !!(detachOptions & Points::DetachOptions::GenerateDebris),
+        !!(detachOptions & Points::DetachOptions::FireDestroyEvent),
+        currentSimulationTime,
+        gameParameters);
 
     // Imprint velocity, unless the point is pinned
     if (!IsPinned(pointElementIndex))
@@ -334,11 +332,9 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
 void Points::DestroyEphemeralParticle(
     ElementIndex pointElementIndex)
 {
-    // Invoke handler
-    if (!!mEphemeralParticleDestroyHandler)
-    {
-        mEphemeralParticleDestroyHandler(pointElementIndex);
-    }
+    // Invoke ship handler
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleEphemeralParticleDestroy(pointElementIndex);
 
     // Fire destroy event
     mGameEventHandler->OnDestroy(

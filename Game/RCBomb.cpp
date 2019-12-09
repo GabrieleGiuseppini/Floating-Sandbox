@@ -14,7 +14,7 @@ RCBomb::RCBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IShipStructureHandler & shipStructureHandler,
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ RCBomb::RCBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        shipStructureHandler,
+        shipPhysicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::IdlePingOff)
@@ -109,7 +109,7 @@ bool RCBomb::Update(
                 DetachIfAttached();
 
                 // Start explosion
-                mShipStructureHandler.StartExplosion(
+                mShipPhysicsHandler.StartExplosion(
                     currentSimulationTime,
                     GetPlaneId(),
                     GetPosition(),

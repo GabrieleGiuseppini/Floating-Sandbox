@@ -21,11 +21,6 @@ namespace Physics
 
 class Triangles : public ElementContainer
 {
-public:
-
-    using DestroyHandler = std::function<void(ElementIndex)>;
-    using RestoreHandler = std::function<void(ElementIndex)>;
-
 private:
 
     /*
@@ -65,47 +60,15 @@ public:
         //////////////////////////////////
         // Container
         //////////////////////////////////
-        , mDestroyHandler()
-        , mRestoreHandler()
+        , mShipPhysicsHandler(nullptr)
     {
     }
 
     Triangles(Triangles && other) = default;
 
-    /*
-     * Sets a (single) handler that is invoked whenever a triangle is destroyed.
-     *
-     * The handler is invoked right before the triangle is marked as deleted. However,
-     * other elements connected to the soon-to-be-deleted triangle might already have been
-     * deleted.
-     *
-     * The handler is not re-entrant: destroying other triangles from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterDestroyHandler(DestroyHandler destroyHandler)
+    void RegisterShipPhysicsHandler(IShipPhysicsHandler * shipPhysicsHandler)
     {
-        assert(!mDestroyHandler);
-        mDestroyHandler = std::move(destroyHandler);
-    }
-
-    /*
-     * Sets a (single) handler that is invoked whenever a triangle is restored.
-     *
-     * The handler is invoked right after the triangle is modified to be restored. However,
-     * other elements connected to the soon-to-be-restored triangle might not have been
-     * restored yet.
-     *
-     * The handler is not re-entrant: restoring other triangles from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterRestoreHandler(RestoreHandler restoreHandler)
-    {
-        assert(!mRestoreHandler);
-        mRestoreHandler = std::move(restoreHandler);
+        mShipPhysicsHandler = shipPhysicsHandler;
     }
 
     void Add(
@@ -263,11 +226,7 @@ private:
     // Container
     //////////////////////////////////////////////////////////
 
-    // The handler registered for triangle deletions
-    DestroyHandler mDestroyHandler;
-
-    // The handler registered for triangle restoration
-    RestoreHandler mRestoreHandler;
+    IShipPhysicsHandler * mShipPhysicsHandler;
 };
 
 }

@@ -44,16 +44,12 @@ TextureGroupType StrToTextureGroupType(std::string const & str)
         return TextureGroupType::PinnedPoint;
     else if (Utils::CaseInsensitiveEquals(str, "RCBomb"))
         return TextureGroupType::RcBomb;
-    else if (Utils::CaseInsensitiveEquals(str, "RCBombExplosion"))
-        return TextureGroupType::RcBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
         return TextureGroupType::RcBombPing;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBomb"))
         return TextureGroupType::TimerBomb;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefuse"))
         return TextureGroupType::TimerBombDefuse;
-    else if (Utils::CaseInsensitiveEquals(str, "TimerBombExplosion"))
-        return TextureGroupType::TimerBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
         return TextureGroupType::TimerBombFuse;
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))

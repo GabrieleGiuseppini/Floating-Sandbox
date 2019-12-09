@@ -24,7 +24,7 @@
 namespace Physics
 {
 
-class Ship : public IShipStructureHandler
+class Ship : public IShipPhysicsHandler
 {
 public:
 
@@ -289,34 +289,6 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void PointDetachHandler(
-        ElementIndex pointElementIndex,
-        bool generateDebris,
-        bool fireDestroyEvent,
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
-    void OnPointOrphaned(
-        ElementIndex pointElementIndex);
-
-    void EphemeralParticleDestroyHandler(
-        ElementIndex pointElementIndex);
-
-    void SpringDestroyHandler(
-        ElementIndex springElementIndex,
-        bool destroyAllTriangles,
-        GameParameters const & gameParameters);
-
-    void SpringRestoreHandler(
-        ElementIndex springElementIndex,
-        GameParameters const & gameParameters);
-
-    void TriangleDestroyHandler(ElementIndex triangleElementIndex);
-
-    void TriangleRestoreHandler(ElementIndex triangleElementIndex);
-
-    void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
-
     void GenerateAirBubbles(
         vec2f const & position,
         float currentSimulationTime,
@@ -381,8 +353,33 @@ private:
 private:
 
     /////////////////////////////////////////////////////////////////////////
-    // IShipStructureHandler
+    // IShipPhysicsHandler
     /////////////////////////////////////////////////////////////////////////
+
+    virtual void HandlePointDetach(
+        ElementIndex pointElementIndex,
+        bool generateDebris,
+        bool fireDestroyEvent,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleEphemeralParticleDestroy(
+        ElementIndex pointElementIndex) override;
+
+    virtual void HandleSpringDestroy(
+        ElementIndex springElementIndex,
+        bool destroyAllTriangles,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleSpringRestore(
+        ElementIndex springElementIndex,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
+
+    virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
+
+    virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
 
     virtual void StartExplosion(
         float currentSimulationTime,
