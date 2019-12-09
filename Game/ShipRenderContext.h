@@ -379,8 +379,8 @@ public:
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
+        ExplosionType explosionType,
         float personalitySeed,
-        float explosionIndex,
         float progress)
     {
         size_t const planeIndex = static_cast<size_t>(planeId);
@@ -402,6 +402,20 @@ public:
         // Calculate render half quad size - magic offset to account for
         // empty outskirts of frames
         float const renderHalfQuadSize = halfQuadSize + 13.0f;
+
+        // Calculate explosion index based off explosion type
+        float explosionIndex;
+        if (ExplosionType::Deflagration == explosionType)
+        {
+            // 0..2, randomly
+            explosionIndex = std::min(2.0f, floor(personalitySeed * 3.0f));
+        }
+        else
+        {
+            assert(ExplosionType::Combustion == explosionType);
+
+            explosionIndex = 3.0f;
+        }
 
         // Calculate rotation based off personality seed
         float const angleCcw = personalitySeed * 2.0f * Pi<float>;

@@ -390,6 +390,7 @@ private:
         vec2f const & centerPosition,
         float blastRadius,
         float blastHeat,
+        ExplosionType explosionType,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombPreimplosion(

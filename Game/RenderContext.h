@@ -1248,8 +1248,8 @@ public:
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
+        ExplosionType explosionType,
         float personalitySeed,
-        float explosionIndex,
         float progress)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1258,8 +1258,8 @@ public:
             planeId,
             centerPosition,
             halfQuadSize,
+            explosionType,
             personalitySeed,
-            explosionIndex,
             progress);
     }
 

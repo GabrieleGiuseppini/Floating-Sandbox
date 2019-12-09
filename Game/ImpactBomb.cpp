@@ -66,6 +66,7 @@ bool ImpactBomb::Update(
                 GetPosition(),
                 gameParameters.BombBlastRadius,
                 gameParameters.BombBlastHeat * 1.2f, // Just a bit more caustic
+                ExplosionType::Deflagration,
                 gameParameters);
 
             //

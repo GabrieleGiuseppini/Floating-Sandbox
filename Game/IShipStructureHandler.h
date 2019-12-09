@@ -21,6 +21,7 @@ struct IShipStructureHandler
         vec2f const & centerPosition,
         float blastRadius,
         float blastHeat,
+        ExplosionType explosionType,
         GameParameters const & gameParameters) = 0;
 
     //

@@ -18,6 +18,7 @@ public:
     vec2f const CenterPosition;
     float const BlastRadius; // m
     float const BlastHeat; // KJ
+    ExplosionType const Type;
     float const PersonalitySeed;
 
     float CurrentProgress;
@@ -29,13 +30,15 @@ public:
         PlaneId planeId,
         vec2f const & centerPosition,
         float blastRadius,
-        float blastHeat)
+        float blastHeat,
+        ExplosionType type)
         : StateMachine(StateMachineType::Explosion)
         , StartSimulationTime(startSimulationTime)
         , Plane(planeId)
         , CenterPosition(centerPosition)
         , BlastRadius(blastRadius)
         , BlastHeat(blastHeat)
+        , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
         , CurrentProgress(0.0f)
         , IsFirstFrame(true)

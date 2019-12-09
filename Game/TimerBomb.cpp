@@ -141,6 +141,7 @@ bool TimerBomb::Update(
                     GetPosition(),
                     gameParameters.BombBlastRadius,
                     gameParameters.BombBlastHeat,
+                    ExplosionType::Deflagration,
                     gameParameters);
 
                 // Notify explosion

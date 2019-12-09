@@ -2347,6 +2347,7 @@ void Ship::StartExplosion(
     vec2f const & centerPosition,
     float blastRadius,
     float blastHeat,
+    ExplosionType explosionType,
     GameParameters const & /*gameParameters*/)
 {
     // Queue state machine
@@ -2356,7 +2357,8 @@ void Ship::StartExplosion(
             planeId,
             centerPosition,
             blastRadius,
-            blastHeat));
+            blastHeat,
+            explosionType));
 }
 
 void Ship::DoAntiMatterBombPreimplosion(

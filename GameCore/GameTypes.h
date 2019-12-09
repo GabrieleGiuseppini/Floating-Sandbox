@@ -197,6 +197,15 @@ enum class BombType
 };
 
 /*
+ * Types of explosions (duh).
+ */
+enum class ExplosionType
+{
+    Combustion,
+    Deflagration
+};
+
+/*
  * Generic duration enum - short and long.
  */
 enum class DurationShortLongType
