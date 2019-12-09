@@ -22,9 +22,7 @@ void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
     size_t const Size = imageData.Size.Width * imageData.Size.Height;
     for (size_t i = 0; i < Size; ++i)
     {
-        vec4f const c1 = imageData.Data[i].toVec4f();
-        vec4f const c2 = vec4f(c1.x * c1.w, c1.y * c1.w, c1.z * c1.w, c1.w);
-        imageData.Data[i] = rgbaColor(c2);
+        imageData.Data[i].alpha_multiply();
     }
 }
 

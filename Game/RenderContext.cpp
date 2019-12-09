@@ -585,6 +585,14 @@ RenderContext::RenderContext(
     // Pre-multiply by alpha, as the explosion shader requires it
     ImageTools::AlphaPreMultiply(atlasData);
 
+    ////// TEST
+    ////ImageFileTools::SaveImage(
+    ////    "C:\\Users\\Neurodancer\\Desktop\\ExplosionAtlas_rgb.png",
+    ////    ImageTools::ToRgb(atlasData));
+    ////ImageFileTools::SaveImage(
+    ////    "C:\\Users\\Neurodancer\\Desktop\\ExplosionAtlas_alpha.png",
+    ////    ImageTools::ToAlpha(atlasData));
+
     // Create OpenGL handle
     glGenTextures(1, &tmpGLuint);
     mExplosionTextureAtlasOpenGLHandle = tmpGLuint;

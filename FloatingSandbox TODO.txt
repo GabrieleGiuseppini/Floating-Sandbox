@@ -323,13 +323,13 @@ Render:
 							+ Double-check final fade out
 						+ Shader texture coords dead center: 
 							+ Make dead center at upload
-						- Speedup alpha pre-multiply
+						+ Speedup alpha pre-multiply
 						= Shader: take explosion index as input
 							= ShipRenderContext::UploadExplosion:
 								+ For test, set index to one
-								= Then, takes it as arg
-									- Bombs: randomly choose between 0 and 2
-									- Swap explosions 3 and 4
+								= Then, takes ExplosionType as arg
+									- Deflagration: randomly choose between 0 and 2
+									+ Swap explosions 3 and 4
 							+ Struct, VAO
 							+ Shader
 			- Cleanup:
