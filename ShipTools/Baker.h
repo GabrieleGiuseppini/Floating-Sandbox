@@ -1,14 +1,18 @@
 /***************************************************************************************
 * Original Author:		Gabriele Giuseppini
-* Created:				2018-06-25
+* Created:				2019-12-10
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "Resizer.h"
 
-void Resizer::Resize(
-    std::string const & /*inputFile*/,
-    std::string const & /*outputFile*/,
-    int /*width*/)
+#include <filesystem>
+#include <string>
+
+class Baker
 {
+public:
 
-}
+    static void BakeRegularAtlas(
+        std::filesystem::path const & jsonSpecificationFilePath,
+        std::filesystem::path const & outputDirectoryPath,
+        std::string const & atlasFilenamesStem);
+};

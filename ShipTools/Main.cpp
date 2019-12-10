@@ -4,6 +4,7 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
+#include "Baker.h"
 #include "Quantizer.h"
 #include "Resizer.h"
 #include "ShipAnalyzer.h"
@@ -20,9 +21,10 @@
 
 #define SEPARATOR "------------------------------------------------------"
 
+int DoAnalyzeShip(int argc, char ** argv);
+int DoBakeRegularAtlas(int argc, char ** argv);
 int DoQuantize(int argc, char ** argv);
 int DoResize(int argc, char ** argv);
-int DoAnalyzeShip(int argc, char ** argv);
 
 void PrintUsage();
 
@@ -41,17 +43,21 @@ int main(int argc, char ** argv)
     std::string verb(argv[1]);
     try
     {
-        if (verb == "quantize")
+        if (verb == "analyze")
+        {
+            return DoAnalyzeShip(argc, argv);
+        }
+        else if (verb == "bake_regular_atlas")
+        {
+            return DoBakeRegularAtlas(argc, argv);
+        }
+        else if (verb == "quantize")
         {
             return DoQuantize(argc, argv);
         }
         else if (verb == "resize")
         {
             return DoResize(argc, argv);
-        }
-        else if (verb == "analyze")
-        {
-            return DoAnalyzeShip(argc, argv);
         }
         else
         {
@@ -63,6 +69,57 @@ int main(int argc, char ** argv)
         std::cout << "ERROR: " << ex.what() << std::endl;
         return -1;
     }
+}
+
+int DoAnalyzeShip(int argc, char ** argv)
+{
+    if (argc < 4)
+    {
+        PrintUsage();
+        return 0;
+    }
+
+    std::string materialsDirectory(argv[2]);
+    std::string inputFile(argv[3]);
+
+    auto analysisInfo = ShipAnalyzer::Analyze(inputFile, materialsDirectory);
+
+    std::cout << std::fixed;
+
+    std::cout << "  Total mass             : " << analysisInfo.TotalMass << std::endl;
+    std::cout << "  Equivalent mass        : " << analysisInfo.MassPerPoint << std::endl;
+    std::cout << "  Equivalent buoyant mass: " << analysisInfo.BuoyantMassPerPoint << std::endl;
+    std::cout << "  Center of mass         : " << analysisInfo.BaricentricX << "," << analysisInfo.BaricentricY << std::endl;
+
+    return 0;
+}
+
+int DoBakeRegularAtlas(int argc, char ** argv)
+{
+    if (argc < 5)
+    {
+        PrintUsage();
+        return 0;
+    }
+
+    std::filesystem::path jsonSpecificationFilePath(argv[2]);
+    std::filesystem::path outputDirectoryPath(argv[3]);
+    std::string atlasFilenamesStem(argv[4]);
+
+    std::cout << SEPARATOR << std::endl;
+    std::cout << "Running bake_regular_atlas:" << std::endl;
+    std::cout << "  JSON specification file : " << jsonSpecificationFilePath << std::endl;
+    std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
+    std::cout << "  atlas filenames' stem   : " << atlasFilenamesStem << std::endl;
+
+    Baker::BakeRegularAtlas(
+        jsonSpecificationFilePath,
+        outputDirectoryPath,
+        atlasFilenamesStem);
+
+    std::cout << "Baking completed." << std::endl;
+
+    return 0;
 }
 
 int DoQuantize(int argc, char ** argv)
@@ -157,35 +214,13 @@ int DoResize(int argc, char ** argv)
     return 0;
 }
 
-int DoAnalyzeShip(int argc, char ** argv)
-{
-    if (argc < 4)
-    {
-        PrintUsage();
-        return 0;
-    }
-
-    std::string materialsDirectory(argv[2]);
-    std::string inputFile(argv[3]);
-
-    auto analysisInfo = ShipAnalyzer::Analyze(inputFile, materialsDirectory);
-
-    std::cout << std::fixed;
-
-    std::cout << "  Total mass             : " << analysisInfo.TotalMass << std::endl;
-    std::cout << "  Equivalent mass        : " << analysisInfo.MassPerPoint<< std::endl;
-    std::cout << "  Equivalent buoyant mass: " << analysisInfo.BuoyantMassPerPoint << std::endl;
-    std::cout << "  Center of mass         : " << analysisInfo.BaricentricX << "," << analysisInfo.BaricentricY << std::endl;
-
-    return 0;
-}
-
 void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
+    std::cout << " analyze <materials_dir> <in_file>" << std::endl;
+    std::cout << " bake_regular_atlas <json_spec_file> <out_dir> <out_stem>" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
-    std::cout << " analyze <materials_dir> <in_file>" << std::endl;
 }

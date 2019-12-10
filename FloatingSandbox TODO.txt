@@ -342,7 +342,12 @@ Render:
 				+ Nuke old explosion textures
 				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
 				- Bake atlas:
-					- TODO
+					- ShipTools: bake_regular_atlas <spec_json> <output_file_stem>
+					- 2 Files:
+						- AtlasMetadata, binary format TBD:, using TextureAtlas::De/Serialize(folder, stem)
+				- BombExplosionBlastForce: new parameter, Newton
+					- Each bomb then adjusts on it (75%, 100%, 125%)
+					- Settings Dialog
 
 		- Rain wetting exposed parts
 			- Every leaking point, that is overwater, gets water in from rain density
@@ -946,6 +951,15 @@ Render:
 		- To be done after new explosions
 		- New materials:
 			- "gunpowder" and "diesel"
+		- Modify combustion state machine
+			- State:
+				- TODO
+			- Invoke StartExplosion with:
+				- TODO
+		- Do Ship::StartExplosion(.) coalescing
+		- Do new game event handler, OnCombustionExplosion
+			- Additive (just like bombs)
+			- New sounds x {underwater, size}
 	
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
