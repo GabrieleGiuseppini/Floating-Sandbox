@@ -315,9 +315,9 @@ enum class WorldTextureGroups : uint16_t
 {
     Land = 0,
     Ocean,
-    Border,
+    WorldBorder,
 
-    _Last = Border
+    _Last = WorldBorder
 };
 
 enum class NoiseTextureGroups : uint16_t

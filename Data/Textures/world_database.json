@@ -1,92 +1,6 @@
 [
 
 {
-	"groupName": "AirBubble",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 2.0,
-			"worldHeight": 2.0,
-			"filename": "air_bubble_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombArmor",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": 0,
-			"anchorOffsetY": 0,
-			"filename": "am_bomb_armor_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombSphere",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "AntiMatterBombSphereCloud",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_cloud_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "Cloud",
-	"comment": "World sizes are in NDC coordinates and are calculated as image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldScaling": 0.00078125,
-			"filename": "cloud_.*"
-		}
-	]
-},
-
-{
-	"groupName": "Explosions",
-	"comment": "World scaling is irrelevant",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldScaling": 1.0,
-			"filename": "explosion\\d+_.*"
-		}
-	]
-},
-
-{
-	"groupName": "ImpactBomb",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "impact_bomb_.*"
-		}
-	]
-},
-
-{
 	"groupName": "Land",
 	"hasOwnAmbientLight": false,
 	"frames":[
@@ -173,18 +87,6 @@
 			"worldHeight": 100.0,
 			"filename": "land_11",
 			"name": "Stratified"
-		}
-	]
-},
-
-{
-	"groupName": "Noise",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"filename": "noise_.*"
 		}
 	]
 },
@@ -283,86 +185,6 @@
 			"worldHeight": 150.0,
 			"filename": "ocean_lava_1",
 			"name": "Warm Lava"
-		}
-	]
-},
-
-{
-	"groupName": "PinnedPoint",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"filename": "pinned_point_.*"
-		}
-	]
-},
-
-{
-	"groupName": "RCBomb",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -7,
-			"filename": "rc_bomb_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "RCBombPing",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -7,
-			"filename": "rc_bomb_ping_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "TimerBomb",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"filename": "timer_bomb_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "TimerBombDefuse",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"filename": "timer_bomb_defuse_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "TimerBombFuse",
-	"hasOwnAmbientLight": true,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"filename": "timer_bomb_fuse_\\d+"
 		}
 	]
 },

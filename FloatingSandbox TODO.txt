@@ -357,7 +357,8 @@ Render:
 								+ ...
 							+ ExplosionTextureGroups
 								+ Explosion
-						- Split jsons
+						+ Split jsons
+						- Refactor TextureDatabase
 						- TextureAtlasBuilder<Traits> has now static builder method that takes an entire database - TextureDatabase<Traits>
 						- RenderContext instantiates different TextureDatabase<Traits>'s
 						- Baker tool:

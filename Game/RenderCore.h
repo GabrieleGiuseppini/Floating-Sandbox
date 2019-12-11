@@ -222,8 +222,8 @@ struct WorldTextureDatabaseTraits
             return TextureGroupType::Land;
         else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
             return TextureGroupType::Ocean;
-        else if (Utils::CaseInsensitiveEquals(str, "Border"))
-            return TextureGroupType::Border;
+        else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
+            return TextureGroupType::WorldBorder;
         else
             throw GameException("Unrecognized World TextureGroupType \"" + str + "\"");
     }
