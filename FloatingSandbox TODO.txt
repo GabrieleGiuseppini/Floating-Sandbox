@@ -341,10 +341,32 @@ Render:
 					  restore handler
 				+ Nuke old explosion textures
 				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
-				- Bake atlas:
+				= Bake atlas:
+					= Rearc textures:
+						! There's a json for each TextureDatabase
+						+ The json is 1:1 with an enum (and its traits for str<->enum):
+							+ Enums are in GameTypes
+							+ Traits are in Game/RenderCore
+							+ CloudTextureGroups
+								+ Cloud
+							+ Land,OceanTextureGroups
+								+ Land,Ocean,Border
+							+ GenericTextureGroups
+								+ RCBomb
+								+ RCBombPing
+								+ ...
+							+ ExplosionTextureGroups
+								+ Explosion
+						- Split jsons
+						- TextureAtlasBuilder<Traits> has now static builder method that takes an entire database - TextureDatabase<Traits>
+						- RenderContext instantiates different TextureDatabase<Traits>'s
+						- Baker tool:
+							- Takes a trait as input						
+					- TODOHERE:
 					- ShipTools: bake_regular_atlas <spec_json> <output_file_stem>
 					- 2 Files:
 						- AtlasMetadata, binary format TBD:, using TextureAtlas::De/Serialize(folder, stem)
+					- Merge back into 1.14
 				- BombExplosionBlastForce: new parameter, Newton
 					- Each bomb then adjusts on it (75%, 100%, 125%)
 					- Settings Dialog

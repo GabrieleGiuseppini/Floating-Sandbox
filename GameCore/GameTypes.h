@@ -303,30 +303,53 @@ enum class ShipFlameRenderMode
 /*
  * The texture groups we support.
  */
-enum class TextureGroupType : uint16_t
+
+enum class CloudTextureGroups : uint16_t
+{
+    Cloud = 0,
+
+    _Last = Cloud
+};
+
+enum class WorldTextureGroups : uint16_t
+{
+    Land = 0,
+    Ocean,
+    Border,
+
+    _Last = Border
+};
+
+enum class NoiseTextureGroups : uint16_t
+{
+    Noise = 0,
+
+    _Last = Noise
+};
+
+enum class GenericTextureGroups : uint16_t
 {
     AirBubble = 0,
     AntiMatterBombArmor,
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
-    Cloud,
-    Explosions,
     ImpactBomb,
-    Land,
-    Noise,
-    Ocean,
     PinnedPoint,
     RcBomb,
     RcBombPing,
     TimerBomb,
     TimerBombDefuse,
     TimerBombFuse,
-    WorldBorder,
 
-    _Last = WorldBorder
+    _Last = TimerBombFuse
 };
 
-TextureGroupType StrToTextureGroupType(std::string const & str);
+enum class ExplosionTextureGroups : uint16_t
+{
+    Explosion = 0,
+
+    _Last = Explosion
+};
 
 /*
  * The index of a single texture frame in a group of textures.
@@ -336,13 +359,14 @@ using TextureFrameIndex = std::uint16_t;
 /*
  * The global identifier of a single texture frame.
  */
+template <typename TextureGroupEnum>
 struct TextureFrameId
 {
-    TextureGroupType Group;
+    TextureGroupEnum Group;
     TextureFrameIndex FrameIndex;
 
     TextureFrameId(
-        TextureGroupType group,
+        TextureGroupEnum group,
         TextureFrameIndex frameIndex)
         : Group(group)
         , FrameIndex(frameIndex)
@@ -374,10 +398,10 @@ struct TextureFrameId
 
 namespace std {
 
-    template <>
-    struct hash<TextureFrameId>
+    template <typename TextureGroupEnum>
+    struct hash<TextureFrameId<TextureGroupEnum>>
     {
-        std::size_t operator()(TextureFrameId const & frameId) const
+        std::size_t operator()(TextureFrameId<TextureGroupEnum> const & frameId) const
         {
             return std::hash<uint16_t>()(static_cast<uint16_t>(frameId.Group))
                 ^ std::hash<TextureFrameIndex>()(frameId.FrameIndex);

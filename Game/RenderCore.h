@@ -7,6 +7,9 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 
+#include <GameCore/GameException.h>
+#include <GameCore/GameTypes.h>
+#include <GameCore/Utils.h>
 #include <GameCore/Vectors.h>
 
 #include <numeric>
@@ -192,6 +195,98 @@ struct ShaderManagerTraits
     static constexpr auto StrToVertexAttributeType = Render::StrToVertexAttributeType;
 };
 
+//
+// Textures
+//
+
+struct CloudTextureDatabaseTraits
+{
+    using TextureGroupType = CloudTextureGroups;
+
+    static TextureGroupType StrToTextureGroupType(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Cloud"))
+            return TextureGroupType::Cloud;
+        else
+            throw GameException("Unrecognized Cloud TextureGroupType \"" + str + "\"");
+    }
+};
+
+struct WorldTextureDatabaseTraits
+{
+    using TextureGroupType = WorldTextureGroups;
+
+    static TextureGroupType StrToTextureGroupType(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Land"))
+            return TextureGroupType::Land;
+        else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
+            return TextureGroupType::Ocean;
+        else if (Utils::CaseInsensitiveEquals(str, "Border"))
+            return TextureGroupType::Border;
+        else
+            throw GameException("Unrecognized World TextureGroupType \"" + str + "\"");
+    }
+};
+
+struct NoiseTextureDatabaseTraits
+{
+    using TextureGroupType = NoiseTextureGroups;
+
+    static TextureGroupType StrToTextureGroupType(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Noise"))
+            return TextureGroupType::Noise;
+        else
+            throw GameException("Unrecognized Noise TextureGroupType \"" + str + "\"");
+    }
+};
+
+struct GenericTextureTextureDatabaseTraits
+{
+    using TextureGroupType = GenericTextureGroups;
+
+    static TextureGroupType StrToTextureGroupType(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "AirBubble"))
+            return TextureGroupType::AirBubble;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombArmor"))
+            return TextureGroupType::AntiMatterBombArmor;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombSphereCloud"))
+            return TextureGroupType::AntiMatterBombSphereCloud;
+        else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombSphere"))
+            return TextureGroupType::AntiMatterBombSphere;
+        else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
+            return TextureGroupType::ImpactBomb;
+        else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))
+            return TextureGroupType::PinnedPoint;
+        else if (Utils::CaseInsensitiveEquals(str, "RCBomb"))
+            return TextureGroupType::RcBomb;
+        else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
+            return TextureGroupType::RcBombPing;
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBomb"))
+            return TextureGroupType::TimerBomb;
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefuse"))
+            return TextureGroupType::TimerBombDefuse;
+        else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
+            return TextureGroupType::TimerBombFuse;
+        else
+            throw GameException("Unrecognized GenericTexture TextureGroupType \"" + str + "\"");
+    }
+};
+
+struct ExplosionTextureDatabaseTraits
+{
+    using TextureGroupType = ExplosionTextureGroups;
+
+    static TextureGroupType StrToTextureGroupType(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Explosion"))
+            return TextureGroupType::Explosion;
+        else
+            throw GameException("Unrecognized Explosion TextureGroupType \"" + str + "\"");
+    }
+};
 
 //
 // Text
