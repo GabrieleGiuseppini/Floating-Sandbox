@@ -1784,7 +1784,7 @@ private:
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
 
-    std::unique_ptr<UploadedTextureManager<WorldTextureGroups>> mUploadedWorldTextureManager;
+    UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
@@ -1802,7 +1802,7 @@ private:
     GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
 
-    std::unique_ptr<UploadedTextureManager<NoiseTextureGroups>> mUploadedNoiseTexturesManager;
+    UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
 
     //
     // Misc Parameters

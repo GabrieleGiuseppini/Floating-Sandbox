@@ -501,11 +501,9 @@ RenderContext::RenderContext(
 
     // World end texture
 
-    mUploadedWorldTextureManager = std::make_unique<UploadedTextureManager<WorldTextureGroups>>();
-
     mShaderManager->ActivateTexture<ProgramParameterType::WorldBorderTexture>();
 
-    mUploadedWorldTextureManager->UploadMipmappedGroup(
+    mUploadedWorldTextureManager.UploadMipmappedGroup(
         worldTextureDatabase.GetGroup(WorldTextureGroups::WorldBorder),
         GL_LINEAR_MIPMAP_NEAREST,
         [&progressCallback](float progress, std::string const &)
@@ -514,7 +512,7 @@ RenderContext::RenderContext(
         });
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedWorldTextureManager->GetOpenGLHandle(WorldTextureGroups::WorldBorder, 0));
+    glBindTexture(GL_TEXTURE_2D, mUploadedWorldTextureManager.GetOpenGLHandle(WorldTextureGroups::WorldBorder, 0));
     CheckOpenGLError();
 
     // Set texture in shader
@@ -651,7 +649,7 @@ RenderContext::RenderContext(
 
     mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture1>();
 
-    mUploadedNoiseTexturesManager->UploadNextFrame(
+    mUploadedNoiseTexturesManager.UploadNextFrame(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         0,
         GL_LINEAR);
@@ -661,7 +659,7 @@ RenderContext::RenderContext(
             + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager->GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
+    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
     CheckOpenGLError();
 
     // Set noise texture in shaders
@@ -678,7 +676,7 @@ RenderContext::RenderContext(
 
     mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture2>();
 
-    mUploadedNoiseTexturesManager->UploadNextFrame(
+    mUploadedNoiseTexturesManager.UploadNextFrame(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         1,
         GL_LINEAR);
@@ -688,7 +686,7 @@ RenderContext::RenderContext(
             + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager->GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
+    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
     CheckOpenGLError();
 
     // Set noise texture in shaders
@@ -1900,7 +1898,7 @@ static void MakeQuad(
 void RenderContext::UpdateWorldBorder()
 {
     ImageSize const & worldBorderTextureSize =
-        mUploadedWorldTextureManager->GetFrameMetadata(WorldTextureGroups::WorldBorder, 0)
+        mUploadedWorldTextureManager.GetFrameMetadata(WorldTextureGroups::WorldBorder, 0)
         .Size;
 
     // Calculate width, in world coordinates, of the world border, under the constraint

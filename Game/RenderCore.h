@@ -199,6 +199,13 @@ struct ShaderManagerTraits
 // Texture databases
 //
 
+enum class CloudTextureGroups : uint16_t
+{
+    Cloud = 0,
+
+    _Last = Cloud
+};
+
 struct CloudTextureDatabaseTraits
 {
     static inline std::string DatabaseName = "Cloud";
@@ -212,6 +219,15 @@ struct CloudTextureDatabaseTraits
         else
             throw GameException("Unrecognized Cloud texture group \"" + str + "\"");
     }
+};
+
+enum class WorldTextureGroups : uint16_t
+{
+    Land = 0,
+    Ocean,
+    WorldBorder,
+
+    _Last = WorldBorder
 };
 
 struct WorldTextureDatabaseTraits
@@ -231,6 +247,13 @@ struct WorldTextureDatabaseTraits
         else
             throw GameException("Unrecognized World texture group \"" + str + "\"");
     }
+};
+
+enum class NoiseTextureGroups : uint16_t
+{
+    Noise = 0,
+
+    _Last = Noise
 };
 
 struct NoiseTextureDatabaseTraits
@@ -281,6 +304,13 @@ struct GenericTextureTextureDatabaseTraits
         else
             throw GameException("Unrecognized GenericTexture texture group \"" + str + "\"");
     }
+};
+
+enum class ExplosionTextureGroups : uint16_t
+{
+    Explosion = 0,
+
+    _Last = Explosion
 };
 
 struct ExplosionTextureDatabaseTraits

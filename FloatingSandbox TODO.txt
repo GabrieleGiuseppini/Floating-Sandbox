@@ -342,7 +342,7 @@ Render:
 				+ Nuke old explosion textures
 				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
 				= Bake atlas:
-					= Rearc textures:
+					+ Rearc textures:
 						! There's a json for each TextureDatabase
 						+ The json is 1:1 with an enum (and its traits for str<->enum):
 							+ Enums are in GameTypes
@@ -370,9 +370,10 @@ Render:
 						+ UploadedTextureManager: also per-groups
 						+ RenderContext instantiates different TextureDatabase<Traits>'s
 						+ Unit tests
-						- Commit
-						- Move non-generic texture groups from GameTypes into RenderCore.h						
-						- Check if maymove #inclusion of -inc.h into RenderContext.cpp
+						+ Commit
+						+ Move non-generic texture groups from GameTypes into RenderCore.h
+					- AtlasBuilder: all methods take bool doAlphaPremultiply
+						- Also store in AtlasMetadata
 					- Baker tool:
 						- bake_regular_atlas TODOHERE: <spec_json> <output_file_stem>
 						- Takes database name ("Explosion") as input

@@ -301,32 +301,8 @@ enum class ShipFlameRenderMode
 };
 
 /*
- * The texture groups we support.
+ * The groups in the "generic texture" database.
  */
-
-enum class CloudTextureGroups : uint16_t
-{
-    Cloud = 0,
-
-    _Last = Cloud
-};
-
-enum class WorldTextureGroups : uint16_t
-{
-    Land = 0,
-    Ocean,
-    WorldBorder,
-
-    _Last = WorldBorder
-};
-
-enum class NoiseTextureGroups : uint16_t
-{
-    Noise = 0,
-
-    _Last = Noise
-};
-
 enum class GenericTextureGroups : uint16_t
 {
     AirBubble = 0,
@@ -342,13 +318,6 @@ enum class GenericTextureGroups : uint16_t
     TimerBombFuse,
 
     _Last = TimerBombFuse
-};
-
-enum class ExplosionTextureGroups : uint16_t
-{
-    Explosion = 0,
-
-    _Last = Explosion
 };
 
 /*
