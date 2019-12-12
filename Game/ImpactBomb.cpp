@@ -98,7 +98,7 @@ void ImpactBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::ImpactBomb, 0),
+                TextureFrameId(GenericTextureGroups::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,

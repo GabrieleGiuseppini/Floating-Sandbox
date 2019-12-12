@@ -13,8 +13,9 @@
 
 namespace Render {
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
-    TextureGroup const & group,
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
+    TextureGroup<TextureGroups> const & group,
     ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
@@ -22,7 +23,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     AddTextureInfos(group, textureInfos);
 
     // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
+    auto const specification = BuildAtlasSpecification(textureInfos);
 
     // Build atlas
     return BuildAtlas(
@@ -34,8 +35,9 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         progressCallback);
 }
 
-TextureAtlas TextureAtlasBuilder::BuildRegularAtlas(
-    TextureGroup const & group,
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildRegularAtlas(
+    TextureGroup<TextureGroups> const & group,
     ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
@@ -43,43 +45,20 @@ TextureAtlas TextureAtlasBuilder::BuildRegularAtlas(
     AddTextureInfos(group, textureInfos);
 
     // Build specification
-    AtlasSpecification specification = BuildRegularAtlasSpecification(textureInfos);
+    auto const specification = BuildRegularAtlasSpecification(textureInfos);
 
     // Build atlas
     return BuildAtlas(
         specification,
-        [&group](TextureFrameId const & frameId)
+        [&group](TextureFrameId<TextureGroups> const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
         },
         progressCallback);
 }
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
-    TextureDatabase const & database,
-    ProgressCallback const & progressCallback)
-{
-    // Build TextureInfo's
-    std::vector<TextureInfo> textureInfos;
-    for (auto const & group : database.GetGroups())
-    {
-        AddTextureInfos(group, textureInfos);
-    }
-
-    // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
-
-    // Build atlas
-    return BuildAtlas(
-        specification,
-        [&database](TextureFrameId const & frameId)
-        {
-            return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
-        },
-        progressCallback);
-}
-
-TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCallback)
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
     std::vector<TextureInfo> textureInfos;
@@ -91,12 +70,12 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCa
     }
 
     // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
+    auto const specification = BuildAtlasSpecification(textureInfos);
 
     // Build atlas
     return BuildAtlas(
         specification,
-        [this](TextureFrameId const & frameId)
+        [this](TextureFrameId<TextureGroups> const & frameId)
         {
             return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
         },
@@ -105,7 +84,8 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCa
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+template <typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Sort input texture info's by height, from tallest to shortest
@@ -236,7 +216,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
         ImageSize(atlasWidth, atlasHeight));
 }
 
-TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+template <typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Verify frames
@@ -301,9 +282,10 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
         ImageSize(atlasWidth, atlasHeight));
 }
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     AtlasSpecification const & specification,
-    std::function<TextureFrame(TextureFrameId const &)> frameLoader,
+    std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
     float const dx = 0.5f / static_cast<float>(specification.AtlasSize.Width);
@@ -317,7 +299,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
 
     // Copy all textures into image, building metadata at the same time
-    std::vector<TextureAtlasFrameMetadata> frameMetadata;
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> frameMetadata;
     for (auto const & texturePosition : specification.TexturePositions)
     {
         progressCallback(
@@ -325,7 +307,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             "Building texture atlas...");
 
         // Load frame
-        TextureFrame textureFrame = frameLoader(texturePosition.FrameId);
+        TextureFrame<TextureGroups> textureFrame = frameLoader(texturePosition.FrameId);
 
         // Copy frame
         CopyImage(
@@ -367,7 +349,8 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         std::move(atlasImageData));
 }
 
-void TextureAtlasBuilder::CopyImage(
+template <typename TextureGroups>
+void TextureAtlasBuilder<TextureGroups>::CopyImage(
     std::unique_ptr<rgbaColor const []> sourceImage,
     ImageSize sourceImageSize,
     rgbaColor * destImage,

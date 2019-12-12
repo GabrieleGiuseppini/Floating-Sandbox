@@ -161,7 +161,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -176,7 +176,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -186,7 +186,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GenericTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -201,7 +201,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -211,7 +211,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GenericTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,

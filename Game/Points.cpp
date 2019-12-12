@@ -1159,7 +1159,6 @@ void Points::UploadEphemeralParticles(
                 renderContext.UploadShipAirBubble(
                     shipId,
                     GetPlaneId(pointIndex),
-                    TextureFrameId(TextureGroupType::AirBubble, 0),
                     GetPosition(pointIndex),
                     0.3f, // Scale, magic number
                     std::min(1.0f, state.CurrentDeltaY / 4.0f)); // Alpha

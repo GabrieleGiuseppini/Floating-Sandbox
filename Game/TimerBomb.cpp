@@ -227,7 +227,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -237,7 +237,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBombFuse, mFuseFlameFrameIndex),
+                TextureFrameId(GenericTextureGroups::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -259,7 +259,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, FuseLengthStepCount),
+                TextureFrameId(GenericTextureGroups::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
                 1.0,
                 mRotationBaseAxis,
@@ -274,7 +274,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -284,7 +284,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBombDefuse, mDefuseStepCounter),
+                TextureFrameId(GenericTextureGroups::TimerBombDefuse, mDefuseStepCounter),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -299,7 +299,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,

@@ -106,3 +106,5 @@ private:
 };
 
 }
+
+#include "UploadedTextureManager-inl.h"

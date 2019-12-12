@@ -15,6 +15,7 @@
 #include <cassert>
 #include <memory>
 #include <numeric>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -180,7 +181,29 @@ public:
     template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildAtlas(
         TextureDatabase<TextureDatabaseTraits> const & database,
-        ProgressCallback const & progressCallback);
+        ProgressCallback const & progressCallback)
+    {
+        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (auto const & group : database.GetGroups())
+        {
+            AddTextureInfos(group, textureInfos);
+        }
+
+        // Build specification
+        auto const specification = BuildAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            [&database](TextureFrameId<TextureGroups> const & frameId)
+            {
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+            },
+            progressCallback);
+    }
 
 public:
 
@@ -298,3 +321,5 @@ private:
 };
 
 }
+
+#include "TextureAtlas-inl.h"

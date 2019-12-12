@@ -358,22 +358,24 @@ Render:
 							+ ExplosionTextureGroups
 								+ Explosion
 						+ Split jsons
-						= Refactor TextureDatabase
+						+ Refactor TextureDatabase
 							+ Split Textures folder per-DB
-							- See if there's any "element-like" struct for which only the container
+							+ See if there's any "element-like" struct for which only the container
 							  should reference TextureGroups, element might not have to know about its coords
-						- Refactor TextureAtlas
-							- templated on database traits
-							- TextureAtlasBuilder<Traits> has now also static builder method that takes an entire database - TextureDatabase<Traits>
-							- See if there's any "element-like" struct for which only the container
+						+ Refactor TextureAtlas
+							+ Templated on groups
+							+ TextureAtlasBuilder<Traits> has now also static builder method that takes an entire database - TextureDatabase<Traits>
+							+ See if there's any "element-like" struct for which only the container
 							  should reference TextureGroups, element might not have to know about its coords
-						= UploadedTextureManager: also per-groups
+						+ UploadedTextureManager: also per-groups
 						+ RenderContext instantiates different TextureDatabase<Traits>'s
-						- Move non-generic texture groups from GameTypes into RenderCore.h?
-						- Baker tool:
-							- Takes a trait as input						
-					- TODOHERE:
-					- ShipTools: bake_regular_atlas <spec_json> <output_file_stem>
+						+ Unit tests
+						- Commit
+						- Move non-generic texture groups from GameTypes into RenderCore.h						
+						- Check if maymove #inclusion of -inc.h into RenderContext.cpp
+					- Baker tool:
+						- bake_regular_atlas TODOHERE: <spec_json> <output_file_stem>
+						- Takes database name ("Explosion") as input
 					- 2 Files:
 						- AtlasMetadata, binary format TBD:, using TextureAtlas::De/Serialize(folder, stem)
 					- Merge back into 1.14

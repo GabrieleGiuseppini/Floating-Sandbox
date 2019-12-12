@@ -92,11 +92,12 @@ set  (RENDER_SOURCES
 	ShipRenderContext.h
 	TextRenderContext.cpp
 	TextRenderContext.h
-	TextureAtlas.cpp
 	TextureAtlas.h
+	TextureAtlas-inl.h
 	TextureDatabase.h
-	UploadedTextureManager.cpp
+	TextureDatabase-inl.h
 	UploadedTextureManager.h
+	UploadedTextureManager-inl.h
 	ViewModel.h)
 
 source_group(" " FILES ${GAME_SOURCES})

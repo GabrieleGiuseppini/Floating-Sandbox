@@ -9,8 +9,9 @@
 
 namespace Render {
 
-void UploadedTextureManager::UploadNextFrame(
-    TextureGroup const & group,
+template <typename TextureGroups>
+void UploadedTextureManager<TextureGroups>::UploadNextFrame(
+    TextureGroup<TextureGroups> const & group,
     TextureFrameIndex const & frameIndex,
     GLint minFilter)
 {
@@ -20,10 +21,10 @@ void UploadedTextureManager::UploadNextFrame(
     std::vector<FrameData> & frameDataGroup = mFrameData[static_cast<size_t>(group.Group)];
 
     // Get frame specification
-    TextureFrameSpecification const & frameSpec = group.GetFrameSpecification(frameIndex);
+    auto const & frameSpec = group.GetFrameSpecification(frameIndex);
 
     // Load frame
-    TextureFrame frame = frameSpec.LoadFrame();
+    auto frame = frameSpec.LoadFrame();
 
     // Create OpenGL handle
     GLuint openGLHandle;
@@ -58,15 +59,16 @@ void UploadedTextureManager::UploadNextFrame(
         openGLHandle);
 }
 
-void UploadedTextureManager::UploadGroup(
-    TextureGroup const & group,
+template <typename TextureGroups>
+void UploadedTextureManager<TextureGroups>::UploadGroup(
+    TextureGroup<TextureGroups> const & group,
     GLint minFilter,
     ProgressCallback const & progressCallback)
 {
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
 
-    for (TextureFrameSpecification const & frameSpec : group.GetFrameSpecifications())
+    for (auto const & frameSpec : group.GetFrameSpecifications())
     {
         // Upload frame
         UploadNextFrame(
@@ -80,8 +82,9 @@ void UploadedTextureManager::UploadGroup(
     }
 }
 
-void UploadedTextureManager::UploadMipmappedGroup(
-    TextureGroup const & group,
+template <typename TextureGroups>
+void UploadedTextureManager<TextureGroups>::UploadMipmappedGroup(
+    TextureGroup<TextureGroups> const & group,
     GLint minFilter,
     ProgressCallback const & progressCallback)
 {
@@ -93,10 +96,10 @@ void UploadedTextureManager::UploadMipmappedGroup(
     float totalFramesCount = static_cast<float>(group.GetFrameCount());
     float currentFramesCount = 0;
 
-    for (TextureFrameSpecification const & frameSpec : group.GetFrameSpecifications())
+    for (auto const & frameSpec : group.GetFrameSpecifications())
     {
         // Load frame
-        TextureFrame frame = frameSpec.LoadFrame();
+        auto frame = frameSpec.LoadFrame();
 
         // Notify progress
         currentFramesCount += 1.0f;
