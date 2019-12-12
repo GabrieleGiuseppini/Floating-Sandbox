@@ -647,7 +647,7 @@ public:
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
-            TextureGroupType::Cloud,
+            CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
         float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
@@ -1304,7 +1304,6 @@ public:
     inline void UploadShipAirBubble(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float alpha)
@@ -1313,7 +1312,6 @@ public:
 
         mShips[shipId]->UploadAirBubble(
             planeId,
-            textureFrameId,
             position,
             scale,
             alpha);
@@ -1322,7 +1320,7 @@ public:
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1336,7 +1334,7 @@ public:
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
@@ -1358,7 +1356,7 @@ public:
     inline void UploadShipGenericTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angle,
@@ -1784,19 +1782,27 @@ private:
     //
 
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mCloudTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
 
-    std::vector<TextureFrameSpecification> mOceanTextureFrameSpecifications;
+    std::unique_ptr<UploadedTextureManager<WorldTextureGroups>> mUploadedWorldTextureManager;
+
+    std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
     size_t mLoadedOceanTextureIndex;
 
-    std::vector<TextureFrameSpecification> mLandTextureFrameSpecifications;
+    std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
 
-    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mExplosionTextureAtlasMetadata;
+    bool mIsWorldBorderVisible;
 
+    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata<GenericTextureGroups>> mGenericTextureAtlasMetadata;
+
+    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
+
+    std::unique_ptr<UploadedTextureManager<NoiseTextureGroups>> mUploadedNoiseTexturesManager;
 
     //
     // Misc Parameters
@@ -1811,16 +1817,6 @@ private:
     //
 
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;
-
-    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata> mGenericTextureAtlasMetadata;
-
-    //
-    // World border
-    //
-
-    ImageSize mWorldBorderTextureSize;
-    bool mIsWorldBorderVisible;
 
     //
     // HeatBlaster
@@ -1841,7 +1837,6 @@ private:
     //
 
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::unique_ptr<UploadedTextureManager> mUploadedTextureManager;
     std::shared_ptr<TextRenderContext> mTextRenderContext;
 
     //

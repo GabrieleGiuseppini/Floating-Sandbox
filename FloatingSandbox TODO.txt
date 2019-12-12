@@ -358,9 +358,18 @@ Render:
 							+ ExplosionTextureGroups
 								+ Explosion
 						+ Split jsons
-						- Refactor TextureDatabase
-						- TextureAtlasBuilder<Traits> has now static builder method that takes an entire database - TextureDatabase<Traits>
-						- RenderContext instantiates different TextureDatabase<Traits>'s
+						= Refactor TextureDatabase
+							+ Split Textures folder per-DB
+							- See if there's any "element-like" struct for which only the container
+							  should reference TextureGroups, element might not have to know about its coords
+						- Refactor TextureAtlas
+							- templated on database traits
+							- TextureAtlasBuilder<Traits> has now also static builder method that takes an entire database - TextureDatabase<Traits>
+							- See if there's any "element-like" struct for which only the container
+							  should reference TextureGroups, element might not have to know about its coords
+						= UploadedTextureManager: also per-groups
+						+ RenderContext instantiates different TextureDatabase<Traits>'s
+						- Move non-generic texture groups from GameTypes into RenderCore.h?
 						- Baker tool:
 							- Takes a trait as input						
 					- TODOHERE:

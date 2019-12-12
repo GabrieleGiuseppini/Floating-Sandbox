@@ -42,9 +42,9 @@ public:
         ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
-        TextureAtlasMetadata const & explosionTextureAtlasMetadata,
+        TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
-        TextureAtlasMetadata const & genericTextureAtlasMetadata,
+        TextureAtlasMetadata<GenericTextureGroups> const & genericTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float effectiveAmbientLightIntensity,
@@ -583,14 +583,13 @@ public:
 
     inline void UploadAirBubble(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float alpha)
     {
         StoreGenericTextureRenderSpecification(
             planeId,
-            textureFrameId,
+            TextureFrameId<GenericTextureGroups>(GenericTextureGroups::AirBubble, 0),
             position,
             scale,
             0.0f, // angle
@@ -600,7 +599,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
         UploadGenericTextureRenderSpecification(
@@ -614,7 +613,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
@@ -632,7 +631,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -697,7 +696,7 @@ private:
     template<typename TVertexBuffer>
     inline void StoreGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -708,7 +707,7 @@ private:
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+        TextureAtlasFrameMetadata<GenericTextureGroups> const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
         float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
@@ -1056,10 +1055,10 @@ private:
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
 
     GameOpenGLTexture & mExplosionTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata const & mExplosionTextureAtlasMetadata;
+    TextureAtlasMetadata<ExplosionTextureGroups> const & mExplosionTextureAtlasMetadata;
 
     GameOpenGLTexture & mGenericTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata const & mGenericTextureAtlasMetadata;
+    TextureAtlasMetadata<GenericTextureGroups> const & mGenericTextureAtlasMetadata;
 
 private:
 

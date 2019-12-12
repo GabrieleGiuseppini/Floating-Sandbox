@@ -359,14 +359,14 @@ using TextureFrameIndex = std::uint16_t;
 /*
  * The global identifier of a single texture frame.
  */
-template <typename TextureGroupEnum>
+template <typename TextureGroups>
 struct TextureFrameId
 {
-    TextureGroupEnum Group;
+    TextureGroups Group;
     TextureFrameIndex FrameIndex;
 
     TextureFrameId(
-        TextureGroupEnum group,
+        TextureGroups group,
         TextureFrameIndex frameIndex)
         : Group(group)
         , FrameIndex(frameIndex)
@@ -398,10 +398,10 @@ struct TextureFrameId
 
 namespace std {
 
-    template <typename TextureGroupEnum>
-    struct hash<TextureFrameId<TextureGroupEnum>>
+    template <typename TextureGroups>
+    struct hash<TextureFrameId<TextureGroups>>
     {
-        std::size_t operator()(TextureFrameId<TextureGroupEnum> const & frameId) const
+        std::size_t operator()(TextureFrameId<TextureGroups> const & frameId) const
         {
             return std::hash<uint16_t>()(static_cast<uint16_t>(frameId.Group))
                 ^ std::hash<TextureFrameIndex>()(frameId.FrameIndex);

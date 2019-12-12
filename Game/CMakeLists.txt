@@ -94,7 +94,6 @@ set  (RENDER_SOURCES
 	TextRenderContext.h
 	TextureAtlas.cpp
 	TextureAtlas.h
-	TextureDatabase.cpp
 	TextureDatabase.h
 	UploadedTextureManager.cpp
 	UploadedTextureManager.h

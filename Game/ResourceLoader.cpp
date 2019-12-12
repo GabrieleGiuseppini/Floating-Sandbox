@@ -35,7 +35,7 @@ std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetTexturesFilePath() const
+std::filesystem::path ResourceLoader::GetTexturesRootFolderPath() const
 {
     return std::filesystem::path("Data") / "Textures";
 }
