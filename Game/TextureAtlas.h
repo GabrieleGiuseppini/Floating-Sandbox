@@ -7,6 +7,7 @@
 
 #include "TextureDatabase.h"
 
+#include <GameCore/EnumFlags.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
@@ -20,6 +21,12 @@
 #include <vector>
 
 namespace Render {
+
+enum class AtlasOptions
+{
+    None = 0,
+    AlphaPremultiply = 1
+};
 
 /*
  * Metadata about one single frame in an atlas.
@@ -56,8 +63,10 @@ public:
 
     TextureAtlasMetadata(
         ImageSize size,
+        AtlasOptions options,
         std::vector<TextureAtlasFrameMetadata<TextureGroups>> frames)
         : mSize(size)
+        , mOptions(options)
         , mFrameMetadata(frames)
         , mFrameMetadataIndices()
     {
@@ -91,6 +100,11 @@ public:
     ImageSize const & GetSize() const
     {
         return mSize;
+    }
+
+    bool IsAlphaPremultiplied() const
+    {
+        return !!(mOptions & AtlasOptions::AlphaPremultiply);
     }
 
     TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & textureFrameId) const
@@ -130,7 +144,9 @@ public:
 
 private:
 
-    const ImageSize mSize;
+    ImageSize const mSize;
+
+    AtlasOptions const mOptions;
 
     std::vector<TextureAtlasFrameMetadata<TextureGroups>> mFrameMetadata;
 
@@ -165,6 +181,7 @@ public:
      */
     static TextureAtlas<TextureGroups> BuildAtlas(
         TextureGroup<TextureGroups> const & group,
+        AtlasOptions options,
         ProgressCallback const & progressCallback);
 
     /*
@@ -173,6 +190,7 @@ public:
      */
     static TextureAtlas<TextureGroups> BuildRegularAtlas(
         TextureGroup<TextureGroups> const & group,
+        AtlasOptions options,
         ProgressCallback const & progressCallback);
 
     /*
@@ -181,6 +199,7 @@ public:
     template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildAtlas(
         TextureDatabase<TextureDatabaseTraits> const & database,
+        AtlasOptions options,
         ProgressCallback const & progressCallback)
     {
         static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
@@ -198,6 +217,7 @@ public:
         // Build atlas
         return BuildAtlas(
             specification,
+            options,
             [&database](TextureFrameId<TextureGroups> const & frameId)
             {
                 return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
@@ -228,7 +248,9 @@ public:
     /*
      * Builds an atlas for the groups added so far.
      */
-    TextureAtlas<TextureGroups> BuildAtlas(ProgressCallback const & progressCallback);
+    TextureAtlas<TextureGroups> BuildAtlas(
+        AtlasOptions options,
+        ProgressCallback const & progressCallback);
 
 private:
 
@@ -285,6 +307,7 @@ private:
 
     static TextureAtlas<TextureGroups> BuildAtlas(
         AtlasSpecification const & specification,
+        AtlasOptions options,
         std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
         ProgressCallback const & progressCallback);
 
@@ -321,5 +344,7 @@ private:
 };
 
 }
+
+template <> struct is_flag<Render::AtlasOptions> : std::true_type {};
 
 #include "TextureAtlas-inl.h"

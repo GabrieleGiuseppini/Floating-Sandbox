@@ -407,6 +407,7 @@ RenderContext::RenderContext(
     // Create atlas
     auto cloudTextureAtlas = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlas(
         cloudTextureDatabase,
+        AtlasOptions::None,
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback((2.0f + progress * CloudAtlasProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
@@ -531,6 +532,7 @@ RenderContext::RenderContext(
     // Create atlas
     auto genericTextureAtlas = TextureAtlasBuilder<GenericTextureGroups>::BuildAtlas(
         genericTextureDatabase,
+        AtlasOptions::None,
         [&progressCallback](float progress, std::string const & /*message*/)
         {
             progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f + progress * GenericTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
@@ -583,6 +585,7 @@ RenderContext::RenderContext(
     // Create atlas
     TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlasBuilder<ExplosionTextureGroups>::BuildRegularAtlas(
         explosionTextureDatabase.GetGroup(ExplosionTextureGroups::Explosion),
+        AtlasOptions::AlphaPremultiply,
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback(
@@ -592,9 +595,7 @@ RenderContext::RenderContext(
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
 
-    // Pre-multiply by alpha, as the explosion shader requires it
     ImageData atlasData = std::move(explosionTextureAtlas.AtlasData);
-    ImageTools::AlphaPreMultiply(atlasData);
 
     ////// TEST
     ////ImageFileTools::SaveImage(

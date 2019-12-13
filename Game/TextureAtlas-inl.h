@@ -6,6 +6,7 @@
 #include "TextureAtlas.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/SysSpecifics.h>
 
 #include <algorithm>
@@ -16,6 +17,7 @@ namespace Render {
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     TextureGroup<TextureGroups> const & group,
+    AtlasOptions options,
     ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
@@ -28,6 +30,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     // Build atlas
     return BuildAtlas(
         specification,
+        options,
         [&group](TextureFrameId const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
@@ -38,6 +41,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildRegularAtlas(
     TextureGroup<TextureGroups> const & group,
+    AtlasOptions options,
     ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
@@ -50,6 +54,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildRegularAtla
     // Build atlas
     return BuildAtlas(
         specification,
+        options,
         [&group](TextureFrameId<TextureGroups> const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
@@ -58,7 +63,9 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildRegularAtla
 }
 
 template <typename TextureGroups>
-TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(ProgressCallback const & progressCallback)
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
+    AtlasOptions options,
+    ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
     std::vector<TextureInfo> textureInfos;
@@ -75,6 +82,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(Progr
     // Build atlas
     return BuildAtlas(
         specification,
+        options,
         [this](TextureFrameId<TextureGroups> const & frameId)
         {
             return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
@@ -285,6 +293,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     AtlasSpecification const & specification,
+    AtlasOptions options,
     std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
@@ -337,6 +346,12 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
         specification.AtlasSize,
         std::move(atlasImage));
 
+    // Pre-multiply alpha, if requested
+    if (!!(options & AtlasOptions::AlphaPremultiply))
+    {
+        ImageTools::AlphaPreMultiply(atlasImageData);
+    }
+
     progressCallback(
         1.0f,
         "Building texture atlas...");
@@ -345,6 +360,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     return TextureAtlas(
         TextureAtlasMetadata(
             specification.AtlasSize,
+            options,
             frameMetadata),
         std::move(atlasImageData));
 }
