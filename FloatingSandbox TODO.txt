@@ -375,12 +375,12 @@ Render:
 					+ AtlasBuilder: all methods take Options flags = None, AlphaPremultiply
 						+ Also store flags in AtlasMetadata
 					+ Test all texture groups					
-					- Baker tool:
-						- bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
-							- Takes database name ("Explosion") as input
-					- 2 Files, using TextureAtlas::De/Serialize(folder)
-						- AtlasMetadata, json format
-						- Atlas image, png
+					= Baker tool:
+						+ bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
+							+ Takes database name ("Explosion") as input
+						- 2 Files, using TextureAtlas::De/Serialize(folder)
+							- AtlasMetadata, json format
+							- Atlas image, png
 					- Commit
 					- RenderCore -> TextureTypes, ShaderTypes [see moleskine]
 					- Merge back into 1.14

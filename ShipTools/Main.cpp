@@ -96,26 +96,48 @@ int DoAnalyzeShip(int argc, char ** argv)
 
 int DoBakeRegularAtlas(int argc, char ** argv)
 {
-    if (argc < 5)
+    if (argc < 4 || argc > 5)
     {
         PrintUsage();
         return 0;
     }
 
-    std::filesystem::path jsonSpecificationFilePath(argv[2]);
+    std::string const databaseName = argv[1];
+    std::filesystem::path databaseDirectoryPath(argv[2]);
     std::filesystem::path outputDirectoryPath(argv[3]);
-    std::string atlasFilenamesStem(argv[4]);
+    bool doAlphaPremultiply = false;
+
+    for (int i = 4; i < argc; ++i)
+    {
+        std::string option(argv[i]);
+        if (option == "-a")
+        {
+            doAlphaPremultiply = true;
+        }
+        else
+        {
+            throw std::runtime_error("Unrecognized option '" + option + "'");
+        }
+    }
 
     std::cout << SEPARATOR << std::endl;
     std::cout << "Running bake_regular_atlas:" << std::endl;
-    std::cout << "  JSON specification file : " << jsonSpecificationFilePath << std::endl;
+    std::cout << "  database name           : " << databaseName << std::endl;
+    std::cout << "  database directory      : " << databaseDirectoryPath << std::endl;
     std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
-    std::cout << "  atlas filenames' stem   : " << atlasFilenamesStem << std::endl;
+    std::cout << "  alpha-premultiply       : " << doAlphaPremultiply << std::endl;
 
-    Baker::BakeRegularAtlas(
-        jsonSpecificationFilePath,
-        outputDirectoryPath,
-        atlasFilenamesStem);
+    if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
+    {
+        Baker::BakeRegularAtlas<Render::ExplosionTextureGroups>(
+            databaseDirectoryPath,
+            outputDirectoryPath,
+            doAlphaPremultiply);
+    }
+    else
+    {
+        throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
+    }
 
     std::cout << "Baking completed." << std::endl;
 
@@ -219,7 +241,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
-    std::cout << " bake_regular_atlas <json_spec_file> <out_dir> <out_stem>" << std::endl;
+    std::cout << " bake_regular_atlas Explosion <database_dir> <out_dir> [-a]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;
