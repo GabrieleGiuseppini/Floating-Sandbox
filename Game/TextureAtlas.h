@@ -62,6 +62,8 @@ struct TextureAtlasFrameMetadata
     {}
 
     void Serialize(picojson::object & root) const;
+
+    static TextureAtlasFrameMetadata Deserialize(picojson::object const & root);
 };
 
 /*
@@ -75,10 +77,10 @@ public:
     TextureAtlasMetadata(
         ImageSize size,
         AtlasOptions options,
-        std::vector<TextureAtlasFrameMetadata<TextureGroups>> frames)
+        std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames)
         : mSize(size)
         , mOptions(options)
-        , mFrameMetadata(frames)
+        , mFrameMetadata(std::move(frames))
         , mFrameMetadataIndices()
     {
         //
@@ -155,6 +157,8 @@ public:
 
     void Serialize(picojson::object & root) const;
 
+    static TextureAtlasMetadata Deserialize(picojson::object const & root);
+
 private:
 
     ImageSize const mSize;
@@ -182,9 +186,9 @@ public:
     RgbaImageData AtlasData;
 
     TextureAtlas(
-        TextureAtlasMetadata<TextureGroups> const & metadata,
-        RgbaImageData atlasData)
-        : Metadata(metadata)
+        TextureAtlasMetadata<TextureGroups> && metadata,
+        RgbaImageData && atlasData)
+        : Metadata(std::move(metadata))
         , AtlasData(std::move(atlasData))
     {}
 
@@ -198,7 +202,7 @@ public:
 
     static TextureAtlas Deserialize(
         std::string const & databaseName,
-        std::filesystem::path const & databaseDirectoryPath);
+        std::filesystem::path const & databaseRootDirectoryPath);
 
 private:
 

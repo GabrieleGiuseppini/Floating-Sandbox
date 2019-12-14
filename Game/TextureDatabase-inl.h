@@ -26,7 +26,7 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
 
     picojson::object anchorWorld;
     anchorWorld["x"] = picojson::value(static_cast<double>(AnchorWorldX));
-    anchorWorld["i"] = picojson::value(static_cast<double>(AnchorWorldY));
+    anchorWorld["y"] = picojson::value(static_cast<double>(AnchorWorldY));
     root["anchor_world"] = picojson::value(anchorWorld);
 
     picojson::object frameId;
@@ -35,6 +35,41 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
     root["id"] = picojson::value(frameId);
 
     root["name"] = picojson::value(FrameName);
+}
+
+template <typename TextureGroups>
+TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+{
+    picojson::object const & sizeJson = root.at("size").get<picojson::object>();
+    ImageSize size(
+        static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
+        static_cast<int>(sizeJson.at("height").get<std::int64_t>()));
+
+    picojson::object const & worldSizeJson = root.at("world_size").get<picojson::object>();
+    float worldWidth = static_cast<float>(worldSizeJson.at("width").get<double>());
+    float worldHeight = static_cast<float>(worldSizeJson.at("height").get<double>());
+
+    bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
+
+    picojson::object const & anchorWorldJson = root.at("anchor_world").get<picojson::object>();
+    float anchorWorldX = static_cast<float>(anchorWorldJson.at("x").get<double>());
+    float anchorWorldY = static_cast<float>(anchorWorldJson.at("y").get<double>());
+
+    picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
+    TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
+    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
+
+    std::string const & name = root.at("name").get<std::string>();
+
+    return TextureFrameMetadata<TextureGroups>(
+        size,
+        worldWidth,
+        worldHeight,
+        hasOwnAmbientLight,
+        anchorWorldX,
+        anchorWorldY,
+        TextureFrameId<TextureGroups>(group, frameIndex),
+        name);
 }
 
 template <typename TextureDatabaseTraits>

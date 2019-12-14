@@ -375,16 +375,18 @@ Render:
 					+ AtlasBuilder: all methods take Options flags = None, AlphaPremultiply
 						+ Also store flags in AtlasMetadata
 					+ Test all texture groups					
-					= Baker tool:
+					+ Baker tool:
 						+ bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
 							+ Takes database name ("Explosion") as input
-						= 2 Files, using TextureAtlas::De/Serialize(folder)
+						+ 2 Files, using TextureAtlas::De/Serialize(folder)
 							+ AtlasMetadata, json format
 							+ Atlas image, png
-							- Deserialize
-							- See if need to do binary serialization
+							+ Deserialize
+							+ See if need to do binary serialization
 					- Commit
-					- RenderCore -> TextureTypes, ShaderTypes [see moleskine]
+					- RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
+					- See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at TextureTypes.cpp
+						- https://stackoverflow.com/questions/26247711/how-to-use-explicit-template-instantiation-to-reduce-compilation-time
 					- Merge back into 1.14
 				- BombExplosionBlastForce: new parameter, Newton
 					- Each bomb then adjusts on it (75%, 100%, 125%)

@@ -65,6 +65,11 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
     return ImageSize(width, height);
 }
 
+RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepath)
+{
+    return LoadImageRgbaLowerLeft(filepath);
+}
+
 RgbaImageData ImageFileTools::LoadImageRgbaLowerLeft(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbaColor>(

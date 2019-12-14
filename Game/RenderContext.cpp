@@ -578,20 +578,18 @@ RenderContext::RenderContext(
     // Initialize explosions texture atlas
     //
 
-    // Load texture database
-    auto explosionTextureDatabase = TextureDatabase<Render::ExplosionTextureDatabaseTraits>::Load(
+    progressCallback(
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
+            + GenericTextureAtlasProgressSteps + 0.0f) / TotalProgressSteps, "Loading explosion textures...");
+
+    // Load atlas
+    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
+        ExplosionTextureDatabaseTraits::DatabaseName,
         resourceLoader.GetTexturesRootFolderPath());
 
-    // Create atlas
-    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlasBuilder<ExplosionTextureGroups>::BuildRegularAtlas(
-        explosionTextureDatabase,
-        AtlasOptions::AlphaPremultiply,
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback(
-                (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
-                 + GenericTextureAtlasProgressSteps + progress * ExplosionAtlasProgressSteps) / TotalProgressSteps, "Loading explosion textures...");
-        });
+    progressCallback(
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
+            + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps) / TotalProgressSteps, "Loading explosion textures...");
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
 

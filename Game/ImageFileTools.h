@@ -17,6 +17,7 @@ public:
 
     static ImageSize GetImageSize(std::filesystem::path const & filepath);
 
+    static RgbaImageData LoadImageRgba(std::filesystem::path const & filepath);
     static RgbaImageData LoadImageRgbaLowerLeft(std::filesystem::path const & filepath);
     static RgbImageData LoadImageRgbLowerLeft(std::filesystem::path const & filepath);
     static RgbaImageData LoadImageRgbaLowerLeftAndMagnify(std::filesystem::path const & filepath, int magnificationFactor);

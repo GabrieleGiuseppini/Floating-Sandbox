@@ -31,14 +31,40 @@ void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root
     textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
     root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
 
-    picojson::object framePixelCoordinates;
-    framePixelCoordinates["left"] = picojson::value(static_cast<int64_t>(FrameLeftX));
-    framePixelCoordinates["bottom"] = picojson::value(static_cast<int64_t>(FrameBottomY));
-    root["frame_coordinates"] = picojson::value(std::move(framePixelCoordinates));
+    picojson::object frameCoordinates;
+    frameCoordinates["left"] = picojson::value(static_cast<int64_t>(FrameLeftX));
+    frameCoordinates["bottom"] = picojson::value(static_cast<int64_t>(FrameBottomY));
+    root["frame_coordinates"] = picojson::value(std::move(frameCoordinates));
 
     picojson::object frameMetadata;
     FrameMetadata.Serialize(frameMetadata);
     root["frame"] = picojson::value(std::move(frameMetadata));
+}
+
+template <typename TextureGroups>
+TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+{
+    picojson::object const & textureCoordinatesJson = root.at("texture_coordinates").get<picojson::object>();
+    vec2f textureCoordinatesBottomLeft(
+        static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("bottom").get<double>()));
+    vec2f textureCoordinatesTopRight(
+        static_cast<float>(textureCoordinatesJson.at("right").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("top").get<double>()));
+
+    picojson::object const & frameCoordinatesJson = root.at("frame_coordinates").get<picojson::object>();
+    int frameLeftX = static_cast<int>(frameCoordinatesJson.at("left").get<std::int64_t>());
+    int frameBottomY = static_cast<int>(frameCoordinatesJson.at("bottom").get<std::int64_t>());
+
+    picojson::object const & frameMetadataJson = root.at("frame").get<picojson::object>();
+    TextureFrameMetadata<TextureGroups> frameMetadata = TextureFrameMetadata<TextureGroups>::Deserialize(frameMetadataJson);
+
+    return TextureAtlasFrameMetadata<TextureGroups>(
+        textureCoordinatesBottomLeft,
+        textureCoordinatesTopRight,
+        frameLeftX,
+        frameBottomY,
+        frameMetadata);
 }
 
 template <typename TextureGroups>
@@ -60,6 +86,30 @@ void TextureAtlasMetadata<TextureGroups>::Serialize(picojson::object & root) con
     }
 
     root["frames"] = picojson::value(std::move(frames));
+}
+
+template <typename TextureGroups>
+TextureAtlasMetadata<TextureGroups> TextureAtlasMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+{
+    picojson::object const & sizeJson = root.at("size").get<picojson::object>();
+    ImageSize size(
+        static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
+        static_cast<int>(sizeJson.at("height").get<std::int64_t>()));
+
+    AtlasOptions options = static_cast<AtlasOptions>(root.at("options").get<std::int64_t>());
+
+    picojson::array const & framesJson = root.at("frames").get<picojson::array>();
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> frames;
+    for (auto const & frameJsonValue : framesJson)
+    {
+        picojson::object const & frameJson = frameJsonValue.get<picojson::object>();
+        frames.push_back(TextureAtlasFrameMetadata<TextureGroups>::Deserialize(frameJson));
+    }
+
+    return TextureAtlasMetadata<TextureGroups>(
+        size,
+        options,
+        std::move(frames));
 }
 
 template <typename TextureGroups>
@@ -88,9 +138,30 @@ void TextureAtlas<TextureGroups>::Serialize(
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
     std::string const & databaseName,
-    std::filesystem::path const & databaseDirectoryPath)
+    std::filesystem::path const & databaseRootDirectoryPath)
 {
-    // TODOHERE
+    //
+    // Metadata
+    //
+
+    std::filesystem::path const metadataFilePath = databaseRootDirectoryPath / "Atlases" / MakeMetadataFilename(databaseName);
+    picojson::value metadataJsonValue = Utils::ParseJSONFile(metadataFilePath);
+    if (!metadataJsonValue.is<picojson::object>())
+    {
+        throw GameException("Atlas metadata json is not an object");
+    }
+
+    picojson::object const & metadataJson = metadataJsonValue.get<picojson::object>();
+    TextureAtlasMetadata<TextureGroups> metadata = TextureAtlasMetadata<TextureGroups>::Deserialize(metadataJson);
+
+    //
+    // Image
+    //
+
+    std::filesystem::path const imageFilePath = databaseRootDirectoryPath / "Atlases" / MakeImageFilename(databaseName);
+    RgbaImageData atlasData = ImageFileTools::LoadImageRgba(imageFilePath);
+
+    return TextureAtlas<TextureGroups>(std::move(metadata), std::move(atlasData));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,11 +487,11 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
         "Building texture atlas...");
 
     // Return atlas
-    return TextureAtlas(
-        TextureAtlasMetadata(
+    return TextureAtlas<TextureGroups>(
+        TextureAtlasMetadata<TextureGroups>(
             specification.AtlasSize,
             options,
-            frameMetadata),
+            std::move(frameMetadata)),
         std::move(atlasImageData));
 }
 

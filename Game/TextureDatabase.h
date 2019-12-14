@@ -79,6 +79,8 @@ struct TextureFrameMetadata
     {}
 
     void Serialize(picojson::object & root) const;
+
+    static TextureFrameMetadata Deserialize(picojson::object const & root);
 };
 
 template <typename TextureGroups>
