@@ -231,8 +231,7 @@ Render:
 				+ About box: "Alex di Roma", No URL
 		+ RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
 		+ Randomize flames' wind bend with personality seed
-
-		= New explosions:
+		+ New explosions:
 			+ Shader:
 				+ Take frames out of 4K video
 				+ Make 16 textures
@@ -332,7 +331,7 @@ Render:
 									+ Swap explosions 3 and 4
 							+ Struct, VAO
 							+ Shader
-			= Cleanup:
+			+ Cleanup:
 				+ Complete IShipPhysicsHandler
 					+ Move "structure handlers" into it
 					+ Register IShipPhysicsHandler with each container
@@ -393,7 +392,7 @@ Render:
 				+ BombExplosionBlastForceAdjustment: new parameter
 					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
 				+ Do explosion notification at Impact bomb
-				- Merge back into 1.14
+				+ Merge back into 1.14
 
 		- Merge into master
 
