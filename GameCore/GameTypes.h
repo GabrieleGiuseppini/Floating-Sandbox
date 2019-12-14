@@ -301,32 +301,17 @@ enum class ShipFlameRenderMode
 };
 
 /*
- * The groups in the "generic texture" database.
- */
-enum class GenericTextureGroups : uint16_t
-{
-    AirBubble = 0,
-    AntiMatterBombArmor,
-    AntiMatterBombSphere,
-    AntiMatterBombSphereCloud,
-    ImpactBomb,
-    PinnedPoint,
-    RcBomb,
-    RcBombPing,
-    TimerBomb,
-    TimerBombDefuse,
-    TimerBombFuse,
-
-    _Last = TimerBombFuse
-};
-
-/*
  * The index of a single texture frame in a group of textures.
  */
 using TextureFrameIndex = std::uint16_t;
 
 /*
  * The global identifier of a single texture frame.
+ *
+ * The identifier of a frame is hierarchical:
+ * - A group, identified by a value of the enum that
+ *   this identifier is templated on
+ * - The index of the frame in that group
  */
 template <typename TextureGroups>
 struct TextureFrameId

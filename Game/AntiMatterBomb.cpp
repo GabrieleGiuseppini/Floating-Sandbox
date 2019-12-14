@@ -296,7 +296,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -307,7 +307,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -318,7 +318,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,
@@ -333,7 +333,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -344,7 +344,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -355,7 +355,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,
@@ -370,7 +370,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -381,7 +381,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -392,7 +392,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(GenericTextureGroups::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,

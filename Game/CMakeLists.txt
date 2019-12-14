@@ -86,12 +86,14 @@ set  (RENDER_SOURCES
 	Font.h
 	RenderContext.cpp
 	RenderContext.h
-	RenderCore.cpp
-	RenderCore.h
+	RenderTypes.h
+	ShaderTypes.cpp
+	ShaderTypes.h
 	ShipRenderContext.cpp
 	ShipRenderContext.h
 	TextRenderContext.cpp
 	TextRenderContext.h
+	TextureTypes.h
 	TextureAtlas.h
 	TextureAtlas-inl.h
 	TextureDatabase.h

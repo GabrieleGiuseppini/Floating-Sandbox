@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
 #include "TextureDatabase.h"
 
 #include <GameOpenGL/GameOpenGL.h>

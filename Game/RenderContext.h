@@ -5,12 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
+#include "RenderTypes.h"
 #include "ResourceLoader.h"
+#include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "ShipRenderContext.h"
 #include "TextRenderContext.h"
 #include "TextureAtlas.h"
+#include "TextureTypes.h"
 #include "UploadedTextureManager.h"
 #include "ViewModel.h"
 

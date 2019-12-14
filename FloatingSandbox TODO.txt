@@ -383,14 +383,20 @@ Render:
 							+ Atlas image, png
 							+ Deserialize
 							+ See if need to do binary serialization
-					- Commit
-					- RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
-					- See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at TextureTypes.cpp
+					+ RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
+					- See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at 
+					  TextureDatabase/TextureAtlas.cpp
+						- ...which include TextureTypes.h
+						- Move back as many methods from .h to .cpp
 						- https://stackoverflow.com/questions/26247711/how-to-use-explicit-template-instantiation-to-reduce-compilation-time
 					- Merge back into 1.14
-				- BombExplosionBlastForce: new parameter, Newton
-					- Each bomb then adjusts on it (75%, 100%, 125%)
+				- BombExplosionBlastForceAdjustment: new parameter
+					- Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
 					- Settings Dialog
+
+		- picojson replacement
+
+		- Merge into master
 
 		- Rain wetting exposed parts
 			- Every leaking point, that is overwater, gets water in from rain density

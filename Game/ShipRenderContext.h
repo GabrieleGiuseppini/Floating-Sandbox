@@ -5,9 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
+#include "RenderTypes.h"
+#include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
+#include "TextureTypes.h"
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>

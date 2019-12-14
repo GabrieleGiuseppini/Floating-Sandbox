@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
+#include "RenderTypes.h"
 #include "ResourceLoader.h"
 
 #include <GameCore/ImageData.h>

@@ -3,7 +3,7 @@
 * Created:              2018-10-08
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "RenderCore.h"
+#include "ShaderTypes.h"
 
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>

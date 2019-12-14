@@ -6,8 +6,8 @@
 #pragma once
 
 #include "Font.h"
-#include "RenderCore.h"
 #include "ResourceLoader.h"
+#include "ShaderTypes.h"
 
 #include <GameOpenGL/ShaderManager.h>
 
@@ -24,12 +24,12 @@ namespace Render
 {
 
 /*
- * This class implements the state of text rendering, 
+ * This class implements the state of text rendering,
  * and provides primitives to manipulate the state.
  *
  * The class reasons in screen coordinates. We stick to screen coordinates
- * (one font pixel is one screen pixel) as the font doesn't look nice when 
- * scaled up or down and using a cheap texture filtering. 
+ * (one font pixel is one screen pixel) as the font doesn't look nice when
+ * scaled up or down and using a cheap texture filtering.
  */
 class TextRenderContext
 {
@@ -73,7 +73,7 @@ public:
 	{
 		RenderedTextHandle handle = ++mLastRenderedTextHandle;
 
-		// Store text		
+		// Store text
 		mLines.emplace_back(
 			std::make_unique<TextLine>(
 				handle,
