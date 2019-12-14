@@ -9,6 +9,34 @@
 
 namespace Render {
 
+template <typename TextureGroups>
+void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
+{
+    picojson::object size;
+    size["width"] = picojson::value(static_cast<int64_t>(Size.Width));
+    size["height"] = picojson::value(static_cast<int64_t>(Size.Height));
+    root["size"] = picojson::value(size);
+
+    picojson::object worldSize;
+    worldSize["width"] = picojson::value(static_cast<double>(WorldWidth));
+    worldSize["height"] = picojson::value(static_cast<double>(WorldHeight));
+    root["world_size"] = picojson::value(worldSize);
+
+    root["has_own_ambient_light"] = picojson::value(HasOwnAmbientLight);
+
+    picojson::object anchorWorld;
+    anchorWorld["x"] = picojson::value(static_cast<double>(AnchorWorldX));
+    anchorWorld["i"] = picojson::value(static_cast<double>(AnchorWorldY));
+    root["anchor_world"] = picojson::value(anchorWorld);
+
+    picojson::object frameId;
+    frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
+    frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
+    root["id"] = picojson::value(frameId);
+
+    root["name"] = picojson::value(FrameName);
+}
+
 template <typename TextureDatabaseTraits>
 TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::Load(std::filesystem::path const & texturesRootFolderPath)
 {

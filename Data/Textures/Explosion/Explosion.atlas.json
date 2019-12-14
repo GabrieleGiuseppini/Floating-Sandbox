@@ -1,0 +1,2057 @@
+{
+  "frames": [
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 0,
+          "group": 0
+        },
+        "name": "0",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 1,
+          "group": 0
+        },
+        "name": "1",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 2,
+          "group": 0
+        },
+        "name": "2",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 3,
+          "group": 0
+        },
+        "name": "3",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 4,
+          "group": 0
+        },
+        "name": "4",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 5,
+          "group": 0
+        },
+        "name": "5",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 6,
+          "group": 0
+        },
+        "name": "6",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 7,
+          "group": 0
+        },
+        "name": "7",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 0,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.0001220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.1248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 8,
+          "group": 0
+        },
+        "name": "8",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 9,
+          "group": 0
+        },
+        "name": "9",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 10,
+          "group": 0
+        },
+        "name": "10",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 11,
+          "group": 0
+        },
+        "name": "11",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 12,
+          "group": 0
+        },
+        "name": "12",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 13,
+          "group": 0
+        },
+        "name": "13",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 14,
+          "group": 0
+        },
+        "name": "14",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 15,
+          "group": 0
+        },
+        "name": "15",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.1251220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.2498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 16,
+          "group": 0
+        },
+        "name": "16",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 17,
+          "group": 0
+        },
+        "name": "17",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 18,
+          "group": 0
+        },
+        "name": "18",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 19,
+          "group": 0
+        },
+        "name": "19",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 20,
+          "group": 0
+        },
+        "name": "20",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 21,
+          "group": 0
+        },
+        "name": "21",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 22,
+          "group": 0
+        },
+        "name": "22",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 23,
+          "group": 0
+        },
+        "name": "23",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1024,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.2501220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.3748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 24,
+          "group": 0
+        },
+        "name": "24",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 25,
+          "group": 0
+        },
+        "name": "25",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 26,
+          "group": 0
+        },
+        "name": "26",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 27,
+          "group": 0
+        },
+        "name": "27",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 28,
+          "group": 0
+        },
+        "name": "28",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 29,
+          "group": 0
+        },
+        "name": "29",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 30,
+          "group": 0
+        },
+        "name": "30",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 31,
+          "group": 0
+        },
+        "name": "31",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 1536,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.3751220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.4998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 32,
+          "group": 0
+        },
+        "name": "32",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 33,
+          "group": 0
+        },
+        "name": "33",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 34,
+          "group": 0
+        },
+        "name": "34",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 35,
+          "group": 0
+        },
+        "name": "35",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 36,
+          "group": 0
+        },
+        "name": "36",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 37,
+          "group": 0
+        },
+        "name": "37",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 38,
+          "group": 0
+        },
+        "name": "38",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 39,
+          "group": 0
+        },
+        "name": "39",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2048,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.5001220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.6248779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 40,
+          "group": 0
+        },
+        "name": "40",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 41,
+          "group": 0
+        },
+        "name": "41",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 42,
+          "group": 0
+        },
+        "name": "42",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 43,
+          "group": 0
+        },
+        "name": "43",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 44,
+          "group": 0
+        },
+        "name": "44",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 45,
+          "group": 0
+        },
+        "name": "45",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 46,
+          "group": 0
+        },
+        "name": "46",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 47,
+          "group": 0
+        },
+        "name": "47",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 2560,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.6251220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.7498779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 48,
+          "group": 0
+        },
+        "name": "48",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 49,
+          "group": 0
+        },
+        "name": "49",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 50,
+          "group": 0
+        },
+        "name": "50",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 51,
+          "group": 0
+        },
+        "name": "51",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 52,
+          "group": 0
+        },
+        "name": "52",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 53,
+          "group": 0
+        },
+        "name": "53",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 54,
+          "group": 0
+        },
+        "name": "54",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 55,
+          "group": 0
+        },
+        "name": "55",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3072,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.7501220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.8748779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 56,
+          "group": 0
+        },
+        "name": "56",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 0
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.0001220703125,
+        "right": 0.1248779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 57,
+          "group": 0
+        },
+        "name": "57",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.1251220703125,
+        "right": 0.2498779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 58,
+          "group": 0
+        },
+        "name": "58",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 1024
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.2501220703125,
+        "right": 0.3748779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 59,
+          "group": 0
+        },
+        "name": "59",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 1536
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.3751220703125,
+        "right": 0.4998779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 60,
+          "group": 0
+        },
+        "name": "60",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 2048
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.5001220703125,
+        "right": 0.6248779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 61,
+          "group": 0
+        },
+        "name": "61",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 2560
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.6251220703125,
+        "right": 0.7498779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 62,
+          "group": 0
+        },
+        "name": "62",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 3072
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.7501220703125,
+        "right": 0.8748779296875,
+        "top": 0.9998779296875
+      }
+    },
+    {
+      "frame": {
+        "anchor_world": {
+          "i": 256,
+          "x": 256
+        },
+        "has_own_ambient_light": true,
+        "id": {
+          "frameIndex": 63,
+          "group": 0
+        },
+        "name": "63",
+        "size": {
+          "height": 512,
+          "width": 512
+        },
+        "world_size": {
+          "height": 512,
+          "width": 512
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 3584,
+        "left": 3584
+      },
+      "texture_coordinates": {
+        "bottom": 0.8751220703125,
+        "left": 0.8751220703125,
+        "right": 0.9998779296875,
+        "top": 0.9998779296875
+      }
+    }
+  ],
+  "options": 1,
+  "size": {
+    "height": 4096,
+    "width": 4096
+  }
+}

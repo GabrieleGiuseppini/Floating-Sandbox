@@ -12,8 +12,11 @@
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
 
+#include <picojson.h>
+
 #include <algorithm>
 #include <cassert>
+#include <filesystem>
 #include <memory>
 #include <numeric>
 #include <type_traits>
@@ -22,6 +25,9 @@
 
 namespace Render {
 
+/*
+ * Atlas creation options.
+ */
 enum class AtlasOptions
 {
     None = 0,
@@ -29,7 +35,7 @@ enum class AtlasOptions
 };
 
 /*
- * Metadata about one single frame in an atlas.
+ * Metadata about one single frame in a texture atlas.
  */
 template <typename TextureGroups>
 struct TextureAtlasFrameMetadata
@@ -54,8 +60,13 @@ struct TextureAtlasFrameMetadata
         , FrameBottomY(frameBottomY)
         , FrameMetadata(frameMetadata)
     {}
+
+    void Serialize(picojson::object & root) const;
 };
 
+/*
+ * Metadata about a whole texture atlas.
+ */
 template <typename TextureGroups>
 class TextureAtlasMetadata
 {
@@ -142,6 +153,8 @@ public:
         return maxDimension;
     }
 
+    void Serialize(picojson::object & root) const;
+
 private:
 
     ImageSize const mSize;
@@ -154,9 +167,14 @@ private:
     std::vector<std::vector<size_t>> mFrameMetadataIndices;
 };
 
+/*
+ * A texture atlas.
+ */
 template <typename TextureGroups>
 struct TextureAtlas
 {
+public:
+
     // Metadata
     TextureAtlasMetadata<TextureGroups> Metadata;
 
@@ -169,6 +187,30 @@ struct TextureAtlas
         : Metadata(metadata)
         , AtlasData(std::move(atlasData))
     {}
+
+    //
+    // De/Serialization
+    //
+
+    void Serialize(
+        std::string const & databaseName,
+        std::filesystem::path const & outputDirectoryPath) const;
+
+    static TextureAtlas Deserialize(
+        std::string const & databaseName,
+        std::filesystem::path const & databaseDirectoryPath);
+
+private:
+
+    static std::filesystem::path MakeMetadataFilename(std::string const & databaseName)
+    {
+        return databaseName + ".atlas.json";
+    }
+
+    static std::filesystem::path MakeImageFilename(std::string const & databaseName)
+    {
+        return databaseName + ".atlas.png";
+    }
 };
 
 template <typename TextureGroups>
@@ -185,13 +227,37 @@ public:
         ProgressCallback const & progressCallback);
 
     /*
-     * Builds an atlas with the specified group, composed of a power of two number of
+     * Builds an atlas with the specified database, composed of a power of two number of
      * frames with identical sizes.
      */
+    template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildRegularAtlas(
-        TextureGroup<TextureGroups> const & group,
+        TextureDatabase<TextureDatabaseTraits> const & database,
         AtlasOptions options,
-        ProgressCallback const & progressCallback);
+        ProgressCallback const & progressCallback)
+    {
+        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (auto const & group : database.GetGroups())
+        {
+            AddTextureInfos(group, textureInfos);
+        }
+
+        // Build specification
+        auto const specification = BuildRegularAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            options,
+            [&database](TextureFrameId<TextureGroups> const & frameId)
+            {
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+            },
+            progressCallback);
+    }
 
     /*
      * Builds an atlas with the entire content of the specified database.

@@ -378,9 +378,11 @@ Render:
 					= Baker tool:
 						+ bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
 							+ Takes database name ("Explosion") as input
-						- 2 Files, using TextureAtlas::De/Serialize(folder)
-							- AtlasMetadata, json format
-							- Atlas image, png
+						= 2 Files, using TextureAtlas::De/Serialize(folder)
+							+ AtlasMetadata, json format
+							+ Atlas image, png
+							- Deserialize
+							- See if need to do binary serialization
 					- Commit
 					- RenderCore -> TextureTypes, ShaderTypes [see moleskine]
 					- Merge back into 1.14

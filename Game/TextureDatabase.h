@@ -20,6 +20,8 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/Utils.h>
 
+#include <picojson.h>
+
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
@@ -75,6 +77,8 @@ struct TextureFrameMetadata
         , FrameId(frameId)
         , FrameName(frameName)
     {}
+
+    void Serialize(picojson::object & root) const;
 };
 
 template <typename TextureGroups>

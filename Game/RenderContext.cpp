@@ -584,7 +584,7 @@ RenderContext::RenderContext(
 
     // Create atlas
     TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlasBuilder<ExplosionTextureGroups>::BuildRegularAtlas(
-        explosionTextureDatabase.GetGroup(ExplosionTextureGroups::Explosion),
+        explosionTextureDatabase,
         AtlasOptions::AlphaPremultiply,
         [&progressCallback](float progress, std::string const &)
         {
@@ -594,16 +594,6 @@ RenderContext::RenderContext(
         });
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
-
-    ImageData atlasData = std::move(explosionTextureAtlas.AtlasData);
-
-    ////// TEST
-    ////ImageFileTools::SaveImage(
-    ////    "C:\\Users\\Neurodancer\\Desktop\\ExplosionAtlas_rgb.png",
-    ////    ImageTools::ToRgb(atlasData));
-    ////ImageFileTools::SaveImage(
-    ////    "C:\\Users\\Neurodancer\\Desktop\\ExplosionAtlas_alpha.png",
-    ////    ImageTools::ToAlpha(atlasData));
 
     // Activate texture
     mShaderManager->ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
@@ -617,7 +607,7 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(atlasData));
+    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
 
     // Set repeat mode - we want to clamp, to leverage the fact that
     // all frames are perfectly transparent at the edges

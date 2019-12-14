@@ -6,8 +6,10 @@
 
 #include <Game/RenderCore.h>
 #include <Game/TextureAtlas.h>
+#include <Game/TextureDatabase.h>
 
 #include <filesystem>
+#include <iostream>
 #include <string>
 
 class Baker
@@ -16,13 +18,13 @@ public:
 
     template <typename TextureDatabaseTraits>
     static void BakeRegularAtlas(
-        std::filesystem::path const & databaseDirectoryPath,
+        std::filesystem::path const & databaseRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
         bool doAlphaPremultiply)
     {
-        if (!std::filesystem::exists(databaseDirectoryPath))
+        if (!std::filesystem::exists(databaseRootDirectoryPath))
         {
-            throw std::runtime_error("Database directory '" + databaseDirectoryPath.string() + "' does not exist");
+            throw std::runtime_error("Database root directory '" + databaseRootDirectoryPath.string() + "' does not exist");
         }
 
         if (!std::filesystem::exists(outputDirectoryPath))
@@ -31,17 +33,27 @@ public:
         }
 
         // Load database
-        auto textureDatabase = TextureDatabase<TextureDatabaseTraits>::Load(
-            databaseDirectoryPath);
+        auto textureDatabase = Render::TextureDatabase<TextureDatabaseTraits>::Load(
+            databaseRootDirectoryPath);
+
 
         // Create atlas
-        auto textureAtlas = TextureAtlasBuilder<TextureDatabaseTraits::TextureGroups>::BuildAtlas(
+
+        std::cout << "Creating atlas..";
+
+        auto textureAtlas = Render::TextureAtlasBuilder<TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
             textureDatabase,
             doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
-            [&progressCallback](float, std::string const &)
+            [](float, std::string const &)
             {
+                std::cout << ".";
             });
 
-        // TODOHERE
+        std::cout << std::endl;
+
+        // Serialize atlas
+        textureAtlas.Serialize(
+            TextureDatabaseTraits::DatabaseName,
+            outputDirectoryPath);
     }
 };

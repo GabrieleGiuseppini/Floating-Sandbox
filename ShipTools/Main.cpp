@@ -96,18 +96,18 @@ int DoAnalyzeShip(int argc, char ** argv)
 
 int DoBakeRegularAtlas(int argc, char ** argv)
 {
-    if (argc < 4 || argc > 5)
+    if (argc < 5 || argc > 6)
     {
         PrintUsage();
         return 0;
     }
 
-    std::string const databaseName = argv[1];
-    std::filesystem::path databaseDirectoryPath(argv[2]);
-    std::filesystem::path outputDirectoryPath(argv[3]);
+    std::string const databaseName = argv[2];
+    std::filesystem::path databaseRootDirectoryPath(argv[3]);
+    std::filesystem::path outputDirectoryPath(argv[4]);
     bool doAlphaPremultiply = false;
 
-    for (int i = 4; i < argc; ++i)
+    for (int i = 5; i < argc; ++i)
     {
         std::string option(argv[i]);
         if (option == "-a")
@@ -123,14 +123,14 @@ int DoBakeRegularAtlas(int argc, char ** argv)
     std::cout << SEPARATOR << std::endl;
     std::cout << "Running bake_regular_atlas:" << std::endl;
     std::cout << "  database name           : " << databaseName << std::endl;
-    std::cout << "  database directory      : " << databaseDirectoryPath << std::endl;
+    std::cout << "  database root directory : " << databaseRootDirectoryPath << std::endl;
     std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
     std::cout << "  alpha-premultiply       : " << doAlphaPremultiply << std::endl;
 
     if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        Baker::BakeRegularAtlas<Render::ExplosionTextureGroups>(
-            databaseDirectoryPath,
+        Baker::BakeRegularAtlas<Render::ExplosionTextureDatabaseTraits>(
+            databaseRootDirectoryPath,
             outputDirectoryPath,
             doAlphaPremultiply);
     }

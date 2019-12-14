@@ -5,14 +5,97 @@
 ***************************************************************************************/
 #include "TextureAtlas.h"
 
+#include "ImageFileTools.h"
+
 #include <GameCore/GameException.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/SysSpecifics.h>
+#include <GameCore/Utils.h>
 
 #include <algorithm>
 #include <cstring>
 
 namespace Render {
+
+////////////////////////////////////////////////////////////////////////////////
+// Atlas
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename TextureGroups>
+void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
+{
+    picojson::object textureCoordinates;
+    textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
+    textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
+    textureCoordinates["right"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.x));
+    textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
+    root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
+
+    picojson::object framePixelCoordinates;
+    framePixelCoordinates["left"] = picojson::value(static_cast<int64_t>(FrameLeftX));
+    framePixelCoordinates["bottom"] = picojson::value(static_cast<int64_t>(FrameBottomY));
+    root["frame_coordinates"] = picojson::value(std::move(framePixelCoordinates));
+
+    picojson::object frameMetadata;
+    FrameMetadata.Serialize(frameMetadata);
+    root["frame"] = picojson::value(std::move(frameMetadata));
+}
+
+template <typename TextureGroups>
+void TextureAtlasMetadata<TextureGroups>::Serialize(picojson::object & root) const
+{
+    picojson::object size;
+    size["width"] = picojson::value(static_cast<std::int64_t>(mSize.Width));
+    size["height"] = picojson::value(static_cast<std::int64_t>(mSize.Height));
+    root["size"] = picojson::value(size);
+
+    root["options"] = picojson::value(static_cast<std::int64_t>(mOptions));
+
+    picojson::array frames;
+    for (auto const & frameMetadata : mFrameMetadata)
+    {
+        picojson::object frame;
+        frameMetadata.Serialize(frame);
+        frames.push_back(picojson::value(std::move(frame)));
+    }
+
+    root["frames"] = picojson::value(std::move(frames));
+}
+
+template <typename TextureGroups>
+void TextureAtlas<TextureGroups>::Serialize(
+    std::string const & databaseName,
+    std::filesystem::path const & outputDirectoryPath) const
+{
+    //
+    // Metadata
+    //
+
+    picojson::object metadataJson;
+    Metadata.Serialize(metadataJson);
+
+    std::filesystem::path const metadataFilePath = outputDirectoryPath / MakeMetadataFilename(databaseName);
+    Utils::SaveJSONFile(picojson::value(metadataJson), metadataFilePath);
+
+    //
+    // Image
+    //
+
+    std::filesystem::path const imageFilePath = outputDirectoryPath / MakeImageFilename(databaseName);
+    ImageFileTools::SaveImage(imageFilePath, AtlasData);
+}
+
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
+    std::string const & databaseName,
+    std::filesystem::path const & databaseDirectoryPath)
+{
+    // TODOHERE
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Builder
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
@@ -32,30 +115,6 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
         specification,
         options,
         [&group](TextureFrameId const & frameId)
-        {
-            return group.LoadFrame(frameId.FrameIndex);
-        },
-        progressCallback);
-}
-
-template <typename TextureGroups>
-TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildRegularAtlas(
-    TextureGroup<TextureGroups> const & group,
-    AtlasOptions options,
-    ProgressCallback const & progressCallback)
-{
-    // Build TextureInfo's
-    std::vector<TextureInfo> textureInfos;
-    AddTextureInfos(group, textureInfos);
-
-    // Build specification
-    auto const specification = BuildRegularAtlasSpecification(textureInfos);
-
-    // Build atlas
-    return BuildAtlas(
-        specification,
-        options,
-        [&group](TextureFrameId<TextureGroups> const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
         },
