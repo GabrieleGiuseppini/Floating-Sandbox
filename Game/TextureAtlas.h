@@ -40,6 +40,8 @@ enum class AtlasOptions
 template <typename TextureGroups>
 struct TextureAtlasFrameMetadata
 {
+public:
+
     vec2f TextureCoordinatesBottomLeft;
     vec2f TextureCoordinatesTopRight;
 
@@ -70,62 +72,31 @@ struct TextureAtlasFrameMetadata
  * Metadata about a whole texture atlas.
  */
 template <typename TextureGroups>
-class TextureAtlasMetadata
+struct TextureAtlasMetadata
 {
 public:
 
     TextureAtlasMetadata(
         ImageSize size,
         AtlasOptions options,
-        std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames)
-        : mSize(size)
-        , mOptions(options)
-        , mFrameMetadata(std::move(frames))
-        , mFrameMetadataIndices()
-    {
-        //
-        // Store frames indices in vector of vectors, indexed by group and frame index
-        //
+        std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames);
 
-        std::sort(
-            mFrameMetadata.begin(),
-            mFrameMetadata.end(),
-            [](TextureAtlasFrameMetadata<TextureGroups> const & f1, TextureAtlasFrameMetadata<TextureGroups> const & f2)
-            {
-                return f1.FrameMetadata.FrameId.Group < f2.FrameMetadata.FrameId.Group
-                    || (f1.FrameMetadata.FrameId.Group == f2.FrameMetadata.FrameId.Group
-                        && f1.FrameMetadata.FrameId.FrameIndex < f2.FrameMetadata.FrameId.FrameIndex);
-            });
-
-        for (size_t frameIndex = 0; frameIndex < mFrameMetadata.size(); ++frameIndex)
-        {
-            size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
-            if (groupIndex >= mFrameMetadataIndices.size())
-            {
-                mFrameMetadataIndices.resize(groupIndex + 1);
-            }
-
-            assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
-            mFrameMetadataIndices.back().emplace_back(frameIndex);
-        }
-    }
-
-    ImageSize const & GetSize() const
+    inline ImageSize const & GetSize() const
     {
         return mSize;
     }
 
-    bool IsAlphaPremultiplied() const
+    inline bool IsAlphaPremultiplied() const
     {
         return !!(mOptions & AtlasOptions::AlphaPremultiply);
     }
 
-    TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & textureFrameId) const
+    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & textureFrameId) const
     {
         return GetFrameMetadata(textureFrameId.Group, textureFrameId.FrameIndex);
     }
 
-    TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(
+    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(
         TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
@@ -134,26 +105,12 @@ public:
         return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
     }
 
-    std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
+    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
     {
         return mFrameMetadata;
     }
 
-    int GetMaxDimension() const
-    {
-        int maxDimension = std::accumulate(
-            mFrameMetadata.cbegin(),
-            mFrameMetadata.cend(),
-            std::numeric_limits<int>::lowest(),
-            [](int minDimension, TextureAtlasFrameMetadata<TextureGroups> const & frameMd)
-            {
-                return std::max(
-                    minDimension,
-                    std::max(frameMd.FrameMetadata.Size.Width, frameMd.FrameMetadata.Size.Height));
-            });
-
-        return maxDimension;
-    }
+    int GetMaxDimension() const;
 
     void Serialize(picojson::object & root) const;
 
@@ -302,20 +259,6 @@ public:
     {}
 
     /*
-     * Adds a group to the set of groups that this instance can be used to build and atlas for.
-     */
-    void Add(TextureGroup<TextureGroups> const & group)
-    {
-        for (auto const & frameSpecification : group.GetFrameSpecifications())
-        {
-            mTextureFrameSpecifications.insert(
-                std::make_pair(
-                    frameSpecification.Metadata.FrameId,
-                    frameSpecification));
-        }
-    }
-
-    /*
      * Builds an atlas for the groups added so far.
      */
     TextureAtlas<TextureGroups> BuildAtlas(
@@ -389,16 +332,20 @@ private:
         int destinationLeftX,
         int destinationBottomY);
 
-    static void AddTextureInfos(
+    static inline void AddTextureInfos(
         TextureGroup<TextureGroups> const & group,
         std::vector<TextureInfo> & textureInfos)
     {
-        for (auto const & frame : group.GetFrameSpecifications())
-        {
-            textureInfos.emplace_back(
-                frame.Metadata.FrameId,
-                frame.Metadata.Size);
-        }
+        std::transform(
+            group.GetFrameSpecifications().cbegin(),
+            group.GetFrameSpecifications().cend(),
+            std::back_inserter(textureInfos),
+            [](auto const & frame)
+            {
+                return TextureInfo(
+                    frame.Metadata.FrameId,
+                    frame.Metadata.Size);
+            });
     }
 
 private:
@@ -416,5 +363,3 @@ private:
 }
 
 template <> struct is_flag<Render::AtlasOptions> : std::true_type {};
-
-#include "TextureAtlas-inl.h"

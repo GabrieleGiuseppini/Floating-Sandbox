@@ -12,14 +12,61 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Utils.h>
 
-#include <algorithm>
 #include <cstring>
 
 namespace Render {
 
-////////////////////////////////////////////////////////////////////////////////
-// Atlas
-////////////////////////////////////////////////////////////////////////////////
+template <typename TextureGroups>
+TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
+    ImageSize size,
+    AtlasOptions options,
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames)
+    : mSize(size)
+    , mOptions(options)
+    , mFrameMetadata(std::move(frames))
+    , mFrameMetadataIndices()
+{
+    //
+    // Store frames indices in vector of vectors, indexed by group and frame index
+    //
+
+    std::sort(
+        mFrameMetadata.begin(),
+        mFrameMetadata.end(),
+        [](TextureAtlasFrameMetadata<TextureGroups> const & f1, TextureAtlasFrameMetadata<TextureGroups> const & f2)
+        {
+            return f1.FrameMetadata.FrameId.Group < f2.FrameMetadata.FrameId.Group
+                || (f1.FrameMetadata.FrameId.Group == f2.FrameMetadata.FrameId.Group
+                    && f1.FrameMetadata.FrameId.FrameIndex < f2.FrameMetadata.FrameId.FrameIndex);
+        });
+
+    for (size_t frameIndex = 0; frameIndex < mFrameMetadata.size(); ++frameIndex)
+    {
+        size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
+        if (groupIndex >= mFrameMetadataIndices.size())
+        {
+            mFrameMetadataIndices.resize(groupIndex + 1);
+        }
+
+        assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
+        mFrameMetadataIndices.back().emplace_back(frameIndex);
+    }
+}
+
+template <typename TextureGroups>
+int TextureAtlasMetadata<TextureGroups>::GetMaxDimension() const
+{
+    return std::accumulate(
+        mFrameMetadata.cbegin(),
+        mFrameMetadata.cend(),
+        std::numeric_limits<int>::lowest(),
+        [](int minDimension, TextureAtlasFrameMetadata<TextureGroups> const & frameMd)
+        {
+            return std::max(
+                minDimension,
+                std::max(frameMd.FrameMetadata.Size.Width, frameMd.FrameMetadata.Size.Height));
+        });
+}
 
 template <typename TextureGroups>
 void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
@@ -185,7 +232,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     return BuildAtlas(
         specification,
         options,
-        [&group](TextureFrameId const & frameId)
+        [&group](TextureFrameId<TextureGroups> const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
         },
@@ -518,3 +565,21 @@ void TextureAtlasBuilder<TextureGroups>::CopyImage(
 }
 
 }
+
+//
+// Explicit specializations for all database groups
+//
+
+#include "TextureTypes.h"
+
+template struct Render::TextureAtlasMetadata<Render::CloudTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::GenericTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::ExplosionTextureGroups>;
+
+template struct Render::TextureAtlas<Render::CloudTextureGroups>;
+template struct Render::TextureAtlas<Render::GenericTextureGroups>;
+template struct Render::TextureAtlas<Render::ExplosionTextureGroups>;
+
+template class Render::TextureAtlasBuilder<Render::CloudTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::GenericTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::ExplosionTextureGroups>;

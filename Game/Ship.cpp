@@ -2349,6 +2349,7 @@ void Ship::StartExplosion(
     PlaneId planeId,
     vec2f const & centerPosition,
     float blastRadius,
+    float blastStrength,
     float blastHeat,
     ExplosionType explosionType,
     GameParameters const & /*gameParameters*/)
@@ -2360,6 +2361,7 @@ void Ship::StartExplosion(
             planeId,
             centerPosition,
             blastRadius,
+            blastStrength,
             blastHeat,
             explosionType));
 }

@@ -54,15 +54,11 @@ bool Ship::UpdateExplosionStateMachine(
         // Blast force
         //
 
-        float const blastStrength =
-            500.0f // Magic number
-            * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
-
         // Store the force field
         AddForceField<BlastForceField>(
             centerPosition,
             blastRadius,
-            blastStrength,
+            explosionStateMachine.BlastStrength,
             explosionStateMachine.IsFirstFrame);
 
         //
@@ -72,7 +68,6 @@ bool Ship::UpdateExplosionStateMachine(
         // Q = q*dt
         float const blastHeat =
             explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
             * GameParameters::SimulationStepTimeDuration<float>;
 
         float const blastHeatSquareRadius =

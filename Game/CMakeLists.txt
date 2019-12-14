@@ -94,10 +94,10 @@ set  (RENDER_SOURCES
 	TextRenderContext.cpp
 	TextRenderContext.h
 	TextureTypes.h
+	TextureAtlas.cpp
 	TextureAtlas.h
-	TextureAtlas-inl.h
+	TextureDatabase.cpp
 	TextureDatabase.h
-	TextureDatabase-inl.h
 	UploadedTextureManager.h
 	UploadedTextureManager-inl.h
 	ViewModel.h)

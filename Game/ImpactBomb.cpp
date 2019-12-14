@@ -60,12 +60,25 @@ bool ImpactBomb::Update(
             // Explode
             //
 
+            // Blast strength
+            float const blastStrength =
+                600.0f // Magic number
+                * gameParameters.BombBlastForceAdjustment
+                * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+
+            // Blast heat
+            float const blastHeat =
+                gameParameters.BombBlastHeat * 1.2f // Just a bit more caustic
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+            // Explode
             mShipPhysicsHandler.StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(),
                 GetPosition(),
                 gameParameters.BombBlastRadius,
-                gameParameters.BombBlastHeat * 1.2f, // Just a bit more caustic
+                blastStrength,
+                blastHeat,
                 ExplosionType::Deflagration,
                 gameParameters);
 

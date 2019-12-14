@@ -1,5 +1,7 @@
 #include <Game/TextureAtlas.h>
 
+#include <Game/TextureTypes.h>
+
 #include "gtest/gtest.h"
 
 namespace Render {

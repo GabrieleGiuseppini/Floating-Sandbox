@@ -410,6 +410,11 @@ public:
     float GetMinBombBlastRadius() const override { return GameParameters::MinBombBlastRadius; }
     float GetMaxBombBlastRadius() const override { return GameParameters::MaxBombBlastRadius; }
 
+    float GetBombBlastForceAdjustment() const override { return mGameParameters.BombBlastForceAdjustment; }
+    void SetBombBlastForceAdjustment(float value) override { mGameParameters.BombBlastForceAdjustment = value; }
+    float GetMinBombBlastForceAdjustment() const override { return GameParameters::MinBombBlastForceAdjustment; }
+    float GetMaxBombBlastForceAdjustment() const override { return GameParameters::MaxBombBlastForceAdjustment; }
+
     float GetBombBlastHeat() const override { return mGameParameters.BombBlastHeat; }
     void SetBombBlastHeat(float value) override { mGameParameters.BombBlastHeat = value; }
     float GetMinBombBlastHeat() const override { return GameParameters::MinBombBlastHeat; }

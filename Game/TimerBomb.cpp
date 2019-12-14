@@ -134,13 +134,25 @@ bool TimerBomb::Update(
                 // its blast)
                 DetachIfAttached();
 
+                // Blast strength
+                float const blastStrength =
+                    500.0f // Magic number
+                    * gameParameters.BombBlastForceAdjustment
+                    * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+
+                // Blast heat
+                float const blastHeat =
+                    gameParameters.BombBlastHeat
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
                 // Start explosion
                 mShipPhysicsHandler.StartExplosion(
                     currentSimulationTime,
                     GetPlaneId(),
                     GetPosition(),
                     gameParameters.BombBlastRadius,
-                    gameParameters.BombBlastHeat,
+                    blastStrength,
+                    blastHeat,
                     ExplosionType::Deflagration,
                     gameParameters);
 

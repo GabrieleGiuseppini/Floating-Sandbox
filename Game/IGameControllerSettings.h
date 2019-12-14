@@ -159,6 +159,9 @@ struct IGameControllerSettings
     virtual float GetBombBlastRadius() const = 0;
     virtual void SetBombBlastRadius(float value) = 0;
 
+    virtual float GetBombBlastForceAdjustment() const = 0;
+    virtual void SetBombBlastForceAdjustment(float value) = 0;
+
     virtual float GetBombBlastHeat() const = 0;
     virtual void SetBombBlastHeat(float value) = 0;
 

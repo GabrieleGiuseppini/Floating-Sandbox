@@ -135,6 +135,7 @@ struct IShipPhysicsHandler
         PlaneId planeId,
         vec2f const & centerPosition,
         float blastRadius,
+        float blastStrength,
         float blastHeat,
         ExplosionType explosionType,
         GameParameters const & gameParameters) = 0;

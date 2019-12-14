@@ -341,7 +341,7 @@ Render:
 					  restore handler
 				+ Nuke old explosion textures
 				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
-				= Bake atlas:
+				+ Bake atlas:
 					+ Rearc textures:
 						! There's a json for each TextureDatabase
 						+ The json is 1:1 with an enum (and its traits for str<->enum):
@@ -384,17 +384,16 @@ Render:
 							+ Deserialize
 							+ See if need to do binary serialization
 					+ RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
-					- See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at 
+					+ See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at 
 					  TextureDatabase/TextureAtlas.cpp
-						- ...which include TextureTypes.h
-						- Move back as many methods from .h to .cpp
-						- https://stackoverflow.com/questions/26247711/how-to-use-explicit-template-instantiation-to-reduce-compilation-time
-					- Merge back into 1.14
-				- BombExplosionBlastForceAdjustment: new parameter
-					- Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
+						+ ...which include TextureTypes.h
+						+ Move back as many methods from .h to .cpp
+				= Move all ultra-violent mode (x3) to bombs' invocations of StartExplosion
+					- Move ultra-violent from blast strength to radius
+				= BombExplosionBlastForceAdjustment: new parameter
+					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
 					- Settings Dialog
-
-		- picojson replacement
+				- Merge back into 1.14
 
 		- Merge into master
 

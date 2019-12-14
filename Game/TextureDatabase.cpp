@@ -386,3 +386,21 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 }
 
 }
+
+//
+// Explicit specializations for all database groups
+//
+
+#include "TextureTypes.h"
+
+template class Render::TextureFrameMetadata<Render::CloudTextureGroups>;
+template class Render::TextureFrameMetadata<Render::WorldTextureGroups>;
+template class Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
+template class Render::TextureFrameMetadata<Render::GenericTextureGroups>;
+template class Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
+
+template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::NoiseTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::GenericTextureTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::ExplosionTextureDatabaseTraits>;

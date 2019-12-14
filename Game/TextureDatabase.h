@@ -145,23 +145,23 @@ public:
         , mFrameSpecifications(std::move(frameSpecifications))
     {}
 
-    auto const & GetFrameSpecification(TextureFrameIndex frameIndex) const
+    inline auto const & GetFrameSpecification(TextureFrameIndex frameIndex) const
     {
         return mFrameSpecifications[frameIndex];
     }
 
-    auto const & GetFrameSpecifications() const
+    inline auto const & GetFrameSpecifications() const
     {
         return mFrameSpecifications;
     }
 
     // Gets the number of frames in this group
-    TextureFrameIndex GetFrameCount() const
+    inline TextureFrameIndex GetFrameCount() const
     {
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    TextureFrame<TextureGroups> LoadFrame(TextureFrameIndex frameIndex) const
+    inline TextureFrame<TextureGroups> LoadFrame(TextureFrameIndex frameIndex) const
     {
         return mFrameSpecifications[frameIndex].LoadFrame();
     }
@@ -184,18 +184,18 @@ public:
 
     static TextureDatabase Load(std::filesystem::path const & texturesRootFolderPath);
 
-    auto const & GetGroups() const
+    inline auto const & GetGroups() const
     {
         return mGroups;
     }
 
-    TextureGroup<TextureGroups> const & GetGroup(TextureGroups group) const
+    inline TextureGroup<TextureGroups> const & GetGroup(TextureGroups group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
     }
 
-    TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(
+    inline TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(
         TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
@@ -214,5 +214,3 @@ private:
 };
 
 }
-
-#include "TextureDatabase-inl.h"
