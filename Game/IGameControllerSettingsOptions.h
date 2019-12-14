@@ -147,6 +147,9 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinBombBlastRadius() const = 0;
 	virtual float GetMaxBombBlastRadius() const = 0;
 
+    virtual float GetMinBombBlastForceAdjustment() const = 0;
+    virtual float GetMaxBombBlastForceAdjustment() const = 0;
+
 	virtual float GetMinBombBlastHeat() const = 0;
 	virtual float GetMaxBombBlastHeat() const = 0;
 

@@ -43,15 +43,6 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-    using DestroyHandler = std::function<void(
-        ElementIndex,
-        bool /*destroyTriangles*/,
-        GameParameters const &)>;
-
-    using RestoreHandler = std::function<void(
-        ElementIndex,
-        GameParameters const &)>;
-
 private:
 
     /*
@@ -152,8 +143,7 @@ public:
         //////////////////////////////////
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mDestroyHandler()
-        , mRestoreHandler()
+        , mShipPhysicsHandler(nullptr)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentNumMechanicalDynamicsIterationsAdjustment(gameParameters.NumMechanicalDynamicsIterationsAdjustment)
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
@@ -166,40 +156,9 @@ public:
 
     Springs(Springs && other) = default;
 
-    /*
-     * Sets a (single) handler that is invoked whenever a spring is destroyed.
-     *
-     * The handler is invoked right before the spring is marked as deleted. However,
-     * other elements connected to the soon-to-be-deleted spring might already have been
-     * deleted.
-     *
-     * The handler is not re-entrant: destroying other springs from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterDestroyHandler(DestroyHandler destroyHandler)
+    void RegisterShipPhysicsHandler(IShipPhysicsHandler * shipPhysicsHandler)
     {
-        assert(!mDestroyHandler);
-        mDestroyHandler = std::move(destroyHandler);
-    }
-
-    /*
-     * Sets a (single) handler that is invoked whenever a spring is restored.
-     *
-     * The handler is invoked right after the spring is unmarked as deleted. However,
-     * other elements connected to the soon-to-be-deleted spring might not yet have been
-     * restored.
-     *
-     * The handler is not re-entrant: restoring other springs from it is not supported
-     * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
-     */
-    void RegisterRestoreHandler(RestoreHandler restoreHandler)
-    {
-        assert(!mRestoreHandler);
-        mRestoreHandler = std::move(restoreHandler);
+        mShipPhysicsHandler = shipPhysicsHandler;
     }
 
     void Add(
@@ -724,12 +683,7 @@ private:
 
     World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
-
-    // The handler registered for spring deletions
-    DestroyHandler mDestroyHandler;
-
-    // The handler registered for spring restores
-    RestoreHandler mRestoreHandler;
+    IShipPhysicsHandler * mShipPhysicsHandler;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation

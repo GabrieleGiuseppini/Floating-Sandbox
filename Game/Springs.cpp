@@ -100,13 +100,11 @@ void Springs::Destroy(
     assert(!IsDeleted(springElementIndex));
 
     // Invoke destroy handler
-    if (!!mDestroyHandler)
-    {
-        mDestroyHandler(
-            springElementIndex,
-            !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
-            gameParameters);
-    }
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleSpringDestroy(
+        springElementIndex,
+        !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
+        gameParameters);
 
     // Fire spring break event, unless told otherwise
     if (!!(destroyOptions & Springs::DestroyOptions::FireBreakEvent))
@@ -149,12 +147,10 @@ void Springs::Restore(
         points);
 
     // Invoke restore handler
-    if (!!mRestoreHandler)
-    {
-        mRestoreHandler(
-            springElementIndex,
-            gameParameters);
-    }
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleSpringRestore(
+        springElementIndex,
+        gameParameters);
 }
 
 void Springs::UpdateForGameParameters(

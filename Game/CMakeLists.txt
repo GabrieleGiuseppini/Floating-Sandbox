@@ -49,6 +49,7 @@ set  (PHYSICS_SOURCES
 	ForceFields.h
 	ImpactBomb.cpp
 	ImpactBomb.h
+	IShipPhysicsHandler.h
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp
@@ -62,6 +63,8 @@ set  (PHYSICS_SOURCES
 	RCBomb.h
 	Ship.cpp
 	Ship_Interactions.cpp
+	Ship_StateMachines.cpp
+	Ship_StateMachines.h
 	Ship.h
 	Springs.cpp
 	Springs.h
@@ -83,18 +86,20 @@ set  (RENDER_SOURCES
 	Font.h
 	RenderContext.cpp
 	RenderContext.h
-	RenderCore.cpp
-	RenderCore.h
+	RenderTypes.h
+	ShaderTypes.cpp
+	ShaderTypes.h
 	ShipRenderContext.cpp
 	ShipRenderContext.h
 	TextRenderContext.cpp
 	TextRenderContext.h
+	TextureTypes.h
 	TextureAtlas.cpp
 	TextureAtlas.h
 	TextureDatabase.cpp
 	TextureDatabase.h
-	UploadedTextureManager.cpp
 	UploadedTextureManager.h
+	UploadedTextureManager-inl.h
 	ViewModel.h)
 
 source_group(" " FILES ${GAME_SOURCES})

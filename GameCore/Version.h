@@ -15,9 +15,9 @@
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define APPLICATION_VERSION_MAJOR               1
-#define APPLICATION_VERSION_MINOR               13
+#define APPLICATION_VERSION_MINOR               14
 #define APPLICATION_VERSION_PATCH               0
-#define APPLICATION_VERSION_BUILD               7
+#define APPLICATION_VERSION_BUILD               0
 
 #define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \
@@ -134,6 +134,18 @@ public:
             << mMinor << "."
             << mPatch << "."
             << mBuild;
+
+        return ss.str();
+    }
+
+    std::string ToMajorMinorPatchString() const
+    {
+        std::stringstream ss;
+
+        ss
+            << mMajor << "."
+            << mMinor << "."
+            << mPatch;
 
         return ss.str();
     }

@@ -27,12 +27,13 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IPhysicsHandler & physicsHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override
@@ -78,57 +79,14 @@ private:
         // In this state we are just idle
         Idle,
 
-        // Dummy state, just transitions to Exploding
+        // Dummy state, just starts explosion
         TriggeringExplosion,
-
-        // In this state we are exploding, and increment our counter to
-        // match the explosion animation until the animation is over
-        Exploding,
 
         // This is the final state; once this state is reached, we're expired
         Expired
     };
 
-    static constexpr auto ExplosionProgressInterval = 20ms;
-    static constexpr uint8_t ExplosionStepsCount = 9;
-
-    inline void TransitionToExploding(
-        GameWallClock::time_point currentWallClockTime,
-        GameParameters const & gameParameters)
-    {
-        mState = State::Exploding;
-
-        assert(mExplodingStepCounter < ExplosionStepsCount);
-
-        // Check whether we're done
-        if (mExplodingStepCounter == ExplosionStepsCount - 1)
-        {
-            // Transition to expired
-            mState = State::Expired;
-        }
-        else
-        {
-            // Invoke blast handler
-            mPhysicsHandler.DoBombExplosion(
-                GetPosition(),
-                static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
-                gameParameters);
-
-            // Increment counter
-            ++mExplodingStepCounter;
-
-            // Schedule next transition
-            mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
-        }
-    }
-
     State mState;
-
-    // The next timestamp at which we'll automatically transition state
-    GameWallClock::time_point mNextStateTransitionTimePoint;
-
-    // The counters for the various states. Fine to rollover!
-    uint8_t mExplodingStepCounter; // Zero on first explosion state
 };
 
 }

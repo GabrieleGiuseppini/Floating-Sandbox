@@ -251,7 +251,7 @@ public:
     static bool LexicalCast(
         std::string const & str,
         TValue * outValue)
-    {        
+    {
         std::istringstream iss;
         iss.unsetf(std::ios::skipws);
 

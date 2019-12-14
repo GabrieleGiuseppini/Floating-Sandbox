@@ -7,23 +7,34 @@
 
 /*
  * Object model for management of textures.
+ *
+ * A frame is a single texture.
+ * A group is a collection of related frames; for example, a group is an animation.
+ * A database is a collection of groups.
  */
 
-#include "ResourceLoader.h"
+#include "ImageFileTools.h"
 
+#include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/ProgressCallback.h>
+#include <GameCore/Utils.h>
+
+#include <picojson.h>
 
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <memory>
+#include <regex>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace Render {
 
+template <typename TextureGroups>
 struct TextureFrameMetadata
 {
     // Size of the image
@@ -43,7 +54,7 @@ struct TextureFrameMetadata
     float AnchorWorldY;
 
     // The ID of this frame
-    TextureFrameId FrameId;
+    TextureFrameId<TextureGroups> FrameId;
 
     // The optional name of the frame
     std::string FrameName;
@@ -55,7 +66,7 @@ struct TextureFrameMetadata
         bool hasOwnAmbientLight,
         float anchorWorldX,
         float anchorWorldY,
-        TextureFrameId frameId,
+        TextureFrameId<TextureGroups> frameId,
         std::string const & frameName)
         : Size(size)
         , WorldWidth(worldWidth)
@@ -66,111 +77,126 @@ struct TextureFrameMetadata
         , FrameId(frameId)
         , FrameName(frameName)
     {}
+
+    void Serialize(picojson::object & root) const;
+
+    static TextureFrameMetadata Deserialize(picojson::object const & root);
 };
 
+template <typename TextureGroups>
 struct TextureFrame
 {
     // Metadata
-    TextureFrameMetadata Metadata;
+    TextureFrameMetadata<TextureGroups> Metadata;
 
     // The image itself
     RgbaImageData TextureData;
 
     TextureFrame(
-        TextureFrameMetadata const & metadata,
+        TextureFrameMetadata<TextureGroups> const & metadata,
         RgbaImageData textureData)
         : Metadata(metadata)
         , TextureData(std::move(textureData))
     {}
 };
 
+template <typename TextureGroups>
 struct TextureFrameSpecification
 {
     // Metadata
-    TextureFrameMetadata Metadata;
+    TextureFrameMetadata<TextureGroups> Metadata;
 
     // The path to the image
     std::filesystem::path FilePath;
 
     TextureFrameSpecification(
-        TextureFrameMetadata const & metadata,
+        TextureFrameMetadata<TextureGroups> const & metadata,
         std::filesystem::path filePath)
         : Metadata(metadata)
         , FilePath(filePath)
     {}
 
-    TextureFrame LoadFrame() const;
+    TextureFrame<TextureGroups> LoadFrame() const
+    {
+        RgbaImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
+
+        return TextureFrame<TextureGroups>(
+            Metadata,
+            std::move(imageData));
+    }
 };
 
 /*
  * This class models a group of textures, and it has all the necessary information
  * to load individual frames at runtime.
  */
+template <typename TextureGroups>
 class TextureGroup
 {
 public:
 
     // The group
-    TextureGroupType Group;
+    TextureGroups Group;
 
     TextureGroup(
-        TextureGroupType group,
-        std::vector<TextureFrameSpecification> frameSpecifications)
+        TextureGroups group,
+        std::vector<TextureFrameSpecification<TextureGroups>> frameSpecifications)
         : Group(group)
         , mFrameSpecifications(std::move(frameSpecifications))
     {}
 
-    auto const & GetFrameSpecification(TextureFrameIndex frameIndex) const
+    inline auto const & GetFrameSpecification(TextureFrameIndex frameIndex) const
     {
         return mFrameSpecifications[frameIndex];
     }
 
-    auto const & GetFrameSpecifications() const
+    inline auto const & GetFrameSpecifications() const
     {
         return mFrameSpecifications;
     }
 
     // Gets the number of frames in this group
-    TextureFrameIndex GetFrameCount() const
+    inline TextureFrameIndex GetFrameCount() const
     {
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    TextureFrame LoadFrame(TextureFrameIndex frameIndex) const
+    inline TextureFrame<TextureGroups> LoadFrame(TextureFrameIndex frameIndex) const
     {
         return mFrameSpecifications[frameIndex].LoadFrame();
     }
 
 private:
 
-    std::vector<TextureFrameSpecification> mFrameSpecifications;
+    std::vector<TextureFrameSpecification<TextureGroups>> mFrameSpecifications;
 };
 
 
 /*
- * The whole set of textures.
+ * A whole set of textures.
  */
+template <typename TextureDatabaseTraits>
 class TextureDatabase
 {
 public:
 
-    static TextureDatabase Load(
-        ResourceLoader const & resourceLoader,
-        ProgressCallback const & progressCallback);
+    using TextureGroups = typename TextureDatabaseTraits::TextureGroups;
 
-    auto const & GetGroups() const
+    static TextureDatabase Load(std::filesystem::path const & texturesRootFolderPath);
+
+    inline auto const & GetGroups() const
     {
         return mGroups;
     }
 
-    TextureGroup const & GetGroup(TextureGroupType group) const
+    inline TextureGroup<TextureGroups> const & GetGroup(TextureGroups group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
     }
 
-    TextureFrameMetadata const & GetFrameMetadata(
-        TextureGroupType group,
+    inline TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(
+        TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
@@ -180,11 +206,11 @@ public:
 
 private:
 
-    explicit TextureDatabase(std::vector<TextureGroup> groups)
+    explicit TextureDatabase(std::vector<TextureGroup<TextureGroups>> groups)
         : mGroups(std::move(groups))
     {}
 
-    std::vector<TextureGroup> mGroups;
+    std::vector<TextureGroup<TextureGroups>> mGroups;
 };
 
 }

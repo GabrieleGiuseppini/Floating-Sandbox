@@ -27,10 +27,8 @@ void Triangles::Destroy(ElementIndex triangleElementIndex)
     assert(!IsDeleted(triangleElementIndex));
 
     // Invoke destroy handler
-    if (!!mDestroyHandler)
-    {
-        mDestroyHandler(triangleElementIndex);
-    }
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleTriangleDestroy(triangleElementIndex);
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[triangleElementIndex] = true;
@@ -45,10 +43,8 @@ void Triangles::Restore(ElementIndex triangleElementIndex)
     mIsDeletedBuffer[triangleElementIndex] = false;
 
     // Invoke restore handler
-    if (!!mRestoreHandler)
-    {
-        mRestoreHandler(triangleElementIndex);
-    }
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleTriangleRestore(triangleElementIndex);
 }
 
 }

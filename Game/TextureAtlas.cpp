@@ -5,16 +5,220 @@
 ***************************************************************************************/
 #include "TextureAtlas.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/SysSpecifics.h>
+#include "ImageFileTools.h"
 
-#include <algorithm>
+#include <GameCore/GameException.h>
+#include <GameCore/ImageTools.h>
+#include <GameCore/SysSpecifics.h>
+#include <GameCore/Utils.h>
+
 #include <cstring>
 
 namespace Render {
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
-    TextureGroup const & group,
+template <typename TextureGroups>
+TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
+    ImageSize size,
+    AtlasOptions options,
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames)
+    : mSize(size)
+    , mOptions(options)
+    , mFrameMetadata(std::move(frames))
+    , mFrameMetadataIndices()
+{
+    //
+    // Store frames indices in vector of vectors, indexed by group and frame index
+    //
+
+    std::sort(
+        mFrameMetadata.begin(),
+        mFrameMetadata.end(),
+        [](TextureAtlasFrameMetadata<TextureGroups> const & f1, TextureAtlasFrameMetadata<TextureGroups> const & f2)
+        {
+            return f1.FrameMetadata.FrameId.Group < f2.FrameMetadata.FrameId.Group
+                || (f1.FrameMetadata.FrameId.Group == f2.FrameMetadata.FrameId.Group
+                    && f1.FrameMetadata.FrameId.FrameIndex < f2.FrameMetadata.FrameId.FrameIndex);
+        });
+
+    for (size_t frameIndex = 0; frameIndex < mFrameMetadata.size(); ++frameIndex)
+    {
+        size_t groupIndex = static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.Group);
+        if (groupIndex >= mFrameMetadataIndices.size())
+        {
+            mFrameMetadataIndices.resize(groupIndex + 1);
+        }
+
+        assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
+        mFrameMetadataIndices.back().emplace_back(frameIndex);
+    }
+}
+
+template <typename TextureGroups>
+int TextureAtlasMetadata<TextureGroups>::GetMaxDimension() const
+{
+    return std::accumulate(
+        mFrameMetadata.cbegin(),
+        mFrameMetadata.cend(),
+        std::numeric_limits<int>::lowest(),
+        [](int minDimension, TextureAtlasFrameMetadata<TextureGroups> const & frameMd)
+        {
+            return std::max(
+                minDimension,
+                std::max(frameMd.FrameMetadata.Size.Width, frameMd.FrameMetadata.Size.Height));
+        });
+}
+
+template <typename TextureGroups>
+void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
+{
+    picojson::object textureCoordinates;
+    textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
+    textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
+    textureCoordinates["right"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.x));
+    textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
+    root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
+
+    picojson::object frameCoordinates;
+    frameCoordinates["left"] = picojson::value(static_cast<int64_t>(FrameLeftX));
+    frameCoordinates["bottom"] = picojson::value(static_cast<int64_t>(FrameBottomY));
+    root["frame_coordinates"] = picojson::value(std::move(frameCoordinates));
+
+    picojson::object frameMetadata;
+    FrameMetadata.Serialize(frameMetadata);
+    root["frame"] = picojson::value(std::move(frameMetadata));
+}
+
+template <typename TextureGroups>
+TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+{
+    picojson::object const & textureCoordinatesJson = root.at("texture_coordinates").get<picojson::object>();
+    vec2f textureCoordinatesBottomLeft(
+        static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("bottom").get<double>()));
+    vec2f textureCoordinatesTopRight(
+        static_cast<float>(textureCoordinatesJson.at("right").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("top").get<double>()));
+
+    picojson::object const & frameCoordinatesJson = root.at("frame_coordinates").get<picojson::object>();
+    int frameLeftX = static_cast<int>(frameCoordinatesJson.at("left").get<std::int64_t>());
+    int frameBottomY = static_cast<int>(frameCoordinatesJson.at("bottom").get<std::int64_t>());
+
+    picojson::object const & frameMetadataJson = root.at("frame").get<picojson::object>();
+    TextureFrameMetadata<TextureGroups> frameMetadata = TextureFrameMetadata<TextureGroups>::Deserialize(frameMetadataJson);
+
+    return TextureAtlasFrameMetadata<TextureGroups>(
+        textureCoordinatesBottomLeft,
+        textureCoordinatesTopRight,
+        frameLeftX,
+        frameBottomY,
+        frameMetadata);
+}
+
+template <typename TextureGroups>
+void TextureAtlasMetadata<TextureGroups>::Serialize(picojson::object & root) const
+{
+    picojson::object size;
+    size["width"] = picojson::value(static_cast<std::int64_t>(mSize.Width));
+    size["height"] = picojson::value(static_cast<std::int64_t>(mSize.Height));
+    root["size"] = picojson::value(size);
+
+    root["options"] = picojson::value(static_cast<std::int64_t>(mOptions));
+
+    picojson::array frames;
+    for (auto const & frameMetadata : mFrameMetadata)
+    {
+        picojson::object frame;
+        frameMetadata.Serialize(frame);
+        frames.push_back(picojson::value(std::move(frame)));
+    }
+
+    root["frames"] = picojson::value(std::move(frames));
+}
+
+template <typename TextureGroups>
+TextureAtlasMetadata<TextureGroups> TextureAtlasMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+{
+    picojson::object const & sizeJson = root.at("size").get<picojson::object>();
+    ImageSize size(
+        static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
+        static_cast<int>(sizeJson.at("height").get<std::int64_t>()));
+
+    AtlasOptions options = static_cast<AtlasOptions>(root.at("options").get<std::int64_t>());
+
+    picojson::array const & framesJson = root.at("frames").get<picojson::array>();
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> frames;
+    for (auto const & frameJsonValue : framesJson)
+    {
+        picojson::object const & frameJson = frameJsonValue.get<picojson::object>();
+        frames.push_back(TextureAtlasFrameMetadata<TextureGroups>::Deserialize(frameJson));
+    }
+
+    return TextureAtlasMetadata<TextureGroups>(
+        size,
+        options,
+        std::move(frames));
+}
+
+template <typename TextureGroups>
+void TextureAtlas<TextureGroups>::Serialize(
+    std::string const & databaseName,
+    std::filesystem::path const & outputDirectoryPath) const
+{
+    //
+    // Metadata
+    //
+
+    picojson::object metadataJson;
+    Metadata.Serialize(metadataJson);
+
+    std::filesystem::path const metadataFilePath = outputDirectoryPath / MakeMetadataFilename(databaseName);
+    Utils::SaveJSONFile(picojson::value(metadataJson), metadataFilePath);
+
+    //
+    // Image
+    //
+
+    std::filesystem::path const imageFilePath = outputDirectoryPath / MakeImageFilename(databaseName);
+    ImageFileTools::SaveImage(imageFilePath, AtlasData);
+}
+
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
+    std::string const & databaseName,
+    std::filesystem::path const & databaseRootDirectoryPath)
+{
+    //
+    // Metadata
+    //
+
+    std::filesystem::path const metadataFilePath = databaseRootDirectoryPath / "Atlases" / MakeMetadataFilename(databaseName);
+    picojson::value metadataJsonValue = Utils::ParseJSONFile(metadataFilePath);
+    if (!metadataJsonValue.is<picojson::object>())
+    {
+        throw GameException("Atlas metadata json is not an object");
+    }
+
+    picojson::object const & metadataJson = metadataJsonValue.get<picojson::object>();
+    TextureAtlasMetadata<TextureGroups> metadata = TextureAtlasMetadata<TextureGroups>::Deserialize(metadataJson);
+
+    //
+    // Image
+    //
+
+    std::filesystem::path const imageFilePath = databaseRootDirectoryPath / "Atlases" / MakeImageFilename(databaseName);
+    RgbaImageData atlasData = ImageFileTools::LoadImageRgba(imageFilePath);
+
+    return TextureAtlas<TextureGroups>(std::move(metadata), std::move(atlasData));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Builder
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
+    TextureGroup<TextureGroups> const & group,
+    AtlasOptions options,
     ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
@@ -22,43 +226,23 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     AddTextureInfos(group, textureInfos);
 
     // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
+    auto const specification = BuildAtlasSpecification(textureInfos);
 
     // Build atlas
     return BuildAtlas(
         specification,
-        [&group](TextureFrameId const & frameId)
+        options,
+        [&group](TextureFrameId<TextureGroups> const & frameId)
         {
             return group.LoadFrame(frameId.FrameIndex);
         },
         progressCallback);
 }
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
-    TextureDatabase const & database,
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
+    AtlasOptions options,
     ProgressCallback const & progressCallback)
-{
-    // Build TextureInfo's
-    std::vector<TextureInfo> textureInfos;
-    for (auto const & group : database.GetGroups())
-    {
-        AddTextureInfos(group, textureInfos);
-    }
-
-    // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
-
-    // Build atlas
-    return BuildAtlas(
-        specification,
-        [&database](TextureFrameId const & frameId)
-        {
-            return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
-        },
-        progressCallback);
-}
-
-TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCallback)
 {
     // Build TextureInfo's
     std::vector<TextureInfo> textureInfos;
@@ -70,12 +254,13 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCa
     }
 
     // Build specification
-    AtlasSpecification specification = BuildAtlasSpecification(textureInfos);
+    auto const specification = BuildAtlasSpecification(textureInfos);
 
     // Build atlas
     return BuildAtlas(
         specification,
-        [this](TextureFrameId const & frameId)
+        options,
+        [this](TextureFrameId<TextureGroups> const & frameId)
         {
             return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
         },
@@ -84,7 +269,8 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(ProgressCallback const & progressCa
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+template <typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Sort input texture info's by height, from tallest to shortest
@@ -215,7 +401,8 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildAtlasSpecifica
         ImageSize(atlasWidth, atlasHeight));
 }
 
-TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+template <typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Verify frames
@@ -224,11 +411,6 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
     if (inputTextureInfos.empty())
     {
         throw GameException("Regular texture atlas cannot consist of an empty set of texture frames");
-    }
-
-    if (inputTextureInfos.size() != ceil_power_of_two(inputTextureInfos.size()))
-    {
-        throw GameException("Number of frames in regular atlas (" + std::to_string(inputTextureInfos.size()) + ") is not a power of two");
     }
 
     int const frameWidth = inputTextureInfos[0].Size.Width;
@@ -254,18 +436,21 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
     // Place tiles
     //
 
-    int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(inputTextureInfos.size()))));
+    // Number of frames, rounded up to next square of a power of two
+    size_t virtualNumberOfFrames = ceil_square_power_of_two(inputTextureInfos.size());
+
+    int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(virtualNumberOfFrames))));
     assert(numberOfFramesPerSide > 0);
     int const atlasWidth = numberOfFramesPerSide * frameWidth;
     int const atlasHeight = numberOfFramesPerSide * frameHeight;
 
     std::vector<AtlasSpecification::TexturePosition> texturePositions;
-    texturePositions.reserve(inputTextureInfos.size());
+    texturePositions.reserve(virtualNumberOfFrames);
 
     for (int i = 0; i < inputTextureInfos.size(); ++i)
     {
-        int c = i % numberOfFramesPerSide;
-        int r = i / numberOfFramesPerSide;
+        int const c = i % numberOfFramesPerSide;
+        int const r = i / numberOfFramesPerSide;
 
         texturePositions.emplace_back(
             inputTextureInfos[i].FrameId,
@@ -282,9 +467,11 @@ TextureAtlasBuilder::AtlasSpecification TextureAtlasBuilder::BuildRegularAtlasSp
         ImageSize(atlasWidth, atlasHeight));
 }
 
-TextureAtlas TextureAtlasBuilder::BuildAtlas(
+template <typename TextureGroups>
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     AtlasSpecification const & specification,
-    std::function<TextureFrame(TextureFrameId const &)> frameLoader,
+    AtlasOptions options,
+    std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
     float const dx = 0.5f / static_cast<float>(specification.AtlasSize.Width);
@@ -298,15 +485,15 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
     std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
 
     // Copy all textures into image, building metadata at the same time
-    std::vector<TextureAtlasFrameMetadata> metadata;
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> frameMetadata;
     for (auto const & texturePosition : specification.TexturePositions)
     {
         progressCallback(
-            static_cast<float>(metadata.size()) / static_cast<float>(specification.TexturePositions.size()),
+            static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TexturePositions.size()),
             "Building texture atlas...");
 
         // Load frame
-        TextureFrame textureFrame = frameLoader(texturePosition.FrameId);
+        TextureFrame<TextureGroups> textureFrame = frameLoader(texturePosition.FrameId);
 
         // Copy frame
         CopyImage(
@@ -318,7 +505,7 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
             texturePosition.FrameBottomY);
 
         // Store texture coordinates
-        metadata.emplace_back(
+        frameMetadata.emplace_back(
             // Bottom-left
             vec2f(
                 dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
@@ -336,17 +523,27 @@ TextureAtlas TextureAtlasBuilder::BuildAtlas(
         specification.AtlasSize,
         std::move(atlasImage));
 
+    // Pre-multiply alpha, if requested
+    if (!!(options & AtlasOptions::AlphaPremultiply))
+    {
+        ImageTools::AlphaPreMultiply(atlasImageData);
+    }
+
     progressCallback(
         1.0f,
         "Building texture atlas...");
 
     // Return atlas
-    return TextureAtlas(
-        metadata,
+    return TextureAtlas<TextureGroups>(
+        TextureAtlasMetadata<TextureGroups>(
+            specification.AtlasSize,
+            options,
+            std::move(frameMetadata)),
         std::move(atlasImageData));
 }
 
-void TextureAtlasBuilder::CopyImage(
+template <typename TextureGroups>
+void TextureAtlasBuilder<TextureGroups>::CopyImage(
     std::unique_ptr<rgbaColor const []> sourceImage,
     ImageSize sourceImageSize,
     rgbaColor * destImage,
@@ -368,3 +565,21 @@ void TextureAtlasBuilder::CopyImage(
 }
 
 }
+
+//
+// Explicit specializations for all database groups
+//
+
+#include "TextureTypes.h"
+
+template struct Render::TextureAtlasMetadata<Render::CloudTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::GenericTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::ExplosionTextureGroups>;
+
+template struct Render::TextureAtlas<Render::CloudTextureGroups>;
+template struct Render::TextureAtlas<Render::GenericTextureGroups>;
+template struct Render::TextureAtlas<Render::ExplosionTextureGroups>;
+
+template class Render::TextureAtlasBuilder<Render::CloudTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::GenericTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::ExplosionTextureGroups>;

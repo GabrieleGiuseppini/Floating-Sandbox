@@ -5,9 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
+#include "RenderTypes.h"
+#include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
+#include "TextureTypes.h"
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -41,8 +43,10 @@ public:
         RgbaImageData shipTexture,
         ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
+        GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
+        TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
-        TextureAtlasMetadata const & genericTextureAtlasMetadata,
+        TextureAtlasMetadata<GenericTextureGroups> const & genericTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float effectiveAmbientLightIntensity,
@@ -367,6 +371,128 @@ public:
     void UploadFlamesEnd();
 
     //
+    // Explosions
+    //
+    // Explosions don't have a start/end as there are multiple
+    // physical sources of explosions.
+    //
+
+    inline void UploadExplosion(
+        PlaneId planeId,
+        vec2f const & centerPosition,
+        float halfQuadSize,
+        ExplosionType explosionType,
+        float personalitySeed,
+        float progress)
+    {
+        size_t const planeIndex = static_cast<size_t>(planeId);
+
+        // Pre-sized
+        assert(planeIndex < mExplosionPlaneVertexBuffers.size());
+
+        // Get this plane's vertex buffer
+        auto & vertexBuffer = mExplosionPlaneVertexBuffers[planeIndex].vertexBuffer;
+
+        //
+        // Populate the texture quad
+        //
+
+        // Resolution of atlas, for dead center calculations
+        float const dTextureX = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Width));
+        float const dTextureY = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Height));
+
+        // Calculate render half quad size - magic offset to account for
+        // empty outskirts of frames
+        float const renderHalfQuadSize = halfQuadSize + 13.0f;
+
+        // Calculate explosion index based off explosion type
+        float explosionIndex;
+        if (ExplosionType::Deflagration == explosionType)
+        {
+            // 0..2, randomly
+            explosionIndex = std::min(2.0f, floor(personalitySeed * 3.0f));
+        }
+        else
+        {
+            assert(ExplosionType::Combustion == explosionType);
+
+            explosionIndex = 3.0f;
+        }
+
+        // Calculate rotation based off personality seed
+        float const angleCcw = personalitySeed * 2.0f * Pi<float>;
+
+        // Append vertices - two triangles
+
+        // Triangle 1
+
+        // Top-left
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(-renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(0.0f + dTextureX, 1.0f - dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Top-Right
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(1.0f - dTextureX, 1.0f - dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Bottom-left
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(0.0f + dTextureX, 0.0f + dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Triangle 2
+
+        // Top-Right
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(1.0f - dTextureX, 1.0f - dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Bottom-left
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(0.0f + dTextureX, 0.0f + dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Bottom-right
+        vertexBuffer.emplace_back(
+            centerPosition,
+            vec2f(renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(1.0f - dTextureX, 0.0f + dTextureY),
+            static_cast<float>(planeId),
+            angleCcw,
+            explosionIndex,
+            progress);
+
+        // Update total count of vertices
+        mExplosionTotalPlaneVertexCount += 6;
+    }
+
+    //
     // Sparkles
     //
 
@@ -453,17 +579,19 @@ public:
     //
     // Air bubbles and generic textures
     //
+    // Generic textures don't have a start/end as there are multiple
+    // physical sources of generic textures.
+    //
 
     inline void UploadAirBubble(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
         vec2f const & position,
         float scale,
         float alpha)
     {
         StoreGenericTextureRenderSpecification(
             planeId,
-            textureFrameId,
+            TextureFrameId<GenericTextureGroups>(GenericTextureGroups::AirBubble, 0),
             position,
             scale,
             0.0f, // angle
@@ -473,7 +601,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
         UploadGenericTextureRenderSpecification(
@@ -487,7 +615,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
@@ -505,7 +633,7 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -529,8 +657,8 @@ public:
             alpha,
             vertexBuffer);
 
-        // Update total count of quads
-        ++mGenericTextureTotalPlaneQuadCount;
+        // Update total count of vertices
+        mGenericTextureTotalPlaneVertexCount += 6;
     }
 
     //
@@ -564,12 +692,13 @@ public:
 
     void RenderEnd();
 
+
 private:
 
     template<typename TVertexBuffer>
     inline void StoreGenericTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId const & textureFrameId,
+        TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -580,7 +709,7 @@ private:
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+        TextureAtlasFrameMetadata<GenericTextureGroups> const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
         float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
@@ -678,6 +807,7 @@ private:
         size_t startFlameIndex,
         size_t flameCount);
 
+    void RenderExplosions();
     void RenderSparkles();
     void RenderGenericTextures();
     void RenderVectorArrows();
@@ -744,6 +874,36 @@ private:
         {}
     };
 
+    struct ExplosionVertex
+    {
+        vec2f centerPosition;
+        vec2f vertexOffset;
+        vec2f textureCoordinate;
+
+        float planeId;
+
+        float angle;
+        float explosionIndex;
+        float progress;
+
+        ExplosionVertex(
+            vec2f _centerPosition,
+            vec2f _vertexOffset,
+            vec2f _textureCoordinate,
+            float _planeId,
+            float _angle,
+            float _explosionIndex,
+            float _progress)
+            : centerPosition(_centerPosition)
+            , vertexOffset(_vertexOffset)
+            , textureCoordinate(_textureCoordinate)
+            , planeId(_planeId)
+            , angle(_angle)
+            , explosionIndex(_explosionIndex)
+            , progress(_progress)
+        {}
+    };
+
     struct SparkleVertex
     {
         vec2f vertexPosition;
@@ -801,6 +961,11 @@ private:
 
 #pragma pack(pop)
 
+    struct ExplosionPlaneData
+    {
+        std::vector<ExplosionVertex> vertexBuffer;
+    };
+
     struct GenericTexturePlaneData
     {
         std::vector<GenericTextureVertex> vertexBuffer;
@@ -831,12 +996,17 @@ private:
     RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
     float mCurrentWindSpeedMagnitudeAverage;
 
+    std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
+    size_t mExplosionTotalPlaneVertexCount;
+    GameOpenGLVBO mExplosionVBO;
+    size_t mExplosionVBOAllocatedVertexCount;
+
     std::vector<SparkleVertex> mSparkleVertexBuffer;
     GameOpenGLVBO mSparkleVertexVBO;
 
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
-    size_t mGenericTextureTotalPlaneQuadCount;
+    size_t mGenericTextureTotalPlaneVertexCount;
     GameOpenGLVBO mGenericTextureVBO;
     size_t mGenericTextureVBOAllocatedVertexCount;
 
@@ -873,6 +1043,7 @@ private:
 
     GameOpenGLVAO mShipVAO;
     GameOpenGLVAO mFlameVAO;
+    GameOpenGLVAO mExplosionVAO;
     GameOpenGLVAO mSparkleVAO;
     GameOpenGLVAO mGenericTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
@@ -885,8 +1056,11 @@ private:
     GameOpenGLTexture mShipTextureOpenGLHandle;
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
 
+    GameOpenGLTexture & mExplosionTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata<ExplosionTextureGroups> const & mExplosionTextureAtlasMetadata;
+
     GameOpenGLTexture & mGenericTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata const & mGenericTextureAtlasMetadata;
+    TextureAtlasMetadata<GenericTextureGroups> const & mGenericTextureAtlasMetadata;
 
 private:
 

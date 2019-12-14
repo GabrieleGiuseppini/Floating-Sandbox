@@ -7,7 +7,7 @@
 
 namespace Physics
 {
-    class Bombs;    
+    class Bombs;
     class Clouds;
     class ElectricalElements;
     class OceanFloor;
@@ -24,6 +24,8 @@ namespace Physics
 }
 
 #include <GameCore/ElementContainer.h>
+
+#include "IShipPhysicsHandler.h"
 
 #include "Storm.h"
 

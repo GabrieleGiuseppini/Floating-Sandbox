@@ -197,6 +197,15 @@ enum class BombType
 };
 
 /*
+ * Types of explosions (duh).
+ */
+enum class ExplosionType
+{
+    Combustion,
+    Deflagration
+};
+
+/*
  * Generic duration enum - short and long.
  */
 enum class DurationShortLongType
@@ -292,49 +301,26 @@ enum class ShipFlameRenderMode
 };
 
 /*
- * The texture groups we support.
- */
-enum class TextureGroupType : uint16_t
-{
-    AirBubble = 0,
-    AntiMatterBombArmor,
-    AntiMatterBombSphere,
-    AntiMatterBombSphereCloud,
-    Cloud,
-    ImpactBomb,
-    Land,
-    Noise,
-    Ocean,
-    PinnedPoint,
-    RcBomb,
-    RcBombExplosion,
-    RcBombPing,
-    TimerBomb,
-    TimerBombDefuse,
-    TimerBombExplosion,
-    TimerBombFuse,
-    WorldBorder,
-
-    _Last = WorldBorder
-};
-
-TextureGroupType StrToTextureGroupType(std::string const & str);
-
-/*
  * The index of a single texture frame in a group of textures.
  */
 using TextureFrameIndex = std::uint16_t;
 
 /*
  * The global identifier of a single texture frame.
+ *
+ * The identifier of a frame is hierarchical:
+ * - A group, identified by a value of the enum that
+ *   this identifier is templated on
+ * - The index of the frame in that group
  */
+template <typename TextureGroups>
 struct TextureFrameId
 {
-    TextureGroupType Group;
+    TextureGroups Group;
     TextureFrameIndex FrameIndex;
 
     TextureFrameId(
-        TextureGroupType group,
+        TextureGroups group,
         TextureFrameIndex frameIndex)
         : Group(group)
         , FrameIndex(frameIndex)
@@ -366,10 +352,10 @@ struct TextureFrameId
 
 namespace std {
 
-    template <>
-    struct hash<TextureFrameId>
+    template <typename TextureGroups>
+    struct hash<TextureFrameId<TextureGroups>>
     {
-        std::size_t operator()(TextureFrameId const & frameId) const
+        std::size_t operator()(TextureFrameId<TextureGroups> const & frameId) const
         {
             return std::hash<uint16_t>()(static_cast<uint16_t>(frameId.Group))
                 ^ std::hash<TextureFrameIndex>()(frameId.FrameIndex);

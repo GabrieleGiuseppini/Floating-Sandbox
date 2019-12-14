@@ -3,33 +3,79 @@
 * Created:              2018-09-26
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
+#pragma once
+
 #include "TextureDatabase.h"
-
-#include "ImageFileTools.h"
-
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
-
-#include <map>
-#include <regex>
-#include <set>
 
 namespace Render {
 
-TextureFrame TextureFrameSpecification::LoadFrame() const
+template <typename TextureGroups>
+void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
 {
-    RgbaImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
+    picojson::object size;
+    size["width"] = picojson::value(static_cast<int64_t>(Size.Width));
+    size["height"] = picojson::value(static_cast<int64_t>(Size.Height));
+    root["size"] = picojson::value(size);
 
-    return TextureFrame(
-        Metadata,
-        std::move(imageData));
+    picojson::object worldSize;
+    worldSize["width"] = picojson::value(static_cast<double>(WorldWidth));
+    worldSize["height"] = picojson::value(static_cast<double>(WorldHeight));
+    root["world_size"] = picojson::value(worldSize);
+
+    root["has_own_ambient_light"] = picojson::value(HasOwnAmbientLight);
+
+    picojson::object anchorWorld;
+    anchorWorld["x"] = picojson::value(static_cast<double>(AnchorWorldX));
+    anchorWorld["y"] = picojson::value(static_cast<double>(AnchorWorldY));
+    root["anchor_world"] = picojson::value(anchorWorld);
+
+    picojson::object frameId;
+    frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
+    frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
+    root["id"] = picojson::value(frameId);
+
+    root["name"] = picojson::value(FrameName);
 }
 
-TextureDatabase TextureDatabase::Load(
-    ResourceLoader const & resourceLoader,
-    ProgressCallback const & progressCallback)
+template <typename TextureGroups>
+TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
 {
-    auto const texturesRoot = resourceLoader.GetTexturesFilePath();
+    picojson::object const & sizeJson = root.at("size").get<picojson::object>();
+    ImageSize size(
+        static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
+        static_cast<int>(sizeJson.at("height").get<std::int64_t>()));
+
+    picojson::object const & worldSizeJson = root.at("world_size").get<picojson::object>();
+    float worldWidth = static_cast<float>(worldSizeJson.at("width").get<double>());
+    float worldHeight = static_cast<float>(worldSizeJson.at("height").get<double>());
+
+    bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
+
+    picojson::object const & anchorWorldJson = root.at("anchor_world").get<picojson::object>();
+    float anchorWorldX = static_cast<float>(anchorWorldJson.at("x").get<double>());
+    float anchorWorldY = static_cast<float>(anchorWorldJson.at("y").get<double>());
+
+    picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
+    TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
+    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
+
+    std::string const & name = root.at("name").get<std::string>();
+
+    return TextureFrameMetadata<TextureGroups>(
+        size,
+        worldWidth,
+        worldHeight,
+        hasOwnAmbientLight,
+        anchorWorldX,
+        anchorWorldY,
+        TextureFrameId<TextureGroups>(group, frameIndex),
+        name);
+}
+
+template <typename TextureDatabaseTraits>
+TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::Load(std::filesystem::path const & texturesRootFolderPath)
+{
+    std::filesystem::path const databaseFolderPath = texturesRootFolderPath / TextureDatabaseTraits::DatabaseName;
 
     //
     // Visit directory and build set of all files
@@ -50,9 +96,7 @@ TextureDatabase TextureDatabase::Load(
 
     std::vector<FileData> allTextureFiles;
 
-    std::set<std::filesystem::path> matchedTextureFiles;
-
-    for (auto const & entryIt : std::filesystem::directory_iterator(texturesRoot))
+    for (auto const & entryIt : std::filesystem::directory_iterator(databaseFolderPath))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
             && entryIt.path().extension().string() != ".json")
@@ -70,11 +114,11 @@ TextureDatabase TextureDatabase::Load(
     // Load JSON file
     //
 
-    std::filesystem::path const jsonFilePath = texturesRoot / "textures.json";
+    std::filesystem::path const jsonFilePath = databaseFolderPath / "database.json";
     picojson::value root = Utils::ParseJSONFile(jsonFilePath.string());
     if (!root.is<picojson::array>())
     {
-        throw GameException("Texture database: file \"" + jsonFilePath.string() + "\" does not contain a JSON array");
+        throw GameException("Texture database \"" + TextureDatabaseTraits::DatabaseName + "\": file \"" + jsonFilePath.string() + "\" does not contain a JSON array");
     }
 
 
@@ -83,9 +127,10 @@ TextureDatabase TextureDatabase::Load(
     //
 
     float const framesToLoad = static_cast<float>(allTextureFiles.size());
-    float framesLoaded = 0.0f;
 
-    std::vector<TextureGroup> textureGroups;
+    std::vector<TextureGroup<TextureGroups>> textureGroups;
+
+    std::set<std::filesystem::path> matchedTextureFiles;
 
     for (auto const & groupValue : root.get<picojson::array>())
     {
@@ -97,7 +142,7 @@ TextureDatabase TextureDatabase::Load(
         auto groupJson = groupValue.get<picojson::object>();
 
         std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "groupName");
-        TextureGroupType groupType = StrToTextureGroupType(groupName);
+        TextureGroups group = TextureDatabaseTraits::StrToTextureGroup(groupName);
 
         // Load group-wide defaults
         std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
@@ -112,7 +157,7 @@ TextureDatabase TextureDatabase::Load(
         // Process frames from JSON and build texture frames
         //
 
-        std::vector<TextureFrameSpecification> textureFrames;
+        std::vector<TextureFrameSpecification<TextureGroups>> textureFrames;
 
         for (auto const & frameValue : Utils::GetMandatoryJsonArray(groupJson, "frames"))
         {
@@ -139,7 +184,7 @@ TextureDatabase TextureDatabase::Load(
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
-            for (auto fileIt = allTextureFiles.cbegin(); fileIt!= allTextureFiles.cend(); ++fileIt)
+            for (auto fileIt = allTextureFiles.cbegin(); fileIt != allTextureFiles.cend(); ++fileIt)
             {
                 FileData const & fileData = *fileIt;
 
@@ -248,15 +293,15 @@ TextureDatabase TextureDatabase::Load(
                     //
 
                     textureFrames.emplace_back(
-                        TextureFrameSpecification(
-                            TextureFrameMetadata(
+                        TextureFrameSpecification<TextureGroups>(
+                            TextureFrameMetadata<TextureGroups>(
                                 textureSize,
                                 worldWidth,
                                 worldHeight,
                                 hasOwnAmbientLight,
                                 anchorWorldX,
                                 anchorWorldY,
-                                TextureFrameId(groupType, frameIndex),
+                                TextureFrameId<TextureGroups>(group, frameIndex),
                                 name),
                             fileData.Path));
 
@@ -268,14 +313,6 @@ TextureDatabase TextureDatabase::Load(
                     matchedTextureFiles.insert(fileData.Path);
 
                     ++filesFoundFromFrameCount;
-
-
-                    //
-                    // Notify progress
-                    //
-
-                    framesLoaded += 1.0f;
-                    progressCallback(framesLoaded / framesToLoad, "Loading textures...");
                 }
             }
 
@@ -310,7 +347,7 @@ TextureDatabase TextureDatabase::Load(
 
         // Store texture frames
         textureGroups.emplace_back(
-            groupType,
+            group,
             textureFrames);
     }
 
@@ -324,7 +361,7 @@ TextureDatabase TextureDatabase::Load(
         });
 
     // Make sure all group indices are found
-    for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TextureGroupType::_Last); ++expectedIndex)
+    for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TextureGroups::_Last); ++expectedIndex)
     {
         if (static_cast<uint16_t>(textureGroups[expectedIndex].Group) < expectedIndex)
         {
@@ -340,15 +377,30 @@ TextureDatabase TextureDatabase::Load(
     if (matchedTextureFiles.size() != allTextureFiles.size())
     {
         throw GameException(
-            "Texture database: couldn't match " 
-            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size()) 
+            "Texture database: couldn't match "
+            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size())
             + " texture files to texture specifications");
     }
-
-    // Notify progress
-    progressCallback(1.0f, "Loading textures...");
 
     return TextureDatabase(std::move(textureGroups));
 }
 
 }
+
+//
+// Explicit specializations for all database groups
+//
+
+#include "TextureTypes.h"
+
+template class Render::TextureFrameMetadata<Render::CloudTextureGroups>;
+template class Render::TextureFrameMetadata<Render::WorldTextureGroups>;
+template class Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
+template class Render::TextureFrameMetadata<Render::GenericTextureGroups>;
+template class Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
+
+template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::NoiseTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::GenericTextureTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::ExplosionTextureDatabaseTraits>;

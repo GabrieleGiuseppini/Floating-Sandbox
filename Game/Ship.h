@@ -16,6 +16,7 @@
 #include <GameCore/RunningAverage.h>
 #include <GameCore/Vectors.h>
 
+#include <list>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -23,8 +24,7 @@
 namespace Physics
 {
 
-class Ship
-    : public Bomb::IPhysicsHandler
+class Ship : public IShipPhysicsHandler
 {
 public:
 
@@ -273,6 +273,12 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void UpdateStateMachines(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void UploadStateMachines(Render::RenderContext & renderContext);
+
 private:
 
     void RunConnectivityVisit();
@@ -282,34 +288,6 @@ private:
     void DestroyConnectedTriangles(
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
-
-    void PointDetachHandler(
-        ElementIndex pointElementIndex,
-        bool generateDebris,
-        bool fireDestroyEvent,
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
-    void OnPointOrphaned(
-        ElementIndex pointElementIndex);
-
-    void EphemeralParticleDestroyHandler(
-        ElementIndex pointElementIndex);
-
-    void SpringDestroyHandler(
-        ElementIndex springElementIndex,
-        bool destroyAllTriangles,
-        GameParameters const & gameParameters);
-
-    void SpringRestoreHandler(
-        ElementIndex springElementIndex,
-        GameParameters const & gameParameters);
-
-    void TriangleDestroyHandler(ElementIndex triangleElementIndex);
-
-    void TriangleRestoreHandler(ElementIndex triangleElementIndex);
-
-    void ElectricalElementDestroyHandler(ElementIndex electricalElementIndex);
 
     void GenerateAirBubbles(
         vec2f const & position,
@@ -375,12 +353,42 @@ private:
 private:
 
     /////////////////////////////////////////////////////////////////////////
-    // Bomb::IPhysicsHandler
+    // IShipPhysicsHandler
     /////////////////////////////////////////////////////////////////////////
 
-    virtual void DoBombExplosion(
-        vec2f const & blastPosition,
-        float sequenceProgress,
+    virtual void HandlePointDetach(
+        ElementIndex pointElementIndex,
+        bool generateDebris,
+        bool fireDestroyEvent,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleEphemeralParticleDestroy(
+        ElementIndex pointElementIndex) override;
+
+    virtual void HandleSpringDestroy(
+        ElementIndex springElementIndex,
+        bool destroyAllTriangles,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleSpringRestore(
+        ElementIndex springElementIndex,
+        GameParameters const & gameParameters) override;
+
+    virtual void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
+
+    virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
+
+    virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
+
+    virtual void StartExplosion(
+        float currentSimulationTime,
+        PlaneId planeId,
+        vec2f const & centerPosition,
+        float blastRadius,
+        float blastStrength,
+        float blastHeat,
+        ExplosionType explosionType,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombPreimplosion(
@@ -403,6 +411,44 @@ private:
 #ifdef _DEBUG
     void VerifyInvariants();
 #endif
+
+private:
+
+    /////////////////////////////////////////////////////////////////////////
+    // State machines
+    /////////////////////////////////////////////////////////////////////////
+
+    enum class StateMachineType
+    {
+        Explosion
+    };
+
+    struct StateMachine
+    {
+    public:
+
+        StateMachineType const Type;
+
+        StateMachine(StateMachineType type)
+            : Type(type)
+        {}
+
+        virtual ~StateMachine()
+        {}
+    };
+
+    struct ExplosionStateMachine;
+
+    inline bool UpdateExplosionStateMachine(
+        ExplosionStateMachine & explosionStateMachine,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    inline void UploadExplosionStateMachine(
+        ExplosionStateMachine const & explosionStateMachine,
+        Render::RenderContext & renderContext);
+
+    std::list<std::unique_ptr<StateMachine>> mStateMachines;
 
 private:
 

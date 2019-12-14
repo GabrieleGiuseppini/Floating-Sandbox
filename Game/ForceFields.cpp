@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameMath.h>
+
 #include <algorithm>
 
 namespace Physics {

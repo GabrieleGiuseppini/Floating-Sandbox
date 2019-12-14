@@ -30,12 +30,13 @@ public:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IPhysicsHandler & physicsHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
     virtual bool MayBeRemoved() const override
@@ -91,10 +92,6 @@ private:
         // move to exploding
         DetonationLeadIn,
 
-        // In this state we are exploding, and increment our counter to
-        // match the explosion animation until the animation is over
-        Exploding,
-
         // We enter this state once the bomb gets underwater; we play a short
         // smoke animation and then we transition to defuse
         Defusing,
@@ -114,9 +111,6 @@ private:
 
     static constexpr auto DetonationLeadInToExplosionInterval = 1500ms;
 
-    static constexpr auto ExplosionProgressInterval = 20ms;
-    static constexpr uint8_t ExplosionStepsCount = 9;
-
     static constexpr auto DefusingInterval = 500ms;
     static constexpr uint8_t DefuseStepsCount = 3;
 
@@ -131,7 +125,6 @@ private:
     // The counters for the various states; set to zero upon
     // entering the state for the first time. Fine to rollover!
     uint8_t mFuseStepCounter;
-    uint8_t mExplodingStepCounter;
     uint8_t mDefuseStepCounter;
     uint8_t mDetonationLeadInShapeFrameCounter;
 };

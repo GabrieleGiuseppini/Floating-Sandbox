@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderCore.h"
 #include "TextureDatabase.h"
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -23,35 +22,36 @@ namespace Render {
 /*
  * This class maintains metadata about a number of textures uploaded to the GPU.
  */
+template <typename TextureGroups>
 class UploadedTextureManager
 {
 public:
 
     // Assumption: all previous frames have been uploaded already
     void UploadNextFrame(
-        TextureGroup const & group,
+        TextureGroup<TextureGroups> const & group,
         TextureFrameIndex const & frameIndex,
         GLint minFilter);
 
     void UploadGroup(
-        TextureGroup const & group,
+        TextureGroup<TextureGroups> const & group,
         GLint minFilter,
         ProgressCallback const & progressCallback);
 
     void UploadMipmappedGroup(
-        TextureGroup const & group,
+        TextureGroup<TextureGroups> const & group,
         GLint minFilter,
         ProgressCallback const & progressCallback);
 
-    inline TextureFrameMetadata const & GetFrameMetadata(TextureFrameId const & frameId) const
+    inline TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & frameId) const
     {
         return GetFrameMetadata(
             frameId.Group,
             frameId.FrameIndex);
     }
 
-    inline TextureFrameMetadata const & GetFrameMetadata(
-        TextureGroupType group,
+    inline TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(
+        TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mFrameData.size());
@@ -60,7 +60,7 @@ public:
         return mFrameData[static_cast<size_t>(group)][frameIndex].Metadata;
     }
 
-    inline void BindTexture(TextureFrameId const & frameId) const
+    inline void BindTexture(TextureFrameId<TextureGroups> const & frameId) const
     {
         glBindTexture(
             GL_TEXTURE_2D,
@@ -69,7 +69,7 @@ public:
                 frameId.FrameIndex));
     }
 
-    inline GLuint GetOpenGLHandle(TextureFrameId const & frameId) const
+    inline GLuint GetOpenGLHandle(TextureFrameId<TextureGroups> const & frameId) const
     {
         return GetOpenGLHandle(
             frameId.Group,
@@ -77,7 +77,7 @@ public:
     }
 
     inline GLuint GetOpenGLHandle(
-        TextureGroupType group,
+        TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mFrameData.size());
@@ -90,11 +90,11 @@ private:
 
     struct FrameData
     {
-        TextureFrameMetadata Metadata;
+        TextureFrameMetadata<TextureGroups> Metadata;
         GameOpenGLTexture OpenGLHandle;
 
         FrameData(
-            TextureFrameMetadata const & metadata,
+            TextureFrameMetadata<TextureGroups> const & metadata,
             GLuint openGLHandle)
             : Metadata(metadata)
             , OpenGLHandle(openGLHandle)
@@ -105,3 +105,5 @@ private:
 };
 
 }
+
+#include "UploadedTextureManager-inl.h"

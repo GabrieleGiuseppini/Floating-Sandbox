@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include "Ship_StateMachines.h"
+
 #include <GameCore/Algorithms.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
@@ -104,13 +106,10 @@ Ship::Ship(
     mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
 
     // Set handlers
-    mPoints.RegisterDetachHandler(std::bind(&Ship::PointDetachHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
-    mPoints.RegisterEphemeralParticleDestroyHandler(std::bind(&Ship::EphemeralParticleDestroyHandler, this, std::placeholders::_1));
-    mSprings.RegisterDestroyHandler(std::bind(&Ship::SpringDestroyHandler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    mSprings.RegisterRestoreHandler(std::bind(&Ship::SpringRestoreHandler, this, std::placeholders::_1, std::placeholders::_2));
-    mTriangles.RegisterDestroyHandler(std::bind(&Ship::TriangleDestroyHandler, this, std::placeholders::_1));
-    mTriangles.RegisterRestoreHandler(std::bind(&Ship::TriangleRestoreHandler, this, std::placeholders::_1));
-    mElectricalElements.RegisterDestroyHandler(std::bind(&Ship::ElectricalElementDestroyHandler, this, std::placeholders::_1));
+    mPoints.RegisterShipPhysicsHandler(this);
+    mSprings.RegisterShipPhysicsHandler(this);
+    mTriangles.RegisterShipPhysicsHandler(this);
+    mElectricalElements.RegisterShipPhysicsHandler(this);
 
     // Do a first connectivity pass (for the first Update)
     RunConnectivityVisit();
@@ -164,6 +163,15 @@ void Ship::Update(
 
 
     //
+    // Update state machines
+    //
+    // May queue force fields!
+    //
+
+    UpdateStateMachines(currentSimulationTime, gameParameters);
+
+
+    //
     // Rot points
     //
 
@@ -173,7 +181,6 @@ void Ship::Update(
             currentSimulationTime,
             gameParameters);
     }
-
 
 
     //
@@ -202,6 +209,7 @@ void Ship::Update(
 
     mBombs.Update(
         currentWallClockTime,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -216,7 +224,7 @@ void Ship::Update(
 
 
     //
-    // Update water dynamics
+    // Update water dynamics - may generate ephemeral particles
     //
 
     UpdateWaterDynamics(
@@ -406,6 +414,13 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
+
+
+    //
+    // Upload state machines
+    //
+
+    UploadStateMachines(renderContext);
 
 
     //
@@ -1851,319 +1866,6 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
-void Ship::PointDetachHandler(
-    ElementIndex pointElementIndex,
-    bool generateDebris,
-    bool fireDestroyEvent,
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
-{
-    bool hasAnythingBeenDestroyed = false;
-
-    //
-    // Destroy all springs attached to this point
-    //
-
-    // Note: we can't simply iterate and destroy, as destroying a spring causes
-    // that spring to be removed from the vector being iterated
-    auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings;
-    while (!connectedSprings.empty())
-    {
-        assert(!mSprings.IsDeleted(connectedSprings.back().SpringIndex));
-
-        mSprings.Destroy(
-            connectedSprings.back().SpringIndex,
-            Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
-            | Springs::DestroyOptions::DestroyAllTriangles, // Destroy all triangles connected to each endpoint
-            gameParameters,
-            mPoints);
-
-        hasAnythingBeenDestroyed = true;
-    }
-
-    assert(mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.empty());
-
-    // At this moment, we've deleted all springs connected to this point, and we
-    // asked those strings to destroy all triangles connected to each endpoint
-    // (thus including this one).
-    // Given that a point is connected to a triangle iff the point is an endpoint
-    // of a spring-edge of that triangle, then we shouldn't have any triangles now
-    assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
-
-
-    //
-    // Destroy the connected electrical element, if any
-    //
-    // Note: we rely on the fact that this happens after connected springs have been destroyed, which
-    // ensures that the electrical element's set of connected electrical elements is empty
-    //
-
-    if (NoneElementIndex != mPoints.GetElectricalElement(pointElementIndex))
-    {
-        assert(!mElectricalElements.IsDeleted(mPoints.GetElectricalElement(pointElementIndex)));
-
-        mElectricalElements.Destroy(mPoints.GetElectricalElement(pointElementIndex));
-
-        hasAnythingBeenDestroyed = true;
-    }
-
-    if (hasAnythingBeenDestroyed)
-    {
-        // Notify bombs
-        mBombs.OnPointDetached(pointElementIndex);
-
-        if (generateDebris)
-        {
-            // Emit debris
-            GenerateDebris(
-                pointElementIndex,
-                currentSimulationTime,
-                gameParameters);
-        }
-
-        if (fireDestroyEvent)
-        {
-            // Notify destroy
-            mGameEventHandler->OnDestroy(
-                mPoints.GetStructuralMaterial(pointElementIndex),
-                mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
-                1);
-        }
-
-        // Remember the structure is now dirty
-        mIsStructureDirty = true;
-    }
-}
-
-void Ship::OnPointOrphaned(ElementIndex pointElementIndex)
-{
-    // Notify points
-    mPoints.OnOrphaned(pointElementIndex);
-}
-
-void Ship::EphemeralParticleDestroyHandler(ElementIndex pointElementIndex)
-{
-    // Notify pins
-    mPinnedPoints.OnEphemeralParticleDestroyed(pointElementIndex);
-}
-
-void Ship::SpringDestroyHandler(
-    ElementIndex springElementIndex,
-    bool destroyAllTriangles,
-    GameParameters const & /*gameParameters*/)
-{
-    auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
-    auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
-
-    //
-    // Remove spring from other elements
-    //
-
-    // Remove spring from set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
-    }
-
-    // Remove the spring from its endpoints
-    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
-    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
-
-    // Notify endpoints that have become orphaned
-    if (mPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
-        OnPointOrphaned(pointAIndex);
-    if (mPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
-        OnPointOrphaned(pointBIndex);
-
-
-    //
-    // Remove other elements from self
-    //
-
-    mSprings.ClearSuperTriangles(springElementIndex);
-
-
-    /////////////////////////////////////////////////
-
-    //
-    // Destroy connected triangles
-    //
-    // These are not only the triangles that have this spring as an edge;
-    // they also include triangles that have this spring as traverse (i.e.
-    // the non-edge diagonal of a two-triangle square)
-    //
-
-    if (destroyAllTriangles)
-    {
-        // We destroy all triangles connected to each endpoint
-        DestroyConnectedTriangles(pointAIndex);
-        DestroyConnectedTriangles(pointBIndex);
-    }
-    else
-    {
-        // We destroy only triangles connected to both endpoints
-        DestroyConnectedTriangles(pointAIndex, pointBIndex);
-    }
-
-
-    //
-    // Make non-hull endpoints leak
-    //
-
-    if (!mPoints.GetMaterialIsHull(pointAIndex))
-        mPoints.SetLeaking(pointAIndex);
-
-    if (!mPoints.GetMaterialIsHull(pointBIndex))
-        mPoints.SetLeaking(pointBIndex);
-
-
-    //
-    // If both endpoints are electrical elements, then disconnect them - i.e. remove
-    // them from each other's set of connected electrical elements
-    //
-
-    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
-    if (NoneElementIndex != electricalElementAIndex)
-    {
-        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
-        if (NoneElementIndex != electricalElementBIndex)
-        {
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementAIndex,
-                electricalElementBIndex);
-
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementBIndex,
-                electricalElementAIndex);
-        }
-    }
-
-    // Notify bombs
-    mBombs.OnSpringDestroyed(springElementIndex);
-
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
-
-    // Update count of broken springs
-    ++mBrokenSpringsCount;
-}
-
-void Ship::SpringRestoreHandler(
-    ElementIndex springElementIndex,
-    GameParameters const & /*gameParameters*/)
-{
-    //
-    // Add others to self
-    //
-
-    // Restore factory supertriangles
-    mSprings.RestoreFactorySuperTriangles(springElementIndex);
-
-    //
-    // Add self to others
-    //
-
-    // Connect self to endpoints
-    mPoints.ConnectSpring(mSprings.GetEndpointAIndex(springElementIndex), springElementIndex, mSprings.GetEndpointBIndex(springElementIndex), true); // Owner
-    mPoints.ConnectSpring(mSprings.GetEndpointBIndex(springElementIndex), springElementIndex, mSprings.GetEndpointAIndex(springElementIndex), false); // Not owner
-
-    // Add spring to set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
-    }
-
-    // Fire event - using point A's properties (quite arbitrarily)
-    mGameEventHandler->OnSpringRepaired(
-        mPoints.GetStructuralMaterial(mSprings.GetEndpointAIndex(springElementIndex)),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(mSprings.GetEndpointAIndex(springElementIndex))),
-        1);
-
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
-
-    // Update count of broken springs
-    assert(mBrokenSpringsCount > 0);
-    --mBrokenSpringsCount;
-}
-
-void Ship::TriangleDestroyHandler(ElementIndex triangleElementIndex)
-{
-    //
-    // Remove triangle from other elements
-    //
-
-    // Remove triangle from set of super triangles of its sub springs
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
-    {
-        mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
-    }
-
-    // Disconnect triangle from its endpoints
-    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-
-    //
-    // Remove other elements from self
-    //
-
-    mTriangles.ClearSubSprings(triangleElementIndex);
-
-
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
-
-    // Update count of broken triangles
-    ++mBrokenTrianglesCount;
-}
-
-void Ship::TriangleRestoreHandler(ElementIndex triangleElementIndex)
-{
-    //
-    // Add others to self
-    //
-
-    // Restore factory subsprings
-    mTriangles.RestoreFactorySubSprings(triangleElementIndex);
-
-
-    //
-    // Add self to others
-    //
-
-    // Connect triangle to its endpoints
-    mPoints.ConnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
-    mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-    mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-
-    // Add triangle to set of super triangles of its sub springs
-    assert(!mTriangles.GetSubSprings(triangleElementIndex).empty());
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
-    {
-        mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
-    }
-
-    // Fire event - using point A's properties (quite arbitrarily)
-    mGameEventHandler->OnTriangleRepaired(
-        mPoints.GetStructuralMaterial(mTriangles.GetPointAIndex(triangleElementIndex)),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(mTriangles.GetPointAIndex(triangleElementIndex))),
-        1);
-
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
-
-    // Update count of broken triangles
-    assert(mBrokenTrianglesCount > 0);
-    --mBrokenTrianglesCount;
-}
-
-void Ship::ElectricalElementDestroyHandler(ElementIndex /*electricalElementIndex*/)
-{
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
-}
-
 void Ship::GenerateAirBubbles(
     vec2f const & position,
     float currentSimulationTime,
@@ -2320,68 +2022,348 @@ void Ship::GenerateSparklesForLightning(
 }
 
 /////////////////////////////////////////////////////////////////////////
-// Bomb::IPhysicsHandler
+// IShipPhysicsHandler
 /////////////////////////////////////////////////////////////////////////
 
-void Ship::DoBombExplosion(
-    vec2f const & blastPosition,
-    float sequenceProgress,
+void Ship::HandlePointDetach(
+    ElementIndex pointElementIndex,
+    bool generateDebris,
+    bool fireDestroyEvent,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    // Blast radius: from 0.6 to BombBlastRadius
-    float const blastRadius = 0.6f + (std::max(gameParameters.BombBlastRadius - 0.6f, 0.0f)) * sequenceProgress;
+    bool hasAnythingBeenDestroyed = false;
 
     //
-    // Blast force
+    // Destroy all springs attached to this point
     //
 
-    float const blastStrength =
-        750.0f
-        * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
-
-    // Store the force field
-    AddForceField<BlastForceField>(
-        blastPosition,
-        blastRadius,
-        blastStrength,
-        sequenceProgress == 0.0f);
-
-    //
-    // Blast heat
-    //
-
-    // Q = q*dt
-    float const blastHeat =
-        gameParameters.BombBlastHeat * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
-
-    float const blastHeatSquareRadius =
-        blastRadius * blastRadius
-        * 1.5f; // Larger radius, so to heat parts that are not swept by the blast and stay behind
-
-    // Search all non-ephemeral points within the radius
-    for (auto pointIndex : mPoints.RawShipPoints())
+    // Note: we can't simply iterate and destroy, as destroying a spring causes
+    // that spring to be removed from the vector being iterated
+    auto & connectedSprings = mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings;
+    while (!connectedSprings.empty())
     {
-        float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - blastPosition).squareLength();
-        if (pointSquareDistance < blastHeatSquareRadius)
+        assert(!mSprings.IsDeleted(connectedSprings.back().SpringIndex));
+
+        mSprings.Destroy(
+            connectedSprings.back().SpringIndex,
+            Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
+            | Springs::DestroyOptions::DestroyAllTriangles, // Destroy all triangles connected to each endpoint
+            gameParameters,
+            mPoints);
+
+        hasAnythingBeenDestroyed = true;
+    }
+
+    assert(mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.empty());
+
+    // At this moment, we've deleted all springs connected to this point, and we
+    // asked those strings to destroy all triangles connected to each endpoint
+    // (thus including this one).
+    // Given that a point is connected to a triangle iff the point is an endpoint
+    // of a spring-edge of that triangle, then we shouldn't have any triangles now
+    assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
+
+
+    //
+    // Destroy the connected electrical element, if any
+    //
+    // Note: we rely on the fact that this happens after connected springs have been destroyed, which
+    // ensures that the electrical element's set of connected electrical elements is empty
+    //
+
+    if (NoneElementIndex != mPoints.GetElectricalElement(pointElementIndex))
+    {
+        assert(!mElectricalElements.IsDeleted(mPoints.GetElectricalElement(pointElementIndex)));
+
+        mElectricalElements.Destroy(mPoints.GetElectricalElement(pointElementIndex));
+
+        hasAnythingBeenDestroyed = true;
+    }
+
+    if (hasAnythingBeenDestroyed)
+    {
+        // Notify bombs
+        mBombs.OnPointDetached(pointElementIndex);
+
+        if (generateDebris)
         {
-            //
-            // Inject heat at this point
-            //
+            // Emit debris
+            GenerateDebris(
+                pointElementIndex,
+                currentSimulationTime,
+                gameParameters);
+        }
 
-            // Calc temperature delta
-            // T = Q/HeatCapacity
-            float const deltaT =
-                blastHeat
-                / mPoints.GetMaterialHeatCapacity(pointIndex);
+        if (fireDestroyEvent)
+        {
+            // Notify destroy
+            mGameEventHandler->OnDestroy(
+                mPoints.GetStructuralMaterial(pointElementIndex),
+                mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+        }
 
-            // Increase temperature
-            mPoints.SetTemperature(
-                pointIndex,
-                mPoints.GetTemperature(pointIndex) + deltaT);
+        // Remember the structure is now dirty
+        mIsStructureDirty = true;
+    }
+}
+
+void Ship::HandleEphemeralParticleDestroy(ElementIndex pointElementIndex)
+{
+    // Notify pins
+    mPinnedPoints.OnEphemeralParticleDestroyed(pointElementIndex);
+}
+
+void Ship::HandleSpringDestroy(
+    ElementIndex springElementIndex,
+    bool destroyAllTriangles,
+    GameParameters const & /*gameParameters*/)
+{
+    auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
+    auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
+
+    //
+    // Remove spring from other elements
+    //
+
+    // Remove spring from set of sub springs at each super-triangle
+    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
+    {
+        mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
+    }
+
+    // Remove the spring from its endpoints
+    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
+    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
+
+    // Notify endpoints that have become orphaned
+    if (mPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
+        mPoints.OnOrphaned(pointAIndex);
+    if (mPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
+        mPoints.OnOrphaned(pointBIndex);
+
+
+    //
+    // Remove other elements from self
+    //
+
+    mSprings.ClearSuperTriangles(springElementIndex);
+
+
+    /////////////////////////////////////////////////
+
+    //
+    // Destroy connected triangles
+    //
+    // These are not only the triangles that have this spring as an edge;
+    // they also include triangles that have this spring as traverse (i.e.
+    // the non-edge diagonal of a two-triangle square)
+    //
+
+    if (destroyAllTriangles)
+    {
+        // We destroy all triangles connected to each endpoint
+        DestroyConnectedTriangles(pointAIndex);
+        DestroyConnectedTriangles(pointBIndex);
+    }
+    else
+    {
+        // We destroy only triangles connected to both endpoints
+        DestroyConnectedTriangles(pointAIndex, pointBIndex);
+    }
+
+
+    //
+    // Make non-hull endpoints leak
+    //
+
+    if (!mPoints.GetMaterialIsHull(pointAIndex))
+        mPoints.SetLeaking(pointAIndex);
+
+    if (!mPoints.GetMaterialIsHull(pointBIndex))
+        mPoints.SetLeaking(pointBIndex);
+
+
+    //
+    // If both endpoints are electrical elements, then disconnect them - i.e. remove
+    // them from each other's set of connected electrical elements
+    //
+
+    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
+    if (NoneElementIndex != electricalElementAIndex)
+    {
+        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
+        if (NoneElementIndex != electricalElementBIndex)
+        {
+            mElectricalElements.RemoveConnectedElectricalElement(
+                electricalElementAIndex,
+                electricalElementBIndex);
+
+            mElectricalElements.RemoveConnectedElectricalElement(
+                electricalElementBIndex,
+                electricalElementAIndex);
         }
     }
+
+    // Notify bombs
+    mBombs.OnSpringDestroyed(springElementIndex);
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+
+    // Update count of broken springs
+    ++mBrokenSpringsCount;
+}
+
+void Ship::HandleSpringRestore(
+    ElementIndex springElementIndex,
+    GameParameters const & /*gameParameters*/)
+{
+    //
+    // Add others to self
+    //
+
+    // Restore factory supertriangles
+    mSprings.RestoreFactorySuperTriangles(springElementIndex);
+
+    //
+    // Add self to others
+    //
+
+    // Connect self to endpoints
+    mPoints.ConnectSpring(mSprings.GetEndpointAIndex(springElementIndex), springElementIndex, mSprings.GetEndpointBIndex(springElementIndex), true); // Owner
+    mPoints.ConnectSpring(mSprings.GetEndpointBIndex(springElementIndex), springElementIndex, mSprings.GetEndpointAIndex(springElementIndex), false); // Not owner
+
+    // Add spring to set of sub springs at each super-triangle
+    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
+    {
+        mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
+    }
+
+    // Fire event - using point A's properties (quite arbitrarily)
+    mGameEventHandler->OnSpringRepaired(
+        mPoints.GetStructuralMaterial(mSprings.GetEndpointAIndex(springElementIndex)),
+        mParentWorld.IsUnderwater(mPoints.GetPosition(mSprings.GetEndpointAIndex(springElementIndex))),
+        1);
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+
+    // Update count of broken springs
+    assert(mBrokenSpringsCount > 0);
+    --mBrokenSpringsCount;
+
+    // Notify if we've just completely restored the ship
+    if (mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
+    {
+        mGameEventHandler->OnShipRepaired(mId);
+    }
+}
+
+void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
+{
+    //
+    // Remove triangle from other elements
+    //
+
+    // Remove triangle from set of super triangles of its sub springs
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    {
+        mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
+    }
+
+    // Disconnect triangle from its endpoints
+    mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+
+    //
+    // Remove other elements from self
+    //
+
+    mTriangles.ClearSubSprings(triangleElementIndex);
+
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+
+    // Update count of broken triangles
+    ++mBrokenTrianglesCount;
+}
+
+void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
+{
+    //
+    // Add others to self
+    //
+
+    // Restore factory subsprings
+    mTriangles.RestoreFactorySubSprings(triangleElementIndex);
+
+
+    //
+    // Add self to others
+    //
+
+    // Connect triangle to its endpoints
+    mPoints.ConnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
+    mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+    mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+
+    // Add triangle to set of super triangles of its sub springs
+    assert(!mTriangles.GetSubSprings(triangleElementIndex).empty());
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    {
+        mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
+    }
+
+    // Fire event - using point A's properties (quite arbitrarily)
+    mGameEventHandler->OnTriangleRepaired(
+        mPoints.GetStructuralMaterial(mTriangles.GetPointAIndex(triangleElementIndex)),
+        mParentWorld.IsUnderwater(mPoints.GetPosition(mTriangles.GetPointAIndex(triangleElementIndex))),
+        1);
+
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+
+    // Update count of broken triangles
+    assert(mBrokenTrianglesCount > 0);
+    --mBrokenTrianglesCount;
+
+    // Notify if we've just completely restored the ship
+    if (mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
+    {
+        mGameEventHandler->OnShipRepaired(mId);
+    }
+}
+
+void Ship::HandleElectricalElementDestroy(ElementIndex /*electricalElementIndex*/)
+{
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+}
+
+void Ship::StartExplosion(
+    float currentSimulationTime,
+    PlaneId planeId,
+    vec2f const & centerPosition,
+    float blastRadius,
+    float blastStrength,
+    float blastHeat,
+    ExplosionType explosionType,
+    GameParameters const & /*gameParameters*/)
+{
+    // Queue state machine
+    mStateMachines.push_back(
+        std::make_unique<ExplosionStateMachine>(
+            currentSimulationTime,
+            planeId,
+            centerPosition,
+            blastRadius,
+            blastStrength,
+            blastHeat,
+            explosionType));
 }
 
 void Ship::DoAntiMatterBombPreimplosion(

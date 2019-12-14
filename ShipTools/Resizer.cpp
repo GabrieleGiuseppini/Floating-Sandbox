@@ -6,9 +6,9 @@
 #include "Resizer.h"
 
 void Resizer::Resize(
-    std::string const & inputFile,
-    std::string const & outputFile,
-    int width)
+    std::string const & /*inputFile*/,
+    std::string const & /*outputFile*/,
+    int /*width*/)
 {
 
 }

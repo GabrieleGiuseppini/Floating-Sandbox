@@ -32,6 +32,25 @@ inline constexpr T ceil_power_of_two(T value)
     return result;
 }
 
+template<typename T>
+inline constexpr T ceil_square_power_of_two(T value)
+{
+    // Special cases
+    if (value < 2)
+        return value;
+
+    T e;
+    --value;
+    for (e = 0; value > 1; ++e, value >>= 1);
+    if (value > 0)
+        ++e;
+
+    if ((e % 2) != 0)
+        ++e;
+
+    return T(1) << e;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Intrinsics
 ////////////////////////////////////////////////////////////////////////////////////////

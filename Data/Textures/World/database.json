@@ -1,0 +1,206 @@
+[
+
+{
+	"groupName": "Land",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{
+			"index": 0,
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_0",
+			"name": "Sand"
+		},
+		{
+			"index": 1,
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_1",
+			"name": "Rock Coarse 1"
+		},
+		{
+			"index": 2,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_2",
+			"name": "Rock Coarse 2"
+		},
+		{
+			"index": 3,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_3",
+			"name": "Rock Coarse 3"
+		},
+		{
+			"index": 4,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_4",
+			"name": "Rock Coarse 4"
+		},
+		{
+			"index": 5,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_5",
+			"name": "Rock Coarse 5"
+		},
+		{
+			"index": 6,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_6",
+			"name": "Rock Coarse 6"
+		},
+		{
+			"index": 7,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_7",
+			"name": "Rock Fine 1"
+		},
+		{
+			"index": 8,
+			"worldWidth": 128.0,
+			"worldHeight": 128.0,
+			"filename": "land_8",
+			"name": "Rock Fine 2"
+		},
+		{
+			"index": 9,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_9",
+			"name": "Rock Fine 3"
+		},
+		{
+			"index": 10,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_10",
+			"name": "Rock Fine 4"
+		},
+		{
+			"index": 11,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "land_11",
+			"name": "Stratified"
+		}
+	]
+},
+
+{
+	"groupName": "Ocean",
+	"hasOwnAmbientLight": false,
+	"frames":[
+
+		{	
+			"index": 0,
+			"worldWidth": 64.0,
+			"worldHeight": 32.0,
+			"filename": "ocean_caribbean_0",
+			"name": "Wavy Clear Thin"
+		},
+		{	
+			"index": 1,
+			"worldWidth": 64.0,
+			"worldHeight": 32.0,
+			"filename": "ocean_0",
+			"name": "Wavy Thin"
+		},
+
+		{	
+			"index": 2,
+			"worldWidth": 64.0,
+			"worldHeight": 64.0,
+			"filename": "ocean_caribbean_0",
+			"name": "Wavy Clear Wide"
+		},
+		{	
+			"index": 3,
+			"worldWidth": 64.0,
+			"worldHeight": 64.0,
+			"filename": "ocean_0",
+			"name": "Wavy Wide"
+		},
+
+		{	
+			"index": 4,
+			"worldWidth": 25.0,
+			"worldHeight": 25.0,
+			"filename": "ocean_caribbean_1",
+			"name": "Crystalline Clear"
+		},
+		{	
+			"index": 5,
+			"worldWidth": 25.0,
+			"worldHeight": 25.0,
+			"filename": "ocean_1",
+			"name": "Crystalline"
+		},
+
+		{	
+			"index": 6,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_caribbean_2",
+			"name": "Murky Clear"
+		},
+		{	
+			"index": 7,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_2",
+			"name": "Murky"
+		},
+
+		{	
+			"index": 8,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_caribbean_3",
+			"name": "Crisp Clear"
+		},
+		{	
+			"index": 9,
+			"worldWidth": 100.0,
+			"worldHeight": 100.0,
+			"filename": "ocean_3",
+			"name": "Crisp"
+		},
+
+		{	
+			"index": 10,
+			"worldWidth": 150.0,
+			"worldHeight": 150.0,
+			"filename": "ocean_lava_0",
+			"name": "Hot Lava"
+		},
+
+		{	
+			"index": 11,
+			"worldWidth": 150.0,
+			"worldHeight": 150.0,
+			"filename": "ocean_lava_1",
+			"name": "Warm Lava"
+		}
+	]
+},
+
+{
+	"groupName": "WorldBorder",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"anchorOffsetX": 0,
+			"anchorOffsetY": 0,
+			"filename": "world_border_\\d+"
+		}
+	]
+}
+
+]

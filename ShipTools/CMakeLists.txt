@@ -4,6 +4,7 @@
 #
 
 set  (SHIP_TOOLS_SOURCES
+	Baker.h
 	Helpers.cpp
 	Helpers.h
 	Main.cpp

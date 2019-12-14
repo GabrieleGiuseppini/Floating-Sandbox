@@ -36,13 +36,13 @@ in vec2 texturePos;
 in float darkness;
 
 // The texture
-uniform sampler2D paramCloudTexture;
+uniform sampler2D paramCloudsAtlasTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
-    vec4 textureColor = texture2D(paramCloudTexture, texturePos);
+    vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
     gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, textureColor.w);
 } 

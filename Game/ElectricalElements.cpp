@@ -102,10 +102,8 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     assert(GetConnectedElectricalElements(electricalElementIndex).empty());
 
     // Invoke destroy handler
-    if (!!mDestroyHandler)
-    {
-        mDestroyHandler(electricalElementIndex);
-    }
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleElectricalElementDestroy(electricalElementIndex);
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;

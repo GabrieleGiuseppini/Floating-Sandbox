@@ -49,7 +49,11 @@ public:
 
     GameOpenGLObject & operator=(GameOpenGLObject && other)
     {
-        TDeleter::Delete(mValue);
+        if (!!(mValue))
+        {
+            TDeleter::Delete(mValue);
+        }
+
         mValue = other.mValue;
         other.mValue = T();
 
@@ -66,7 +70,17 @@ public:
         return mValue;
     }
 
-    T release() noexcept
+    void reset() noexcept
+    {
+        if (!!(mValue))
+        {
+            TDeleter::Delete(mValue);
+        }
+
+        mValue = T();
+    }
+
+    [[nodiscard]] T release() noexcept
     {
         auto value = mValue;
         mValue = T();

@@ -14,7 +14,7 @@ AntiMatterBomb::AntiMatterBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,7 +23,7 @@ AntiMatterBomb::AntiMatterBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipPhysicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::Contained_1)
@@ -39,6 +39,7 @@ AntiMatterBomb::AntiMatterBomb(
 
 bool AntiMatterBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
     auto const elapsed = std::chrono::duration<float>(currentWallClockTime - mLastUpdateTimePoint);
@@ -77,7 +78,7 @@ bool AntiMatterBomb::Update(
             mCurrentStateProgress = 0.0f;
 
             // Invoke handler
-            mPhysicsHandler.DoAntiMatterBombPreimplosion(
+            mShipPhysicsHandler.DoAntiMatterBombPreimplosion(
                 GetPosition(),
                 0.0f,
                 gameParameters);
@@ -109,7 +110,7 @@ bool AntiMatterBomb::Update(
                 mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * (1.0f - mCurrentStateProgress) * elapsed.count();
 
                 // Invoke handler
-                mPhysicsHandler.DoAntiMatterBombPreimplosion(
+                mShipPhysicsHandler.DoAntiMatterBombPreimplosion(
                     GetPosition(),
                     mCurrentStateProgress,
                     gameParameters);
@@ -125,7 +126,7 @@ bool AntiMatterBomb::Update(
                 mCurrentStateProgress = 0.0f;
 
                 // Invoke handler
-                mPhysicsHandler.DoAntiMatterBombImplosion(
+                mShipPhysicsHandler.DoAntiMatterBombImplosion(
                     GetPosition(),
                     0.0f,
                     gameParameters);
@@ -159,7 +160,7 @@ bool AntiMatterBomb::Update(
                 mCurrentCloudRotationAngle += ImplosionCloudRevolutionSpeed * mCurrentStateProgress * elapsed.count();
 
                 // Invoke handler
-                mPhysicsHandler.DoAntiMatterBombImplosion(
+                mShipPhysicsHandler.DoAntiMatterBombImplosion(
                     GetPosition(),
                     mCurrentStateProgress,
                     gameParameters);
@@ -201,7 +202,7 @@ bool AntiMatterBomb::Update(
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(PreExplosionInterval).count());
 
                 // Invoke handler at max of implosion strength
-                mPhysicsHandler.DoAntiMatterBombImplosion(
+                mShipPhysicsHandler.DoAntiMatterBombImplosion(
                     GetPosition(),
                     1.0f,
                     gameParameters);
@@ -219,7 +220,7 @@ bool AntiMatterBomb::Update(
                     1);
 
                 // Invoke explosion handler
-                mPhysicsHandler.DoAntiMatterBombExplosion(
+                mShipPhysicsHandler.DoAntiMatterBombExplosion(
                     GetPosition(),
                     0.0f,
                     gameParameters);
@@ -256,7 +257,7 @@ bool AntiMatterBomb::Update(
                 //
 
                 // Invoke explosion handler
-                mPhysicsHandler.DoAntiMatterBombExplosion(
+                mShipPhysicsHandler.DoAntiMatterBombExplosion(
                     GetPosition(),
                     mCurrentStateProgress,
                     gameParameters);
@@ -295,7 +296,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -306,7 +307,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -317,7 +318,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,
@@ -332,7 +333,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -343,7 +344,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -354,7 +355,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,
@@ -369,7 +370,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombArmor, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -380,7 +381,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphere, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -391,7 +392,7 @@ void AntiMatterBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::AntiMatterBombSphereCloud, 0),
+                TextureFrameId(Render::GenericTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
                 1.0f,
                 mCurrentCloudRotationAngle,

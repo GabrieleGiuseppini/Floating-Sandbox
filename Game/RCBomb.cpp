@@ -14,7 +14,7 @@ RCBomb::RCBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,19 +23,19 @@ RCBomb::RCBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipPhysicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::IdlePingOff)
     , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowPingOffInterval)
-    , mExplosionTimePoint(GameWallClock::time_point::min())
+    , mExplosionIgnitionTimestamp(GameWallClock::time_point::min())
     , mPingOnStepCounter(0u)
-    , mExplodingStepCounter(0u)
 {
 }
 
 bool RCBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -98,24 +98,53 @@ bool RCBomb::Update(
         case State::DetonationLeadIn:
         {
             // Check if time to explode
-            if (currentWallClockTime > mExplosionTimePoint)
+            if (currentWallClockTime > mExplosionIgnitionTimestamp)
             {
                 //
-                // Transition to Exploding state
+                // Explode
                 //
 
                 // Detach self (or else explosion will move along with ship performing
                 // its blast)
                 DetachIfAttached();
 
-                // Transition
-                TransitionToExploding(currentWallClockTime, gameParameters);
+                // Blast radius
+                float const blastRadius =
+                    gameParameters.BombBlastRadius
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                // Blast strength
+                float const blastStrength =
+                    700.0f // Magic number
+                    * gameParameters.BombBlastForceAdjustment;
+
+                // Blast heat
+                float const blastHeat =
+                    gameParameters.BombBlastHeat
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                // Start explosion
+                mShipPhysicsHandler.StartExplosion(
+                    currentSimulationTime,
+                    GetPlaneId(),
+                    GetPosition(),
+                    blastRadius,
+                    blastStrength,
+                    blastHeat,
+                    ExplosionType::Deflagration,
+                    gameParameters);
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     BombType::RCBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
+
+                //
+                // Transition to Expired state
+                //
+
+                mState = State::Expired;
             }
             else if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
@@ -124,20 +153,6 @@ bool RCBomb::Update(
                 //
 
                 TransitionToDetonationLeadIn(currentWallClockTime);
-            }
-
-            return true;
-        }
-
-        case State::Exploding:
-        {
-            if (currentWallClockTime > mNextStateTransitionTimePoint)
-            {
-                //
-                // Transition to Exploding state
-                //
-
-                TransitionToExploding(currentWallClockTime, gameParameters);
             }
 
             return true;
@@ -162,7 +177,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(Render::GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -177,7 +192,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(Render::GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -187,7 +202,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(Render::GenericTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -202,7 +217,7 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBomb, 0),
+                TextureFrameId(Render::GenericTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -212,27 +227,9 @@ void RCBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(Render::GenericTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            break;
-        }
-
-        case State::Exploding:
-        {
-            assert(mExplodingStepCounter >= 0);
-            assert(mExplodingStepCounter < ExplosionStepsCount);
-
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetPlaneId(),
-                TextureFrameId(TextureGroupType::RcBombExplosion, mExplodingStepCounter),
-                GetPosition(),
-                1.0f + static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
@@ -262,7 +259,7 @@ void RCBomb::Detonate()
         TransitionToDetonationLeadIn(currentWallClockTime);
 
         // Schedule explosion
-        mExplosionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
+        mExplosionIgnitionTimestamp = currentWallClockTime + DetonationLeadInToExplosionInterval;
     }
 }
 

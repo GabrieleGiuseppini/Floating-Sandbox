@@ -187,6 +187,14 @@ public:
             || (r == other.r && g == other.g && b == other.b && a < other.a);
     }
 
+    inline void alpha_multiply()
+    {
+        float const alpha = static_cast<float>(a) / 255.0f;
+        r = static_cast<uint8_t>(round(r * alpha));
+        g = static_cast<uint8_t>(round(g * alpha));
+        b = static_cast<uint8_t>(round(b * alpha));
+    }
+
     inline rgbaColor mix(
         rgbColor const & otherColor,
         float alpha) const noexcept

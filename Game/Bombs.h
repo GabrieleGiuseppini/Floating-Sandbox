@@ -35,13 +35,13 @@ public:
         World & parentWorld,
         ShipId shipId,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        Bomb::IPhysicsHandler & physicsHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mShipId(shipId)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mPhysicsHandler(physicsHandler)
+        , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentBombs()
@@ -51,6 +51,7 @@ public:
 
     void Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void OnPointDetached(ElementIndex pointElementIndex);
@@ -181,7 +182,7 @@ private:
                     nearestUnarmedSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
-                    mPhysicsHandler,
+                    mShipPhysicsHandler,
                     mShipPoints,
                     mShipSprings));
 
@@ -226,8 +227,8 @@ private:
     // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
-    // The handler to invoke for acting on the world
-    Bomb::IPhysicsHandler & mPhysicsHandler;
+    // The handler to invoke for acting on the ship
+    IShipPhysicsHandler & mShipPhysicsHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;

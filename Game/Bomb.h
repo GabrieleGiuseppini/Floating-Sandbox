@@ -31,40 +31,13 @@ class Bomb
 public:
 
     /*
-     * Interface required by bombs for acting on the physical world.
-     */
-    struct IPhysicsHandler
-    {
-        virtual void DoBombExplosion(
-            vec2f const & blastPosition,
-            float sequenceProgress,
-            GameParameters const & gameParameters) = 0;
-
-        virtual void DoAntiMatterBombPreimplosion(
-            vec2f const & centerPosition,
-            float sequenceProgress,
-            GameParameters const & gameParameters) = 0;
-
-        virtual void DoAntiMatterBombImplosion(
-            vec2f const & centerPosition,
-            float sequenceProgress,
-            GameParameters const & gameParameters) = 0;
-
-        virtual void DoAntiMatterBombExplosion(
-            vec2f const & centerPosition,
-            float sequenceProgress,
-            GameParameters const & gameParameters) = 0;
-    };
-
-public:
-
-    /*
      * Updates the bomb's state machine.
      *
      * Returns false when the bomb has "expired" and thus can be deleted.
      */
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters) = 0;
 
     /*
@@ -201,6 +174,15 @@ public:
         }
     }
 
+    /*
+     * Returns the personality seed of this bomb, i.e.
+     * a uniform normalized random value.
+     */
+    float GetPersonalitySeed() const
+    {
+        return mPersonalitySeed;
+    }
+
 protected:
 
     Bomb(
@@ -209,13 +191,13 @@ protected:
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        IPhysicsHandler & physicsHandler,
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mId(id)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
-        , mPhysicsHandler(physicsHandler)
+        , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mRotationBaseAxis(shipSprings.GetEndpointBPosition(springIndex, shipPoints) - shipSprings.GetEndpointAPosition(springIndex, shipPoints))
@@ -224,6 +206,7 @@ protected:
         , mFrozenMidpointPosition(std::nullopt)
         , mFrozenRotationOffsetAxis(std::nullopt)
         , mFrozenPlaneId(std::nullopt)
+        , mPersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
     {
     }
 
@@ -236,8 +219,8 @@ protected:
     // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
-    // The handler to invoke for acting on the world
-    IPhysicsHandler & mPhysicsHandler;
+    // The handler to invoke for acting on the ship
+    IShipPhysicsHandler & mShipPhysicsHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;
@@ -267,6 +250,9 @@ private:
 
     // The plane ID of this bomb, if the bomb has been detached from its spring; otherwise, none
     std::optional<PlaneId> mFrozenPlaneId;
+
+    // The random personality seed
+    float const mPersonalitySeed;
 };
 
 }

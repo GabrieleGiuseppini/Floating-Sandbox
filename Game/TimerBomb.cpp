@@ -14,7 +14,7 @@ TimerBomb::TimerBomb(
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    IPhysicsHandler & physicsHandler,
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
     : Bomb(
@@ -23,14 +23,13 @@ TimerBomb::TimerBomb(
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
-        physicsHandler,
+        shipPhysicsHandler,
         shipPoints,
         shipSprings)
     , mState(State::SlowFuseBurning)
     , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowFuseToDetonationLeadInInterval / FuseStepCount)
     , mFuseFlameFrameIndex(0)
     , mFuseStepCounter(0)
-    , mExplodingStepCounter(0)
     , mDefuseStepCounter(0)
     , mDetonationLeadInShapeFrameCounter(0)
 {
@@ -42,6 +41,7 @@ TimerBomb::TimerBomb(
 
 bool TimerBomb::Update(
     GameWallClock::time_point currentWallClockTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -127,21 +127,37 @@ bool TimerBomb::Update(
             if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
                 //
-                // Transition to Exploding state
+                // Explode
                 //
-
-                mState = State::Exploding;
-
-                assert(0 == mExplodingStepCounter);
 
                 // Detach self (or else explosion will move along with ship performing
                 // its blast)
                 DetachIfAttached();
 
-                // Invoke explosion handler
-                mPhysicsHandler.DoBombExplosion(
+                // Blast radius
+                float const blastRadius =
+                    gameParameters.BombBlastRadius
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                // Blast strength
+                float const blastStrength =
+                    500.0f // Magic number
+                    * gameParameters.BombBlastForceAdjustment;
+
+                // Blast heat
+                float const blastHeat =
+                    gameParameters.BombBlastHeat
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                // Start explosion
+                mShipPhysicsHandler.StartExplosion(
+                    currentSimulationTime,
+                    GetPlaneId(),
                     GetPosition(),
-                    static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
+                    blastRadius,
+                    blastStrength,
+                    blastHeat,
+                    ExplosionType::Deflagration,
                     gameParameters);
 
                 // Notify explosion
@@ -150,43 +166,16 @@ bool TimerBomb::Update(
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 
-                // Schedule next transition
-                mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
+                //
+                // Transition to Expired state
+                //
+
+                mState = State::Expired;
             }
             else
             {
                 // Increment frame counter
                 ++mDetonationLeadInShapeFrameCounter;
-            }
-
-            return true;
-        }
-
-        case State::Exploding:
-        {
-            if (currentWallClockTime > mNextStateTransitionTimePoint)
-            {
-                assert(mExplodingStepCounter < ExplosionStepsCount);
-
-                // Check whether we're done
-                if (mExplodingStepCounter == ExplosionStepsCount - 1)
-                {
-                    // Transition to expired
-                    mState = State::Expired;
-                }
-                else
-                {
-                    ++mExplodingStepCounter;
-
-                    // Invoke explosion handler
-                    mPhysicsHandler.DoBombExplosion(
-                        GetPosition(),
-                        static_cast<float>(mExplodingStepCounter) / static_cast<float>(ExplosionStepsCount - 1),
-                        gameParameters);
-
-                    // Schedule next transition
-                    mNextStateTransitionTimePoint = currentWallClockTime + ExplosionProgressInterval;
-                }
             }
 
             return true;
@@ -254,7 +243,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(Render::GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -264,7 +253,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBombFuse, mFuseFlameFrameIndex),
+                TextureFrameId(Render::GenericTextureGroups::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -286,26 +275,9 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, FuseLengthStepCount),
+                TextureFrameId(Render::GenericTextureGroups::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
                 1.0,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            break;
-        }
-
-        case State::Exploding:
-        {
-            assert(mExplodingStepCounter < ExplosionStepsCount);
-
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBombExplosion, mExplodingStepCounter),
-                GetPosition(),
-                1.0f + static_cast<float>(mExplodingStepCounter + 1) / static_cast<float>(ExplosionStepsCount),
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
@@ -318,7 +290,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(Render::GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -328,7 +300,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBombDefuse, mDefuseStepCounter),
+                TextureFrameId(Render::GenericTextureGroups::TimerBombDefuse, mDefuseStepCounter),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -343,7 +315,7 @@ void TimerBomb::Upload(
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(TextureGroupType::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(Render::GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,

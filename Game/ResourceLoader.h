@@ -30,7 +30,7 @@ public:
     // Textures
     //
 
-    std::filesystem::path GetTexturesFilePath() const;
+    std::filesystem::path GetTexturesRootFolderPath() const;
 
 
     //

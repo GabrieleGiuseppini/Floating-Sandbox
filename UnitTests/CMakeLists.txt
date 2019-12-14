@@ -23,6 +23,7 @@ set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
+	FloatingPointTests.cpp
 	GameEventDispatcherTests.cpp
 	GameMathTests.cpp
 	MemoryStreamsTests.cpp
