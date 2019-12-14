@@ -60,27 +60,41 @@ bool ImpactBomb::Update(
             // Explode
             //
 
+            // Detach self (or else explosion will move along with ship performing
+            // its blast)
+            DetachIfAttached();
+
+            // Blast radius
+            float const blastRadius =
+                gameParameters.BombBlastRadius
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
             // Blast strength
             float const blastStrength =
                 600.0f // Magic number
-                * gameParameters.BombBlastForceAdjustment
-                * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+                * gameParameters.BombBlastForceAdjustment;
 
             // Blast heat
             float const blastHeat =
                 gameParameters.BombBlastHeat * 1.2f // Just a bit more caustic
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-            // Explode
+            // Start explosion
             mShipPhysicsHandler.StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(),
                 GetPosition(),
-                gameParameters.BombBlastRadius,
+                blastRadius,
                 blastStrength,
                 blastHeat,
                 ExplosionType::Deflagration,
                 gameParameters);
+
+            // Notify explosion
+            mGameEventHandler->OnBombExplosion(
+                BombType::ImpactBomb,
+                mParentWorld.IsUnderwater(GetPosition()),
+                1);
 
             //
             // Transition to Expired state

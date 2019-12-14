@@ -108,11 +108,15 @@ bool RCBomb::Update(
                 // its blast)
                 DetachIfAttached();
 
+                // Blast radius
+                float const blastRadius =
+                    gameParameters.BombBlastRadius
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
                 // Blast strength
                 float const blastStrength =
                     700.0f // Magic number
-                    * gameParameters.BombBlastForceAdjustment
-                    * (gameParameters.IsUltraViolentMode ? 100.0f : 1.0f);
+                    * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat
                 float const blastHeat =
@@ -124,7 +128,7 @@ bool RCBomb::Update(
                     currentSimulationTime,
                     GetPlaneId(),
                     GetPosition(),
-                    gameParameters.BombBlastRadius,
+                    blastRadius,
                     blastStrength,
                     blastHeat,
                     ExplosionType::Deflagration,

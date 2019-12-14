@@ -388,11 +388,11 @@ Render:
 					  TextureDatabase/TextureAtlas.cpp
 						+ ...which include TextureTypes.h
 						+ Move back as many methods from .h to .cpp
-				= Move all ultra-violent mode (x3) to bombs' invocations of StartExplosion
-					- Move ultra-violent from blast strength to radius
-				= BombExplosionBlastForceAdjustment: new parameter
+				+ Move all ultra-violent mode (x3) to bombs' invocations of StartExplosion
+					+ Move ultra-violent from blast strength to radius
+				+ BombExplosionBlastForceAdjustment: new parameter
 					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
-					- Settings Dialog
+				+ Do explosion notification at Impact bomb
 				- Merge back into 1.14
 
 		- Merge into master
