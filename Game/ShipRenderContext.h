@@ -807,9 +807,9 @@ private:
         size_t startFlameIndex,
         size_t flameCount);
 
-    void RenderExplosions();
     void RenderSparkles();
     void RenderGenericTextures();
+    void RenderExplosions();
     void RenderVectorArrows();
 
 private:

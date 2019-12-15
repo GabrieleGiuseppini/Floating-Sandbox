@@ -482,16 +482,17 @@ void ShipRenderContext::UpdateOrthoMatrices()
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs
     //      - 5: Points
-    //      - 6: Flames - foreground, and Explosions
+    //      - 6: Flames - foreground
     //      - 7: Sparkles
     //      - 8: Generic textures
-    //      - 9: Vectors
+    //      - 9: Explosions
+    //      - 10: Vectors
     //
 
     constexpr float ShipRegionZStart = 1.0f;
     constexpr float ShipRegionZWidth = -2.0f;
 
-    constexpr int NLayers = 10;
+    constexpr int NLayers = 11;
 
     ViewModel::ProjectionMatrix shipOrthoMatrix;
 
@@ -534,6 +535,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
+
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
@@ -644,7 +646,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
 
     //
-    // Layer 6: Flames - foreground, and Explosions
+    // Layer 6: Flames - foreground
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -660,13 +662,11 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
+
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipExplosions, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
 
     //
     // Layer 7: Sparkles
@@ -705,7 +705,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
 
     //
-    // Layer 9: Vectors
+    // Layer 9: Explosions
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -715,6 +715,24 @@ void ShipRenderContext::UpdateOrthoMatrices()
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         9,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipExplosions, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 10: Vectors
+    //
+
+    mViewModel.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        10,
         NLayers,
         shipOrthoMatrix);
 
@@ -1752,14 +1770,6 @@ void ShipRenderContext::RenderEnd()
 
 
     //
-    // Render explosions
-    //
-
-    RenderExplosions();
-
-
-
-    //
     // Render sparkles
     //
 
@@ -1772,6 +1782,14 @@ void ShipRenderContext::RenderEnd()
     //
 
     RenderGenericTextures();
+
+
+
+    //
+    // Render explosions
+    //
+
+    RenderExplosions();
 
 
 
@@ -1825,63 +1843,6 @@ void ShipRenderContext::RenderFlames(
 
         // Update stats
         mRenderStatistics.LastRenderedShipFlames += flameCount; // # of quads
-    }
-}
-
-void ShipRenderContext::RenderExplosions()
-{
-    if (mExplosionTotalPlaneVertexCount > 0)
-    {
-        glBindVertexArray(*mExplosionVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
-
-        //
-        // Upload to VBO
-        //
-
-        // (Re-)Allocate vertex buffer, if needed
-        if (mExplosionVBOAllocatedVertexCount < mExplosionTotalPlaneVertexCount)
-        {
-            mExplosionVBOAllocatedVertexCount = mExplosionTotalPlaneVertexCount;
-
-            glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
-            CheckOpenGLError();
-        }
-
-        // Map vertex buffer
-        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-        CheckOpenGLError();
-
-        // Copy all buffers
-        for (auto const & plane : mExplosionPlaneVertexBuffers)
-        {
-            if (!plane.vertexBuffer.empty())
-            {
-                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(ExplosionVertex);
-                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
-
-                // Advance
-                mappedBuffer += byteCopySize;
-            }
-        }
-
-        // Unmap vertex buffer
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-
-        //
-        // Render
-        //
-
-        assert(0 == (mExplosionTotalPlaneVertexCount % 6));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mExplosionTotalPlaneVertexCount));
-
-        glBindVertexArray(0);
     }
 }
 
@@ -1999,6 +1960,63 @@ void ShipRenderContext::RenderGenericTextures()
 
             mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureTotalPlaneVertexCount / 6;
         }
+
+        glBindVertexArray(0);
+    }
+}
+
+void ShipRenderContext::RenderExplosions()
+{
+    if (mExplosionTotalPlaneVertexCount > 0)
+    {
+        glBindVertexArray(*mExplosionVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
+
+        //
+        // Upload to VBO
+        //
+
+        // (Re-)Allocate vertex buffer, if needed
+        if (mExplosionVBOAllocatedVertexCount < mExplosionTotalPlaneVertexCount)
+        {
+            mExplosionVBOAllocatedVertexCount = mExplosionTotalPlaneVertexCount;
+
+            glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+        }
+
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+
+        // Copy all buffers
+        for (auto const & plane : mExplosionPlaneVertexBuffers)
+        {
+            if (!plane.vertexBuffer.empty())
+            {
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(ExplosionVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
+
+                // Advance
+                mappedBuffer += byteCopySize;
+            }
+        }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        //
+        // Render
+        //
+
+        assert(0 == (mExplosionTotalPlaneVertexCount % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mExplosionTotalPlaneVertexCount));
 
         glBindVertexArray(0);
     }

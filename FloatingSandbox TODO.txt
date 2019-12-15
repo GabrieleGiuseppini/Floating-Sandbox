@@ -410,11 +410,11 @@ Render:
 			+ Test water bubbles
 
 		= Try to overlap bombs' disappearance with explosion
-			- And try to draw explosions *over* generic textures
-
-		- Interleaving Update's with Render's (*)
+			= And try to draw explosions *over* generic textures
 
 		- Menu's: try look'n'feel of "foo/bar"
+
+		- Interleaving Update's with Render's (*)
 
 		- Explosive combustion (*)
 
