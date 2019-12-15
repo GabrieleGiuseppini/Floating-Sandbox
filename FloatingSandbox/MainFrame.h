@@ -109,7 +109,7 @@ private:
     std::unique_ptr<wxTimer> mPostInitializeTimer;
     std::unique_ptr<wxTimer> mGameTimer;
     std::unique_ptr<wxTimer> mLowFrequencyTimer;
-    std::unique_ptr<wxTimer> mCheckUpdateTimer;
+    std::unique_ptr<wxTimer> mCheckUpdatesTimer;
 
 private:
 
@@ -121,11 +121,10 @@ private:
     void OnPostInitializeTrigger(wxTimerEvent & event);
     void OnMainFrameClose(wxCloseEvent & event);
     void OnQuit(wxCommandEvent & event);
-    void OnPaint(wxPaintEvent & event);
     void OnKeyDown(wxKeyEvent & event);
     void OnGameTimerTrigger(wxTimerEvent & event);
     void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
-    void OnCheckUpdateTimerTrigger(wxTimerEvent & event);
+    void OnCheckUpdatesTimerTrigger(wxTimerEvent & event);
     void OnIdle(wxIdleEvent & event);
 
     // Main GL canvas

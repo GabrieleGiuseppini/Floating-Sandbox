@@ -100,7 +100,7 @@ long const ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
 long const ID_POSTIINITIALIZE_TIMER = wxNewId();
 long const ID_GAME_TIMER = wxNewId();
 long const ID_LOW_FREQUENCY_TIMER = wxNewId();
-long const ID_CHECK_UPDATE_TIMER = wxNewId();
+long const ID_CHECK_UPDATES_TIMER = wxNewId();
 
 MainFrame::MainFrame(
     wxApp * mainApp,
@@ -136,7 +136,6 @@ MainFrame::MainFrame(
     Centre();
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
-    Bind(wxEVT_PAINT, &MainFrame::OnPaint, this);
 
     wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
     mainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
@@ -548,8 +547,8 @@ MainFrame::MainFrame(
     mLowFrequencyTimer = std::make_unique<wxTimer>(this, ID_LOW_FREQUENCY_TIMER);
     Connect(ID_LOW_FREQUENCY_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnLowFrequencyTimerTrigger);
 
-    mCheckUpdateTimer = std::make_unique<wxTimer>(this, ID_CHECK_UPDATE_TIMER);
-    Connect(ID_CHECK_UPDATE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnCheckUpdateTimerTrigger);
+    mCheckUpdatesTimer = std::make_unique<wxTimer>(this, ID_CHECK_UPDATES_TIMER);
+    Connect(ID_CHECK_UPDATES_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnCheckUpdatesTimerTrigger);
 
 
     //
@@ -763,7 +762,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     if (mUIPreferencesManager->GetCheckUpdatesAtStartup())
     {
         // 10 seconds
-        mCheckUpdateTimer->Start(10000, true);
+        mCheckUpdatesTimer->Start(10000, true);
     }
 
 
@@ -823,20 +822,6 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
     Close();
-}
-
-void MainFrame::OnPaint(wxPaintEvent & event)
-{
-    // This happens sparingly, mostly when the window is resized and when it's shown
-
-    if (!!mGameController)
-    {
-        mGameController->Render();
-
-        AfterGameRender();
-    }
-
-    event.Skip();
 }
 
 void MainFrame::OnKeyDown(wxKeyEvent & event)
@@ -1036,7 +1021,7 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
     mMusicController->LowFrequencyUpdate();
 }
 
-void MainFrame::OnCheckUpdateTimerTrigger(wxTimerEvent & /*event*/)
+void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)
 {
     mUpdateChecker = std::make_unique<UpdateChecker>();
 }
