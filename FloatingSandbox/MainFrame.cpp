@@ -246,7 +246,7 @@ MainFrame::MainFrame(
     mainMenuBar->Append(fileMenu, _("&File"));
 
 
-    // Control
+    // Controls
 
     wxMenu * controlsMenu = new wxMenu();
 
@@ -289,11 +289,11 @@ MainFrame::MainFrame(
 
     mToolsMenu = new wxMenu();
 
-    wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move\tM"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move/Rotate\tM"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(moveMenuItem);
     Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
 
-    wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All\tALT+M"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All\tALT+M"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(moveAllMenuItem);
     Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
 
@@ -305,7 +305,7 @@ MainFrame::MainFrame(
     mToolsMenu->Append(sliceMenuItem);
     Connect(ID_SLICE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSliceMenuItemSelected);
 
-    wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster\tH"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster\tH"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(heatBlasterMenuItem);
     Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
 
@@ -313,11 +313,11 @@ MainFrame::MainFrame(
     mToolsMenu->Append(fireExtinguisherMenuItem);
     Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
 
-    wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Grab\tG"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel\tG"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(grabMenuItem);
     Connect(ID_GRAB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGrabMenuItemSelected);
 
-    wxMenuItem * swirlMenuItem = new wxMenuItem(mToolsMenu, ID_SWIRL_MENUITEM, _("Swirl\tW"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * swirlMenuItem = new wxMenuItem(mToolsMenu, ID_SWIRL_MENUITEM, _("Swirl/Counterswirl\tW"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(swirlMenuItem);
     Connect(ID_SWIRL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSwirlMenuItemSelected);
 
@@ -331,7 +331,7 @@ MainFrame::MainFrame(
     Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
     */
 
-    wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood\tF"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry\tF"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(floodHoseMenuItem);
     Connect(ID_FLOOD_HOSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFloodHoseMenuItemSelected);
 
