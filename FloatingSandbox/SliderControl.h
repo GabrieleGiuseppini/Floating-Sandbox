@@ -147,7 +147,8 @@ public:
 
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
-            vSizer->Add(mSlider, 0, wxALIGN_CENTER_HORIZONTAL);
+            // Make the slider expand
+            vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
         }
 
 

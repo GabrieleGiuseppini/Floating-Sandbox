@@ -44,6 +44,7 @@ public:
         float CloudDarkening; // [0.0f = full darkness, 1.0 = no darkening]
         float AmbientDarkening; // [0.0f = full darkness, 1.0 = no darkening]
 		float RainDensity; // [0.0f = no rain, 1.0f = full rain]
+        float RainQuantity; // m/h
 
         Parameters()
         {
@@ -58,6 +59,7 @@ public:
             CloudDarkening = 1.0f;
             AmbientDarkening = 1.0f;
 			RainDensity = 0.0f;
+            RainQuantity = 0.0f;
         }
     };
 

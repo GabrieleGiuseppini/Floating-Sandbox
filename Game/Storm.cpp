@@ -201,6 +201,10 @@ void Storm::Update(
 		}
     }
 
+    // Update rain quantity (m/h)
+    mParameters.RainQuantity =
+        mParameters.RainDensity
+        * GameParameters::MaxRainQuantity;
 
 	//
 	// Thunder stage
@@ -378,7 +382,7 @@ void Storm::RecalculateCoefficients(
 		* (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
 	mMaxRainDensity = MixPiecewiseLinear(
-		0.1f, 0.4f, 0.9f,
+		0.1f, 0.4f, 0.9f, // Rendering at 1.0 is not that nice
 		GameParameters::MinStormStrengthAdjustment,
 		GameParameters::MaxStormStrengthAdjustment,
 		gameParameters.StormStrengthAdjustment);

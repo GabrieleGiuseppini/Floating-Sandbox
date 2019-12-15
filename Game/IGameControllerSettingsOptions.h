@@ -86,6 +86,9 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinStormStrengthAdjustment() const = 0;
 	virtual float GetMaxStormStrengthAdjustment() const = 0;
 
+    virtual float GetMinRainFloodAdjustment() const = 0;
+    virtual float GetMaxRainFloodAdjustment() const = 0;
+
 	// Heat
 
 	virtual float GetMinAirTemperature() const = 0;

@@ -331,9 +331,9 @@ void SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & eve
 void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event)
 {
 	mLiveSettings.SetValue(GameSettings::DoGenerateAirBubbles, event.IsChecked());
-    mAirBubbleDensitySlider->Enable(event.IsChecked());
-
     OnLiveSettingsChanged();
+
+    mAirBubbleDensitySlider->Enable(event.IsChecked());
 }
 
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
@@ -359,6 +359,8 @@ void SettingsDialog::OnDoRainWithStormCheckBoxClick(wxCommandEvent & event)
 {
 	mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
 	OnLiveSettingsChanged();
+
+    mRainFloodAdjustmentSlider->Enable(event.IsChecked());
 }
 
 void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
@@ -1927,97 +1929,123 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 		{
 			wxGridBagSizer * stormSizer = new wxGridBagSizer(0, 0);
 
-			stormSizer->AddGrowableRow(0, 1); // Slider above checkbox
+            stormSizer->AddGrowableRow(1, 1); // Slider below checkbox
 
-			// Storm Strength Adjustment
-			{
-				mStormStrengthAdjustmentSlider = new SliderControl<float>(
-					stormBox,
-					SliderWidth,
-					-1,
-					"Storm Strength Adjust",
-					"Adjusts the strength of storms.",
-					[this](float value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<ExponentialSliderCore>(
-						mGameControllerSettingsOptions->GetMinStormStrengthAdjustment(),
-						1.0f,
-						mGameControllerSettingsOptions->GetMaxStormStrengthAdjustment()));
+            // Storm Strength Adjustment
+            {
+                mStormStrengthAdjustmentSlider = new SliderControl<float>(
+                    stormBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Storm Strength Adjust",
+                    "Adjusts the strength of storms.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinStormStrengthAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxStormStrengthAdjustment()));
 
-				stormSizer->Add(
-					mStormStrengthAdjustmentSlider,
-					wxGBPosition(0, 0),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
+                stormSizer->Add(
+                    mStormStrengthAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
-			// Do rain with storm
-			{
-				mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Span Rain Checkbox"));
-				mDoRainWithStormCheckBox->SetToolTip("Enables or disables generation of rain during a storm.");
-				mDoRainWithStormCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDoRainWithStormCheckBoxClick, this);
+            // Do rain with storm
+            {
+                mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Span Rain Checkbox"));
+                mDoRainWithStormCheckBox->SetToolTip("Enables or disables generation of rain during a storm.");
+                mDoRainWithStormCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDoRainWithStormCheckBoxClick, this);
 
-				stormSizer->Add(
-					mDoRainWithStormCheckBox,
-					wxGBPosition(1, 0),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
+                stormSizer->Add(
+                    mDoRainWithStormCheckBox,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
-			// Storm Duration
-			{
-				mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
-					stormBox,
-					SliderWidth,
-					SliderHeight,
-					"Storm Duration",
-					"The duration of a storm (s).",
-					[this](std::chrono::seconds::rep value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
-						mGameControllerSettingsOptions->GetMinStormDuration().count(),
-						mGameControllerSettingsOptions->GetMaxStormDuration().count()));
+            // Rain Flood Adjustment
+            {
+                mRainFloodAdjustmentSlider = new SliderControl<float>(
+                    stormBox,
+                    SliderWidth,
+                    -1,
+                    "Rain Flood Adjust",
+                    "Adjusts to which extent rain floods exposed areas of a ship.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRainFloodAdjustment(),
+                        10000.0f,
+                        mGameControllerSettingsOptions->GetMaxRainFloodAdjustment()));
 
-				stormSizer->Add(
-					mStormDurationSlider,
-					wxGBPosition(0, 1),
-					wxGBSpan(2, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
+                stormSizer->Add(
+                    mRainFloodAdjustmentSlider,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
-			// Storm Rate
-			{
-				mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
-					stormBox,
-					SliderWidth,
-					SliderHeight,
-					"Storm Rate",
-					"The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether.",
-					[this](std::chrono::minutes::rep value)
-					{
-						this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
-						this->OnLiveSettingsChanged();
-					},
-					std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
-						mGameControllerSettingsOptions->GetMinStormRate().count(),
-						mGameControllerSettingsOptions->GetMaxStormRate().count()));
+            // Storm Duration
+            {
+                mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
+                    stormBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Storm Duration",
+                    "The duration of a storm (s).",
+                    [this](std::chrono::seconds::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
+                        mGameControllerSettingsOptions->GetMinStormDuration().count(),
+                        mGameControllerSettingsOptions->GetMaxStormDuration().count()));
 
-				stormSizer->Add(
-					mStormRateSlider,
-					wxGBPosition(0, 2),
-					wxGBSpan(2, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
+                stormSizer->Add(
+                    mStormDurationSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Storm Rate
+            {
+                mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    stormBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Storm Rate",
+                    "The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether.",
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinStormRate().count(),
+                        mGameControllerSettingsOptions->GetMaxStormRate().count()));
+
+                stormSizer->Add(
+                    mStormRateSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
 			stormBoxSizer->Add(stormSizer, 0, wxALL, StaticBoxInsetMargin);
 		}
@@ -3786,6 +3814,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 	mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
 
 	mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+
+    mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
+    mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
 
 	mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
 

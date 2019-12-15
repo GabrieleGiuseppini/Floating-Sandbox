@@ -393,13 +393,21 @@ Render:
 					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
 				+ Do explosion notification at Impact bomb
 				+ Merge back into 1.14
-
-		- Merge into master
-
-		- Rain wetting exposed parts
-			- Every leaking point, that is overwater, gets water in from rain density
-			- TBConfirmed: Just change externalWaterHeight so that it's max of ocean column height at that point, and rain density * constant
-			- Test water bubbles
+		+ Rain wetting exposed parts
+			+ Every leaking point, that is overwater, gets water in from rain density
+				+ Just change externalWaterHeight so that it's max of ocean column height at that point, and rain density * constant
+			+ Rearc rain density:
+				+ Leave Storm::Parameters::RainDensity as-is
+				+ Add new Storm::Parameters::RainQuantity: m/h
+					+ Calculated as RainDensity * 50mm/h, not adjustable
+					+ Only used by Ship::UpdateWaterIntake
+						+ Uses GameParameters::RainFloodAdjustment: 0->1000->3,500,000
+							+ Parameter is specific to water intake
+						+ Ensure that at Xmax adjustment and 1.0 density, equivalent water height is 1m
+				+ SettingsDialog
+					+ Also conditionally enable new slider based off DoRainWithStorm
+					+ Fix modulate wind's checkbox+slider expansion
+			+ Test water bubbles
 
 		- Interleaving Update's with Render's (*)
 
@@ -786,7 +794,28 @@ Render:
 	- See if Z test and ocean before clouds buys us anything
 
 	- Try interleaving Update's with Render's (*)
-		- First, quick and dirty: do at stars, clouds, ocean
+		! First, quick and dirty: do at stars, clouds, ocean
+		- World:
+			- Replace Update(...) and Render(...) with 
+			  UpdateAndRender(..., bool doUpdate, steady_clock::duration updateElapsedTime, bool doRender,steady_clock::duration renderElapsedTime)
+			  - For now as-is
+		- GameController:
+			- See who calls its Update() and Render()
+				- Update: used by step-by-step
+					- Replace with GC::PulseUpdate()
+						- Sets mIsPulseUpdateSet
+						- RunGameIteration(.) checks it together w/pause, and always clears it
+				- Render: OnPaint
+					- Should not be needed anymore, nuke it
+			- Replace implementation of RunGameIteration(.)
+				- Incorporate (and then nuke) InternalUpdate and InternalRender
+		- Test
+		- World::UpdateAndRender(.):
+			- Interleave at:
+				- Stars
+				- Clouds
+				- Ocean
+				- ?Land
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

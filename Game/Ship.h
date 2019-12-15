@@ -233,10 +233,12 @@ public:
 
     void UpdateWaterDynamics(
         float currentSimulationTime,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void UpdateWaterInflow(
         float currentSimulationTime,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
         float & waterTaken);
 

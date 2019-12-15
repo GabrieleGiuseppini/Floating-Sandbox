@@ -306,6 +306,11 @@ public:
 	bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
 	void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
 
+    float GetRainFloodAdjustment() const override { return mGameParameters.RainFloodAdjustment; }
+    void SetRainFloodAdjustment(float value) override { mGameParameters.RainFloodAdjustment = value; }
+    float GetMinRainFloodAdjustment() const override { return GameParameters::MinRainFloodAdjustment; }
+    float GetMaxRainFloodAdjustment() const override { return GameParameters::MaxRainFloodAdjustment; }
+
     // Heat
 
     float GetAirTemperature() const override { return mGameParameters.AirTemperature; }

@@ -1,4 +1,5 @@
 1.14.0.TODO
+- Rain now floods exposed areas of a ship
 - Re-worked explosion physics and graphics
 - 11 new ships
 

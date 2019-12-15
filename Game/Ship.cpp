@@ -229,6 +229,7 @@ void Ship::Update(
 
     UpdateWaterDynamics(
         currentSimulationTime,
+        stormParameters,
         gameParameters);
 
 
@@ -797,6 +798,7 @@ void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)
 
 void Ship::UpdateWaterDynamics(
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -807,6 +809,7 @@ void Ship::UpdateWaterDynamics(
 
     UpdateWaterInflow(
         currentSimulationTime,
+        stormParameters,
         gameParameters,
         waterTakenInStep);
 
@@ -837,14 +840,22 @@ void Ship::UpdateWaterDynamics(
 
 void Ship::UpdateWaterInflow(
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
     float & waterTaken)
 {
     //
-    // Intake/outtake water into/from all the leaking nodes that are underwater
+    // Intake/outtake water into/from all the leaking nodes that are either underwater
+    // or are overwater and taking rain.
     //
     // Ephemeral points are never leaking, hence we ignore them
     //
+
+    float const rainEquivalentWaterHeight =
+        stormParameters.RainQuantity // m/h
+        / 3600.0f // -> m/s
+        * GameParameters::SimulationStepTimeDuration<float> // -> m/step
+        * gameParameters.RainFloodAdjustment;
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -863,11 +874,14 @@ void Ship::UpdateWaterInflow(
             //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
             //
 
+            // We also incorporate rain in the sources of external water height:
+            // - If point is below water surface: external water height is due to depth
+            // - If point is above water surface: external water height is due to rain
             float const externalWaterHeight = std::max(
                 mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
                     + 0.1f // Magic number to force flotsam to take some water in and eventually sink
                     - mPoints.GetPosition(pointIndex).y,
-                0.0f);
+                rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
 
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 

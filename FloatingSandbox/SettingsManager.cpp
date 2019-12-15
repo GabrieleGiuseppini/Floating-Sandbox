@@ -65,6 +65,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 	ADD_GC_SETTING(std::chrono::seconds, StormDuration);
 	ADD_GC_SETTING(float, StormStrengthAdjustment);
 	ADD_GC_SETTING(bool, DoRainWithStorm);
+    ADD_GC_SETTING(float, RainFloodAdjustment);
 
     // Heat
     ADD_GC_SETTING(float, AirTemperature);

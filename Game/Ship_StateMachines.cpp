@@ -16,13 +16,13 @@ namespace Physics {
 bool Ship::UpdateExplosionStateMachine(
     ExplosionStateMachine & explosionStateMachine,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     //
     // Update progress
     //
 
-    float constexpr ExplosionDuration = 1.0f;
+    float constexpr ExplosionDuration = 1.0f; // Simulation seconds
 
     explosionStateMachine.CurrentProgress =
         (currentSimulationTime - explosionStateMachine.StartSimulationTime)

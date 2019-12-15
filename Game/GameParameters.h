@@ -12,7 +12,7 @@
 #include <chrono>
 
 /*
- * Parameters that affect the game (physics, world).
+ * Parameters that affect the game's physics and its world.
  */
 struct GameParameters
 {
@@ -236,6 +236,15 @@ struct GameParameters
 	float LightningBlastHeat; // KJoules/sec
 
 	bool DoRainWithStorm;
+
+    // Conversion between adimensional rain density and m/h:
+    // rain quantity (in m/h) at density = 1.0
+    static float constexpr MaxRainQuantity = 0.05f; // 50mm/h == violent shower
+
+    // How much rain does affect water intaken
+    float RainFloodAdjustment;
+    static float constexpr MinRainFloodAdjustment = 0.0f;
+    static float constexpr MaxRainFloodAdjustment = 3600.0f / (MaxRainQuantity * SimulationStepTimeDuration<float>); // Guarantees that max is one meter/frame
 
     // Heat and combustion
 

@@ -131,6 +131,7 @@ private:
     SliderControl<unsigned int> * mNumberOfCloudsSlider;
 	SliderControl<float> * mStormStrengthAdjustmentSlider;
 	wxCheckBox* mDoRainWithStormCheckBox;
+    SliderControl<float> * mRainFloodAdjustmentSlider;
 	SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
 	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
