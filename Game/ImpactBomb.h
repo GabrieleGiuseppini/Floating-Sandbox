@@ -82,11 +82,18 @@ private:
         // Dummy state, just starts explosion
         TriggeringExplosion,
 
+        // We are exploding (only used for rendering purposes)
+        Exploding,
+
         // This is the final state; once this state is reached, we're expired
         Expired
     };
 
     State mState;
+
+    static constexpr int ExplosionFadeoutStepsCount = 8;
+
+    uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
 };
 
 }

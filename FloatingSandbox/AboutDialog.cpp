@@ -129,7 +129,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Darek225", "https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
         {"\t\t\t\t", "Aurélien WOLFF", "" },
         {"\t\t\t\t", "HummeL", "https://www.youtube.com/c/HummeL_Prog" },
-        {"\t\t\t\t", "Alex di Roma", "" },
+        {"\t\t\t\t", "Alex di Roma", "https://discordapp.com/" },
 
         {"Ship art:\t\t", "OceanLinerOrca", "https://www.deviantart.com/oceanlinerorca" },
 

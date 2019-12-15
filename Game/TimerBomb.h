@@ -99,22 +99,24 @@ private:
         // Final state of defusing; we just stick around
         Defused,
 
+        // We are exploding (only used for rendering purposes)
+        Exploding,
+
         // This is the final state; once this state is reached, we're expired
         Expired
     };
+
+    State mState;
 
     static constexpr auto SlowFuseToDetonationLeadInInterval = 8000ms;
     static constexpr auto FastFuseToDetonationLeadInInterval = 2000ms;
     static constexpr int FuseStepCount = 16;
     static constexpr int FuseLengthStepCount = 4;
     static constexpr int FuseFramesPerFuseLengthCount = FuseStepCount / FuseLengthStepCount;
-
     static constexpr auto DetonationLeadInToExplosionInterval = 1500ms;
-
     static constexpr auto DefusingInterval = 500ms;
     static constexpr uint8_t DefuseStepsCount = 3;
-
-    State mState;
+    static constexpr int ExplosionFadeoutStepsCount = 8;
 
     // The next timestamp at which we'll automatically transition state
     GameWallClock::time_point mNextStateTransitionTimePoint;
@@ -127,6 +129,7 @@ private:
     uint8_t mFuseStepCounter;
     uint8_t mDefuseStepCounter;
     uint8_t mDetonationLeadInShapeFrameCounter;
+    uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
 };
 
 }

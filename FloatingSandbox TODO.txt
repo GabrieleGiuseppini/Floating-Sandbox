@@ -409,7 +409,12 @@ Render:
 					+ Fix modulate wind's checkbox+slider expansion
 			+ Test water bubbles
 
+		= Try to overlap bombs' disappearance with explosion
+			- And try to draw explosions *over* generic textures
+
 		- Interleaving Update's with Render's (*)
+
+		- Menu's: try look'n'feel of "foo/bar"
 
 		- Explosive combustion (*)
 
@@ -435,6 +440,8 @@ Render:
 		- Cached quantities (*)
 
 		- Lights/materials breaking under pressure (*)
+
+		- Ropes are too strong - they prevent ship parts from sinking
 		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
@@ -535,7 +542,9 @@ Render:
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Be able to place nuke and AM bomb anywhere
 	- Fishes
-		- https://oceana.org/marine-life
+		- Textures: https://oceana.org/marine-life
+		- Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
+		- AABB around ships' connected components, so that fish AI's avoid them
 	- Plants on the bottom - don't have to interact with the ship, just on layer in front of it
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -834,6 +843,7 @@ Render:
 
 
 - Gfx:
+	- Selector to change color of water
 
 	- Heat overlay more integrated in game play:
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaced black with alpha=0
@@ -940,6 +950,8 @@ Render:
 	- Consider making world 1.5 times wider
 
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
+
+	- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click.
 
 	- "Lightning rod" material
 		- Has precedence when looking for candidates
@@ -1104,7 +1116,7 @@ Render:
 		- New emitter material, much like smoke emitter (*)
 		- Fires when wet for the first time
 
-	- Switches:
+	- Switches: (*)
 		- New electrical material types
 			- Two types:
 				- GameType enum
@@ -1133,7 +1145,7 @@ Render:
 				- local switch ID is ID from color code
 		- ShipBuilder detects all switches as electrical elements
 			- Initial ID is from color code
-			- Checks for duplicate initial IDs
+			- Checks for duplicate initial IDs - errors out if duplicate found
 			- Initial ID is only used to match with ship's switch names
 			- Then, generates an ObjectId using ship ID and local object ID
 				- LocalObjectId is just element index of switch in ElectricalElements
@@ -1142,7 +1154,7 @@ Render:
 		- New game events:
 			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, type, state)
 			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
-			- Water-sensing switching done at ElectricalUpdate() fire SwitchToggled(ID, state)
+			- Water-sensing switching - which is done at ElectricalUpdate() - fires SwitchToggled(ID, state)
 		- MainFrame gets switches via AddSwitch event, with all metadata (ID, name, type, state)
 			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
@@ -1154,11 +1166,9 @@ Render:
 			- Menu item to toggle SwitchBoard; enabled only if there's been one AddSwitch
 			- Hides it again only at Reset()
 		- Electrical dynamics:
-			- ElectricalElement: rename "ConnectivityVisit" (sequence number, etc.) as "ElectricalPropagationVisit" (...)
-				- Ship::UpdateElectrical"Propagation"
 			- ElectricalElement has new "conductsElectricity" bool buffer
 				- Material (init'd with material's) and "current"
-				- Ship::UpdateElectricalConnectivity checks conductance first when deciding to follow a connected electrical element
+				- Ship::UpdateSourcesAndPropagation checks conductance first when deciding to follow a connected electrical element
 			- Ship::SetSwitch(LocalSwitchId, bool):
 				- Toggles electrical element's "current" "conductsElectricity", via ElectricalElements::SetSwitch(switch index, SwitchState)
 				- Then fires SwitchToggled event
@@ -1342,16 +1352,25 @@ Render:
 						  take that frontierId
 						- TODO
 	
+	- Punch tool: interacts with frontier, just like a punch
+		- Requires frontier work first
+
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
 	- Random noise that lowers strength to inject "cracks" when the ship is under stress
 		- Random walk across pairs of points on opposide sides of ships
 
-	- Torpedoes
+	- Torpedoes and missiles
+		- "You place one down and click where it speeds off to and explodes at. Basically a moving bomb that explodes 
+		   when it reaches a destination, be that under water, or on the water."
+		- "Missiles: like before, but above water"
 		- Requires collision detection
 		- Might either have own propulsion or follow a vector specified with click-and-drag
 		- Also other objects might be launched with click-and-drag
+
+	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
+	  or start getting damaged, etc."
 
 	- Ocean waves:
 		- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field

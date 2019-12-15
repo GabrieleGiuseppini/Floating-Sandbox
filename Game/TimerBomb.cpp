@@ -32,6 +32,7 @@ TimerBomb::TimerBomb(
     , mFuseStepCounter(0)
     , mDefuseStepCounter(0)
     , mDetonationLeadInShapeFrameCounter(0)
+    , mExplosionFadeoutCounter(0u)
 {
     // Notify start slow fuse
     mGameEventHandler->OnTimerBombFuse(
@@ -167,10 +168,10 @@ bool TimerBomb::Update(
                     1);
 
                 //
-                // Transition to Expired state
+                // Transition to Exploding state
                 //
 
-                mState = State::Expired;
+                mState = State::Exploding;
             }
             else
             {
@@ -207,6 +208,18 @@ bool TimerBomb::Update(
 
         case State::Defused:
         {
+            return true;
+        }
+
+        case State::Exploding:
+        {
+            ++mExplosionFadeoutCounter;
+            if (mExplosionFadeoutCounter >= ExplosionFadeoutStepsCount)
+            {
+                // Transition to expired
+                mState = State::Expired;
+            }
+
             return true;
         }
 
@@ -321,6 +334,26 @@ void TimerBomb::Upload(
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
+
+            break;
+        }
+
+        case State::Exploding:
+        {
+            // Calculate current progress
+            float const progress =
+                static_cast<float>(mExplosionFadeoutCounter + 1)
+                / static_cast<float>(ExplosionFadeoutStepsCount);
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
+                shipId,
+                GetPlaneId(),
+                TextureFrameId(Render::GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                GetPosition(),
+                1.0f, // Scale
+                mRotationBaseAxis,
+                GetRotationOffsetAxis(),
+                1.0f - progress);  // Alpha
 
             break;
         }

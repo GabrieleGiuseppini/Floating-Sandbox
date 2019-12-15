@@ -27,6 +27,7 @@ ImpactBomb::ImpactBomb(
         shipPoints,
         shipSprings)
     , mState(State::Idle)
+    , mExplosionFadeoutCounter(0u)
 {
 }
 
@@ -97,10 +98,22 @@ bool ImpactBomb::Update(
                 1);
 
             //
-            // Transition to Expired state
+            // Transition to Exploding state
             //
 
-            mState = State::Expired;
+            mState = State::Exploding;
+
+            return true;
+        }
+
+        case State::Exploding:
+        {
+            ++mExplosionFadeoutCounter;
+            if (mExplosionFadeoutCounter >= ExplosionFadeoutStepsCount)
+            {
+                // Transition to expired
+                mState = State::Expired;
+            }
 
             return true;
         }
@@ -131,6 +144,26 @@ void ImpactBomb::Upload(
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
+
+            break;
+        }
+
+        case State::Exploding:
+        {
+            // Calculate current progress
+            float const progress =
+                static_cast<float>(mExplosionFadeoutCounter + 1)
+                / static_cast<float>(ExplosionFadeoutStepsCount);
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
+                shipId,
+                GetPlaneId(),
+                TextureFrameId(Render::GenericTextureGroups::ImpactBomb, 0),
+                GetPosition(),
+                1.0f, // Scale
+                mRotationBaseAxis,
+                GetRotationOffsetAxis(),
+                1.0f - progress);  // Alpha
 
             break;
         }

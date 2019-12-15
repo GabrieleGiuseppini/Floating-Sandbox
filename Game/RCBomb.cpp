@@ -30,6 +30,7 @@ RCBomb::RCBomb(
     , mNextStateTransitionTimePoint(GameWallClock::GetInstance().Now() + SlowPingOffInterval)
     , mExplosionIgnitionTimestamp(GameWallClock::time_point::min())
     , mPingOnStepCounter(0u)
+    , mExplosionFadeoutCounter(0u)
 {
 }
 
@@ -141,10 +142,10 @@ bool RCBomb::Update(
                     1);
 
                 //
-                // Transition to Expired state
+                // Transition to Exploding state
                 //
 
-                mState = State::Expired;
+                mState = State::Exploding;
             }
             else if (currentWallClockTime > mNextStateTransitionTimePoint)
             {
@@ -153,6 +154,18 @@ bool RCBomb::Update(
                 //
 
                 TransitionToDetonationLeadIn(currentWallClockTime);
+            }
+
+            return true;
+        }
+
+        case State::Exploding:
+        {
+            ++mExplosionFadeoutCounter;
+            if (mExplosionFadeoutCounter >= ExplosionFadeoutStepsCount)
+            {
+                // Transition to expired
+                mState = State::Expired;
             }
 
             return true;
@@ -233,6 +246,26 @@ void RCBomb::Upload(
                 mRotationBaseAxis,
                 GetRotationOffsetAxis(),
                 1.0f);
+
+            break;
+        }
+
+        case State::Exploding:
+        {
+            // Calculate current progress
+            float const progress =
+                static_cast<float>(mExplosionFadeoutCounter + 1)
+                / static_cast<float>(ExplosionFadeoutStepsCount);
+
+            renderContext.UploadShipGenericTextureRenderSpecification(
+                shipId,
+                GetPlaneId(),
+                TextureFrameId(Render::GenericTextureGroups::RcBomb, 0),
+                GetPosition(),
+                1.0f, // Scale
+                mRotationBaseAxis,
+                GetRotationOffsetAxis(),
+                1.0f - progress);  // Alpha
 
             break;
         }
