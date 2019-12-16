@@ -53,7 +53,7 @@ def main():
         d_vals.append((row_name,col_order,col_name,elem))
 
     # Sort cols
-    for k,v in d.iteritems():
+    for k,v in d.items():
         d[k] = sorted(v, key=itemgetter(1))
 
 
@@ -73,7 +73,7 @@ def main():
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing={}>".format(spacing)
 
     # Visit all rows
-    for k in sorted(d.iterkeys()):
+    for k in sorted(d.keys()):
 
         input_col_values = d[k]
 

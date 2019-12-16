@@ -411,10 +411,11 @@ Render:
 		+ Menu's: try look'n'feel of "foo/bar"
 		+ Try to overlap bombs' disappearance with explosion
 			+ And try to draw explosions *over* generic textures
+
+		= Explosive combustion (*)
+		- Degrading combustion (*)
 		
 		- Interleaving Update's with Render's (*)
-
-		- Explosive combustion (*)
 
 		= See why land rendering lowers FPS so much
 			+ Compare first with ocean
@@ -1030,18 +1031,14 @@ Render:
 	- Attempt to use total point masses for springs (*)
 		- Do first a pass to recalc coefficients, once per simulation step
 
-	- Degrading combustion
-		- Superheated materials vaporize
-		- New combustion type, "Degrading - TBD"
-		- Same state machine as normal combustion, but no flames, and no generation of heat
-
-	- Explosive combustion:(*)
-		- To be done after new explosions
-		- New materials:
-			- "Gunpowder":
-				- Takes-in water
-			- "Diesel"
-				- Doesn't take-in water
+	= Explosive combustion:(*)
+		+ To be done after new explosions
+		+ New materials:
+			+ "Gunpowder":
+				+ Takes-in water
+			+ "Diesel"
+				+ Doesn't take-in water
+		- Make test ship
 		- Modify combustion state machine
 			- At ignition check loop:
 				- Identify top N (=6? Local constexpr) candidates; conditions:
@@ -1075,7 +1072,12 @@ Render:
 			- Param above, under Combustion
 		- Cleanup:
 			- Nail down top N candidates
-	
+			+ Make new structural materials template
+	- Degrading combustion
+		- Superheated materials vaporize
+		- New combustion type, "Degrading - TBD"
+		- Same state machine as normal combustion, but no flames, and no generation of heat
+
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
 
