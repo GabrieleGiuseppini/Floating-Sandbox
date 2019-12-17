@@ -629,6 +629,7 @@ void Points::UpdateCombustionLowFrequency(
         // Calculate blast heat
         float const blastHeat =
             GameParameters::CombustionHeat
+            * 1.5f // Arbitrary multiplier
             * dt
             * gameParameters.CombustionHeatAdjustment
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);

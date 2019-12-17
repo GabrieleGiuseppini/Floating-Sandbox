@@ -1066,7 +1066,7 @@ Render:
 		+ Do new game event handler, OnCombustionExplosion
 			+ Additive (just like bombs)
 			+ New sounds x {underwater, size}
-		- Test UltraViolent mode
+		+ Test UltraViolent mode
 		- Cleanup:
 			+ Nail down top N candidates
 			+ Make new structural materials template
