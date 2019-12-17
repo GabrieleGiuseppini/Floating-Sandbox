@@ -1084,6 +1084,19 @@ void SoundController::OnCombustionSmothered()
         true);
 }
 
+void SoundController::OnCombustionExplosion(
+    bool isUnderwater,
+    unsigned int size)
+{
+    float volume = std::min(100.0f, static_cast<float>(size) * 100.0f / 3.0f);
+
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::CombustionExplosion,
+        isUnderwater,
+        volume,
+        true);
+}
+
 void SoundController::OnStress(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,

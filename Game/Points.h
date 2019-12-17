@@ -96,7 +96,8 @@ private:
             Burning,
             Extinguishing_Consumed,
             Extinguishing_SmotheredRain,
-            Extinguishing_SmotheredWater
+            Extinguishing_SmotheredWater,
+            Exploded
         };
 
     public:
@@ -107,10 +108,16 @@ private:
         float MaxFlameDevelopment;
 
         CombustionState()
-            : State(StateType::NotBurning)
-            , FlameDevelopment(0.0f)
-            , MaxFlameDevelopment(0.0f)
-        {}
+        {
+            Reset();
+        }
+
+        inline void Reset()
+        {
+            State = StateType::NotBurning;
+            FlameDevelopment = 0.0f;
+            MaxFlameDevelopment = 0.0f;
+        }
     };
 
     /*
@@ -393,6 +400,7 @@ public:
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialCombustionTypeBuffer(mBufferElementCount, shipPointCount, StructuralMaterial::MaterialCombustionType::Combustion) // Arbitrary
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
@@ -440,7 +448,8 @@ public:
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
-        , mIgnitionCandidates(mRawShipPointCount)
+        , mCombustionIgnitionCandidates(mRawShipPointCount)
+        , mCombustionExplosionCandidates(mRawShipPointCount)
         , mBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
@@ -548,6 +557,8 @@ public:
         DetachOptions detachOptions,
         float currentSimulationTime,
         GameParameters const & gameParameters);
+
+    void Restore(ElementIndex pointElementIndex);
 
     void OnOrphaned(ElementIndex pointElementIndex);
 
@@ -943,11 +954,6 @@ public:
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
-    }
-
-    void RestoreFactoryIsLeaking(ElementIndex pointElementIndex)
-    {
-        mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
     }
 
     //
@@ -1388,6 +1394,7 @@ private:
     Buffer<float> mTemperatureBuffer; // Kelvin
     Buffer<float> mMaterialHeatCapacityBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
+    Buffer<StructuralMaterial::MaterialCombustionType> mMaterialCombustionTypeBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;
 
     //
@@ -1494,9 +1501,10 @@ private:
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
 
-    // The list of candidates for burning; member only
-    // to save allocations at use time
-    BoundedVector<std::tuple<ElementIndex, float>> mIgnitionCandidates;
+    // The list of candidates for burning and exploding during combustion;
+    // member only to save allocations at use time
+    BoundedVector<std::tuple<ElementIndex, float>> mCombustionIgnitionCandidates;
+    BoundedVector<std::tuple<ElementIndex, float>> mCombustionExplosionCandidates;
 
     // The indices of the points that are currently burning
     std::vector<ElementIndex> mBurningPoints;

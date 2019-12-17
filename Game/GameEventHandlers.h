@@ -97,6 +97,13 @@ struct ICombustionGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnCombustionExplosion(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IStatisticsGameEventHandler

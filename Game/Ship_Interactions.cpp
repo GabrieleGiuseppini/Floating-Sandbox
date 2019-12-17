@@ -661,7 +661,7 @@ void Ship::RepairAt(
 
 
             //
-            // 3) Restore eligible endpoints' IsLeaking
+            // 3) Restore eligible endpoints
             //
             // Eligible endpoints are those that now have all of their factory springs
             //
@@ -669,7 +669,7 @@ void Ship::RepairAt(
             if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
                 == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size())
             {
-                mPoints.RestoreFactoryIsLeaking(pointIndex);
+                mPoints.Restore(pointIndex);
             }
         }
     }

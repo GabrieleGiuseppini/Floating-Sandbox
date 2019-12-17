@@ -55,6 +55,7 @@ enum class SoundType
 	Lightning,
     FireBurning,
     FireSizzling,
+    CombustionExplosion,
     TsunamiTriggered,
     BombAttached,
     BombDetached,

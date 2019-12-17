@@ -29,6 +29,8 @@ public:
         , mTriangleRepairedEvents()
         , mStressEvents()
         , mBreakEvents()
+        , mCombustionExplosionEvents()
+        , mLightningHitEvents()
         , mLightFlickerEvents()
         , mBombExplosionEvents()
         , mRCBombPingEvents()
@@ -159,6 +161,13 @@ public:
         {
             sink->OnCombustionSmothered();
         }
+    }
+
+    virtual void OnCombustionExplosion(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mCombustionExplosionEvents[std::make_tuple(isUnderwater)] += size;
     }
 
     //
@@ -539,6 +548,16 @@ public:
         mTimerBombDefusedEvents.clear();
         mTimerBombDefusedEvents.clear();
 
+        for (auto * sink : mCombustionSinks)
+        {
+            for (auto const & entry : mCombustionExplosionEvents)
+            {
+                sink->OnCombustionExplosion(std::get<0>(entry.first), entry.second);
+            }
+        }
+
+        mCombustionExplosionEvents.clear();
+
 		for (auto * sink : mAtmosphereSinks)
 		{
 			for (auto const & entry : mLightningHitEvents)
@@ -592,6 +611,7 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mCombustionExplosionEvents;
 	unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;

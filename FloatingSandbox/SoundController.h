@@ -173,6 +173,10 @@ public:
 
     virtual void OnCombustionSmothered() override;
 
+    virtual void OnCombustionExplosion(
+        bool isUnderwater,
+        unsigned int size) override;
+
     virtual void OnStress(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
