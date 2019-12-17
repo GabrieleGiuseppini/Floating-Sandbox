@@ -922,8 +922,8 @@
         "melting_temperature": 1000000.0,
         "name": "Diesel", 
         "render_color": "#1E1E1E", 
-        "sound_type": "Metal", 
-        "specific_heat": 42.0,
+        "sound_type": "Wood", 
+        "specific_heat": 22.0,
         "stiffness": 1.0, 
         "strength": 3.166,
         "template": {
@@ -943,14 +943,14 @@
         "ignition_temperature": 693.15, 
         "is_hull": false, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.8, 
             "nominal_mass": 801.0
         }, 
         "melting_temperature": 1000000.0,
         "name": "Gunpowder", 
         "render_color": "#2E1E1E", 
         "sound_type": "Rubber", 
-        "specific_heat": 50.0,
+        "specific_heat": 27.0,
         "stiffness": 1.0, 
         "strength": 0.42,
         "template": {

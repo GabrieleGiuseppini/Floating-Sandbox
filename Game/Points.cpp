@@ -376,7 +376,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
                 mFrozenCoefficientBuffer[i]);
         }
 
-        // Remember the new values
+        // Remember the new value
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
     }
 
@@ -392,7 +392,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
             }
         }
 
-        // Remember the new values
+        // Remember the new value
         mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
     }
 }
@@ -541,67 +541,70 @@ void Points::UpdateCombustionLowFrequency(
     // Pick candidates for ignition
     //
 
-    // Randomly choose the max number of points we want to ignite now,
-    // honoring MaxBurningParticles at the same time
-    size_t const maxIgnitionPoints = std::min(
-        std::min(
-            size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)), // 4->9
-            mBurningPoints.size() < gameParameters.MaxBurningParticles
+    if (!mCombustionIgnitionCandidates.empty())
+    {
+        // Randomly choose the max number of points we want to ignite now,
+        // honoring MaxBurningParticles at the same time
+        size_t const maxIgnitionPoints = std::min(
+            std::min(
+                size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)), // 4->9
+                mBurningPoints.size() < gameParameters.MaxBurningParticles
                 ? static_cast<size_t>(gameParameters.MaxBurningParticles) - mBurningPoints.size()
                 : size_t(0)),
-        mCombustionIgnitionCandidates.size());
+            mCombustionIgnitionCandidates.size());
 
-    // Sort top N candidates by ignition temperature delta
-    std::nth_element(
-        mCombustionIgnitionCandidates.data(),
-        mCombustionIgnitionCandidates.data() + maxIgnitionPoints,
-        mCombustionIgnitionCandidates.data() + mCombustionIgnitionCandidates.size(),
-        [](auto const & t1, auto const & t2)
+        // Sort top N candidates by ignition temperature delta
+        std::nth_element(
+            mCombustionIgnitionCandidates.data(),
+            mCombustionIgnitionCandidates.data() + maxIgnitionPoints,
+            mCombustionIgnitionCandidates.data() + mCombustionIgnitionCandidates.size(),
+            [](auto const & t1, auto const & t2)
+            {
+                return std::get<1>(t1) > std::get<1>(t2);
+            });
+
+        // Ignite these points
+        for (size_t i = 0; i < maxIgnitionPoints; ++i)
         {
-            return std::get<1>(t1) > std::get<1>(t2);
-        });
+            assert(i < mCombustionIgnitionCandidates.size());
 
-    // Ignite these points
-    for (size_t i = 0; i < maxIgnitionPoints; ++i)
-    {
-        assert(i < mCombustionIgnitionCandidates.size());
+            auto const pointIndex = std::get<0>(mCombustionIgnitionCandidates[i]);
 
-        auto const pointIndex = std::get<0>(mCombustionIgnitionCandidates[i]);
+            //
+            // Ignite!
+            //
 
-        //
-        // Ignite!
-        //
+            mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
 
-        mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_1;
+            // Initial development depends on how deep this particle is in its burning zone
+            mCombustionStateBuffer[pointIndex].FlameDevelopment =
+                0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mCombustionIgnitionCandidates[i]));
 
-        // Initial development depends on how deep this particle is in its burning zone
-        mCombustionStateBuffer[pointIndex].FlameDevelopment =
-            0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mCombustionIgnitionCandidates[i]));
+            // Max development: random and depending on number of springs connected to this point
+            // (so chains have smaller flames)
+            float const deltaSizeDueToConnectedSprings =
+                static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
+                * 0.0625f; // 0.0625 -> 0.50 (@8)
+            mCombustionStateBuffer[pointIndex].MaxFlameDevelopment = std::max(
+                0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
+                mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
-        // Max development: random and depending on number of springs connected to this point
-        // (so chains have smaller flames)
-        float const deltaSizeDueToConnectedSprings =
-            static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
-            * 0.0625f; // 0.0625 -> 0.50 (@8)
-        mCombustionStateBuffer[pointIndex].MaxFlameDevelopment = std::max(
-            0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
-            mCombustionStateBuffer[pointIndex].FlameDevelopment);
+            // Add point to vector of burning points, sorted by plane ID
+            assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
+            mBurningPoints.insert(
+                std::lower_bound( // Earlier than others at same plane ID, so it's drawn behind them
+                    mBurningPoints.cbegin(),
+                    mBurningPoints.cend(),
+                    pointIndex,
+                    [this](auto p1, auto p2)
+                    {
+                        return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
+                    }),
+                pointIndex);
 
-        // Add point to vector of burning points, sorted by plane ID
-        assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
-        mBurningPoints.insert(
-            std::lower_bound( // Earlier than others at same plane ID, so it's drawn behind them
-                mBurningPoints.cbegin(),
-                mBurningPoints.cend(),
-                pointIndex,
-                [this](auto p1, auto p2)
-                {
-                    return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
-                }),
-            pointIndex);
-
-        // Notify
-        mGameEventHandler->OnPointCombustionBegin();
+            // Notify
+            mGameEventHandler->OnPointCombustionBegin();
+        }
     }
 
 
@@ -609,64 +612,66 @@ void Points::UpdateCombustionLowFrequency(
     // Pick candidates for explosion
     //
 
-    // TODOTEST
-    size_t const maxExplosionPoints = std::min(size_t(6), mCombustionExplosionCandidates.size());
-
-    // Sort top N candidates by ignition temperature delta
-    std::nth_element(
-        mCombustionExplosionCandidates.data(),
-        mCombustionExplosionCandidates.data() + maxExplosionPoints,
-        mCombustionExplosionCandidates.data() + mCombustionExplosionCandidates.size(),
-        [](auto const & t1, auto const & t2)
-        {
-            return std::get<1>(t1) > std::get<1>(t2);
-        });
-
-    // Explode these points
-    for (size_t i = 0; i < maxExplosionPoints; ++i)
+    if (!mCombustionExplosionCandidates.empty())
     {
-        assert(i < mCombustionExplosionCandidates.size());
+        size_t const maxExplosionPoints = std::min(size_t(6), mCombustionExplosionCandidates.size());
 
-        auto const pointIndex = std::get<0>(mCombustionExplosionCandidates[i]);
-        auto const pointPosition = GetPosition(pointIndex);
+        // Sort top N candidates by ignition temperature delta
+        std::nth_element(
+            mCombustionExplosionCandidates.data(),
+            mCombustionExplosionCandidates.data() + maxExplosionPoints,
+            mCombustionExplosionCandidates.data() + mCombustionExplosionCandidates.size(),
+            [](auto const & t1, auto const & t2)
+            {
+                return std::get<1>(t1) > std::get<1>(t2);
+            });
 
-        //
-        // Explode!
-        //
-
-        // Blast radius
-        float const blastRadius =
-            gameParameters.BombBlastRadius // TODOHERE: new GameParameter
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-        // Blast strength
-        float const blastStrength =
-            700.0f // Magic number
-            * gameParameters.BombBlastForceAdjustment;
-
-        // Blast heat
+        // Calculate blast heat
         float const blastHeat =
-            gameParameters.BombBlastHeat // TODOHERE
+            GameParameters::CombustionHeat
+            * dt
+            * gameParameters.CombustionHeatAdjustment
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-        // Start explosion
-        mShipPhysicsHandler->StartExplosion(
-            currentSimulationTime,
-            GetPlaneId(pointIndex),
-            pointPosition,
-            blastRadius,
-            blastStrength,
-            blastHeat,
-            ExplosionType::Combustion,
-            gameParameters);
+        // Explode these points
+        for (size_t i = 0; i < maxExplosionPoints; ++i)
+        {
+            assert(i < mCombustionExplosionCandidates.size());
 
-        // Notify explosion
-        mGameEventHandler->OnCombustionExplosion(
-            mParentWorld.IsUnderwater(pointPosition),
-            1);
+            auto const pointIndex = std::get<0>(mCombustionExplosionCandidates[i]);
+            auto const pointPosition = GetPosition(pointIndex);
 
-        // Transition state
-        mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Exploded;
+            //
+            // Explode!
+            //
+
+            // Blast radius, arbitrarily dependent on material's ignition temperature
+            float constexpr MinBlastRadius = 2.0f;
+            float constexpr MaxBlastRadius = 10.0f;
+            float const power = SmoothStep(480.0f, 700.0f, mMaterialIgnitionTemperatureBuffer[pointIndex]);
+            float const blastRadius = !gameParameters.IsUltraViolentMode
+                ? (MinBlastRadius + (MaxBlastRadius - MinBlastRadius) * power)
+                : MinBlastRadius * 10.0f;
+
+            // Start explosion
+            mShipPhysicsHandler->StartExplosion(
+                currentSimulationTime,
+                GetPlaneId(pointIndex),
+                pointPosition,
+                blastRadius,
+                700.0f, // Magic number
+                blastHeat,
+                ExplosionType::Combustion,
+                gameParameters);
+
+            // Notify explosion
+            mGameEventHandler->OnCombustionExplosion(
+                mParentWorld.IsUnderwater(pointPosition),
+                1);
+
+            // Transition state
+            mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Exploded;
+        }
     }
 }
 
@@ -684,7 +689,7 @@ void Points::UpdateCombustionHighFrequency(
 
     // Heat generated by combustion in this step
     float const effectiveCombustionHeat =
-        100.0f * 1000.0f // 100KJ
+        GameParameters::CombustionHeat
         * dt
         * gameParameters.CombustionHeatAdjustment;
 
@@ -727,10 +732,10 @@ void Points::UpdateCombustionHighFrequency(
                 auto const otherEndpointIndex = s.OtherEndpointIndex;
 
                 // Calculate direction coefficient so to prefer upwards direction:
-                // 0.9 + 0.8*(1 - cos(theta)): 2.5 N, 0.9 S, 1.7 W and E
+                // 0.9 + 1.0*(1 - cos(theta)): 2.9 N, 0.9 S, 1.9 W and E
                 vec2f const springDir = (GetPosition(otherEndpointIndex) - GetPosition(pointIndex)).normalise();
                 float const dirAlpha =
-                    (0.9f + 0.8f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
+                    (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
                 // No normalization: when using normalization flame does not propagate along rope
 
                 // Add heat to point

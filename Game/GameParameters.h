@@ -295,6 +295,8 @@ struct GameParameters
     static float constexpr MinCombustionSpeedAdjustment = 0.1f;
     static float constexpr MaxCombustionSpeedAdjustment = 100.0f;
 
+    static float constexpr CombustionHeat = 100.0f * 1000.0f; // 100KJ
+
     float CombustionHeatAdjustment;
     static float constexpr MinCombustionHeatAdjustment = 0.1f;
     static float constexpr MaxCombustionHeatAdjustment = 100.0f;
