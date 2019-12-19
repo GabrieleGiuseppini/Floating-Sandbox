@@ -1067,10 +1067,11 @@ Render:
 			+ Additive (just like bombs)
 			+ New sounds x {underwater, size}
 		+ Test UltraViolent mode
-		- Cleanup:
+		= Cleanup:
 			+ Nail down top N candidates
 			+ Make new structural materials template
-			- Finalize "Flawed Design" (or "Imminent Disaster"?)
+			= Finalize "Flawed Design" (or "Imminent Disaster"?)
+				+ Name, Description
 	- Degrading combustion
 		- Superheated materials vaporize
 		- New combustion type, "Degradation"

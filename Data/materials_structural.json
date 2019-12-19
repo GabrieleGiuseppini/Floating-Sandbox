@@ -923,7 +923,7 @@
         "name": "Diesel", 
         "render_color": "#1E1E1E", 
         "sound_type": "Wood", 
-        "specific_heat": 22.0,
+        "specific_heat": 16.0,
         "stiffness": 1.0, 
         "strength": 3.166,
         "template": {
@@ -950,14 +950,14 @@
         "name": "Gunpowder", 
         "render_color": "#2E1E1E", 
         "sound_type": "Rubber", 
-        "specific_heat": 27.0,
+        "specific_heat": 21.0,
         "stiffness": 1.0, 
         "strength": 0.42,
         "template": {
             "column": 3, 
             "row": "55|Gunpowder"
         }, 
-        "thermal_conductivity": 0.3,
+        "thermal_conductivity": 0.25,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "water_volume_fill": 1.0
