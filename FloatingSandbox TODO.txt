@@ -414,7 +414,7 @@ Render:
 		+ Explosive combustion
 		+ changes.txt
 		
-		- Interleaving Update's with Render's (*)
+		= Interleaving Update's with Render's (*)
 
 		= See why land rendering lowers FPS so much
 			+ Compare first with ocean
@@ -802,19 +802,19 @@ Render:
 
 	- See if Z test and ocean before clouds buys us anything
 
-	- Try interleaving Update's with Render's (*)
+	= Try interleaving Update's with Render's (*)
 		! First, quick and dirty: do at stars, clouds, ocean
 		- World:
 			- Replace Update(...) and Render(...) with 
-			  UpdateAndRender(..., bool doUpdate, steady_clock::duration updateElapsedTime, bool doRender,steady_clock::duration renderElapsedTime)
+			  UpdateAndRender(..., bool doUpdate, steady_clock::duration & updateElapsedTime, bool doRender, steady_clock::duration & renderElapsedTime)
 			  - For now as-is
 		- GameController:
 			- See who calls its Update() and Render()
-				- Update: used by step-by-step
+				- 1) Update: used by step-by-step
 					- Replace with GC::PulseUpdate()
 						- Sets mIsPulseUpdateSet
 						- RunGameIteration(.) checks it together w/pause, and always clears it
-				- Render: OnPaint
+				- 2) Render: OnPaint
 					- Should not be needed anymore, nuke it
 			- Replace implementation of RunGameIteration(.)
 				- Incorporate (and then nuke) InternalUpdate and InternalRender
