@@ -1,5 +1,7 @@
 1.14.0.TODO
 - Rain now floods exposed areas of a ship
+- Added new material combustion type, "Explosive", and added first two explosive materials: Diesel and Gunpowder
+	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
 - Re-worked explosion physics and graphics
 - 11 new ships
 
