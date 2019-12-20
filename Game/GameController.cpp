@@ -1256,19 +1256,19 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     // Calculate UR ratio
 
-    auto totalUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration);
-    auto totalRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration);
-    auto lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
-    auto lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
+    auto const lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
+    float const lastUpdateDurationMillisecondsPerFrame = mLastFrameCount != 0
+        ? static_cast<float>(lastUpdateDurationNs.count()) / 1000000.0f / static_cast<float>(mLastFrameCount)
+        : 0.0f;
 
-    float const totalURRatio = totalRenderDurationNs.count() != 0
-        ? static_cast<float>(totalUpdateDurationNs.count()) / static_cast<float>(totalRenderDurationNs.count())
+    auto const lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
+    float const lastRenderDurationMillisecondsPerFrame = mLastFrameCount != 0
+        ? static_cast<float>(lastRenderDurationNs.count()) / 1000000.0f / static_cast<float>(mLastFrameCount)
         : 0.0f;
 
     float const lastURRatio = lastRenderDurationNs.count() != 0
         ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
         : 0.0f;
-
 
     // Publish frame rate
     assert(!!mGameEventDispatcher);
@@ -1287,7 +1287,8 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mIsPaused,
         mRenderContext->GetZoom(),
         mRenderContext->GetCameraWorldPosition(),
-        totalURRatio,
+        lastUpdateDurationMillisecondsPerFrame,
+        lastRenderDurationMillisecondsPerFrame,
         lastURRatio,
         mRenderContext->GetStatistics());
 }

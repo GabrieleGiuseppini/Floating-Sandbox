@@ -35,7 +35,8 @@ public:
         bool isPaused,
         float zoom,
         vec2f const & camera,
-        float totalUpdateToRenderDurationRatio,
+        float lastUpdateDurationMillisecondsPerFrame,
+        float lastRenderDurationMillisecondsPerFrame,
         float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
 

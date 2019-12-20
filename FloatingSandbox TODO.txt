@@ -828,7 +828,9 @@ Render:
 			  + GC passes mTotalUpdateDuration& & friend&
 			  + For now as-is
 		+ Test
-		- Perf improvements:
+		+ Make status text in millis
+		= Perf improvements:
+			+ Start: Default: FPS=30.0, U/R=22.x/10.x, pause:R=21.5; Ball of Iron: FPS=49.0-50.0-55.0F, U/R=5.x/14.x, pause:R=19.9
 			- First: move RenderStart at beginning and see if it's worse
 				- Test on all boxes
 			- World::UpdateAndRender(.):
@@ -839,6 +841,7 @@ Render:
 					- TBD
 					- ?Land
 			- Remove doRender arg of World::UpdateAndRender()
+			- End:
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

@@ -54,7 +54,8 @@ void TextLayer::SetStatusTexts(
     bool isPaused,
     float zoom,
     vec2f const & camera,
-    float totalUpdateToRenderDurationRatio,
+    float lastUpdateDurationMillisecondsPerFrame,
+    float lastRenderDurationMillisecondsPerFrame,
     float lastUpdateToRenderDurationRatio,
     Render::RenderStatistics const & renderStatistics)
 {
@@ -90,8 +91,12 @@ void TextLayer::SetStatusTexts(
         ss.fill('0');
 
         ss << std::fixed << std::setprecision(2)
-            << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << "%)"
-            << " ZOOM:" << zoom
+            << "U:" << lastUpdateDurationMillisecondsPerFrame << "MS "
+            << "R:" << lastRenderDurationMillisecondsPerFrame << "MS "
+            << "(U/R:" << (100.0f * lastUpdateToRenderDurationRatio) << "%)";
+
+        ss << std::fixed << std::setprecision(2)
+            << " ZM:" << zoom
             << " CAM:" << camera.x << ", " << camera.y;
 
 		mStatusTextLines[1].Text = ss.str();
