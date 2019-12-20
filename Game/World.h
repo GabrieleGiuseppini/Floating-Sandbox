@@ -236,7 +236,6 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext,
         bool doUpdate,
-        bool doRender, // TODOTEST
         GameChronometer::duration & updateTotalElapsedTime,
         GameChronometer::duration & renderTotalElapsedTime);
 

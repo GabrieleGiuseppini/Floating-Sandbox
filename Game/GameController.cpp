@@ -422,7 +422,6 @@ void GameController::RunGameIteration()
         mGameParameters,
         *mRenderContext,
         doUpdate,
-        true,
         mTotalUpdateDuration,
         mTotalRenderDuration);
 

@@ -582,10 +582,13 @@ void World::UpdateAndRender(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext,
     bool doUpdate,
-    bool doRender, // TODOTEST
     GameChronometer::duration & updateTotalElapsedTime,
     GameChronometer::duration & renderTotalElapsedTime)
 {
+    //
+    // Update sky
+    //
+
     if (doUpdate)
     {
         auto const updateStartTime = GameChronometer::now();
@@ -593,12 +596,52 @@ void World::UpdateAndRender(
         // Update current time
         mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
-        // Update world parts
+        // Update stars
         mStars.Update(gameParameters);
+
+        // Update storm
         mStorm.Update(mCurrentSimulationTime, gameParameters);
+
+        // Update wind
         mWind.Update(mStorm.GetParameters(), gameParameters);
+
+        // Update clouds
         mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
+
+        updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
+    }
+
+    //
+    // Render sky
+    //
+
+    {
+        auto const renderStartTime = GameChronometer::now();
+
+        renderContext.RenderSkyStart();
+
+        // Upload stars
+        mStars.Upload(renderContext);
+
+        // Upload storm
+        mStorm.Upload(renderContext);
+
+        // Upload clouds
+        mClouds.Upload(renderContext);
+
+        renderContext.RenderSkyEnd();
+
+        renderTotalElapsedTime += GameChronometer::now() - renderStartTime;
+    }
+
+    if (doUpdate)
+    {
+        auto const updateStartTime = GameChronometer::now();
+
+        // Update ocean surface
         mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+
+        // Update ocean floor
         mOceanFloor.Update(gameParameters);
 
         // Update all ships
@@ -614,26 +657,8 @@ void World::UpdateAndRender(
         updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
     }
 
-    if (doRender)
     {
         auto const renderStartTime = GameChronometer::now();
-
-        //
-        // Render sky
-        //
-
-        renderContext.RenderSkyStart();
-
-        // Upload stars
-        mStars.Upload(renderContext);
-
-        // Upload storm
-        mStorm.Upload(renderContext);
-
-        // Upload clouds
-        mClouds.Upload(renderContext);
-
-        renderContext.RenderSkyEnd();
 
 
         //
