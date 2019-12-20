@@ -424,10 +424,13 @@ Render:
 				! ...hence the OpenGL wait times increase
 			- Would need to "stack" ocean on top of land, like it was before
 
-		- See why Samsung is so slow
+		+ See why Samsung is so slow
 			! Apparently it's the physics (it's 64FPS with pause)
 			+ Write and run unit tests for denormals
-			- Add switch to turn off Ship::Update's to verify whether it's pure CPU or not
+			+ It's 4 cores, each core 1GHz, vs. 1 core, 2.4GHz
+
+		- Multi-threading, phase I:
+			- TBD
 
 		- Run w/OpenGL tracing to see if there's any errors
 
@@ -438,6 +441,9 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Cached quantities (*)
+
+		- Multi-threading, phase II:
+			- TBD
 
 		- Lights/materials breaking under pressure (*)
 
@@ -831,16 +837,18 @@ Render:
 		+ Make status text in millis
 		= Perf improvements:
 			+ Start: Default: FPS=30.0, U/R=22.x/10.x, pause:R=21.5; Ball of Iron: FPS=49.0-50.0-55.0F, U/R=5.x/14.x, pause:R=19.9
-			- First: move RenderStart at beginning and see if it's worse
-				- Test on all boxes
+			+ First: move RenderStart at beginning and see if it's worse
+				+ Test on all boxes
+					+ Samsung: 90/11
+			- Call World::UpdateAndRender just once
 			- World::UpdateAndRender(.):
+				- Remove doRender arg
 				- Interleave at:
 					- Stars
 					- Clouds
 					- Ocean
 					- TBD
-					- ?Land
-			- Remove doRender arg of World::UpdateAndRender()
+					- ?Land			
 			- End:
 					
 	- Lights on the GPU with instanced drawing

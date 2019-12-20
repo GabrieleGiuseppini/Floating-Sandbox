@@ -336,15 +336,60 @@ RgbImageData GameController::TakeScreenshot()
 
 void GameController::RunGameIteration()
 {
-    ///////////////////////////////////////////////////////////
-    // Update
-    ///////////////////////////////////////////////////////////
-
+    //
     // Decide whether we are going to run a simulation update
+    //
+
     bool const doUpdate = ((!mIsPaused || mIsPulseUpdateSet) && !mIsMoveToolEngaged);
 
     // Clear pulse
     mIsPulseUpdateSet = false;
+
+
+    //
+    // Initialize render stats, if needed
+    //
+
+    if (mRenderStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
+    {
+        assert(mRenderStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
+
+        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+        mRenderStatsOriginTimestampReal = nowReal;
+        mRenderStatsLastTimestampReal = nowReal;
+
+        mTotalFrameCount = 0u;
+        mLastFrameCount = 0u;
+
+        // In order to start from zero at first render, take global origin here
+        mOriginTimestampGame = nowReal;
+
+        // Render initial status text
+        PublishStats(nowReal);
+    }
+
+    //
+    // Initialize rendering
+    //
+
+    auto const renderStartTime1 = GameChronometer::now();
+
+    // Flip the (previous) back buffer onto the screen
+    mSwapRenderBuffersFunction();
+
+    // Smooth render controls
+    float const realWallClockNow = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
+    mZoomParameterSmoother->Update(realWallClockNow);
+    mCameraWorldPositionParameterSmoother->Update(realWallClockNow);
+
+    // Start rendering
+    mRenderContext->RenderStart();
+
+    mTotalRenderDuration += GameChronometer::now() - renderStartTime1;
+
+    //
+    //
+    //
 
     if (doUpdate)
     {
@@ -388,60 +433,6 @@ void GameController::RunGameIteration()
         mTotalUpdateDuration += GameChronometer::now() - updateStartTime2;
     }
 
-
-    ///////////////////////////////////////////////////////////
-    // Render
-    ///////////////////////////////////////////////////////////
-
-    //
-    // Initialize render stats, if needed
-    //
-
-    if (mRenderStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
-    {
-        assert(mRenderStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
-
-        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-        mRenderStatsOriginTimestampReal = nowReal;
-        mRenderStatsLastTimestampReal = nowReal;
-
-        mTotalFrameCount = 0u;
-        mLastFrameCount = 0u;
-
-        // In order to start from zero at first render, take global origin here
-        mOriginTimestampGame = nowReal;
-
-        // Render initial status text
-        PublishStats(nowReal);
-    }
-
-
-    //
-    // Render
-    //
-
-    auto const renderStartTime1 = GameChronometer::now();
-
-    // Flip the (previous) back buffer onto the screen
-    mSwapRenderBuffersFunction();
-
-    //
-    // Smooth render controls
-    //
-
-    float const now = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
-
-    mZoomParameterSmoother->Update(now);
-    mCameraWorldPositionParameterSmoother->Update(now);
-
-
-    //
-    // Start rendering
-    //
-
-    mRenderContext->RenderStart();
-
-    mTotalRenderDuration += GameChronometer::now() - renderStartTime1;
 
     //
     // Render world
