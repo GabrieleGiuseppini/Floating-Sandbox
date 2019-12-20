@@ -840,7 +840,7 @@ Render:
 			+ First: move RenderStart at beginning and see if it's worse
 				+ Test on all boxes
 					+ Samsung: 90/11
-			- Call World::UpdateAndRender just once
+			+ Call World::UpdateAndRender just once
 			- World::UpdateAndRender(.):
 				- Remove doRender arg
 				- Interleave at:

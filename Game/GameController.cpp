@@ -336,6 +336,8 @@ RgbImageData GameController::TakeScreenshot()
 
 void GameController::RunGameIteration()
 {
+    float const now = GameWallClock::GetInstance().NowAsFloat();
+
     //
     // Decide whether we are going to run a simulation update
     //
@@ -372,32 +374,34 @@ void GameController::RunGameIteration()
     // Initialize rendering
     //
 
-    auto const renderStartTime1 = GameChronometer::now();
+    {
+        auto const renderStartTime = GameChronometer::now();
 
-    // Flip the (previous) back buffer onto the screen
-    mSwapRenderBuffersFunction();
+        // Flip the (previous) back buffer onto the screen
+        mSwapRenderBuffersFunction();
 
-    // Smooth render controls
-    float const realWallClockNow = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
-    mZoomParameterSmoother->Update(realWallClockNow);
-    mCameraWorldPositionParameterSmoother->Update(realWallClockNow);
+        // Smooth render controls
+        float const realWallClockNow = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
+        mZoomParameterSmoother->Update(realWallClockNow);
+        mCameraWorldPositionParameterSmoother->Update(realWallClockNow);
 
-    // Start rendering
-    mRenderContext->RenderStart();
+        //
+        // Start rendering
+        //
 
-    mTotalRenderDuration += GameChronometer::now() - renderStartTime1;
+        mRenderContext->RenderStart();
+
+        mTotalRenderDuration += GameChronometer::now() - renderStartTime;
+    }
 
     //
-    //
+    // Update parameter smoothers
     //
 
     if (doUpdate)
     {
-        auto const updateStartTime1 = GameChronometer::now();
+        auto const updateStartTime = GameChronometer::now();
 
-        float const now = GameWallClock::GetInstance().NowAsFloat();
-
-        // Update parameter smoothers
         std::for_each(
             mFloatParameterSmoothers.begin(),
             mFloatParameterSmoothers.end(),
@@ -406,19 +410,29 @@ void GameController::RunGameIteration()
                 ps.Update(now);
             });
 
-        mTotalUpdateDuration += GameChronometer::now() - updateStartTime1;
+        mTotalUpdateDuration += GameChronometer::now() - updateStartTime;
+    }
 
-        // Update world
-        assert(!!mWorld);
-        mWorld->UpdateAndRender(
-            mGameParameters,
-            *mRenderContext,
-            true,
-            false,
-            mTotalUpdateDuration,
-            mTotalRenderDuration);
+    //
+    // Update and render world
+    //
 
-        auto const updateStartTime2 = GameChronometer::now();
+    assert(!!mWorld);
+    mWorld->UpdateAndRender(
+        mGameParameters,
+        *mRenderContext,
+        doUpdate,
+        true,
+        mTotalUpdateDuration,
+        mTotalRenderDuration);
+
+    //
+    // Finalize update
+    //
+
+    if (doUpdate)
+    {
+        auto const updateStartTime = GameChronometer::now();
 
         // Flush events
         mGameEventDispatcher->Flush();
@@ -430,59 +444,45 @@ void GameController::RunGameIteration()
         assert(!!mTextLayer);
         mTextLayer->Update(now);
 
-        mTotalUpdateDuration += GameChronometer::now() - updateStartTime2;
+        mTotalUpdateDuration += GameChronometer::now() - updateStartTime;
     }
 
-
     //
-    // Render world
-    //
-
-    assert(!!mWorld);
-    mWorld->UpdateAndRender(
-        mGameParameters,
-        *mRenderContext,
-        false,
-        true,
-        mTotalUpdateDuration,
-        mTotalRenderDuration);
-
-    auto const renderStartTime2 = GameChronometer::now();
-
-    //
-    // Render HeatBlaster flame, if any
+    // Finalize Rendering
     //
 
-    if (!!mHeatBlasterFlameToRender)
     {
-        mRenderContext->UploadHeatBlasterFlame(
-            std::get<0>(*mHeatBlasterFlameToRender),
-            std::get<1>(*mHeatBlasterFlameToRender),
-            std::get<2>(*mHeatBlasterFlameToRender));
+        auto const renderStartTime = GameChronometer::now();
 
-        mHeatBlasterFlameToRender.reset();
+        // Render HeatBlaster flame, if any
+        if (!!mHeatBlasterFlameToRender)
+        {
+            mRenderContext->UploadHeatBlasterFlame(
+                std::get<0>(*mHeatBlasterFlameToRender),
+                std::get<1>(*mHeatBlasterFlameToRender),
+                std::get<2>(*mHeatBlasterFlameToRender));
+
+            mHeatBlasterFlameToRender.reset();
+        }
+
+        // Render fire extinguisher spray, if any
+        if (!!mFireExtinguisherSprayToRender)
+        {
+            mRenderContext->UploadFireExtinguisherSpray(
+                std::get<0>(*mFireExtinguisherSprayToRender),
+                std::get<1>(*mFireExtinguisherSprayToRender));
+
+            mFireExtinguisherSprayToRender.reset();
+        }
+
+        //
+        // Finish rendering
+        //
+
+        mRenderContext->RenderEnd();
+
+        mTotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
-
-    //
-    // Render fire extinguisher spray, if any
-
-    if (!!mFireExtinguisherSprayToRender)
-    {
-        mRenderContext->UploadFireExtinguisherSpray(
-            std::get<0>(*mFireExtinguisherSprayToRender),
-            std::get<1>(*mFireExtinguisherSprayToRender));
-
-        mFireExtinguisherSprayToRender.reset();
-    }
-
-
-    //
-    // Finish rendering
-    //
-
-    mRenderContext->RenderEnd();
-
-    mTotalRenderDuration += GameChronometer::now() - renderStartTime2;
 
 
     //
