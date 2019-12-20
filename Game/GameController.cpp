@@ -500,77 +500,6 @@ void GameController::RunGameIteration()
 
     ++mTotalFrameCount;
     ++mLastFrameCount;
-
-    /* TODOOLD
-    ///////////////////////////////////////////////////////////
-    // Update
-    ///////////////////////////////////////////////////////////
-
-    // Make sure we're not paused
-    if ((!mIsPaused || mIsPulseUpdateSet) && !mIsMoveToolEngaged)
-    {
-        auto const startTime = std::chrono::steady_clock::now();
-
-        InternalUpdate();
-
-        auto const endTime = std::chrono::steady_clock::now();
-        mTotalUpdateDuration += endTime - startTime;
-
-        // Clear pulse
-        mIsPulseUpdateSet = false;
-    }
-
-
-    ///////////////////////////////////////////////////////////
-    // Render
-    ///////////////////////////////////////////////////////////
-
-    //
-    // Initialize render stats, if needed
-    //
-
-    if (mRenderStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
-    {
-        assert(mRenderStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
-
-        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-        mRenderStatsOriginTimestampReal = nowReal;
-        mRenderStatsLastTimestampReal = nowReal;
-
-        mTotalFrameCount = 0u;
-        mLastFrameCount = 0u;
-
-        // In order to start from zero at first render, take global origin here
-        mOriginTimestampGame = nowReal;
-
-        // Render initial status text
-        PublishStats(nowReal);
-    }
-
-
-    //
-    // Render
-    //
-
-    auto const startTime = std::chrono::steady_clock::now();
-
-    // Flip the (previous) back buffer onto the screen
-    mSwapRenderBuffersFunction();
-
-    // Render
-    InternalRender();
-
-    auto const endTime = std::chrono::steady_clock::now();
-    mTotalRenderDuration += endTime - startTime;
-
-
-    //
-    // Update stats
-    //
-
-    ++mTotalFrameCount;
-    ++mLastFrameCount;
-    */
 }
 
 void GameController::LowFrequencyUpdate()
@@ -603,6 +532,8 @@ void GameController::LowFrequencyUpdate()
         mTotalFrameCount = 0u;
         mLastFrameCount = 0u;
         mRenderStatsOriginTimestampReal = nowReal;
+        mTotalUpdateDuration = GameChronometer::duration(0);
+        mTotalRenderDuration = GameChronometer::duration(0);
 
         ++mSkippedFirstStatPublishes;
     }
