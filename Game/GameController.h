@@ -110,8 +110,10 @@ public:
     void RunGameIteration() override;
     void LowFrequencyUpdate() override;
 
-    void Update() override;
-    void Render() override;
+    void PulseUpdate() override
+    {
+        mIsPulseUpdateSet = true;
+    }
 
     //
     // Game Control and notifications
@@ -629,6 +631,7 @@ private:
     GameParameters mGameParameters;
     std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
+    bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;
 
     // When set, will be uploaded to the RenderContext to display the HeatBlaster flame

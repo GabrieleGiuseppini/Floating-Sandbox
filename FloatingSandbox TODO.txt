@@ -804,27 +804,40 @@ Render:
 
 	= Try interleaving Update's with Render's (*)
 		! First, quick and dirty: do at stars, clouds, ocean
+		- GameController:
+			= Nuke Update() and Render()
+				+ 1) Update: used by step-by-step
+					+ Replace with GC::PulseUpdate()
+						+ Sets mIsPulseUpdateSet
+						+ RunGameIteration(.) checks it together w/pause, and always clears it
+				+ 2) Render: OnPaint
+					+ Should not be needed anymore, nuke it
+			- 3) Replace implementation of RunGameIteration(.)
+				- Incorporate (and then nuke) inline the implementations of InternalUpdate and InternalRender
+					- i.e. end up calling World::Update and World::Render directly, one after the other
+			- 4) Test
+				- Normal
+				- Pause, step-by-step
+				- Resize, minimize/maximize, fullscreen/nofullscreen
+		- 5) GameChronometer
+			- using std::steady_clock
 		- World:
 			- Replace Update(...) and Render(...) with 
-			  UpdateAndRender(..., bool doUpdate, steady_clock::duration & updateElapsedTime, bool doRender, steady_clock::duration & renderElapsedTime)
+			  UpdateAndRender(..., bool doUpdate, GameChronometer::duration & updateElapsedTime, bool doRender, GameChronometer::duration & renderElapsedTime)
+			  - Really needs doUpdate and/or doRender?
+			  - GC passes mLastTotalUpdateDuration& & friend&
 			  - For now as-is
-		- GameController:
-			- See who calls its Update() and Render()
-				- 1) Update: used by step-by-step
-					- Replace with GC::PulseUpdate()
-						- Sets mIsPulseUpdateSet
-						- RunGameIteration(.) checks it together w/pause, and always clears it
-				- 2) Render: OnPaint
-					- Should not be needed anymore, nuke it
-			- Replace implementation of RunGameIteration(.)
-				- Incorporate (and then nuke) InternalUpdate and InternalRender
 		- Test
-		- World::UpdateAndRender(.):
-			- Interleave at:
-				- Stars
-				- Clouds
-				- Ocean
-				- ?Land
+		- Perf improvements:
+			- First: move RenderStart at beginning and see if it's worse
+				- Test on all boxes
+			- World::UpdateAndRender(.):
+				- Interleave at:
+					- Stars
+					- Clouds
+					- Ocean
+					- TBD
+					- ?Land
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)
@@ -1133,7 +1146,9 @@ Render:
 			- Each switch gets name as part of Electrical Elements data communicated to ship
 				- ObjectId is implicit (local ID is index in container of switches's ElementIndex within ElectricalElements)
 		- New game events:
-			- Ship::cctor visits switches among ElectricalElements and fires AddSwitch(ID, name, type, state)
+			- Ship::cctor invokes ElectricalElements::AnnounceInteracticeElements(GameEventDispatcher &) 
+				- New IGameHandler: "electrical"
+				- Visits switches among ElectricalElements and fires AddSwitch(ID, name, type, state)
 			- Ship::ElectricalElementDestroyHandler fires DeleteSwitch(ID) if deleting a switch
 			- Water-sensing switching - which is done at ElectricalUpdate() - fires SwitchToggled(ID, state)
 		- MainFrame gets switches via AddSwitch event, with all metadata (ID, name, type, state)

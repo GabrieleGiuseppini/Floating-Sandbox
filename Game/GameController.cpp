@@ -58,6 +58,7 @@ GameController::GameController(
     : mGameParameters()
     , mLastShipLoadedFilepath()
     , mIsPaused(false)
+    , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     , mHeatBlasterFlameToRender()
     , mFireExtinguisherSprayToRender()
@@ -336,11 +337,11 @@ RgbImageData GameController::TakeScreenshot()
 void GameController::RunGameIteration()
 {
     ///////////////////////////////////////////////////////////
-    // Update simulation
+    // Update
     ///////////////////////////////////////////////////////////
 
     // Make sure we're not paused
-    if (!mIsPaused && !mIsMoveToolEngaged)
+    if ((!mIsPaused || mIsPulseUpdateSet) && !mIsMoveToolEngaged)
     {
         auto const startTime = std::chrono::steady_clock::now();
 
@@ -348,6 +349,9 @@ void GameController::RunGameIteration()
 
         auto const endTime = std::chrono::steady_clock::now();
         mTotalUpdateDuration += endTime - startTime;
+
+        // Clear pulse
+        mIsPulseUpdateSet = false;
     }
 
 
@@ -437,16 +441,6 @@ void GameController::LowFrequencyUpdate()
     }
 
     mRenderStatsLastTimestampReal = nowReal;
-}
-
-void GameController::Update()
-{
-    InternalUpdate();
-}
-
-void GameController::Render()
-{
-    InternalRender();
 }
 
 /////////////////////////////////////////////////////////////
