@@ -3,7 +3,7 @@
 # Game library
 #
 
-set  (GAME_SOURCES
+set  (GAME_SOURCES	
 	GameController.cpp
 	GameController_StateMachines.cpp
 	GameController.h

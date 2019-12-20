@@ -804,30 +804,30 @@ Render:
 
 	= Try interleaving Update's with Render's (*)
 		! First, quick and dirty: do at stars, clouds, ocean
-		- GameController:
-			= Nuke Update() and Render()
+		+ GameController:
+			+ Nuke Update() and Render()
 				+ 1) Update: used by step-by-step
 					+ Replace with GC::PulseUpdate()
 						+ Sets mIsPulseUpdateSet
 						+ RunGameIteration(.) checks it together w/pause, and always clears it
 				+ 2) Render: OnPaint
 					+ Should not be needed anymore, nuke it
-			- 3) Replace implementation of RunGameIteration(.)
-				- Incorporate (and then nuke) inline the implementations of InternalUpdate and InternalRender
-					- i.e. end up calling World::Update and World::Render directly, one after the other
-			- 4) Test
-				- Normal
-				- Pause, step-by-step
-				- Resize, minimize/maximize, fullscreen/nofullscreen
-		- 5) GameChronometer
-			- using std::steady_clock
-		- World:
-			- Replace Update(...) and Render(...) with 
+			+ 3) Replace implementation of RunGameIteration(.)
+				+ Incorporate (and then nuke) inline the implementations of InternalUpdate and InternalRender
+					+ i.e. end up calling World::Update and World::Render directly, one after the other
+			+ 4) Test
+				+ Normal
+				+ Pause, step-by-step
+				+ Resize, minimize/maximize, fullscreen/nofullscreen
+		+ 5) GameChronometer
+			+ using std::steady_clock
+			+ Use
+		+ World:
+			+ Replace Update(...) and Render(...) with 
 			  UpdateAndRender(..., bool doUpdate, GameChronometer::duration & updateElapsedTime, bool doRender, GameChronometer::duration & renderElapsedTime)
-			  - Really needs doUpdate and/or doRender?
-			  - GC passes mLastTotalUpdateDuration& & friend&
-			  - For now as-is
-		- Test
+			  + GC passes mTotalUpdateDuration& & friend&
+			  + For now as-is
+		+ Test
 		- Perf improvements:
 			- First: move RenderStart at beginning and see if it's worse
 				- Test on all boxes
@@ -838,6 +838,7 @@ Render:
 					- Ocean
 					- TBD
 					- ?Land
+			- Remove doRender arg of World::UpdateAndRender()
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

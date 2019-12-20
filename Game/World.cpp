@@ -578,100 +578,113 @@ void World::SetSilence(float silenceAmount)
 // Simulation
 //////////////////////////////////////////////////////////////////////////////
 
-void World::Update(
+void World::UpdateAndRender(
     GameParameters const & gameParameters,
-    Render::RenderContext const & renderContext)
+    Render::RenderContext & renderContext,
+    bool doUpdate,
+    bool doRender, // TODOTEST
+    GameChronometer::duration & updateTotalElapsedTime,
+    GameChronometer::duration & renderTotalElapsedTime)
 {
-    // Update current time
-    mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
-
-    // Update world parts
-    mStars.Update(gameParameters);
-    mStorm.Update(mCurrentSimulationTime, gameParameters);
-    mWind.Update(mStorm.GetParameters(), gameParameters);
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
-    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
-    mOceanFloor.Update(gameParameters);
-
-    // Update all ships
-    for (auto & ship : mAllShips)
+    if (doUpdate)
     {
-        ship->Update(
-            mCurrentSimulationTime,
-			mStorm.GetParameters(),
-            gameParameters,
-            renderContext);
-    }
-}
+        auto const updateStartTime = GameChronometer::now();
 
-void World::Render(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
-{
-    //
-    // Render sky
-    //
+        // Update current time
+        mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
-    renderContext.RenderSkyStart();
+        // Update world parts
+        mStars.Update(gameParameters);
+        mStorm.Update(mCurrentSimulationTime, gameParameters);
+        mWind.Update(mStorm.GetParameters(), gameParameters);
+        mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
+        mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+        mOceanFloor.Update(gameParameters);
 
-    // Upload stars
-    mStars.Upload(renderContext);
+        // Update all ships
+        for (auto & ship : mAllShips)
+        {
+            ship->Update(
+                mCurrentSimulationTime,
+                mStorm.GetParameters(),
+                gameParameters,
+                renderContext);
+        }
 
-    // Upload storm
-    mStorm.Upload(renderContext);
-
-    // Upload clouds
-    mClouds.Upload(renderContext);
-
-    renderContext.RenderSkyEnd();
-
-
-    //
-    // Upload land and ocean
-    //
-
-    mOceanFloor.Upload(gameParameters, renderContext);
-    mOceanSurface.Upload(gameParameters, renderContext);
-
-
-    //
-    // Render ocean (opaquely over sky)
-    //
-
-    renderContext.RenderOceanOpaquely();
-
-
-    //
-    // Render all ships
-    //
-
-    renderContext.RenderShipsStart();
-
-    for (auto const & ship : mAllShips)
-    {
-        ship->Render(
-            gameParameters,
-            renderContext);
+        updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
     }
 
-    renderContext.RenderShipsEnd();
-
-
-    //
-    // Render the ocean transparently, if we want to see the ship *in* the ocean instead
-    //
-
-    if (!renderContext.GetShowShipThroughOcean())
+    if (doRender)
     {
-        renderContext.RenderOceanTransparently();
+        auto const renderStartTime = GameChronometer::now();
+
+        //
+        // Render sky
+        //
+
+        renderContext.RenderSkyStart();
+
+        // Upload stars
+        mStars.Upload(renderContext);
+
+        // Upload storm
+        mStorm.Upload(renderContext);
+
+        // Upload clouds
+        mClouds.Upload(renderContext);
+
+        renderContext.RenderSkyEnd();
+
+
+        //
+        // Upload land and ocean
+        //
+
+        mOceanFloor.Upload(gameParameters, renderContext);
+        mOceanSurface.Upload(gameParameters, renderContext);
+
+
+        //
+        // Render ocean (opaquely over sky)
+        //
+
+        renderContext.RenderOceanOpaquely();
+
+
+        //
+        // Render all ships
+        //
+
+        renderContext.RenderShipsStart();
+
+        for (auto const & ship : mAllShips)
+        {
+            ship->Render(
+                gameParameters,
+                renderContext);
+        }
+
+        renderContext.RenderShipsEnd();
+
+
+        //
+        // Render the ocean transparently, if we want to see the ship *in* the ocean instead
+        //
+
+        if (!renderContext.GetShowShipThroughOcean())
+        {
+            renderContext.RenderOceanTransparently();
+        }
+
+
+        //
+        // Render the ocean floor
+        //
+
+        renderContext.RenderLand();
+
+        renderTotalElapsedTime += GameChronometer::now() - renderStartTime;
     }
-
-
-    //
-    // Render the ocean floor
-    //
-
-    renderContext.RenderLand();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
