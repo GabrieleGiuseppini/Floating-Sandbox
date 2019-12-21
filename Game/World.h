@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
+#include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
@@ -236,8 +237,7 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext,
         bool doUpdate,
-        GameChronometer::duration & updateTotalElapsedTime,
-        GameChronometer::duration & renderTotalElapsedTime);
+        PerfStats & perfStats);
 
 private:
 

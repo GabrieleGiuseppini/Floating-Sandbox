@@ -21,6 +21,7 @@ set  (GAME_SOURCES
 	MaterialDatabase.h
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
+	PerfStats.h
 	ResourceLoader.cpp
 	ResourceLoader.h
 	ShipBuilder.cpp

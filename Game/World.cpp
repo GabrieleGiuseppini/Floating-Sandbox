@@ -582,8 +582,7 @@ void World::UpdateAndRender(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext,
     bool doUpdate,
-    GameChronometer::duration & updateTotalElapsedTime,
-    GameChronometer::duration & renderTotalElapsedTime)
+    PerfStats & perfStats)
 {
     //
     // Update sky
@@ -593,22 +592,36 @@ void World::UpdateAndRender(
     {
         auto const updateStartTime = GameChronometer::now();
 
+
         // Update current time
         mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
+        //
         // Update stars
+        //
+
         mStars.Update(gameParameters);
 
+        //
         // Update storm
+        //
+
         mStorm.Update(mCurrentSimulationTime, gameParameters);
 
+        //
         // Update wind
+        //
+
         mWind.Update(mStorm.GetParameters(), gameParameters);
 
+        //
         // Update clouds
+        //
+
         mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
 
-        updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
+
+        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
     }
 
     //
@@ -618,20 +631,31 @@ void World::UpdateAndRender(
     {
         auto const renderStartTime = GameChronometer::now();
 
+
         renderContext.RenderSkyStart();
 
+        //
         // Upload stars
+        //
+
         mStars.Upload(renderContext);
 
+        //
         // Upload storm
+        //
+
         mStorm.Upload(renderContext);
 
+        //
         // Upload clouds
+        //
+
         mClouds.Upload(renderContext);
 
         renderContext.RenderSkyEnd();
 
-        renderTotalElapsedTime += GameChronometer::now() - renderStartTime;
+
+        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
 
     //
@@ -642,13 +666,23 @@ void World::UpdateAndRender(
     {
         auto const updateStartTime = GameChronometer::now();
 
+
+        //
         // Update ocean surface
+        //
+
         mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
 
+        perfStats.TotalOceanSurfaceUpdateDuration += GameChronometer::now() - updateStartTime;
+
+        //
         // Update ocean floor
+        //
+
         mOceanFloor.Update(gameParameters);
 
-        updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
+
+        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
     }
 
     //
@@ -658,16 +692,35 @@ void World::UpdateAndRender(
     {
         auto const renderStartTime = GameChronometer::now();
 
+
+        //
         // Upload land
+        //
+
         mOceanFloor.Upload(gameParameters, renderContext);
 
-        // Upload ocean surface
-        mOceanSurface.Upload(gameParameters, renderContext);
+        perfStats.TotalOceanFloorUploadDuration += GameChronometer::now() - renderStartTime;
 
+        //
+        // Upload ocean surface
+        //
+
+        {
+            auto const renderStartTime1 = GameChronometer::now();
+
+            mOceanSurface.Upload(gameParameters, renderContext);
+
+            perfStats.TotalOceanSurfaceUploadDuration += GameChronometer::now() - renderStartTime1;
+        }
+
+        //
         // Render ocean (opaquely over sky)
+        //
+
         renderContext.RenderOceanOpaquely();
 
-        renderTotalElapsedTime += GameChronometer::now() - renderStartTime;
+
+        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
 
     //
@@ -678,7 +731,6 @@ void World::UpdateAndRender(
     {
         auto const updateStartTime = GameChronometer::now();
 
-        // Update all ships
         for (auto & ship : mAllShips)
         {
             ship->Update(
@@ -688,7 +740,9 @@ void World::UpdateAndRender(
                 renderContext);
         }
 
-        updateTotalElapsedTime += GameChronometer::now() - updateStartTime;
+        auto const elapsed = GameChronometer::now() - updateStartTime;
+        perfStats.TotalShipsUpdateDuration += elapsed;
+        perfStats.TotalUpdateDuration += elapsed;
     }
 
     //
@@ -698,7 +752,6 @@ void World::UpdateAndRender(
     {
         auto const renderStartTime = GameChronometer::now();
 
-        // Render all ships
         {
             renderContext.RenderShipsStart();
 
@@ -710,18 +763,32 @@ void World::UpdateAndRender(
             }
 
             renderContext.RenderShipsEnd();
+
+            perfStats.TotalShipsRenderDuration += GameChronometer::now() - renderStartTime;
         }
 
+        //
         // Render the ocean transparently, if we want to see the ship *in* the ocean instead
+        //
+
         if (!renderContext.GetShowShipThroughOcean())
         {
             renderContext.RenderOceanTransparently();
         }
 
+        //
         // Render the ocean floor
-        renderContext.RenderLand();
+        //
 
-        renderTotalElapsedTime += GameChronometer::now() - renderStartTime;
+        {
+            auto const renderStartTime1 = GameChronometer::now();
+
+            renderContext.RenderLand();
+
+            perfStats.TotalOceanFloorRenderDuration += GameChronometer::now() - renderStartTime1;
+        }
+
+        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
 }
 

@@ -84,15 +84,13 @@ GameController::GameController(
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Stats
-    , mTotalFrameCount(0u)
-    , mLastFrameCount(0u)
     , mRenderStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
     , mRenderStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
-    , mTotalUpdateDuration(GameChronometer::duration::zero())
-    , mLastTotalUpdateDuration(GameChronometer::duration::zero())
-    , mTotalRenderDuration(GameChronometer::duration::zero())
-    , mLastTotalRenderDuration(GameChronometer::duration::zero())
     , mOriginTimestampGame(GameWallClock::GetInstance().Now())
+    , mTotalPerfStats()
+    , mLastPublishedTotalPerfStats()
+    , mTotalFrameCount(0u)
+    , mLastPublishedTotalFrameCount(0u)
     , mSkippedFirstStatPublishes(0)
 {
     // Register ourselves as event handler for the events we care about
@@ -360,9 +358,6 @@ void GameController::RunGameIteration()
         mRenderStatsOriginTimestampReal = nowReal;
         mRenderStatsLastTimestampReal = nowReal;
 
-        mTotalFrameCount = 0u;
-        mLastFrameCount = 0u;
-
         // In order to start from zero at first render, take global origin here
         mOriginTimestampGame = nowReal;
 
@@ -380,6 +375,8 @@ void GameController::RunGameIteration()
         // Flip the (previous) back buffer onto the screen
         mSwapRenderBuffersFunction();
 
+        mTotalPerfStats.TotalSwapRenderBuffersDuration += GameChronometer::now() - renderStartTime;
+
         // Smooth render controls
         float const realWallClockNow = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
         mZoomParameterSmoother->Update(realWallClockNow);
@@ -391,7 +388,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->RenderStart();
 
-        mTotalRenderDuration += GameChronometer::now() - renderStartTime;
+        mTotalPerfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
 
     //
@@ -410,7 +407,7 @@ void GameController::RunGameIteration()
                 ps.Update(now);
             });
 
-        mTotalUpdateDuration += GameChronometer::now() - updateStartTime;
+        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
     }
 
     //
@@ -422,8 +419,7 @@ void GameController::RunGameIteration()
         mGameParameters,
         *mRenderContext,
         doUpdate,
-        mTotalUpdateDuration,
-        mTotalRenderDuration);
+        mTotalPerfStats);
 
     //
     // Finalize update
@@ -443,7 +439,7 @@ void GameController::RunGameIteration()
         assert(!!mTextLayer);
         mTextLayer->Update(now);
 
-        mTotalUpdateDuration += GameChronometer::now() - updateStartTime;
+        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
     }
 
     //
@@ -480,7 +476,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->RenderEnd();
 
-        mTotalRenderDuration += GameChronometer::now() - renderStartTime;
+        mTotalPerfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
     }
 
 
@@ -489,7 +485,6 @@ void GameController::RunGameIteration()
     //
 
     ++mTotalFrameCount;
-    ++mLastFrameCount;
 }
 
 void GameController::LowFrequencyUpdate()
@@ -504,14 +499,6 @@ void GameController::LowFrequencyUpdate()
 
 
         PublishStats(nowReal);
-
-        //
-        // Reset stats
-        //
-
-        mLastFrameCount = 0u;
-        mLastTotalUpdateDuration = mTotalUpdateDuration;
-        mLastTotalRenderDuration = mTotalRenderDuration;
     }
     else
     {
@@ -519,16 +506,18 @@ void GameController::LowFrequencyUpdate()
         // Skip the first few publish as rates are too polluted
         //
 
-        mTotalFrameCount = 0u;
-        mLastFrameCount = 0u;
         mRenderStatsOriginTimestampReal = nowReal;
-        mTotalUpdateDuration = GameChronometer::duration(0);
-        mTotalRenderDuration = GameChronometer::duration(0);
+
+        mTotalPerfStats = PerfStats();
+        mTotalFrameCount = 0u;
 
         ++mSkippedFirstStatPublishes;
     }
 
     mRenderStatsLastTimestampReal = nowReal;
+
+    mLastPublishedTotalPerfStats = mTotalPerfStats;
+    mLastPublishedTotalFrameCount = mTotalFrameCount;
 }
 
 /////////////////////////////////////////////////////////////
@@ -1160,6 +1149,9 @@ void GameController::OnShipAdded(
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 {
+    PerfStats const lastDeltaPerfStats = mTotalPerfStats - mLastPublishedTotalPerfStats;
+    uint64_t const lastDeltaFrameCount = mTotalFrameCount - mLastPublishedTotalFrameCount;
+
     // Calculate fps
 
     auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
@@ -1172,23 +1164,13 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     float const lastFps =
         lastElapsedReal.count() != 0.0f
-        ? static_cast<float>(mLastFrameCount) / lastElapsedReal.count()
+        ? static_cast<float>(lastDeltaFrameCount) / lastElapsedReal.count()
         : 0.0f;
 
     // Calculate UR ratio
 
-    auto const lastUpdateDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalUpdateDuration - mLastTotalUpdateDuration);
-    float const lastUpdateDurationMillisecondsPerFrame = mLastFrameCount != 0
-        ? static_cast<float>(lastUpdateDurationNs.count()) / 1000000.0f / static_cast<float>(mLastFrameCount)
-        : 0.0f;
-
-    auto const lastRenderDurationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(mTotalRenderDuration - mLastTotalRenderDuration);
-    float const lastRenderDurationMillisecondsPerFrame = mLastFrameCount != 0
-        ? static_cast<float>(lastRenderDurationNs.count()) / 1000000.0f / static_cast<float>(mLastFrameCount)
-        : 0.0f;
-
-    float const lastURRatio = lastRenderDurationNs.count() != 0
-        ? static_cast<float>(lastUpdateDurationNs.count()) / static_cast<float>(lastRenderDurationNs.count())
+    float const lastURRatio = lastDeltaPerfStats.TotalRenderDuration.count() != 0
+        ? static_cast<float>(lastDeltaPerfStats.TotalUpdateDuration.count()) / static_cast<float>(lastDeltaPerfStats.TotalRenderDuration.count())
         : 0.0f;
 
     // Publish frame rate
@@ -1204,13 +1186,12 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     mTextLayer->SetStatusTexts(
         lastFps,
         totalFps,
+        lastDeltaPerfStats,
+        lastDeltaFrameCount,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
         mIsPaused,
         mRenderContext->GetZoom(),
         mRenderContext->GetCameraWorldPosition(),
-        lastUpdateDurationMillisecondsPerFrame,
-        lastRenderDurationMillisecondsPerFrame,
-        lastURRatio,
         mRenderContext->GetStatistics());
 }
 

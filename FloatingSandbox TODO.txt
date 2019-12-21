@@ -416,6 +416,9 @@ Render:
 		
 		= Interleaving Update's with Render's (*)
 
+		- Land: avoid uploading if not changed
+			- See perf improvement: 
+
 		= See why land rendering lowers FPS so much
 			+ Compare first with ocean
 			+ Try with a dumb shader

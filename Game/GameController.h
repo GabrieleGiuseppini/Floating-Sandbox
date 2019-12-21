@@ -12,6 +12,7 @@
 #include "IGameControllerSettings.h"
 #include "IGameControllerSettingsOptions.h"
 #include "MaterialDatabase.h"
+#include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLoader.h"
@@ -686,14 +687,12 @@ private:
     // Stats
     //
 
-    uint64_t mTotalFrameCount;
-    uint64_t mLastFrameCount;
     std::chrono::steady_clock::time_point mRenderStatsOriginTimestampReal;
     std::chrono::steady_clock::time_point mRenderStatsLastTimestampReal;
-    GameChronometer::duration mTotalUpdateDuration;
-    GameChronometer::duration mLastTotalUpdateDuration;
-    GameChronometer::duration mTotalRenderDuration;
-    GameChronometer::duration mLastTotalRenderDuration;
     GameWallClock::time_point mOriginTimestampGame;
+    PerfStats mTotalPerfStats;
+    PerfStats mLastPublishedTotalPerfStats;
+    uint64_t mTotalFrameCount;
+    uint64_t mLastPublishedTotalFrameCount;
     int mSkippedFirstStatPublishes;
 };
