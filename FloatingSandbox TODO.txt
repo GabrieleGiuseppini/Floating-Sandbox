@@ -416,9 +416,6 @@ Render:
 		
 		= Interleaving Update's with Render's (*)
 
-		- Land: avoid uploading if not changed
-			- See perf improvement: 
-
 		= See why land rendering lowers FPS so much
 			+ Compare first with ocean
 			+ Try with a dumb shader
@@ -850,11 +847,15 @@ Render:
 					+ Sky
 					+ Ocean
 			- Advanced:
-				- Interleave land upload
 				- Breakup sky rendering:
-					- Stars
-					- Clouds
-				
+					- Update+Render Stars
+					- Update ...
+					- Render Clouds
+				- Land: 
+					- Avoid uploading if not changed
+						- Remember last visible world boundaries, and anything else that might cause a change in
+						  uploaded data
+					- Try rendering earlier (and thus interleaved with something else) by rendering onto the highest Z (-10, test)
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

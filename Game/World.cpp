@@ -654,8 +654,9 @@ void World::UpdateAndRender(
 
         renderContext.RenderSkyEnd();
 
-
-        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
+        auto const totalElapsed = GameChronometer::now() - renderStartTime;
+        perfStats.TotalSkyRenderDuration += totalElapsed;
+        perfStats.TotalRenderDuration += totalElapsed;
     }
 
     //
@@ -699,19 +700,11 @@ void World::UpdateAndRender(
 
         mOceanFloor.Upload(gameParameters, renderContext);
 
-        perfStats.TotalOceanFloorUploadDuration += GameChronometer::now() - renderStartTime;
-
         //
         // Upload ocean surface
         //
 
-        {
-            auto const renderStartTime1 = GameChronometer::now();
-
-            mOceanSurface.Upload(gameParameters, renderContext);
-
-            perfStats.TotalOceanSurfaceUploadDuration += GameChronometer::now() - renderStartTime1;
-        }
+        mOceanSurface.Upload(gameParameters, renderContext);
 
         //
         // Render ocean (opaquely over sky)

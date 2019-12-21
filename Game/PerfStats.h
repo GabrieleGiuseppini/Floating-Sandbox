@@ -17,8 +17,7 @@ struct PerfStats
     // Render
     GameChronometer::duration TotalRenderDuration;
     GameChronometer::duration TotalSwapRenderBuffersDuration;
-    GameChronometer::duration TotalOceanSurfaceUploadDuration;
-    GameChronometer::duration TotalOceanFloorUploadDuration;
+    GameChronometer::duration TotalSkyRenderDuration;
     GameChronometer::duration TotalOceanFloorRenderDuration;
     GameChronometer::duration TotalShipsRenderDuration;
 
@@ -30,8 +29,7 @@ struct PerfStats
         //
         , TotalRenderDuration(0)
         , TotalSwapRenderBuffersDuration(0)
-        , TotalOceanSurfaceUploadDuration(0)
-        , TotalOceanFloorUploadDuration(0)
+        , TotalSkyRenderDuration(0)
         , TotalOceanFloorRenderDuration(0)
         , TotalShipsRenderDuration(0)
     {
@@ -50,8 +48,7 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
 
     perfStats.TotalRenderDuration = lhs.TotalRenderDuration - rhs.TotalRenderDuration;
     perfStats.TotalSwapRenderBuffersDuration = lhs.TotalSwapRenderBuffersDuration - rhs.TotalSwapRenderBuffersDuration;
-    perfStats.TotalOceanSurfaceUploadDuration = lhs.TotalOceanSurfaceUploadDuration - rhs.TotalOceanSurfaceUploadDuration;
-    perfStats.TotalOceanFloorUploadDuration = lhs.TotalOceanFloorUploadDuration - rhs.TotalOceanFloorUploadDuration;
+    perfStats.TotalSkyRenderDuration = lhs.TotalSkyRenderDuration - rhs.TotalSkyRenderDuration;
     perfStats.TotalOceanFloorRenderDuration = lhs.TotalOceanFloorRenderDuration - rhs.TotalOceanFloorRenderDuration;
     perfStats.TotalShipsRenderDuration = lhs.TotalShipsRenderDuration - rhs.TotalShipsRenderDuration;
 

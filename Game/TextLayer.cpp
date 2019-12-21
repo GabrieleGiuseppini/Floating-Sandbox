@@ -105,8 +105,8 @@ void TextLayer::SetStatusTexts(
             ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalSwapRenderBuffersDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
 
-        float const lastOceanFloorRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalOceanFloorRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+        float const lastSkyRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalSkyRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
 
         float const lastShipsRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
@@ -124,7 +124,7 @@ void TextLayer::SetStatusTexts(
             << std::setprecision(2)
             << " R:" << lastRenderDurationMillisecondsPerFrame << "MS"
             << std::setprecision(1)
-            << " (SWP:" << lastSwapRenderBuffersDuration << " L:" << lastOceanFloorRenderDurationMillisecondsPerFrame << " S:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
+            << " (SWP:" << lastSwapRenderBuffersDuration << " SK:" << lastSkyRenderDurationMillisecondsPerFrame << " SH:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
 
 		mStatusTextLines[1].Text = ss.str();
 		mStatusTextLines[1].IsTextDirty = true;
