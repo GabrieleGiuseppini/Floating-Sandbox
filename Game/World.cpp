@@ -584,23 +584,48 @@ void World::UpdateAndRender(
     bool doUpdate,
     PerfStats & perfStats)
 {
+    if (doUpdate)
+    {
+        // Update current time
+        mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
+    }
+
     //
-    // Update sky
+    // Update stars
     //
 
     if (doUpdate)
     {
         auto const updateStartTime = GameChronometer::now();
 
-
-        // Update current time
-        mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
-
-        //
-        // Update stars
-        //
-
         mStars.Update(gameParameters);
+
+        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
+    }
+
+    //
+    // Render stars
+    //
+
+    {
+        auto const renderStartTime = GameChronometer::now();
+
+        // Upload
+        mStars.Upload(renderContext);
+
+        // Render
+        renderContext.RenderStars();
+
+        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
+    }
+
+    //
+    // Update clouds
+    //
+
+    if (doUpdate)
+    {
+        auto const updateStartTime = GameChronometer::now();
 
         //
         // Update storm
@@ -625,20 +650,13 @@ void World::UpdateAndRender(
     }
 
     //
-    // Render sky
+    // Render clouds
     //
 
     {
         auto const renderStartTime = GameChronometer::now();
 
-
-        renderContext.RenderSkyStart();
-
-        //
-        // Upload stars
-        //
-
-        mStars.Upload(renderContext);
+        renderContext.RenderCloudsStart();
 
         //
         // Upload storm
@@ -652,11 +670,11 @@ void World::UpdateAndRender(
 
         mClouds.Upload(renderContext);
 
-        renderContext.RenderSkyEnd();
+        renderContext.RenderCloudsEnd();
 
-        auto const totalElapsed = GameChronometer::now() - renderStartTime;
-        perfStats.TotalSkyRenderDuration += totalElapsed;
-        perfStats.TotalRenderDuration += totalElapsed;
+        auto const elapsed = GameChronometer::now() - renderStartTime;
+        perfStats.TotalCloudRenderDuration += elapsed;
+        perfStats.TotalRenderDuration += elapsed;
     }
 
     //

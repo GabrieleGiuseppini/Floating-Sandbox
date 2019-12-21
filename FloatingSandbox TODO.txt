@@ -846,11 +846,11 @@ Render:
 				+ Interleave at:
 					+ Sky
 					+ Ocean
-			- Advanced:
-				- Breakup sky rendering:
-					- Update+Render Stars
-					- Update ...
-					- Render Clouds
+			= Advanced:
+				+ Breakup sky rendering:
+					+ Update+Render Stars
+					+ Update ...
+					+ Render Clouds
 				- Land: 
 					- Avoid uploading if not changed
 						- Remember last visible world boundaries, and anything else that might cause a change in
