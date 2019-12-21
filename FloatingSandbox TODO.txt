@@ -841,15 +841,17 @@ Render:
 				+ Test on all boxes
 					+ Samsung: 90/11
 			+ Call World::UpdateAndRender just once
-			= World::UpdateAndRender(.):
+			+ World::UpdateAndRender(.):
 				+ Remove doRender arg
-				= Interleave at:
+				+ Interleave at:
 					+ Sky
-					- Ocean
+					+ Ocean
 			- Advanced:
+				- Interleave land upload
 				- Breakup sky rendering:
 					- Stars
 					- Clouds
+				
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)
