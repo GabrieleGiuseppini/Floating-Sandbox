@@ -522,13 +522,9 @@ public:
 
     void RenderStart();
 
-
     //
-    // Sky
+    // Stars
     //
-
-    void RenderSkyStart();
-
 
     void UploadStarsStart(size_t starCount);
 
@@ -545,6 +541,14 @@ public:
     }
 
     void UploadStarsEnd();
+
+    void RenderStars();
+
+    //
+    // Clouds
+    //
+
+    void RenderCloudsStart();
 
 
 	inline void UploadStormAmbientDarkening(float darkening)
@@ -709,7 +713,7 @@ public:
     void UploadCloudsEnd();
 
 
-    void RenderSkyEnd();
+    void RenderCloudsEnd();
 
 
     //

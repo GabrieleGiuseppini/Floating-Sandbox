@@ -489,8 +489,8 @@ void ShipRenderContext::UpdateOrthoMatrices()
     //      - 10: Vectors
     //
 
-    constexpr float ShipRegionZStart = 1.0f;
-    constexpr float ShipRegionZWidth = -2.0f;
+    constexpr float ShipRegionZStart = 1.0f; // Far
+    constexpr float ShipRegionZWidth = -2.0f; // Near (-1)
 
     constexpr int NLayers = 11;
 

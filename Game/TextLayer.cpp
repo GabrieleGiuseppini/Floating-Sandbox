@@ -50,12 +50,12 @@ void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
 void TextLayer::SetStatusTexts(
     float immediateFps,
     float averageFps,
+    PerfStats const & lastDeltaPerfStats,
+    uint64_t lastDeltaFrameCount,
     std::chrono::duration<float> elapsedGameSeconds,
     bool isPaused,
     float zoom,
     vec2f const & camera,
-    float totalUpdateToRenderDurationRatio,
-    float lastUpdateToRenderDurationRatio,
     Render::RenderStatistics const & renderStatistics)
 {
     int elapsedSecondsGameInt = static_cast<int>(roundf(elapsedGameSeconds.count()));
@@ -85,28 +85,63 @@ void TextLayer::SetStatusTexts(
 
     if (mIsExtendedStatusTextEnabled)
     {
+        float const lastUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastOceanSurfaceUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalOceanSurfaceUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastShipsUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalShipsUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastSwapRenderBuffersDuration = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalSwapRenderBuffersDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastCloudRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalCloudRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
+        float const lastShipsRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalShipsRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+            : 0.0f;
+
         std::ostringstream ss;
 
         ss.fill('0');
 
         ss << std::fixed << std::setprecision(2)
-            << "U/R:" << (100.0f * totalUpdateToRenderDurationRatio) << "% (" << (100.0f * lastUpdateToRenderDurationRatio) << "%)"
-            << " ZOOM:" << zoom
-            << " CAM:" << camera.x << ", " << camera.y;
+            << "U:" << lastUpdateDurationMillisecondsPerFrame << "MS"
+            << std::setprecision(1)
+            << " (OS:" << lastOceanSurfaceUpdateDurationMillisecondsPerFrame << " S:" << lastShipsUpdateDurationMillisecondsPerFrame << ")"
+            << std::setprecision(2)
+            << " R:" << lastRenderDurationMillisecondsPerFrame << "MS"
+            << std::setprecision(1)
+            << " (SWP:" << lastSwapRenderBuffersDuration << " CL:" << lastCloudRenderDurationMillisecondsPerFrame << " SH:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
 
 		mStatusTextLines[1].Text = ss.str();
 		mStatusTextLines[1].IsTextDirty = true;
 
         ss.str("");
 
-        ss
-            << "PNT:" << renderStatistics.LastRenderedShipPoints
+        ss  << "PNT:" << renderStatistics.LastRenderedShipPoints
             << " RPS:" << renderStatistics.LastRenderedShipRopes
             << " SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
             << " PLN:" << renderStatistics.LastRenderedShipPlanes
             << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
             << " FLM:" << renderStatistics.LastRenderedShipFlames;
+
+        ss << std::fixed << std::setprecision(2)
+            << " ZM:" << zoom
+            << " CAM:" << camera.x << ", " << camera.y;
 
 		mStatusTextLines[2].Text = ss.str();
 		mStatusTextLines[2].IsTextDirty = true;

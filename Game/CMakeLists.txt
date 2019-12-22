@@ -3,7 +3,7 @@
 # Game library
 #
 
-set  (GAME_SOURCES
+set  (GAME_SOURCES	
 	GameController.cpp
 	GameController_StateMachines.cpp
 	GameController.h
@@ -21,6 +21,7 @@ set  (GAME_SOURCES
 	MaterialDatabase.h
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
+	PerfStats.h
 	ResourceLoader.cpp
 	ResourceLoader.h
 	ShipBuilder.cpp

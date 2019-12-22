@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "PerfStats.h"
 #include "TextRenderContext.h"
 
 #include <GameCore/GameTypes.h>
@@ -31,12 +32,12 @@ public:
     void SetStatusTexts(
         float immediateFps,
         float averageFps,
+        PerfStats const & lastDeltaPerfStats,
+        uint64_t lastDeltaFrameCount,
         std::chrono::duration<float> elapsedGameSeconds,
         bool isPaused,
         float zoom,
         vec2f const & camera,
-        float totalUpdateToRenderDurationRatio,
-        float lastUpdateToRenderDurationRatio,
         Render::RenderStatistics const & renderStatistics);
 
 	void AddEphemeralTextLine(

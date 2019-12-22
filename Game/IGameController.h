@@ -41,8 +41,7 @@ struct IGameController
     virtual void RunGameIteration() = 0;
     virtual void LowFrequencyUpdate() = 0;
 
-    virtual void Update() = 0;
-    virtual void Render() = 0;
+    virtual void PulseUpdate() = 0;
 
 
     //

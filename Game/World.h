@@ -8,11 +8,13 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
+#include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
 
 #include <GameCore/AABB.h>
+#include <GameCore/GameChronometer.h>
 #include <GameCore/Vectors.h>
 
 #include <cstdint>
@@ -74,7 +76,7 @@ public:
     inline OceanFloorTerrain const & GetOceanFloorTerrain() const
     {
         return mOceanFloor.GetTerrain();
-    }	
+    }
 
 
     //
@@ -210,7 +212,7 @@ public:
 
     void QueryNearestPointAt(
         vec2f const & targetPos,
-        float radius) const;	
+        float radius) const;
 
 	std::optional<vec2f> FindSuitableLightningTarget() const;
 
@@ -231,13 +233,11 @@ public:
 
 public:
 
-    void Update(
+    void UpdateAndRender(
         GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
-
-    void Render(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+        Render::RenderContext & renderContext,
+        bool doUpdate,
+        PerfStats & perfStats);
 
 private:
 

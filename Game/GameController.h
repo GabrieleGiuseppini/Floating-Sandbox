@@ -12,6 +12,7 @@
 #include "IGameControllerSettings.h"
 #include "IGameControllerSettingsOptions.h"
 #include "MaterialDatabase.h"
+#include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLoader.h"
@@ -19,6 +20,7 @@
 #include "TextLayer.h"
 
 #include <GameCore/Colors.h>
+#include <GameCore/GameChronometer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageData.h>
@@ -110,8 +112,10 @@ public:
     void RunGameIteration() override;
     void LowFrequencyUpdate() override;
 
-    void Update() override;
-    void Render() override;
+    void PulseUpdate() override
+    {
+        mIsPulseUpdateSet = true;
+    }
 
     //
     // Game Control and notifications
@@ -583,10 +587,6 @@ private:
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader);
 
-    void InternalUpdate();
-
-    void InternalRender();
-
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipAdded(
@@ -629,6 +629,7 @@ private:
     GameParameters mGameParameters;
     std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
+    bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;
 
     // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
@@ -686,14 +687,12 @@ private:
     // Stats
     //
 
-    uint64_t mTotalFrameCount;
-    uint64_t mLastFrameCount;
     std::chrono::steady_clock::time_point mRenderStatsOriginTimestampReal;
     std::chrono::steady_clock::time_point mRenderStatsLastTimestampReal;
-    std::chrono::steady_clock::duration mTotalUpdateDuration;
-    std::chrono::steady_clock::duration mLastTotalUpdateDuration;
-    std::chrono::steady_clock::duration mTotalRenderDuration;
-    std::chrono::steady_clock::duration mLastTotalRenderDuration;
     GameWallClock::time_point mOriginTimestampGame;
+    PerfStats mTotalPerfStats;
+    PerfStats mLastPublishedTotalPerfStats;
+    uint64_t mTotalFrameCount;
+    uint64_t mLastPublishedTotalFrameCount;
     int mSkippedFirstStatPublishes;
 };

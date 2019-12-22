@@ -884,10 +884,6 @@ void RenderContext::RenderStart()
     mRenderStatistics.Reset();
 }
 
-void RenderContext::RenderSkyStart()
-{
-}
-
 void RenderContext::UploadStarsStart(size_t starCount)
 {
     //
@@ -921,6 +917,26 @@ void RenderContext::UploadStarsEnd()
     glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::RenderStars()
+{
+    if (!mStarVertexBuffer.empty())
+    {
+        glBindVertexArray(*mStarVAO);
+
+        mShaderManager->ActivateProgram<ProgramType::Stars>();
+
+        glPointSize(0.5f);
+
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
+        CheckOpenGLError();
+    }
+}
+
+void RenderContext::RenderCloudsStart()
+{
+
 }
 
 void RenderContext::UploadLightningsStart(size_t lightningCount)
@@ -1011,32 +1027,19 @@ void RenderContext::UploadCloudsEnd()
     }
 }
 
-void RenderContext::RenderSkyEnd()
+void RenderContext::RenderCloudsEnd()
 {
-    ////////////////////////////////////////////////////
-    // Draw stars
-    ////////////////////////////////////////////////////
-
-    glBindVertexArray(*mStarVAO);
-
-    mShaderManager->ActivateProgram<ProgramType::Stars>();
-
-    glPointSize(0.5f);
-
-    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
-    CheckOpenGLError();
-
 	////////////////////////////////////////////////////
 	// Draw background clouds, iff there are background lightnings
 	////////////////////////////////////////////////////
 
 	// The number of clouds we want to draw *over* background
 	// lightnings
-	size_t constexpr cloudsOverLightnings = 5;
+	size_t constexpr CloudsOverLightnings = 5;
 	GLsizei cloudsOverLightningVertexStart = 0;
 
 	if (mBackgroundLightningVertexCount > 0
-		&& mCloudVertexBuffer.size() > 6 * cloudsOverLightnings)
+		&& mCloudVertexBuffer.size() > 6 * CloudsOverLightnings)
 	{
 		glBindVertexArray(*mCloudVAO);
 
@@ -1045,7 +1048,7 @@ void RenderContext::RenderSkyEnd()
 		if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
 			glLineWidth(0.1f);
 
-		cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - 6 * cloudsOverLightnings;
+		cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
 		glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
 		CheckOpenGLError();
 	}

@@ -22,6 +22,7 @@ set  (SOURCES
 	FixedTickSliderCore.cpp
 	FixedTickSliderCore.h
 	FloatingPoint.h
+	GameChronometer.h
 	GameDebug.h
 	GameException.h
 	GameMath.h
