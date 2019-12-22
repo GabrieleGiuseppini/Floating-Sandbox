@@ -447,7 +447,7 @@ Render:
 
 		- Underwater currents (*)
 
-		- IEphemeralParticleEmitter's (*)
+		- Smoke (*)
 		
 		- Continuous Auto-focus (*)
 
@@ -1029,29 +1029,16 @@ Render:
 
 	- Breaking waves (Muller's paper)
 
-	- Ephemeral particle emitters (*)
-		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
-		  types of electricals
-		- Implemented like electrical elements, i.e.:
-			- EphemeralParticlesEmitters container, almost clone of ElectricalElements
-				- Contains point index and IEphemeralParticleEmitter
-					- IEphemeralParticleEmitter: 
-						- void Update(clockNow, Points &, MaterialDatabase const &)
-						- Impl knows its point index
-				- Passed already populated by ship builder
-		- Ship has EphemeralParticlesEmitters, passed already populated by ship builder
-			- Registers DestroyHandler, all identical to ElectricalElements
-		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
-			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
-		
-	- Smoke:
-		- New material: (smoke) emitter - "subclass" of "particle emitter"
-			- Recognized by ship builder via "particle_emitter_properties" sub-object
+	- Smoke ephemeral particle emitters (*)
+		- Another type of electrical material
+			- TODO: Materials: 
 		- New material: smoke
 			- Lighter than air
+			- "Unique" material (like Air, addressable from outside)
+		- ElectricalElements::UpdateSinks(...)
+			- Run state machine and eventually invoke Points::CreateSmokeEphemeralParticle
 		- UpdatePointForces: if any point is above water, apply air buoyancy (*)
 			- i.e. always end up applying one buoyancy, either water or air
-		- IEphemeralParticleEmitter (*) implementation: SmokeEphemeralParticleEmitter
 		- Research particle motion - inject random walk in smoke and bubbles
 			- https://core.ac.uk/download/pdf/337937.pdf !!! (Random Walk Models of Turbulent Dispersion)
 			- http://orbit.dtu.dk/files/3706687/Visser6.pdf
