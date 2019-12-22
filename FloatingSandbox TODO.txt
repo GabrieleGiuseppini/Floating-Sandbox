@@ -412,27 +412,10 @@ Render:
 		+ Try to overlap bombs' disappearance with explosion
 			+ And try to draw explosions *over* generic textures
 		+ Explosive combustion
-		+ changes.txt
-		
-		= Interleaving Update's with Render's (*)
+		+ changes.txt		
+		+ Interleaving Update's with Render's
 
-		= See why land rendering lowers FPS so much
-			+ Compare first with ocean
-			+ Try with a dumb shader
-			+ Also double-check if mipmapping is different than ocean
-			! It's the double drawing (ocean and land), while when viewing ocean, land is implicitly clipped
-				! ...hence the OpenGL wait times increase
-			- Would need to "stack" ocean on top of land, like it was before
-
-		+ See why Samsung is so slow
-			! Apparently it's the physics (it's 64FPS with pause)
-			+ Write and run unit tests for denormals
-			+ It's 4 cores, each core 1GHz, vs. 1 core, 2.4GHz
-
-		- Multi-threading, phase I:
-			- TBD
-
-		- Run w/OpenGL tracing to see if there's any errors
+		- Switches (*)
 
 		- Try with SpringRelaxation updating only positions (*)
 		- Spring and NonSpring force separation optimization (*)		
@@ -441,6 +424,11 @@ Render:
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Cached quantities (*)
+
+		- Run w/OpenGL tracing to see if there's any errors
+
+		- Multi-threading, phase I:
+			- TBD
 
 		- Multi-threading, phase II:
 			- TBD
@@ -464,7 +452,6 @@ Render:
 		- Continuous Auto-focus (*)
 
 		- Batisphere with pumps and propulsion (*)
-			- Switches (*)
 			- Flood doors (*)
 			- Pumps (*)
 			- Propulsion (*)
@@ -805,54 +792,6 @@ Render:
 
 
 - Gfx optimizations:
-
-	- See if Z test and ocean before clouds buys us anything
-
-	= Try interleaving Update's with Render's (*)
-		! First, quick and dirty: do at stars, clouds, ocean
-		+ GameController:
-			+ Nuke Update() and Render()
-				+ 1) Update: used by step-by-step
-					+ Replace with GC::PulseUpdate()
-						+ Sets mIsPulseUpdateSet
-						+ RunGameIteration(.) checks it together w/pause, and always clears it
-				+ 2) Render: OnPaint
-					+ Should not be needed anymore, nuke it
-			+ 3) Replace implementation of RunGameIteration(.)
-				+ Incorporate (and then nuke) inline the implementations of InternalUpdate and InternalRender
-					+ i.e. end up calling World::Update and World::Render directly, one after the other
-			+ 4) Test
-				+ Normal
-				+ Pause, step-by-step
-				+ Resize, minimize/maximize, fullscreen/nofullscreen
-		+ 5) GameChronometer
-			+ using std::steady_clock
-			+ Use
-		+ World:
-			+ Replace Update(...) and Render(...) with 
-			  UpdateAndRender(..., bool doUpdate, GameChronometer::duration & updateElapsedTime, bool doRender, GameChronometer::duration & renderElapsedTime)
-			  + GC passes mTotalUpdateDuration& & friend&
-			  + For now as-is
-		+ Test
-		+ Make status text in millis
-		= Perf improvements:
-			+ Start: Default: FPS=30.0, U/R=22.x/10.x, pause:R=21.5; Ball of Iron: FPS=49.0-50.0-55.0F, U/R=5.x/14.x, pause:R=19.9
-			+ First: move RenderStart at beginning and see if it's worse
-				+ Test on all boxes
-					+ Samsung: 90/11
-			+ Call World::UpdateAndRender just once
-			+ World::UpdateAndRender(.):
-				+ Remove doRender arg
-				+ Interleave at:
-					+ Sky
-					+ Ocean
-			= Advanced:
-				+ Breakup sky rendering:
-					+ Update+Render Stars
-					+ Update ...
-					+ Render Clouds
-				- Land: 
-					- Try rendering earlier (and thus interleaved with something else) by rendering onto the highest Z (-10, test)
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)
@@ -1167,7 +1106,10 @@ Render:
 					- Also includes lights fizzling
 				- Visits switches among ElectricalElements and fires OnSwitchCreated(ObjectId, name, type, state)
 					- state is current value of ConductsElectricity (i.e. still from electrical material)
-			- Ship::ElectricalElementDestroyHandler fires OnSwitchDestroyed(ObjectId) if destroying a switch
+			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
+				- Also clears (on destroy) ConductsElectricity
+				- See if may avoid checking for deleted at UpdateElectricalPropagation
+				- TODO: need to fire toggle event?
 			- Ship::ElectricalElements fires OnSwitchToggled(ObjectId, new state) at:
 				- 1) ToggleSwitch(LocalSwitchId switchId)
 				- 2) Water-sensing switching - which is done at ElectricalUpdate()
@@ -1198,17 +1140,18 @@ Render:
 				- Then fires OnSwitchToggled(ObjectId, new state) event
 					- state is new value of ConductsElectricity, i.e. after the toggle
 			- Water switching: at UpdatePre() (SEE MOLESKINE)
+				- "Pre" -> "UpdateConductivity"
 
 		- SwitchboardPanel:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
 			- ShipSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
-				- Interactive only if type is "interactive"
+				- Interactive only if isInteractive=true
 					- cctor argument
 				- Has state (SwitchState mCurrentState)
 					- Purely for drawing
-				- May be disabled/enabled (via SetEnabled(.) override), making it grey and non-functional
+				- May be disabled/enabled (via SetEnabled(isEnabled) override), making it grey and non-functional
 				- User-generated toggle event is via lambda(new state)
 				- Exposes Toggle() for externally-generated toggle events
 					- Does not invoke lambda in this case
@@ -1226,15 +1169,16 @@ Render:
 				- Has unordered_map<ObjectId, SwitchInfo>
 					- SwitchInfo:
 						- uq_ptr<SwitchControl>
-						- bool IsEnabled
+						- bool IsEnabled					
 				- OnSwitchCreated:
 					- Calc key and store in vector<integer from key, ObjectId> for key mappings
 					- Create uq_ptr<SwitchControl(key)>
+						- Does the mapping here from switch type to images and isInteractive
 					- Add SwitchInfo to map
 					- Add to panel - left-aligned, overflow and grow
-				- OnSwitchDestroyed: 
-					- Disable switch control
-					- Disable in SwitchInfo
+				- OnSwitchEnabled: 
+					- Enable/Disable switch control
+					- Enable/Disable in SwitchInfo
 					- Leave in map
 				- OnSwitchToggled(ObjectId, new state):
 					- Lookup from map and call Toggle on control (regardless of disabling)
@@ -3780,6 +3724,49 @@ IF WX:
 			+ 2: Buffers offseted to three portions, using sums of Buffer::CalculateByteSize(.) for previous
 		+ Then do a single upload
 		+ Perf: has decreased!
+	+ Try interleaving Update's with Render's
+		! First, quick and dirty: do at stars, clouds, ocean
+		+ GameController:
+			+ Nuke Update() and Render()
+				+ 1) Update: used by step-by-step
+					+ Replace with GC::PulseUpdate()
+						+ Sets mIsPulseUpdateSet
+						+ RunGameIteration(.) checks it together w/pause, and always clears it
+				+ 2) Render: OnPaint
+					+ Should not be needed anymore, nuke it
+			+ 3) Replace implementation of RunGameIteration(.)
+				+ Incorporate (and then nuke) inline the implementations of InternalUpdate and InternalRender
+					+ i.e. end up calling World::Update and World::Render directly, one after the other
+			+ 4) Test
+				+ Normal
+				+ Pause, step-by-step
+				+ Resize, minimize/maximize, fullscreen/nofullscreen
+		+ 5) GameChronometer
+			+ using std::steady_clock
+			+ Use
+		+ World:
+			+ Replace Update(...) and Render(...) with 
+			  UpdateAndRender(..., bool doUpdate, GameChronometer::duration & updateElapsedTime, bool doRender, GameChronometer::duration & renderElapsedTime)
+			  + GC passes mTotalUpdateDuration& & friend&
+			  + For now as-is
+		+ Test
+		+ Make status text in millis
+		+ Perf improvements:
+			+ Start: Default: FPS=30.0, U/R=22.x/10.x, pause:R=21.5; Ball of Iron: FPS=49.0-50.0-55.0F, U/R=5.x/14.x, pause:R=19.9
+			+ First: move RenderStart at beginning and see if it's worse
+				+ Test on all boxes
+					+ Samsung: 90/11
+			+ Call World::UpdateAndRender just once
+			+ World::UpdateAndRender(.):
+				+ Remove doRender arg
+				+ Interleave at:
+					+ Sky
+					+ Ocean
+			+ Advanced:
+				+ Breakup sky rendering:
+					+ Update+Render Stars
+					+ Update ...
+					+ Render Clouds
 
 + Dynamics
 	+ Try half of the relaxation iterations
