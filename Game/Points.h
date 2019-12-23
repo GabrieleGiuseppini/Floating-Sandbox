@@ -81,6 +81,19 @@ public:
 
 private:
 
+    struct BuoyancyCoefficients
+    {
+        vec2f Coefficient1; // Temperature-independent
+        vec2f Coefficient2; // Temperature-dependent
+
+        BuoyancyCoefficients(
+            vec2f const & coefficient1,
+            vec2f const & coefficient2)
+            : Coefficient1(coefficient1)
+            , Coefficient2(coefficient2)
+        {}
+    };
+
     /*
      * The combustion state.
      */
@@ -382,6 +395,7 @@ public:
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(vec2f::zero(), vec2f::zero()))
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
@@ -768,6 +782,11 @@ public:
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
 
+    BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
+    {
+        return mBuoyancyCoefficientsBuffer[pointElementIndex];
+    }
+
     /*
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
@@ -826,11 +845,6 @@ public:
     bool GetMaterialIsHull(ElementIndex pointElementIndex) const
     {
         return mMaterialIsHullBuffer[pointElementIndex];
-    }
-
-    float GetMaterialWaterVolumeFill(ElementIndex pointElementIndex) const
-    {
-        return mMaterialWaterVolumeFillBuffer[pointElementIndex];
     }
 
     float GetMaterialWaterIntake(ElementIndex pointElementIndex) const
@@ -995,11 +1009,6 @@ public:
     float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
     {
         return mMaterialHeatCapacityBuffer[pointElementIndex];
-    }
-
-    float GetMaterialThermalExpansionCoefficient(ElementIndex pointElementIndex) const
-    {
-        return mMaterialThermalExpansionCoefficientBuffer[pointElementIndex];
     }
 
     /*
@@ -1316,6 +1325,25 @@ private:
             * frozenCoefficient;
     }
 
+    static inline BuoyancyCoefficients CalculateBuoyancyCoefficients(
+        float waterVolumeFill,
+        float thermalExpansionCoefficient)
+    {
+        vec2f const coefficient1 =
+            GameParameters::Gravity
+            * waterVolumeFill
+            * (1.0f - thermalExpansionCoefficient * GameParameters::Temperature0);
+
+        vec2f const coefficient2 =
+            GameParameters::Gravity
+            * waterVolumeFill
+            * thermalExpansionCoefficient;
+
+        return BuoyancyCoefficients(
+            coefficient1,
+            coefficient2);
+    }
+
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
     {
         return GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -1362,6 +1390,7 @@ private:
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
+    Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
 
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;

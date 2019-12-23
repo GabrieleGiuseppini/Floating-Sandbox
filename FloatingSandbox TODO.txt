@@ -1032,20 +1032,17 @@ Render:
 				+ Test blimp filled with hydrogen
 					+ Change external structure to something light, e.g. cloth
 			+ Add to Guide
-		= UpdatePointForces: if any point is above water, apply air buoyancy (*)
+		+ UpdatePointForces: if any point is above water, apply air buoyancy (*)
 			+ i.e. always end up applying one buoyancy, either water or air
-			= Any buoyancy depends on temperature of particle and on temperature of "ambient air"/"ambient water"
-				+ Use ThermalExpansionCoefficient at both buoyancies
-			- See perf impact
-				- Pre-multiply with gravity: pre= ms, post= ms
-		- See if want to do heat dissipation also on ephemeral particles
-			- So that "frozen" air bubbles start floating again
-		
-
-		= Another type of electrical material: SmokeEmitter
+			+ Any buoyancy depends on temperature of particle and on temperature of "ambient air"/"ambient water"
+				+ Use ThermalExpansionCoefficient at both buoyancies			
+				+ Pre-multiply with gravity
+		+ See if want to do heat dissipation also on ephemeral particles
+			+ So that "frozen" air bubbles start floating again
+		+ See perf impact: 29.4 FPS (1 FPS lost!)		
+		+ Another type of electrical material: SmokeEmitter
 			+ ParticleEmissionRate
-			+ Add to DB
-			- Add ParticleEmissionRate et al to Guide
+			+ Add to DB			
 		= ElectricalElements::UpdateSinks(...)
 			- Run state machine and eventually invoke Points::CreateSmokeEphemeralParticle
 				+ Conditions:
@@ -1065,10 +1062,11 @@ Render:
 			- A) Simple texture (one of N alternatives) via GenericTextures
 				- Alpha and scale change with progress, see Moleskine
 		- Cleanup (if everything's fine):
+			- Add ParticleEmissionRate to Guide
 			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
 				- json
 				- Materials.*
-				- Guid
+				- Guide
 			- Add air density adjustment global param, like water
 				- SettingsDialog
 			- Redo materials templates

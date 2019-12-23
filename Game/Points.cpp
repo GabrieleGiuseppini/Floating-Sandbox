@@ -38,6 +38,9 @@ void Points::Add(
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
+    mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
+        structuralMaterial.WaterVolumeFill,
+        structuralMaterial.ThermalExpansionCoefficient));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
@@ -129,6 +132,9 @@ void Points::CreateEphemeralParticleAirBubble(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        structuralMaterial.WaterVolumeFill,
+        structuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     mMaterialWaterVolumeFillBuffer[pointIndex] = structuralMaterial.WaterVolumeFill;
@@ -195,9 +201,10 @@ void Points::CreateEphemeralParticleDebris(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    //mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -208,7 +215,7 @@ void Points::CreateEphemeralParticleDebris(
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
     mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
-    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
@@ -262,9 +269,10 @@ void Points::CreateEphemeralParticleSparkle(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
+    //mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -275,7 +283,7 @@ void Points::CreateEphemeralParticleSparkle(
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
     mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
-    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
@@ -1348,7 +1356,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     {
         float const mass =
             mAugmentedMaterialMassBuffer[i]
-            + std::min(GetWater(i), GetMaterialWaterVolumeFill(i)) * densityAdjustedWaterMass;
+            + std::min(GetWater(i), mMaterialWaterVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
         assert(mass > 0.0f);
 

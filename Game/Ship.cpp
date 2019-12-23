@@ -548,34 +548,24 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // Add buoyancy
         //
 
-        // Calculate temperature-adjusted volume of particle
-        float const effectivePointDeltaTemperature = mPoints.GetTemperature(pointIndex) - GameParameters::Temperature0;
-        float const pointVolume =
-            mPoints.GetMaterialWaterVolumeFill(pointIndex)
-            * (1.0f + mPoints.GetMaterialThermalExpansionCoefficient(pointIndex) * effectivePointDeltaTemperature);
+        // Calculate upward push of water/air mass
+        auto const & buoyancyCoefficients = mPoints.GetBuoyancyCoefficients(pointIndex);
+        vec2f const buoyancyPush =
+            buoyancyCoefficients.Coefficient1
+            + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
-            //
-            // Apply upward push of water mass (i.e. water buoyancy!)
-            //
-
-            // TODO: see if may pre-multiply by gravity
+            // Water
             mPoints.GetForce(pointIndex) -=
-                gameParameters.Gravity
-                * pointVolume
+                buoyancyPush
                 * effectiveWaterDensity;
         }
         else
         {
-            //
-            // Apply upward push of air mass (i.e. air buoyancy!)
-            //
-
-            // TODO: see if may pre-multiply by gravity
+            // Air
             mPoints.GetForce(pointIndex) -=
-                gameParameters.Gravity
-                * pointVolume
+                buoyancyPush
                 * effectiveAirDensity;
         }
 
@@ -1510,8 +1500,8 @@ void Ship::PropagateHeat(
     //
     // Visit all non-ephemeral points
     //
-    // No particular reason to not do ephemeral points as well - at the moment
-    // temperature is not relevant to ephemeral particles
+    // No particular reason to not do ephemeral points as well - it's just
+    // that at the moment ephemeral particles are not connected to each other
     //
 
     for (auto pointIndex : mPoints.RawShipPoints())
@@ -1617,7 +1607,9 @@ void Ship::PropagateHeat(
 
     float const airTemperature = gameParameters.AirTemperature;
 
-    for (auto pointIndex : mPoints.RawShipPoints())
+    // We also include ephemeral points, as they may be heated
+    // and have a temperature
+    for (auto pointIndex : mPoints)
     {
         // Heat lost in this time quantum (positive when outgoing)
         float heatLost;
