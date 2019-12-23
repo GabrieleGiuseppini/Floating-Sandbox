@@ -252,6 +252,7 @@ public:
 
     void UpdateElectricalDynamics(
         GameWallClock::time_point currentWallclockTime,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void DiffuseLight(GameParameters const & gameParameters);
@@ -293,6 +294,7 @@ private:
 
     void GenerateAirBubbles(
         vec2f const & position,
+        float temperature,
         float currentSimulationTime,
         PlaneId planeId,
         GameParameters const & gameParameters);

@@ -273,12 +273,27 @@
         "color_key": "#700000", 
         "electrical_type": "Cable", 
         "heat_generated": 0.0, 
-        "maximum_operating_temperature": 398.15, 
-        "minimum_operating_temperature": 233.15, 
+        "maximum_operating_temperature": 1000000.0, 
+        "minimum_operating_temperature": 0.0, 
         "name": "Electrical Cable", 
         "template": {
             "column": "1|Cable", 
             "row": "6|Cables"
+        }
+    },
+
+    {
+        "color_key": "#209010",
+        "electrical_type": "SmokeEmitter", 
+        "heat_generated": 200.0, 
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Smoke Emitter", 
+	"particle_emission_rate": 1.0,
+        "template": {
+            "column": "0|Smoke Emitter", 
+            "row": "8|Misc"
         }
     }
 ]

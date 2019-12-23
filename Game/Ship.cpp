@@ -239,6 +239,7 @@ void Ship::Update(
 
     UpdateElectricalDynamics(
         currentWallClockTime,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -502,14 +503,24 @@ void Ship::UpdateMechanicalDynamics(
 
 void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
-    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+    // Density of air, adjusted for temperature
+    float const effectiveAirDensity =
+        GameParameters::AirMass
+        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (gameParameters.AirTemperature - GameParameters::Temperature0));
+    // TODO: see if we want to have an air density adustment
+
+    // Density of water, adjusted for temperature and manual adjustment
+    float const effectiveWaterDensity  =
+        GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0) )
+        * gameParameters.WaterDensityAdjustment;
 
     // Calculate wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
-    float constexpr VelocityConversionFactor = 1000.0f / 3600.0f;
+    float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
     vec2f const windForce =
         mParentWorld.GetCurrentWindSpeed().square()
-        * (VelocityConversionFactor * VelocityConversionFactor)
+        * (WindVelocityConversionFactor * WindVelocityConversionFactor)
         * 0.5f
         * GameParameters::AirMass;
 
@@ -526,35 +537,56 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         //
-        // 1. Add gravity and buoyancy
+        // Add gravity
         //
 
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
-        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
+        //
+        // Add buoyancy
+        //
+
+        // Calculate temperature-adjusted volume of particle
+        float const effectivePointDeltaTemperature = mPoints.GetTemperature(pointIndex) - GameParameters::Temperature0;
+        float const pointVolume =
+            mPoints.GetMaterialWaterVolumeFill(pointIndex)
+            * (1.0f + mPoints.GetMaterialThermalExpansionCoefficient(pointIndex) * effectivePointDeltaTemperature);
+
+        if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             //
-            // Apply upward push of water mass (i.e. buoyancy!)
+            // Apply upward push of water mass (i.e. water buoyancy!)
             //
 
+            // TODO: see if may pre-multiply by gravity
             mPoints.GetForce(pointIndex) -=
                 gameParameters.Gravity
-                * mPoints.GetMaterialWaterVolumeFill(pointIndex)
-                * densityAdjustedWaterMass;
+                * pointVolume
+                * effectiveWaterDensity;
+        }
+        else
+        {
+            //
+            // Apply upward push of air mass (i.e. air buoyancy!)
+            //
+
+            // TODO: see if may pre-multiply by gravity
+            mPoints.GetForce(pointIndex) -=
+                gameParameters.Gravity
+                * pointVolume
+                * effectiveAirDensity;
         }
 
 
         //
-        // 2. Apply water drag
+        // Apply water drag - if under water - or wind force - if above water
         //
         // FUTURE: should replace with directional water drag, which acts on frontier points only,
         // proportional to angle between velocity and normal to surface at this point;
         // this would ensure that masses would also have a horizontal velocity component when sinking,
         // providing a "gliding" effect
-        //
-        // 3. Apply wind force
         //
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
@@ -935,6 +967,7 @@ void Ship::UpdateWaterInflow(
                 {
                     GenerateAirBubbles(
                         mPoints.GetPosition(pointIndex),
+                        mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
                         gameParameters);
@@ -1293,6 +1326,7 @@ void Ship::UpdateSinking()
 
 void Ship::UpdateElectricalDynamics(
     GameWallClock::time_point currentWallclockTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     // Generate a new visit sequence number
@@ -1316,6 +1350,7 @@ void Ship::UpdateElectricalDynamics(
 
     mElectricalElements.UpdateSinks(
         currentWallclockTime,
+        currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -1882,6 +1917,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::GenerateAirBubbles(
     vec2f const & position,
+    float temperature,
     float currentSimulationTime,
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
@@ -1893,6 +1929,7 @@ void Ship::GenerateAirBubbles(
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
+        temperature,
         vortexAmplitude,
         vortexPeriod,
         mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),

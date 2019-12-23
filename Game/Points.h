@@ -399,6 +399,7 @@ public:
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialThermalExpansionCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialCombustionTypeBuffer(mBufferElementCount, shipPointCount, StructuralMaterial::MaterialCombustionType::Combustion) // Arbitrary
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
@@ -526,9 +527,10 @@ public:
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
+        float temperature,
         float vortexAmplitude,
         float vortexPeriod,
-        StructuralMaterial const & structuralMaterial,
+        StructuralMaterial const & structuralMaterial, // Air
         float currentSimulationTime,
         PlaneId planeId);
 
@@ -995,6 +997,11 @@ public:
         return mMaterialHeatCapacityBuffer[pointElementIndex];
     }
 
+    float GetMaterialThermalExpansionCoefficient(ElementIndex pointElementIndex) const
+    {
+        return mMaterialThermalExpansionCoefficientBuffer[pointElementIndex];
+    }
+
     /*
      * Checks whether a point is eligible for being extinguished by smotherning.
      */
@@ -1393,6 +1400,7 @@ private:
 
     Buffer<float> mTemperatureBuffer; // Kelvin
     Buffer<float> mMaterialHeatCapacityBuffer;
+    Buffer<float> mMaterialThermalExpansionCoefficientBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<StructuralMaterial::MaterialCombustionType> mMaterialCombustionTypeBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;

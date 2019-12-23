@@ -61,7 +61,14 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         {
             mSinks.emplace_back(elementIndex);
-            mElementStateBuffer.emplace_back(ElementState::OtherSinkState(false));
+            mElementStateBuffer.emplace_back(ElementState::OtherSinkState());
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+        {
+            mSinks.emplace_back(elementIndex);
+            mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
             break;
         }
     }
@@ -260,6 +267,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
 void ElectricalElements::UpdateSinks(
     GameWallClock::time_point currentWallclockTime,
+    float currentSimulationTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & gameParameters)
@@ -316,6 +324,53 @@ void ElectricalElements::UpdateSinks(
                     }
 
                     isOperating = mElementStateBuffer[sinkIndex].OtherSink.IsPowered;
+
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkIndex].SmokeEmitter.IsPowered)
+                    {
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        {
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsPowered = false;
+                        }
+                    }
+                    else
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        {
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsPowered = true;
+
+                            // Make sure we calculate the next emission timestamp
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
+
+                    isOperating = mElementStateBuffer[sinkIndex].SmokeEmitter.IsPowered;
+
+                    if (isOperating)
+                    {
+                        // See if we need to calculate the next emission timestamp
+                        if (mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
+                        {
+                            // TODOHERE
+                        }
+
+                        // See if it's time to emit smoke
+                        if (currentSimulationTime >= mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
+                        {
+                            // Emit smoke
+                            // TODOHERE
+
+                            // Make sure we re-calculate the next emission timestamp
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
 
                     break;
                 }

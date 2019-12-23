@@ -53,7 +53,8 @@ Structural materials are as follows:
             "column": 0, 
             "row": "0|Iron Hull"
         }, 
-	"thermal_conductivity": 79.5, 
+	"thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_intake": 1.0, 
         "water_retention": 0.05, 
@@ -81,6 +82,7 @@ Here's an explanation of the elements:
    - For example, 0.01 means that a spring will break after it gets shorter or longer by 1% of its rest length.
 - _template_: coordinates of the material in the automatically-generated materials template.
 - _thermal conductivity_: the speed with which heat propagates along this material, in W/(m*K).
+- _thermal_expansion_coefficient_: the amount by which the volume of the material changes with temperature, in 1/K.
 - _water diffusion speed_: the speed with which water at this particle spreads out of it. Technically, it's the fraction of water at this particle that is allowed to leave the particle towards its neighbors.
 - _water intake_: the amount of water that enters or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.

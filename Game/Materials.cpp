@@ -51,6 +51,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
         float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
         float const thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        float const thermalExpansionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_expansion_coefficient", 0.0);
         float const specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
         MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
 
@@ -78,6 +79,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             ignitionTemperature,
             meltingTemperature,
             thermalConductivity,
+            thermalExpansionCoefficient,
             specificHeat,
             combustionType,
             // Misc
@@ -168,6 +170,16 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         float minimumOperatingTemperature = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "minimum_operating_temperature");
         float maximumOperatingTemperature = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "maximum_operating_temperature");
 
+        // Particle emitter properties
+        float particleEmissionRate = 0.0f;
+        if (ElectricalElementType::SmokeEmitter == electricalType)
+        {
+            particleEmissionRate = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "particle_emission_rate");
+
+            if (particleEmissionRate < 0.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
+        }
+
         return ElectricalMaterial(
             name,
             electricalType,
@@ -178,7 +190,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             wetFailureRate,
             heatGenerated,
             minimumOperatingTemperature,
-            maximumOperatingTemperature);
+            maximumOperatingTemperature,
+            particleEmissionRate);
     }
     catch (GameException const & ex)
     {
@@ -198,6 +211,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::Generator;
     else if (lstr == "othersink")
         return ElectricalElementType::OtherSink;
+    else if (lstr == "smokeemitter")
+        return ElectricalElementType::SmokeEmitter;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
 }

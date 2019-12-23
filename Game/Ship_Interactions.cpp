@@ -749,12 +749,11 @@ bool Ship::ApplyHeatBlasterAt(
 
     float const squareRadius = radius * radius;
 
-    // Search all non-ephemeral points within the radius
+    // Search all points within the radius
     //
-    // No real reason to skip ephemeral points, other than they're not currently
-    // subject to temperature
+    // We also do ephemeral points in order to change buoyancy of air bubbles
     bool atLeastOnePointFound = false;
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (pointSquareDistance < squareRadius)
@@ -889,6 +888,7 @@ bool Ship::InjectBubblesAt(
     {
         GenerateAirBubbles(
             targetPos,
+            GameParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,
             gameParameters);

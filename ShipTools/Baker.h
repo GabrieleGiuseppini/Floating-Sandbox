@@ -4,9 +4,9 @@
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 
-#include <Game/RenderCore.h>
 #include <Game/TextureAtlas.h>
 #include <Game/TextureDatabase.h>
+#include <Game/TextureTypes.h>
 
 #include <filesystem>
 #include <iostream>

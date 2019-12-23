@@ -15,7 +15,8 @@ public:
         float TotalMass;
 
         float MassPerPoint;
-        float BuoyantMassPerPoint;
+        float AirBuoyantMassPerPoint;
+        float WaterBuoyantMassPerPoint;
 
         float BaricentricX;
         float BaricentricY;
@@ -23,7 +24,8 @@ public:
         AnalysisInfo()
             : TotalMass(0.0f)
             , MassPerPoint(0.0f)
-            , BuoyantMassPerPoint(0.0f)
+            , AirBuoyantMassPerPoint(0.0f)
+            , WaterBuoyantMassPerPoint(0.0f)
             , BaricentricX(0.0f)
             , BaricentricY(0.0f)
         {}

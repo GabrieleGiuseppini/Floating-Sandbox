@@ -109,8 +109,21 @@ private:
         {
             bool IsPowered;
 
-            OtherSinkState(bool isPowered)
-                : IsPowered(isPowered)
+            OtherSinkState()
+                : IsPowered(false)
+            {}
+        };
+
+        struct SmokeEmitterState
+        {
+            float EmissionRate;
+            bool IsPowered;
+            float NextEmissionSimulationTimestamp;
+
+            SmokeEmitterState(float emissionRate)
+                : EmissionRate(emissionRate)
+                , IsPowered(false)
+                , NextEmissionSimulationTimestamp(0.0f)
             {}
         };
 
@@ -118,6 +131,7 @@ private:
         GeneratorState Generator;
         LampState Lamp;
         OtherSinkState OtherSink;
+        SmokeEmitterState SmokeEmitter;
 
         ElementState(CableState cable)
             : Cable(cable)
@@ -133,6 +147,10 @@ private:
 
         ElementState(OtherSinkState otherSink)
             : OtherSink(otherSink)
+        {}
+
+        ElementState(SmokeEmitterState smokeEmitter)
+            : SmokeEmitter(smokeEmitter)
         {}
     };
 
@@ -213,6 +231,7 @@ public:
 
     void UpdateSinks(
         GameWallClock::time_point currentWallclockTime,
+        float currentSimulationTime,
         SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
         GameParameters const & gameParameters);

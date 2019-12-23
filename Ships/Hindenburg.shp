@@ -1,10 +1,10 @@
 {
 	"structure_image":"hindenburg_structure.png.dat",
 	"texture_image":"hindenburg_texture.png.dat",
-	"offset":{"x":0.0, "y":-10.0},
+	"offset":{"x":0.0, "y":10.0},
 	"ship_name":"Hindenburg",
 	"created_by":"Michael Bozarth; D. Briedis (Shipbucket.com)",
 	"year_built":"1936",
 	"description":
-		"Ok, the 'Hindenburg' is not necessarily a ship, nor is it a ship at all, but it is a blimp that doesn't seem to float...Unless you play around with the game physics a lot, but that's not the point. The Hindenburg was the biggest blimp in the world just before WW2 built by Nazi Germany for commercial purposes where it could hold many people and had many fancy things inside of it. She was filled with hydrogen instead of helium which made her very flammable and unpredictable. Nazi Germany was only able to supply her with hydrogen because helium was too expensive for Nazi Germany, including the fact that they weren't able to get helium as the United States of America banned Nazi Germany from buying any resources from them. As well as the USA was the only country capable of producing such an element at the time. So for that fact, Nazi Germany had to resort to using hydrogen (A very flammable substance) as a lifter for the Hindenburg, which resulted in a disaster that lit up the sky in flames that achieved the name 'The Hindenburg Disaster'."
+		"The Hindenburg was the biggest blimp in the world just before WW2 built by Nazi Germany for commercial purposes where it could hold many people and had many fancy things inside of it. She was filled with hydrogen instead of helium which made her very flammable and unpredictable. Nazi Germany was only able to supply her with hydrogen because helium was too expensive for Nazi Germany, including the fact that they weren't able to get helium as the United States of America banned Nazi Germany from buying any resources from them. As well as the USA was the only country capable of producing such an element at the time. So for that fact, Nazi Germany had to resort to using hydrogen (A very flammable substance) as a lifter for the Hindenburg, which resulted in a disaster that lit up the sky in flames that achieved the name 'The Hindenburg Disaster'."
 }
