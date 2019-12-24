@@ -117,12 +117,12 @@ private:
         struct SmokeEmitterState
         {
             float EmissionRate;
-            bool IsPowered;
+            bool IsOperating;
             float NextEmissionSimulationTimestamp;
 
             SmokeEmitterState(float emissionRate)
                 : EmissionRate(emissionRate)
-                , IsPowered(false)
+                , IsOperating(false)
                 , NextEmissionSimulationTimestamp(0.0f)
             {}
         };

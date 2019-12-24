@@ -54,6 +54,9 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinWaterDiffusionSpeedAdjustment() const = 0;
 	virtual float GetMaxWaterDiffusionSpeedAdjustment() const = 0;
 
+    virtual float GetMinSmokeParticleLifetimeAdjustment() const = 0;
+    virtual float GetMaxSmokeParticleLifetimeAdjustment() const = 0;
+
 	virtual float GetMinBasalWaveHeightAdjustment() const = 0;
 	virtual float GetMaxBasalWaveHeightAdjustment() const = 0;
 

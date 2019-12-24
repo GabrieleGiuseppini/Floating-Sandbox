@@ -59,16 +59,16 @@ namespace Physics {
 Ship::Ship(
     ShipId id,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     MaterialDatabase const & materialDatabase,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     Points && points,
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements)
     : mId(id)
     , mParentWorld(parentWorld)
-    , mGameEventHandler(std::move(gameEventDispatcher))
     , mMaterialDatabase(materialDatabase)
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
@@ -507,7 +507,6 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
     float const effectiveAirDensity =
         GameParameters::AirMass
         / (1.0f + GameParameters::AirThermalExpansionCoefficient * (gameParameters.AirTemperature - GameParameters::Temperature0));
-    // TODO: see if we want to have an air density adustment
 
     // Density of water, adjusted for temperature and manual adjustment
     float const effectiveWaterDensity  =
@@ -1924,7 +1923,6 @@ void Ship::GenerateAirBubbles(
         temperature,
         vortexAmplitude,
         vortexPeriod,
-        mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
         currentSimulationTime,
         planeId);
 }
@@ -1947,10 +1945,9 @@ void Ship::GenerateDebris(
                 GameParameters::MaxDebrisParticlesVelocity);
 
             // Choose a lifetime
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateUniformInteger(
-                    GameParameters::MinDebrisParticlesLifetime.count(),
-                    GameParameters::MaxDebrisParticlesLifetime.count()));
+            float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+                GameParameters::MinDebrisParticlesLifetime,
+                GameParameters::MaxDebrisParticlesLifetime);
 
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
@@ -2004,10 +2001,9 @@ void Ship::GenerateSparklesForCut(
                 + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
 
             // Choose a lifetime
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateUniformInteger(
-                    GameParameters::MinSparkleParticlesForCutLifetime.count(),
-                    GameParameters::MaxSparkleParticlesForCutLifetime.count()));
+            float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+                    GameParameters::MinSparkleParticlesForCutLifetime,
+                    GameParameters::MaxSparkleParticlesForCutLifetime);
 
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
@@ -2048,10 +2044,9 @@ void Ship::GenerateSparklesForLightning(
 		float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
 
 		// Choose a lifetime
-		std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-			GameRandomEngine::GetInstance().GenerateUniformInteger(
-				GameParameters::MinSparkleParticlesForLightningLifetime.count(),
-				GameParameters::MaxSparkleParticlesForLightningLifetime.count()));
+		float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+				GameParameters::MinSparkleParticlesForLightningLifetime,
+				GameParameters::MaxSparkleParticlesForLightningLifetime);
 
 		// Create sparkle
 		mPoints.CreateEphemeralParticleSparkle(

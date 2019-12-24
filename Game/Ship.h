@@ -31,8 +31,8 @@ public:
     Ship(
         ShipId id,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         MaterialDatabase const & materialDatabase,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         Points && points,
         Springs && springs,
         Triangles && triangles,
@@ -458,8 +458,8 @@ private:
 
     ShipId const mId;
     World & mParentWorld;
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     MaterialDatabase const & mMaterialDatabase;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;

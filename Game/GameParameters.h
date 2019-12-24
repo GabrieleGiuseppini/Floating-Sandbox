@@ -153,23 +153,29 @@ struct GameParameters
     static constexpr unsigned int MaxDebrisParticlesPerEvent = 9;
     static float constexpr MinDebrisParticlesVelocity = 12.5f;
     static float constexpr MaxDebrisParticlesVelocity = 20.0f;
-    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(400);
-    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(900);
+    static constexpr float MinDebrisParticlesLifetime = 0.4f;
+    static constexpr float MaxDebrisParticlesLifetime = 0.9f;
+
+    static constexpr float MinSmokeParticlesLifetime = 1.0f;
+    static constexpr float MaxSmokeParticlesLifetime = 4.0f;
+    float SmokeParticleLifetimeAdjustment;
+    static float constexpr MinSmokeParticleLifetimeAdjustment = 0.1f;
+    static float constexpr MaxSmokeParticleLifetimeAdjustment = 10.0f;
 
     bool DoGenerateSparklesForCuts;
     static constexpr unsigned int MinSparkleParticlesForCutEvent = 4;
     static constexpr unsigned int MaxSparkleParticlesForCutEvent = 10;
     static float constexpr MinSparkleParticlesForCutVelocity = 75.0f;
     static float constexpr MaxSparkleParticlesForCutVelocity = 150.0f;
-    static constexpr std::chrono::milliseconds MinSparkleParticlesForCutLifetime = std::chrono::milliseconds(200);
-    static constexpr std::chrono::milliseconds MaxSparkleParticlesForCutLifetime = std::chrono::milliseconds(500);
+    static constexpr float MinSparkleParticlesForCutLifetime = 0.2f;
+    static constexpr float MaxSparkleParticlesForCutLifetime = 0.5f;
 
 	static constexpr unsigned int MinSparkleParticlesForLightningEvent = 4;
 	static constexpr unsigned int MaxSparkleParticlesForLightningEvent = 10;
 	static float constexpr MinSparkleParticlesForLightningVelocity = 75.0f;
 	static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
-	static constexpr std::chrono::milliseconds MinSparkleParticlesForLightningLifetime = std::chrono::milliseconds(200);
-	static constexpr std::chrono::milliseconds MaxSparkleParticlesForLightningLifetime = std::chrono::milliseconds(500);
+	static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
+	static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
 
     bool DoGenerateAirBubbles;
     float CumulatedIntakenWaterThresholdForAirBubbles;

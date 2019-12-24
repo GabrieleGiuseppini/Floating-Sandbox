@@ -7,6 +7,7 @@
 
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
+#include "MaterialDatabase.h"
 #include "Materials.h"
 #include "RenderContext.h"
 
@@ -167,6 +168,11 @@ private:
 
         struct SmokeState
         {
+            float Progress;
+
+            SmokeState()
+                : Progress(0.0f)
+            {}
         };
 
         struct SparkleState
@@ -208,11 +214,11 @@ private:
     struct EphemeralParticleAttributes1
     {
         EphemeralType Type;
-        float StartTime;
+        float StartSimulationTime;
 
         EphemeralParticleAttributes1()
             : Type(EphemeralType::None)
-            , StartTime(0.0f)
+            , StartSimulationTime(0.0f)
         {}
     };
 
@@ -223,11 +229,11 @@ private:
     struct EphemeralParticleAttributes2
     {
         EphemeralState State;
-        float MaxLifetime;
+        float MaxSimulationLifetime;
 
         EphemeralParticleAttributes2()
             : State(EphemeralState::DebrisState()) // Arbitrary
-            , MaxLifetime(0.0f)
+            , MaxSimulationLifetime(0.0f)
         {}
     };
 
@@ -376,6 +382,7 @@ public:
     Points(
         ElementCount shipPointCount,
         World & parentWorld,
+        MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + GameParameters::MaxEphemeralParticles)
@@ -456,6 +463,7 @@ public:
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
+        , mMaterialDatabase(materialDatabase)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
@@ -544,7 +552,6 @@ public:
         float temperature,
         float vortexAmplitude,
         float vortexPeriod,
-        StructuralMaterial const & structuralMaterial, // Air
         float currentSimulationTime,
         PlaneId planeId);
 
@@ -553,7 +560,14 @@ public:
         vec2f const & velocity,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        std::chrono::milliseconds maxLifetime,
+        float maxSimulationLifetime,
+        PlaneId planeId);
+
+    void CreateEphemeralParticleSmoke(
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        float maxSimulationLifetime,
         PlaneId planeId);
 
     void CreateEphemeralParticleSparkle(
@@ -561,7 +575,7 @@ public:
         vec2f const & velocity,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        std::chrono::milliseconds maxLifetime,
+        float maxSimulationLifetime,
         PlaneId planeId);
 
     void DestroyEphemeralParticle(
@@ -1520,6 +1534,7 @@ private:
     ElementCount const mAllPointCount;
 
     World & mParentWorld;
+    MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 

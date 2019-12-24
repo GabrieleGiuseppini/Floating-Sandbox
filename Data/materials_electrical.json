@@ -290,7 +290,7 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "Smoke Emitter", 
-	"particle_emission_rate": 1.0,
+	"particle_emission_rate": 0.05,
         "template": {
             "column": "0|Smoke Emitter", 
             "row": "8|Misc"

@@ -20,6 +20,7 @@ GameParameters::GameParameters()
     , WaterCrazyness(1.0f)
     // Ephemeral particles
     , DoGenerateDebris(true)
+    , SmokeParticleLifetimeAdjustment(1.0f)
     , DoGenerateSparklesForCuts(true)
     , DoGenerateAirBubbles(true)
     , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
