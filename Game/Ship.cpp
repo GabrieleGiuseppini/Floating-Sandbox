@@ -1522,21 +1522,18 @@ void Ship::PropagateHeat(
 
             // Calculate outgoing heat flow per unit of time
             //
-            // q = Ki * (Tp - Tpi)
+            // q = Ki * (Tp - Tpi) * dt / Li
             float const outgoingHeatFlow =
                 mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
-                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
+                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f) // DeltaT, positive if going out
+                * dt
+                / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Store flow
             springOutboundHeatFlows[s] = outgoingHeatFlow;
 
-            // Calculate outgoing heat due to this delta T
-            //
-            // Q = dt * q / Li
-            totalOutgoingHeat +=
-                dt
-                * outgoingHeatFlow
-                / mSprings.GetFactoryRestLength(cs.SpringIndex);
+            // Update total outgoing heat
+            totalOutgoingHeat += outgoingHeatFlow;
         }
 
 
@@ -1572,9 +1569,7 @@ void Ship::PropagateHeat(
 
             // Raise target temperature due to this flow
             newPointTemperatureBufferData[cs.OtherEndpointIndex] +=
-                dt
-                * springOutboundHeatFlows[s] * normalizationFactor
-                / mSprings.GetFactoryRestLength(cs.SpringIndex)
+                springOutboundHeatFlows[s] * normalizationFactor
                 * mPoints.GetMaterialHeatCapacityReciprocal(cs.OtherEndpointIndex);
         }
 
@@ -1583,7 +1578,6 @@ void Ship::PropagateHeat(
             totalOutgoingHeat * normalizationFactor
             * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
     }
-
 
     //
     // Dissipate heat
