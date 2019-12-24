@@ -419,7 +419,7 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialHeatCapacityReciprocalBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialThermalExpansionCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialCombustionTypeBuffer(mBufferElementCount, shipPointCount, StructuralMaterial::MaterialCombustionType::Combustion) // Arbitrary
@@ -1020,9 +1020,9 @@ public:
         mTemperatureBuffer.copy_from(*newTemperatureBuffer);
     }
 
-    float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
+    float GetMaterialHeatCapacityReciprocal(ElementIndex pointElementIndex) const
     {
-        return mMaterialHeatCapacityBuffer[pointElementIndex];
+        return mMaterialHeatCapacityReciprocalBuffer[pointElementIndex];
     }
 
     /*
@@ -1067,7 +1067,7 @@ public:
     {
         mTemperatureBuffer[pointElementIndex] +=
             heat
-            / GetMaterialHeatCapacity(pointElementIndex);
+            * GetMaterialHeatCapacityReciprocal(pointElementIndex);
     }
 
     //
@@ -1442,7 +1442,7 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
-    Buffer<float> mMaterialHeatCapacityBuffer;
+    Buffer<float> mMaterialHeatCapacityReciprocalBuffer;
     Buffer<float> mMaterialThermalExpansionCoefficientBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<StructuralMaterial::MaterialCombustionType> mMaterialCombustionTypeBuffer;

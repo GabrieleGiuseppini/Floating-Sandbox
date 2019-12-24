@@ -772,7 +772,7 @@ bool Ship::ApplyHeatBlasterAt(
             // T = Q/HeatCapacity
             float deltaT =
                 heatBlasterHeat * smoothing
-                / mPoints.GetMaterialHeatCapacity(pointIndex);
+                * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
             // Increase/lower temperature
             mPoints.SetTemperature(
@@ -1320,7 +1320,7 @@ void Ship::ApplyLightning(
 			// T = Q/HeatCapacity
 			float deltaT =
 				lightningHeat * smoothing
-				/ mPoints.GetMaterialHeatCapacity(pointIndex);
+				* mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
 			// Increase/lower temperature
 			mPoints.SetTemperature(

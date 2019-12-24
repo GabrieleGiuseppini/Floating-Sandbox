@@ -88,7 +88,7 @@ bool Ship::UpdateExplosionStateMachine(
                 // T = Q/HeatCapacity
                 float const deltaT =
                     blastHeat
-                    / mPoints.GetMaterialHeatCapacity(pointIndex);
+                    * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
                 // Increase temperature
                 mPoints.SetTemperature(

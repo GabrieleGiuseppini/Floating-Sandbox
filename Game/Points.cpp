@@ -62,7 +62,8 @@ void Points::Add(
 
     // Heat dynamics
     mTemperatureBuffer.emplace_back(GameParameters::Temperature0);
-    mMaterialHeatCapacityBuffer.emplace_back(structuralMaterial.GetHeatCapacity());
+    assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer.emplace_back(1.0f / structuralMaterial.GetHeatCapacity());
     mMaterialThermalExpansionCoefficientBuffer.emplace_back(structuralMaterial.ThermalExpansionCoefficient);
     mMaterialIgnitionTemperatureBuffer.emplace_back(structuralMaterial.IgnitionTemperature);
     mMaterialCombustionTypeBuffer.emplace_back(structuralMaterial.CombustionType);
@@ -148,7 +149,8 @@ void Points::CreateEphemeralParticleAirBubble(
     //mIsLeakingBuffer[pointIndex] = false;
 
     mTemperatureBuffer[pointIndex] = temperature;
-    mMaterialHeatCapacityBuffer[pointIndex] = airStructuralMaterial.GetHeatCapacity();
+    assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / airStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = airStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = airStructuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = airStructuralMaterial.CombustionType;
@@ -216,7 +218,8 @@ void Points::CreateEphemeralParticleDebris(
     //mIsLeakingBuffer[pointIndex] = false;
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
-    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
+    assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
@@ -288,7 +291,8 @@ void Points::CreateEphemeralParticleSmoke(
     //mIsLeakingBuffer[pointIndex] = false;
 
     mTemperatureBuffer[pointIndex] = temperature;
-    mMaterialHeatCapacityBuffer[pointIndex] = airStructuralMaterial.GetHeatCapacity();
+    assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / airStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = airStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = airStructuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = airStructuralMaterial.CombustionType;
@@ -358,7 +362,8 @@ void Points::CreateEphemeralParticleSparkle(
     //mIsLeakingBuffer[pointIndex] = false;
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
-    mMaterialHeatCapacityBuffer[pointIndex] = structuralMaterial.GetHeatCapacity();
+    assert(structuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
@@ -830,7 +835,7 @@ void Points::UpdateCombustionHighFrequency(
                 mTemperatureBuffer[otherEndpointIndex] +=
                     effectiveCombustionHeat
                     * dirAlpha
-                    / mMaterialHeatCapacityBuffer[otherEndpointIndex];
+                    * mMaterialHeatCapacityReciprocalBuffer[otherEndpointIndex];
             }
         }
 

@@ -1056,7 +1056,8 @@ Render:
 			+ Points::RenderEphemeralParticles: Smoke
 				+ For now, just point - like debris
 		+ Do test ship
-		- Run in Debug
+		+ Run in Debug
+		- Optimize ship's UpdateHeat::springOutboundHeatFlows
 		- Rendering:
 			- A) Simple texture (one of N alternatives) via GenericTextures
 				- Alpha and scale change with progress, see Moleskine

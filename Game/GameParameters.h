@@ -62,7 +62,7 @@ struct GameParameters
     static float constexpr WaterMass = 1000.0f; // Kg
 
     // Temperature at which all the constants are taken at
-    static float constexpr Temperature0 = 298.15; // 25C
+    static float constexpr Temperature0 = 298.15f; // 25C
 
 
 

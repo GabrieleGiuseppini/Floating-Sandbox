@@ -1550,7 +1550,7 @@ void Ship::PropagateHeat(
             // Q = Kp * Tp
             float const pointHeat =
                 pointTemperature
-                * mPoints.GetMaterialHeatCapacity(pointIndex);
+                / mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
             normalizationFactor = std::min(
                 pointHeat / totalOutgoingHeat,
@@ -1575,13 +1575,13 @@ void Ship::PropagateHeat(
                 dt
                 * springOutboundHeatFlows[s] * normalizationFactor
                 / mSprings.GetFactoryRestLength(cs.SpringIndex)
-                / mPoints.GetMaterialHeatCapacity(cs.OtherEndpointIndex);
+                * mPoints.GetMaterialHeatCapacityReciprocal(cs.OtherEndpointIndex);
         }
 
         // Update point's temperature due to total flow
         newPointTemperatureBufferData[pointIndex] -=
             totalOutgoingHeat * normalizationFactor
-            / mPoints.GetMaterialHeatCapacity(pointIndex);
+            * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
     }
 
 
@@ -1631,7 +1631,7 @@ void Ship::PropagateHeat(
         // Remove this heat from the point
         newPointTemperatureBufferData[pointIndex] -=
             heatLost
-            / mPoints.GetMaterialHeatCapacity(pointIndex);
+            * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
     }
 }
 
