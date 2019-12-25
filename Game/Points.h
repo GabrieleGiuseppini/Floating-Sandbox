@@ -168,10 +168,20 @@ private:
 
         struct SmokeState
         {
-            float Progress;
+            float PersonalitySeed;
+            float LifetimeProgress;
+            float ScaleProgress;
 
             SmokeState()
-                : Progress(0.0f)
+                : PersonalitySeed(0.0f)
+                , LifetimeProgress(0.0f)
+                , ScaleProgress(0.0f)
+            {}
+
+            SmokeState(float personalitySeed)
+                : PersonalitySeed(personalitySeed)
+                , LifetimeProgress(0.0f)
+                , ScaleProgress(0.0f)
             {}
         };
 

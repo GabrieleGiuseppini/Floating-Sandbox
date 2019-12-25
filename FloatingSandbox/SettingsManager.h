@@ -71,6 +71,8 @@ enum class GameSettings : size_t
     LightSpreadAdjustment,
     UltraViolentMode,
     DoGenerateDebris,
+    SmokeEmissionDensityAdjustment,
+    SmokeParticleLifetimeAdjustment,
     DoGenerateSparklesForCuts,
     DoGenerateAirBubbles,
     AirBubblesDensity,

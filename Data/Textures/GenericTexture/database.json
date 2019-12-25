@@ -105,8 +105,8 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldWidth": 48.0,
-			"worldHeight": 48.0,
+			"worldWidth": 24.0,
+			"worldHeight": 24.0,
 			"filename": "smoke_\\d+"
 		}
 	]

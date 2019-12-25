@@ -156,8 +156,12 @@ struct GameParameters
     static constexpr float MinDebrisParticlesLifetime = 0.4f;
     static constexpr float MaxDebrisParticlesLifetime = 0.9f;
 
-    static constexpr float MinSmokeParticlesLifetime = 1.0f;
-    static constexpr float MaxSmokeParticlesLifetime = 4.0f;
+    float SmokeEmissionDensityAdjustment;
+    static float constexpr MinSmokeEmissionDensityAdjustment = 0.1f;
+    static float constexpr MaxSmokeEmissionDensityAdjustment = 10.0f;
+
+    static constexpr float MinSmokeParticlesLifetime = 3.5f;
+    static constexpr float MaxSmokeParticlesLifetime = 6.0f;
     float SmokeParticleLifetimeAdjustment;
     static float constexpr MinSmokeParticleLifetimeAdjustment = 0.1f;
     static float constexpr MaxSmokeParticleLifetimeAdjustment = 10.0f;

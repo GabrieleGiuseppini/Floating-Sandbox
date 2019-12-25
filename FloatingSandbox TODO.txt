@@ -1058,23 +1058,26 @@ Render:
 		+ Do test ship
 		+ Run in Debug
 		+ Optimize ship's UpdateHeat::springOutboundHeatFlows
-		= Rendering:
-			- A) Simple texture (one of N alternatives) via GenericTextures
-				- Alpha and scale change with progress, see Moleskine
-				+ Address Points::TODOTEST's for point smoke particles
-				- Finish scale function
-				- Nail down database's world dimensions
-			- B) 4K movies
-		- Cleanup (if everything's fine):
+		+ Rendering: Simple texture (one of N alternatives) via GenericTextures
+			+ Alpha and scale change with progress
+			+ Finish scale function
+			+ Nail down database's world dimensions
+			! "Violent" smoke params:
+				! Emission rate: 0.05
+				! scale: 1.07f * (1.0f - exp(-3.0f * progress));
+				! alpha: SmoothStep(0.0f, 0.05f, progress) - SmoothStep(0.85f, 1.0f, progress);
+				! "worldWidth": 48.0, "worldHeight": 48.0
+		= Cleanup (if everything's fine):
 			- Add particle_emission_rate to Guide
 			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
 				- json
 				- Materials.*
 				- Guide
-			- Add smoke emission rate adjustment global param?
-				- SettingsDialog
-			= Add smoke maxlifetime adjustment global param
-				- SettingsDialog
+			+ Add smoke emission rate adjustment global param
+				+ SettingsDialog
+			+ Add smoke maxlifetime adjustment global param
+				+ SettingsDialog
+				+ Make scale independent from adjustment
 			- BuoyancyCoefficients: make them float w/gravity magnitude and multiply with gravity dir at use time
 			- Redo materials templates
 			- changes.txt:
@@ -1083,13 +1086,6 @@ Render:
 					- Hindenburg update
 				- New SmokeEmitter material
 					- Cruise Vessel update
-
-	- Research particle motion - inject random walk in smoke and bubbles
-		- https://core.ac.uk/download/pdf/337937.pdf !!! (Random Walk Models of Turbulent Dispersion)
-		- http://orbit.dtu.dk/files/3706687/Visser6.pdf
-		- @ Smoke
-			- http://matthias-mueller-fischer.ch/publications/sca03.pdf
-
 
 	- Fireworks
 		- New emitter material, much like smoke emitter (*)

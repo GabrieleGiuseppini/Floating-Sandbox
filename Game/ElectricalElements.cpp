@@ -361,7 +361,8 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
                                 currentSimulationTime
                                 + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                                    1.0f / mElementStateBuffer[sinkIndex].SmokeEmitter.EmissionRate);
+                                    gameParameters.SmokeEmissionDensityAdjustment
+                                    / mElementStateBuffer[sinkIndex].SmokeEmitter.EmissionRate);
                         }
 
                         // See if it's time to emit smoke
@@ -376,7 +377,7 @@ void ElectricalElements::UpdateSinks(
                             // Temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
                                 points.GetTemperature(pointIndex),
-                                gameParameters.AirTemperature + 100.0f);
+                                gameParameters.AirTemperature + 200.0f);
 
                             // Choose a lifetime
                             float const maxLifetime =

@@ -309,7 +309,7 @@ void Points::CreateEphemeralParticleSmoke(
     mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::Smoke;
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
-    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState();
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
@@ -1093,10 +1093,10 @@ void Points::UpdateEphemeralParticles(
 
                         // Update progress
                         assert(maxSimulationLifetime > 0.0f);
-                        auto const progress =
-                            elapsedSimulationLifetime
-                            / maxSimulationLifetime;
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Progress = progress;
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.LifetimeProgress =
+                            elapsedSimulationLifetime / maxSimulationLifetime;
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
+                            std::min(1.0f, elapsedSimulationLifetime / 5.0f);
 
                         // Inject random walk in direction orthogonal to current velocity
                         float const randomWalkMagnitude =
@@ -1412,22 +1412,22 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Smoke:
             {
-                float const progress = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Progress;
+                auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke;
 
                 // Calculate scale
-                // 1.07 * (1 - exp(-3 * x))
-                float const scale = 1.07f * (1.0f - exp(-3.0f * progress));
+                float const scale = state.ScaleProgress;
 
                 // Calculate alpha
+                float const lifetimeProgress = state.LifetimeProgress;
                 float const alpha =
-                    SmoothStep(0.0f, 0.05f, progress)
-                    - SmoothStep(0.85f, 1.0f, progress);
+                    SmoothStep(0.0f, 0.05f, lifetimeProgress)
+                    - SmoothStep(0.7f, 1.0f, lifetimeProgress);
 
                 // Upload smoke
                 renderContext.UploadShipGenericTextureRenderSpecification(
                     shipId,
                     GetPlaneId(pointIndex),
-                    mRandomNormalizedUniformFloatBuffer[pointIndex],
+                    state.PersonalitySeed,
                     Render::GenericTextureGroups::Smoke,
                     GetPosition(pointIndex),
                     scale,

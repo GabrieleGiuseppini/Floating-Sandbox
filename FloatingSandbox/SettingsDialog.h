@@ -123,17 +123,19 @@ private:
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
 
-    // Ocean and Sky
+    // Ocean, Smoke, and Sky
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
-    SliderControl<unsigned int> * mNumberOfStarsSlider;
-    SliderControl<unsigned int> * mNumberOfCloudsSlider;
+    SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
+    SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
 	SliderControl<float> * mStormStrengthAdjustmentSlider;
 	wxCheckBox* mDoRainWithStormCheckBox;
     SliderControl<float> * mRainFloodAdjustmentSlider;
 	SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
 	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
+    SliderControl<unsigned int> * mNumberOfStarsSlider;
+    SliderControl<unsigned int> * mNumberOfCloudsSlider;
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;
@@ -229,7 +231,7 @@ private:
 
     void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
     void PopulateHeatPanel(wxPanel * panel);
-    void PopulateOceanAndSkyPanel(wxPanel * panel);
+    void PopulateOceanSmokeSkyPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
