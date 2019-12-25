@@ -1001,9 +1001,9 @@ void Points::UpdateEphemeralParticles(
                     // Do not advance air bubble if it's pinned
                     if (!IsPinned(pointIndex))
                     {
-                        float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(GetPosition(pointIndex).x);
-                        float const deltaY = waterHeight - GetPosition(pointIndex).y;
-
+                        auto const & position = GetPosition(pointIndex);
+                        float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(position.x);
+                        float const deltaY = waterHeight - position.y;
                         if (deltaY <= 0.0f)
                         {
                             // Got to the surface, expire
@@ -1075,9 +1075,11 @@ void Points::UpdateEphemeralParticles(
                 case EphemeralType::Smoke:
                 {
                     // Check if expired
+                    auto const & position = GetPosition(pointIndex);
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     auto const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
-                    if (elapsedSimulationLifetime >= maxSimulationLifetime)
+                    if (elapsedSimulationLifetime >= maxSimulationLifetime
+                        || mParentWorld.IsUnderwater(position))
                     {
                         //
                         /// Expired

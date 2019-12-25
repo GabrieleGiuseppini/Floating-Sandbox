@@ -1067,7 +1067,8 @@ Render:
 				! scale: 1.07f * (1.0f - exp(-3.0f * progress));
 				! alpha: SmoothStep(0.0f, 0.05f, progress) - SmoothStep(0.85f, 1.0f, progress);
 				! "worldWidth": 48.0, "worldHeight": 48.0
-		= Cleanup (if everything's fine):
+		+ Expire smoke ephemeral particles that end up underwater
+		= Cleanup (if everything's fine):			
 			- Add particle_emission_rate to Guide
 			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
 				- json
