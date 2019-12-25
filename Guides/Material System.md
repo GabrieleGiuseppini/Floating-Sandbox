@@ -119,11 +119,15 @@ Here's an explanation of the elements:
    - "Generator": propagates an electrical current through all connected cables.
    - "Cable": propagates an electrical current through its endpoints.
    - "Lamp": emits light.
+   - "OtherSink": just heats while operating.
+   - "SmokeEmitter": emits smoke - ideal for funnels and engine exhaust pipes.
 - _heat generated_: the amount of heat generated when functioning, in KJ/s.
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
 - _luminiscence_: the amount of light emitted by a lamp; between 0.0 and 1.0.
 - _light spread_: the distance from a lamp, in metres, beyond which that lamp's light is zero.
 - _minimum operating temperature_: the minimum temperature, in Kelvin, below which the material/device will stop working.
 - _maximum operating temperature_: the maximum temperature, in Kelvin, above which the material/device will stop working.
+- _particle_emission_rate_: only valid for SmokeEmitter materials, dictates the average interval - in simulation time seconds - between two particle emissions.
+   - For example, 0.5 means that on average two particles will be emitted each second.
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.

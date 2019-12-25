@@ -1069,7 +1069,7 @@ Render:
 				! "worldWidth": 48.0, "worldHeight": 48.0
 		+ Expire smoke ephemeral particles that end up underwater
 		= Cleanup (if everything's fine):			
-			- Add particle_emission_rate to Guide
+			+ Add particle_emission_rate to Guide
 			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
 				- json
 				- Materials.*
