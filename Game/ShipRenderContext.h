@@ -633,6 +633,33 @@ public:
 
     inline void UploadGenericTextureRenderSpecification(
         PlaneId planeId,
+        float personalitySeed,
+        GenericTextureGroups textureGroup,
+        vec2f const & position,
+        float scale,
+        float alpha)
+    {
+        // Choose frame
+        size_t const frameCount = mGenericTextureAtlasMetadata.GetFrameCount(GenericTextureGroups::Smoke);
+        float frameIndexF = personalitySeed * frameCount;
+        TextureFrameIndex const frameIndex = std::min(
+            static_cast<TextureFrameIndex>(floor(frameIndexF)),
+            static_cast<TextureFrameIndex>(frameCount - 1));
+
+        // Choose angle
+        float const angleCw = (frameIndexF - static_cast<float>(frameIndex)) * 2.0f * Pi<float>;
+
+        UploadGenericTextureRenderSpecification(
+            planeId,
+            TextureFrameId<GenericTextureGroups>(textureGroup, frameIndex),
+            position,
+            scale,
+            angleCw,
+            alpha);
+    }
+
+    inline void UploadGenericTextureRenderSpecification(
+        PlaneId planeId,
         TextureFrameId<GenericTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,

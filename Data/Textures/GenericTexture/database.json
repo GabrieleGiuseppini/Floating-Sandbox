@@ -101,6 +101,18 @@
 },
 
 {
+	"groupName": "Smoke",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 48.0,
+			"worldHeight": 48.0,
+			"filename": "smoke_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "TimerBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[

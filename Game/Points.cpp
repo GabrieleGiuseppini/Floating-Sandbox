@@ -318,10 +318,6 @@ void Points::CreateEphemeralParticleSmoke(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
-
-    // TODOTEST: remove when we'll use gen textures for smoke
-    // Remember that ephemeral points are dirty now
-    mAreEphemeralPointsDirtyForRendering = true;
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -1088,10 +1084,6 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         ExpireEphemeralParticle(pointIndex);
-
-                        // Remember that ephemeral points are now dirty
-                        // TODOTEST: remove when we'll use generic textures
-                        mAreEphemeralPointsDirtyForRendering = true;
                     }
                     else
                     {
@@ -1114,11 +1106,6 @@ void Points::UpdateEphemeralParticles(
                         mForceBuffer[pointIndex] +=
                             deviationDirection * randomWalkMagnitude
                             * smokeRandomWalkVelocityImpulseToForceCoefficient;
-
-                        // TODOTEST: remove when we'll use generic textures
-                        mColorBuffer[pointIndex].w =
-                            SmoothStep(0.0f, 0.05f, progress)
-                            - SmoothStep(0.85f, 1.0f, progress);
                     }
 
                     break;
@@ -1425,14 +1412,26 @@ void Points::UploadEphemeralParticles(
 
             case EphemeralType::Smoke:
             {
-                // TODOTEST: change when we'll use gen textures
-                // Don't upload point unless there's been a change
-                if (mAreEphemeralPointsDirtyForRendering)
-                {
-                    renderContext.UploadShipElementEphemeralPoint(
-                        shipId,
-                        pointIndex);
-                }
+                float const progress = mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Progress;
+
+                // Calculate scale
+                // 1.07 * (1 - exp(-3 * x))
+                float const scale = 1.07f * (1.0f - exp(-3.0f * progress));
+
+                // Calculate alpha
+                float const alpha =
+                    SmoothStep(0.0f, 0.05f, progress)
+                    - SmoothStep(0.85f, 1.0f, progress);
+
+                // Upload smoke
+                renderContext.UploadShipGenericTextureRenderSpecification(
+                    shipId,
+                    GetPlaneId(pointIndex),
+                    mRandomNormalizedUniformFloatBuffer[pointIndex],
+                    Render::GenericTextureGroups::Smoke,
+                    GetPosition(pointIndex),
+                    scale,
+                    alpha);
 
                 break;
             }

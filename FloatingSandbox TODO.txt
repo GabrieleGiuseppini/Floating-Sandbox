@@ -1058,10 +1058,13 @@ Render:
 		+ Do test ship
 		+ Run in Debug
 		+ Optimize ship's UpdateHeat::springOutboundHeatFlows
-		- Rendering:
+		= Rendering:
 			- A) Simple texture (one of N alternatives) via GenericTextures
 				- Alpha and scale change with progress, see Moleskine
-			- Address Points::TODOTEST's for point smoke particles
+				+ Address Points::TODOTEST's for point smoke particles
+				- Finish scale function
+				- Nail down database's world dimensions
+			- B) 4K movies
 		- Cleanup (if everything's fine):
 			- Add particle_emission_rate to Guide
 			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"

@@ -1379,6 +1379,25 @@ public:
             alpha);
     }
 
+    inline void UploadShipGenericTextureRenderSpecification(
+        ShipId shipId,
+        PlaneId planeId,
+        float personalitySeed,
+        GenericTextureGroups textureGroup,
+        vec2f const & position,
+        float scale,
+        float alpha)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadGenericTextureRenderSpecification(
+            planeId,
+            personalitySeed,
+            textureGroup,
+            position,
+            scale,
+            alpha);
+    }
     //
     // Ephemeral points
     //
