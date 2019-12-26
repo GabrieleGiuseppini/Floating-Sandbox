@@ -35,18 +35,18 @@ void Points::Add(
     mForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
+    mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
-        structuralMaterial.WaterVolumeFill,
+        structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
 
     mMaterialIsHullBuffer.emplace_back(structuralMaterial.IsHull);
-    mMaterialWaterVolumeFillBuffer.emplace_back(structuralMaterial.WaterVolumeFill);
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
     mMaterialWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
@@ -130,16 +130,16 @@ void Points::CreateEphemeralParticleAirBubble(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        airStructuralMaterial.WaterVolumeFill,
+        airStructuralMaterial.BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
 
-    //mMaterialWaterVolumeFillBuffer[pointIndex] = airStructuralMaterial.WaterVolumeFill;
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -201,6 +201,7 @@ void Points::CreateEphemeralParticleDebris(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
@@ -208,7 +209,6 @@ void Points::CreateEphemeralParticleDebris(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    //mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -272,6 +272,7 @@ void Points::CreateEphemeralParticleSmoke(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
@@ -281,7 +282,6 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
 
-    //mMaterialWaterVolumeFillBuffer[pointIndex] = airStructuralMaterial.WaterVolumeFill;
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -341,6 +341,7 @@ void Points::CreateEphemeralParticleSparkle(
     mForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
@@ -348,7 +349,6 @@ void Points::CreateEphemeralParticleSparkle(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
-    //mMaterialWaterVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -1506,7 +1506,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     {
         float const mass =
             mAugmentedMaterialMassBuffer[i]
-            + std::min(GetWater(i), mMaterialWaterVolumeFillBuffer[i]) * densityAdjustedWaterMass;
+            + std::min(GetWater(i), mMaterialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
         assert(mass > 0.0f);
 

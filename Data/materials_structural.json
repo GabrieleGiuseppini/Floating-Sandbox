@@ -23,7 +23,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#303040", 
@@ -49,7 +49,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#808090", 
@@ -75,7 +75,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A0A0A0", 
@@ -101,7 +101,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#909090", 
@@ -127,7 +127,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D8D8D8", 
@@ -153,7 +153,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#565663", 
@@ -179,7 +179,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#787896", 
@@ -205,7 +205,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E0E0E0", 
@@ -231,7 +231,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C8C8C8", 
@@ -257,7 +257,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#EFEFEF", 
@@ -283,7 +283,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#EEEEEE", 
@@ -309,7 +309,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A42E10", 
@@ -335,7 +335,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B22212", 
@@ -361,7 +361,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A29A10", 
@@ -387,7 +387,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B2A012", 
@@ -413,7 +413,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#76B210", 
@@ -439,7 +439,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#88B810", 
@@ -465,7 +465,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#10A29A", 
@@ -491,7 +491,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#10B2A0", 
@@ -517,7 +517,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#204060", 
@@ -543,7 +543,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#305878", 
@@ -569,7 +569,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#757575", 
@@ -595,7 +595,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#989898", 
@@ -621,7 +621,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#905020", 
@@ -647,7 +647,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E0D8C0", 
@@ -673,7 +673,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D2D2D2", 
@@ -698,7 +698,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -724,7 +724,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -750,7 +750,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -776,7 +776,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -802,7 +802,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -828,7 +828,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -854,7 +854,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
 
@@ -882,7 +882,7 @@
         "water_diffusion_speed": 0.015, 
         "water_intake": 0.05, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.3, 
+        "buoyancy_volume_fill": 0.3, 
         "wind_receptivity": 1.0
     }, 
     {
@@ -908,7 +908,7 @@
         "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#232323", 
@@ -933,7 +933,7 @@
         "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -960,7 +960,7 @@
         "water_diffusion_speed": 0.0,
 	"water_intake": 0.0,
         "water_retention": 0.00,
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -986,7 +986,7 @@
         "thermal_conductivity": 0.25,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -1013,7 +1013,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D0D0D0", 
@@ -1039,7 +1039,7 @@
 	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A88848", 
@@ -1064,7 +1064,7 @@
         "thermal_conductivity": 0.05, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C1A46A", 
@@ -1089,7 +1089,7 @@
         "thermal_conductivity": 0.05, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A71000", 
@@ -1115,7 +1115,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#950000", 
@@ -1141,7 +1141,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D80E00", 
@@ -1167,7 +1167,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D80E02", 
@@ -1193,7 +1193,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#840E00", 
@@ -1219,7 +1219,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#740200", 
@@ -1245,7 +1245,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#9E0F00", 
@@ -1271,7 +1271,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#9E2E0C", 
@@ -1297,7 +1297,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B51B1B", 
@@ -1323,7 +1323,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#8F1F00", 
@@ -1349,7 +1349,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BE1400", 
@@ -1375,7 +1375,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A27A00", 
@@ -1401,7 +1401,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#926A00", 
@@ -1427,7 +1427,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D29800", 
@@ -1453,7 +1453,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#806200", 
@@ -1479,7 +1479,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#705200", 
@@ -1505,7 +1505,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#997200", 
@@ -1531,7 +1531,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#998B0A", 
@@ -1557,7 +1557,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#AF7C18", 
@@ -1583,7 +1583,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#8B7A00", 
@@ -1609,7 +1609,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B88D00", 
@@ -1635,7 +1635,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#5A9B00", 
@@ -1661,7 +1661,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#7BC800", 
@@ -1687,7 +1687,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#467B00", 
@@ -1713,7 +1713,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#569200", 
@@ -1739,7 +1739,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#439206", 
@@ -1765,7 +1765,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#78A814", 
@@ -1791,7 +1791,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#3C8400", 
@@ -1817,7 +1817,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#66B100", 
@@ -1843,7 +1843,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#008A95", 
@@ -1869,7 +1869,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#00B6BF", 
@@ -1895,7 +1895,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#006A76", 
@@ -1921,7 +1921,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#00818C", 
@@ -1947,7 +1947,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#036E8C", 
@@ -1973,7 +1973,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#10A19D", 
@@ -1999,7 +1999,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#00657E", 
@@ -2025,7 +2025,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#009BA9", 
@@ -2051,7 +2051,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#22437B", 
@@ -2077,7 +2077,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#2D58A0", 
@@ -2103,7 +2103,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1B3261", 
@@ -2129,7 +2129,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#203E74", 
@@ -2155,7 +2155,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1E3070", 
@@ -2181,7 +2181,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#325989", 
@@ -2207,7 +2207,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1A2C66", 
@@ -2233,7 +2233,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#26498C", 
@@ -2259,7 +2259,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A900A7", 
@@ -2285,7 +2285,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D100D6", 
@@ -2311,7 +2311,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#860080", 
@@ -2337,7 +2337,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9F009C", 
@@ -2363,7 +2363,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A30085", 
@@ -2389,7 +2389,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9B00AF", 
@@ -2415,7 +2415,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#93007B", 
@@ -2441,7 +2441,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BF00BA", 
@@ -2467,7 +2467,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D45B00", 
@@ -2493,7 +2493,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#F26500", 
@@ -2519,7 +2519,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A84F00", 
@@ -2545,7 +2545,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C85800", 
@@ -2571,7 +2571,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#CE8100", 
@@ -2597,7 +2597,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#DE4000", 
@@ -2623,7 +2623,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
 
@@ -2651,7 +2651,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#090909", 
@@ -2677,7 +2677,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
 
@@ -2705,7 +2705,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#EF6B00", 
@@ -2731,7 +2731,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#111111", 
@@ -2757,7 +2757,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#222222", 
@@ -2783,7 +2783,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1F1F1F", 
@@ -2809,7 +2809,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#333333", 
@@ -2835,7 +2835,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#A2A2A2", 
@@ -2862,7 +2862,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#444444", 
@@ -2888,7 +2888,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#262626", 
@@ -2914,7 +2914,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E8E8E8", 
@@ -2941,7 +2941,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#555555", 
@@ -2967,7 +2967,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#666666", 
@@ -2993,7 +2993,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#777777", 
@@ -3019,7 +3019,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#888888", 
@@ -3045,7 +3045,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A21000", 
@@ -3071,7 +3071,7 @@
 	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#842005", 
@@ -3097,7 +3097,7 @@
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#7E0C00", 
@@ -3123,7 +3123,7 @@
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9B3012", 
@@ -3149,7 +3149,7 @@
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#545454", 
@@ -3175,7 +3175,7 @@
         "thermal_conductivity": 66.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C1FFFF", 
@@ -3201,7 +3201,7 @@
 	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E5FFFF", 
@@ -3227,7 +3227,7 @@
 	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#BFBFBF", 
@@ -3254,7 +3254,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1BFBF", 
@@ -3281,7 +3281,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BFBFE1", 
@@ -3308,7 +3308,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#CFCFCF", 
@@ -3335,7 +3335,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1CFCF", 
@@ -3362,7 +3362,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#CFCFE1", 
@@ -3389,7 +3389,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#B8B8B8", 
@@ -3416,7 +3416,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1B8B8", 
@@ -3443,7 +3443,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B8B8E1", 
@@ -3470,7 +3470,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C7C7C7", 
@@ -3497,7 +3497,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1C7C7", 
@@ -3524,7 +3524,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C7C7E1", 
@@ -3551,7 +3551,7 @@
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C4C4C4", 
@@ -3577,7 +3577,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1C4C4", 
@@ -3603,7 +3603,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C4C4E1", 
@@ -3629,7 +3629,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D4D4D4", 
@@ -3655,7 +3655,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1D4D4", 
@@ -3681,7 +3681,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D4D4E1", 
@@ -3707,7 +3707,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E4E4E4", 
@@ -3734,7 +3734,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B3000B", 
@@ -3761,7 +3761,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#EFED00", 
@@ -3788,7 +3788,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#186F36", 
@@ -3815,7 +3815,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#13377B", 
@@ -3842,7 +3842,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#050505", 
@@ -3869,7 +3869,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#F4F4F4", 
@@ -3896,7 +3896,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E3000B", 
@@ -3923,7 +3923,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FFED00", 
@@ -3950,7 +3950,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#287F46", 
@@ -3977,7 +3977,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#23478B", 
@@ -4004,7 +4004,7 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#080808", 
@@ -4031,13 +4031,13 @@
 	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
         "color_key": "#F0F0F0", 
         "combustion_type": "Combustion", 
-        "comments": "water_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
+        "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
         "ignition_temperature": 1000000.0, 
         "is_hull": true, 
         "mass": {
@@ -4060,7 +4060,7 @@
         "water_diffusion_speed": 0.0, 
         "water_intake": 0.0, 
         "water_retention": 0.0, 
-        "water_volume_fill": 0.003
+        "buoyancy_volume_fill": 0.003
     }, 
 
     {
@@ -4086,7 +4086,7 @@
 	"thermal_expansion_coefficient": 0.0036,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05,
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -4114,7 +4114,7 @@
         "thermal_conductivity": 0.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FFE010", 
@@ -4141,7 +4141,7 @@
         "thermal_conductivity": 0.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FC0808", 
@@ -4168,7 +4168,7 @@
         "thermal_conductivity": 205.0, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#4C0000", 
@@ -4195,7 +4195,7 @@
         "thermal_conductivity": 0.25, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#700000", 
@@ -4222,6 +4222,6 @@
         "thermal_conductivity": 0.25, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }
 ]

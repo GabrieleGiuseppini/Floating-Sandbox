@@ -18,6 +18,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
+        float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
 
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
 
@@ -40,7 +41,6 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         // Water
 
         bool const isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
-        float const waterVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_volume_fill");
         float const waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
         float const waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
         float const waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
@@ -65,12 +65,12 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             strength,
             nominalMass,
             density,
+            buoyancyVolumeFill,
             stiffness,
             renderColor,
             uniqueType,
             materialSound,
             isHull,
-            waterVolumeFill,
             waterIntake,
             waterDiffusionSpeed,
             waterRetention,

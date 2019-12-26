@@ -1070,16 +1070,17 @@ Render:
 		+ Expire smoke ephemeral particles that end up underwater
 		= Cleanup (if everything's fine):			
 			+ Add particle_emission_rate to Guide
-			- StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
-				- json
-				- Materials.*
-				- Guide
+			+ StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
+				+ json
+				+ Materials.*
+				+ Guide
 			+ Add smoke emission rate adjustment global param
 				+ SettingsDialog
 			+ Add smoke maxlifetime adjustment global param
 				+ SettingsDialog
 				+ Make scale independent from adjustment
-			- BuoyancyCoefficients: make them float w/gravity magnitude and multiply with gravity dir at use time
+			- BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
+			- Try white smoke
 			- Redo materials templates
 			- changes.txt:
 				- Hydrogen to explosive materials

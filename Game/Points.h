@@ -408,6 +408,7 @@ public:
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -417,7 +418,6 @@ public:
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
         , mMaterialIsHullBuffer(mBufferElementCount, shipPointCount, false)
-        , mMaterialWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1350,17 +1350,17 @@ private:
     }
 
     static inline BuoyancyCoefficients CalculateBuoyancyCoefficients(
-        float waterVolumeFill,
+        float buoyancyVolumeFill,
         float thermalExpansionCoefficient)
     {
         vec2f const coefficient1 =
             GameParameters::Gravity
-            * waterVolumeFill
+            * buoyancyVolumeFill
             * (1.0f - thermalExpansionCoefficient * GameParameters::Temperature0);
 
         vec2f const coefficient2 =
             GameParameters::Gravity
-            * waterVolumeFill
+            * buoyancyVolumeFill
             * thermalExpansionCoefficient;
 
         return BuoyancyCoefficients(
@@ -1410,6 +1410,7 @@ private:
     Buffer<vec2f> mForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
+    Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
@@ -1424,7 +1425,6 @@ private:
     //
 
     Buffer<bool> mMaterialIsHullBuffer;
-    Buffer<float> mMaterialWaterVolumeFillBuffer;
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;

@@ -32,8 +32,9 @@ Note: the last material must NOT be followed by a comma!
 
 Structural materials are as follows:
 ```
-    {
+    {	
         "color_key": "#404050",
+	"buoyancy_volume_fill": 0.0,
 	"combustion_type": "Combustion", 
         "ignition_temperature": 1588.15, 
         "is_hull": true, 
@@ -57,8 +58,7 @@ Structural materials are as follows:
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_intake": 1.0, 
-        "water_retention": 0.05, 
-        "water_volume_fill": 0.0,
+        "water_retention": 0.05,         
 	"wind_receptivity": 0.0
     }, 
 ```
@@ -66,6 +66,8 @@ Structural materials are as follows:
 Here's an explanation of the elements:
 
 - _color key_: the RGB color to use in the structural layer image to tell the game which material to use for a particle.
+- _buoyancy volume fill_: the fraction of 1m3 of this material that may be occupied by air or water, and at the same time, the fraction of 1m3 of air or water that this particle displaces. This parameter basically controls buoyancy.
+   - For example, 0.5 means that this particle may take in up to half a cubic meter of air or water, and that this particle also displaces half a cubic meter of air or water.
 - _combustion type_: the type of combustion. At this moment only "Combustion" is supported.
 - _ignition temperature_: the temperature, in Kelvin, at which the material starts burning.
 - _is hull_: whether or not a point or a spring of this material is permeable to water.
@@ -86,8 +88,6 @@ Here's an explanation of the elements:
 - _water diffusion speed_: the speed with which water at this particle spreads out of it. Technically, it's the fraction of water at this particle that is allowed to leave the particle towards its neighbors.
 - _water intake_: the amount of water that enters or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.
-- _water volume fill_: the fraction of 1m3 that may be filled-in by water, and at the same time, the fraction of 1m3 of water that this particle displaces when submerged. This parameter basically controls buoyancy.
-   - For example, 0.5 means that this particle may take in up to half a cubic meter, and that this particle also displaces half a cubic meter of water when submerged.
 - _wind receptivity_: the amount of wind force that this material feels when it is over the water line; when not set, assumed to be 0.0.
 
 # Electrical Materials
@@ -127,7 +127,7 @@ Here's an explanation of the elements:
 - _light spread_: the distance from a lamp, in metres, beyond which that lamp's light is zero.
 - _minimum operating temperature_: the minimum temperature, in Kelvin, below which the material/device will stop working.
 - _maximum operating temperature_: the maximum temperature, in Kelvin, above which the material/device will stop working.
-- _particle_emission_rate_: only valid for SmokeEmitter materials, dictates the average interval - in simulation time seconds - between two particle emissions.
+- _particle emission rate_: only valid for SmokeEmitter materials, dictates the average interval - in simulation time seconds - between two particle emissions.
    - For example, 0.5 means that on average two particles will be emitted each second.
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.

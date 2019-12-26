@@ -50,6 +50,7 @@ public:
     float Strength;
     float NominalMass;
     float Density;
+    float BuoyancyVolumeFill;
     float Stiffness;
     vec4f RenderColor;
 
@@ -59,7 +60,6 @@ public:
 
     // Water
     bool IsHull;
-    float WaterVolumeFill;
     float WaterIntake;
     float WaterDiffusionSpeed;
     float WaterRetention;
@@ -112,13 +112,13 @@ public:
         float strength,
         float nominalMass,
         float density,
+        float buoyancyVolumeFill,
         float stiffness,
         vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         // Water
         bool isHull,
-        float waterVolumeFill,
         float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
@@ -137,13 +137,13 @@ public:
         , Strength(strength)
         , NominalMass(nominalMass)
         , Density(density)
+        , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
-        , WaterVolumeFill(waterVolumeFill)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
         , RustReceptivity(rustReceptivity)
