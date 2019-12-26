@@ -1082,12 +1082,11 @@ Render:
 				+ Make scale independent from adjustment
 			+ Try white smoke			
 			+ Do smoke emitter at Titanic with Lights
-			= BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
-				- 29.2/29.3 -> 
+			+ BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
 			+ Try to replace bomb fuse smoke with real smoke particles
 				+ Do "violent" emission, use scale formula above
 				+ Test (with sound)
-				= Nuke old textures
+				+ Nuke old textures
 			+ R.M.S. Titanic with Lights
 			+ Redo materials templates
 			+ Add diesel to both titanics
@@ -1146,8 +1145,8 @@ Render:
 					- state is current value of ConductsElectricity (i.e. still from electrical material)
 			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
 				- Also clears (on destroy) ConductsElectricity
-				- See if may avoid checking for deleted at UpdateElectricalPropagation
-				- TODO: need to fire toggle event?
+					- Thus see if may avoid checking for deleted at UpdateElectricalPropagation
+				- TODO: need to fire toggle event to communicate last state?
 			- Ship::ElectricalElements fires OnSwitchToggled(ObjectId, new state) at:
 				- 1) ToggleSwitch(LocalSwitchId switchId)
 				- 2) Water-sensing switching - which is done at ElectricalUpdate()
