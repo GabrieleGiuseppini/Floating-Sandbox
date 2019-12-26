@@ -416,6 +416,9 @@ Render:
 		+ Interleaving Update's with Render's
 
 		= Smoke (*)
+		- Ropes are too strong - they prevent ship parts from sinking
+
+		- Send for testing
 
 		- Switches (*)
 
@@ -436,8 +439,6 @@ Render:
 			- TBD
 
 		- Lights/materials breaking under pressure (*)
-
-		- Ropes are too strong - they prevent ship parts from sinking
 		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
@@ -1079,8 +1080,10 @@ Render:
 			+ Add smoke maxlifetime adjustment global param
 				+ SettingsDialog
 				+ Make scale independent from adjustment
+			+ Try white smoke			
+			+ Do smoke emitter at Titanic with Lights
+			- Try to replace bomb fuse smoke with real smoke particles
 			- BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
-			- Try white smoke
 			- Redo materials templates
 			- changes.txt:
 				- Hydrogen to explosive materials

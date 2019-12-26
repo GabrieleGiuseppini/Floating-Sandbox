@@ -101,13 +101,25 @@
 },
 
 {
-	"groupName": "Smoke",
+	"groupName": "SmokeDark",
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
 			"worldWidth": 24.0,
 			"worldHeight": 24.0,
-			"filename": "smoke_\\d+"
+			"filename": "smoke_dark_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "SmokeLight",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 24.0,
+			"worldHeight": 24.0,
+			"filename": "smoke_light_\\d+"
 		}
 	]
 },

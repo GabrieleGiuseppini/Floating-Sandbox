@@ -1430,7 +1430,7 @@ void Points::UploadEphemeralParticles(
                     shipId,
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,
-                    Render::GenericTextureGroups::Smoke,
+                    Render::GenericTextureGroups::SmokeLight, // Smoke emitter emits white smoke
                     GetPosition(pointIndex),
                     scale,
                     alpha);

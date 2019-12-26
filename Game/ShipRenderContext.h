@@ -640,7 +640,7 @@ public:
         float alpha)
     {
         // Choose frame
-        size_t const frameCount = mGenericTextureAtlasMetadata.GetFrameCount(GenericTextureGroups::Smoke);
+        size_t const frameCount = mGenericTextureAtlasMetadata.GetFrameCount(textureGroup);
         float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
             static_cast<TextureFrameIndex>(floor(frameIndexF)),
