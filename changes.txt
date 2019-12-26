@@ -1,6 +1,12 @@
 1.14.0.TODO
 - Rain now floods exposed areas of a ship
-- Added new material combustion type, "Explosive", and added first two explosive materials: Diesel and Gunpowder
+- Added air buoyancy: materials lighter than air now float in the air
+	- Added new "Hydrogen" material and used it with the Hindenburg to make it lighter than air
+- Added thermal expansion - the hotter the material, the lesser its density
+	- Noticeable with very light materials, such as Air and Hydrogen
+- Added new "Smoke Emitter" electrical material, which, when powered, emits smoke particles
+	- Changed "R.M.S. Titanic (With Lights)" into "R.M.S. Titanic (With Lights and Smoke)", and changed "Cruise Vessel"'s funnel into a smoking funnel
+- Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
 - Re-worked explosion physics and graphics
 - 11 new ships

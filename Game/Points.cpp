@@ -1095,9 +1095,6 @@ void Points::UpdateEphemeralParticles(
 
                     // Check if expired
                     auto const & position = GetPosition(pointIndex);
-                    // TODOTEST
-                    ///*if (lifetimeProgress >= 1.0f
-                    //    || (mParentWorld.IsUnderwater(position) && lifetimeProgress > 0.1f))*/
                     if (lifetimeProgress >= 1.0f
                         || mParentWorld.IsUnderwater(position))
                     {
