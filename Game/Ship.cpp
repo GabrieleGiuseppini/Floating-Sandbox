@@ -549,21 +549,21 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
 
         // Calculate upward push of water/air mass
         auto const & buoyancyCoefficients = mPoints.GetBuoyancyCoefficients(pointIndex);
-        vec2f const buoyancyPush =
+        float const buoyancyPush =
             buoyancyCoefficients.Coefficient1
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             // Water
-            mPoints.GetForce(pointIndex) -=
+            mPoints.GetForce(pointIndex).y +=
                 buoyancyPush
                 * effectiveWaterDensity;
         }
         else
         {
             // Air
-            mPoints.GetForce(pointIndex) -=
+            mPoints.GetForce(pointIndex).y +=
                 buoyancyPush
                 * effectiveAirDensity;
         }

@@ -102,7 +102,6 @@ enum class GenericTextureGroups : uint16_t
     SmokeDark,
     SmokeLight,
     TimerBomb,
-    TimerBombDefuse,
     TimerBombFuse,
 
     _Last = TimerBombFuse
@@ -138,8 +137,6 @@ struct GenericTextureTextureDatabaseTraits
             return TextureGroups::SmokeLight;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBomb"))
             return TextureGroups::TimerBomb;
-        else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefuse"))
-            return TextureGroups::TimerBombDefuse;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return TextureGroups::TimerBombFuse;
         else

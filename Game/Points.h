@@ -84,12 +84,12 @@ private:
 
     struct BuoyancyCoefficients
     {
-        vec2f Coefficient1; // Temperature-independent
-        vec2f Coefficient2; // Temperature-dependent
+        float Coefficient1; // Temperature-independent
+        float Coefficient2; // Temperature-dependent
 
         BuoyancyCoefficients(
-            vec2f const & coefficient1,
-            vec2f const & coefficient2)
+            float coefficient1,
+            float coefficient2)
             : Coefficient1(coefficient1)
             , Coefficient2(coefficient2)
         {}
@@ -168,18 +168,33 @@ private:
 
         struct SmokeState
         {
+            enum class GrowthType
+            {
+                Slow,
+                Fast
+            };
+
+            Render::GenericTextureGroups TextureGroup;
+            GrowthType Growth;
             float PersonalitySeed;
             float LifetimeProgress;
             float ScaleProgress;
 
             SmokeState()
-                : PersonalitySeed(0.0f)
+                : TextureGroup(Render::GenericTextureGroups::SmokeLight) // Arbitrary
+                , Growth(GrowthType::Slow) // Arbitrary
+                , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
                 , ScaleProgress(0.0f)
             {}
 
-            SmokeState(float personalitySeed)
-                : PersonalitySeed(personalitySeed)
+            SmokeState(
+                Render::GenericTextureGroups textureGroup,
+                GrowthType growth,
+                float personalitySeed)
+                : TextureGroup(textureGroup)
+                , Growth(growth)
+                , PersonalitySeed(personalitySeed)
                 , LifetimeProgress(0.0f)
                 , ScaleProgress(0.0f)
             {}
@@ -413,7 +428,7 @@ public:
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(vec2f::zero(), vec2f::zero()))
+        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
@@ -573,12 +588,48 @@ public:
         float maxSimulationLifetime,
         PlaneId planeId);
 
-    void CreateEphemeralParticleSmoke(
+    void CreateEphemeralParticleLightSmoke(
         vec2f const & position,
         float temperature,
         float currentSimulationTime,
-        float maxSimulationLifetime,
-        PlaneId planeId);
+        PlaneId planeId,
+        GameParameters const & gameParameters)
+    {
+        CreateEphemeralParticleSmoke(
+            Render::GenericTextureGroups::SmokeLight,
+            EphemeralState::SmokeState::GrowthType::Slow,
+            position,
+            temperature,
+            currentSimulationTime,
+            planeId,
+            gameParameters);
+    }
+
+    void CreateEphemeralParticleHeavySmoke(
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters)
+    {
+        CreateEphemeralParticleSmoke(
+            Render::GenericTextureGroups::SmokeDark,
+            EphemeralState::SmokeState::GrowthType::Fast,
+            position,
+            temperature,
+            currentSimulationTime,
+            planeId,
+            gameParameters);
+    }
+
+    void CreateEphemeralParticleSmoke(
+        Render::GenericTextureGroups textureGroup,
+        EphemeralState::SmokeState::GrowthType growth,
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters);
 
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
@@ -1353,13 +1404,13 @@ private:
         float buoyancyVolumeFill,
         float thermalExpansionCoefficient)
     {
-        vec2f const coefficient1 =
-            GameParameters::Gravity
+        float const coefficient1 =
+            GameParameters::GravityMagnitude
             * buoyancyVolumeFill
             * (1.0f - thermalExpansionCoefficient * GameParameters::Temperature0);
 
-        vec2f const coefficient2 =
-            GameParameters::Gravity
+        float const coefficient2 =
+            GameParameters::GravityMagnitude
             * buoyancyVolumeFill
             * thermalExpansionCoefficient;
 

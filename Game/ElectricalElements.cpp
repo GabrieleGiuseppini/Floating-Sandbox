@@ -372,27 +372,20 @@ void ElectricalElements::UpdateSinks(
                             // Emit smoke
                             //
 
-                            auto const pointIndex = GetPointIndex(sinkIndex);
+                            auto const emitterPointIndex = GetPointIndex(sinkIndex);
 
-                            // Temperature: highest of emitter's and current air + something (to ensure buoyancy)
-                            float const smokeTemperature = std::max(
-                                points.GetTemperature(pointIndex),
+                            // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
+                            float const temperature = std::max(
+                                points.GetTemperature(emitterPointIndex),
                                 gameParameters.AirTemperature + 200.0f);
 
-                            // Choose a lifetime
-                            float const maxLifetime =
-                                gameParameters.SmokeParticleLifetimeAdjustment
-                                * GameRandomEngine::GetInstance().GenerateUniformReal(
-                                    GameParameters::MinSmokeParticlesLifetime,
-                                    GameParameters::MaxSmokeParticlesLifetime);
-
                             // Generate particle
-                            points.CreateEphemeralParticleSmoke(
-                                points.GetPosition(pointIndex),
-                                smokeTemperature,
+                            points.CreateEphemeralParticleLightSmoke(
+                                points.GetPosition(emitterPointIndex),
+                                temperature,
                                 currentSimulationTime,
-                                maxLifetime,
-                                points.GetPlaneId(pointIndex));
+                                points.GetPlaneId(emitterPointIndex),
+                                gameParameters);
 
                             // Make sure we re-calculate the next emission timestamp
                             mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;

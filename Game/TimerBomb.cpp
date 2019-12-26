@@ -54,13 +54,22 @@ bool TimerBomb::Update(
             if (mParentWorld.IsUnderwater(GetPosition()))
             {
                 //
-                // Transition to defusing
+                // Defuse
                 //
 
+                // Emit smoke
+                mShipPoints.CreateEphemeralParticleHeavySmoke(
+                    GetPosition() + vec2f(0.0f, 5.0f), // Where the fuse is
+                    gameParameters.AirTemperature + 300.0f,
+                    currentSimulationTime,
+                    GetPlaneId(),
+                    gameParameters);
+
+                // Transition to defusing
                 mState = State::Defusing;
 
+                // Notify
                 mGameEventHandler->OnTimerBombFuse(mId, std::nullopt);
-
                 mGameEventHandler->OnTimerBombDefused(true, 1);
 
                 // Schedule next transition
@@ -253,6 +262,7 @@ void TimerBomb::Upload(
         case State::SlowFuseBurning:
         case State::FastFuseBurning:
         {
+            // Render bomb
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
@@ -263,6 +273,7 @@ void TimerBomb::Upload(
                 GetRotationOffsetAxis(),
                 1.0f);
 
+            // Render fuse
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
@@ -285,6 +296,7 @@ void TimerBomb::Upload(
                     ? vec2f(-ShakeOffset, 0.0f)
                     : vec2f(ShakeOffset, 0.0f));
 
+            // Render bomb
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
@@ -300,20 +312,11 @@ void TimerBomb::Upload(
 
         case State::Defusing:
         {
+            // Render bomb
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
                 TextureFrameId(Render::GenericTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
-                GetPosition(),
-                1.0f,
-                mRotationBaseAxis,
-                GetRotationOffsetAxis(),
-                1.0f);
-
-            renderContext.UploadShipGenericTextureRenderSpecification(
-                shipId,
-                GetPlaneId(),
-                TextureFrameId(Render::GenericTextureGroups::TimerBombDefuse, mDefuseStepCounter),
                 GetPosition(),
                 1.0f,
                 mRotationBaseAxis,
@@ -325,6 +328,7 @@ void TimerBomb::Upload(
 
         case State::Defused:
         {
+            // Render inert bomb
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
@@ -345,6 +349,7 @@ void TimerBomb::Upload(
                 static_cast<float>(mExplosionFadeoutCounter + 1)
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
+            // Render disappearing bomb
             renderContext.UploadShipGenericTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),

@@ -206,7 +206,7 @@ void Points::CreateEphemeralParticleDebris(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
+    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
@@ -251,15 +251,24 @@ void Points::CreateEphemeralParticleDebris(
 }
 
 void Points::CreateEphemeralParticleSmoke(
+    Render::GenericTextureGroups textureGroup,
+    EphemeralState::SmokeState::GrowthType growth,
     vec2f const & position,
     float temperature,
     float currentSimulationTime,
-    float maxSimulationLifetime,
-    PlaneId planeId)
+    PlaneId planeId,
+    GameParameters const & gameParameters)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
     assert(NoneElementIndex != pointIndex);
+
+    // Choose a lifetime
+    float const maxSimulationLifetime =
+        gameParameters.SmokeParticleLifetimeAdjustment
+        * GameRandomEngine::GetInstance().GenerateUniformReal(
+            GameParameters::MinSmokeParticlesLifetime,
+            GameParameters::MaxSmokeParticlesLifetime);
 
     //
     // Store attributes
@@ -278,7 +287,7 @@ void Points::CreateEphemeralParticleSmoke(
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        1.0f, // Need to counteract the artificially low water volume fill of air for air bubbles
+        1.0f, // Need to counteract the artificially low buoyancy volume fill of air for air bubbles
         airStructuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
 
@@ -309,7 +318,10 @@ void Points::CreateEphemeralParticleSmoke(
     mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::Smoke;
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = maxSimulationLifetime;
-    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::SmokeState(
+        textureGroup,
+        growth,
+        GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
     //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
@@ -346,7 +358,7 @@ void Points::CreateEphemeralParticleSparkle(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(vec2f::zero(), vec2f::zero()); // No buoyancy
+    mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
 
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
@@ -1074,11 +1086,19 @@ void Points::UpdateEphemeralParticles(
 
                 case EphemeralType::Smoke:
                 {
+                    // Calculate progress
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    assert(maxSimulationLifetime > 0.0f);
+                    float const lifetimeProgress =
+                        elapsedSimulationLifetime
+                        / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+
                     // Check if expired
                     auto const & position = GetPosition(pointIndex);
-                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
-                    auto const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
-                    if (elapsedSimulationLifetime >= maxSimulationLifetime
+                    // TODOTEST
+                    ///*if (lifetimeProgress >= 1.0f
+                    //    || (mParentWorld.IsUnderwater(position) && lifetimeProgress > 0.1f))*/
+                    if (lifetimeProgress >= 1.0f
                         || mParentWorld.IsUnderwater(position))
                     {
                         //
@@ -1094,11 +1114,18 @@ void Points::UpdateEphemeralParticles(
                         //
 
                         // Update progress
-                        assert(maxSimulationLifetime > 0.0f);
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.LifetimeProgress =
-                            elapsedSimulationLifetime / maxSimulationLifetime;
-                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
-                            std::min(1.0f, elapsedSimulationLifetime / 5.0f);
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.LifetimeProgress = lifetimeProgress;
+                        if (EphemeralState::SmokeState::GrowthType::Slow == mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Growth)
+                        {
+                            mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
+                                std::min(1.0f, elapsedSimulationLifetime / 5.0f);
+                        }
+                        else
+                        {
+                            assert(EphemeralState::SmokeState::GrowthType::Fast == mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.Growth);
+                            mEphemeralParticleAttributes2Buffer[pointIndex].State.Smoke.ScaleProgress =
+                                1.07f * (1.0f - exp(-3.0f * lifetimeProgress));
+                        }
 
                         // Inject random walk in direction orthogonal to current velocity
                         float const randomWalkMagnitude =
@@ -1430,7 +1457,7 @@ void Points::UploadEphemeralParticles(
                     shipId,
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,
-                    Render::GenericTextureGroups::SmokeLight, // Smoke emitter emits white smoke
+                    state.TextureGroup,
                     GetPosition(pointIndex),
                     scale,
                     alpha);

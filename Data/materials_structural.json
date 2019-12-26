@@ -3889,7 +3889,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 6, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,
@@ -3916,7 +3916,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 7, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,
@@ -3943,7 +3943,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 11, 
+            "column": 8, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,
@@ -3970,7 +3970,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 12, 
+            "column": 9, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,
@@ -3997,7 +3997,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 13, 
+            "column": 10, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,
@@ -4024,7 +4024,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 14, 
+            "column": 11, 
             "row": "80|LEGO (ABS)"
         }, 
         "thermal_conductivity": 0.25,

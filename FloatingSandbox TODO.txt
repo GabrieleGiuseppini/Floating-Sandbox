@@ -1082,15 +1082,21 @@ Render:
 				+ Make scale independent from adjustment
 			+ Try white smoke			
 			+ Do smoke emitter at Titanic with Lights
-			- Try to replace bomb fuse smoke with real smoke particles
-			- BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
-			- Redo materials templates
+			= BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
+				- 29.2/29.3 -> 
+			+ Try to replace bomb fuse smoke with real smoke particles
+				+ Do "violent" emission, use scale formula above
+				+ Test (with sound)
+				= Nuke old textures
+			+ R.M.S. Titanic with Lights
+			+ Redo materials templates
+			+ Add diesel to both titanics
 			- changes.txt:
 				- Hydrogen to explosive materials
-				- Air buoyancy
+				- Air buoyancy and its relationship with temperature
 					- Hindenburg update
 				- New SmokeEmitter material
-					- Cruise Vessel update
+					- Cruise Vessel, Titanic update
 
 	- Fireworks
 		- New emitter material, much like smoke emitter (*)

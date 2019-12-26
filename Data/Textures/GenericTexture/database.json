@@ -139,20 +139,6 @@
 },
 
 {
-	"groupName": "TimerBombDefuse",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"filename": "timer_bomb_defuse_\\d+"
-		}
-	]
-},
-
-{
 	"groupName": "TimerBombFuse",
 	"hasOwnAmbientLight": true,
 	"frames":[
