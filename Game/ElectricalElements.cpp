@@ -61,7 +61,14 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         {
             mSinks.emplace_back(elementIndex);
-            mElementStateBuffer.emplace_back(ElementState::OtherSinkState(false));
+            mElementStateBuffer.emplace_back(ElementState::OtherSinkState());
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+        {
+            mSinks.emplace_back(elementIndex);
+            mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
             break;
         }
     }
@@ -260,6 +267,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
 void ElectricalElements::UpdateSinks(
     GameWallClock::time_point currentWallclockTime,
+    float currentSimulationTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & gameParameters)
@@ -316,6 +324,73 @@ void ElectricalElements::UpdateSinks(
                     }
 
                     isOperating = mElementStateBuffer[sinkIndex].OtherSink.IsPowered;
+
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating)
+                    {
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        {
+                            // Stop operating
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating = false;
+                        }
+                    }
+                    else
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
+                            && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        {
+                            // Start operating
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating = true;
+
+                            // Make sure we calculate the next emission timestamp
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
+
+                    if (mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating)
+                    {
+                        // See if we need to calculate the next emission timestamp
+                        if (mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
+                        {
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
+                                currentSimulationTime
+                                + GameRandomEngine::GetInstance().GenerateExponentialReal(
+                                    gameParameters.SmokeEmissionDensityAdjustment
+                                    / mElementStateBuffer[sinkIndex].SmokeEmitter.EmissionRate);
+                        }
+
+                        // See if it's time to emit smoke
+                        if (currentSimulationTime >= mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
+                        {
+                            //
+                            // Emit smoke
+                            //
+
+                            auto const emitterPointIndex = GetPointIndex(sinkIndex);
+
+                            // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
+                            float const temperature = std::max(
+                                points.GetTemperature(emitterPointIndex),
+                                gameParameters.AirTemperature + 200.0f);
+
+                            // Generate particle
+                            points.CreateEphemeralParticleLightSmoke(
+                                points.GetPosition(emitterPointIndex),
+                                temperature,
+                                currentSimulationTime,
+                                points.GetPlaneId(emitterPointIndex),
+                                gameParameters);
+
+                            // Make sure we re-calculate the next emission timestamp
+                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
 
                     break;
                 }

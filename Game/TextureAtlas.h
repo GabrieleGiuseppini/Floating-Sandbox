@@ -91,6 +91,11 @@ public:
         return !!(mOptions & AtlasOptions::AlphaPremultiply);
     }
 
+    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
+    {
+        return mFrameMetadata;
+    }
+
     inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & textureFrameId) const
     {
         return GetFrameMetadata(textureFrameId.Group, textureFrameId.FrameIndex);
@@ -105,9 +110,10 @@ public:
         return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
     }
 
-    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
+    inline size_t GetFrameCount(TextureGroups group) const
     {
-        return mFrameMetadata;
+        assert(static_cast<size_t>(group) < mFrameMetadataIndices.size());
+        return mFrameMetadataIndices[static_cast<size_t>(group)].size();
     }
 
     int GetMaxDimension() const;

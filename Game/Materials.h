@@ -50,6 +50,7 @@ public:
     float Strength;
     float NominalMass;
     float Density;
+    float BuoyancyVolumeFill;
     float Stiffness;
     vec4f RenderColor;
 
@@ -59,7 +60,6 @@ public:
 
     // Water
     bool IsHull;
-    float WaterVolumeFill;
     float WaterIntake;
     float WaterDiffusionSpeed;
     float WaterRetention;
@@ -69,6 +69,7 @@ public:
     float IgnitionTemperature; // K
     float MeltingTemperature; // K
     float ThermalConductivity; // W/(m*K)
+    float ThermalExpansionCoefficient; // 1/K
     float SpecificHeat; // J/(Kg*K)
     MaterialCombustionType CombustionType;
 
@@ -85,7 +86,7 @@ public:
 
     bool IsUniqueType(MaterialUniqueType uniqueType) const
     {
-        return !!UniqueType && *UniqueType == uniqueType;
+        return !!UniqueType && (*UniqueType == uniqueType);
     }
 
     /*
@@ -111,13 +112,13 @@ public:
         float strength,
         float nominalMass,
         float density,
+        float buoyancyVolumeFill,
         float stiffness,
         vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         // Water
         bool isHull,
-        float waterVolumeFill,
         float waterIntake,
         float waterDiffusionSpeed,
         float waterRetention,
@@ -126,6 +127,7 @@ public:
         float ignitionTemperature,
         float meltingTemperature,
         float thermalConductivity,
+        float thermalExpansionCoefficient,
         float specificHeat,
         MaterialCombustionType combustionType,
         // Misc
@@ -135,19 +137,20 @@ public:
         , Strength(strength)
         , NominalMass(nominalMass)
         , Density(density)
+        , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
         , RenderColor(renderColor)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
-        , WaterVolumeFill(waterVolumeFill)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
         , WaterRetention(waterRetention)
         , RustReceptivity(rustReceptivity)
         , IgnitionTemperature(ignitionTemperature)
         , MeltingTemperature(meltingTemperature)
         , ThermalConductivity(thermalConductivity)
+        , ThermalExpansionCoefficient(thermalExpansionCoefficient)
         , SpecificHeat(specificHeat)
         , CombustionType(combustionType)
         , WindReceptivity(windReceptivity)
@@ -164,7 +167,8 @@ struct ElectricalMaterial
         Lamp,
         Cable,
         Generator,
-        OtherSink
+        OtherSink,
+        SmokeEmitter
     };
 
     ElectricalElementType ElectricalType;
@@ -182,6 +186,9 @@ struct ElectricalMaterial
     float MinimumOperatingTemperature; // K
     float MaximumOperatingTemperature; // K
 
+    // Particle Emission
+    float ParticleEmissionRate; // Number of particles per second
+
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
@@ -196,7 +203,8 @@ struct ElectricalMaterial
         float wetFailureRate,
         float heatGenerated,
         float minimumOperatingTemperature,
-        float maximumOperatingTemperature)
+        float maximumOperatingTemperature,
+        float particleEmissionRate)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
@@ -207,6 +215,7 @@ struct ElectricalMaterial
         , HeatGenerated(heatGenerated)
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
+        , ParticleEmissionRate(particleEmissionRate)
     {
     }
 };

@@ -258,6 +258,7 @@ private:
     static Physics::Points CreatePoints(
         std::vector<PointInfo> const & pointInfos2,
         Physics::World & parentWorld,
+        MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
 

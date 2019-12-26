@@ -248,6 +248,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     Points points = CreatePoints(
         pointInfos2,
         parentWorld,
+        materialDatabase,
         gameEventDispatcher,
         gameParameters);
 
@@ -318,8 +319,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     return std::make_unique<Ship>(
         shipId,
         parentWorld,
-        gameEventDispatcher,
         materialDatabase,
+        gameEventDispatcher,
         std::move(points),
         std::move(springs),
         std::move(triangles),
@@ -813,12 +814,14 @@ void ShipBuilder::CreateShipElementInfos(
 Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos2,
     World & parentWorld,
+    MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
         parentWorld,
+        materialDatabase,
         std::move(gameEventDispatcher),
         gameParameters);
 

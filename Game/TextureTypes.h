@@ -99,8 +99,9 @@ enum class GenericTextureGroups : uint16_t
     PinnedPoint,
     RcBomb,
     RcBombPing,
+    SmokeDark,
+    SmokeLight,
     TimerBomb,
-    TimerBombDefuse,
     TimerBombFuse,
 
     _Last = TimerBombFuse
@@ -130,10 +131,12 @@ struct GenericTextureTextureDatabaseTraits
             return TextureGroups::RcBomb;
         else if (Utils::CaseInsensitiveEquals(str, "RCBombPing"))
             return TextureGroups::RcBombPing;
+        else if (Utils::CaseInsensitiveEquals(str, "SmokeDark"))
+            return TextureGroups::SmokeDark;
+        else if (Utils::CaseInsensitiveEquals(str, "SmokeLight"))
+            return TextureGroups::SmokeLight;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBomb"))
             return TextureGroups::TimerBomb;
-        else if (Utils::CaseInsensitiveEquals(str, "TimerBombDefuse"))
-            return TextureGroups::TimerBombDefuse;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return TextureGroups::TimerBombFuse;
         else

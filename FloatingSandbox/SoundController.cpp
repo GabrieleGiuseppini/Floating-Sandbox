@@ -1086,15 +1086,15 @@ void SoundController::OnCombustionSmothered()
 
 void SoundController::OnCombustionExplosion(
     bool isUnderwater,
-    unsigned int size)
+    unsigned int /*size*/)
 {
-    float volume = std::min(100.0f, static_cast<float>(size) * 100.0f / 3.0f);
+    float const volume = 100.0f;
 
     PlayUOneShotMultipleChoiceSound(
         SoundType::CombustionExplosion,
         isUnderwater,
         volume,
-        true);
+        false);
 }
 
 void SoundController::OnStress(

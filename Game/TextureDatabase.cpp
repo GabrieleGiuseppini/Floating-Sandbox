@@ -393,11 +393,11 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
 #include "TextureTypes.h"
 
-template class Render::TextureFrameMetadata<Render::CloudTextureGroups>;
-template class Render::TextureFrameMetadata<Render::WorldTextureGroups>;
-template class Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
-template class Render::TextureFrameMetadata<Render::GenericTextureGroups>;
-template class Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::CloudTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::WorldTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::GenericTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
 
 template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;

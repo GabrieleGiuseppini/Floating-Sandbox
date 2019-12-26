@@ -62,6 +62,9 @@ void main()
 {
     vec4 textureColor = texture2D(paramGenericTexturesAtlasTexture, vertexTextureCoordinates);
 
+    if (textureColor.w < 0.2)
+        discard;
+
     gl_FragColor = vec4(
         textureColor.xyz * vertexEffectiveAmbientLightIntensity,
         textureColor.w * vertexAlpha);

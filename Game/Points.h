@@ -7,6 +7,7 @@
 
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
+#include "MaterialDatabase.h"
 #include "Materials.h"
 #include "RenderContext.h"
 
@@ -81,6 +82,19 @@ public:
 
 private:
 
+    struct BuoyancyCoefficients
+    {
+        float Coefficient1; // Temperature-independent
+        float Coefficient2; // Temperature-dependent
+
+        BuoyancyCoefficients(
+            float coefficient1,
+            float coefficient2)
+            : Coefficient1(coefficient1)
+            , Coefficient2(coefficient2)
+        {}
+    };
+
     /*
      * The combustion state.
      */
@@ -154,6 +168,36 @@ private:
 
         struct SmokeState
         {
+            enum class GrowthType
+            {
+                Slow,
+                Fast
+            };
+
+            Render::GenericTextureGroups TextureGroup;
+            GrowthType Growth;
+            float PersonalitySeed;
+            float LifetimeProgress;
+            float ScaleProgress;
+
+            SmokeState()
+                : TextureGroup(Render::GenericTextureGroups::SmokeLight) // Arbitrary
+                , Growth(GrowthType::Slow) // Arbitrary
+                , PersonalitySeed(0.0f)
+                , LifetimeProgress(0.0f)
+                , ScaleProgress(0.0f)
+            {}
+
+            SmokeState(
+                Render::GenericTextureGroups textureGroup,
+                GrowthType growth,
+                float personalitySeed)
+                : TextureGroup(textureGroup)
+                , Growth(growth)
+                , PersonalitySeed(personalitySeed)
+                , LifetimeProgress(0.0f)
+                , ScaleProgress(0.0f)
+            {}
         };
 
         struct SparkleState
@@ -195,11 +239,11 @@ private:
     struct EphemeralParticleAttributes1
     {
         EphemeralType Type;
-        float StartTime;
+        float StartSimulationTime;
 
         EphemeralParticleAttributes1()
             : Type(EphemeralType::None)
-            , StartTime(0.0f)
+            , StartSimulationTime(0.0f)
         {}
     };
 
@@ -210,11 +254,11 @@ private:
     struct EphemeralParticleAttributes2
     {
         EphemeralState State;
-        float MaxLifetime;
+        float MaxSimulationLifetime;
 
         EphemeralParticleAttributes2()
             : State(EphemeralState::DebrisState()) // Arbitrary
-            , MaxLifetime(0.0f)
+            , MaxSimulationLifetime(0.0f)
         {}
     };
 
@@ -363,6 +407,7 @@ public:
     Points(
         ElementCount shipPointCount,
         World & parentWorld,
+        MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + GameParameters::MaxEphemeralParticles)
@@ -378,15 +423,16 @@ public:
         , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
         , mMaterialIsHullBuffer(mBufferElementCount, shipPointCount, false)
-        , mMaterialWaterVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -398,7 +444,8 @@ public:
         , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mMaterialHeatCapacityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialHeatCapacityReciprocalBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mMaterialThermalExpansionCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialCombustionTypeBuffer(mBufferElementCount, shipPointCount, StructuralMaterial::MaterialCombustionType::Combustion) // Arbitrary
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
@@ -441,6 +488,7 @@ public:
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         , mParentWorld(parentWorld)
+        , mMaterialDatabase(materialDatabase)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
@@ -526,9 +574,9 @@ public:
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
+        float temperature,
         float vortexAmplitude,
         float vortexPeriod,
-        StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         PlaneId planeId);
 
@@ -537,15 +585,58 @@ public:
         vec2f const & velocity,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        std::chrono::milliseconds maxLifetime,
+        float maxSimulationLifetime,
         PlaneId planeId);
+
+    void CreateEphemeralParticleLightSmoke(
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters)
+    {
+        CreateEphemeralParticleSmoke(
+            Render::GenericTextureGroups::SmokeLight,
+            EphemeralState::SmokeState::GrowthType::Slow,
+            position,
+            temperature,
+            currentSimulationTime,
+            planeId,
+            gameParameters);
+    }
+
+    void CreateEphemeralParticleHeavySmoke(
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters)
+    {
+        CreateEphemeralParticleSmoke(
+            Render::GenericTextureGroups::SmokeDark,
+            EphemeralState::SmokeState::GrowthType::Fast,
+            position,
+            temperature,
+            currentSimulationTime,
+            planeId,
+            gameParameters);
+    }
+
+    void CreateEphemeralParticleSmoke(
+        Render::GenericTextureGroups textureGroup,
+        EphemeralState::SmokeState::GrowthType growth,
+        vec2f const & position,
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters);
 
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
         vec2f const & velocity,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
-        std::chrono::milliseconds maxLifetime,
+        float maxSimulationLifetime,
         PlaneId planeId);
 
     void DestroyEphemeralParticle(
@@ -766,6 +857,11 @@ public:
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
 
+    BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
+    {
+        return mBuoyancyCoefficientsBuffer[pointElementIndex];
+    }
+
     /*
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
@@ -824,11 +920,6 @@ public:
     bool GetMaterialIsHull(ElementIndex pointElementIndex) const
     {
         return mMaterialIsHullBuffer[pointElementIndex];
-    }
-
-    float GetMaterialWaterVolumeFill(ElementIndex pointElementIndex) const
-    {
-        return mMaterialWaterVolumeFillBuffer[pointElementIndex];
     }
 
     float GetMaterialWaterIntake(ElementIndex pointElementIndex) const
@@ -990,9 +1081,9 @@ public:
         mTemperatureBuffer.copy_from(*newTemperatureBuffer);
     }
 
-    float GetMaterialHeatCapacity(ElementIndex pointElementIndex) const
+    float GetMaterialHeatCapacityReciprocal(ElementIndex pointElementIndex) const
     {
-        return mMaterialHeatCapacityBuffer[pointElementIndex];
+        return mMaterialHeatCapacityReciprocalBuffer[pointElementIndex];
     }
 
     /*
@@ -1037,7 +1128,7 @@ public:
     {
         mTemperatureBuffer[pointElementIndex] +=
             heat
-            / GetMaterialHeatCapacity(pointElementIndex);
+            * GetMaterialHeatCapacityReciprocal(pointElementIndex);
     }
 
     //
@@ -1309,6 +1400,25 @@ private:
             * frozenCoefficient;
     }
 
+    static inline BuoyancyCoefficients CalculateBuoyancyCoefficients(
+        float buoyancyVolumeFill,
+        float thermalExpansionCoefficient)
+    {
+        float const coefficient1 =
+            GameParameters::GravityMagnitude
+            * buoyancyVolumeFill
+            * (1.0f - thermalExpansionCoefficient * GameParameters::Temperature0);
+
+        float const coefficient2 =
+            GameParameters::GravityMagnitude
+            * buoyancyVolumeFill
+            * thermalExpansionCoefficient;
+
+        return BuoyancyCoefficients(
+            coefficient1,
+            coefficient2);
+    }
+
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
     {
         return GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -1351,10 +1461,12 @@ private:
     Buffer<vec2f> mForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
+    Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
+    Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
 
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;
@@ -1364,7 +1476,6 @@ private:
     //
 
     Buffer<bool> mMaterialIsHullBuffer;
-    Buffer<float> mMaterialWaterVolumeFillBuffer;
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
@@ -1392,7 +1503,8 @@ private:
     //
 
     Buffer<float> mTemperatureBuffer; // Kelvin
-    Buffer<float> mMaterialHeatCapacityBuffer;
+    Buffer<float> mMaterialHeatCapacityReciprocalBuffer;
+    Buffer<float> mMaterialThermalExpansionCoefficientBuffer;
     Buffer<float> mMaterialIgnitionTemperatureBuffer;
     Buffer<StructuralMaterial::MaterialCombustionType> mMaterialCombustionTypeBuffer;
     Buffer<CombustionState> mCombustionStateBuffer;
@@ -1483,6 +1595,7 @@ private:
     ElementCount const mAllPointCount;
 
     World & mParentWorld;
+    MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 

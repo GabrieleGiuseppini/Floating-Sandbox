@@ -86,10 +86,11 @@ int DoAnalyzeShip(int argc, char ** argv)
 
     std::cout << std::fixed;
 
-    std::cout << "  Total mass             : " << analysisInfo.TotalMass << std::endl;
-    std::cout << "  Equivalent mass        : " << analysisInfo.MassPerPoint << std::endl;
-    std::cout << "  Equivalent buoyant mass: " << analysisInfo.BuoyantMassPerPoint << std::endl;
-    std::cout << "  Center of mass         : " << analysisInfo.BaricentricX << "," << analysisInfo.BaricentricY << std::endl;
+    std::cout << "  Total mass                   : " << analysisInfo.TotalMass << std::endl;
+    std::cout << "  Equivalent mass              : " << analysisInfo.MassPerPoint << std::endl;
+    std::cout << "  Equivalent air buoyant mass  : " << analysisInfo.AirBuoyantMassPerPoint << std::endl;
+    std::cout << "  Equivalent water buoyant mass: " << analysisInfo.WaterBuoyantMassPerPoint << std::endl;
+    std::cout << "  Center of mass               : " << analysisInfo.BaricentricX << "," << analysisInfo.BaricentricY << std::endl;
 
     return 0;
 }

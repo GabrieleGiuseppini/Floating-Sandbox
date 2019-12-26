@@ -414,6 +414,11 @@ Render:
 		+ Explosive combustion
 		+ changes.txt		
 		+ Interleaving Update's with Render's
+		+ Smoke (*)
+
+		- Ropes are too strong - they prevent ship parts from sinking
+
+		- Send for testing
 
 		- Switches (*)
 
@@ -434,8 +439,6 @@ Render:
 			- TBD
 
 		- Lights/materials breaking under pressure (*)
-
-		- Ropes are too strong - they prevent ship parts from sinking
 		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
@@ -445,9 +448,7 @@ Render:
 			- Shader already started: https://www.shadertoy.com/view/3sVSRc
 			- See if should add some noise
 
-		- Underwater currents (*)
-
-		- IEphemeralParticleEmitter's (*)
+		- Underwater currents (*)		
 		
 		- Continuous Auto-focus (*)
 
@@ -1000,11 +1001,6 @@ Render:
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
 
-	- Air buoyancy (*)
-		- And new material: blimp body, representing a cube of thin cloth filled with warm air
-			- Might also play with heat
-			- Then tell Michael, who could change blimp
-
 	- Dynamite that may be thrown to the ship
 
 	- Dive bomb:
@@ -1028,37 +1024,6 @@ Render:
 				- Displacement of both might be influenced by point's connected component size
 
 	- Breaking waves (Muller's paper)
-
-	- Ephemeral particle emitters (*)
-		- TODO: decide between the below (emitter is new object type in its own right) and having instead emitters as special
-		  types of electricals
-		- Implemented like electrical elements, i.e.:
-			- EphemeralParticlesEmitters container, almost clone of ElectricalElements
-				- Contains point index and IEphemeralParticleEmitter
-					- IEphemeralParticleEmitter: 
-						- void Update(clockNow, Points &, MaterialDatabase const &)
-						- Impl knows its point index
-				- Passed already populated by ship builder
-		- Ship has EphemeralParticlesEmitters, passed already populated by ship builder
-			- Registers DestroyHandler, all identical to ElectricalElements
-		- Ship::UpdateEphemeralParticles: invokes EphemeralParticlesEmitters::Update(...)
-			- Which invokes IEphemeralParticleEmitter::Update(clockNow, mPoints) for each emitter
-		
-	- Smoke:
-		- New material: (smoke) emitter - "subclass" of "particle emitter"
-			- Recognized by ship builder via "particle_emitter_properties" sub-object
-		- New material: smoke
-			- Lighter than air
-		- UpdatePointForces: if any point is above water, apply air buoyancy (*)
-			- i.e. always end up applying one buoyancy, either water or air
-		- IEphemeralParticleEmitter (*) implementation: SmokeEphemeralParticleEmitter
-		- Research particle motion - inject random walk in smoke and bubbles
-			- https://core.ac.uk/download/pdf/337937.pdf !!! (Random Walk Models of Turbulent Dispersion)
-			- http://orbit.dtu.dk/files/3706687/Visser6.pdf
-			- @ Smoke
-				- http://matthias-mueller-fischer.ch/publications/sca03.pdf
-		- Rendering:
-			- Do shader
 
 	- Fireworks
 		- New emitter material, much like smoke emitter (*)
@@ -1108,8 +1073,8 @@ Render:
 					- state is current value of ConductsElectricity (i.e. still from electrical material)
 			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
 				- Also clears (on destroy) ConductsElectricity
-				- See if may avoid checking for deleted at UpdateElectricalPropagation
-				- TODO: need to fire toggle event?
+					- Thus see if may avoid checking for deleted at UpdateElectricalPropagation
+				- TODO: need to fire toggle event to communicate last state?
 			- Ship::ElectricalElements fires OnSwitchToggled(ObjectId, new state) at:
 				- 1) ToggleSwitch(LocalSwitchId switchId)
 				- 2) Water-sensing switching - which is done at ElectricalUpdate()
@@ -1200,37 +1165,45 @@ Render:
 
 	- Pumps (*)
 		- Spec:
-			- New electrical element
-			- Two types: "in" or "out" (a bool electrical property)
-			- Water is taken @ ElectricalElements::Update()
-				- TODO: reconsider this: might do:
-					- Have new Points flag set by pump when on, kinda like "IsPumpLeaking"
-					- Rename other IsLeaking as "IsStructuralLeaking" (different than "IsFactoryLeaking")
-					- Ship::UpdateWaterIntake() looks at both (or union of bools) to decide whether to consider
-					  a point
-			- Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
-			  water is sucked in our out
+			- New electrical element type
+			- Two types: "in" or "out"
+			- Pumps' intake is superimposed to leaking point's intake
+				- Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
+				  water is sucked in our out
+			- Water is taken @ Ship::UpdateWaterIntake()
+				- In: as long as external water pressure > internal water pressure
+				- Out: as long as internal water pressure > 0
 			- Continuous sound when pumping
 		- Impl:
-			- ElectricalElements::Update():
-				- For each pump element (own separate list, for perf):
-					- If powered: // eventually have state machine for lead-in/lead-out
-						- If type is "in" && y < waterLevel && point.water < external pressure:
-							- Take in water - with quantity from GameParameters
-						- Else if type is "out" && point.water > 0:
-							- Take out water - same quantity from GameParameters
-			- @ power state changes: emit event, for continuous sound - much like TimerBomb's fuse
-				- Need object ID
+			- Materials: new electrical element type
+				- Property: float pumpForce (< or > 0 for in/out), only de-serialized for pumps
+				- Add property to guide
+			- struct Points::LeakingComposite: float StructuralLeak (0.0 or 1.0), float PumpForce (-1.0,...,+1.0)
+				- union: int64_t, used for fast "if(is leaking)" check
+			- ElectricalElements::UpdateSinks():
+				- For each pump:
+					- smoothing state machine, w/operating temperatures
+					- eventually sets Points::LeakingComposite::PumpForce
+					- @ power state changes: emit event, for continuous sound - much like TimerBomb's fuse
+						- Need object ID
+			- Ship::UpdateWaterIntake()
+				- NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
+				             + max(
+							max(PumpForce(ext.w - p.w), 0)
+							max(-PumpForce * p.w, 0)
+					     )
+			- Update materials template
 
 	- Flood doors (*)
 		- Spec:		
-			- TODO: always on/always off - needed or may just flip structural's?
 			- New electrical element
 			- Point that flood door is attached to may or may not be leaking
+			- When powered, inverts water permeability of all attached springs
+				- TODO: always on/always off - needed or may just flip structural's?
 			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
 				+ No ObjectID needed thus
-			- Power connectivity state changes cause modifications of water propagation coefficient of spring (i.e. WaterPermeability)
 		- Impl:
+			- TODOHERE
 			- ElectricalElements::Update():
 				- For each flood door element (own separate list, for perf):
 					- Run state machine (including eventual lead-in/lead-out's)
@@ -5593,6 +5566,77 @@ IF WX:
 			+ Make new structural materials template
 			+ Finalize "Flawed Design" (or "Imminent Disaster"?)
 				+ Name, Description
+	+ Smoke ephemeral particle emitters
+		+ Add ThermalExpansionCoefficient to all materials
+			+ Points::Buffer
+			+ All materials have it almost as zero (use real)
+			+ Air, hydrogen have own
+				+ Test blimp filled with hydrogen
+					+ Change external structure to something light, e.g. cloth
+			+ Add to Guide
+		+ UpdatePointForces: if any point is above water, apply air buoyancy (*)
+			+ i.e. always end up applying one buoyancy, either water or air
+			+ Any buoyancy depends on temperature of particle and on temperature of "ambient air"/"ambient water"
+				+ Use ThermalExpansionCoefficient at both buoyancies			
+				+ Pre-multiply with gravity
+		+ See if want to do heat dissipation also on ephemeral particles
+			+ So that "frozen" air bubbles start floating again
+		+ See perf impact: 29.4 FPS (1 FPS lost!)		
+		+ Another type of electrical material: SmokeEmitter
+			+ ParticleEmissionRate
+			+ Add to DB			
+		+ ElectricalElements::UpdateSinks(...)
+			+ Run state machine and eventually invoke Points::CreateSmokeEphemeralParticle
+				+ Conditions:
+					+ Not destroyed
+					+ Connected
+					+ Not underwater
+				+ Calculate next emission timestamp when needed
+			+ Points::CreateSmokeEphemeralParticle:
+				+ Create particle of Air (just like AirBubble), but at high temperature
+			+ Points::UpdateEphemeralParticles: Smoke
+			+ Points::RenderEphemeralParticles: Smoke
+				+ For now, just point - like debris
+		+ Do test ship
+		+ Run in Debug
+		+ Optimize ship's UpdateHeat::springOutboundHeatFlows
+		+ Rendering: Simple texture (one of N alternatives) via GenericTextures
+			+ Alpha and scale change with progress
+			+ Finish scale function
+			+ Nail down database's world dimensions
+			! "Violent" smoke params:
+				! Emission rate: 0.05
+				! scale: 1.07f * (1.0f - exp(-3.0f * progress));
+				! alpha: SmoothStep(0.0f, 0.05f, progress) - SmoothStep(0.85f, 1.0f, progress);
+				! "worldWidth": 48.0, "worldHeight": 48.0
+		+ Expire smoke ephemeral particles that end up underwater
+		+ Cleanup (if everything's fine):			
+			+ Add particle_emission_rate to Guide
+			+ StructuralMaterial: "waterVolumeFill" -> "buoyancyVolumeFill"
+				+ json
+				+ Materials.*
+				+ Guide
+			+ Add smoke emission rate adjustment global param
+				+ SettingsDialog
+			+ Add smoke maxlifetime adjustment global param
+				+ SettingsDialog
+				+ Make scale independent from adjustment
+			+ Try white smoke			
+			+ Do smoke emitter at Titanic with Lights
+			+ BuoyancyCoefficients: make them float, using gravity magnitude, and multiply with gravity dir at use time
+			+ Try to replace bomb fuse smoke with real smoke particles
+				+ Do "violent" emission, use scale formula above
+				+ Test (with sound)
+				+ Nuke old textures
+			+ R.M.S. Titanic with Lights
+			+ Redo materials templates
+			+ Add diesel to both titanics
+			+ changes.txt:
+				+ Hydrogen to explosive materials
+				+ Air buoyancy and its relationship with temperature
+					+ Hindenburg update
+				+ New SmokeEmitter material
+					+ Cruise Vessel, Titanic update
 
 + Water
 	+ Water

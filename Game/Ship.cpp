@@ -59,16 +59,16 @@ namespace Physics {
 Ship::Ship(
     ShipId id,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     MaterialDatabase const & materialDatabase,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     Points && points,
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements)
     : mId(id)
     , mParentWorld(parentWorld)
-    , mGameEventHandler(std::move(gameEventDispatcher))
     , mMaterialDatabase(materialDatabase)
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
@@ -239,6 +239,7 @@ void Ship::Update(
 
     UpdateElectricalDynamics(
         currentWallClockTime,
+        currentSimulationTime,
         gameParameters);
 
 
@@ -502,14 +503,23 @@ void Ship::UpdateMechanicalDynamics(
 
 void Ship::UpdatePointForces(GameParameters const & gameParameters)
 {
-    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+    // Density of air, adjusted for temperature
+    float const effectiveAirDensity =
+        GameParameters::AirMass
+        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (gameParameters.AirTemperature - GameParameters::Temperature0));
+
+    // Density of water, adjusted for temperature and manual adjustment
+    float const effectiveWaterDensity  =
+        GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0) )
+        * gameParameters.WaterDensityAdjustment;
 
     // Calculate wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
-    float constexpr VelocityConversionFactor = 1000.0f / 3600.0f;
+    float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
     vec2f const windForce =
         mParentWorld.GetCurrentWindSpeed().square()
-        * (VelocityConversionFactor * VelocityConversionFactor)
+        * (WindVelocityConversionFactor * WindVelocityConversionFactor)
         * 0.5f
         * GameParameters::AirMass;
 
@@ -526,35 +536,46 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         //
-        // 1. Add gravity and buoyancy
+        // Add gravity
         //
 
         mPoints.GetForce(pointIndex) +=
             gameParameters.Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
-        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
-        {
-            //
-            // Apply upward push of water mass (i.e. buoyancy!)
-            //
+        //
+        // Add buoyancy
+        //
 
-            mPoints.GetForce(pointIndex) -=
-                gameParameters.Gravity
-                * mPoints.GetMaterialWaterVolumeFill(pointIndex)
-                * densityAdjustedWaterMass;
+        // Calculate upward push of water/air mass
+        auto const & buoyancyCoefficients = mPoints.GetBuoyancyCoefficients(pointIndex);
+        float const buoyancyPush =
+            buoyancyCoefficients.Coefficient1
+            + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
+
+        if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
+        {
+            // Water
+            mPoints.GetForce(pointIndex).y +=
+                buoyancyPush
+                * effectiveWaterDensity;
+        }
+        else
+        {
+            // Air
+            mPoints.GetForce(pointIndex).y +=
+                buoyancyPush
+                * effectiveAirDensity;
         }
 
 
         //
-        // 2. Apply water drag
+        // Apply water drag - if under water - or wind force - if above water
         //
         // FUTURE: should replace with directional water drag, which acts on frontier points only,
         // proportional to angle between velocity and normal to surface at this point;
         // this would ensure that masses would also have a horizontal velocity component when sinking,
         // providing a "gliding" effect
-        //
-        // 3. Apply wind force
         //
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
@@ -935,6 +956,7 @@ void Ship::UpdateWaterInflow(
                 {
                     GenerateAirBubbles(
                         mPoints.GetPosition(pointIndex),
+                        mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
                         gameParameters);
@@ -1293,6 +1315,7 @@ void Ship::UpdateSinking()
 
 void Ship::UpdateElectricalDynamics(
     GameWallClock::time_point currentWallclockTime,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     // Generate a new visit sequence number
@@ -1316,6 +1339,7 @@ void Ship::UpdateElectricalDynamics(
 
     mElectricalElements.UpdateSinks(
         currentWallclockTime,
+        currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -1475,8 +1499,8 @@ void Ship::PropagateHeat(
     //
     // Visit all non-ephemeral points
     //
-    // No particular reason to not do ephemeral points as well - at the moment
-    // temperature is not relevant to ephemeral particles
+    // No particular reason to not do ephemeral points as well - it's just
+    // that at the moment ephemeral particles are not connected to each other
     //
 
     for (auto pointIndex : mPoints.RawShipPoints())
@@ -1498,21 +1522,18 @@ void Ship::PropagateHeat(
 
             // Calculate outgoing heat flow per unit of time
             //
-            // q = Ki * (Tp - Tpi)
+            // q = Ki * (Tp - Tpi) * dt / Li
             float const outgoingHeatFlow =
                 mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
-                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f); // DeltaT, positive if going out
+                * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f) // DeltaT, positive if going out
+                * dt
+                / mSprings.GetFactoryRestLength(cs.SpringIndex);
 
             // Store flow
             springOutboundHeatFlows[s] = outgoingHeatFlow;
 
-            // Calculate outgoing heat due to this delta T
-            //
-            // Q = dt * q / Li
-            totalOutgoingHeat +=
-                dt
-                * outgoingHeatFlow
-                / mSprings.GetFactoryRestLength(cs.SpringIndex);
+            // Update total outgoing heat
+            totalOutgoingHeat += outgoingHeatFlow;
         }
 
 
@@ -1526,7 +1547,7 @@ void Ship::PropagateHeat(
             // Q = Kp * Tp
             float const pointHeat =
                 pointTemperature
-                * mPoints.GetMaterialHeatCapacity(pointIndex);
+                / mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
             normalizationFactor = std::min(
                 pointHeat / totalOutgoingHeat,
@@ -1548,18 +1569,15 @@ void Ship::PropagateHeat(
 
             // Raise target temperature due to this flow
             newPointTemperatureBufferData[cs.OtherEndpointIndex] +=
-                dt
-                * springOutboundHeatFlows[s] * normalizationFactor
-                / mSprings.GetFactoryRestLength(cs.SpringIndex)
-                / mPoints.GetMaterialHeatCapacity(cs.OtherEndpointIndex);
+                springOutboundHeatFlows[s] * normalizationFactor
+                * mPoints.GetMaterialHeatCapacityReciprocal(cs.OtherEndpointIndex);
         }
 
         // Update point's temperature due to total flow
         newPointTemperatureBufferData[pointIndex] -=
             totalOutgoingHeat * normalizationFactor
-            / mPoints.GetMaterialHeatCapacity(pointIndex);
+            * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
     }
-
 
     //
     // Dissipate heat
@@ -1582,7 +1600,9 @@ void Ship::PropagateHeat(
 
     float const airTemperature = gameParameters.AirTemperature;
 
-    for (auto pointIndex : mPoints.RawShipPoints())
+    // We also include ephemeral points, as they may be heated
+    // and have a temperature
+    for (auto pointIndex : mPoints)
     {
         // Heat lost in this time quantum (positive when outgoing)
         float heatLost;
@@ -1605,7 +1625,7 @@ void Ship::PropagateHeat(
         // Remove this heat from the point
         newPointTemperatureBufferData[pointIndex] -=
             heatLost
-            / mPoints.GetMaterialHeatCapacity(pointIndex);
+            * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
     }
 }
 
@@ -1882,6 +1902,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::GenerateAirBubbles(
     vec2f const & position,
+    float temperature,
     float currentSimulationTime,
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
@@ -1893,9 +1914,9 @@ void Ship::GenerateAirBubbles(
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
+        temperature,
         vortexAmplitude,
         vortexPeriod,
-        mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air),
         currentSimulationTime,
         planeId);
 }
@@ -1918,10 +1939,9 @@ void Ship::GenerateDebris(
                 GameParameters::MaxDebrisParticlesVelocity);
 
             // Choose a lifetime
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateUniformInteger(
-                    GameParameters::MinDebrisParticlesLifetime.count(),
-                    GameParameters::MaxDebrisParticlesLifetime.count()));
+            float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+                GameParameters::MinDebrisParticlesLifetime,
+                GameParameters::MaxDebrisParticlesLifetime);
 
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
@@ -1975,10 +1995,9 @@ void Ship::GenerateSparklesForCut(
                 + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
 
             // Choose a lifetime
-            std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-                GameRandomEngine::GetInstance().GenerateUniformInteger(
-                    GameParameters::MinSparkleParticlesForCutLifetime.count(),
-                    GameParameters::MaxSparkleParticlesForCutLifetime.count()));
+            float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+                    GameParameters::MinSparkleParticlesForCutLifetime,
+                    GameParameters::MaxSparkleParticlesForCutLifetime);
 
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
@@ -2019,10 +2038,9 @@ void Ship::GenerateSparklesForLightning(
 		float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
 
 		// Choose a lifetime
-		std::chrono::milliseconds const maxLifetime = std::chrono::milliseconds(
-			GameRandomEngine::GetInstance().GenerateUniformInteger(
-				GameParameters::MinSparkleParticlesForLightningLifetime.count(),
-				GameParameters::MaxSparkleParticlesForLightningLifetime.count()));
+		float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+				GameParameters::MinSparkleParticlesForLightningLifetime,
+				GameParameters::MaxSparkleParticlesForLightningLifetime);
 
 		// Create sparkle
 		mPoints.CreateEphemeralParticleSparkle(

@@ -101,6 +101,30 @@
 },
 
 {
+	"groupName": "SmokeDark",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 24.0,
+			"worldHeight": 24.0,
+			"filename": "smoke_dark_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "SmokeLight",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 24.0,
+			"worldHeight": 24.0,
+			"filename": "smoke_light_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "TimerBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[
@@ -110,20 +134,6 @@
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
 			"filename": "timer_bomb_\\d+"
-		}
-	]
-},
-
-{
-	"groupName": "TimerBombDefuse",
-	"hasOwnAmbientLight": false,
-	"frames":[
-		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"filename": "timer_bomb_defuse_\\d+"
 		}
 	]
 },

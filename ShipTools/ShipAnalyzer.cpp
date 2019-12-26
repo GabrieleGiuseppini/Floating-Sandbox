@@ -34,7 +34,8 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     // Visit all points
     ShipAnalyzer::AnalysisInfo analysisInfo;
     float totalMass = 0.0f;
-    float buoyantMass = 0.0f;
+    float airBuoyantMass = 0.0f;
+    float waterBuoyantMass = 0.0f;
     float numPoints = 0.0f;
     for (int x = 0; x < image.Size.Width; ++x)
     {
@@ -54,7 +55,11 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
 
                 totalMass += structuralMaterial->GetMass();
 
-                buoyantMass +=
+                airBuoyantMass +=
+                    structuralMaterial->GetMass()
+                    - (structuralMaterial->WaterVolumeFill * GameParameters::AirMass);
+
+                waterBuoyantMass +=
                     structuralMaterial->GetMass()
                     - (structuralMaterial->WaterVolumeFill * GameParameters::WaterMass);
 
@@ -70,7 +75,8 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     if (numPoints != 0.0f)
     {
         analysisInfo.MassPerPoint = totalMass / numPoints;
-        analysisInfo.BuoyantMassPerPoint = buoyantMass / numPoints;
+        analysisInfo.AirBuoyantMassPerPoint = airBuoyantMass / numPoints;
+        analysisInfo.WaterBuoyantMassPerPoint = waterBuoyantMass / numPoints;
     }
 
     if (analysisInfo.TotalMass != 0.0f)

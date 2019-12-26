@@ -146,14 +146,14 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Ocean and Sky
+    // Ocean, Smoke, and Sky
     //
 
     wxPanel * oceanAndSkyPanel = new wxPanel(notebook);
 
-    PopulateOceanAndSkyPanel(oceanAndSkyPanel);
+    PopulateOceanSmokeSkyPanel(oceanAndSkyPanel);
 
-    notebook->AddPage(oceanAndSkyPanel, "Ocean and Sky");
+    notebook->AddPage(oceanAndSkyPanel, "Ocean, Smoke, and Sky");
 
 
     //
@@ -1708,7 +1708,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
+void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
@@ -1835,77 +1835,78 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
             CellBorder);
     }
 
-
     //
-    // Sky
+    // Smoke
     //
 
     {
-        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
+        wxStaticBox * smokeBox = new wxStaticBox(panel, wxID_ANY, _("Smoke"));
 
-        wxBoxSizer * skyBoxSizer = new wxBoxSizer(wxVERTICAL);
-        skyBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * smokeBoxSizer = new wxBoxSizer(wxVERTICAL);
+        smokeBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * skySizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * smokeSizer = new wxGridBagSizer(0, 0);
 
-            // Number of Stars
+            // Smoke Density Adjust
             {
-                mNumberOfStarsSlider = new SliderControl<unsigned int>(
-                    skyBox,
+                mSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
+                    smokeBox,
                     SliderWidth,
                     SliderHeight,
-                    "Number of Stars",
-                    "The number of stars in the sky.",
-                    [this](unsigned int value)
+                    "Smoke Density Adjust",
+                    "Adjusts the density of smoke particles.",
+                    [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                        this->mLiveSettings.SetValue(GameSettings::SmokeEmissionDensityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions->GetMinNumberOfStars(),
-                        mGameControllerSettingsOptions->GetMaxNumberOfStars()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSmokeEmissionDensityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxSmokeEmissionDensityAdjustment()));
 
-                skySizer->Add(
-                    mNumberOfStarsSlider,
+                smokeSizer->Add(
+                    mSmokeEmissionDensityAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            // Number of Clouds
+            // Smoke Persistence Adjust
             {
-                mNumberOfCloudsSlider = new SliderControl<unsigned int>(
-                    skyBox,
+                mSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
+                    smokeBox,
                     SliderWidth,
                     SliderHeight,
-                    "Number of Clouds",
-                    "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
-                    [this](unsigned int value)
+                    "Smoke Persistence Adjust",
+                    "Adjusts how long it takes for smoke to vanish.",
+                    [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                        this->mLiveSettings.SetValue(GameSettings::SmokeParticleLifetimeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions->GetMinNumberOfClouds(),
-                        mGameControllerSettingsOptions->GetMaxNumberOfClouds()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSmokeParticleLifetimeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxSmokeParticleLifetimeAdjustment()));
 
-                skySizer->Add(
-                    mNumberOfCloudsSlider,
+                smokeSizer->Add(
+                    mSmokeParticleLifetimeAdjustmentSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            skyBoxSizer->Add(skySizer, 0, wxALL, StaticBoxInsetMargin);
+            smokeBoxSizer->Add(smokeSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        skyBox->SetSizerAndFit(skyBoxSizer);
+        smokeBox->SetSizerAndFit(smokeBoxSizer);
 
         gridSizer->Add(
-            skyBox,
+            smokeBox,
             wxGBPosition(0, 3),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
@@ -2055,11 +2056,86 @@ void SettingsDialog::PopulateOceanAndSkyPanel(wxPanel * panel)
 		gridSizer->Add(
 			stormBox,
 			wxGBPosition(1, 0),
-			wxGBSpan(1, 3),
+			wxGBSpan(1, 4),
 			wxEXPAND | wxALL,
 			CellBorder);
 	}
 
+    //
+    // Sky
+    //
+
+    {
+        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
+
+        wxBoxSizer * skyBoxSizer = new wxBoxSizer(wxVERTICAL);
+        skyBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * skySizer = new wxGridBagSizer(0, 0);
+
+            // Number of Stars
+            {
+                mNumberOfStarsSlider = new SliderControl<unsigned int>(
+                    skyBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Number of Stars",
+                    "The number of stars in the sky.",
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfStars(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfStars()));
+
+                skySizer->Add(
+                    mNumberOfStarsSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Number of Clouds
+            {
+                mNumberOfCloudsSlider = new SliderControl<unsigned int>(
+                    skyBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Number of Clouds",
+                    "The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value.",
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfClouds(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfClouds()));
+
+                skySizer->Add(
+                    mNumberOfCloudsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            skyBoxSizer->Add(skySizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        skyBox->SetSizerAndFit(skyBoxSizer);
+
+        gridSizer->Add(
+            skyBox,
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -3799,28 +3875,24 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
 
-    // Ocean and Sky
+    // Ocean, Smoke, and Sky
 
     mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
-
     mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
-
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
 
-    mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
-
-    mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
+    mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
+    mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
 
 	mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
-
 	mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-
     mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
     mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-
 	mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
-
 	mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
+
+    mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
+    mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
 
 	// Wind and Waves
 

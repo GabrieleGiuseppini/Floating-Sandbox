@@ -61,6 +61,9 @@ struct GameParameters
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg
 
+    // Temperature at which all the constants are taken at
+    static float constexpr Temperature0 = 298.15f; // 25C
+
 
 
     //
@@ -150,23 +153,33 @@ struct GameParameters
     static constexpr unsigned int MaxDebrisParticlesPerEvent = 9;
     static float constexpr MinDebrisParticlesVelocity = 12.5f;
     static float constexpr MaxDebrisParticlesVelocity = 20.0f;
-    static constexpr std::chrono::milliseconds MinDebrisParticlesLifetime = std::chrono::milliseconds(400);
-    static constexpr std::chrono::milliseconds MaxDebrisParticlesLifetime = std::chrono::milliseconds(900);
+    static constexpr float MinDebrisParticlesLifetime = 0.4f;
+    static constexpr float MaxDebrisParticlesLifetime = 0.9f;
+
+    float SmokeEmissionDensityAdjustment;
+    static float constexpr MinSmokeEmissionDensityAdjustment = 0.1f;
+    static float constexpr MaxSmokeEmissionDensityAdjustment = 10.0f;
+
+    static constexpr float MinSmokeParticlesLifetime = 3.5f;
+    static constexpr float MaxSmokeParticlesLifetime = 6.0f;
+    float SmokeParticleLifetimeAdjustment;
+    static float constexpr MinSmokeParticleLifetimeAdjustment = 0.1f;
+    static float constexpr MaxSmokeParticleLifetimeAdjustment = 10.0f;
 
     bool DoGenerateSparklesForCuts;
     static constexpr unsigned int MinSparkleParticlesForCutEvent = 4;
     static constexpr unsigned int MaxSparkleParticlesForCutEvent = 10;
     static float constexpr MinSparkleParticlesForCutVelocity = 75.0f;
     static float constexpr MaxSparkleParticlesForCutVelocity = 150.0f;
-    static constexpr std::chrono::milliseconds MinSparkleParticlesForCutLifetime = std::chrono::milliseconds(200);
-    static constexpr std::chrono::milliseconds MaxSparkleParticlesForCutLifetime = std::chrono::milliseconds(500);
+    static constexpr float MinSparkleParticlesForCutLifetime = 0.2f;
+    static constexpr float MaxSparkleParticlesForCutLifetime = 0.5f;
 
 	static constexpr unsigned int MinSparkleParticlesForLightningEvent = 4;
 	static constexpr unsigned int MaxSparkleParticlesForLightningEvent = 10;
 	static float constexpr MinSparkleParticlesForLightningVelocity = 75.0f;
 	static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
-	static constexpr std::chrono::milliseconds MinSparkleParticlesForLightningLifetime = std::chrono::milliseconds(200);
-	static constexpr std::chrono::milliseconds MaxSparkleParticlesForLightningLifetime = std::chrono::milliseconds(500);
+	static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
+	static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
 
     bool DoGenerateAirBubbles;
     float CumulatedIntakenWaterThresholdForAirBubbles;
@@ -248,19 +261,21 @@ struct GameParameters
 
     // Heat and combustion
 
-    static float constexpr InitialTemperature = 298.15f; // 25C
-
     float AirTemperature; // Kelvin
     static float constexpr MinAirTemperature = 273.15f; // 0C
     static float constexpr MaxAirTemperature = 2073.15f; // 1800C
 
     static float constexpr AirConvectiveHeatTransferCoefficient = 100.45f; // J/(s*m2*K) - arbitrary, higher than real
 
+    static float constexpr AirThermalExpansionCoefficient = 0.0034f; // 1/K
+
     float WaterTemperature; // Kelvin
     static float constexpr MinWaterTemperature = 273.15f; // 0C
     static float constexpr MaxWaterTemperature = 2073.15f; // 1800C
 
     static float constexpr WaterConvectiveHeatTransferCoefficient = 2500.0f; // J/(s*m2*K) - arbitrary, higher than real
+
+    static float constexpr WaterThermalExpansionCoefficient = 0.000207f; // 1/K
 
     static float constexpr IgnitionTemperatureHighWatermark = 0.0f;
     static float constexpr IgnitionTemperatureLowWatermark = -30.0f;

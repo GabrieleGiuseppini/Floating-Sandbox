@@ -19,10 +19,11 @@
             "column": 0, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#303040", 
@@ -44,10 +45,11 @@
             "column": 0, 
             "row": "1|Structural Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#808090", 
@@ -69,10 +71,11 @@
             "column": 0, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A0A0A0", 
@@ -94,10 +97,11 @@
             "column": 0, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#909090", 
@@ -119,10 +123,11 @@
             "column": 0, 
             "row": "11|Structural Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D8D8D8", 
@@ -144,10 +149,11 @@
             "column": 0, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#565663", 
@@ -169,10 +175,11 @@
             "column": 0, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#787896", 
@@ -194,10 +201,11 @@
             "column": 0, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E0E0E0", 
@@ -219,10 +227,11 @@
             "column": 0, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C8C8C8", 
@@ -244,10 +253,11 @@
             "column": 0, 
             "row": "31|Structural Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#EFEFEF", 
@@ -269,10 +279,11 @@
             "column": 0, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#EEEEEE", 
@@ -294,10 +305,11 @@
             "column": 1, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A42E10", 
@@ -319,10 +331,11 @@
             "column": 1, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B22212", 
@@ -344,10 +357,11 @@
             "column": 2, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A29A10", 
@@ -369,10 +383,11 @@
             "column": 2, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B2A012", 
@@ -394,10 +409,11 @@
             "column": 3, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#76B210", 
@@ -419,10 +435,11 @@
             "column": 3, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#88B810", 
@@ -444,10 +461,11 @@
             "column": 4, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#10A29A", 
@@ -469,10 +487,11 @@
             "column": 4, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#10B2A0", 
@@ -494,10 +513,11 @@
             "column": 5, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#204060", 
@@ -519,10 +539,11 @@
             "column": 5, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#305878", 
@@ -544,10 +565,11 @@
             "column": 6, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#757575", 
@@ -569,10 +591,11 @@
             "column": 8, 
             "row": "30|Aluminium Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#989898", 
@@ -594,10 +617,11 @@
             "column": 8, 
             "row": "32|Aluminium"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#905020", 
@@ -620,9 +644,10 @@
             "row": "40|Wood Hull"
         }, 
         "thermal_conductivity": 0.1, 
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E0D8C0", 
@@ -644,10 +669,11 @@
             "column": 0, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D2D2D2", 
@@ -672,7 +698,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -698,7 +724,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -724,7 +750,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -750,7 +776,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -776,7 +802,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -802,7 +828,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
     {
@@ -828,7 +854,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.05, 
+        "buoyancy_volume_fill": 0.05, 
         "wind_receptivity": 0.5
     }, 
 
@@ -856,7 +882,7 @@
         "water_diffusion_speed": 0.015, 
         "water_intake": 0.05, 
         "water_retention": 0.5, 
-        "water_volume_fill": 0.3, 
+        "buoyancy_volume_fill": 0.3, 
         "wind_receptivity": 1.0
     }, 
     {
@@ -879,10 +905,10 @@
             "column": 0, 
             "row": "55|Carbon Hull"
         }, 
-        "thermal_conductivity": 1.7, 
+        "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#232323", 
@@ -904,10 +930,10 @@
             "column": 1, 
             "row": "55|Carbon"
         }, 
-        "thermal_conductivity": 1.7, 
+        "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -934,7 +960,7 @@
         "water_diffusion_speed": 0.0,
 	"water_intake": 0.0,
         "water_retention": 0.00,
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -960,7 +986,7 @@
         "thermal_conductivity": 0.25,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {
@@ -983,10 +1009,11 @@
             "column": 0, 
             "row": "60|Aluminium Sheet Hull"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D0D0D0", 
@@ -1008,10 +1035,11 @@
             "column": 1, 
             "row": "60|Aluminium Sheet"
         }, 
-        "thermal_conductivity": 205.0, 
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A88848", 
@@ -1036,7 +1064,7 @@
         "thermal_conductivity": 0.05, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C1A46A", 
@@ -1061,7 +1089,7 @@
         "thermal_conductivity": 0.05, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A71000", 
@@ -1083,10 +1111,11 @@
             "column": 1, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#950000", 
@@ -1108,10 +1137,11 @@
             "column": 1, 
             "row": "11|Structural Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D80E00", 
@@ -1133,10 +1163,11 @@
             "column": 1, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D80E02", 
@@ -1158,10 +1189,11 @@
             "column": 2, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#840E00", 
@@ -1183,10 +1215,11 @@
             "column": 1, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#740200", 
@@ -1208,10 +1241,11 @@
             "column": 1, 
             "row": "1|Structural Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#9E0F00", 
@@ -1233,10 +1267,11 @@
             "column": 1, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#9E2E0C", 
@@ -1258,10 +1293,11 @@
             "column": 1, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B51B1B", 
@@ -1283,10 +1319,11 @@
             "column": 1, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#8F1F00", 
@@ -1308,10 +1345,11 @@
             "column": 1, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BE1400", 
@@ -1333,10 +1371,11 @@
             "column": 1, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A27A00", 
@@ -1358,10 +1397,11 @@
             "column": 2, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#926A00", 
@@ -1383,10 +1423,11 @@
             "column": 2, 
             "row": "11|Structural Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D29800", 
@@ -1408,10 +1449,11 @@
             "column": 3, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#806200", 
@@ -1433,10 +1475,11 @@
             "column": 2, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#705200", 
@@ -1458,10 +1501,11 @@
             "column": 2, 
             "row": "1|Structural Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#997200", 
@@ -1483,10 +1527,11 @@
             "column": 2, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#998B0A", 
@@ -1508,10 +1553,11 @@
             "column": 2, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#AF7C18", 
@@ -1533,10 +1579,11 @@
             "column": 2, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#8B7A00", 
@@ -1558,10 +1605,11 @@
             "column": 2, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B88D00", 
@@ -1583,10 +1631,11 @@
             "column": 2, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#5A9B00", 
@@ -1608,10 +1657,11 @@
             "column": 3, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#7BC800", 
@@ -1633,10 +1683,11 @@
             "column": 4, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#467B00", 
@@ -1658,10 +1709,11 @@
             "column": 3, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#569200", 
@@ -1683,10 +1735,11 @@
             "column": 3, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#439206", 
@@ -1708,10 +1761,11 @@
             "column": 3, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#78A814", 
@@ -1733,10 +1787,11 @@
             "column": 3, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#3C8400", 
@@ -1758,10 +1813,11 @@
             "column": 3, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#66B100", 
@@ -1783,10 +1839,11 @@
             "column": 3, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#008A95", 
@@ -1808,10 +1865,11 @@
             "column": 4, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#00B6BF", 
@@ -1833,10 +1891,11 @@
             "column": 5, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#006A76", 
@@ -1858,10 +1917,11 @@
             "column": 4, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#00818C", 
@@ -1883,10 +1943,11 @@
             "column": 4, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#036E8C", 
@@ -1908,10 +1969,11 @@
             "column": 4, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#10A19D", 
@@ -1933,10 +1995,11 @@
             "column": 4, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#00657E", 
@@ -1958,10 +2021,11 @@
             "column": 4, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#009BA9", 
@@ -1983,10 +2047,11 @@
             "column": 4, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#22437B", 
@@ -2008,10 +2073,11 @@
             "column": 5, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#2D58A0", 
@@ -2033,10 +2099,11 @@
             "column": 6, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1B3261", 
@@ -2058,10 +2125,11 @@
             "column": 5, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#203E74", 
@@ -2083,10 +2151,11 @@
             "column": 5, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1E3070", 
@@ -2108,10 +2177,11 @@
             "column": 5, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#325989", 
@@ -2133,10 +2203,11 @@
             "column": 5, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1A2C66", 
@@ -2158,10 +2229,11 @@
             "column": 5, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#26498C", 
@@ -2183,10 +2255,11 @@
             "column": 5, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A900A7", 
@@ -2208,10 +2281,11 @@
             "column": 6, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D100D6", 
@@ -2233,10 +2307,11 @@
             "column": 7, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#860080", 
@@ -2258,10 +2333,11 @@
             "column": 6, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9F009C", 
@@ -2283,10 +2359,11 @@
             "column": 6, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A30085", 
@@ -2308,10 +2385,11 @@
             "column": 6, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9B00AF", 
@@ -2333,10 +2411,11 @@
             "column": 6, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#93007B", 
@@ -2358,10 +2437,11 @@
             "column": 6, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BF00BA", 
@@ -2383,10 +2463,11 @@
             "column": 6, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D45B00", 
@@ -2408,10 +2489,11 @@
             "column": 7, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#F26500", 
@@ -2433,10 +2515,11 @@
             "column": 8, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A84F00", 
@@ -2458,10 +2541,11 @@
             "column": 7, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C85800", 
@@ -2483,10 +2567,11 @@
             "column": 7, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#CE8100", 
@@ -2508,10 +2593,11 @@
             "column": 7, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#DE4000", 
@@ -2533,10 +2619,11 @@
             "column": 7, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
 
@@ -2560,10 +2647,11 @@
             "column": 8, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#090909", 
@@ -2585,10 +2673,11 @@
             "column": 8, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
 
 
@@ -2612,10 +2701,11 @@
             "column": 7, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#EF6B00", 
@@ -2637,10 +2727,11 @@
             "column": 7, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#111111", 
@@ -2662,10 +2753,11 @@
             "column": 8, 
             "row": "0|Iron Hull"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#222222", 
@@ -2687,10 +2779,11 @@
             "column": 8, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#1F1F1F", 
@@ -2712,10 +2805,11 @@
             "column": 9, 
             "row": "2|Iron"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#333333", 
@@ -2737,10 +2831,11 @@
             "column": 8, 
             "row": "10|Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#A2A2A2", 
@@ -2763,10 +2858,11 @@
             "column": 9, 
             "row": "10|Stainless Steel Hull"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#444444", 
@@ -2788,10 +2884,11 @@
             "column": 9, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#262626", 
@@ -2813,10 +2910,11 @@
             "column": 10, 
             "row": "12|Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E8E8E8", 
@@ -2839,10 +2937,11 @@
             "column": 9, 
             "row": "20|Stainless Steel"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#555555", 
@@ -2864,10 +2963,11 @@
             "column": 8, 
             "row": "20|Titanium Hull"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#666666", 
@@ -2889,10 +2989,11 @@
             "column": 8, 
             "row": "22|Titanium"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#777777", 
@@ -2914,10 +3015,11 @@
             "column": 8, 
             "row": "40|Wood Hull"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#888888", 
@@ -2939,10 +3041,11 @@
             "column": 9, 
             "row": "42|Wood"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#A21000", 
@@ -2964,10 +3067,11 @@
             "column": "0|Double-Bottom Steel", 
             "row": "90|Double-Bottom"
         }, 
-        "thermal_conductivity": 50.2, 
+        "thermal_conductivity": 50.2,
+	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#842005", 
@@ -2989,10 +3093,11 @@
             "column": "1|Double-Bottom Titanium", 
             "row": "90|Double-Bottom"
         }, 
-        "thermal_conductivity": 17.0, 
+        "thermal_conductivity": 17.0,
+	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#7E0C00", 
@@ -3014,10 +3119,11 @@
             "column": "2|Double-Bottom Iron", 
             "row": "90|Double-Bottom"
         }, 
-        "thermal_conductivity": 79.5, 
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#9B3012", 
@@ -3039,10 +3145,11 @@
             "column": "3|Double-Bottom Wood", 
             "row": "90|Double-Bottom"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#545454", 
@@ -3068,7 +3175,7 @@
         "thermal_conductivity": 66.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C1FFFF", 
@@ -3090,10 +3197,11 @@
             "column": "0|Glass Hull", 
             "row": "100|Glass"
         }, 
-        "thermal_conductivity": 0.8, 
+        "thermal_conductivity": 0.8,
+	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E5FFFF", 
@@ -3115,10 +3223,11 @@
             "column": "1|Glass", 
             "row": "100|Glass"
         }, 
-        "thermal_conductivity": 0.8, 
+        "thermal_conductivity": 0.8,
+	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#BFBFBF", 
@@ -3141,10 +3250,11 @@
             "column": 10, 
             "row": "32|Rubber Hull Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1BFBF", 
@@ -3167,10 +3277,11 @@
             "column": 11, 
             "row": "32|Rubber Hull Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#BFBFE1", 
@@ -3193,10 +3304,11 @@
             "column": 12, 
             "row": "32|Rubber Hull Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#CFCFCF", 
@@ -3219,10 +3331,11 @@
             "column": 10, 
             "row": "40|Rubber Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1CFCF", 
@@ -3245,10 +3358,11 @@
             "column": 11, 
             "row": "40|Rubber Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#CFCFE1", 
@@ -3271,10 +3385,11 @@
             "column": 12, 
             "row": "40|Rubber Soft"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#B8B8B8", 
@@ -3297,10 +3412,11 @@
             "column": 10, 
             "row": "42|Rubber Hull Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1B8B8", 
@@ -3323,10 +3439,11 @@
             "column": 11, 
             "row": "42|Rubber Hull Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B8B8E1", 
@@ -3349,10 +3466,11 @@
             "column": 12, 
             "row": "42|Rubber Hull Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C7C7C7", 
@@ -3375,10 +3493,11 @@
             "column": 9, 
             "row": "50|Rubber Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1C7C7", 
@@ -3401,10 +3520,11 @@
             "column": 10, 
             "row": "50|Rubber Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C7C7E1", 
@@ -3427,10 +3547,11 @@
             "column": 11, 
             "row": "50|Rubber Hard"
         }, 
-        "thermal_conductivity": 0.1, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#C4C4C4", 
@@ -3456,7 +3577,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#E1C4C4", 
@@ -3482,7 +3603,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#C4C4E1", 
@@ -3508,7 +3629,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#D4D4D4", 
@@ -3534,7 +3655,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E1D4D4", 
@@ -3560,7 +3681,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#D4D4E1", 
@@ -3586,7 +3707,7 @@
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E4E4E4", 
@@ -3609,10 +3730,11 @@
             "column": 5, 
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#B3000B", 
@@ -3635,10 +3757,11 @@
             "column": 6,
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#EFED00", 
@@ -3661,10 +3784,11 @@
             "column": 7, 
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#186F36", 
@@ -3687,10 +3811,11 @@
             "column": 8, 
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#13377B", 
@@ -3713,10 +3838,11 @@
             "column": 9, 
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#050505", 
@@ -3739,10 +3865,11 @@
             "column": 10, 
             "row": "70|LEGO Hull (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#F4F4F4", 
@@ -3762,13 +3889,14 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 6, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#E3000B", 
@@ -3788,13 +3916,14 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 7, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FFED00", 
@@ -3814,13 +3943,14 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 11, 
+            "column": 8, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#287F46", 
@@ -3840,13 +3970,14 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 12, 
+            "column": 9, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#23478B", 
@@ -3866,13 +3997,14 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 13, 
+            "column": 10, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#080808", 
@@ -3892,18 +4024,20 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 14, 
+            "column": 11, 
             "row": "80|LEGO (ABS)"
         }, 
-        "thermal_conductivity": 0.25, 
+        "thermal_conductivity": 0.25,
+	"thermal_expansion_coefficient": 0.000031,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
+
     {
         "color_key": "#F0F0F0", 
         "combustion_type": "Combustion", 
-        "comments": "water_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
+        "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
         "ignition_temperature": 1000000.0, 
         "is_hull": true, 
         "mass": {
@@ -3918,16 +4052,42 @@
         "stiffness": 1.0, 
         "strength": 1.0, 
         "template": {
-            "column": 3, 
-            "row": "70|Air"
+            "column": 0, 
+            "row": "80|Air"
         }, 
         "thermal_conductivity": 0.0262, 
+	"thermal_expansion_coefficient": 0.0034,
         "water_diffusion_speed": 0.0, 
         "water_intake": 0.0, 
         "water_retention": 0.0, 
-        "water_volume_fill": 0.003
+        "buoyancy_volume_fill": 0.003
     }, 
 
+    {
+        "color_key": "#CECECE", 
+        "combustion_type": "Explosion", 
+        "ignition_temperature": 773.15, 
+        "is_hull": false, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 0.0813
+        }, 
+        "melting_temperature": 1000000.0,
+        "name": "Hydrogen", 
+        "render_color": "#CECECE",
+        "specific_heat": 14310.0,
+        "stiffness": 1.0,
+        "strength": 1.0,
+        "template": {
+            "column": 1,
+            "row": "80|Hydrogen"
+        }, 
+        "thermal_conductivity": 0.182, 
+	"thermal_expansion_coefficient": 0.0036,
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 1.0
+    }, 
 
     {
         "color_key": "#FFFF00", 
@@ -3954,7 +4114,7 @@
         "thermal_conductivity": 0.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FFE010", 
@@ -3981,7 +4141,7 @@
         "thermal_conductivity": 0.8, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.0, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#FC0808", 
@@ -4008,7 +4168,7 @@
         "thermal_conductivity": 205.0, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }, 
     {
         "color_key": "#4C0000", 
@@ -4035,7 +4195,7 @@
         "thermal_conductivity": 0.25, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 0.0
+        "buoyancy_volume_fill": 0.0
     }, 
     {
         "color_key": "#700000", 
@@ -4062,6 +4222,6 @@
         "thermal_conductivity": 0.25, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
-        "water_volume_fill": 1.0
+        "buoyancy_volume_fill": 1.0
     }
 ]
