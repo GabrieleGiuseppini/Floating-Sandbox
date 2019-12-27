@@ -3571,7 +3571,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 7, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3597,7 +3597,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 10, 
+            "column": 8, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3623,7 +3623,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 11, 
+            "column": 9, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
