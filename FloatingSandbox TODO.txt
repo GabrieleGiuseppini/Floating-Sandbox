@@ -416,11 +416,10 @@ Render:
 		+ Interleaving Update's with Render's
 		+ Smoke (*)
 		+ Ropes are too strong - they prevent ship parts from sinking
+		+ Send for testing
+		+ Bump up version
 
-		- Send for testing
-		- Bump up version
-
-		- Switches (*)
+		= Switches (*)
 
 		- Try with SpringRelaxation updating only positions (*)
 		- Spring and NonSpring force separation optimization (*)		
@@ -438,11 +437,11 @@ Render:
 		- Multi-threading, phase II:
 			- TBD
 
-		- Lights/materials breaking under pressure (*)
-		
+		- Lights/materials breaking under pressure (*)		
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
 				- @ Ship::DestroyHandler's
+		- Repair tool: repair electrics (*)
 
 		- Do shader at Anti-Matter bomb pre-implosion
 			- Shader already started: https://www.shadertoy.com/view/3sVSRc
@@ -913,6 +912,8 @@ Render:
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
 
+	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
+
 - Dynamics:
 
 	- Consider making world 1.5 times wider
@@ -956,7 +957,7 @@ Render:
 		- Then merge scrub tool into this one, with SHIFT 
 		- Icon: ?
 
-	- Repair tool: see if can repair electrics
+	- Repair tool: repair electrics (*)
 
 	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
 
@@ -1029,7 +1030,7 @@ Render:
 		- New emitter material, much like smoke emitter (*)
 		- Fires when wet for the first time
 
-	- Switches: (*)
+	= Switches: (*)
 		- New electrical material types
 			- Two types:
 				- GameType enum
