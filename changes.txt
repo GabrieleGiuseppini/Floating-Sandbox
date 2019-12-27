@@ -9,6 +9,7 @@
 - Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
 - Re-worked explosion physics and graphics
+- Adjusted physical properties of ropes, which were too light and too strong
 - 11 new ships
 
 1.13.0.7

@@ -415,10 +415,10 @@ Render:
 		+ changes.txt		
 		+ Interleaving Update's with Render's
 		+ Smoke (*)
-
-		- Ropes are too strong - they prevent ship parts from sinking
+		+ Ropes are too strong - they prevent ship parts from sinking
 
 		- Send for testing
+		- Bump up version
 
 		- Switches (*)
 

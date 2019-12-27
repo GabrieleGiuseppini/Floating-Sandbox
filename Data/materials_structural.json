@@ -865,15 +865,15 @@
         "is_hull": false, 
         "mass": {
             "density": 0.0935, 
-            "nominal_mass": 30
+            "nominal_mass": 180
         }, 
         "melting_temperature": 1000000.0,
         "name": "Rope", 
         "render_color": "#000000", 
         "sound_type": "Cable", 
         "specific_heat": 1400.0, 
-        "stiffness": 0.8,
-        "strength": 0.8, 
+        "stiffness": 2.3,
+        "strength": 0.075, 
         "template": {
             "column": 7, 
             "row": "50|Rope"
@@ -883,7 +883,7 @@
         "water_intake": 0.05, 
         "water_retention": 0.5, 
         "buoyancy_volume_fill": 0.3, 
-        "wind_receptivity": 1.0
+        "wind_receptivity": 0.2
     }, 
     {
         "color_key": "#1A1A1A", 
