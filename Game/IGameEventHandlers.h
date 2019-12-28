@@ -166,6 +166,40 @@ struct IAtmosphereGameEventHandler
 	}
 };
 
+struct IElectricalElementGameEventHandler
+{
+    virtual void OnLightFlicker(
+        DurationShortLongType /*duration*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSwitchCreated(
+        SwitchId /*switchId*/,
+        std::string const & /*name*/,
+        SwitchType /*type*/,
+        SwitchState /*state*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSwitchEnabled(
+        SwitchId /*switchId*/,
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSwitchToggled(
+        SwitchId /*switchId*/,
+        SwitchState /*newState*/)
+    {
+        // Default-implemented
+    }
+};
+
 struct IGenericGameEventHandler
 {
     virtual void OnDestroy(
@@ -202,14 +236,6 @@ struct IGenericGameEventHandler
     virtual void OnPinToggled(
         bool /*isPinned*/,
         bool /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnLightFlicker(
-        DurationShortLongType /*duration*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
     {
         // Default-implemented
     }

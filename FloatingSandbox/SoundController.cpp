@@ -1133,21 +1133,6 @@ void SoundController::OnBreak(
     }
 }
 
-void SoundController::OnLightFlicker(
-    DurationShortLongType duration,
-    bool isUnderwater,
-    unsigned int size)
-{
-    PlayDslUOneShotMultipleChoiceSound(
-        SoundType::LightFlicker,
-        duration,
-        isUnderwater,
-        std::max(
-            100.0f,
-            30.0f * size),
-        true);
-}
-
 void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
@@ -1276,6 +1261,21 @@ void SoundController::OnLightning()
 		SoundType::Lightning,
 		100.0f,
 		true);
+}
+
+void SoundController::OnLightFlicker(
+    DurationShortLongType duration,
+    bool isUnderwater,
+    unsigned int size)
+{
+    PlayDslUOneShotMultipleChoiceSound(
+        SoundType::LightFlicker,
+        duration,
+        isUnderwater,
+        std::max(
+            100.0f,
+            30.0f * size),
+        true);
 }
 
 void SoundController::OnBombPlaced(

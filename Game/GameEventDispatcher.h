@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventHandlers.h"
+#include "IGameEventHandlers.h"
 
 #include <GameCore/TupleKeys.h>
 
@@ -20,6 +20,7 @@ class GameEventDispatcher
     , public ICombustionGameEventHandler
     , public IStatisticsGameEventHandler
 	, public IAtmosphereGameEventHandler
+    , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -42,6 +43,7 @@ public:
         , mCombustionSinks()
         , mStatisticsSinks()
 		, mAtmosphereSinks()
+        , mElectricalElementSinks()
         , mGenericSinks()
     {
     }
@@ -270,6 +272,53 @@ public:
 	}
 
     //
+    // Electrical elements
+    //
+
+    virtual void OnLightFlicker(
+        DurationShortLongType duration,
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
+    }
+
+    virtual void OnSwitchCreated(
+        SwitchId switchId,
+        std::string const & name,
+        SwitchType type,
+        SwitchState state) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnSwitchCreated(switchId, name, type, state);
+        }
+    }
+
+    virtual void OnSwitchEnabled(
+        SwitchId switchId,
+        bool isEnabled)
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnSwitchEnabled(switchId, isEnabled);
+        }
+    }
+
+    virtual void OnSwitchToggled(
+        SwitchId switchId,
+        SwitchState newState)
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnSwitchToggled(switchId, newState);
+        }
+    }
+
+    //
     // Generic
     //
 
@@ -321,14 +370,6 @@ public:
         {
             sink->OnPinToggled(isPinned, isUnderwater);
         }
-    }
-
-    virtual void OnLightFlicker(
-        DurationShortLongType duration,
-        bool isUnderwater,
-        unsigned int size) override
-    {
-        mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
     virtual void OnWaterTaken(float waterTaken) override
@@ -507,6 +548,36 @@ public:
         mStressEvents.clear();
         mBreakEvents.clear();
 
+        for (auto * sink : mCombustionSinks)
+        {
+            for (auto const & entry : mCombustionExplosionEvents)
+            {
+                sink->OnCombustionExplosion(std::get<0>(entry.first), entry.second);
+            }
+        }
+
+        mCombustionExplosionEvents.clear();
+
+		for (auto * sink : mAtmosphereSinks)
+		{
+			for (auto const & entry : mLightningHitEvents)
+			{
+				sink->OnLightningHit(*(std::get<0>(entry.first)));
+			}
+		}
+
+		mLightningHitEvents.clear();
+
+        for (auto * sink : mElectricalElementSinks)
+        {
+            for (auto const & entry : mLightFlickerEvents)
+            {
+                sink->OnLightFlicker(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
+            }
+        }
+
+        mLightFlickerEvents.clear();
+
         for (auto * sink : mGenericSinks)
         {
             for (auto const & entry : mSpringRepairedEvents)
@@ -517,11 +588,6 @@ public:
             for (auto const & entry : mTriangleRepairedEvents)
             {
                 sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
-            }
-
-            for (auto const & entry : mLightFlickerEvents)
-            {
-                sink->OnLightFlicker(std::get<0>(entry.first), std::get<1>(entry.first), entry.second);
             }
 
             for (auto const & entry : mBombExplosionEvents)
@@ -542,31 +608,10 @@ public:
 
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
-        mLightFlickerEvents.clear();
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
         mTimerBombDefusedEvents.clear();
         mTimerBombDefusedEvents.clear();
-
-        for (auto * sink : mCombustionSinks)
-        {
-            for (auto const & entry : mCombustionExplosionEvents)
-            {
-                sink->OnCombustionExplosion(std::get<0>(entry.first), entry.second);
-            }
-        }
-
-        mCombustionExplosionEvents.clear();
-
-		for (auto * sink : mAtmosphereSinks)
-		{
-			for (auto const & entry : mLightningHitEvents)
-			{
-				sink->OnLightningHit(*(std::get<0>(entry.first)));
-			}
-		}
-
-		mLightningHitEvents.clear();
     }
 
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
@@ -599,6 +644,11 @@ public:
 		mAtmosphereSinks.push_back(sink);
 	}
 
+    void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * sink)
+    {
+        mElectricalElementSinks.push_back(sink);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * sink)
     {
         mGenericSinks.push_back(sink);
@@ -613,10 +663,10 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mCombustionExplosionEvents;
 	unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
-    unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
+    unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
 
     // The registered sinks
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
@@ -625,5 +675,6 @@ private:
     std::vector<ICombustionGameEventHandler *> mCombustionSinks;
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
 	std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
+    std::vector<IElectricalElementGameEventHandler *> mElectricalElementSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

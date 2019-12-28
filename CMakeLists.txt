@@ -174,6 +174,7 @@ add_subdirectory(GameOpenGL)
 add_subdirectory(GPUCalc)
 add_subdirectory(GPUCalcTest)
 add_subdirectory(ShipTools)
+add_subdirectory(UIControls)
 add_subdirectory(UnitTests)
 
 

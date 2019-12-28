@@ -7,8 +7,8 @@
 
 #include "Sounds.h"
 
-#include <Game/GameEventHandlers.h>
 #include <Game/IGameController.h>
+#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>
@@ -34,6 +34,7 @@ class SoundController
     , public ICombustionGameEventHandler
     , public IStructuralGameEventHandler
 	, public IAtmosphereGameEventHandler
+    , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -162,6 +163,7 @@ public:
         gameController.RegisterCombustionEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterElectricalElementEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -212,11 +214,6 @@ public:
         bool isPinned,
         bool isUnderwater) override;
 
-    virtual void OnLightFlicker(
-        DurationShortLongType duration,
-        bool isUnderwater,
-        unsigned int size) override;
-
     virtual void OnWaterTaken(float waterTaken) override;
 
     virtual void OnWaterSplashed(float waterSplashed) override;
@@ -234,6 +231,11 @@ public:
 	virtual void OnThunder() override;
 
 	virtual void OnLightning() override;
+
+    virtual void OnLightFlicker(
+        DurationShortLongType duration,
+        bool isUnderwater,
+        unsigned int size) override;
 
     virtual void OnBombPlaced(
         BombId bombId,

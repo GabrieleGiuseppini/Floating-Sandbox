@@ -30,8 +30,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	PreferencesDialog.h
 	ProbePanel.cpp
 	ProbePanel.h
-	ScalarTimeSeriesProbeControl.cpp
-	ScalarTimeSeriesProbeControl.h
 	SettingsDialog.cpp
 	SettingsDialog.h
 	SettingsManager.cpp
@@ -42,7 +40,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	ShipLoadDialog.h
 	ShipPreviewWindow.cpp
 	ShipPreviewWindow.h
-	SliderControl.h
 	SoundController.cpp
 	SoundController.h
 	Sounds.cpp
@@ -53,6 +50,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	StandardSystemPaths.h
 	StartupTipDialog.cpp
 	StartupTipDialog.h
+	SwitchboardPanel.cpp
+	SwitchboardPanel.h
 	ToolController.cpp
 	ToolController.h
 	Tools.cpp
@@ -93,6 +92,7 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
+	UIControlsLib
 	sfml-audio
 	sfml-network
 	${OPENGL_LIBRARIES}

@@ -21,7 +21,7 @@
 #include "UpdateChecker.h"
 
 #include <Game/GameController.h>
-#include <Game/GameEventHandlers.h>
+#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/filedlg.h>

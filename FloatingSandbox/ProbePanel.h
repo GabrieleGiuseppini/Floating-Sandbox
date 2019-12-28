@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ScalarTimeSeriesProbeControl.h"
+#include <UIControls/ScalarTimeSeriesProbeControl.h>
 
-#include <Game/GameEventHandlers.h>
 #include <Game/IGameController.h>
+#include <Game/IGameEventHandlers.h>
 
 #include <wx/sizer.h>
 #include <wx/wx.h>

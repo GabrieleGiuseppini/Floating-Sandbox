@@ -6,11 +6,11 @@
 #pragma once
 
 #include "GameEventDispatcher.h"
-#include "GameEventHandlers.h"
 #include "GameParameters.h"
 #include "IGameController.h"
 #include "IGameControllerSettings.h"
 #include "IGameControllerSettingsOptions.h"
+#include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
@@ -96,6 +96,12 @@ public:
 		assert(!!mGameEventDispatcher);
 		mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
 	}
+
+    void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterElectricalElementEventHandler(handler);
+    }
 
     void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {

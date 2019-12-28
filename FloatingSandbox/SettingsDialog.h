@@ -6,7 +6,8 @@
 #pragma once
 
 #include "SettingsManager.h"
-#include "SliderControl.h"
+
+#include <UIControls/SliderControl.h>
 
 #include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ResourceLoader.h>

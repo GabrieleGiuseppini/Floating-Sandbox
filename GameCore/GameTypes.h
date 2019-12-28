@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <limits>
 #include <sstream>
@@ -51,6 +52,7 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  * Various other identifiers.
  */
 using LocalBombId = std::uint32_t;
+using LocalSwitchId = std::uint32_t;
 
 /*
  * Object ID's, identifying objects of ships across ships.
@@ -111,6 +113,13 @@ private:
     LocalObjectId mLocalObjectId;
 };
 
+template<typename TLocalObjectId>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ObjectId<TLocalObjectId> const & oid)
+{
+    os << oid.ToString();
+    return os;
+}
+
 namespace std {
 
     template <typename TLocalObjectId>
@@ -127,6 +136,7 @@ namespace std {
 
 using ElementId = ObjectId<ElementIndex>;
 using BombId = ObjectId<LocalBombId>;
+using SwitchId = ObjectId<LocalSwitchId>;
 
 /*
  * A sequence number which is never zero.
@@ -204,6 +214,39 @@ enum class ExplosionType
     Combustion,
     Deflagration
 };
+
+/*
+ * Types of switches (duh).
+ */
+enum class SwitchType
+{
+    InteractiveSwitch,
+    WaterSensingSwitch
+};
+
+/*
+ * Switch states.
+ */
+enum class SwitchState : bool
+{
+    Off = 0,
+    On = 1
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, SwitchState const & s)
+{
+    if (s == SwitchState::On)
+    {
+        os << "ON";
+    }
+    else
+    {
+        assert(s == SwitchState::Off);
+        os << "OFF";
+    }
+
+    return os;
+}
 
 /*
  * Generic duration enum - short and long.

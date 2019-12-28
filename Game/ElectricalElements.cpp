@@ -427,7 +427,7 @@ void ElectricalElements::RunLampStateMachine(
 {
     //
     // Lamp is only on if visited or self-powered and within operating temperature;
-    // actual lights depends on flicker state machine
+    // actual light depends on flicker state machine
     //
 
     auto const pointIndex = GetPointIndex(elementLampIndex);

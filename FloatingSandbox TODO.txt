@@ -1033,9 +1033,9 @@ Render:
 	= Switches: (*)
 		- New electrical material types
 			- Two types:
-				- GameType enum
-				- Interactive switch: controlled by user
-				- Water sensing switch: controlled by water (w/constant low and high watermark thresholds)
+				+ GameType enum
+				+ Interactive switch: controlled by user
+				= Water sensing switch: controlled by water (w/constant low and high watermark thresholds)
 					- Check done at low-frequency step in ElectricalUpdate()
 			- Color trick like ropes to have unique and deterministic IDs for switches
 				- One material (base structural color) for initially on and another one for initially off
@@ -1044,7 +1044,7 @@ Render:
 				- Lights, Cables, Generators have it as true (also in ElectricalMaterial and in json)
 				- Switches have it as true or false depending on whether switch is "on" or "off"
 					- The act of switching ("Toggle...()") toggles the boolean
-		- GameTypes:
+		+ GameTypes:
 			+ ObjectId overhaul:
 				+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
 				+ ObjectId == <ShipId (new GameType alias, uint32_t w/ None), LocalObjectId (uint32_t)>
@@ -1052,9 +1052,9 @@ Render:
 					+ ObjectIdGenerator only provides helper for globally unique - with no guarantees - or should go
 				+ All ship ID ints become ShipId
 				+ All object ID ints become ObjectId
-			- LocalSwitchId typedef (uint32_t)
-			- SwitchId == ObjectId<LocalSwitchId>
-			- SwitchState enum (mapped to bool)
+			+ LocalSwitchId typedef (uint32_t)
+			+ SwitchId == ObjectId<LocalSwitchId>
+			+ SwitchState enum (mapped to bool)
 		- Ship json adds optional names for each ID
 			- as vector<pair<local switch ID, std::string>>>
 				- local switch ID is ID from color code
@@ -1065,11 +1065,12 @@ Render:
 			- Then, generates an ObjectId using ship ID and local object ID
 				- LocalObjectId is just element index of switch in ElectricalElements
 			- Each switch gets name as part of Electrical Elements data communicated to ship
+				- ElectricalElements::Add now takes std::string label
 				- ObjectId is implicit (local ID is index in container of switches's ElementIndex within ElectricalElements)
 		- New game events:
 			- Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
-				- New IGameHandler: "electrical"
-					- Also includes lights fizzling
+				+ New IGameHandler: "electrical"
+					+ Also includes lights fizzling
 				- Visits switches among ElectricalElements and fires OnSwitchCreated(ObjectId, name, type, state)
 					- state is current value of ConductsElectricity (i.e. still from electrical material)
 			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
@@ -1112,18 +1113,17 @@ Render:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
-			- ShipSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
-				- Interactive only if isInteractive=true
-					- cctor argument
+			- ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
 				- Has state (SwitchState mCurrentState)
 					- Purely for drawing
 				- May be disabled/enabled (via SetEnabled(isEnabled) override), making it grey and non-functional
 				- User-generated toggle event is via lambda(new state)
-				- Exposes Toggle() for externally-generated toggle events
+				- Exposes SetState(enum) and ToggleState() for externally-generated toggle events
 					- Does not invoke lambda in this case
 				- Images:
 					- {on, off} X {enabled, disabled} X {interactive, not interactive}
 				- Tooltip displays keys (whose labels are provided by creator via cctor)
+			- ShipAutomaticSwitchControl
 			- Panel: much like ProbePanel
 				- Has:
 					- ResourceLoader const & (used @ cctor only for button images)
@@ -1147,7 +1147,7 @@ Render:
 					- Enable/Disable in SwitchInfo
 					- Leave in map
 				- OnSwitchToggled(ObjectId, new state):
-					- Lookup from map and call Toggle on control (regardless of disabling)
+					- Lookup from map and call SetState(new state) on control (regardless of disabling)
 				- Gets key events from MainFrame when MainFrame does not recognize
 					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain
 					- Shift and Alt do +10, +20
@@ -1162,6 +1162,9 @@ Render:
 			- {on, off} x {2} sounds
 
 		- Do not propagate switch characteristics through ropes
+
+		- Cleanup:
+			- Wanna use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background?
 				
 
 	- Pumps (*)
@@ -1203,6 +1206,7 @@ Render:
 				- TODO: always on/always off - needed or may just flip structural's?
 			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
 				+ No ObjectID needed thus
+				- Open sound, Close sound
 		- Impl:
 			- TODOHERE
 			- ElectricalElements::Update():

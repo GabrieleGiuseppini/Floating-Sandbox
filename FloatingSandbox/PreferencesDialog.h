@@ -5,8 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include "SliderControl.h"
 #include "UIPreferencesManager.h"
+
+#include <UIControls/SliderControl.h>
 
 #include <wx/filepicker.h>
 #include <wx/spinctrl.h>

@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/GameEventHandlers.h>
 #include <Game/IGameController.h>
+#include <Game/IGameEventHandlers.h>
 
 #include <wx/wx.h>
 
@@ -18,6 +18,7 @@ class EventTickerPanel
     , public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
     , public IWavePhenomenaGameEventHandler
+    , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -39,6 +40,7 @@ public:
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterStructuralEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
+        gameController.RegisterElectricalElementEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -79,6 +81,20 @@ public:
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
+
+    virtual void OnSwitchCreated(
+        SwitchId switchId,
+        std::string const & name,
+        SwitchType type,
+        SwitchState state) override;
+
+    virtual void OnSwitchEnabled(
+        SwitchId switchId,
+        bool isEnabled) override;
+
+    virtual void OnSwitchToggled(
+        SwitchId switchId,
+        SwitchState newState) override;
 
     virtual void OnBombPlaced(
         BombId bombId,
