@@ -14,6 +14,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 /*
 * The complete definition of a ship.
@@ -41,6 +42,8 @@ public:
 
     TextureOriginType TextureOrigin;
 
+    std::vector<std::string> ElectricalElementLabels;
+
     ShipMetadata const Metadata;
 
     static ShipDefinition Load(std::filesystem::path const & filepath);
@@ -53,12 +56,14 @@ private:
         std::optional<RgbImageData> electricalLayerImage,
         RgbaImageData textureLayerImage,
         TextureOriginType textureOrigin,
+        std::vector<std::string> electricalElementLabels,
         ShipMetadata const metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))
         , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))
         , TextureLayerImage(std::move(textureLayerImage))
         , TextureOrigin(textureOrigin)
+        , ElectricalElementLabels(std::move(electricalElementLabels))
         , Metadata(std::move(metadata))
     {
     }

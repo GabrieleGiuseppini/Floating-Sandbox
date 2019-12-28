@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <vector>
 
 /*
  * The content of a ship definition file (.shp).
@@ -31,6 +32,9 @@ public:
     std::optional<std::filesystem::path> const ElectricalLayerImageFilePath;
 
     std::optional<std::filesystem::path> const TextureLayerImageFilePath;
+
+    // Labels of electrical elements
+    std::vector<std::string> ElectricalElementLabels;
 
     // The ship's metadata
     ShipMetadata const Metadata;
@@ -51,11 +55,13 @@ public:
         std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
         std::optional<std::filesystem::path> const & textureLayerImageFilePath,
-        ShipMetadata shipMetadata)
+        std::vector<std::string> && electricalElementLabels,
+        ShipMetadata && shipMetadata)
         : StructuralLayerImageFilePath(structuralLayerImageFilePath)
         , RopesLayerImageFilePath(ropesLayerImageFilePath)
         , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
         , TextureLayerImageFilePath(std::move(textureLayerImageFilePath))
+        , ElectricalElementLabels(std::move(electricalElementLabels))
         , Metadata(std::move(shipMetadata))
     {
     }

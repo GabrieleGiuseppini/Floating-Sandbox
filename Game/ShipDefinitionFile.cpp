@@ -42,6 +42,23 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         definitionJson,
         "texture_image");
 
+    std::vector<std::string> electricalElementLabels;
+    std::optional<picojson::array> electricalElementLabelsJsonArray = Utils::GetOptionalJsonMember<picojson::array>(
+        definitionJson,
+        "electrical_element_labels");
+    if (!!electricalElementLabelsJsonArray)
+    {
+        for (auto const & labelJsonValue : *electricalElementLabelsJsonArray)
+        {
+            if (!labelJsonValue.is<std::string>())
+            {
+                throw GameException("Error parsing JSON: electrical element label is not of the string type");
+            }
+
+            electricalElementLabels.emplace_back(labelJsonValue.get<std::string>());
+        }
+    }
+
     std::string shipName = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "ship_name",
@@ -72,6 +89,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         ropesLayerImageFilePath,
         electricalLayerImageFilePath,
         textureLayerImageFilePath,
+        std::move(electricalElementLabels),
         ShipMetadata(
             shipName,
             author,

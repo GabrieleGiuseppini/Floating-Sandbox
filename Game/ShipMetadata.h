@@ -51,4 +51,5 @@ public:
     }
 
     ShipMetadata(ShipMetadata const & other) = default;
+    ShipMetadata(ShipMetadata && other) = default;
 };

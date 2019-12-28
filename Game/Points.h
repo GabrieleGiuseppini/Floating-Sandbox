@@ -733,12 +733,12 @@ public:
     // Dynamics
     //
 
-    vec2f const & GetPosition(ElementIndex pointElementIndex) const
+    vec2f const & GetPosition(ElementIndex pointElementIndex) const noexcept
     {
         return mPositionBuffer[pointElementIndex];
     }
 
-    vec2f & GetPosition(ElementIndex pointElementIndex)
+    vec2f & GetPosition(ElementIndex pointElementIndex) noexcept
     {
         return mPositionBuffer[pointElementIndex];
     }
@@ -753,12 +753,12 @@ public:
         return reinterpret_cast<float *>(mPositionBuffer.data());
     }
 
-    vec2f const & GetVelocity(ElementIndex pointElementIndex) const
+    vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
     {
         return mVelocityBuffer[pointElementIndex];
     }
 
-    vec2f & GetVelocity(ElementIndex pointElementIndex)
+    vec2f & GetVelocity(ElementIndex pointElementIndex) noexcept
     {
         return mVelocityBuffer[pointElementIndex];
     }
@@ -775,24 +775,24 @@ public:
 
     void SetVelocity(
         ElementIndex pointElementIndex,
-        vec2f const & velocity)
+        vec2f const & velocity) noexcept
     {
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetForce(ElementIndex pointElementIndex) const
+    vec2f const & GetForce(ElementIndex pointElementIndex) const noexcept
     {
         return mForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetForce(ElementIndex pointElementIndex)
+    vec2f & GetForce(ElementIndex pointElementIndex) noexcept
     {
         return mForceBuffer[pointElementIndex];
     }
 
     void AddForce(
         ElementIndex pointElementIndex,
-        vec2f const & force)
+        vec2f const & force) noexcept
     {
         mForceBuffer[pointElementIndex] += force;
     }
@@ -814,7 +814,7 @@ public:
      * Only valid after a call to UpdateTotalMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    float GetMass(ElementIndex pointElementIndex)
+    float GetMass(ElementIndex pointElementIndex) noexcept
     {
         return mMassBuffer[pointElementIndex];
     }

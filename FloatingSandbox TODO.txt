@@ -1031,19 +1031,29 @@ Render:
 		- Fires when wet for the first time
 
 	= Switches: (*)
-		- New electrical material types
-			- Two types:
+		! Spec:
+			! Two new electrical material types:
+				! Interactive switch
+					! Controlled by user
+				! Water sensing switch
+					! Controlled by water
+			! Color trick like ropes to have unique and deterministic IDs for switches
+				! One material (base structural color) for initially on and another one for initially off
+					! Property: conducts_eletricity, just sets the default value
+			! New electrical property: ConductsElectricity, bool - used at connectivity visit
+				! Lights, Cables, Generators have it as true (also in ElectricalMaterial and in json)
+				! Switches have it as true or false depending on whether switch is "on" or "off"
+					! The act of switching ("Toggle...()") toggles the boolean
+		+ Electrical materials:
+			+ Two new types:
 				+ GameType enum
-				+ Interactive switch: controlled by user
-				= Water sensing switch: controlled by water (w/constant low and high watermark thresholds)
-					- Check done at low-frequency step in ElectricalUpdate()
-			- Color trick like ropes to have unique and deterministic IDs for switches
-				- One material (base structural color) for initially on and another one for initially off
-					- Property: conducts_eletricity, just sets the default value
-			- New electrical property: ConductsElectricity, bool - used at connectivity visit
-				- Lights, Cables, Generators have it as true (also in ElectricalMaterial and in json)
-				- Switches have it as true or false depending on whether switch is "on" or "off"
-					- The act of switching ("Toggle...()") toggles the boolean
+				+ Interactive switch
+					! Controlled by user
+				+ Water sensing switch
+					! Controlled by water
+			+ New electrical property: ConductsElectricity, bool - used at connectivity visit
+				+ Lights, Cables, Generators have it as true (also in ElectricalMaterial and in json)
+				+ Switches have it as true or false depending on whether switch is "on" or "off"
 		+ GameTypes:
 			+ ObjectId overhaul:
 				+ ObjectId is unique only in the context in which it's used (e.g. bombs vs switches)
@@ -1055,18 +1065,16 @@ Render:
 			+ LocalSwitchId typedef (uint32_t)
 			+ SwitchId == ObjectId<LocalSwitchId>
 			+ SwitchState enum (mapped to bool)
-		- Ship json adds optional names for each ID
-			- as vector<pair<local switch ID, std::string>>>
-				- local switch ID is ID from color code
+		+ Ship json adds optional names for each ID
+			+ as vector<std::string>
 		- ShipBuilder detects all switches as electrical elements
-			- Initial ID is from color code
-			- Checks for duplicate initial IDs - errors out if duplicate found
-			- Initial ID is only used to match with ship's switch names
-			- Then, generates an ObjectId using ship ID and local object ID
-				- LocalObjectId is just element index of switch in ElectricalElements
-			- Each switch gets name as part of Electrical Elements data communicated to ship
-				- ElectricalElements::Add now takes std::string label
-				- ObjectId is implicit (local ID is index in container of switches's ElementIndex within ElectricalElements)
+			- Instance ID is from color code
+			- Checks for duplicate instance IDs - errors out if duplicate found
+			- Instance ID is only used to match with ship's switch names from json (or to make default label when no label specified), 
+			  then each switch gets name as part of Electrical Elements data communicated to ship
+				- If label not present -> "Switch <instance ID>"
+				- ElectricalElements::Add now also takes std::string label
+				- ObjectId is implicit and not specified now (local ID is index in container of switches's ElementIndex within ElectricalElements)
 		- New game events:
 			- Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
 				+ New IGameHandler: "electrical"
@@ -1106,8 +1114,9 @@ Render:
 				- Toggles electrical element's conductsElectricity, via ElectricalElements::ToggleSwitch(LocalSwitchId)
 				- Then fires OnSwitchToggled(ObjectId, new state) event
 					- state is new value of ConductsElectricity, i.e. after the toggle
-			- Water switching: at UpdatePre() (SEE MOLESKINE)
-				- "Pre" -> "UpdateConductivity"
+			- Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
+				- Uses list of elements (including water-sensing switches) for perf
+				- Uses constant low and high watermark thresholds
 
 		- SwitchboardPanel:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
@@ -1164,6 +1173,12 @@ Render:
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- Materials guide:
+				- Add new ElectricalElementTypes
+				- Add new properties:
+					- conducts_electricity
+					- is_instanced - with warning not to change
+			- Redo electrical materials template
 			- Wanna use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background?
 				
 

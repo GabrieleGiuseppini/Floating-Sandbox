@@ -25,9 +25,11 @@ public:
 
     using ColorKey = rgbColor;
 
+    using ElectricalElementInstanceId = std::uint8_t; // Max 256 instances
+
 private:
 
-    using UniqueMaterialsArray = std::array<std::pair<ColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
+    using UniqueStructuralMaterialsArray = std::array<std::pair<ColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
 
     static constexpr auto RopeUniqueMaterialIndex = static_cast<size_t>(StructuralMaterial::MaterialUniqueType::Rope);
 
@@ -38,7 +40,6 @@ public:
         return Load(resourceLoader.GetMaterialDatabaseRootFilepath());
     }
 
-
     static MaterialDatabase Load(std::filesystem::path materialsRootDirectory)
     {
         //
@@ -46,7 +47,7 @@ public:
         //
 
         std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
-        UniqueMaterialsArray uniqueStructuralMaterials;
+        UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
         picojson::value structuralMaterialsRoot = Utils::ParseJSONFile(
             materialsRootDirectory / "materials_structural.json");
@@ -154,6 +155,7 @@ public:
                 throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
             }
 
+            // Store
             electricalMaterialsMap.emplace(
                 std::make_pair(
                     colorKey,
@@ -189,6 +191,7 @@ public:
         auto srchIt = mStructuralMaterialMap.find(colorKey);
         if (srchIt != mStructuralMaterialMap.end())
         {
+            // Found color key verbatim!
             return &(srchIt->second);
         }
 
@@ -238,12 +241,17 @@ public:
         return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }
 
+    static ElectricalElementInstanceId GetElectricalElementInstanceId(ColorKey const & colorKey)
+    {
+        return static_cast<ElectricalElementInstanceId>(colorKey.b);
+    }
+
 private:
 
     MaterialDatabase(
         std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
         std::map<ColorKey, ElectricalMaterial> electricalMaterialMap,
-        UniqueMaterialsArray uniqueStructuralMaterials)
+        UniqueStructuralMaterialsArray uniqueStructuralMaterials)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mElectricalMaterialMap(std::move(electricalMaterialMap))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
@@ -252,5 +260,6 @@ private:
 
     std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
     std::map<ColorKey, ElectricalMaterial> mElectricalMaterialMap;
-    UniqueMaterialsArray mUniqueStructuralMaterials;
+
+    UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
 };

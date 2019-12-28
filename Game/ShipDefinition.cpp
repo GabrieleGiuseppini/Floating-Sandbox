@@ -17,6 +17,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     std::optional<RgbImageData> electricalLayerImage;
     std::filesystem::path absoluteTextureLayerImageFilePath;
     ShipDefinition::TextureOriginType textureOrigin;
+    std::vector<std::string> electricalElementLabels;
     std::optional<ShipMetadata> shipMetadata;
 
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
@@ -65,6 +66,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
         }
 
+        electricalElementLabels = sdf.ElectricalElementLabels;
 
         //
         // Make metadata
@@ -137,5 +139,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         std::move(electricalLayerImage),
         std::move(*textureImage),
         textureOrigin,
+        electricalElementLabels,
         *shipMetadata);
 }

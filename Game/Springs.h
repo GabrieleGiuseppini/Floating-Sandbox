@@ -254,12 +254,12 @@ public:
     // Endpoints
     //
 
-    ElementIndex GetEndpointAIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointAIndex(ElementIndex springElementIndex) const noexcept
     {
         return mEndpointsBuffer[springElementIndex].PointAIndex;
     }
 
-    ElementIndex GetEndpointBIndex(ElementIndex springElementIndex) const
+    ElementIndex GetEndpointBIndex(ElementIndex springElementIndex) const noexcept
     {
         return mEndpointsBuffer[springElementIndex].PointBIndex;
     }
@@ -441,7 +441,7 @@ public:
         return mFactoryRestLengthBuffer[springElementIndex];
     }
 
-    float GetRestLength(ElementIndex springElementIndex) const
+    float GetRestLength(ElementIndex springElementIndex) const noexcept
     {
         return mRestLengthBuffer[springElementIndex];
     }
@@ -453,12 +453,12 @@ public:
         mRestLengthBuffer[springElementIndex] = restLength;
     }
 
-    float GetStiffnessCoefficient(ElementIndex springElementIndex) const
+    float GetStiffnessCoefficient(ElementIndex springElementIndex) const noexcept
     {
         return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
-    float GetDampingCoefficient(ElementIndex springElementIndex) const
+    float GetDampingCoefficient(ElementIndex springElementIndex) const noexcept
     {
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }

@@ -160,6 +160,8 @@ public:
 
 struct ElectricalMaterial
 {
+public:
+
     std::string Name;
 
     enum class ElectricalElementType
@@ -167,13 +169,16 @@ struct ElectricalMaterial
         Lamp,
         Cable,
         Generator,
+        InteractiveSwitch,
         OtherSink,
-        SmokeEmitter
+        SmokeEmitter,
+        WaterSensingSwitch
     };
 
     ElectricalElementType ElectricalType;
 
     bool IsSelfPowered;
+    bool ConductsElectricity;
 
     // Light
     float Luminiscence;
@@ -189,6 +194,11 @@ struct ElectricalMaterial
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
 
+    // Instancing
+    bool IsInstanced; // When true, only one particle may exist with a given (full) color key
+
+public:
+
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
@@ -197,6 +207,7 @@ struct ElectricalMaterial
         std::string name,
         ElectricalElementType electricalType,
         bool isSelfPowered,
+        bool conductsElectricity,
         float luminiscence,
         vec4f lightColor,
         float lightSpread,
@@ -204,10 +215,12 @@ struct ElectricalMaterial
         float heatGenerated,
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
-        float particleEmissionRate)
+        float particleEmissionRate,
+        bool isInstanced)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
+        , ConductsElectricity(conductsElectricity)
         , Luminiscence(luminiscence)
         , LightColor(lightColor)
         , LightSpread(lightSpread)
@@ -216,6 +229,7 @@ struct ElectricalMaterial
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , IsInstanced(isInstanced)
     {
     }
 };

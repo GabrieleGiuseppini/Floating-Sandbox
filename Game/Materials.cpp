@@ -137,15 +137,16 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         std::string electricalTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "electrical_type");
         ElectricalElementType electricalType = StrToElectricalElementType(electricalTypeStr);
 
+        bool isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
+        bool conductsElectricity = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "conducts_electricity");
+
         // Lamps properties
-        bool isSelfPowered = false;
         float luminiscence = 0.0f;
         vec4f lightColor = vec4f::zero();
         float lightSpread = 0.0f;
         float wetFailureRate = 0.0f;
         if (ElectricalElementType::Lamp == electricalType)
         {
-            isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
             luminiscence = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "luminiscence");
             lightColor =
                 Utils::Hex2RgbColor(
@@ -180,10 +181,14 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
         }
 
+        // Instancing
+        bool isInstanced = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_instanced", false);
+
         return ElectricalMaterial(
             name,
             electricalType,
             isSelfPowered,
+            conductsElectricity,
             luminiscence,
             lightColor,
             lightSpread,
@@ -191,7 +196,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             heatGenerated,
             minimumOperatingTemperature,
             maximumOperatingTemperature,
-            particleEmissionRate);
+            particleEmissionRate,
+            isInstanced);
     }
     catch (GameException const & ex)
     {
@@ -209,10 +215,14 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::Cable;
     else if (lstr == "generator")
         return ElectricalElementType::Generator;
+    else if (lstr == "interactiveswitch")
+        return ElectricalElementType::InteractiveSwitch;
     else if (lstr == "othersink")
         return ElectricalElementType::OtherSink;
     else if (lstr == "smokeemitter")
         return ElectricalElementType::SmokeEmitter;
+    else if (lstr == "watersensingswitch")
+        return ElectricalElementType::WaterSensingSwitch;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
 }
