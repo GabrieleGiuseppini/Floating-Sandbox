@@ -13,8 +13,36 @@ namespace Physics {
 
 constexpr float LampWetFailureWaterThreshold = 0.1f;
 
+void ElectricalElements::AnnounceInstancedElements()
+{
+    for (auto elementIndex : *this)
+    {
+        switch (GetMaterialType(elementIndex))
+        {
+            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    SwitchId(mShipId, elementIndex),
+                    mLabels[elementIndex],
+                    SwitchType::Interactive,
+                    // TODO: from conducts_electricity);
+            }
+
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    SwitchId(mShipId, elementIndex),
+                    mLabels[elementIndex],
+                    SwitchType::WaterSensing,
+                    // TODO: from conducts_electricity);
+            }
+        }
+    }
+}
+
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
+    std::string label,
     ElectricalMaterial const & electricalMaterial)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -74,6 +102,7 @@ void ElectricalElements::Add(
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
+    mLabels.push_back(label);
 
     //
     // Lamp

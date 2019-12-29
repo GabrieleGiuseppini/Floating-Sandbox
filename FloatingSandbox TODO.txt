@@ -219,6 +219,12 @@ Render:
 	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
+	- www.floatingsandbox.com:
+		- Try to change white BG to another color
+	- After 1.14 is out: 
+		- Add new screenshots to:
+			- www.floatingsandbox.com 
+			- GameJolt
 
 - Roadmap:
 
@@ -421,6 +427,10 @@ Render:
 
 		= Switches (*)
 
+		- Slicer sound is not controller by Tools Volume
+
+		- See if fire may emit Heavy smoke
+
 		- Try with SpringRelaxation updating only positions (*)
 		- Spring and NonSpring force separation optimization (*)		
 		- Attempt to re-instate square water drag (*)
@@ -480,6 +490,9 @@ Render:
 		+ Waallrus: have all
 		+ MasterGarfield: have all
 			+ Have also his PayPal email
+		- Space ship pack: [free]
+			- JohnSmith: gave permission, but he'll be making a smaller one first
+		- nomadavid's pack
 	- New ships:
 		- To test:
 			- mrpasta444_ship_pack
@@ -1067,19 +1080,22 @@ Render:
 			+ SwitchState enum (mapped to bool)
 		+ Ship json adds optional names for each ID
 			+ as vector<std::string>
-		- ShipBuilder detects all switches as electrical elements
-			- Instance ID is from color code
-			- Checks for duplicate instance IDs - errors out if duplicate found
-			- Instance ID is only used to match with ship's switch names from json (or to make default label when no label specified), 
+		+ ShipBuilder detects all switches as electrical elements
+			+ Instance ID is from color code
+			+ Checks for duplicate instance IDs - errors out if duplicate found
+			+ Instance ID is only used to match with ship's switch names from json (or to make default label when no label specified), 
 			  then each switch gets name as part of Electrical Elements data communicated to ship
-				- If label not present -> "Switch <instance ID>"
-				- ElectricalElements::Add now also takes std::string label
-				- ObjectId is implicit and not specified now (local ID is index in container of switches's ElementIndex within ElectricalElements)
-		- New game events:
-			- Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
+				+ If label not present -> "Switch <instance ID>"
+				+ ElectricalElements::Add now also takes std::string label
+				+ ObjectId is implicit and not specified now (local ID is index in container of switches's ElementIndex within ElectricalElements)
+		- Switching mechanism:
+			- TODO: most performing approach is to turn off and on via ElectricalElements::ConnectedElectricalElementsBuffer
+			  (since we use that to do graph visit)
+		= New game events:
+			= Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
 				+ New IGameHandler: "electrical"
 					+ Also includes lights fizzling
-				- Visits switches among ElectricalElements and fires OnSwitchCreated(ObjectId, name, type, state)
+				= Visits switches among ElectricalElements and fires OnSwitchCreated(ObjectId, name, type, state)
 					- state is current value of ConductsElectricity (i.e. still from electrical material)
 			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
 				- Also clears (on destroy) ConductsElectricity
@@ -1378,15 +1394,20 @@ Render:
 
 	- ShipLoadDialog:
 		- Ship preview database/cache
+		- Move most used ships at top
 
 - Sounds:
 
-	- Sounds that play before ship starts sinking
-		- SOS, bell, sailor screaming, etc.
-		- Office TimCan provides the sounds
-
 	- Sounds playable by user via key
 		- Bell, horn, etc.
+		- Office TimCan provides the sounds
+	- Ship may come with custom sound(s) for horns
+		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
+		- Ships could also come with their own sounds; if not, default seounds are provided
+
+
+	- Sounds that play before ship starts sinking
+		- SOS, bell, sailor screaming, etc.
 		- Office TimCan provides the sounds
 
 	- Morse code sound when it's about to sink (early sink detection)
@@ -1403,9 +1424,9 @@ Render:
 	- New sounds:
 		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
 		- ShipSoundsForFS (in Scratch)
-	- Ship may come with custom sound(s) for horns
-		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
+
 	- Volume of effects should depend on distance/zoom
+
 	- Global mute setting
 
 -Probing:

@@ -48,6 +48,7 @@ private:
         bool IsLeaking;
 
         ElectricalMaterial const * ElectricalMtl;
+        MaterialDatabase::ElectricalElementInstanceId ElectricalElementInstanceId;
         std::vector<ElementIndex> ConnectedSprings1;
 
         PointInfo(
@@ -63,6 +64,7 @@ private:
             , IsRope(isRope)
             , IsLeaking(isRope ? true : false) // Ropes leak by default
             , ElectricalMtl(nullptr)
+            , ElectricalElementInstanceId()
             , ConnectedSprings1()
         {
         }
@@ -260,7 +262,8 @@ private:
         Physics::World & parentWorld,
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        std::vector<MaterialDatabase::ElectricalElementInstanceId> & electricalElementInstanceIds);
 
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
         std::vector<TriangleInfo> const & triangleInfos2,
@@ -287,8 +290,11 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
+        std::vector<MaterialDatabase::ElectricalElementInstanceId> electricalElementInstanceIds,
+        ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        ShipDefinition const & shipDefinition,
         GameParameters const & gameParameters);
 
 private:

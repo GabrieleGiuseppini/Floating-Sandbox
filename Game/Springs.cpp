@@ -133,7 +133,7 @@ void Springs::Restore(
     assert(springElementIndex < mElementCount);
     assert(IsDeleted(springElementIndex));
 
-    // Clear the delete flag
+    // Clear the deleted flag
     mIsDeletedBuffer[springElementIndex] = false;
 
     // Recalculate parameters for this spring

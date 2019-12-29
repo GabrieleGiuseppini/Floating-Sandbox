@@ -25,7 +25,7 @@ public:
 
     using ColorKey = rgbColor;
 
-    using ElectricalElementInstanceId = std::uint8_t; // Max 256 instances
+    using ElectricalElementInstanceId = std::uint8_t; // Max 255 instances
 
 private:
 

@@ -159,6 +159,7 @@ public:
     ElectricalElements(
         ElementCount allElementCount,
         ElementCount lampElementCount,
+        ShipId shipId,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
@@ -174,10 +175,11 @@ public:
         , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mMaterialLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, 8U>())
+        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
+        , mLabels()
         //////////////////////////////////
         // Lamps
         //////////////////////////////////
@@ -190,6 +192,7 @@ public:
         //////////////////////////////////
         // Container
         //////////////////////////////////
+        , mShipId(shipId)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
@@ -216,8 +219,11 @@ public:
         mShipPhysicsHandler = shipPhysicsHandler;
     }
 
+    void AnnounceInstancedElements();
+
     void Add(
         ElementIndex pointElementIndex,
+        std::string label,
         ElectricalMaterial const & electricalMaterial);
 
     void Destroy(ElementIndex electricalElementIndex);
@@ -421,7 +427,7 @@ private:
     // Type
     Buffer<ElectricalMaterial::ElectricalElementType> mMaterialTypeBuffer;
 
-    // Properties
+    // Heat
     Buffer<float> mMaterialHeatGeneratedBuffer;
     Buffer<OperatingTemperatures> mMaterialOperatingTemperaturesBuffer;
 
@@ -431,7 +437,7 @@ private:
     Buffer<float> mMaterialLightSpreadBuffer;
 
     // Connected elements
-    Buffer<FixedSizeVector<ElementIndex, 8U>> mConnectedElectricalElementsBuffer;
+    Buffer<FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>> mConnectedElectricalElementsBuffer;
 
     // Element state
     Buffer<ElementState> mElementStateBuffer;
@@ -441,6 +447,9 @@ private:
 
     // Connectivity detection visit sequence number
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
+
+    // Labels - one for each element
+    std::vector<std::string> mLabels;
 
     //////////////////////////////////////////////////////////
     // Lamps
@@ -458,6 +467,7 @@ private:
     // Container
     //////////////////////////////////////////////////////////
 
+    ShipId const mShipId;
     World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;

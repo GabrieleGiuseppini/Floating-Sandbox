@@ -52,7 +52,6 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  * Various other identifiers.
  */
 using LocalBombId = std::uint32_t;
-using LocalSwitchId = std::uint32_t;
 
 /*
  * Object ID's, identifying objects of ships across ships.
@@ -136,7 +135,7 @@ namespace std {
 
 using ElementId = ObjectId<ElementIndex>;
 using BombId = ObjectId<LocalBombId>;
-using SwitchId = ObjectId<LocalSwitchId>;
+using SwitchId = ObjectId<ElementIndex>;
 
 /*
  * A sequence number which is never zero.
@@ -220,8 +219,8 @@ enum class ExplosionType
  */
 enum class SwitchType
 {
-    InteractiveSwitch,
-    WaterSensingSwitch
+    Interactive,
+    WaterSensing
 };
 
 /*
@@ -229,8 +228,8 @@ enum class SwitchType
  */
 enum class SwitchState : bool
 {
-    Off = 0,
-    On = 1
+    Off = false,
+    On = true
 };
 
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, SwitchState const & s)
