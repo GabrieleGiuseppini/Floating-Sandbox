@@ -137,8 +137,8 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
+    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
 
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -168,7 +168,7 @@ MainFrame::MainFrame(
     };
 
     mMainGLCanvas = std::make_unique<wxGLCanvas>(
-        mainPanel,
+        mMainPanel,
         ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
         wxDefaultPosition,
@@ -497,12 +497,26 @@ MainFrame::MainFrame(
 
     SetMenuBar(mainMenuBar);
 
+    //
+    // Switchboard panel
+    //
+
+    mSwitchboardPanel = SwitchboardPanel::Create(
+        mMainPanel,
+        mGameController,
+        *mResourceLoader);
+
+    mMainFrameSizer->Add(mSwitchboardPanel.get(), 0, wxEXPAND);
+
+    // TODOTEST
+    //mMainFrameSizer->Hide(mSwitchboardPanel.get());
+
 
     //
     // Probe panel
     //
 
-    mProbePanel = std::make_unique<ProbePanel>(mainPanel);
+    mProbePanel = std::make_unique<ProbePanel>(mMainPanel);
 
     mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
 
@@ -513,18 +527,19 @@ MainFrame::MainFrame(
     // Event ticker panel
     //
 
-    mEventTickerPanel = std::make_unique<EventTickerPanel>(mainPanel);
+    mEventTickerPanel = std::make_unique<EventTickerPanel>(mMainPanel);
 
     mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND);
 
     mMainFrameSizer->Hide(mEventTickerPanel.get());
 
 
+
     //
     // Finalize frame
     //
 
-    mainPanel->SetSizerAndFit(mMainFrameSizer);
+    mMainPanel->SetSizerAndFit(mMainFrameSizer);
 
 
 
@@ -601,6 +616,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
+                // 0.0 -> 0.5
                 splash->UpdateProgress(progress / 2.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -627,7 +643,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             *mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
-                splash->UpdateProgress(0.5f + progress / 3.0f, message);
+                // 0.5 -> 0.66
+                splash->UpdateProgress(0.5f + progress / 6.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -653,7 +670,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             *mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
-                splash->UpdateProgress(0.5f + 0.33333f + progress / 3.0f, message);
+                // 0.66 -> 0.83
+                splash->UpdateProgress(0.666f + progress / 6.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -727,8 +745,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     this->RegisterEventHandler(*mGameController);
-    mEventTickerPanel->RegisterEventHandler(*mGameController);
+    mSwitchboardPanel->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
+    mEventTickerPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
 
@@ -948,13 +967,13 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
-        // Update event ticker
-        assert(!!mEventTickerPanel);
-        mEventTickerPanel->Update();
-
         // Update probe panel
         assert(!!mProbePanel);
         mProbePanel->Update();
+
+        // Update event ticker
+        assert(!!mEventTickerPanel);
+        mEventTickerPanel->Update();
 
         // Update sound controller
         assert(!!mSoundController);

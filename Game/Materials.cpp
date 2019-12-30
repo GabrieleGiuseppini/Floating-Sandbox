@@ -137,7 +137,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         std::string electricalTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "electrical_type");
         ElectricalElementType electricalType = StrToElectricalElementType(electricalTypeStr);
 
-        bool isSelfPowered = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "is_self_powered");
+        bool isSelfPowered = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_self_powered", false);
         bool conductsElectricity = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "conducts_electricity");
 
         // Lamps properties

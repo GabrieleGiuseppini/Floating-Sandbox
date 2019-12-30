@@ -6,32 +6,83 @@
 #include "SwitchboardPanel.h"
 
 #include <cassert>
+#include <utility>
 
-SwitchboardPanel::SwitchboardPanel(wxWindow* parent)
+std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
+    wxWindow * parent,
+    std::shared_ptr<IGameController> gameController,
+    ResourceLoader & resourceLoader)
+{
+    return std::unique_ptr<SwitchboardPanel>(
+        new SwitchboardPanel(
+            parent,
+            gameController,
+            resourceLoader));
+}
+
+SwitchboardPanel::SwitchboardPanel(
+    wxWindow * parent,
+    std::shared_ptr<IGameController> gameController,
+    ResourceLoader & resourceLoader)
     : wxPanel(
         parent,
         wxID_ANY,
         wxDefaultPosition,
         wxDefaultSize,
-        wxBORDER_SIMPLE | wxCLIP_CHILDREN)
+        wxBORDER_SIMPLE)
+    , mSwitchMap()
+    , mGameController(gameController)
 {
-    SetDoubleBuffered(true);
+    // TODOTEST
+    //SetDoubleBuffered(true);
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    // TODO
+    //
+    // Make panel
+    //
+
+    MakePanel();
+
+    //
+    // Load bitmaps
+    //
+
+    mInteractiveSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
 }
 
 SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
+void SwitchboardPanel::MakePanel()
+{
+    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // TODOTEST
+    mSwitchPanel->SetMinSize(wxSize(-1, 100));
+
+    mSwitchSizer = new wxFlexGridSizer(1, 0, 0, 0);
+    mSwitchSizer->SetFlexibleDirection(wxHORIZONTAL);
+
+    mSwitchPanel->SetSizerAndFit(mSwitchSizer);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SwitchboardPanel::OnGameReset()
 {
-    // TODO
+    // Reset all controls
+    mSwitchPanel->Destroy();
+    mSwitchPanel = nullptr;
+    mSwitchSizer = nullptr;
+    MakePanel();
+
+    // Clear map
+    mSwitchMap.clear();
 }
 
 void SwitchboardPanel::OnSwitchCreated(
@@ -40,14 +91,100 @@ void SwitchboardPanel::OnSwitchCreated(
     SwitchType type,
     SwitchState state)
 {
-    // TODO
+    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", name, " T=", int(type));
+
+    // TODO: handle overflow, add row eventually
+
+    //
+    // Create control
+    //
+
+    wxPanel * ctrl;
+    switch (type)
+    {
+        case SwitchType::Interactive:
+        {
+            ctrl = new ShipInteractiveSwitchControl(
+                mSwitchPanel,
+                mInteractiveSwitchOnEnabledBitmap,
+                mInteractiveSwitchOffEnabledBitmap,
+                mInteractiveSwitchOnDisabledBitmap,
+                mInteractiveSwitchOffDisabledBitmap,
+                switchId,
+                name,
+                [this](SwitchId switchId, SwitchState newState)
+                {
+                    this->mGameController->SetSwitchState(switchId, newState);
+                },
+                state);
+
+            break;
+        }
+
+        case SwitchType::WaterSensing:
+        {
+            // TODO
+            ctrl = nullptr;
+            return;
+
+            break;
+        }
+    }
+
+    mSwitchSizer->Add(
+        ctrl,
+        0,
+        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+
+    // TODOTEST
+
+    mSwitchPanel->Layout();
+    mSwitchPanel->Fit();
+
+    this->Layout();
+    this->Fit();
+
+    ////this->GetParent()->Layout();
+
+
+    //
+    // Add switch to map
+    //
+
+    assert(mSwitchMap.find(switchId) == mSwitchMap.end());
+    mSwitchMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(switchId),
+        std::forward_as_tuple(type, ctrl));
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
     SwitchId switchId,
     bool isEnabled)
 {
-    // TODO
+    auto it = mSwitchMap.find(switchId);
+    assert(it != mSwitchMap.end());
+
+    // Enable/disable control
+    switch (it->second.Type)
+    {
+        case SwitchType::Interactive:
+        {
+            auto * ctrl = dynamic_cast<ShipInteractiveSwitchControl *>(it->second.SwitchControl);
+            ctrl->SetEnabled(isEnabled);
+            break;
+        }
+
+        case SwitchType::WaterSensing:
+        {
+            auto * ctrl = dynamic_cast<ShipAutomaticSwitchControl *>(it->second.SwitchControl);
+            ctrl->SetEnabled(isEnabled);
+            break;
+        }
+    }
+
+    // Remember enable state
+    it->second.IsEnabled = isEnabled;
 }
 
 void SwitchboardPanel::OnSwitchToggled(

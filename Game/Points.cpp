@@ -1088,7 +1088,7 @@ void Points::UpdateEphemeralParticles(
                 {
                     // Calculate progress
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
-                    assert(maxSimulationLifetime > 0.0f);
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
                     float const lifetimeProgress =
                         elapsedSimulationLifetime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;

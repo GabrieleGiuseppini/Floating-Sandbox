@@ -2379,6 +2379,12 @@ void Ship::HandleElectricalElementDestroy(ElementIndex /*electricalElementIndex*
     mIsStructureDirty = true;
 }
 
+void Ship::HandleElectricalElementRestore(ElementIndex /*electricalElementIndex*/)
+{
+    // Remember our structure is now dirty
+    mIsStructureDirty = true;
+}
+
 void Ship::StartExplosion(
     float currentSimulationTime,
     PlaneId planeId,

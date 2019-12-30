@@ -73,12 +73,12 @@ struct ObjectId
         , mLocalObjectId(localObjectId)
     {}
 
-    inline ShipId GetShipId() const
+    inline ShipId GetShipId() const noexcept
     {
         return mShipId;
     };
 
-    inline LocalObjectId GetLocalObjectId() const
+    inline LocalObjectId GetLocalObjectId() const noexcept
     {
         return mLocalObjectId;
     }

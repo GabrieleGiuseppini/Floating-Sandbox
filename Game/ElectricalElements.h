@@ -26,6 +26,17 @@ class ElectricalElements : public ElementContainer
 {
 private:
 
+    struct Conductivity
+    {
+        bool MaterialConductsElectricity;
+        bool ConductsElectricity;
+
+        explicit Conductivity(bool materialConductsElectricity)
+            : MaterialConductsElectricity(materialConductsElectricity)
+            , ConductsElectricity(materialConductsElectricity) // Init with material
+        {}
+    };
+
     struct OperatingTemperatures
     {
         float MinOperatingTemperature;
@@ -170,12 +181,14 @@ public:
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
         , mMaterialTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
+        , mConductivityBuffer(mBufferElementCount, mElementCount, Conductivity(false))
         , mMaterialHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialOperatingTemperaturesBuffer(mBufferElementCount, mElementCount, OperatingTemperatures(0.0f, 0.0f))
         , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mMaterialLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
+        , mConductingConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
@@ -219,14 +232,20 @@ public:
         mShipPhysicsHandler = shipPhysicsHandler;
     }
 
-    void AnnounceInstancedElements();
-
     void Add(
         ElementIndex pointElementIndex,
         std::string label,
         ElectricalMaterial const & electricalMaterial);
 
+    void AnnounceInstancedElements();
+
+    void SetSwitchState(
+        SwitchId switchId,
+        SwitchState switchState);
+
     void Destroy(ElementIndex electricalElementIndex);
+
+    void Restore(ElementIndex electricalElementIndex);
 
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
@@ -275,29 +294,38 @@ public:
     // Connected elements
     //
 
-    inline auto const & GetConnectedElectricalElements(ElementIndex electricalElementIndex) const
-    {
-        return mConnectedElectricalElementsBuffer[electricalElementIndex];
-    }
-
     inline void AddConnectedElectricalElement(
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
     {
-        assert(connectedElectricalElementIndex < mElementCount);
-
         mConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
+
+        // If both elements conduct electricity, then connect them also electrically
+        assert(!mConductingConnectedElectricalElementsBuffer[electricalElementIndex].contains(connectedElectricalElementIndex));
+        if (mConductivityBuffer[electricalElementIndex].ConductsElectricity
+            && mConductivityBuffer[connectedElectricalElementIndex].ConductsElectricity)
+        {
+            mConductingConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
+            // Other connection will be done when AddConnectedElectricalElement is invoked on the other
+        }
     }
 
     inline void RemoveConnectedElectricalElement(
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
     {
-        assert(connectedElectricalElementIndex < mElementCount);
-
         bool found = mConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(connectedElectricalElementIndex);
-
         assert(found);
+
+        // Unconditionally remove from conducting and connected elements
+        // (it's there in case they're both conducting)
+        found = mConductingConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(connectedElectricalElementIndex);
+        assert(!mConductivityBuffer[electricalElementIndex].ConductsElectricity
+            || !mConductivityBuffer[connectedElectricalElementIndex].ConductsElectricity
+            || found);
+
+        // Other connection will be severed when RemoveConnectedElectricalElement is invoked on the other
+
         (void)found;
     }
 
@@ -427,6 +455,9 @@ private:
     // Type
     Buffer<ElectricalMaterial::ElectricalElementType> mMaterialTypeBuffer;
 
+    // Conductivity
+    Buffer<Conductivity> mConductivityBuffer;
+
     // Heat
     Buffer<float> mMaterialHeatGeneratedBuffer;
     Buffer<OperatingTemperatures> mMaterialOperatingTemperaturesBuffer;
@@ -436,8 +467,11 @@ private:
     Buffer<vec4f> mMaterialLightColorBuffer;
     Buffer<float> mMaterialLightSpreadBuffer;
 
-    // Connected elements
+    // Currently-connected elements - changes with structural changes
     Buffer<FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>> mConnectedElectricalElementsBuffer;
+
+    // Currently-conducting and connected elements - changes with structural changes and toggles
+    Buffer<FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>> mConductingConnectedElectricalElementsBuffer;
 
     // Element state
     Buffer<ElementState> mElementStateBuffer;

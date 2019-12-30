@@ -1088,89 +1088,130 @@ Render:
 				+ If label not present -> "Switch <instance ID>"
 				+ ElectricalElements::Add now also takes std::string label
 				+ ObjectId is implicit and not specified now (local ID is index in container of switches's ElementIndex within ElectricalElements)
-		- Switching mechanism:
-			- TODO: most performing approach is to turn off and on via ElectricalElements::ConnectedElectricalElementsBuffer
-			  (since we use that to do graph visit)
+		= Electrical dynamics:
+			+ ElectricalElement has new "conductsElectricity" buffer
+				+ ~ Material (init'd with material's) and "current", in same struct (~ double "Switch")
+				+ cctor: value of material's x 2
+				! ElectricalElements::UpdateSourcesAndPropagation automagically considers it as it is now in the connectivity graph
+			+ GC->World->Ship->ElectricalElements::SetSwitchState(SwitchId, SwitchState)
+				+ Checks if state different than current
+				+ If so:
+					+ Sets conductsElectricity
+					+ Then updates ConductingConnectedElectricalElements (see below)
+					+ Then fires OnSwitchToggled(SwitchId, new state) event
+			- TODO:IF NEEDED: ElectricalElements::GetSwitchState(SwitchId) -> Double SwitchState
+		- ElectricalElements connectivity:
+			! Most performing approach is to alter connectivity graph with switch toggles
+			= mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
+				= Changes with structural changes only:
+					! Point destruction: just mark as deleted, as springs have been destroyed already
+						! assert
+					! Spring destruction: remove s.endpoints from each other *iff both A and B are electrical elements*
+						! Do via ElectricalElements::RemoveConnectedElectricalElement
+					- Point restore: just clear deleted flag, as springs will be restored later
+						- Do via ElectricalElements::Restore(idx)
+					- Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
+						- Do via ElectricalElements::AddConnectedElectricalElement
+			= mConductingConnectedElectricalElementsBuffer:
+				! Intersection of mConnectedElectricalElementsBuffer and mConductsElectricityBuffer:
+					! For each electrical element A: A.ConductingConnectedElectricalElements contains B iff:
+						! A.ConnectedElectricalElements contains B
+						! AND A.ConductsElectricity
+						! AND B.ConductsElectricity
+				= Changes with:
+					= Structural changes:
+						+ Point destruction: <nothing, as springs have been destroyed already> 
+							+ assert
+						+ Spring destruction: remove s.endpoints from each other *iff both A and B are electrical elements*
+							+ Do via ElectricalElements::RemoveConnectedElectricalElement
+						- Point restore: <nothing, as springs will be restored later>
+							- Do via ElectricalElements::Restore(idx)
+						= Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
+						  AND *iff A.ConductsElectricity AND B.ConductsElectricity*
+							+ Do via ElectricalElements::AddConnectedElectricalElement
+					+ ConductsElectricity changes (i.e. @ SetSwitchState):
+						+ F->T: for each elem B in ConnectedElectricalElements such that B.ConductsElectricity:
+							+ Add B to this.ConductingConnectedElectricalElements
+								+ assert not already in
+							+ Add this to B.ConductingConnectedElectricalElements
+								+ assert not already in
+						+ T->F: for each elem B in ConductingConnectedElectricalElements such that B.ConductsElectricity:
+							+ Remove B from this.ConductingConnectedElectricalElements
+								+ assert already in
+							+ Remove this from B.ConductingConnectedElectricalElements
+								+ assert already in
+			+ ElectricalElements::UpdateSourcesAndPropagation: only consider ConductingConnectedElectricalElements
+				+ Make ConnectedElectricalElementsBuffer private
+		- Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
+			- Uses list of elements (including water-sensing switches) for perf
+				- mAutomaticSwitches
+			- If current conductsElectricity==material's && water > high watermark:
+				- SetSwitchState(!current)
+			- Else if current conductsElectricity==!material's && water < low watermark:
+				- SetSwitchState(current)
 		= New game events:
-			= Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
+			+ Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
 				+ New IGameHandler: "electrical"
 					+ Also includes lights fizzling
-				= Visits switches among ElectricalElements and fires OnSwitchCreated(ObjectId, name, type, state)
-					- state is current value of ConductsElectricity (i.e. still from electrical material)
-			- Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(ObjectId, false)
-				- Also clears (on destroy) ConductsElectricity
-					- Thus see if may avoid checking for deleted at UpdateElectricalPropagation
-				- TODO: need to fire toggle event to communicate last state?
-			- Ship::ElectricalElements fires OnSwitchToggled(ObjectId, new state) at:
-				- 1) ToggleSwitch(LocalSwitchId switchId)
+				+ Visits switches among ElectricalElements and fires OnSwitchCreated(SwitchId, name, type, state)
+					+ state is current value of ConductsElectricity (i.e. still from electrical material)
+			+ Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(SwitchId, false)
+				! Also clears (on destroy) ConductsElectricity
+					+ Thus see if may avoid checking for deleted at UpdateElectricalPropagation
+			= Ship::ElectricalElements fires OnSwitchToggled(SwitchId, new state) at:
+				+ 1) ToggleSwitch(SwitchId switchId)
 				- 2) Water-sensing switching - which is done at ElectricalUpdate()
 					- But invokes ToggleSwitch(.) anyway
-				- state is new value of ConductsElectricity, i.e. after the toggle
-		- MainFrame gets switches via AddSwitch event, with all metadata (ObjectId, name, type, state)
+				+ state is new value of ConductsElectricity, i.e. after the toggle
+		- MainFrame gets switches via AddSwitch event, with all metadata (SwitchId, name, type, state)
 			- SwitchBoard panel (see below)
 				- Registers as event listener at cctor
-				//- Uses GameController (own shared ptr) :: SetSwitch(ObjectId switchId, bool state) to control switches
-				- Uses GameController (own shared ptr) :: ToggleSwitch(ObjectId switchId) to control switches
+				//- Uses GameController (own shared ptr) :: SetSwitch(SwitchId switchId, bool state) to control switches
+				- Uses GameController (own shared ptr) :: ToggleSwitch(SwitchId switchId) to control switches
 					- Water-sensing switches are not controllable, they just provide feedback
 		- MainFrame:
 			- Also registers for AddSwitch and shows SwitchBoard on first add
 				- As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
 			- Menu item to toggle SwitchBoard; enabled only if there's been one AddSwitch
 			- Hides it again only at Reset()
-		- Electrical dynamics:
-			- ElectricalElement has new "conductsElectricity" bool buffer
-				//- Material (init'd with material's) and "current"
-				- Single buffer
-				- cctor: value of material's
-				- Ship::UpdateSourcesAndPropagation checks conductance first when deciding to follow a connected electrical element
-			//- Ship::SetSwitch(LocalSwitchId, bool):
-			//	- Toggles electrical element's "current" "conductsElectricity", via ElectricalElements::SetSwitch(switch index, SwitchState)
-			//	- Then fires SwitchToggled event
-			- Ship::ToggleSwitch(LocalSwitchId):
-				- Toggles electrical element's conductsElectricity, via ElectricalElements::ToggleSwitch(LocalSwitchId)
-				- Then fires OnSwitchToggled(ObjectId, new state) event
-					- state is new value of ConductsElectricity, i.e. after the toggle
-			- Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
-				- Uses list of elements (including water-sensing switches) for perf
-				- Uses constant low and high watermark thresholds
-
 		- SwitchboardPanel:
 			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 				- Menu items to toggle it, enabled iff there's at least one switch
 			- Has control to hide it back (kinda like "close" button at top-right corner)
-			- ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
-				- Has state (SwitchState mCurrentState)
-					- Purely for drawing
-				- May be disabled/enabled (via SetEnabled(isEnabled) override), making it grey and non-functional
-				- User-generated toggle event is via lambda(new state)
-				- Exposes SetState(enum) and ToggleState() for externally-generated toggle events
-					- Does not invoke lambda in this case
-				- Images:
-					- {on, off} X {enabled, disabled} X {interactive, not interactive}
+			= ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
+				+ Has state (SwitchState mCurrentState)
+					+ Purely for drawing
+				+ May be disabled/enabled (via SetEnabled(isEnabled) override), making it grey and non-functional
+				- User-generated toggle event is via lambda(SwitchId, new state)
+				+ Exposes SetState(enum) and ToggleState() for externally-generated toggle events
+					+ Does not invoke lambda in this case
+				+ Images:
+					+ {on, off} X {enabled, disabled}
 				- Tooltip displays keys (whose labels are provided by creator via cctor)
 			- ShipAutomaticSwitchControl
+				- Merge two switch controls into one - base and two derived classes
 			- Panel: much like ProbePanel
-				- Has:
-					- ResourceLoader const & (used @ cctor only for button images)
-					- GameController (see others for shared_ptr or &)
+				+ Has:
+					+ ResourceLoader const & (used @ cctor only for button images)
+					+ GameController (see others for shared_ptr or &)
 				- Registers as event listener
 					- Processes IGameEventHandler::OnSwitchCreate/Delete
 					- Processes IGameEventHandler::OnSwitchToggled(ObjectId, new state)
 					- Processes Reset() to delete all
-				- Has unordered_map<ObjectId, SwitchInfo>
-					- SwitchInfo:
-						- uq_ptr<SwitchControl>
-						- bool IsEnabled					
+				+ Has unordered_map<ObjectId, SwitchInfo>
+					+ SwitchInfo:
+						+ uq_ptr<SwitchControl>
+						+ bool IsEnabled					
 				- OnSwitchCreated:
 					- Calc key and store in vector<integer from key, ObjectId> for key mappings
-					- Create uq_ptr<SwitchControl(key)>
-						- Does the mapping here from switch type to images and isInteractive
-					- Add SwitchInfo to map
+					+ Create uq_ptr<SwitchControl(key)>
+						+ Does the mapping here from switch type to images and class
+					+ Add SwitchInfo to map
 					- Add to panel - left-aligned, overflow and grow
-				- OnSwitchEnabled: 
-					- Enable/Disable switch control
-					- Enable/Disable in SwitchInfo
-					- Leave in map
+				+ OnSwitchEnabled: 
+					+ Enable/Disable switch control
+					+ Enable/Disable in SwitchInfo
+					+ Leave in map
 				- OnSwitchToggled(ObjectId, new state):
 					- Lookup from map and call SetState(new state) on control (regardless of disabling)
 				- Gets key events from MainFrame when MainFrame does not recognize
@@ -1179,16 +1220,16 @@ Render:
 					- Uses key mappings to figure out ObjectId
 					- On key:
 						- If SwitchInfo.IsEnabled:
-							- Call SwitchControl->ToggleState()
-							- Call (target of) lambda
-				- Target of lambda (OnInternallyToggledSwitch(ObjectId)):
-					- GameController->ToggleSwitch(ObjectId switchId)
-		- SoundController::OnSwitchToggled(., new state)
-			- {on, off} x {2} sounds
+							- Call SwitchControl->ToggleState() -> newState
+							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
+		= SoundController::OnSwitchToggled(., new state)
+			= {on, off} x {3} sounds
 
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
+			+ Nuke Ship.h::commented-out getters [if not needed]
 			- Materials guide:
 				- Add new ElectricalElementTypes
 				- Add new properties:
@@ -1196,6 +1237,8 @@ Render:
 					- is_instanced - with warning not to change
 			- Redo electrical materials template
 			- Wanna use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background?
+			- Decide whether SwitchboardPanel should be double-buffered or not
+		- Run in Debug
 				
 
 	- Pumps (*)

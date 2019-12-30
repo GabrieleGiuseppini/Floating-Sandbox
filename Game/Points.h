@@ -1513,7 +1513,7 @@ private:
     // Electrical dynamics
     //
 
-    // Electrical element, when any
+    // Electrical element (index in ElectricalElements container), if any
     Buffer<ElementIndex> mElectricalElementBuffer;
 
     // Total illumination, 0.0->1.0

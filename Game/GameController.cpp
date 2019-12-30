@@ -1025,6 +1025,14 @@ void GameController::TriggerLightning()
 	mWorld->TriggerLightning();
 }
 
+void GameController::SetSwitchState(
+    SwitchId switchId,
+    SwitchState switchState)
+{
+    assert(!!mWorld);
+    mWorld->SetSwitchState(switchId, switchState);
+}
+
 //
 // Render controls
 //

@@ -16,6 +16,7 @@
 #include "SettingsManager.h"
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
+#include "SwitchboardPanel.h"
 #include "ToolController.h"
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
@@ -62,6 +63,8 @@ public:
 
 private:
 
+    wxPanel * mMainPanel;
+
     //
     // Canvas
     //
@@ -88,8 +91,10 @@ private:
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
-    std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+    std::unique_ptr<SwitchboardPanel> mSwitchboardPanel;
     std::unique_ptr<ProbePanel> mProbePanel;
+    std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+
 
     //
     // Dialogs

@@ -45,6 +45,8 @@ enum class SoundType
     FloodHose,
     Stress,
     LightFlicker,
+    InteractiveSwitchOn,
+    InteractiveSwitchOff,
     WaterRush,
     WaterSplash,
     Wave,

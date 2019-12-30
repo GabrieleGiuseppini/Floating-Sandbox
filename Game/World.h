@@ -229,6 +229,10 @@ public:
 
 	void TriggerLightning();
 
+    void SetSwitchState(
+        SwitchId switchId,
+        SwitchState switchState);
+
     void SetSilence(float silenceAmount);
 
 public:

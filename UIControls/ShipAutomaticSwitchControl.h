@@ -6,14 +6,12 @@
 #pragma once
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/Log.h>
 
 #include <wx/bitmap.h>
 #include <wx/stattext.h>
 #include <wx/wx.h>
 
 #include <cassert>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -28,8 +26,8 @@ public:
         wxBitmap const & offEnabledImage,
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
+        SwitchId switchId,
         std::string const & label,
-        std::function<void(SwitchState)> onSwitchToggled,
         SwitchState currentState)
         : wxPanel(
             parent,
@@ -40,16 +38,15 @@ public:
         , mOnEnabledImage(onEnabledImage)
         , mOffEnabledImage(offEnabledImage)
         , mOnDisabledImage(onDisabledImage)
-        , mOffDisabledImage(onDisabledImage)
-        , mOnSwitchToggled(std::move(onSwitchToggled))
+        , mOffDisabledImage(offDisabledImage)
         , mImageBitmap(nullptr)
+        , mSwitchId(switchId)
         , mCurrentState(currentState)
         , mIsEnabled(true)
     {
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
         mImageBitmap = new wxStaticBitmap(this, wxID_ANY, mOnEnabledImage, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
-        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&ShipAutomaticSwitchControl::OnMouseClick, this);
         vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
@@ -65,11 +62,6 @@ public:
         SetImageForCurrentState();
     }
 
-    void ToggleState()
-    {
-        SetState(mCurrentState == SwitchState::On ? SwitchState::Off : SwitchState::On);
-    }
-
     void SetEnabled(bool isEnabled)
     {
         mIsEnabled = isEnabled;
@@ -79,15 +71,32 @@ public:
 
 private:
 
-    void OnMouseClick(wxMouseEvent & event)
-    {
-        // TODO
-        LogMessage("Click!");
-    }
-
     void SetImageForCurrentState()
     {
-        // TODO
+        if (mIsEnabled)
+        {
+            if (mCurrentState == SwitchState::On)
+            {
+                mImageBitmap->SetBitmap(mOnEnabledImage);
+            }
+            else
+            {
+                assert(mCurrentState == SwitchState::Off);
+                mImageBitmap->SetBitmap(mOffEnabledImage);
+            }
+        }
+        else
+        {
+            if (mCurrentState == SwitchState::On)
+            {
+                mImageBitmap->SetBitmap(mOnDisabledImage);
+            }
+            else
+            {
+                assert(mCurrentState == SwitchState::Off);
+                mImageBitmap->SetBitmap(mOffDisabledImage);
+            }
+        }
     }
 
 private:
@@ -97,12 +106,11 @@ private:
     wxBitmap const & mOnDisabledImage;
     wxBitmap const & mOffDisabledImage;
 
-    std::function<void(SwitchState)> const mOnSwitchToggled;
-
     wxStaticBitmap * mImageBitmap;
 
 private:
 
+    SwitchId const mSwitchId;
     SwitchState mCurrentState;
     bool mIsEnabled;
 };

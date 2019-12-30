@@ -95,7 +95,6 @@ SoundController::SoundController(
         }
 
 
-
         //
         // Parse filename
         //
@@ -418,7 +417,9 @@ SoundController::SoundController(
                 || soundType == SoundType::Snapshot
                 || soundType == SoundType::TerrainAdjust
                 || soundType == SoundType::ThanosSnap
-                || soundType == SoundType::Scrub)
+                || soundType == SoundType::Scrub
+                || soundType == SoundType::InteractiveSwitchOn
+                || soundType == SoundType::InteractiveSwitchOff)
         {
             //
             // - one-shot sound
@@ -1276,6 +1277,16 @@ void SoundController::OnLightFlicker(
             100.0f,
             30.0f * size),
         true);
+}
+
+void SoundController::OnSwitchToggled(
+    SwitchId switchId,
+    SwitchState newState)
+{
+    PlayOneShotMultipleChoiceSound(
+        newState == SwitchState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+        100.0f,
+        false);
 }
 
 void SoundController::OnBombPlaced(

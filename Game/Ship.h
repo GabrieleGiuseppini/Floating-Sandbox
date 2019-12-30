@@ -50,15 +50,6 @@ public:
     auto const & GetPoints() const { return mPoints; }
     auto & GetPoints() { return mPoints; }
 
-    auto const & GetSprings() const { return mSprings; }
-    auto & GetSprings() { return mSprings; }
-
-    auto const & GetTriangles() const { return mTriangles; }
-    auto & GetTriangles() { return mTriangles; }
-
-    auto const & GetElectricalElements() const { return mElectricalElements; }
-    auto & GetElectricalElements() { return mElectricalElements; }
-
     void Update(
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
@@ -205,6 +196,10 @@ public:
 		vec2f const & targetPos,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
+
+    void SetSwitchState(
+        SwitchId switchId,
+        SwitchState switchState);
 
 public:
 
@@ -384,6 +379,8 @@ private:
     virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
     virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
+
+    virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 
     virtual void StartExplosion(
         float currentSimulationTime,

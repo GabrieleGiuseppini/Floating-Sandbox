@@ -237,6 +237,10 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnSwitchToggled(
+        SwitchId switchId,
+        SwitchState newState) override;
+
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,

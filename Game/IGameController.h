@@ -103,6 +103,8 @@ struct IGameController
     virtual void TriggerStorm() = 0;
 	virtual void TriggerLightning() = 0;
 
+    virtual void SetSwitchState(SwitchId switchId, SwitchState switchState) = 0;
+
     //
     // Rendering controls
     //

@@ -1330,4 +1330,13 @@ void Ship::ApplyLightning(
 	}
 }
 
+void Ship::SetSwitchState(
+    SwitchId switchId,
+    SwitchState switchState)
+{
+    assert(switchId.GetShipId() == mId);
+
+    mElectricalElements.SetSwitchState(switchId, switchState);
+}
+
 }
