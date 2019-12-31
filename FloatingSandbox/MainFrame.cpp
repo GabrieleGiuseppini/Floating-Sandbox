@@ -627,10 +627,14 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mSwitchboardPanel = SwitchboardPanel::Create(
         mMainPanel,
+        mMainPanel,
+        mMainFrameSizer,
         mGameController,
         *mResourceLoader);
 
     mMainFrameSizer->Add(mSwitchboardPanel.get(), 0, wxEXPAND);
+
+    mMainPanel->Layout();
 
 
     //
@@ -878,6 +882,11 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 		LogMessage(worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
+
+        // TODOTEST
+        mMainFrameSizer->Hide(mSwitchboardPanel.get());
+        mMainFrameSizer->Show(mSwitchboardPanel.get());
+        mMainFrameSizer->Layout();
     }
     else if (event.GetKeyCode() == 'B')
     {
@@ -1055,7 +1064,17 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
-    if (!!mGameController)
+    // TODOTEST
+    if (!mSwitchboardPanel)
+        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasResize:", event.GetSize().GetX(), "x", event.GetSize().GetY());
+    else
+        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasResize:", event.GetSize().GetX(), "x", event.GetSize().GetY(),
+        " Switchboard:", mSwitchboardPanel->GetSize().GetX(), "x", mSwitchboardPanel->GetSize().GetY(),
+        " visible=", mSwitchboardPanel->IsShown());
+
+    if (!!mGameController
+        && event.GetSize().GetX() > 0
+        && event.GetSize().GetY())
     {
         mGameController->SetCanvasSize(
             event.GetSize().GetX(),

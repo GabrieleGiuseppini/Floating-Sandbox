@@ -1233,6 +1233,8 @@ Render:
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- Mouse pointer on switchboard
+			- AutoShowSwitchboard preference saving
 			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
 			+ Nuke Ship.h::commented-out getters [if not needed]
 			- Materials guide:

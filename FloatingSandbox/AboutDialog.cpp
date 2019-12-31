@@ -60,9 +60,9 @@ AboutDialog::AboutDialog(
     // Image
     //
 
-    wxBitmap* bmp = new wxBitmap(resourceLoader.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap bmp(resourceLoader.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
 
-    wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, *bmp, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
+    wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, bmp, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
 
     mainSizer->Add(stBmp, 1, wxALIGN_CENTER_HORIZONTAL);
 

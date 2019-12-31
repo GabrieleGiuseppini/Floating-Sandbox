@@ -29,10 +29,21 @@ public:
 
     static std::unique_ptr<SwitchboardPanel> Create(
         wxWindow * parent,
+        wxWindow * parentLayoutWindow,
+        wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
         ResourceLoader & resourceLoader);
 
     virtual ~SwitchboardPanel();
+
+    bool IsShowing() const
+    {
+        return mShowingMode != ShowingMode::NotShowing;
+    }
+
+    void ShowPartially();
+
+    void ShowFully();
 
 public:
 
@@ -66,15 +77,32 @@ private:
 
     SwitchboardPanel(
         wxWindow * parent,
+        wxWindow * parentLayoutWindow,
+        wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
         ResourceLoader & resourceLoader);
 
-    void MakePanel();
+    void MakeSwitchPanel();
+
+    void LayoutParent();
 
 private:
 
+    enum class ShowingMode
+    {
+        NotShowing,
+        ShowingHint,
+        ShowingFully
+    };
+
+    ShowingMode mShowingMode;
+
+    wxBoxSizer * mMainVSizer;
+    wxPanel * mHintPanel;
     wxPanel * mSwitchPanel;
-    wxFlexGridSizer * mSwitchSizer;
+    wxFlexGridSizer * mSwitchPanelSizer;
+
+private:
 
     struct SwitchInfo
     {
@@ -96,6 +124,9 @@ private:
 private:
 
     std::shared_ptr<IGameController> const mGameController;
+
+    wxWindow * const mParentLayoutWindow;
+    wxSizer * const mParentLayoutSizer;
 
     //
     // Bitmaps

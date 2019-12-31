@@ -45,6 +45,7 @@ class MainFrame
     : public wxFrame
     , public ILifecycleGameEventHandler
 	, public IAtmosphereGameEventHandler
+    , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -206,13 +207,21 @@ private:
     {
         gameController.RegisterLifecycleEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterElectricalElementEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
     virtual void OnGameReset() override
     {
-        mCurrentShipTitles.clear();
+        // Hide switchboard panel
+        // TODOTEST
+        ////assert(nullptr != mMainFrameSizer);
+        ////assert(!!mSwitchboardPanel);
+        ////mMainFrameSizer->Hide(mSwitchboardPanel.get());
+        ////mMainFrameSizer->Layout();
 
+        // Refresh title bar
+        mCurrentShipTitles.clear();
         UpdateFrameTitle();
     }
 
@@ -239,6 +248,32 @@ private:
 	{
 		mTriggerStormMenuItem->Enable(true);
 	}
+
+    virtual void OnSwitchCreated(
+        SwitchId /*switchId*/,
+        std::string const & /*name*/,
+        SwitchType /*type*/,
+        SwitchState /*state*/) override
+    {
+        assert(!!mSwitchboardPanel);
+        assert(!!mUIPreferencesManager);
+
+        if (!mSwitchboardPanel->IsShowing())
+        {
+            if (mUIPreferencesManager->GetAutoShowSwitchboard())
+            {
+                mSwitchboardPanel->ShowFully();
+            }
+            else
+            {
+                mSwitchboardPanel->ShowPartially();
+            }
+
+            // TODOTEST
+            //mMainFrameSizer->Show(mSwitchboardPanel.get());
+            //mMainFrameSizer->Layout();
+        }
+    }
 
     virtual void OnBombPlaced(
         BombId /*bombId*/,

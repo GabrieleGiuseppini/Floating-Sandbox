@@ -10,18 +10,24 @@
 
 std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parent,
+    wxWindow * parentLayoutWindow,
+    wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
     ResourceLoader & resourceLoader)
 {
     return std::unique_ptr<SwitchboardPanel>(
         new SwitchboardPanel(
             parent,
+            parentLayoutWindow,
+            parentLayoutSizer,
             gameController,
             resourceLoader));
 }
 
 SwitchboardPanel::SwitchboardPanel(
     wxWindow * parent,
+    wxWindow * parentLayoutWindow,
+    wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
     ResourceLoader & resourceLoader)
     : wxPanel(
@@ -30,19 +36,32 @@ SwitchboardPanel::SwitchboardPanel(
         wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE)
+    , mShowingMode(ShowingMode::NotShowing)
     , mSwitchMap()
     , mGameController(gameController)
+    , mParentLayoutWindow(parentLayoutWindow)
+    , mParentLayoutSizer(parentLayoutSizer)
 {
-    // TODOTEST
-    //SetDoubleBuffered(true);
-
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    //
-    // Make panel
-    //
+    mMainVSizer = new wxBoxSizer(wxVERTICAL);
 
-    MakePanel();
+    // Hint panel - hidden
+    mHintPanel = new wxPanel(this);
+    {
+        wxBoxSizer * hintSizer = new wxBoxSizer(wxVERTICAL);
+        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Switches", wxDefaultPosition, wxDefaultSize, 0);
+        hintSizer->Add(hintStaticText, 0, wxALIGN_CENTER_HORIZONTAL);
+        mHintPanel->SetSizer(hintSizer);
+    }
+    mMainVSizer->Add(mHintPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+    mMainVSizer->Hide(mHintPanel);
+
+    // Switch panel - hidden
+    MakeSwitchPanel();
+    mMainVSizer->Hide(mSwitchPanel);
+
+    SetSizer(mMainVSizer);
 
     //
     // Load bitmaps
@@ -58,28 +77,92 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-void SwitchboardPanel::MakePanel()
+void SwitchboardPanel::ShowPartially()
+{
+    LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
+
+    // Show hint panel
+    mMainVSizer->Show(mHintPanel);
+
+    // Hide switch panel
+    mMainVSizer->Hide(mSwitchPanel);
+
+    // Update layout
+    mMainVSizer->Layout();
+
+    mShowingMode = ShowingMode::ShowingHint;
+
+    // Notify parent
+    LayoutParent();
+}
+
+void SwitchboardPanel::ShowFully()
+{
+    LogMessage("TODOTEST:SwitchboardPanel::ShowFully()");
+
+    // Show hint panel
+    mMainVSizer->Show(mHintPanel);
+
+    // Show switch panel
+    mMainVSizer->Show(mSwitchPanel);
+
+    // Update layout
+    mMainVSizer->Layout();
+
+    mShowingMode = ShowingMode::ShowingFully;
+
+    // Notify parent
+    LayoutParent();
+}
+
+void SwitchboardPanel::MakeSwitchPanel()
 {
     // Create grid sizer for switch panel
-    mSwitchSizer = new wxFlexGridSizer(1, 0, 0, 0);
-    mSwitchSizer->SetFlexibleDirection(wxHORIZONTAL);
+    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 0);
+    mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
 
     // Create panel for switches
     mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    mSwitchPanel->SetSizerAndFit(mSwitchSizer);
+    mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
+
+    // Add switch panel to v-sizer
+    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+}
+
+void SwitchboardPanel::LayoutParent()
+{
+    // TODOTEST
+    mParentLayoutWindow->Layout();
+    mParentLayoutWindow->GetSizer()->Fit(mParentLayoutWindow);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SwitchboardPanel::OnGameReset()
 {
-    // Reset all controls
+    LogMessage("TODOTEST:SwitchboardPanel::OnGameReset()");
+
+    // Reset all switch controls
     mSwitchPanel->Destroy();
     mSwitchPanel = nullptr;
-    mSwitchSizer = nullptr;
-    MakePanel();
+    mSwitchPanelSizer = nullptr;
+    MakeSwitchPanel();
 
-    // Clear map
+    // Hide hint panel
+    mMainVSizer->Hide(mHintPanel);
+
+    // Hide (new) switch panel
+    mMainVSizer->Hide(mSwitchPanel);
+
+    // Update layout
+    mMainVSizer->Layout();
+
+    mShowingMode = ShowingMode::NotShowing;
+
+    // Notify parent
+    LayoutParent();
+
+    // Clear switch map
     mSwitchMap.clear();
 }
 
@@ -129,20 +212,22 @@ void SwitchboardPanel::OnSwitchCreated(
         }
     }
 
-    mSwitchSizer->Add(
+    LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: BEFORE: SwitchPanelSize=",
+        mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),
+        " ctrl Size=", ctrl->GetSize().GetX(), "x", ctrl->GetSize().GetY());
+
+    mSwitchPanelSizer->Add(
         ctrl,
         0,
         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
 
-    // TODOTEST: figure out which one is needed
+    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
-    mSwitchPanel->Layout();
-    mSwitchPanel->Fit();
+    //LayoutParent();
 
-    this->Layout();
-    this->Fit();
-
-    ////this->GetParent()->Layout();
+    LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: AFTER: SwitchPanelSize=",
+        mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),
+        " visible=", mSwitchPanel->IsShown());
 
 
     //
