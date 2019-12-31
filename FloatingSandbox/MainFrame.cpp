@@ -497,19 +497,6 @@ MainFrame::MainFrame(
 
     SetMenuBar(mainMenuBar);
 
-    //
-    // Switchboard panel
-    //
-
-    mSwitchboardPanel = SwitchboardPanel::Create(
-        mMainPanel,
-        mGameController,
-        *mResourceLoader);
-
-    mMainFrameSizer->Add(mSwitchboardPanel.get(), 0, wxEXPAND);
-
-    // TODOTEST
-    //mMainFrameSizer->Hide(mSwitchboardPanel.get());
 
 
     //
@@ -521,6 +508,7 @@ MainFrame::MainFrame(
     mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
 
     mMainFrameSizer->Hide(mProbePanel.get());
+
 
 
     //
@@ -631,6 +619,18 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
 
     this->mMainApp->Yield();
+
+
+    //
+    // Create switchboard panel
+    //
+
+    mSwitchboardPanel = SwitchboardPanel::Create(
+        mMainPanel,
+        mGameController,
+        *mResourceLoader);
+
+    mMainFrameSizer->Add(mSwitchboardPanel.get(), 0, wxEXPAND);
 
 
     //
@@ -745,9 +745,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     this->RegisterEventHandler(*mGameController);
-    mSwitchboardPanel->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
     mEventTickerPanel->RegisterEventHandler(*mGameController);
+    mSwitchboardPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
 

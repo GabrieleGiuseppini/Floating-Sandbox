@@ -85,18 +85,18 @@ private:
 
     void OnMouseClick(wxMouseEvent & /*event*/)
     {
-        // TODOTEST
-        LogMessage("TODOTEST: ShipInteractiveSwitchControl::OnMouseClick");
+        if (mIsEnabled)
+        {
+            //
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            //
 
-        //
-        // Just invoke the callback, we'll end up being toggled when the event travels back
-        //
+            SwitchState const newState = (mCurrentState == SwitchState::On)
+                ? SwitchState::Off
+                : SwitchState::On;
 
-        SwitchState const newState = (mCurrentState == SwitchState::On)
-            ? SwitchState::Off
-            : SwitchState::On;
-
-        mOnSwitchToggled(mSwitchId, newState);
+            mOnSwitchToggled(mSwitchId, newState);
+        }
     }
 
     void SetImageForCurrentState()
@@ -125,6 +125,8 @@ private:
                 mImageBitmap->SetBitmap(mOffDisabledImage);
             }
         }
+
+        Refresh();
     }
 
 private:

@@ -113,6 +113,8 @@ void ElectricalElements::AnnounceInstancedElements()
                     mLabels[elementIndex],
                     SwitchType::Interactive,
                     static_cast<SwitchState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+
+                break;
             }
 
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
@@ -122,6 +124,8 @@ void ElectricalElements::AnnounceInstancedElements()
                     mLabels[elementIndex],
                     SwitchType::WaterSensing,
                     static_cast<SwitchState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+
+                break;
             }
         }
     }

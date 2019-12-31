@@ -97,6 +97,8 @@ private:
                 mImageBitmap->SetBitmap(mOffDisabledImage);
             }
         }
+
+        Refresh();
     }
 
 private:

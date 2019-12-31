@@ -60,14 +60,12 @@ SwitchboardPanel::~SwitchboardPanel()
 
 void SwitchboardPanel::MakePanel()
 {
-    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-    // TODOTEST
-    mSwitchPanel->SetMinSize(wxSize(-1, 100));
-
+    // Create grid sizer for switch panel
     mSwitchSizer = new wxFlexGridSizer(1, 0, 0, 0);
     mSwitchSizer->SetFlexibleDirection(wxHORIZONTAL);
 
+    // Create panel for switches
+    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     mSwitchPanel->SetSizerAndFit(mSwitchSizer);
 }
 
@@ -136,7 +134,7 @@ void SwitchboardPanel::OnSwitchCreated(
         0,
         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
 
-    // TODOTEST
+    // TODOTEST: figure out which one is needed
 
     mSwitchPanel->Layout();
     mSwitchPanel->Fit();
@@ -191,5 +189,24 @@ void SwitchboardPanel::OnSwitchToggled(
     SwitchId switchId,
     SwitchState newState)
 {
-    // TODO
+    auto it = mSwitchMap.find(switchId);
+    assert(it != mSwitchMap.end());
+
+    // Toggle control
+    switch (it->second.Type)
+    {
+        case SwitchType::Interactive:
+        {
+            auto * ctrl = dynamic_cast<ShipInteractiveSwitchControl *>(it->second.SwitchControl);
+            ctrl->SetState(newState);
+            break;
+        }
+
+        case SwitchType::WaterSensing:
+        {
+            auto * ctrl = dynamic_cast<ShipAutomaticSwitchControl *>(it->second.SwitchControl);
+            ctrl->SetState(newState);
+            break;
+        }
+    }
 }

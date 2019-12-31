@@ -427,6 +427,8 @@ Render:
 
 		= Switches (*)
 
+		- Try transmogrifying all textures
+
 		- Slicer sound is not controller by Tools Volume
 
 		- See if fire may emit Heavy smoke
@@ -1182,14 +1184,17 @@ Render:
 				+ Has state (SwitchState mCurrentState)
 					+ Purely for drawing
 				+ May be disabled/enabled (via SetEnabled(isEnabled) override), making it grey and non-functional
-				- User-generated toggle event is via lambda(SwitchId, new state)
+				+ User-generated toggle event is via lambda(SwitchId, new state)
 				+ Exposes SetState(enum) and ToggleState() for externally-generated toggle events
 					+ Does not invoke lambda in this case
 				+ Images:
 					+ {on, off} X {enabled, disabled}
 				- Tooltip displays keys (whose labels are provided by creator via cctor)
 			- ShipAutomaticSwitchControl
-				- Merge two switch controls into one - base and two derived classes
+				- Merge two switch controls into one - base and two derived classes; both expose:
+					- SetEnabled
+					- SetState
+				- ...nuke all the "casting switch(type)" from panel
 			- Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)
@@ -1212,8 +1217,8 @@ Render:
 					+ Enable/Disable switch control
 					+ Enable/Disable in SwitchInfo
 					+ Leave in map
-				- OnSwitchToggled(ObjectId, new state):
-					- Lookup from map and call SetState(new state) on control (regardless of disabling)
+				+ OnSwitchToggled(ObjectId, new state):
+					+ Lookup from map and call SetState(new state) on control (regardless of disabling)
 				- Gets key events from MainFrame when MainFrame does not recognize
 					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain
 					- Shift and Alt do +10, +20

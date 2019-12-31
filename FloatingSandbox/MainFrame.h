@@ -91,9 +91,9 @@ private:
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
-    std::unique_ptr<SwitchboardPanel> mSwitchboardPanel;
     std::unique_ptr<ProbePanel> mProbePanel;
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+    std::unique_ptr<SwitchboardPanel> mSwitchboardPanel;
 
 
     //
