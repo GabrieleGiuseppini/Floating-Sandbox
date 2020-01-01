@@ -154,12 +154,12 @@ public:
             currentState)
         , mOnSwitchToggled(std::move(onSwitchToggled))
     {
-        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&ShipInteractiveSwitchControl::OnMouseClick, this);
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&ShipInteractiveSwitchControl::OnLeftDown, this);
     }
 
 private:
 
-    void OnMouseClick(wxMouseEvent & /*event*/)
+    void OnLeftDown(wxMouseEvent & /*event*/)
     {
         if (mIsEnabled)
         {

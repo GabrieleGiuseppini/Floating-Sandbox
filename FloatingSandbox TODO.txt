@@ -1232,11 +1232,11 @@ Render:
 
 		- Cleanup:
 			- Remove test switch adding from MainFrame.cpp
-			= Mouse pointer on switchboard
+			+ Mouse pointer on switchboard
 				+ SwitchboardPanel::cctor: SetCursor
 				+ See whether tool controller should set it only on canvas rather than on application
 					+ ToolController::cctor and Tool::cctor take wxWindow for parent, not wxFrame
-				- Make finger pointer
+				+ Make finger pointer
 			+ AutoShowSwitchboard preference saving
 			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
 			+ Nuke Ship.h::commented-out getters [if not needed]

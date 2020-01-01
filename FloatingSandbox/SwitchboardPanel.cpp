@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "SwitchboardPanel.h"
 
+#include "WxHelpers.h"
+
 #include <cassert>
 #include <utility>
 
@@ -44,8 +46,19 @@ SwitchboardPanel::SwitchboardPanel(
 {
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    // TODOTEST
-    SetCursor(wxNullCursor);
+    // Load cursor
+    mUpCursor = WxHelpers::MakeCursor(
+        resourceLoader.GetCursorFilepath("switch_cursor_up"),
+        8,
+        9);
+
+    // Set cursor
+    SetCursor(*mUpCursor);
+
+
+    //
+    // Setup panel
+    //
 
     mMainVSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -154,25 +167,6 @@ void SwitchboardPanel::ShowFullyDocked()
 
     // Notify parent
     LayoutParent();
-}
-
-void SwitchboardPanel::MakeSwitchPanel()
-{
-    // Create grid sizer for switch panel
-    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 0);
-    mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
-
-    // Create panel for switches
-    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
-
-    // Add switch panel to v-sizer
-    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL);
-}
-
-void SwitchboardPanel::LayoutParent()
-{
-    mParentLayoutWindow->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -294,4 +288,25 @@ void SwitchboardPanel::OnSwitchToggled(
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
     it->second.SwitchControl->SetState(newState);
+}
+
+///////////////////////////////////////////////////////////////////
+
+void SwitchboardPanel::MakeSwitchPanel()
+{
+    // Create grid sizer for switch panel
+    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 0);
+    mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
+
+    // Create panel for switches
+    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
+
+    // Add switch panel to v-sizer
+    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+}
+
+void SwitchboardPanel::LayoutParent()
+{
+    mParentLayoutWindow->Layout();
 }

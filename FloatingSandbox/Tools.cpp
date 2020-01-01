@@ -24,7 +24,7 @@ std::vector<std::unique_ptr<wxCursor>> MakeCursors(
     wxBitmap* bmp = new wxBitmap(filepath.string(), wxBITMAP_TYPE_PNG);
     if (nullptr == bmp)
     {
-        throw GameException("Cannot load resource '" + filepath.string() + "'");
+        throw GameException("Cannot load cursor '" + filepath.string() + "'");
     }
 
     wxImage img = bmp->ConvertToImage();
@@ -94,7 +94,7 @@ std::unique_ptr<wxCursor> MakeCursor(
     wxBitmap* bmp = new wxBitmap(filepath.string(), wxBITMAP_TYPE_PNG);
     if (nullptr == bmp)
     {
-        throw GameException("Cannot load resource '" + filepath.string() + "'");
+        throw GameException("Cannot load cursor '" + filepath.string() + "'");
     }
 
     wxImage img = bmp->ConvertToImage();

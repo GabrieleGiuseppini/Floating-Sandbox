@@ -12,6 +12,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
+#include <wx/cursor.h>
 #include <wx/sizer.h>
 #include <wx/wx.h>
 
@@ -131,6 +132,8 @@ private:
 
     wxWindow * const mParentLayoutWindow;
     wxSizer * const mParentLayoutSizer;
+
+    std::shared_ptr<wxCursor> mUpCursor;
 
     //
     // Bitmaps
