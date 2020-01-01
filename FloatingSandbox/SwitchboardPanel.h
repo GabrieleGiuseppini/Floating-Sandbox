@@ -41,9 +41,13 @@ public:
         return mShowingMode != ShowingMode::NotShowing;
     }
 
+    void Hide();
+
     void ShowPartially();
 
-    void ShowFully();
+    void ShowFullyFloating();
+
+    void ShowFullyDocked();
 
 public:
 
@@ -92,7 +96,8 @@ private:
     {
         NotShowing,
         ShowingHint,
-        ShowingFully
+        ShowingFullyFloating,
+        ShowingFullyDocked
     };
 
     ShowingMode mShowingMode;

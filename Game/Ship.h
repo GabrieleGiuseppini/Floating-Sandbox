@@ -38,7 +38,7 @@ public:
         Triangles && triangles,
         ElectricalElements && electricalElements);
 
-    ~Ship();
+    void Announce();
 
     ShipId GetId() const { return mId; }
 

@@ -57,6 +57,16 @@ ShipId World::AddShip(
     return shipId;
 }
 
+void World::Announce()
+{
+    // Nothing to announce in non-ship stuff...
+    // ...ask all ships to announce
+    for (auto & ship : mAllShips)
+    {
+        ship->Announce();
+    }
+}
+
 size_t World::GetShipCount() const
 {
     return mAllShips.size();

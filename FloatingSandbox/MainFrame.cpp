@@ -884,9 +884,9 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         mGameController->QueryNearestPointAt(screenCoords);
 
         // TODOTEST
-        mMainFrameSizer->Hide(mSwitchboardPanel.get());
-        mMainFrameSizer->Show(mSwitchboardPanel.get());
-        mMainFrameSizer->Layout();
+        static ElementIndex TODOID(1);
+        ++TODOID;
+        mSwitchboardPanel->OnSwitchCreated(SwitchId(0, TODOID), "Test " + std::to_string(TODOID), SwitchType::Interactive, SwitchState::Off);
     }
     else if (event.GetKeyCode() == 'B')
     {

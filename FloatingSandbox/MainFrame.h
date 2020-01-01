@@ -213,12 +213,12 @@ private:
 
     virtual void OnGameReset() override
     {
-        // Hide switchboard panel
-        // TODOTEST
-        ////assert(nullptr != mMainFrameSizer);
-        ////assert(!!mSwitchboardPanel);
-        ////mMainFrameSizer->Hide(mSwitchboardPanel.get());
-        ////mMainFrameSizer->Layout();
+        // Hide switchboard panel if showing in any form
+        assert(!!mSwitchboardPanel);
+        if (mSwitchboardPanel->IsShowing())
+        {
+            mSwitchboardPanel->Hide();
+        }
 
         // Refresh title bar
         mCurrentShipTitles.clear();
@@ -255,6 +255,10 @@ private:
         SwitchType /*type*/,
         SwitchState /*state*/) override
     {
+        //
+        // Show switchboard if required
+        //
+
         assert(!!mSwitchboardPanel);
         assert(!!mUIPreferencesManager);
 
@@ -262,16 +266,12 @@ private:
         {
             if (mUIPreferencesManager->GetAutoShowSwitchboard())
             {
-                mSwitchboardPanel->ShowFully();
+                mSwitchboardPanel->ShowFullyDocked();
             }
             else
             {
                 mSwitchboardPanel->ShowPartially();
             }
-
-            // TODOTEST
-            //mMainFrameSizer->Show(mSwitchboardPanel.get());
-            //mMainFrameSizer->Layout();
         }
     }
 

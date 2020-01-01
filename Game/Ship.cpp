@@ -111,15 +111,14 @@ Ship::Ship(
     mTriangles.RegisterShipPhysicsHandler(this);
     mElectricalElements.RegisterShipPhysicsHandler(this);
 
-    // Announce instanced electrical elements
-    mElectricalElements.AnnounceInstancedElements();
-
     // Do a first connectivity pass (for the first Update)
     RunConnectivityVisit();
 }
 
-Ship::~Ship()
+void Ship::Announce()
 {
+    // Announce instanced electrical elements
+    mElectricalElements.AnnounceInstancedElements();
 }
 
 void Ship::Update(

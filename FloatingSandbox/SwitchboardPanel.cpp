@@ -77,6 +77,25 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
+void SwitchboardPanel::Hide()
+{
+    LogMessage("TODOTEST:SwitchboardPanel::Hide()");
+
+    // Hide hint panel
+    mMainVSizer->Hide(mHintPanel);
+
+    // Hide switch panel
+    mMainVSizer->Hide(mSwitchPanel);
+
+    // Update layout
+    mMainVSizer->Layout();
+
+    mShowingMode = ShowingMode::NotShowing;
+
+    // Notify parent
+    LayoutParent();
+}
+
 void SwitchboardPanel::ShowPartially()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
@@ -96,9 +115,9 @@ void SwitchboardPanel::ShowPartially()
     LayoutParent();
 }
 
-void SwitchboardPanel::ShowFully()
+void SwitchboardPanel::ShowFullyFloating()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::ShowFully()");
+    LogMessage("TODOTEST:SwitchboardPanel::ShowFullyFloating()");
 
     // Show hint panel
     mMainVSizer->Show(mHintPanel);
@@ -109,7 +128,26 @@ void SwitchboardPanel::ShowFully()
     // Update layout
     mMainVSizer->Layout();
 
-    mShowingMode = ShowingMode::ShowingFully;
+    mShowingMode = ShowingMode::ShowingFullyFloating;
+
+    // Notify parent
+    LayoutParent();
+}
+
+void SwitchboardPanel::ShowFullyDocked()
+{
+    LogMessage("TODOTEST:SwitchboardPanel::ShowFullyDocked()");
+
+    // Show hint panel
+    mMainVSizer->Show(mHintPanel);
+
+    // Show switch panel
+    mMainVSizer->Show(mSwitchPanel);
+
+    // Update layout
+    mMainVSizer->Layout();
+
+    mShowingMode = ShowingMode::ShowingFullyDocked;
 
     // Notify parent
     LayoutParent();
@@ -131,9 +169,7 @@ void SwitchboardPanel::MakeSwitchPanel()
 
 void SwitchboardPanel::LayoutParent()
 {
-    // TODOTEST
     mParentLayoutWindow->Layout();
-    mParentLayoutWindow->GetSizer()->Fit(mParentLayoutWindow);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -216,14 +252,18 @@ void SwitchboardPanel::OnSwitchCreated(
         mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),
         " ctrl Size=", ctrl->GetSize().GetX(), "x", ctrl->GetSize().GetY());
 
+    // Add to sizer
     mSwitchPanelSizer->Add(
         ctrl,
         0,
         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
 
+    // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
-    //LayoutParent();
+    mMainVSizer->Layout();
+
+    LayoutParent();
 
     LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: AFTER: SwitchPanelSize=",
         mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),

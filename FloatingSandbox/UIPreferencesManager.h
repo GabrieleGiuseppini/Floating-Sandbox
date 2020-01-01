@@ -162,6 +162,11 @@ public:
         return mAutoShowSwitchboard;
     }
 
+    void SetAutoShowSwitchboard(bool value)
+    {
+        mAutoShowSwitchboard = value;
+    }
+
     float GetZoomIncrement() const
     {
         return mZoomIncrement;

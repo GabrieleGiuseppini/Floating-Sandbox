@@ -34,15 +34,17 @@ public:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
 
-    float GetCurrentSimulationTime() const
-    {
-        return mCurrentSimulationTime;
-    }
-
     ShipId AddShip(
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters);
+
+    void Announce();
+
+    float GetCurrentSimulationTime() const
+    {
+        return mCurrentSimulationTime;
+    }
 
     size_t GetShipCount() const;
 

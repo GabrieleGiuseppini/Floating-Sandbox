@@ -1165,15 +1165,14 @@ Render:
 				- 2) Water-sensing switching - which is done at ElectricalUpdate()
 					- But invokes ToggleSwitch(.) anyway
 				+ state is new value of ConductsElectricity, i.e. after the toggle
-		- MainFrame gets switches via AddSwitch event, with all metadata (SwitchId, name, type, state)
-			- SwitchBoard panel (see below)
-				- Registers as event listener at cctor
-				//- Uses GameController (own shared ptr) :: SetSwitch(SwitchId switchId, bool state) to control switches
-				- Uses GameController (own shared ptr) :: ToggleSwitch(SwitchId switchId) to control switches
-					- Water-sensing switches are not controllable, they just provide feedback
-		- MainFrame:
-			- Also registers for AddSwitch and shows SwitchBoard on first add
-				- As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
+		! MainFrame gets switches via AddSwitch event, with all metadata (SwitchId, name, type, state)
+			! SwitchBoard panel (see below)
+				! Registers as event listener at cctor
+				! Uses GameController (own shared ptr) :: SetSwitch(SwitchId switchId, state) to control switches
+					! Water-sensing switches are not controllable, they just provide feedback
+		= MainFrame:
+			= Also registers for AddSwitch and shows SwitchBoard on first add
+				+ As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
 			- Menu item to toggle SwitchBoard; enabled only if there's been one AddSwitch
 			- Hides it again only at Reset()
 		- SwitchboardPanel:
@@ -1234,7 +1233,7 @@ Render:
 
 		- Cleanup:
 			- Mouse pointer on switchboard
-			- AutoShowSwitchboard preference saving
+			= AutoShowSwitchboard preference saving
 			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
 			+ Nuke Ship.h::commented-out getters [if not needed]
 			- Materials guide:
