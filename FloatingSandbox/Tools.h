@@ -11,7 +11,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/cursor.h>
-#include <wx/frame.h>
+#include <wx/window.h>
 
 #include <chrono>
 #include <memory>
@@ -100,16 +100,16 @@ protected:
 
     Tool(
         ToolType toolType,
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : mToolType(toolType)
-        , mParentFrame(parentFrame)
+        , mParentWindow(parentWindow)
         , mGameController(gameController)
         , mSoundController(soundController)
     {}
 
-    wxFrame * const mParentFrame;
+    wxWindow * const mParentWindow;
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
 
@@ -137,22 +137,22 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
         assert(nullptr != mCurrentCursor);
 
-        mParentFrame->SetCursor(*mCurrentCursor);
+        mParentWindow->SetCursor(*mCurrentCursor);
     }
 
 protected:
 
     OneShotTool(
         ToolType toolType,
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
-            parentFrame,
+            parentWindow,
             std::move(gameController),
             std::move(soundController))
         , mCurrentCursor(nullptr)
@@ -197,22 +197,22 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
         assert(nullptr != mCurrentCursor);
 
-        mParentFrame->SetCursor(*mCurrentCursor);
+        mParentWindow->SetCursor(*mCurrentCursor);
     }
 
 protected:
 
     ContinuousTool(
         ToolType toolType,
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
-            parentFrame,
+            parentWindow,
             std::move(gameController),
             std::move(soundController))
         , mCurrentCursor(nullptr)
@@ -441,7 +441,7 @@ protected:
 
     BaseMoveTool(
         ToolType toolType,
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::unique_ptr<wxCursor> upCursor,
@@ -450,7 +450,7 @@ protected:
         std::unique_ptr<wxCursor> rotateDownCursor)
         : OneShotTool(
             toolType,
-            parentFrame,
+            parentWindow,
             std::move(gameController),
             std::move(soundController))
         , mEngagedMovableObjectId()
@@ -645,7 +645,7 @@ class MoveTool final : public BaseMoveTool<ElementId>
 public:
 
     MoveTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -656,7 +656,7 @@ class MoveAllTool final : public BaseMoveTool<ShipId>
 public:
 
     MoveAllTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -667,7 +667,7 @@ class SmashTool final : public ContinuousTool
 public:
 
     SmashTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -733,7 +733,7 @@ class SawTool final : public Tool
 public:
 
     SawTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -840,10 +840,10 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
         assert(nullptr != mCurrentCursor);
 
-        mParentFrame->SetCursor(*mCurrentCursor);
+        mParentWindow->SetCursor(*mCurrentCursor);
     }
 
 private:
@@ -875,7 +875,7 @@ class HeatBlasterTool final : public Tool
 public:
 
     HeatBlasterTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -964,15 +964,15 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
         if (mIsEngaged)
         {
-            mParentFrame->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolDownCursor : *mHeatDownCursor);
+            mParentWindow->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolDownCursor : *mHeatDownCursor);
         }
         else
         {
-            mParentFrame->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolUpCursor : *mHeatUpCursor);
+            mParentWindow->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolUpCursor : *mHeatUpCursor);
         }
     }
 
@@ -994,7 +994,7 @@ class FireExtinguisherTool final : public Tool
 public:
 
     FireExtinguisherTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1070,15 +1070,15 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
         if (mIsEngaged)
         {
-            mParentFrame->SetCursor(*mDownCursor);
+            mParentWindow->SetCursor(*mDownCursor);
         }
         else
         {
-            mParentFrame->SetCursor(*mUpCursor);
+            mParentWindow->SetCursor(*mUpCursor);
         }
     }
 
@@ -1097,7 +1097,7 @@ class GrabTool final : public ContinuousTool
 public:
 
     GrabTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1210,7 +1210,7 @@ class SwirlTool final : public ContinuousTool
 public:
 
     SwirlTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1323,7 +1323,7 @@ class PinTool final : public OneShotTool
 public:
 
     PinTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1355,7 +1355,7 @@ class InjectAirBubblesTool final : public Tool
 public:
 
     InjectAirBubblesTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1430,9 +1430,9 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
-        mParentFrame->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
+        mParentWindow->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
     }
 
 private:
@@ -1450,7 +1450,7 @@ class FloodHoseTool final : public Tool
 public:
 
     FloodHoseTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1524,9 +1524,9 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
-        mParentFrame->SetCursor(
+        mParentWindow->SetCursor(
             mIsEngaged
             ? ((mDownCursorCounter % 2) ? *mDownCursor2 : *mDownCursor1)
             : *mUpCursor);
@@ -1551,7 +1551,7 @@ class AntiMatterBombTool final : public OneShotTool
 public:
 
     AntiMatterBombTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1583,7 +1583,7 @@ class ImpactBombTool final : public OneShotTool
 public:
 
     ImpactBombTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1615,7 +1615,7 @@ class RCBombTool final : public OneShotTool
 public:
 
     RCBombTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1647,7 +1647,7 @@ class TimerBombTool final : public OneShotTool
 public:
 
     TimerBombTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1679,7 +1679,7 @@ class WaveMakerTool final : public OneShotTool
 public:
 
     WaveMakerTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1749,7 +1749,7 @@ class TerrainAdjustTool final : public Tool
 public:
 
     TerrainAdjustTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1810,9 +1810,9 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
-        mParentFrame->SetCursor(!!mCurrentTrajectoryPreviousPosition ? *mDownCursor : *mUpCursor);
+        mParentWindow->SetCursor(!!mCurrentTrajectoryPreviousPosition ? *mDownCursor : *mUpCursor);
     }
 
 private:
@@ -1830,7 +1830,7 @@ class ScrubTool final : public Tool
 public:
 
     ScrubTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1930,10 +1930,10 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
         assert(nullptr != mCurrentCursor);
 
-        mParentFrame->SetCursor(*mCurrentCursor);
+        mParentWindow->SetCursor(*mCurrentCursor);
     }
 
 private:
@@ -1965,7 +1965,7 @@ class RepairStructureTool final : public Tool
 public:
 
     RepairStructureTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -2046,9 +2046,9 @@ public:
 
     virtual void ShowCurrentCursor() override
     {
-        assert(nullptr != mParentFrame);
+        assert(nullptr != mParentWindow);
 
-        mParentFrame->SetCursor(*mCurrentCursor);
+        mParentWindow->SetCursor(*mCurrentCursor);
     }
 
 private:
@@ -2111,7 +2111,7 @@ class ThanosSnapTool final : public OneShotTool
 public:
 
     ThanosSnapTool(
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);

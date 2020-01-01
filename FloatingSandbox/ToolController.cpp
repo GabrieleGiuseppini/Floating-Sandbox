@@ -11,14 +11,14 @@
 
 ToolController::ToolController(
     ToolType initialToolType,
-    wxFrame * parentFrame,
+    wxWindow * parentWindow,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLoader & resourceLoader)
     : mInputState()
     , mCurrentTool(nullptr)
     , mAllTools()
-    , mParentFrame(parentFrame)
+    , mParentWindow(parentWindow)
     , mPanCursor()
     , mGameController(gameController)
     , mSoundController(soundController)
@@ -29,140 +29,140 @@ ToolController::ToolController(
 
     mAllTools.emplace_back(
         std::make_unique<MoveTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<MoveAllTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<SmashTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<SawTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<HeatBlasterTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<FireExtinguisherTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<GrabTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<SwirlTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<PinTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<InjectAirBubblesTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<FloodHoseTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<AntiMatterBombTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<ImpactBombTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<RCBombTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<TimerBombTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<WaveMakerTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<TerrainAdjustTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<ScrubTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<RepairStructureTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
 
     mAllTools.emplace_back(
         std::make_unique<ThanosSnapTool>(
-            parentFrame,
+            parentWindow,
             gameController,
             soundController,
             resourceLoader));
@@ -231,7 +231,7 @@ void ToolController::OnRightMouseDown()
     mInputState.IsRightMouseDown = true;
 
     // Show our pan cursor
-    mParentFrame->SetCursor(*mPanCursor);
+    mParentWindow->SetCursor(*mPanCursor);
 }
 
 void ToolController::OnRightMouseUp()

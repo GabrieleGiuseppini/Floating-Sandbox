@@ -729,7 +729,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mToolController = std::make_unique<ToolController>(
             initialToolType,
-            this,
+            mMainGLCanvas.get(),
             mGameController,
             mSoundController,
             *mResourceLoader);
