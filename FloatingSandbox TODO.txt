@@ -1186,11 +1186,13 @@ Render:
 				+ Images:
 					+ {on, off} X {enabled, disabled}
 				- Tooltip displays keys (whose labels are provided by creator via cctor)
-			- ShipAutomaticSwitchControl
-				- Merge two switch controls into one - base and two derived classes; both expose:
-					- SetEnabled
-					- SetState
-				- ...nuke all the "casting switch(type)" from panel
+			= ShipAutomaticSwitchControl
+				+ Merge two switch controls into one - base and two derived classes; both expose:
+					+ SetEnabled
+					+ SetState
+				+ ...nuke all the "casting switch(type)" from panel
+				- Images:
+					- {on, off} X {enabled, disabled}
 			- Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)
@@ -1208,7 +1210,7 @@ Render:
 					+ Create uq_ptr<SwitchControl(key)>
 						+ Does the mapping here from switch type to images and class
 					+ Add SwitchInfo to map
-					- Add to panel - left-aligned, overflow and grow
+					- Add to panel - center-aligned, overflow and grow
 				+ OnSwitchEnabled: 
 					+ Enable/Disable switch control
 					+ Enable/Disable in SwitchInfo
@@ -1229,7 +1231,10 @@ Render:
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- Remove test switch adding from MainFrame.cpp
 			- Mouse pointer on switchboard
+				= SwitchboardPanel::cctor: SetCursor
+				- See whether tool controller should set it only on canvas rather than on application
 			+ AutoShowSwitchboard preference saving
 			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
 			+ Nuke Ship.h::commented-out getters [if not needed]

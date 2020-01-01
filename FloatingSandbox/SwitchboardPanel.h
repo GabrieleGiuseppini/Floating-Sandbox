@@ -5,8 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <UIControls/ShipAutomaticSwitchControl.h>
-#include <UIControls/ShipInteractiveSwitchControl.h>
+#include <UIControls/ShipSwitchControl.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
@@ -112,12 +111,12 @@ private:
     struct SwitchInfo
     {
         SwitchType Type;
-        wxPanel * SwitchControl;
+        ShipSwitchControl * SwitchControl;
         bool IsEnabled;
 
         SwitchInfo(
             SwitchType type,
-            wxPanel * switchControl)
+            ShipSwitchControl * switchControl)
             : Type(type)
             , SwitchControl(switchControl)
             , IsEnabled(true)

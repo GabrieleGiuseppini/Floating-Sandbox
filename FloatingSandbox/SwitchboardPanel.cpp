@@ -208,7 +208,7 @@ void SwitchboardPanel::OnSwitchCreated(
     // Create control
     //
 
-    wxPanel * ctrl;
+    ShipSwitchControl * ctrl;
     switch (type)
     {
         case SwitchType::Interactive:
@@ -277,26 +277,10 @@ void SwitchboardPanel::OnSwitchEnabled(
     SwitchId switchId,
     bool isEnabled)
 {
+    // Enable/disable switch control
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
-
-    // Enable/disable control
-    switch (it->second.Type)
-    {
-        case SwitchType::Interactive:
-        {
-            auto * ctrl = dynamic_cast<ShipInteractiveSwitchControl *>(it->second.SwitchControl);
-            ctrl->SetEnabled(isEnabled);
-            break;
-        }
-
-        case SwitchType::WaterSensing:
-        {
-            auto * ctrl = dynamic_cast<ShipAutomaticSwitchControl *>(it->second.SwitchControl);
-            ctrl->SetEnabled(isEnabled);
-            break;
-        }
-    }
+    it->second.SwitchControl->SetEnabled(isEnabled);
 
     // Remember enable state
     it->second.IsEnabled = isEnabled;
@@ -306,24 +290,8 @@ void SwitchboardPanel::OnSwitchToggled(
     SwitchId switchId,
     SwitchState newState)
 {
+    // Toggle switch control
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
-
-    // Toggle control
-    switch (it->second.Type)
-    {
-        case SwitchType::Interactive:
-        {
-            auto * ctrl = dynamic_cast<ShipInteractiveSwitchControl *>(it->second.SwitchControl);
-            ctrl->SetState(newState);
-            break;
-        }
-
-        case SwitchType::WaterSensing:
-        {
-            auto * ctrl = dynamic_cast<ShipAutomaticSwitchControl *>(it->second.SwitchControl);
-            ctrl->SetState(newState);
-            break;
-        }
-    }
+    it->second.SwitchControl->SetState(newState);
 }

@@ -6,9 +6,8 @@
 set  (UI_CONTROLS_SOURCES
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h
-	SliderControl.h
-	ShipAutomaticSwitchControl.h
-	ShipInteractiveSwitchControl.h
+	ShipSwitchControl.h
+	SliderControl.h	
 )
 
 source_group(" " FILES ${UI_CONTROLS_SOURCES})
