@@ -139,6 +139,11 @@ private:
     // Bitmaps
     //
 
+    wxBitmap mAutomaticSwitchOnEnabledBitmap;
+    wxBitmap mAutomaticSwitchOffEnabledBitmap;
+    wxBitmap mAutomaticSwitchOnDisabledBitmap;
+    wxBitmap mAutomaticSwitchOffDisabledBitmap;
+
     wxBitmap mInteractiveSwitchOnEnabledBitmap;
     wxBitmap mInteractiveSwitchOffEnabledBitmap;
     wxBitmap mInteractiveSwitchOnDisabledBitmap;

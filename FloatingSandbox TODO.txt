@@ -1186,13 +1186,15 @@ Render:
 				+ Images:
 					+ {on, off} X {enabled, disabled}
 				- Tooltip displays keys (whose labels are provided by creator via cctor)
-			= ShipAutomaticSwitchControl
+			+ ShipAutomaticSwitchControl
 				+ Merge two switch controls into one - base and two derived classes; both expose:
 					+ SetEnabled
 					+ SetState
 				+ ...nuke all the "casting switch(type)" from panel
-				- Images:
-					- {on, off} X {enabled, disabled}
+				+ Images:
+					+ {on, off} X {enabled, disabled}
+			- Floating/Docked state machine:
+				- TODO
 			- Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)

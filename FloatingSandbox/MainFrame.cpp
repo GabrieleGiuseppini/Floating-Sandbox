@@ -886,7 +886,11 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         // TODOTEST
         static ElementIndex TODOID(1);
         ++TODOID;
-        mSwitchboardPanel->OnSwitchCreated(SwitchId(0, TODOID), "Test " + std::to_string(TODOID), SwitchType::Interactive, SwitchState::Off);
+        mSwitchboardPanel->OnSwitchCreated(
+            SwitchId(0, TODOID),
+            "Test " + std::to_string(TODOID),
+            TODOID % 2 ? SwitchType::Interactive : SwitchType::WaterSensing,
+            SwitchState::Off);
     }
     else if (event.GetKeyCode() == 'B')
     {

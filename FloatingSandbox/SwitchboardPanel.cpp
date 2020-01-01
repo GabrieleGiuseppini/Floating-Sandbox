@@ -83,6 +83,11 @@ SwitchboardPanel::SwitchboardPanel(
     // Load bitmaps
     //
 
+    mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
     mInteractiveSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
@@ -226,11 +231,23 @@ void SwitchboardPanel::OnSwitchCreated(
 
         case SwitchType::WaterSensing:
         {
-            // TODO
-            ctrl = nullptr;
-            return;
+            ctrl = new ShipAutomaticSwitchControl(
+                mSwitchPanel,
+                mAutomaticSwitchOnEnabledBitmap,
+                mAutomaticSwitchOffEnabledBitmap,
+                mAutomaticSwitchOnDisabledBitmap,
+                mAutomaticSwitchOffDisabledBitmap,
+                switchId,
+                name,
+                state);
 
             break;
+        }
+
+        default:
+        {
+            assert(false);
+            return;
         }
     }
 
