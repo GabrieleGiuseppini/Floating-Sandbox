@@ -44,6 +44,9 @@ SwitchboardPanel::SwitchboardPanel(
 {
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
+    // TODOTEST
+    SetCursor(wxNullCursor);
+
     mMainVSizer = new wxBoxSizer(wxVERTICAL);
 
     // Hint panel - hidden
@@ -184,19 +187,8 @@ void SwitchboardPanel::OnGameReset()
     mSwitchPanelSizer = nullptr;
     MakeSwitchPanel();
 
-    // Hide hint panel
-    mMainVSizer->Hide(mHintPanel);
-
-    // Hide (new) switch panel
-    mMainVSizer->Hide(mSwitchPanel);
-
-    // Update layout
-    mMainVSizer->Layout();
-
-    mShowingMode = ShowingMode::NotShowing;
-
-    // Notify parent
-    LayoutParent();
+    // Hide
+    Hide();
 
     // Clear switch map
     mSwitchMap.clear();

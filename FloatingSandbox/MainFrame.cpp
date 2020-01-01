@@ -1064,17 +1064,9 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
-    // TODOTEST
-    if (!mSwitchboardPanel)
-        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasResize:", event.GetSize().GetX(), "x", event.GetSize().GetY());
-    else
-        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasResize:", event.GetSize().GetX(), "x", event.GetSize().GetY(),
-        " Switchboard:", mSwitchboardPanel->GetSize().GetX(), "x", mSwitchboardPanel->GetSize().GetY(),
-        " visible=", mSwitchboardPanel->IsShown());
-
     if (!!mGameController
         && event.GetSize().GetX() > 0
-        && event.GetSize().GetY())
+        && event.GetSize().GetY() > 0)
     {
         mGameController->SetCanvasSize(
             event.GetSize().GetX(),

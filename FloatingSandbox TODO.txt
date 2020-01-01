@@ -1090,7 +1090,7 @@ Render:
 				+ If label not present -> "Switch <instance ID>"
 				+ ElectricalElements::Add now also takes std::string label
 				+ ObjectId is implicit and not specified now (local ID is index in container of switches's ElementIndex within ElectricalElements)
-		= Electrical dynamics:
+		+ Electrical dynamics:
 			+ ElectricalElement has new "conductsElectricity" buffer
 				+ ~ Material (init'd with material's) and "current", in same struct (~ double "Switch")
 				+ cctor: value of material's x 2
@@ -1101,7 +1101,6 @@ Render:
 					+ Sets conductsElectricity
 					+ Then updates ConductingConnectedElectricalElements (see below)
 					+ Then fires OnSwitchToggled(SwitchId, new state) event
-			- TODO:IF NEEDED: ElectricalElements::GetSwitchState(SwitchId) -> Double SwitchState
 		- ElectricalElements connectivity:
 			! Most performing approach is to alter connectivity graph with switch toggles
 			= mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
@@ -1170,14 +1169,12 @@ Render:
 				! Registers as event listener at cctor
 				! Uses GameController (own shared ptr) :: SetSwitch(SwitchId switchId, state) to control switches
 					! Water-sensing switches are not controllable, they just provide feedback
-		= MainFrame:
-			= Also registers for AddSwitch and shows SwitchBoard on first add
+		+ MainFrame:
+			+ Also registers for AddSwitch and shows SwitchBoard on first add
 				+ As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
-			- Menu item to toggle SwitchBoard; enabled only if there's been one AddSwitch
-			- Hides it again only at Reset()
-		- SwitchboardPanel:
-			- MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
-				- Menu items to toggle it, enabled iff there's at least one switch
+			+ Hides it again only at Reset()
+		= SwitchboardPanel:
+			+ MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 			- Has control to hide it back (kinda like "close" button at top-right corner)
 			= ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
 				+ Has state (SwitchState mCurrentState)
@@ -1226,14 +1223,14 @@ Render:
 						- If SwitchInfo.IsEnabled:
 							- Call SwitchControl->ToggleState() -> newState
 							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
-		= SoundController::OnSwitchToggled(., new state)
-			= {on, off} x {3} sounds
+		+ SoundController::OnSwitchToggled(., new state)
+			+ {on, off} x {3} sounds
 
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
 			- Mouse pointer on switchboard
-			= AutoShowSwitchboard preference saving
+			+ AutoShowSwitchboard preference saving
 			+ Nuke ElectricalElements.h::GetConnectedConductingElectricalElements [if not needed]
 			+ Nuke Ship.h::commented-out getters [if not needed]
 			- Materials guide:
