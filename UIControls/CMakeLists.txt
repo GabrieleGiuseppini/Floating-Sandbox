@@ -4,6 +4,7 @@
 #
 
 set  (UI_CONTROLS_SOURCES
+	BitmappedCheckbox.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h
 	ShipSwitchControl.h

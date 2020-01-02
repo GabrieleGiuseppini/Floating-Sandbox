@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ShipSwitchControl.h>
 
 #include <Game/IGameController.h>
@@ -89,6 +90,8 @@ private:
     void MakeSwitchPanel();
 
     void LayoutParent();
+
+    void OnDockCheckbox(wxCommandEvent & event);
 
 private:
 

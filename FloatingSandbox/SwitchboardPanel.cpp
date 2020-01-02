@@ -65,12 +65,24 @@ SwitchboardPanel::SwitchboardPanel(
     // Hint panel - hidden
     mHintPanel = new wxPanel(this);
     {
-        wxBoxSizer * hintSizer = new wxBoxSizer(wxVERTICAL);
         wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Switches", wxDefaultPosition, wxDefaultSize, 0);
-        hintSizer->Add(hintStaticText, 0, wxALIGN_CENTER_HORIZONTAL);
+
+        wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
+        wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("undocked_icon").string(), wxBITMAP_TYPE_PNG);
+        BitmappedCheckbox * dockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the Switchboard.");
+        dockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
+
+        wxFlexGridSizer * hintSizer = new wxFlexGridSizer(3);
+        hintSizer->AddGrowableCol(1, 1);
+        hintSizer->AddSpacer(dockCheckboxCheckedBitmap.GetSize().GetX());
+        hintSizer->Add(hintStaticText, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
+        hintSizer->Add(dockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
+
         mHintPanel->SetSizer(hintSizer);
+
+        // TODO: hide checkbox
     }
-    mMainVSizer->Add(mHintPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+    mMainVSizer->Add(mHintPanel, 0, wxEXPAND);
     mMainVSizer->Hide(mHintPanel);
 
     // Switch panel - hidden
@@ -326,4 +338,9 @@ void SwitchboardPanel::MakeSwitchPanel()
 void SwitchboardPanel::LayoutParent()
 {
     mParentLayoutWindow->Layout();
+}
+
+void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
+{
+    // TODOHERE
 }
