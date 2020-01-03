@@ -1193,16 +1193,17 @@ Render:
 				+ ...nuke all the "casting switch(type)" from panel
 				+ Images:
 					+ {on, off} X {enabled, disabled}
-			- Floating/Docked state machine:
-				- TODO
-			- Panel: much like ProbePanel
+			= Floating/Docked state machine:
+				+ Fix stack overflow issue
+				- Test with EventTicker/ProbePanel on				
+			= Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)
 					+ GameController (see others for shared_ptr or &)
-				- Registers as event listener
-					- Processes IGameEventHandler::OnSwitchCreate/Delete
-					- Processes IGameEventHandler::OnSwitchToggled(ObjectId, new state)
-					- Processes Reset() to delete all
+				+ Registers as event listener
+					+ Processes IGameEventHandler::OnSwitchCreate/Delete
+					+ Processes IGameEventHandler::OnSwitchToggled(ObjectId, new state)
+					+ Processes Reset() to delete all
 				+ Has unordered_map<ObjectId, SwitchInfo>
 					+ SwitchInfo:
 						+ uq_ptr<SwitchControl>
@@ -1227,12 +1228,16 @@ Render:
 						- If SwitchInfo.IsEnabled:
 							- Call SwitchControl->ToggleState() -> newState
 							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
+				- Gfx:
+					- Grey hint panel
+					- Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- Clear TODOTEST's in SwitchboardPanel
 			- Remove test switch adding from MainFrame.cpp
 			+ Mouse pointer on switchboard
 				+ SwitchboardPanel::cctor: SetCursor
@@ -1247,8 +1252,7 @@ Render:
 				- Add new properties:
 					- conducts_electricity
 					- is_instanced - with warning not to change
-			- Redo electrical materials template
-			- Wanna use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background?
+			- Redo electrical materials template			-
 			- Decide whether SwitchboardPanel should be double-buffered or not
 		- Run in Debug
 				

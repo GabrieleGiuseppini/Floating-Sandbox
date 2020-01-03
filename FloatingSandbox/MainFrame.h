@@ -213,12 +213,13 @@ private:
 
     virtual void OnGameReset() override
     {
-        // Hide switchboard panel if showing in any form
-        assert(!!mSwitchboardPanel);
-        if (mSwitchboardPanel->IsShowing())
-        {
-            mSwitchboardPanel->Hide();
-        }
+        // TODOTEST
+        ////// Hide switchboard panel if showing in any form
+        ////assert(!!mSwitchboardPanel);
+        ////if (mSwitchboardPanel->IsShowing())
+        ////{
+        ////    mSwitchboardPanel->HideFully();
+        ////}
 
         // Refresh title bar
         mCurrentShipTitles.clear();

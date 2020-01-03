@@ -13,8 +13,8 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
-#include <wx/cursor.h>
 #include <wx/sizer.h>
+#include <wx/timer.h>
 #include <wx/wx.h>
 
 #include <memory>
@@ -42,7 +42,7 @@ public:
         return mShowingMode != ShowingMode::NotShowing;
     }
 
-    void Hide();
+    void HideFully();
 
     void ShowPartially();
 
@@ -89,9 +89,19 @@ private:
 
     void MakeSwitchPanel();
 
+    void ShowDockCheckbox(bool doShow);
+
+    void InstallMouseTracking(bool isActive);
+
     void LayoutParent();
 
+    void OnLeaveWindowTimer(wxTimerEvent & event);
+
     void OnDockCheckbox(wxCommandEvent & event);
+
+    void OnEnterWindow(wxMouseEvent & event);
+
+    void OnLeaveWindow();
 
 private:
 
@@ -105,10 +115,17 @@ private:
 
     ShowingMode mShowingMode;
 
+
     wxBoxSizer * mMainVSizer;
+
     wxPanel * mHintPanel;
+    BitmappedCheckbox * mDockCheckbox;
+    wxFlexGridSizer * mHintPanelSizer;
+
     wxPanel * mSwitchPanel;
     wxFlexGridSizer * mSwitchPanelSizer;
+
+    std::unique_ptr<wxTimer> mLeaveWindowTimer;
 
 private:
 
@@ -135,8 +152,6 @@ private:
 
     wxWindow * const mParentLayoutWindow;
     wxSizer * const mParentLayoutSizer;
-
-    std::shared_ptr<wxCursor> mUpCursor;
 
     //
     // Bitmaps

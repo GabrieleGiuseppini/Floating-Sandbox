@@ -7,6 +7,8 @@
 
 #include "WxHelpers.h"
 
+#include <wx/cursor.h>
+
 #include <cassert>
 #include <utility>
 
@@ -39,6 +41,8 @@ SwitchboardPanel::SwitchboardPanel(
         wxDefaultSize,
         wxBORDER_SIMPLE)
     , mShowingMode(ShowingMode::NotShowing)
+    , mLeaveWindowTimer()
+    //
     , mSwitchMap()
     , mGameController(gameController)
     , mParentLayoutWindow(parentLayoutWindow)
@@ -47,13 +51,13 @@ SwitchboardPanel::SwitchboardPanel(
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     // Load cursor
-    mUpCursor = WxHelpers::MakeCursor(
+    auto upCursor = WxHelpers::MakeCursor(
         resourceLoader.GetCursorFilepath("switch_cursor_up"),
         8,
         9);
 
     // Set cursor
-    SetCursor(*mUpCursor);
+    SetCursor(*upCursor);
 
 
     //
@@ -64,23 +68,29 @@ SwitchboardPanel::SwitchboardPanel(
 
     // Hint panel - hidden
     mHintPanel = new wxPanel(this);
+    mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
     {
-        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Switches", wxDefaultPosition, wxDefaultSize, 0);
-
         wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
         wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("undocked_icon").string(), wxBITMAP_TYPE_PNG);
-        BitmappedCheckbox * dockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the Switchboard.");
-        dockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
-        wxFlexGridSizer * hintSizer = new wxFlexGridSizer(3);
-        hintSizer->AddGrowableCol(1, 1);
-        hintSizer->AddSpacer(dockCheckboxCheckedBitmap.GetSize().GetX());
-        hintSizer->Add(hintStaticText, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
-        hintSizer->Add(dockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
+        wxPanel * fillerPanel = new wxPanel(mHintPanel, wxID_ANY, wxDefaultPosition, dockCheckboxCheckedBitmap.GetSize());
 
-        mHintPanel->SetSizer(hintSizer);
+        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Switches", wxDefaultPosition, wxDefaultSize, 0);
+        hintStaticText->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
-        // TODO: hide checkbox
+        mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the Switchboard.");
+        mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
+
+        mHintPanelSizer = new wxFlexGridSizer(3);
+        mHintPanelSizer->AddGrowableCol(1, 1);
+        mHintPanelSizer->Add(fillerPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+        mHintPanelSizer->Add(hintStaticText, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
+        mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
+
+        mHintPanelSizer->Hide(size_t(0));
+        mHintPanelSizer->Hide(size_t(2));
+
+        mHintPanel->SetSizer(mHintPanelSizer);
     }
     mMainVSizer->Add(mHintPanel, 0, wxEXPAND);
     mMainVSizer->Hide(mHintPanel);
@@ -104,15 +114,27 @@ SwitchboardPanel::SwitchboardPanel(
     mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
+    //
+    // Setup enter/leave mouse events
+    //
+
+    Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
+
+    mLeaveWindowTimer = std::make_unique<wxTimer>(this, wxID_ANY);
+    Connect(mLeaveWindowTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&SwitchboardPanel::OnLeaveWindowTimer);
 }
 
 SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-void SwitchboardPanel::Hide()
+void SwitchboardPanel::HideFully()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::Hide()");
+    LogMessage("TODOTEST:SwitchboardPanel::HideFully()");
+
+    ShowDockCheckbox(false);
+    InstallMouseTracking(false);
 
     // Hide hint panel
     mMainVSizer->Hide(mHintPanel);
@@ -133,6 +155,15 @@ void SwitchboardPanel::ShowPartially()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
 
+    if (mShowingMode == ShowingMode::NotShowing)
+    {
+        InstallMouseTracking(true);
+    }
+    else if (mShowingMode == ShowingMode::ShowingFullyFloating)
+    {
+        ShowDockCheckbox(false);
+    }
+
     // Show hint panel
     mMainVSizer->Show(mHintPanel);
 
@@ -152,6 +183,16 @@ void SwitchboardPanel::ShowFullyFloating()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowFullyFloating()");
 
+    if (mShowingMode == ShowingMode::ShowingHint)
+    {
+        mDockCheckbox->SetChecked(false);
+        ShowDockCheckbox(true);
+    }
+    else if (mShowingMode == ShowingMode::ShowingFullyDocked)
+    {
+        InstallMouseTracking(true);
+    }
+
     // Show hint panel
     mMainVSizer->Show(mHintPanel);
 
@@ -170,6 +211,16 @@ void SwitchboardPanel::ShowFullyFloating()
 void SwitchboardPanel::ShowFullyDocked()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowFullyDocked()");
+
+    if (mShowingMode == ShowingMode::ShowingFullyFloating)
+    {
+        InstallMouseTracking(false);
+    }
+    else if (mShowingMode == ShowingMode::NotShowing)
+    {
+        mDockCheckbox->SetChecked(true);
+        ShowDockCheckbox(true);
+    }
 
     // Show hint panel
     mMainVSizer->Show(mHintPanel);
@@ -192,6 +243,9 @@ void SwitchboardPanel::OnGameReset()
 {
     LogMessage("TODOTEST:SwitchboardPanel::OnGameReset()");
 
+    ShowDockCheckbox(false);
+    InstallMouseTracking(false);
+
     // Reset all switch controls
     mSwitchPanel->Destroy();
     mSwitchPanel = nullptr;
@@ -199,7 +253,7 @@ void SwitchboardPanel::OnGameReset()
     MakeSwitchPanel();
 
     // Hide
-    Hide();
+    HideFully();
 
     // Clear switch map
     mSwitchMap.clear();
@@ -335,12 +389,70 @@ void SwitchboardPanel::MakeSwitchPanel()
     mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL);
 }
 
+void SwitchboardPanel::ShowDockCheckbox(bool doShow)
+{
+    assert(!!mHintPanelSizer);
+
+    mHintPanelSizer->Show(size_t(0), doShow);
+    mHintPanelSizer->Show(size_t(2), doShow);
+
+    mHintPanelSizer->Layout();
+}
+
+void SwitchboardPanel::InstallMouseTracking(bool isActive)
+{
+    LogMessage("SwitchboardPanel::InstallMouseTracking: ", isActive);
+
+    assert(!!mLeaveWindowTimer);
+
+    if (isActive)
+    {
+        mLeaveWindowTimer->Start(500, false);
+    }
+    else
+    {
+        mLeaveWindowTimer->Stop();
+    }
+}
+
 void SwitchboardPanel::LayoutParent()
 {
     mParentLayoutWindow->Layout();
 }
 
+void SwitchboardPanel::OnLeaveWindowTimer(wxTimerEvent & /*event*/)
+{
+    wxPoint const clientCoords = ScreenToClient(wxGetMousePosition());
+    if (clientCoords.y < 0)
+    {
+        OnLeaveWindow();
+    }
+}
+
 void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 {
-    // TODOHERE
+    if (event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyFloating)
+    {
+        ShowFullyDocked();
+    }
+    else if (!event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyDocked)
+    {
+        ShowFullyFloating();
+    }
+}
+
+void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
+{
+    if (mShowingMode == ShowingMode::ShowingHint)
+    {
+        ShowFullyFloating();
+    }
+}
+
+void SwitchboardPanel::OnLeaveWindow()
+{
+    if (mShowingMode == ShowingMode::ShowingFullyFloating)
+    {
+        ShowPartially();
+    }
 }

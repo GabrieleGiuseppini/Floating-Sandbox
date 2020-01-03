@@ -44,6 +44,12 @@ public:
         return mIsChecked;
     }
 
+    void SetChecked(bool isChecked)
+    {
+        mIsChecked = isChecked;
+        SelectBitmapForCurrentState();
+    }
+
 private:
 
     void OnLeftDown(wxMouseEvent & /*event*/)
@@ -52,16 +58,22 @@ private:
         mIsChecked = !mIsChecked;
 
         // Refresh UI
-        if (mIsChecked)
-            mStaticBitmap->SetBitmap(mCheckedBitmap);
-        else
-            mStaticBitmap->SetBitmap(mUncheckedBitmap);
-        Refresh();
+        SelectBitmapForCurrentState();
 
         // Fire event
         auto event = wxCommandEvent(wxEVT_CHECKBOX, GetId());
         event.SetInt(mIsChecked ? 1 : 0);
         ProcessEvent(event);
+    }
+
+    void SelectBitmapForCurrentState()
+    {
+        if (mIsChecked)
+            mStaticBitmap->SetBitmap(mCheckedBitmap);
+        else
+            mStaticBitmap->SetBitmap(mUncheckedBitmap);
+
+        Refresh();
     }
 
 private:
