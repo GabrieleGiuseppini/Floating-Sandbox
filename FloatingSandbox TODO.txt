@@ -1229,7 +1229,7 @@ Render:
 							- Call SwitchControl->ToggleState() -> newState
 							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
 				- Gfx:
-					- Grey hint panel
+					= Grey hint panel
 					- Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds

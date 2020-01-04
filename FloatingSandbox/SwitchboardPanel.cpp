@@ -66,8 +66,9 @@ SwitchboardPanel::SwitchboardPanel(
 
     mMainVSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Hint panel - hidden
+    // Hint panel
     mHintPanel = new wxPanel(this);
+    mHintPanel->SetBackgroundColour(wxColour(128, 128, 128)); // Grey
     mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
     {
         wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
@@ -87,17 +88,18 @@ SwitchboardPanel::SwitchboardPanel(
         mHintPanelSizer->Add(hintStaticText, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
         mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
 
+        // Hide L and R squares for now
         mHintPanelSizer->Hide(size_t(0));
         mHintPanelSizer->Hide(size_t(2));
 
         mHintPanel->SetSizer(mHintPanelSizer);
     }
     mMainVSizer->Add(mHintPanel, 0, wxEXPAND);
-    mMainVSizer->Hide(mHintPanel);
+    mMainVSizer->Hide(mHintPanel); // Hide it
 
-    // Switch panel - hidden
+    // Switch panel
     MakeSwitchPanel();
-    mMainVSizer->Hide(mSwitchPanel);
+    mMainVSizer->Hide(mSwitchPanel); // Hide it
 
     SetSizer(mMainVSizer);
 
@@ -142,12 +144,10 @@ void SwitchboardPanel::HideFully()
     // Hide switch panel
     mMainVSizer->Hide(mSwitchPanel);
 
-    // Update layout
-    mMainVSizer->Layout();
-
+    // Transition state
     mShowingMode = ShowingMode::NotShowing;
 
-    // Notify parent
+    // Re-layout from parent
     LayoutParent();
 }
 
@@ -170,12 +170,10 @@ void SwitchboardPanel::ShowPartially()
     // Hide switch panel
     mMainVSizer->Hide(mSwitchPanel);
 
-    // Update layout
-    mMainVSizer->Layout();
-
+    // Transition state
     mShowingMode = ShowingMode::ShowingHint;
 
-    // Notify parent
+    // Re-layout from parent
     LayoutParent();
 }
 
@@ -199,12 +197,10 @@ void SwitchboardPanel::ShowFullyFloating()
     // Show switch panel
     mMainVSizer->Show(mSwitchPanel);
 
-    // Update layout
-    mMainVSizer->Layout();
-
+    // Transition state
     mShowingMode = ShowingMode::ShowingFullyFloating;
 
-    // Notify parent
+    // Re-layout from parent
     LayoutParent();
 }
 
@@ -228,12 +224,10 @@ void SwitchboardPanel::ShowFullyDocked()
     // Show switch panel
     mMainVSizer->Show(mSwitchPanel);
 
-    // Update layout
-    mMainVSizer->Layout();
-
+    // Transition state
     mShowingMode = ShowingMode::ShowingFullyDocked;
 
-    // Notify parent
+    // Re-layout from parent
     LayoutParent();
 }
 
@@ -325,7 +319,8 @@ void SwitchboardPanel::OnSwitchCreated(
     mSwitchPanelSizer->Add(
         ctrl,
         0,
-        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+        8);
 
     // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
@@ -378,7 +373,7 @@ void SwitchboardPanel::OnSwitchToggled(
 void SwitchboardPanel::MakeSwitchPanel()
 {
     // Create grid sizer for switch panel
-    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 0);
+    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 15);
     mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
 
     // Create panel for switches

@@ -76,7 +76,7 @@ protected:
         vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
-        vSizer->Add(labelStaticText, 1, wxALIGN_CENTRE_HORIZONTAL);
+        vSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         this->SetSizerAndFit(vSizer);
     }
