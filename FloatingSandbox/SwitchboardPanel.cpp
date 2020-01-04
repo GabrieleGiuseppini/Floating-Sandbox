@@ -34,13 +34,7 @@ SwitchboardPanel::SwitchboardPanel(
     wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
     ResourceLoader & resourceLoader)
-    : wxPanel(
-        parent,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxBORDER_SIMPLE)
-    , mShowingMode(ShowingMode::NotShowing)
+    : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
     //
     , mSwitchMap()
@@ -48,7 +42,16 @@ SwitchboardPanel::SwitchboardPanel(
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
 {
-    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    wxPanel::Create(
+        parent,
+        wxID_ANY,
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxBORDER_SIMPLE);
+
+    wxBitmap backgroundBitmap;
+    backgroundBitmap.LoadFile(resourceLoader.GetIconFilepath("switchboard_background").string(), wxBITMAP_TYPE_PNG);
+    SetBackgroundBitmap(backgroundBitmap);
 
     // Load cursor
     auto upCursor = WxHelpers::MakeCursor(
@@ -63,8 +66,6 @@ SwitchboardPanel::SwitchboardPanel(
     //
     // Load bitmaps
     //
-
-    mSwitchPanelBackground.LoadFile(resourceLoader.GetIconFilepath("switchboard_background").string(), wxBITMAP_TYPE_PNG);
 
     mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -85,7 +86,8 @@ SwitchboardPanel::SwitchboardPanel(
 
     // Hint panel
     mHintPanel = new wxPanel(this);
-    mHintPanel->SetBackgroundColour(wxColour(128, 128, 128)); // Grey
+    // TODOTEST
+    //mHintPanel->SetBackgroundColour(wxColour(128, 128, 128)); // Grey
     mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
     {
         wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
@@ -381,7 +383,7 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
 
     // Create panel for switches
-    mSwitchPanel = new BitmappedBackgroundPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, mSwitchPanelBackground);
+    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     // TODOTEST
     //mSwitchPanel->SetBackgroundColour(wxColor(200, 200, 200));
     mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);

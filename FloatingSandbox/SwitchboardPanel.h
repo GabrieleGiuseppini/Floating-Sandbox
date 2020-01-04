@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include <UIControls/BitmappedBackgroundPanel.h>
 #include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ShipSwitchControl.h>
 
@@ -14,6 +13,7 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
+#include <wx/custombgwin.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
@@ -23,7 +23,7 @@
 #include <unordered_map>
 
 class SwitchboardPanel
-    : public wxPanel
+    : public wxCustomBackgroundWindow<wxPanel>
     , public ILifecycleGameEventHandler
     , public IElectricalElementGameEventHandler
 {
@@ -123,7 +123,7 @@ private:
     BitmappedCheckbox * mDockCheckbox;
     wxFlexGridSizer * mHintPanelSizer;
 
-    BitmappedBackgroundPanel * mSwitchPanel;
+    wxPanel * mSwitchPanel;
     wxFlexGridSizer * mSwitchPanelSizer;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
@@ -157,8 +157,6 @@ private:
     //
     // Bitmaps
     //
-
-    wxBitmap mSwitchPanelBackground;
 
     wxBitmap mAutomaticSwitchOnEnabledBitmap;
     wxBitmap mAutomaticSwitchOffEnabledBitmap;
