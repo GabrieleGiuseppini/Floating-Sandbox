@@ -1231,7 +1231,8 @@ Render:
 				- Gfx:
 					= Grey hint panel
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
-						- Try with whole panel, rather than with SwitchPanel only
+						+ Try with whole panel, rather than with SwitchPanel only
+						- Tri other background
 					- See suspend/resume layout for flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
@@ -1239,6 +1240,8 @@ Render:
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- More intuitive pin
+				- Close to "Switches" label?
 			- Clear TODOTEST's in SwitchboardPanel
 			- Remove test switch adding from MainFrame.cpp
 			+ Mouse pointer on switchboard
