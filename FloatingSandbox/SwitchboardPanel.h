@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UIControls/BitmappedBackgroundPanel.h>
 #include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ShipSwitchControl.h>
 
@@ -122,7 +123,7 @@ private:
     BitmappedCheckbox * mDockCheckbox;
     wxFlexGridSizer * mHintPanelSizer;
 
-    wxPanel * mSwitchPanel;
+    BitmappedBackgroundPanel * mSwitchPanel;
     wxFlexGridSizer * mSwitchPanelSizer;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
@@ -156,6 +157,8 @@ private:
     //
     // Bitmaps
     //
+
+    wxBitmap mSwitchPanelBackground;
 
     wxBitmap mAutomaticSwitchOnEnabledBitmap;
     wxBitmap mAutomaticSwitchOffEnabledBitmap;

@@ -4,6 +4,7 @@
 #
 
 set  (UI_CONTROLS_SOURCES
+	BitmappedBackgroundPanel.h
 	BitmappedCheckbox.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h

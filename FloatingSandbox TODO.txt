@@ -1230,7 +1230,9 @@ Render:
 							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
 				- Gfx:
 					= Grey hint panel
-					- Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
+					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
+						- Try with whole panel, rather than with SwitchPanel only
+					- See suspend/resume layout for flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 

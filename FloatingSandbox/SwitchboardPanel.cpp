@@ -61,6 +61,23 @@ SwitchboardPanel::SwitchboardPanel(
 
 
     //
+    // Load bitmaps
+    //
+
+    mSwitchPanelBackground.LoadFile(resourceLoader.GetIconFilepath("switchboard_background").string(), wxBITMAP_TYPE_PNG);
+
+    mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
+    mInteractiveSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
+
+    //
     // Setup panel
     //
 
@@ -94,28 +111,16 @@ SwitchboardPanel::SwitchboardPanel(
 
         mHintPanel->SetSizer(mHintPanelSizer);
     }
-    mMainVSizer->Add(mHintPanel, 0, wxEXPAND);
+    mMainVSizer->Add(mHintPanel, 0, wxEXPAND); // We want it as large as possible, but as tall as it is
     mMainVSizer->Hide(mHintPanel); // Hide it
 
     // Switch panel
     MakeSwitchPanel();
-    mMainVSizer->Hide(mSwitchPanel); // Hide it
+    // TODOTEST
+    //mMainVSizer->Hide(mSwitchPanel); // Hide it
 
     SetSizer(mMainVSizer);
 
-    //
-    // Load bitmaps
-    //
-
-    mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
-
-    mInteractiveSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
 
     //
     // Setup enter/leave mouse events
@@ -142,7 +147,8 @@ void SwitchboardPanel::HideFully()
     mMainVSizer->Hide(mHintPanel);
 
     // Hide switch panel
-    mMainVSizer->Hide(mSwitchPanel);
+    // TODOTEST
+    //mMainVSizer->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::NotShowing;
@@ -154,6 +160,9 @@ void SwitchboardPanel::HideFully()
 void SwitchboardPanel::ShowPartially()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
+
+    // TODOTEST
+    Freeze();
 
     if (mShowingMode == ShowingMode::NotShowing)
     {
@@ -168,13 +177,17 @@ void SwitchboardPanel::ShowPartially()
     mMainVSizer->Show(mHintPanel);
 
     // Hide switch panel
-    mMainVSizer->Hide(mSwitchPanel);
+    // TODOTEST
+    //mMainVSizer->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::ShowingHint;
 
     // Re-layout from parent
     LayoutParent();
+
+    // TODOTEST
+    Thaw();
 }
 
 void SwitchboardPanel::ShowFullyFloating()
@@ -377,11 +390,13 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
 
     // Create panel for switches
-    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    mSwitchPanel = new BitmappedBackgroundPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, mSwitchPanelBackground);
+    // TODOTEST
+    //mSwitchPanel->SetBackgroundColour(wxColor(200, 200, 200));
     mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
 
     // Add switch panel to v-sizer
-    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL);
+    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as wide and as tall as it is
 }
 
 void SwitchboardPanel::ShowDockCheckbox(bool doShow)
