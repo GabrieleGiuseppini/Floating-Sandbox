@@ -116,8 +116,7 @@ SwitchboardPanel::SwitchboardPanel(
 
     // Switch panel
     MakeSwitchPanel();
-    // TODOTEST
-    //mMainVSizer->Hide(mSwitchPanel); // Hide it
+    mMainVSizer->Hide(mSwitchPanel); // Hide it
 
     SetSizer(mMainVSizer);
 
@@ -147,8 +146,7 @@ void SwitchboardPanel::HideFully()
     mMainVSizer->Hide(mHintPanel);
 
     // Hide switch panel
-    // TODOTEST
-    //mMainVSizer->Hide(mSwitchPanel);
+    mMainVSizer->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::NotShowing;
@@ -160,9 +158,6 @@ void SwitchboardPanel::HideFully()
 void SwitchboardPanel::ShowPartially()
 {
     LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
-
-    // TODOTEST
-    Freeze();
 
     if (mShowingMode == ShowingMode::NotShowing)
     {
@@ -177,17 +172,13 @@ void SwitchboardPanel::ShowPartially()
     mMainVSizer->Show(mHintPanel);
 
     // Hide switch panel
-    // TODOTEST
-    //mMainVSizer->Hide(mSwitchPanel);
+    mMainVSizer->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::ShowingHint;
 
     // Re-layout from parent
     LayoutParent();
-
-    // TODOTEST
-    Thaw();
 }
 
 void SwitchboardPanel::ShowFullyFloating()
