@@ -467,9 +467,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mAutoShowSwitchboardCheckBox = new wxCheckBox(panel, wxID_ANY, _("Open Switchboard at Load"), wxDefaultPosition, wxDefaultSize, 0);
+        mAutoShowSwitchboardCheckBox = new wxCheckBox(panel, wxID_ANY, _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
 
-        mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's switchboard when a ship with switches is loaded.");
+        mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded.");
 
         mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
 
