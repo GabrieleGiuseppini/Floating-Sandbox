@@ -1193,9 +1193,9 @@ Render:
 				+ ...nuke all the "casting switch(type)" from panel
 				+ Images:
 					+ {on, off} X {enabled, disabled}
-			= Floating/Docked state machine:
+			+ Floating/Docked state machine:
 				+ Fix stack overflow issue
-				- Test with EventTicker/ProbePanel on				
+				+ Test with EventTicker/ProbePanel on				
 			= Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)
