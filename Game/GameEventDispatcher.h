@@ -283,17 +283,48 @@ public:
         mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
-    virtual void OnSwitchCreated(
-        SwitchId switchId,
-        ElectricalElementInstanceIndex instanceIndex,
-        std::string const & instanceName,
-        SwitchType type,
-        ElectricalState state) override
+    virtual void OnElectricalElementAnnouncementsBegin()
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchCreated(switchId, instanceIndex, instanceName, type, state);
+            sink->OnElectricalElementAnnouncementsBegin();
+        }
+    }
+
+    virtual void OnSwitchCreated(
+        SwitchId switchId,
+        ElectricalElementInstanceIndex instanceIndex,
+        SwitchType type,
+        ElectricalState state,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnSwitchCreated(switchId, instanceIndex, type, state, panelElementMetadata);
+        }
+    }
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId powerMonitorId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalState state,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnPowerMonitorCreated(powerMonitorId, instanceIndex, state, panelElementMetadata);
+        }
+    }
+
+    virtual void OnElectricalElementAnnouncementsEnd()
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnElectricalElementAnnouncementsEnd();
         }
     }
 
@@ -316,19 +347,6 @@ public:
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnSwitchToggled(switchId, newState);
-        }
-    }
-
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId powerMonitorId,
-        ElectricalElementInstanceIndex instanceIndex,
-        std::string const & instanceName,
-        ElectricalState state) override
-    {
-        // No need to aggregate this one
-        for (auto sink : mElectricalElementSinks)
-        {
-            sink->OnPowerMonitorCreated(powerMonitorId, instanceIndex, instanceName, state);
         }
     }
 

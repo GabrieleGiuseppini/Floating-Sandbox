@@ -42,22 +42,9 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         definitionJson,
         "texture_image");
 
-    std::vector<std::string> electricalElementLabels;
-    std::optional<picojson::array> electricalElementLabelsJsonArray = Utils::GetOptionalJsonMember<picojson::array>(
-        definitionJson,
-        "electrical_element_labels");
-    if (!!electricalElementLabelsJsonArray)
-    {
-        for (auto const & labelJsonValue : *electricalElementLabelsJsonArray)
-        {
-            if (!labelJsonValue.is<std::string>())
-            {
-                throw GameException("Error parsing JSON: electrical element label is not of the string type");
-            }
-
-            electricalElementLabels.emplace_back(labelJsonValue.get<std::string>());
-        }
-    }
+    //
+    // Metadata
+    //
 
     std::string shipName = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
@@ -84,16 +71,43 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         offset.y = Utils::GetMandatoryJsonMember<float>(*offsetObject, "y");
     }
 
+    //
+    // Electrical panel metadata
+    //
+
+    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata;
+    std::optional<picojson::object> electricalPanelMetadataObject = Utils::GetOptionalJsonObject(definitionJson, "electrical_panel");
+    if (!!electricalPanelMetadataObject)
+    {
+        for (auto const & it : *electricalPanelMetadataObject)
+        {
+            ElectricalElementInstanceIndex instanceIndex;
+            if (!Utils::LexicalCast(it.first, &instanceIndex))
+                throw GameException("Key of electrical panel element '" + it.first + "' is not a valid integer");
+
+            picojson::object const & elementMetadataObject = Utils::GetJsonValueAs<picojson::object>(it.second, it.first);
+            auto const panelX = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_x");
+            auto const panelY = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_y");
+            auto const label = Utils::GetMandatoryJsonMember<std::string>(elementMetadataObject, "label");
+
+            auto const res = electricalPanelMetadata.emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(instanceIndex),
+                std::forward_as_tuple(int(panelX), int(panelY), label));
+        }
+    }
+
+
     return ShipDefinitionFile(
         structuralLayerImageFilePath,
         ropesLayerImageFilePath,
         electricalLayerImageFilePath,
         textureLayerImageFilePath,
-        std::move(electricalElementLabels),
         ShipMetadata(
             shipName,
             author,
             yearBuilt,
             description,
-            offset));
+            offset,
+            electricalPanelMetadata));
 }

@@ -16,7 +16,7 @@ constexpr float LampWetFailureWaterThreshold = 0.1f;
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
-    std::string instanceLabel,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
     ElectricalMaterial const & electricalMaterial)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -78,7 +78,8 @@ void ElectricalElements::Add(
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
-    mInstanceInfos.emplace_back(instanceIndex, instanceLabel);
+
+    mInstanceInfos.emplace_back(instanceIndex, panelElementMetadata);
 
     //
     // Lamp
@@ -103,6 +104,18 @@ void ElectricalElements::Add(
 
 void ElectricalElements::AnnounceInstancedElements()
 {
+    bool hasAnnounced = false;
+
+    auto const prolog =
+        [this, &hasAnnounced]()
+        {
+            if (!hasAnnounced)
+            {
+                mGameEventHandler->OnElectricalElementAnnouncementsBegin();
+                hasAnnounced = true;
+            }
+        };
+
     for (auto elementIndex : *this)
     {
         assert(elementIndex < mInstanceInfos.size());
@@ -111,51 +124,64 @@ void ElectricalElements::AnnounceInstancedElements()
         {
             case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
             {
+                prolog();
+
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::InteractivePushSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
             }
 
             case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
             {
+                prolog();
+
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::InteractiveToggleSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
             }
 
             case ElectricalMaterial::ElectricalElementType::PowerMonitor:
             {
+                prolog();
+
                 mGameEventHandler->OnPowerMonitorCreated(
                     PowerMonitorId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    mInstanceInfos[elementIndex].InstanceLabel,
-                    ElectricalState::Off); // We start with off; we'll figure out actual state at the next update
+                    ElectricalState::Off, // We start with off; we'll figure out actual state at the next update
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
             }
 
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
+                prolog();
+
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::AutomaticSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
             }
         }
+    }
+
+    if (hasAnnounced)
+    {
+        mGameEventHandler->OnElectricalElementAnnouncementsEnd();
     }
 }
 

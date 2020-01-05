@@ -304,10 +304,10 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
         electricalElementInstanceIndices,
+        shipDefinition.Metadata.ElectricalPanelMetadata,
         shipId,
         parentWorld,
         gameEventDispatcher,
-        shipDefinition,
         gameParameters);
 
 
@@ -1177,15 +1177,30 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
-    std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices,
+    std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
+    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    ShipDefinition const & shipDefinition,
     GameParameters const & gameParameters)
 {
     //
-    // - Get indices of points with electrical elements, together with their instance metadata
+    // Verify all panel metadata indices are valid instance IDs
+    //
+
+    for (auto const it : panelMetadata)
+    {
+        if (std::find(
+            electricalElementInstanceIndices.cbegin(),
+            electricalElementInstanceIndices.cend(),
+            it.first) == electricalElementInstanceIndices.cend())
+        {
+            throw GameException("Index '" + std::to_string(it.first) + " of electrical panel metadata cannot be found among electrical element indices");
+        }
+    }
+
+    //
+    // - Get indices of points with electrical elements, together with their panel metadata
     // - Count number of lamps
     //
 
@@ -1193,15 +1208,15 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     {
         ElementIndex elementIndex;
         ElectricalElementInstanceIndex instanceIndex;
-        std::string instanceLabel;
+        std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
 
         ElectricalElementInfo(
             ElementIndex _elementIndex,
             ElectricalElementInstanceIndex _instanceIndex,
-            std::string _instanceLabel)
+            std::optional<ElectricalPanelElementMetadata> _panelElementMetadata)
             : elementIndex(_elementIndex)
             , instanceIndex(_instanceIndex)
-            , instanceLabel(_instanceLabel)
+            , panelElementMetadata(_panelElementMetadata)
         {}
     };
 
@@ -1215,43 +1230,19 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
             assert(NoneElectricalElementInstanceIndex != instanceIndex);
 
-            // Get label
-            std::string instanceLabel;
+            // Get panel metadata
+            std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
             if (electricalMaterial->IsInstanced)
             {
-                if (instanceIndex < shipDefinition.ElectricalElementLabels.size())
+                auto const findIt = panelMetadata.find(instanceIndex);
+                if (findIt != panelMetadata.end())
                 {
-                    // Take label from definition
-                    instanceLabel = shipDefinition.ElectricalElementLabels[instanceIndex];
-                }
-                else
-                {
-                    // Make label
-                    std::stringstream ss;
-                    switch (electricalMaterial->ElectricalType)
-                    {
-                        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
-                        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
-                        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
-                        {
-                            ss << "Switch";
-                            break;
-                        }
-
-                        default:
-                        {
-                            assert(false);
-                            break;
-                        }
-                    }
-
-                    ss << " #" << static_cast<int>(instanceIndex);
-
-                    instanceLabel = ss.str();
+                    // Take metadata
+                    panelElementMetadata = findIt->second;
                 }
             }
 
-            electricalElementInfos.emplace_back(pointIndex, instanceIndex, instanceLabel);
+            electricalElementInfos.emplace_back(pointIndex, instanceIndex, panelElementMetadata);
 
             if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial->ElectricalType)
                 ++lampElementCount;
@@ -1279,7 +1270,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
         electricalElements.Add(
             elementInfo.elementIndex,
             elementInfo.instanceIndex,
-            elementInfo.instanceLabel,
+            elementInfo.panelElementMetadata,
             *electricalMaterial);
     }
 

@@ -15,6 +15,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -29,13 +30,13 @@ private:
     struct InstanceInfo
     {
         ElectricalElementInstanceIndex InstanceIndex;
-        std::string InstanceLabel;
+        std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
 
         InstanceInfo(
             ElectricalElementInstanceIndex instanceIndex,
-            std::string const & instanceLabel)
+            std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
             : InstanceIndex(instanceIndex)
-            , InstanceLabel(instanceLabel)
+            , PanelElementMetadata(panelElementMetadata)
         {}
     };
 
@@ -249,7 +250,7 @@ public:
     void Add(
         ElementIndex pointElementIndex,
         ElectricalElementInstanceIndex instanceIndex,
-        std::string instanceLabel,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
         ElectricalMaterial const & electricalMaterial);
 
     void AnnounceInstancedElements();

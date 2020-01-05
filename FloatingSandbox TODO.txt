@@ -434,7 +434,12 @@ Render:
 		- See if fire may emit Heavy smoke
 
 		- Try with SpringRelaxation updating only positions (*)
-		- Spring and NonSpring force separation optimization (*)		
+
+		- Release
+			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		- Spring and NonSpring force separation optimization (*)
+			- Unless "SpringRelaxation updating only positions" makes the trick
 		- Attempt to re-instate square water drag (*)
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
@@ -642,6 +647,7 @@ Render:
 	- Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
+			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
 		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
@@ -1214,30 +1220,37 @@ Render:
 					+ Create uq_ptr<SwitchControl(key)>
 						+ Does the mapping here from switch type to images and class
 					+ Add SwitchInfo to map
-					- Add to panel - center-aligned, overflow and grow
-						- json:
+					= Add to panel - center-aligned, overflow and grow
+						+ json:
 							"electrical_panel":{
 								"0": {"panel_x"=-1, "panel_y"=0, "label"="Test 1" },
 								"1": {"panel_x"=0, "panel_y"=0, "label"="Test 2" }
 							}
-							- Verify (at ShipBuilder):
-								= No dupe instances (done by json already?)
-								- exist instance key for each metadata
-							- ShipMetadata::ElectricalPanelMetadata
-								- x, y, label
-								- Move from definition's to ShipMetadata
-							- Passed to ElectricalElements::Add as std::optional, which stores it in 
-							  mElectricalElementAnnouncements (own struct w/ instance ID and epMD) and later uses it 
-							  for announcements
-						- Announcement:
-							- OnElectricalElementAnnouncementsBegin/End
-							- Switch and PowerMonitor announcements take extra:
-								- ShipMetadata::ElectricalPanelMetadata
+							+ ShipMetadata::ElectricalPanelMetadata
+								+ x, y, label
+								+ Move from definition's to ShipMetadata
+							+ Verify (at ShipBuilder::CreateElectricalElements):
+								+ No dupe instances (done by json already?)
+								+ Exist instance key for each metadata
+							+ Passed to ElectricalElements::Add as std::optional
+								+ Which stores it in  mInstanceInfos (own struct w/ instance ID and epMD) and later uses it 
+								  for announcements
+						+ Announcement:
+							+ OnElectricalElementAnnouncementsBegin/End
+							+ Switch and PowerMonitor announcements take extra:
+								+ ShipMetadata::ElectricalPanelMetadata
 						- Panel:
-							- OnElectricalElementAnnouncementsBegin: TODO
-							- On...: TODO
-								! AddControl(ctrl, ...)
-							- OnElectricalElementAnnouncementsEnd: TODO
+							- OnElectricalElementAnnouncementsBegin: clear TODO
+							- On...:
+								- Make label if no panel element metadata, then pass to control
+								- Store ctrl and panel MD in ElementInfo
+							- OnElectricalElementAnnouncementsEnd: do positioning for all
+								- Position each element automagically if no panel element metadata
+								- Sort algo
+								! AddControl(ctrl, x, y)
+
+						- Website: add FAQ for heat controls -> Gabe's blog
+
 						- Do also at PowerMonitor
 						- Change CircuitTest's electrical:
 							- 1) Test very L and very R

@@ -66,7 +66,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
         }
 
-        electricalElementLabels = sdf.ElectricalElementLabels;
 
         //
         // Make metadata
@@ -139,6 +138,5 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         std::move(electricalLayerImage),
         std::move(*textureImage),
         textureOrigin,
-        electricalElementLabels,
         *shipMetadata);
 }

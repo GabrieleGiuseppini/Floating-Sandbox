@@ -270,6 +270,25 @@ enum class DurationShortLongType
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
 /*
+ * Information (layout, etc.) for an element in the electrical panel.
+ */
+struct ElectricalPanelElementMetadata
+{
+    int X;
+    int Y;
+    std::string Label;
+
+    ElectricalPanelElementMetadata(
+        int x,
+        int y,
+        std::string const & label)
+        : X(x)
+        , Y(y)
+        , Label(label)
+    {}
+};
+
+/*
  * Repair session IDs and step IDs in a session.
  *
  * Comparable and ordered.

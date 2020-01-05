@@ -273,6 +273,31 @@ void SwitchboardPanel::OnSwitchCreated(
 {
     LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceName, " T=", int(type));
 
+    /* TODOHERE: salvaged from ShipBuilder
+
+                    // Make label
+                    std::stringstream label;
+                    switch (electricalMaterial->ElectricalType)
+                    {
+                        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+                        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+                        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+                        {
+                            label << "Switch";
+                            break;
+                        }
+
+                        default:
+                        {
+                            assert(false);
+                            break;
+                        }
+                    }
+
+                    label << " #" << static_cast<int>(instanceIndex);
+
+    */
+
     //
     // Add control
     //

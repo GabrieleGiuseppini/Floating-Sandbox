@@ -291,11 +291,11 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
-        std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices,
+        std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
+        std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        ShipDefinition const & shipDefinition,
         GameParameters const & gameParameters);
 
 private:
