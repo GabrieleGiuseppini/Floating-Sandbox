@@ -107,7 +107,7 @@ SwitchboardPanel::SwitchboardPanel(
         mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
         mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
-        mHintPanelSizer = new wxFlexGridSizer(3);
+        mHintPanelSizer = new wxBoxSizer(wxHORIZONTAL);
         mHintPanelSizer->Add(fillerPanel, 0, wxALIGN_CENTER_HORIZONTAL);
         mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_HORIZONTAL, 10);
         mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);

@@ -130,7 +130,7 @@ private:
 
     wxPanel * mHintPanel;
     BitmappedCheckbox * mDockCheckbox;
-    wxFlexGridSizer * mHintPanelSizer;
+    wxBoxSizer * mHintPanelSizer;
 
     wxPanel * mSwitchPanel;
     wxFlexGridSizer * mSwitchPanelSizer;
