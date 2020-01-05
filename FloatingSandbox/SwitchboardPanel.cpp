@@ -273,10 +273,8 @@ void SwitchboardPanel::OnSwitchCreated(
 {
     LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceName, " T=", int(type));
 
-    // TODO: handle overflow, add row eventually
-
     //
-    // Create control
+    // Add control
     //
 
     ElectricalElementControl * ctrl;
@@ -339,26 +337,7 @@ void SwitchboardPanel::OnSwitchCreated(
         }
     }
 
-    LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: BEFORE: SwitchPanelSize=",
-        mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),
-        " ctrl Size=", ctrl->GetSize().GetX(), "x", ctrl->GetSize().GetY());
-
-    // Add to sizer
-    mSwitchPanelSizer->Add(
-        ctrl,
-        0,
-        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-        8);
-
-    // Ask sizer to resize panel accordingly
-    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
-
-    // Re-layout from parent
-    LayoutParent();
-
-    LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: AFTER: SwitchPanelSize=",
-        mSwitchPanel->GetSize().GetX(), "x", mSwitchPanel->GetSize().GetY(),
-        " visible=", mSwitchPanel->IsShown());
+    AddControl(ctrl, instanceIndex);
 
 
     //
@@ -406,7 +385,7 @@ void SwitchboardPanel::OnPowerMonitorCreated(
     // TODO: handle overflow, add row eventually
 
     //
-    // Create control
+    // Add control
     //
 
     ElectricalElementControl * ctrl = new PowerMonitorElectricalElementControl(
@@ -416,18 +395,7 @@ void SwitchboardPanel::OnPowerMonitorCreated(
         instanceName,
         state);
 
-    // Add to sizer
-    mSwitchPanelSizer->Add(
-        ctrl,
-        0,
-        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-        8);
-
-    // Ask sizer to resize panel accordingly
-    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
-
-    // Re-layout from parent
-    LayoutParent();
+    AddControl(ctrl, instanceIndex);
 
 
     //
@@ -456,10 +424,9 @@ void SwitchboardPanel::OnPowerMonitorToggled(
 void SwitchboardPanel::MakeSwitchPanel()
 {
     // Create grid sizer for switch panel
-    mSwitchPanelSizer = new wxFlexGridSizer(1, 0, 0, 15);
-    mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
+    mSwitchPanelSizer = new wxGridBagSizer(0, 15);
 
-    // Create panel for switches
+    // Create (scrollable) panel for switches
     mSwitchPanel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL);
     mSwitchPanel->SetScrollRate(5, 0);
     mSwitchPanel->FitInside();
@@ -492,6 +459,31 @@ void SwitchboardPanel::InstallMouseTracking(bool isActive)
     {
         mLeaveWindowTimer->Stop();
     }
+}
+
+void SwitchboardPanel::AddControl(
+    ElectricalElementControl * ctrl,
+    ElectricalElementInstanceIndex instanceIndex)
+{
+    // Calculate row and column
+    // TODOTEST
+    int const r = static_cast<int>(instanceIndex) / 11;
+    int const c = static_cast<int>(instanceIndex) % 11;
+
+    // Add to sizer
+    mSwitchPanelSizer->Add(
+        ctrl,
+        wxGBPosition(r, c),
+        wxGBSpan(1, 1),
+        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+        8);
+
+    // Ask sizer to resize panel accordingly
+    // TODOTEST: needed?
+    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
+
+    // Re-layout from parent
+    LayoutParent();
 }
 
 void SwitchboardPanel::LayoutParent()

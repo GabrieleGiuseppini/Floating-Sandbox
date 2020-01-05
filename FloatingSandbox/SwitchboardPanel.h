@@ -14,8 +14,8 @@
 
 #include <wx/bitmap.h>
 #include <wx/custombgwin.h>
+#include <wx/gbsizer.h>
 #include <wx/scrolwin.h>
-#include <wx/sizer.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
 
@@ -106,6 +106,10 @@ private:
 
     void InstallMouseTracking(bool isActive);
 
+    void AddControl(
+        ElectricalElementControl * ctrl,
+        ElectricalElementInstanceIndex instanceIndex);
+
     void LayoutParent();
 
     void OnLeaveWindowTimer(wxTimerEvent & event);
@@ -136,7 +140,7 @@ private:
     wxBoxSizer * mHintPanelSizer;
 
     wxScrolled<wxPanel> * mSwitchPanel;
-    wxFlexGridSizer * mSwitchPanelSizer;
+    wxGridBagSizer * mSwitchPanelSizer;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
 

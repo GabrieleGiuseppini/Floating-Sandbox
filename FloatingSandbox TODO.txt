@@ -1210,10 +1210,41 @@ Render:
 						+ bool IsEnabled					
 				- OnSwitchCreated:
 					- Calc key and store in vector<integer from key, ObjectId> for key mappings
+						- Ctrl/Alt 1...0, -, =
 					+ Create uq_ptr<SwitchControl(key)>
 						+ Does the mapping here from switch type to images and class
 					+ Add SwitchInfo to map
 					- Add to panel - center-aligned, overflow and grow
+						- json:
+							"electrical_panel":{
+								"0": {"panel_x"=-1, "panel_y"=0, "label"="Test 1" },
+								"1": {"panel_x"=0, "panel_y"=0, "label"="Test 2" }
+							}
+							- Verify (at ShipBuilder):
+								= No dupe instances (done by json already?)
+								- exist instance key for each metadata
+							- ShipMetadata::ElectricalPanelMetadata
+								- x, y, label
+								- Move from definition's to ShipMetadata
+							- Passed to ElectricalElements::Add as std::optional, which stores it in 
+							  mElectricalElementAnnouncements (own struct w/ instance ID and epMD) and later uses it 
+							  for announcements
+						- Announcement:
+							- OnElectricalElementAnnouncementsBegin/End
+							- Switch and PowerMonitor announcements take extra:
+								- ShipMetadata::ElectricalPanelMetadata
+						- Panel:
+							- OnElectricalElementAnnouncementsBegin: TODO
+							- On...: TODO
+								! AddControl(ctrl, ...)
+							- OnElectricalElementAnnouncementsEnd: TODO
+						- Do also at PowerMonitor
+						- Change CircuitTest's electrical:
+							- 1) Test very L and very R
+								- a) 1st row only
+								- b) 2nd row only
+								- c) 1st and 2nd row
+							- 2) (current) single instance at center, 1st row
 				+ OnSwitchEnabled: 
 					+ Enable/Disable switch control
 					+ Enable/Disable in SwitchInfo
@@ -1221,8 +1252,7 @@ Render:
 				+ OnSwitchToggled(ObjectId, new state):
 					+ Lookup from map and call SetState(new state) on control (regardless of disabling)
 				- Gets key events from MainFrame when MainFrame does not recognize
-					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain
-					- Shift and Alt do +10, +20
+					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain					
 					- Uses key mappings to figure out ObjectId
 					- On key:
 						- If SwitchInfo.IsEnabled:
@@ -1232,7 +1262,7 @@ Render:
 					= Grey hint panel
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 						+ Try with whole panel, rather than with SwitchPanel only
-						- Tri other background
+						- Try other background
 					- See suspend/resume layout for flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
