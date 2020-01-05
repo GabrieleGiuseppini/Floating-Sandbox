@@ -106,13 +106,34 @@ void ElectricalElements::AnnounceInstancedElements()
     {
         switch (GetMaterialType(elementIndex))
         {
-            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+            case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
             {
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
                     mLabels[elementIndex],
-                    SwitchType::Interactive,
-                    static_cast<SwitchState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+                    SwitchType::InteractivePushSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    SwitchId(mShipId, elementIndex),
+                    mLabels[elementIndex],
+                    SwitchType::InteractiveToggleSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+            {
+                mGameEventHandler->OnPowerMonitorCreated(
+                    PowerMonitorId(mShipId, elementIndex),
+                    mLabels[elementIndex],
+                    ElectricalState::Off); // We start with off; we'll figure out actual state at the next update
 
                 break;
             }
@@ -122,8 +143,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
                     mLabels[elementIndex],
-                    SwitchType::WaterSensing,
-                    static_cast<SwitchState>(mConductivityBuffer[elementIndex].ConductsElectricity));
+                    SwitchType::AutomaticSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
 
                 break;
             }
@@ -133,7 +154,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
 void ElectricalElements::SetSwitchState(
     SwitchId switchId,
-    SwitchState switchState)
+    ElectricalState switchState)
 {
     auto const electricalElementIndex = switchId.GetLocalObjectId();
 
@@ -205,7 +226,8 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Notify switch disabling
     auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
-    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
+    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
     {
         mGameEventHandler->OnSwitchEnabled(SwitchId(mShipId, electricalElementIndex), false);
@@ -233,7 +255,8 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
     // Notify switch enabling
     auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
-    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
+    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
     {
         mGameEventHandler->OnSwitchEnabled(SwitchId(mShipId, electricalElementIndex), true);

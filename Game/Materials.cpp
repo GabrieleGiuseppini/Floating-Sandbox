@@ -215,10 +215,14 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::Cable;
     else if (lstr == "generator")
         return ElectricalElementType::Generator;
-    else if (lstr == "interactiveswitch")
-        return ElectricalElementType::InteractiveSwitch;
+    else if (lstr == "interactivepushswitch")
+        return ElectricalElementType::InteractivePushSwitch;
+    else if (lstr == "interactivetoggleswitch")
+        return ElectricalElementType::InteractiveToggleSwitch;
     else if (lstr == "othersink")
         return ElectricalElementType::OtherSink;
+    else if (lstr == "powermonitor")
+        return ElectricalElementType::PowerMonitor;
     else if (lstr == "smokeemitter")
         return ElectricalElementType::SmokeEmitter;
     else if (lstr == "watersensingswitch")

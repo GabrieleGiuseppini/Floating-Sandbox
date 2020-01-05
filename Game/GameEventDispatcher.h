@@ -287,7 +287,7 @@ public:
         SwitchId switchId,
         std::string const & name,
         SwitchType type,
-        SwitchState state) override
+        ElectricalState state) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
@@ -309,12 +309,35 @@ public:
 
     virtual void OnSwitchToggled(
         SwitchId switchId,
-        SwitchState newState)
+        ElectricalState newState)
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnSwitchToggled(switchId, newState);
+        }
+    }
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId powerMonitorId,
+        std::string const & name,
+        ElectricalState state) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnPowerMonitorCreated(powerMonitorId, name, state);
+        }
+    }
+
+    virtual void OnPowerMonitorToggled(
+        PowerMonitorId powerMonitorId,
+        ElectricalState newState) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnPowerMonitorToggled(powerMonitorId, newState);
         }
     }
 

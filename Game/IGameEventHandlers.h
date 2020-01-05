@@ -180,7 +180,7 @@ struct IElectricalElementGameEventHandler
         SwitchId /*switchId*/,
         std::string const & /*name*/,
         SwitchType /*type*/,
-        SwitchState /*state*/)
+        ElectricalState /*state*/)
     {
         // Default-implemented
     }
@@ -194,7 +194,22 @@ struct IElectricalElementGameEventHandler
 
     virtual void OnSwitchToggled(
         SwitchId /*switchId*/,
-        SwitchState /*newState*/)
+        ElectricalState /*newState*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId /*powerMonitorId*/,
+        std::string const & /*name*/,
+        ElectricalState /*state*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPowerMonitorToggled(
+        PowerMonitorId /*powerMonitorId*/,
+        ElectricalState /*newState*/)
     {
         // Default-implemented
     }

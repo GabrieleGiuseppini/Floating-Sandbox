@@ -1332,7 +1332,7 @@ void Ship::ApplyLightning(
 
 void Ship::SetSwitchState(
     SwitchId switchId,
-    SwitchState switchState)
+    ElectricalState switchState)
 {
     assert(switchId.GetShipId() == mId);
 

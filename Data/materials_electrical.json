@@ -305,29 +305,58 @@
     {
         "color_key": "#804000",
 	"conducts_electricity": true,
-        "electrical_type": "InteractiveSwitch",
+        "electrical_type": "InteractiveToggleSwitch",
         "heat_generated": 0.0,
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Interactive Switch ON",
+        "name": "Interactive Toggle Switch ON",
         "template": {
             "column": 0,
-            "row": "8|I-Switch ON"
+            "row": "8|I-TSwitch ON"
         }
     }, 
     {
         "color_key": "#104000",
 	"conducts_electricity": false,
-        "electrical_type": "InteractiveSwitch",
+        "electrical_type": "InteractiveToggleSwitch",
         "heat_generated": 0.0,
 	"is_instanced": true,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Interactive Switch OFF",
+        "name": "Interactive Toggle Switch OFF",
         "template": {
             "column": 1,
-            "row": "8|I-Switch OFF"
+            "row": "8|I-TSwitch OFF"
+        }
+    }, 
+
+    {
+        "color_key": "#884800",
+	"conducts_electricity": true,
+        "electrical_type": "InteractivePushSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Push Switch ON",
+        "template": {
+            "column": 2,
+            "row": "8|I-PSwitch ON"
+        }
+    }, 
+    {
+        "color_key": "#184800",
+	"conducts_electricity": false,
+        "electrical_type": "InteractivePushSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Push Switch OFF",
+        "template": {
+            "column": 3,
+            "row": "8|I-PSwitch OFF"
         }
     }, 
 
@@ -341,7 +370,7 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch ON",
         "template": {
-            "column": 2,
+            "column": 4,
             "row": "8|W-Switch ON"
         }
     }, 
@@ -355,7 +384,7 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch OFF",
         "template": {
-            "column": 3,
+            "column": 5,
             "row": "8|W-Switch OFF"
         }
     },

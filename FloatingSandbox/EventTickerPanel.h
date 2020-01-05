@@ -82,19 +82,17 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnSwitchCreated(
-        SwitchId switchId,
-        std::string const & name,
-        SwitchType type,
-        SwitchState state) override;
-
     virtual void OnSwitchEnabled(
         SwitchId switchId,
         bool isEnabled) override;
 
     virtual void OnSwitchToggled(
         SwitchId switchId,
-        SwitchState newState) override;
+        ElectricalState newState) override;
+
+    virtual void OnPowerMonitorToggled(
+        PowerMonitorId powerMonitorId,
+        ElectricalState newState) override;
 
     virtual void OnBombPlaced(
         BombId bombId,

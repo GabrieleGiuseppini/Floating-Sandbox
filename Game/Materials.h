@@ -169,8 +169,10 @@ public:
         Lamp,
         Cable,
         Generator,
-        InteractiveSwitch,
+        InteractiveToggleSwitch,
+        InteractivePushSwitch,
         OtherSink,
+        PowerMonitor,
         SmokeEmitter,
         WaterSensingSwitch
     };

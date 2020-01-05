@@ -38,6 +38,7 @@ SwitchboardPanel::SwitchboardPanel(
     , mLeaveWindowTimer()
     //
     , mSwitchMap()
+    , mPowerMonitorMap()
     , mGameController(gameController)
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
@@ -72,11 +73,18 @@ SwitchboardPanel::SwitchboardPanel(
     mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
 
-    mInteractiveSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
 
+    mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
+    mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
+    mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
 
     //
     // Setup panel
@@ -255,15 +263,16 @@ void SwitchboardPanel::OnGameReset()
     // Hide
     HideFully();
 
-    // Clear switch map
+    // Clear maps
     mSwitchMap.clear();
+    mPowerMonitorMap.clear();
 }
 
 void SwitchboardPanel::OnSwitchCreated(
     SwitchId switchId,
     std::string const & name,
     SwitchType type,
-    SwitchState state)
+    ElectricalState state)
 {
     LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", name, " T=", int(type));
 
@@ -273,20 +282,19 @@ void SwitchboardPanel::OnSwitchCreated(
     // Create control
     //
 
-    ShipSwitchControl * ctrl;
+    ElectricalElementControl * ctrl;
     switch (type)
     {
-        case SwitchType::Interactive:
+        case SwitchType::InteractivePushSwitch:
         {
-            ctrl = new ShipInteractiveSwitchControl(
+            ctrl = new InteractivePushSwitchElectricalElementControl(
                 mSwitchPanel,
-                mInteractiveSwitchOnEnabledBitmap,
-                mInteractiveSwitchOffEnabledBitmap,
-                mInteractiveSwitchOnDisabledBitmap,
-                mInteractiveSwitchOffDisabledBitmap,
-                switchId,
+                mInteractivePushSwitchOnEnabledBitmap,
+                mInteractivePushSwitchOffEnabledBitmap,
+                mInteractivePushSwitchOnDisabledBitmap,
+                mInteractivePushSwitchOffDisabledBitmap,
                 name,
-                [this](SwitchId switchId, SwitchState newState)
+                [this, switchId](ElectricalState newState)
                 {
                     this->mGameController->SetSwitchState(switchId, newState);
                 },
@@ -295,15 +303,32 @@ void SwitchboardPanel::OnSwitchCreated(
             break;
         }
 
-        case SwitchType::WaterSensing:
+        case SwitchType::InteractiveToggleSwitch:
         {
-            ctrl = new ShipAutomaticSwitchControl(
+            ctrl = new InteractiveToggleSwitchElectricalElementControl(
+                mSwitchPanel,
+                mInteractiveToggleSwitchOnEnabledBitmap,
+                mInteractiveToggleSwitchOffEnabledBitmap,
+                mInteractiveToggleSwitchOnDisabledBitmap,
+                mInteractiveToggleSwitchOffDisabledBitmap,
+                name,
+                [this, switchId](ElectricalState newState)
+                {
+                    this->mGameController->SetSwitchState(switchId, newState);
+                },
+                state);
+
+            break;
+        }
+
+        case SwitchType::AutomaticSwitch:
+        {
+            ctrl = new AutomaticSwitchElectricalElementControl(
                 mSwitchPanel,
                 mAutomaticSwitchOnEnabledBitmap,
                 mAutomaticSwitchOffEnabledBitmap,
                 mAutomaticSwitchOnDisabledBitmap,
                 mAutomaticSwitchOffDisabledBitmap,
-                switchId,
                 name,
                 state);
 
@@ -348,7 +373,7 @@ void SwitchboardPanel::OnSwitchCreated(
     mSwitchMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(switchId),
-        std::forward_as_tuple(type, ctrl));
+        std::forward_as_tuple(ctrl));
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
@@ -358,7 +383,7 @@ void SwitchboardPanel::OnSwitchEnabled(
     // Enable/disable switch control
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
-    it->second.SwitchControl->SetEnabled(isEnabled);
+    it->second.Control->SetEnabled(isEnabled);
 
     // Remember enable state
     it->second.IsEnabled = isEnabled;
@@ -366,12 +391,68 @@ void SwitchboardPanel::OnSwitchEnabled(
 
 void SwitchboardPanel::OnSwitchToggled(
     SwitchId switchId,
-    SwitchState newState)
+    ElectricalState newState)
 {
     // Toggle switch control
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
-    it->second.SwitchControl->SetState(newState);
+    it->second.Control->SetState(newState);
+}
+
+void SwitchboardPanel::OnPowerMonitorCreated(
+    PowerMonitorId powerMonitorId,
+    std::string const & name,
+    ElectricalState state)
+{
+    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", name);
+
+    // TODO: handle overflow, add row eventually
+
+    //
+    // Create control
+    //
+
+    ElectricalElementControl * ctrl = new PowerMonitorElectricalElementControl(
+        mSwitchPanel,
+        mPowerMonitorOnBitmap,
+        mPowerMonitorOffBitmap,
+        name,
+        state);
+
+    // Add to sizer
+    mSwitchPanelSizer->Add(
+        ctrl,
+        0,
+        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+        8);
+
+    // Ask sizer to resize panel accordingly
+    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
+
+    mMainVSizer->Layout();
+
+    LayoutParent();
+
+
+    //
+    // Add monitor to map
+    //
+
+    assert(mPowerMonitorMap.find(powerMonitorId) == mPowerMonitorMap.end());
+    mPowerMonitorMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(powerMonitorId),
+        std::forward_as_tuple(ctrl));
+}
+
+void SwitchboardPanel::OnPowerMonitorToggled(
+    PowerMonitorId powerMonitorId,
+    ElectricalState newState)
+{
+    // Toggle power monitor control
+    auto it = mPowerMonitorMap.find(powerMonitorId);
+    assert(it != mPowerMonitorMap.end());
+    it->second.Control->SetState(newState);
 }
 
 ///////////////////////////////////////////////////////////////////

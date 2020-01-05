@@ -579,7 +579,7 @@ void World::TriggerRogueWave()
         mWind);
 }
 
-void World::SetSwitchState(SwitchId switchId, SwitchState switchState)
+void World::SetSwitchState(SwitchId switchId, ElectricalState switchState)
 {
     auto const shipId = switchId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());

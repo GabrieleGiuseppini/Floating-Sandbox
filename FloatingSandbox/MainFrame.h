@@ -254,7 +254,32 @@ private:
         SwitchId /*switchId*/,
         std::string const & /*name*/,
         SwitchType /*type*/,
-        SwitchState /*state*/) override
+        ElectricalState /*state*/) override
+    {
+        //
+        // Show switchboard if required
+        //
+
+        assert(!!mSwitchboardPanel);
+        assert(!!mUIPreferencesManager);
+
+        if (!mSwitchboardPanel->IsShowing())
+        {
+            if (mUIPreferencesManager->GetAutoShowSwitchboard())
+            {
+                mSwitchboardPanel->ShowFullyDocked();
+            }
+            else
+            {
+                mSwitchboardPanel->ShowPartially();
+            }
+        }
+    }
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId /*powerMonitorId*/,
+        std::string const & /*name*/,
+        ElectricalState /*state*/) override
     {
         //
         // Show switchboard if required

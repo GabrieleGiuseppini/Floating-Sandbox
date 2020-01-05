@@ -181,7 +181,7 @@ public:
     void TriggerStorm() override;
 	void TriggerLightning() override;
 
-    void SetSwitchState(SwitchId switchId, SwitchState switchState) override;
+    void SetSwitchState(SwitchId switchId, ElectricalState switchState) override;
 
     //
     // Render controls

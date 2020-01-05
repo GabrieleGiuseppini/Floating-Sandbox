@@ -6,7 +6,7 @@
 #pragma once
 
 #include <UIControls/BitmappedCheckbox.h>
-#include <UIControls/ShipSwitchControl.h>
+#include <UIControls/ElectricalElementControl.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
@@ -69,7 +69,7 @@ public:
         SwitchId switchId,
         std::string const & name,
         SwitchType type,
-        SwitchState state) override;
+        ElectricalState state) override;
 
     virtual void OnSwitchEnabled(
         SwitchId switchId,
@@ -77,7 +77,16 @@ public:
 
     virtual void OnSwitchToggled(
         SwitchId switchId,
-        SwitchState newState) override;
+        ElectricalState newState) override;
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId powerMonitorId,
+        std::string const & name,
+        ElectricalState state) override;
+
+    virtual void OnPowerMonitorToggled(
+        PowerMonitorId powerMonitorId,
+        ElectricalState newState) override;
 
 private:
 
@@ -130,22 +139,19 @@ private:
 
 private:
 
-    struct SwitchInfo
+    struct ElectricalElementInfo
     {
-        SwitchType Type;
-        ShipSwitchControl * SwitchControl;
+        ElectricalElementControl * Control;
         bool IsEnabled;
 
-        SwitchInfo(
-            SwitchType type,
-            ShipSwitchControl * switchControl)
-            : Type(type)
-            , SwitchControl(switchControl)
+        ElectricalElementInfo(ElectricalElementControl * control)
+            : Control(control)
             , IsEnabled(true)
         {}
     };
 
-    std::unordered_map<SwitchId, SwitchInfo> mSwitchMap;
+    std::unordered_map<SwitchId, ElectricalElementInfo> mSwitchMap;
+    std::unordered_map<PowerMonitorId, ElectricalElementInfo> mPowerMonitorMap;
 
 private:
 
@@ -163,8 +169,16 @@ private:
     wxBitmap mAutomaticSwitchOnDisabledBitmap;
     wxBitmap mAutomaticSwitchOffDisabledBitmap;
 
-    wxBitmap mInteractiveSwitchOnEnabledBitmap;
-    wxBitmap mInteractiveSwitchOffEnabledBitmap;
-    wxBitmap mInteractiveSwitchOnDisabledBitmap;
-    wxBitmap mInteractiveSwitchOffDisabledBitmap;
+    wxBitmap mInteractivePushSwitchOnEnabledBitmap;
+    wxBitmap mInteractivePushSwitchOffEnabledBitmap;
+    wxBitmap mInteractivePushSwitchOnDisabledBitmap;
+    wxBitmap mInteractivePushSwitchOffDisabledBitmap;
+
+    wxBitmap mInteractiveToggleSwitchOnEnabledBitmap;
+    wxBitmap mInteractiveToggleSwitchOffEnabledBitmap;
+    wxBitmap mInteractiveToggleSwitchOnDisabledBitmap;
+    wxBitmap mInteractiveToggleSwitchOffDisabledBitmap;
+
+    wxBitmap mPowerMonitorOnBitmap;
+    wxBitmap mPowerMonitorOffBitmap;
 };

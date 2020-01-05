@@ -889,8 +889,8 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         mSwitchboardPanel->OnSwitchCreated(
             SwitchId(0, TODOID),
             "Test " + std::to_string(TODOID),
-            TODOID % 2 ? SwitchType::Interactive : SwitchType::WaterSensing,
-            SwitchState::Off);
+            TODOID % 3 == 0 ? SwitchType::InteractivePushSwitch : (TODOID % 3 == 1 ? SwitchType::InteractiveToggleSwitch : SwitchType::AutomaticSwitch),
+            ElectricalState::Off);
     }
     else if (event.GetKeyCode() == 'B')
     {

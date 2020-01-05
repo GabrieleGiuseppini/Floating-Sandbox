@@ -61,7 +61,7 @@ using LocalBombId = std::uint32_t;
  *
  * Not comparable, not ordered.
  */
-template<typename TLocalObjectId>
+template<typename TLocalObjectId, typename TTypeTag>
 struct ObjectId
 {
     using LocalObjectId = TLocalObjectId;
@@ -112,8 +112,8 @@ private:
     LocalObjectId mLocalObjectId;
 };
 
-template<typename TLocalObjectId>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ObjectId<TLocalObjectId> const & oid)
+template<typename TLocalObjectId, typename TTypeTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
 {
     os << oid.ToString();
     return os;
@@ -121,21 +121,22 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, Objec
 
 namespace std {
 
-    template <typename TLocalObjectId>
-    struct hash<ObjectId<TLocalObjectId>>
+    template <typename TLocalObjectId, typename TTypeTag>
+    struct hash<ObjectId<TLocalObjectId, TTypeTag>>
     {
-        std::size_t operator()(ObjectId<TLocalObjectId> const & objectId) const
+        std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
         {
             return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-                ^ std::hash<typename ObjectId<TLocalObjectId>::LocalObjectId>()(objectId.GetLocalObjectId());
+                ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
         }
     };
 
 }
 
-using ElementId = ObjectId<ElementIndex>;
-using BombId = ObjectId<LocalBombId>;
-using SwitchId = ObjectId<ElementIndex>;
+using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
+using BombId = ObjectId<LocalBombId, struct BombTypeTag>;
+using SwitchId = ObjectId<ElementIndex, struct SwitchTypeTag>;
+using PowerMonitorId = ObjectId<ElementIndex, struct PowerMonitorTypeTag>;
 
 /*
  * A sequence number which is never zero.
@@ -219,28 +220,29 @@ enum class ExplosionType
  */
 enum class SwitchType
 {
-    Interactive,
-    WaterSensing
+    InteractiveToggleSwitch,
+    InteractivePushSwitch,
+    AutomaticSwitch
 };
 
 /*
- * Switch states.
+ * Electrical states.
  */
-enum class SwitchState : bool
+enum class ElectricalState : bool
 {
     Off = false,
     On = true
 };
 
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, SwitchState const & s)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ElectricalState const & s)
 {
-    if (s == SwitchState::On)
+    if (s == ElectricalState::On)
     {
         os << "ON";
     }
     else
     {
-        assert(s == SwitchState::Off);
+        assert(s == ElectricalState::Off);
         os << "OFF";
     }
 

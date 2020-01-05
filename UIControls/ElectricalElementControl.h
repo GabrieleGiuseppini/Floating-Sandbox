@@ -18,20 +18,20 @@
 #include <optional>
 #include <string>
 
-class ShipSwitchControl : public wxPanel
+class ElectricalElementControl : public wxPanel
 {
 public:
 
-    void SetState(SwitchState state)
+    void SetState(ElectricalState state)
     {
         mCurrentState = state;
 
         SetImageForCurrentState();
     }
 
-    SwitchState ToggleState()
+    ElectricalState ToggleState()
     {
-        SetState(mCurrentState == SwitchState::On ? SwitchState::Off : SwitchState::On);
+        SetState(mCurrentState == ElectricalState::On ? ElectricalState::Off : ElectricalState::On);
 
         return mCurrentState;
     }
@@ -45,22 +45,20 @@ public:
 
 protected:
 
-    ShipSwitchControl(
+    ElectricalElementControl(
         wxWindow * parent,
         wxBitmap const & onEnabledImage,
         wxBitmap const & offEnabledImage,
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
-        SwitchId switchId,
         std::string const & label,
-        SwitchState currentState)
+        ElectricalState currentState)
         : wxPanel(
             parent,
             wxID_ANY,
             wxDefaultPosition,
             wxDefaultSize,
             wxBORDER_NONE)
-        , mSwitchId(switchId)
         , mCurrentState(currentState)
         , mIsEnabled(true)
         , mImageBitmap(nullptr)
@@ -87,25 +85,25 @@ private:
     {
         if (mIsEnabled)
         {
-            if (mCurrentState == SwitchState::On)
+            if (mCurrentState == ElectricalState::On)
             {
                 mImageBitmap->SetBitmap(mOnEnabledImage);
             }
             else
             {
-                assert(mCurrentState == SwitchState::Off);
+                assert(mCurrentState == ElectricalState::Off);
                 mImageBitmap->SetBitmap(mOffEnabledImage);
             }
         }
         else
         {
-            if (mCurrentState == SwitchState::On)
+            if (mCurrentState == ElectricalState::On)
             {
                 mImageBitmap->SetBitmap(mOnDisabledImage);
             }
             else
             {
-                assert(mCurrentState == SwitchState::Off);
+                assert(mCurrentState == ElectricalState::Off);
                 mImageBitmap->SetBitmap(mOffDisabledImage);
             }
         }
@@ -115,8 +113,7 @@ private:
 
 protected:
 
-    SwitchId const mSwitchId;
-    SwitchState mCurrentState;
+    ElectricalState mCurrentState;
     bool mIsEnabled;
 
     wxStaticBitmap * mImageBitmap;
@@ -129,32 +126,30 @@ private:
     wxBitmap const & mOffDisabledImage;
 };
 
-class ShipInteractiveSwitchControl : public ShipSwitchControl
+class InteractiveToggleSwitchElectricalElementControl : public ElectricalElementControl
 {
 public:
 
-    ShipInteractiveSwitchControl(
+    InteractiveToggleSwitchElectricalElementControl(
         wxWindow * parent,
         wxBitmap const & onEnabledImage,
         wxBitmap const & offEnabledImage,
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
-        SwitchId switchId,
         std::string const & label,
-        std::function<void(SwitchId, SwitchState)> onSwitchToggled,
-        SwitchState currentState)
-        : ShipSwitchControl(
+        std::function<void(ElectricalState)> onSwitchToggled,
+        ElectricalState currentState)
+        : ElectricalElementControl(
             parent,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
             offDisabledImage,
-            switchId,
             label,
             currentState)
         , mOnSwitchToggled(std::move(onSwitchToggled))
     {
-        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&ShipInteractiveSwitchControl::OnLeftDown, this);
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
     }
 
 private:
@@ -167,39 +162,122 @@ private:
             // Just invoke the callback, we'll end up being toggled when the event travels back
             //
 
-            SwitchState const newState = (mCurrentState == SwitchState::On)
-                ? SwitchState::Off
-                : SwitchState::On;
+            ElectricalState const newState = (mCurrentState == ElectricalState::On)
+                ? ElectricalState::Off
+                : ElectricalState::On;
 
-            mOnSwitchToggled(mSwitchId, newState);
+            mOnSwitchToggled(newState);
         }
     }
 
 private:
 
-    std::function<void(SwitchId, SwitchState)> const mOnSwitchToggled;
+    std::function<void(ElectricalState)> const mOnSwitchToggled;
 };
 
-class ShipAutomaticSwitchControl : public ShipSwitchControl
+class InteractivePushSwitchElectricalElementControl : public ElectricalElementControl
 {
 public:
 
-    ShipAutomaticSwitchControl(
+    InteractivePushSwitchElectricalElementControl(
         wxWindow * parent,
         wxBitmap const & onEnabledImage,
         wxBitmap const & offEnabledImage,
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
-        SwitchId switchId,
         std::string const & label,
-        SwitchState currentState)
-        : ShipSwitchControl(
+        std::function<void(ElectricalState)> onSwitchToggled,
+        ElectricalState currentState)
+        : ElectricalElementControl(
             parent,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
             offDisabledImage,
-            switchId,
+            label,
+            currentState)
+        , mOnSwitchToggled(std::move(onSwitchToggled))
+    {
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
+        mImageBitmap->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+    }
+
+private:
+
+    void OnLeftDown(wxMouseEvent & /*event*/)
+    {
+        if (mIsEnabled)
+        {
+            //
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            //
+
+            ElectricalState const newState = (mCurrentState == ElectricalState::On)
+                ? ElectricalState::Off
+                : ElectricalState::On;
+
+            mOnSwitchToggled(newState);
+        }
+    }
+
+    void OnLeftUp(wxMouseEvent & /*event*/)
+    {
+        //
+        // Just invoke the callback, we'll end up being toggled when the event travels back
+        //
+
+        ElectricalState const newState = (mCurrentState == ElectricalState::On)
+            ? ElectricalState::Off
+            : ElectricalState::On;
+
+        mOnSwitchToggled(newState);
+    }
+
+private:
+
+    std::function<void(ElectricalState)> const mOnSwitchToggled;
+};
+
+class AutomaticSwitchElectricalElementControl : public ElectricalElementControl
+{
+public:
+
+    AutomaticSwitchElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & onEnabledImage,
+        wxBitmap const & offEnabledImage,
+        wxBitmap const & onDisabledImage,
+        wxBitmap const & offDisabledImage,
+        std::string const & label,
+        ElectricalState currentState)
+        : ElectricalElementControl(
+            parent,
+            onEnabledImage,
+            offEnabledImage,
+            onDisabledImage,
+            offDisabledImage,
+            label,
+            currentState)
+    {
+    }
+};
+
+class PowerMonitorElectricalElementControl : public ElectricalElementControl
+{
+public:
+
+    PowerMonitorElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & onImage,
+        wxBitmap const & offImage,
+        std::string const & label,
+        ElectricalState currentState)
+        : ElectricalElementControl(
+            parent,
+            onImage,
+            offImage,
+            onImage,
+            offImage,
             label,
             currentState)
     {

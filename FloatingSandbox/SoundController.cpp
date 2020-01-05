@@ -1280,11 +1280,11 @@ void SoundController::OnLightFlicker(
 }
 
 void SoundController::OnSwitchToggled(
-    SwitchId switchId,
-    SwitchState newState)
+    SwitchId /*switchId*/,
+    ElectricalState newState)
 {
     PlayOneShotMultipleChoiceSound(
-        newState == SwitchState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+        newState == ElectricalState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
         100.0f,
         false);
 }

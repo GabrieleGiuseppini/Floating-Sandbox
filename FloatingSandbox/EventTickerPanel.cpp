@@ -175,17 +175,6 @@ void EventTickerPanel::OnTriangleRepaired(
     AppendFutureTickerText(ss.str());
 }
 
-void EventTickerPanel::OnSwitchCreated(
-    SwitchId switchId,
-    std::string const & name,
-    SwitchType /*type*/,
-    SwitchState state)
-{
-    std::stringstream ss;
-    ss << "Switch '" << name << "' (" << switchId << ") created and " << state << "!";
-    AppendFutureTickerText(ss.str());
-}
-
 void EventTickerPanel::OnSwitchEnabled(
     SwitchId switchId,
     bool isEnabled)
@@ -199,10 +188,19 @@ void EventTickerPanel::OnSwitchEnabled(
 
 void EventTickerPanel::OnSwitchToggled(
     SwitchId switchId,
-    SwitchState newState)
+    ElectricalState newState)
 {
     std::stringstream ss;
     ss << "Switch '" << switchId << "' toggled to " << newState << "!";
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnPowerMonitorToggled(
+    PowerMonitorId powerMonitorId,
+    ElectricalState newState)
+{
+    std::stringstream ss;
+    ss << "Monitor '" << powerMonitorId << "' toggled to " << newState << "!";
     AppendFutureTickerText(ss.str());
 }
 

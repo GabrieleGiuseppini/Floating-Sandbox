@@ -1208,7 +1208,8 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
                     std::stringstream ss;
                     switch (electricalMaterial->ElectricalType)
                     {
-                        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+                        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+                        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
                         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
                         {
                             ss << "Switch";

@@ -1175,7 +1175,7 @@ Render:
 			+ Hides it again only at Reset()
 		= SwitchboardPanel:
 			+ MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
-			- Has control to hide it back (kinda like "close" button at top-right corner)
+			+ Has control to hide it back (kinda like "close" button at top-right corner)
 			= ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
 				+ Has state (SwitchState mCurrentState)
 					+ Purely for drawing
@@ -1237,11 +1237,16 @@ Render:
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
+		= Gfx:
+			= Do push switch (mechanical)
+			- Do automatic switch (mechanical)
+
 		- Do not propagate switch characteristics through ropes
 
 		- Cleanup:
+			- See if need different sound for push switch vs toggle switch
 			- More intuitive pin
-				- Close to "Switches" label?
+				- Closer to "Switches" label?
 			- Clear TODOTEST's in SwitchboardPanel
 			- Remove test switch adding from MainFrame.cpp
 			+ Mouse pointer on switchboard
@@ -1260,7 +1265,34 @@ Render:
 			- Redo electrical materials template			-
 			- Decide whether SwitchboardPanel should be double-buffered or not
 		- Run in Debug
-				
+
+	= Power monitors:
+		+ GameTypes:
+			+ First off, tag ObjectId
+			+ Add PowerMonitorId
+			+ Add Switch types:
+				! ToggleSwitch
+				+ PushSwitch
+		+ EventHandler:
+			+ Add power monitor events
+		- Simulation:
+			- Make it a sink
+			- Keep state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
+		- MainFrame:
+			- Register for power monitor events
+		+ UI:
+			+ ElectricalElementControl
+				+ InteractiveToggleSwitchElectricalElementControl
+				+ InteractivePushSwitchElectricalElementControl
+				+ AutomaticSwitchElectricalElementControl
+				+ PowerMonitorElectricalElementControl
+		- Add element to electrical elements json
+		- Switchboard:
+			+ Register for power monitor events
+			- Swap bitmaps: 
+				+ Current non-interactive becomes power monitor
+			= Add power monitor to switchboard
+		- Refresh electrical elements' materials template				
 
 	- Pumps (*)
 		- Spec:

@@ -241,7 +241,7 @@ public:
 
     void SetSwitchState(
         SwitchId switchId,
-        SwitchState switchState);
+        ElectricalState switchState);
 
     void Destroy(ElementIndex electricalElementIndex);
 

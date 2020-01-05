@@ -239,7 +239,7 @@ public:
 
     virtual void OnSwitchToggled(
         SwitchId switchId,
-        SwitchState newState) override;
+        ElectricalState newState) override;
 
     virtual void OnBombPlaced(
         BombId bombId,
