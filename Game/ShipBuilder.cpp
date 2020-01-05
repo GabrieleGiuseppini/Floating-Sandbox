@@ -244,14 +244,14 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     // Visit all PointInfo's and create Points, i.e. the entire set of points
     //
 
-    std::vector<MaterialDatabase::ElectricalElementInstanceId> electricalElementInstanceIds;
+    std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices;
     Physics::Points points = CreatePoints(
         pointInfos2,
         parentWorld,
         materialDatabase,
         gameEventDispatcher,
         gameParameters,
-        electricalElementInstanceIds);
+        electricalElementInstanceIndices);
 
 
     //
@@ -303,7 +303,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
-        electricalElementInstanceIds,
+        electricalElementInstanceIndices,
         shipId,
         parentWorld,
         gameEventDispatcher,
@@ -476,30 +476,34 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 assert(nullptr == pointInfos1[pointIndex].ElectricalMtl);
                 pointInfos1[pointIndex].ElectricalMtl = electricalMaterial;
 
-                // Store instance ID, if material requires one
+                // Store instance index, if material requires one
                 if (electricalMaterial->IsInstanced)
                 {
-                    pointInfos1[pointIndex].ElectricalElementInstanceId = MaterialDatabase::GetElectricalElementInstanceId(colorKey);
+                    pointInfos1[pointIndex].ElectricalElementInstanceIndex = MaterialDatabase::GetElectricalElementInstanceIndex(colorKey);
+                }
+                else
+                {
+                    assert(pointInfos1[pointIndex].ElectricalElementInstanceIndex == NoneElectricalElementInstanceIndex);
                 }
             }
         }
     }
 
     //
-    // Check for duplicate electrical element instance IDs
+    // Check for duplicate electrical element instance indices
     //
 
-    std::set<MaterialDatabase::ElectricalElementInstanceId> seenInstanceIds;
+    std::set<ElectricalElementInstanceIndex> seenInstanceIndices;
     for (auto const & pi : pointInfos1)
     {
         if (nullptr != pi.ElectricalMtl
             && pi.ElectricalMtl->IsInstanced)
         {
-            if (!seenInstanceIds.insert(pi.ElectricalElementInstanceId).second)
+            if (!seenInstanceIndices.insert(pi.ElectricalElementInstanceIndex).second)
             {
                 throw GameException(
-                    std::string("Found more that one electrical element with ID \"")
-                    + std::to_string(pi.ElectricalElementInstanceId)
+                    std::string("Found more that one electrical element with index \"")
+                    + std::to_string(pi.ElectricalElementInstanceIndex)
                     + "\" in electrical layer image");
             }
         }
@@ -857,7 +861,7 @@ Physics::Points ShipBuilder::CreatePoints(
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
-    std::vector<MaterialDatabase::ElectricalElementInstanceId> & electricalElementInstanceIds)
+    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
@@ -866,7 +870,7 @@ Physics::Points ShipBuilder::CreatePoints(
         std::move(gameEventDispatcher),
         gameParameters);
 
-    electricalElementInstanceIds.reserve(pointInfos2.size());
+    electricalElementInstanceIndices.reserve(pointInfos2.size());
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -897,10 +901,10 @@ Physics::Points ShipBuilder::CreatePoints(
 			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
         //
-        // Store electrical element instance ID (if any)
+        // Store electrical element instance index
         //
 
-        electricalElementInstanceIds.push_back(pointInfo.ElectricalElementInstanceId);
+        electricalElementInstanceIndices.push_back(pointInfo.ElectricalElementInstanceIndex);
     }
 
     return points;
@@ -1173,7 +1177,7 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
-    std::vector<MaterialDatabase::ElectricalElementInstanceId> electricalElementInstanceIds,
+    std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices,
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
@@ -1181,26 +1185,44 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     GameParameters const & gameParameters)
 {
     //
-    // - Get indices of points with electrical elements, together with their labels
+    // - Get indices of points with electrical elements, together with their instance metadata
     // - Count number of lamps
     //
 
-    std::vector<std::pair<ElementIndex, std::string>> electricalElementPointIndicesAndLabels;
+    struct ElectricalElementInfo
+    {
+        ElementIndex elementIndex;
+        ElectricalElementInstanceIndex instanceIndex;
+        std::string instanceLabel;
+
+        ElectricalElementInfo(
+            ElementIndex _elementIndex,
+            ElectricalElementInstanceIndex _instanceIndex,
+            std::string _instanceLabel)
+            : elementIndex(_elementIndex)
+            , instanceIndex(_instanceIndex)
+            , instanceLabel(_instanceLabel)
+        {}
+    };
+
+    std::vector<ElectricalElementInfo> electricalElementInfos;
     ElementIndex lampElementCount = 0;
     for (auto pointIndex : points)
     {
         ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(pointIndex);
         if (nullptr != electricalMaterial)
         {
+            auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
+            assert(NoneElectricalElementInstanceIndex != instanceIndex);
+
             // Get label
-            std::string elementLabel;
+            std::string instanceLabel;
             if (electricalMaterial->IsInstanced)
             {
-                auto const instanceId = electricalElementInstanceIds[pointIndex];
-                if (instanceId < shipDefinition.ElectricalElementLabels.size())
+                if (instanceIndex < shipDefinition.ElectricalElementLabels.size())
                 {
                     // Take label from definition
-                    elementLabel = shipDefinition.ElectricalElementLabels[instanceId];
+                    instanceLabel = shipDefinition.ElectricalElementLabels[instanceIndex];
                 }
                 else
                 {
@@ -1223,13 +1245,13 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
                         }
                     }
 
-                    ss << " #" << static_cast<int>(instanceId);
+                    ss << " #" << static_cast<int>(instanceIndex);
 
-                    elementLabel = ss.str();
+                    instanceLabel = ss.str();
                 }
             }
 
-            electricalElementPointIndicesAndLabels.emplace_back(pointIndex, elementLabel);
+            electricalElementInfos.emplace_back(pointIndex, instanceIndex, instanceLabel);
 
             if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial->ElectricalType)
                 ++lampElementCount;
@@ -1241,22 +1263,23 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     //
 
     ElectricalElements electricalElements(
-        static_cast<ElementCount>(electricalElementPointIndicesAndLabels.size()),
+        static_cast<ElementCount>(electricalElementInfos.size()),
         lampElementCount,
         shipId,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
 
-    for (auto const & pointIndexAndLabel : electricalElementPointIndicesAndLabels)
+    for (auto const & elementInfo : electricalElementInfos)
     {
-        ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(pointIndexAndLabel.first);
+        ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(elementInfo.elementIndex);
         assert(nullptr != electricalMaterial);
 
         // Add element
         electricalElements.Add(
-            pointIndexAndLabel.first,
-            pointIndexAndLabel.second,
+            elementInfo.elementIndex,
+            elementInfo.instanceIndex,
+            elementInfo.instanceLabel,
             *electricalMaterial);
     }
 

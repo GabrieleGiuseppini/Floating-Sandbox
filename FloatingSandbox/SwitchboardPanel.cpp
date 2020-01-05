@@ -266,11 +266,12 @@ void SwitchboardPanel::OnGameReset()
 
 void SwitchboardPanel::OnSwitchCreated(
     SwitchId switchId,
-    std::string const & name,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::string const & instanceName,
     SwitchType type,
     ElectricalState state)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", name, " T=", int(type));
+    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceName, " T=", int(type));
 
     // TODO: handle overflow, add row eventually
 
@@ -289,7 +290,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractivePushSwitchOffEnabledBitmap,
                 mInteractivePushSwitchOnDisabledBitmap,
                 mInteractivePushSwitchOffDisabledBitmap,
-                name,
+                instanceName,
                 [this, switchId](ElectricalState newState)
                 {
                     this->mGameController->SetSwitchState(switchId, newState);
@@ -307,7 +308,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractiveToggleSwitchOffEnabledBitmap,
                 mInteractiveToggleSwitchOnDisabledBitmap,
                 mInteractiveToggleSwitchOffDisabledBitmap,
-                name,
+                instanceName,
                 [this, switchId](ElectricalState newState)
                 {
                     this->mGameController->SetSwitchState(switchId, newState);
@@ -325,7 +326,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOffEnabledBitmap,
                 mAutomaticSwitchOnDisabledBitmap,
                 mAutomaticSwitchOffDisabledBitmap,
-                name,
+                instanceName,
                 state);
 
             break;
@@ -396,10 +397,11 @@ void SwitchboardPanel::OnSwitchToggled(
 
 void SwitchboardPanel::OnPowerMonitorCreated(
     PowerMonitorId powerMonitorId,
-    std::string const & name,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::string const & instanceName,
     ElectricalState state)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", name);
+    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", instanceName);
 
     // TODO: handle overflow, add row eventually
 
@@ -411,7 +413,7 @@ void SwitchboardPanel::OnPowerMonitorCreated(
         mSwitchPanel,
         mPowerMonitorOnBitmap,
         mPowerMonitorOffBitmap,
-        name,
+        instanceName,
         state);
 
     // Add to sizer

@@ -252,7 +252,8 @@ private:
 
     virtual void OnSwitchCreated(
         SwitchId /*switchId*/,
-        std::string const & /*name*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        std::string const & /*instanceName*/,
         SwitchType /*type*/,
         ElectricalState /*state*/) override
     {
@@ -278,7 +279,8 @@ private:
 
     virtual void OnPowerMonitorCreated(
         PowerMonitorId /*powerMonitorId*/,
-        std::string const & /*name*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        std::string const & /*instanceName*/,
         ElectricalState /*state*/) override
     {
         //

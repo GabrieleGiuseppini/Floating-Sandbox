@@ -15,7 +15,8 @@ constexpr float LampWetFailureWaterThreshold = 0.1f;
 
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
-    std::string label,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::string instanceLabel,
     ElectricalMaterial const & electricalMaterial)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -77,7 +78,7 @@ void ElectricalElements::Add(
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
-    mLabels.push_back(label);
+    mInstanceInfos.emplace_back(instanceIndex, instanceLabel);
 
     //
     // Lamp
@@ -104,13 +105,16 @@ void ElectricalElements::AnnounceInstancedElements()
 {
     for (auto elementIndex : *this)
     {
+        assert(elementIndex < mInstanceInfos.size());
+
         switch (GetMaterialType(elementIndex))
         {
             case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
             {
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
-                    mLabels[elementIndex],
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::InteractivePushSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
 
@@ -121,7 +125,8 @@ void ElectricalElements::AnnounceInstancedElements()
             {
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
-                    mLabels[elementIndex],
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::InteractiveToggleSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
 
@@ -132,7 +137,8 @@ void ElectricalElements::AnnounceInstancedElements()
             {
                 mGameEventHandler->OnPowerMonitorCreated(
                     PowerMonitorId(mShipId, elementIndex),
-                    mLabels[elementIndex],
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].InstanceLabel,
                     ElectricalState::Off); // We start with off; we'll figure out actual state at the next update
 
                 break;
@@ -142,7 +148,8 @@ void ElectricalElements::AnnounceInstancedElements()
             {
                 mGameEventHandler->OnSwitchCreated(
                     SwitchId(mShipId, elementIndex),
-                    mLabels[elementIndex],
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].InstanceLabel,
                     SwitchType::AutomaticSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity));
 

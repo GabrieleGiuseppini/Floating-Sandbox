@@ -11,6 +11,7 @@
 #include "ShipDefinition.h"
 
 #include <GameCore/FixedSizeVector.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageSize.h>
 
 #include <algorithm>
@@ -48,7 +49,7 @@ private:
         bool IsLeaking;
 
         ElectricalMaterial const * ElectricalMtl;
-        MaterialDatabase::ElectricalElementInstanceId ElectricalElementInstanceId;
+        ElectricalElementInstanceIndex ElectricalElementInstanceIndex;
         std::vector<ElementIndex> ConnectedSprings1;
 
         PointInfo(
@@ -64,7 +65,7 @@ private:
             , IsRope(isRope)
             , IsLeaking(isRope ? true : false) // Ropes leak by default
             , ElectricalMtl(nullptr)
-            , ElectricalElementInstanceId()
+            , ElectricalElementInstanceIndex(NoneElectricalElementInstanceIndex)
             , ConnectedSprings1()
         {
         }
@@ -263,7 +264,7 @@ private:
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
-        std::vector<MaterialDatabase::ElectricalElementInstanceId> & electricalElementInstanceIds);
+        std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices);
 
     static std::vector<TriangleInfo> FilterOutRedundantTriangles(
         std::vector<TriangleInfo> const & triangleInfos2,
@@ -290,7 +291,7 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
-        std::vector<MaterialDatabase::ElectricalElementInstanceId> electricalElementInstanceIds,
+        std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices,
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

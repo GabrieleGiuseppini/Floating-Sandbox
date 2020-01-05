@@ -68,7 +68,8 @@ public:
 
     virtual void OnSwitchCreated(
         SwitchId switchId,
-        std::string const & name,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::string const & instanceName,
         SwitchType type,
         ElectricalState state) override;
 
@@ -82,7 +83,8 @@ public:
 
     virtual void OnPowerMonitorCreated(
         PowerMonitorId powerMonitorId,
-        std::string const & name,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::string const & instanceName,
         ElectricalState state) override;
 
     virtual void OnPowerMonitorToggled(

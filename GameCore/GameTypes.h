@@ -49,9 +49,18 @@ using PlaneId = std::uint32_t;
 static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
 
 /*
+ * IDs (sequential) of electrical elements that have an identity.
+ *
+ * Comparable and ordered. Start from 0.
+ */
+using ElectricalElementInstanceIndex = std::uint8_t; // Max 255 instances
+static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
+
+/*
  * Various other identifiers.
  */
 using LocalBombId = std::uint32_t;
+
 
 /*
  * Object ID's, identifying objects of ships across ships.

@@ -285,14 +285,15 @@ public:
 
     virtual void OnSwitchCreated(
         SwitchId switchId,
-        std::string const & name,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::string const & instanceName,
         SwitchType type,
         ElectricalState state) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchCreated(switchId, name, type, state);
+            sink->OnSwitchCreated(switchId, instanceIndex, instanceName, type, state);
         }
     }
 
@@ -320,13 +321,14 @@ public:
 
     virtual void OnPowerMonitorCreated(
         PowerMonitorId powerMonitorId,
-        std::string const & name,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::string const & instanceName,
         ElectricalState state) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnPowerMonitorCreated(powerMonitorId, name, state);
+            sink->OnPowerMonitorCreated(powerMonitorId, instanceIndex, instanceName, state);
         }
     }
 

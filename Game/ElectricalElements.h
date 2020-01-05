@@ -26,6 +26,19 @@ class ElectricalElements : public ElementContainer
 {
 private:
 
+    struct InstanceInfo
+    {
+        ElectricalElementInstanceIndex InstanceIndex;
+        std::string InstanceLabel;
+
+        InstanceInfo(
+            ElectricalElementInstanceIndex instanceIndex,
+            std::string const & instanceLabel)
+            : InstanceIndex(instanceIndex)
+            , InstanceLabel(instanceLabel)
+        {}
+    };
+
     struct Conductivity
     {
         bool MaterialConductsElectricity;
@@ -192,7 +205,7 @@ public:
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
-        , mLabels()
+        , mInstanceInfos()
         //////////////////////////////////
         // Lamps
         //////////////////////////////////
@@ -215,6 +228,7 @@ public:
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
     {
+        mInstanceInfos.reserve(mElementCount);
     }
 
     ElectricalElements(ElectricalElements && other) = default;
@@ -234,7 +248,8 @@ public:
 
     void Add(
         ElementIndex pointElementIndex,
-        std::string label,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::string instanceLabel,
         ElectricalMaterial const & electricalMaterial);
 
     void AnnounceInstancedElements();
@@ -482,8 +497,8 @@ private:
     // Connectivity detection visit sequence number
     Buffer<SequenceNumber> mCurrentConnectivityVisitSequenceNumberBuffer;
 
-    // Labels - one for each element
-    std::vector<std::string> mLabels;
+    // Instance info's - one for each element
+    std::vector<InstanceInfo> mInstanceInfos;
 
     //////////////////////////////////////////////////////////
     // Lamps

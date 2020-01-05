@@ -25,8 +25,6 @@ public:
 
     using ColorKey = rgbColor;
 
-    using ElectricalElementInstanceId = std::uint8_t; // Max 255 instances
-
 private:
 
     using UniqueStructuralMaterialsArray = std::array<std::pair<ColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
@@ -241,9 +239,10 @@ public:
         return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }
 
-    static ElectricalElementInstanceId GetElectricalElementInstanceId(ColorKey const & colorKey)
+    static ElectricalElementInstanceIndex GetElectricalElementInstanceIndex(ColorKey const & colorKey)
     {
-        return static_cast<ElectricalElementInstanceId>(colorKey.b);
+        static_assert(sizeof(ElectricalElementInstanceIndex) >= sizeof(ColorKey::data_type));
+        return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
     }
 
 private:

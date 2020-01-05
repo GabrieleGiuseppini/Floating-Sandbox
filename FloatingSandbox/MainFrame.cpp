@@ -888,6 +888,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         ++TODOID;
         mSwitchboardPanel->OnSwitchCreated(
             SwitchId(0, TODOID),
+            TODOID,
             "Test " + std::to_string(TODOID),
             TODOID % 3 == 0 ? SwitchType::InteractivePushSwitch : (TODOID % 3 == 1 ? SwitchType::InteractiveToggleSwitch : SwitchType::AutomaticSwitch),
             ElectricalState::Off);
