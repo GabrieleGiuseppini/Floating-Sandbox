@@ -352,8 +352,7 @@ void SwitchboardPanel::OnSwitchCreated(
     // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
-    mMainVSizer->Layout();
-
+    // Re-layout from parent
     LayoutParent();
 
     LogMessage("TODOTEST:SwitchboardPanel::OnSwitchCreated: AFTER: SwitchPanelSize=",
@@ -425,8 +424,7 @@ void SwitchboardPanel::OnPowerMonitorCreated(
     // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
-    mMainVSizer->Layout();
-
+    // Re-layout from parent
     LayoutParent();
 
 
@@ -460,9 +458,9 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanelSizer->SetFlexibleDirection(wxHORIZONTAL);
 
     // Create panel for switches
-    mSwitchPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    // TODOTEST
-    //mSwitchPanel->SetBackgroundColour(wxColor(200, 200, 200));
+    mSwitchPanel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL);
+    mSwitchPanel->SetScrollRate(5, 0);
+    mSwitchPanel->FitInside();
     mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
 
     // Add switch panel to v-sizer

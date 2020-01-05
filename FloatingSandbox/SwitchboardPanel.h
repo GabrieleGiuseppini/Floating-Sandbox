@@ -14,6 +14,7 @@
 
 #include <wx/bitmap.h>
 #include <wx/custombgwin.h>
+#include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
@@ -132,7 +133,7 @@ private:
     BitmappedCheckbox * mDockCheckbox;
     wxBoxSizer * mHintPanelSizer;
 
-    wxPanel * mSwitchPanel;
+    wxScrolled<wxPanel> * mSwitchPanel;
     wxFlexGridSizer * mSwitchPanelSizer;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
