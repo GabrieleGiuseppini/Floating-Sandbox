@@ -110,11 +110,10 @@ SwitchboardPanel::SwitchboardPanel(
         mHintPanelSizer = new wxBoxSizer(wxHORIZONTAL);
         mHintPanelSizer->Add(fillerPanel, 0, wxALIGN_CENTER_HORIZONTAL);
         mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_HORIZONTAL, 10);
-        mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
+        mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL | wxRESERVE_SPACE_EVEN_IF_HIDDEN);
 
-        // Hide L and R squares for now
-        mHintPanelSizer->Hide(size_t(0));
-        mHintPanelSizer->Hide(size_t(2));
+        // Hide docking icon for now
+        mDockCheckbox->Hide();
 
         mHintPanel->SetSizer(mHintPanelSizer);
     }
@@ -474,8 +473,7 @@ void SwitchboardPanel::ShowDockCheckbox(bool doShow)
 {
     assert(!!mHintPanelSizer);
 
-    mHintPanelSizer->Show(size_t(0), doShow);
-    mHintPanelSizer->Show(size_t(2), doShow);
+    mDockCheckbox->Show(doShow);
 
     mHintPanelSizer->Layout();
 }
