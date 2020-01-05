@@ -1245,8 +1245,8 @@ Render:
 
 		- Cleanup:
 			- See if need different sound for push switch vs toggle switch
-			- More intuitive pin
-				- Closer to "Switches" label?
+			= More intuitive pin
+				+ Closer to "Switches" label
 			- Clear TODOTEST's in SwitchboardPanel
 			- Remove test switch adding from MainFrame.cpp
 			+ Mouse pointer on switchboard

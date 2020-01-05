@@ -94,8 +94,6 @@ SwitchboardPanel::SwitchboardPanel(
 
     // Hint panel
     mHintPanel = new wxPanel(this);
-    // TODOTEST
-    //mHintPanel->SetBackgroundColour(wxColour(128, 128, 128)); // Grey
     mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
     {
         wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
@@ -103,16 +101,15 @@ SwitchboardPanel::SwitchboardPanel(
 
         wxPanel * fillerPanel = new wxPanel(mHintPanel, wxID_ANY, wxDefaultPosition, dockCheckboxCheckedBitmap.GetSize());
 
-        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Switches", wxDefaultPosition, wxDefaultSize, 0);
+        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Electrical Panel", wxDefaultPosition, wxDefaultSize, 0);
         hintStaticText->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
-        mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the Switchboard.");
+        mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
         mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
         mHintPanelSizer = new wxFlexGridSizer(3);
-        mHintPanelSizer->AddGrowableCol(1, 1);
         mHintPanelSizer->Add(fillerPanel, 0, wxALIGN_CENTER_HORIZONTAL);
-        mHintPanelSizer->Add(hintStaticText, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
+        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_HORIZONTAL, 10);
         mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL);
 
         // Hide L and R squares for now
@@ -121,7 +118,7 @@ SwitchboardPanel::SwitchboardPanel(
 
         mHintPanel->SetSizer(mHintPanelSizer);
     }
-    mMainVSizer->Add(mHintPanel, 0, wxEXPAND); // We want it as large as possible, but as tall as it is
+    mMainVSizer->Add(mHintPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as tall and as large as it is
     mMainVSizer->Hide(mHintPanel); // Hide it
 
     // Switch panel
