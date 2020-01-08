@@ -132,8 +132,12 @@ public:
         {
             for (int w = 0; w < width; ++w)
             {
+                int const col = w - width / 2;
+
                 std::optional<TElement> positionElement;
-                if (decoratedIt != decoratedElements.cend())
+                if (decoratedIt != decoratedElements.cend()
+                    && h == decoratedIt->Coordinates->second
+                    && col >= decoratedIt->Coordinates->first)
                 {
                     // Position a decorated element
                     positionElement = decoratedIt->Element;
@@ -152,11 +156,11 @@ public:
                 }
 
                 // TODOTEST
-                //std::cout << "X=" << (w - width / 2) << " Y=" << h << std::endl;
+                //std::cout << "X=" << col << " Y=" << h << std::endl;
 
                 onPosition(
                     positionElement,
-                    w - width / 2,
+                    col,
                     h);
             }
         }

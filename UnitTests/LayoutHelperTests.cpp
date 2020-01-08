@@ -126,5 +126,245 @@ TEST_P(NonPanelLayoutTest, NonPanelLayoutTest)
     Mock::VerifyAndClear(&handler);
 }
 
-// Panel only:
+TEST(LayoutHelperTests, WithPanelLayout_One_Zero)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(0, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(1, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 0, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_MinusOne)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(-1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_PlusOne)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 1, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_MinusTwo)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(-2, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(5, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 2, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_PlusTwo)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(2, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(5, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 2, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_MinusThree)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(-3, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(7, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -3, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 3, 0)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, WithPanelLayout_One_PlusOnePlusOne)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 45, std::make_pair<int, int>(1, 1) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 2)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 1)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 1)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 1, 1)).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
 // NonPanelAndPanel TODO
