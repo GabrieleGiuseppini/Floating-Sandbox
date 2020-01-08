@@ -50,7 +50,7 @@ TEST(LayoutHelperTests, Empty)
 }
 
 // NElements, expected width, col start, expected height
-class NonPanelLayoutTest : public testing::TestWithParam<std::tuple<size_t, int, int, int>>
+class UndecoratedOnlyLayoutTest : public testing::TestWithParam<std::tuple<size_t, int, int, int>>
 {
 public:
     virtual void SetUp() {}
@@ -59,7 +59,7 @@ public:
 
 INSTANTIATE_TEST_CASE_P(
     LayoutHelperTests,
-    NonPanelLayoutTest,
+    UndecoratedOnlyLayoutTest,
     ::testing::Values(
         std::make_tuple(1, 1, 0, 1)
         , std::make_tuple(2, 2, -1, 1)
@@ -77,7 +77,7 @@ INSTANTIATE_TEST_CASE_P(
         , std::make_tuple(33, 11, -5, 3)
         , std::make_tuple(34, 11, -5, 4)
     ));
-TEST_P(NonPanelLayoutTest, NonPanelLayoutTest)
+TEST_P(UndecoratedOnlyLayoutTest, UndecoratedOnlyLayoutTest)
 {
     size_t const nElements = std::get<0>(GetParam());
     int const expectedWidth = std::get<1>(GetParam());
@@ -105,11 +105,12 @@ TEST_P(NonPanelLayoutTest, NonPanelLayoutTest)
         for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
         {
             if (iElement < nElements)
+            {
                 EXPECT_CALL(handler, OnLayout(std::optional<int>(int(iElement)), col, row)).Times(1);
+                ++iElement;
+            }
             else
                 EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), col, row)).Times(1);
-
-            ++iElement;
         }
     }
 
@@ -124,9 +125,11 @@ TEST_P(NonPanelLayoutTest, NonPanelLayoutTest)
     // Verify
 
     Mock::VerifyAndClear(&handler);
+
+    EXPECT_EQ(iElement, nElements);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_Zero)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_Zero)
 {
     // Prepare data
 
@@ -157,7 +160,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_Zero)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_MinusOne)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusOne)
 {
     // Prepare data
 
@@ -190,7 +193,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_MinusOne)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_PlusOne)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOne)
 {
     // Prepare data
 
@@ -223,7 +226,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_PlusOne)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_MinusTwo)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusTwo)
 {
     // Prepare data
 
@@ -258,7 +261,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_MinusTwo)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_PlusTwo)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusTwo)
 {
     // Prepare data
 
@@ -293,7 +296,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_PlusTwo)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_MinusThree)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusThree)
 {
     // Prepare data
 
@@ -330,7 +333,7 @@ TEST(LayoutHelperTests, WithPanelLayout_One_MinusThree)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(LayoutHelperTests, WithPanelLayout_One_PlusOnePlusOne)
+TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOnePlusOne)
 {
     // Prepare data
 
