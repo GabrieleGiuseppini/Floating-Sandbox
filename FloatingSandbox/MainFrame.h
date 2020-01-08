@@ -250,38 +250,7 @@ private:
 		mTriggerStormMenuItem->Enable(true);
 	}
 
-    virtual void OnSwitchCreated(
-        SwitchId /*switchId*/,
-        ElectricalElementInstanceIndex /*instanceIndex*/,
-        std::string const & /*instanceName*/,
-        SwitchType /*type*/,
-        ElectricalState /*state*/) override
-    {
-        //
-        // Show switchboard if required
-        //
-
-        assert(!!mSwitchboardPanel);
-        assert(!!mUIPreferencesManager);
-
-        if (!mSwitchboardPanel->IsShowing())
-        {
-            if (mUIPreferencesManager->GetAutoShowSwitchboard())
-            {
-                mSwitchboardPanel->ShowFullyDocked();
-            }
-            else
-            {
-                mSwitchboardPanel->ShowPartially();
-            }
-        }
-    }
-
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId /*powerMonitorId*/,
-        ElectricalElementInstanceIndex /*instanceIndex*/,
-        std::string const & /*instanceName*/,
-        ElectricalState /*state*/) override
+    virtual void OnElectricalElementAnnouncementsBegin() override
     {
         //
         // Show switchboard if required

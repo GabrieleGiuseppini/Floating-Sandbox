@@ -6,6 +6,7 @@
 set  (UI_CONTROLS_SOURCES
 	BitmappedCheckbox.h
 	ElectricalElementControl.h
+	LayoutHelper.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h	
 	SliderControl.h	

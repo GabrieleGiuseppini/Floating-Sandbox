@@ -264,42 +264,43 @@ void SwitchboardPanel::OnGameReset()
     mPowerMonitorMap.clear();
 }
 
+void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
+{
+    LogMessage("TODOTEST:SwitchboardPanel::OnElectricalElementAnnouncementsBegin()");
+
+    // Clear maps
+    mSwitchMap.clear();
+    mPowerMonitorMap.clear();
+}
+
 void SwitchboardPanel::OnSwitchCreated(
     SwitchId switchId,
     ElectricalElementInstanceIndex instanceIndex,
-    std::string const & instanceName,
     SwitchType type,
-    ElectricalState state)
+    ElectricalState state,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceName, " T=", int(type));
-
-    /* TODOHERE: salvaged from ShipBuilder
-
-                    // Make label
-                    std::stringstream label;
-                    switch (electricalMaterial->ElectricalType)
-                    {
-                        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
-                        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
-                        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
-                        {
-                            label << "Switch";
-                            break;
-                        }
-
-                        default:
-                        {
-                            assert(false);
-                            break;
-                        }
-                    }
-
-                    label << " #" << static_cast<int>(instanceIndex);
-
-    */
+    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceIndex);
 
     //
-    // Add control
+    // Make label, if needed
+    //
+
+    std::string label;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "Switch " << " #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+    }
+
+    //
+    // Make control
     //
 
     ElectricalElementControl * ctrl;
@@ -313,7 +314,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractivePushSwitchOffEnabledBitmap,
                 mInteractivePushSwitchOnDisabledBitmap,
                 mInteractivePushSwitchOffDisabledBitmap,
-                instanceName,
+                label,
                 [this, switchId](ElectricalState newState)
                 {
                     this->mGameController->SetSwitchState(switchId, newState);
@@ -331,7 +332,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractiveToggleSwitchOffEnabledBitmap,
                 mInteractiveToggleSwitchOnDisabledBitmap,
                 mInteractiveToggleSwitchOffDisabledBitmap,
-                instanceName,
+                label,
                 [this, switchId](ElectricalState newState)
                 {
                     this->mGameController->SetSwitchState(switchId, newState);
@@ -349,7 +350,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOffEnabledBitmap,
                 mAutomaticSwitchOnDisabledBitmap,
                 mAutomaticSwitchOffDisabledBitmap,
-                instanceName,
+                label,
                 state);
 
             break;
@@ -362,9 +363,6 @@ void SwitchboardPanel::OnSwitchCreated(
         }
     }
 
-    AddControl(ctrl, instanceIndex);
-
-
     //
     // Add switch to map
     //
@@ -373,7 +371,59 @@ void SwitchboardPanel::OnSwitchCreated(
     mSwitchMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(switchId),
-        std::forward_as_tuple(ctrl));
+        std::forward_as_tuple(ctrl, panelElementMetadata));
+}
+
+void SwitchboardPanel::OnPowerMonitorCreated(
+    PowerMonitorId powerMonitorId,
+    ElectricalElementInstanceIndex instanceIndex,
+    ElectricalState state,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+{
+    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", instanceIndex);
+
+    //
+    // Make label, if needed
+    //
+
+    std::string label;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "Switch " << " #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+    }
+
+    //
+    // Make control
+    //
+
+    ElectricalElementControl * ctrl = new PowerMonitorElectricalElementControl(
+        mSwitchPanel,
+        mPowerMonitorOnBitmap,
+        mPowerMonitorOffBitmap,
+        label,
+        state);
+
+    //
+    // Add monitor to map
+    //
+
+    assert(mPowerMonitorMap.find(powerMonitorId) == mPowerMonitorMap.end());
+    mPowerMonitorMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(powerMonitorId),
+        std::forward_as_tuple(ctrl, panelElementMetadata));
+}
+
+void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
+{
+    // TODOHERE
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
@@ -397,41 +447,6 @@ void SwitchboardPanel::OnSwitchToggled(
     auto it = mSwitchMap.find(switchId);
     assert(it != mSwitchMap.end());
     it->second.Control->SetState(newState);
-}
-
-void SwitchboardPanel::OnPowerMonitorCreated(
-    PowerMonitorId powerMonitorId,
-    ElectricalElementInstanceIndex instanceIndex,
-    std::string const & instanceName,
-    ElectricalState state)
-{
-    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", instanceName);
-
-    // TODO: handle overflow, add row eventually
-
-    //
-    // Add control
-    //
-
-    ElectricalElementControl * ctrl = new PowerMonitorElectricalElementControl(
-        mSwitchPanel,
-        mPowerMonitorOnBitmap,
-        mPowerMonitorOffBitmap,
-        instanceName,
-        state);
-
-    AddControl(ctrl, instanceIndex);
-
-
-    //
-    // Add monitor to map
-    //
-
-    assert(mPowerMonitorMap.find(powerMonitorId) == mPowerMonitorMap.end());
-    mPowerMonitorMap.emplace(
-        std::piecewise_construct,
-        std::forward_as_tuple(powerMonitorId),
-        std::forward_as_tuple(ctrl));
 }
 
 void SwitchboardPanel::OnPowerMonitorToggled(

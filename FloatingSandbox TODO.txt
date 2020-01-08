@@ -1240,9 +1240,9 @@ Render:
 							+ Switch and PowerMonitor announcements take extra:
 								+ ShipMetadata::ElectricalPanelMetadata
 						- Panel:
-							- OnElectricalElementAnnouncementsBegin: clear TODO
-							- On...:
-								- Make label if no panel element metadata, then pass to control
+							+ OnElectricalElementAnnouncementsBegin: clear maps
+							= On...:
+								+ Make label if no panel element metadata, then pass to control
 								- Store ctrl and panel MD in ElementInfo
 							- OnElectricalElementAnnouncementsEnd: do positioning for all
 								- Position each element automagically if no panel element metadata
@@ -1308,33 +1308,43 @@ Render:
 			- Redo electrical materials template			-
 			- Decide whether SwitchboardPanel should be double-buffered or not
 		- Run in Debug
+		- Merge into trunk
 
-	= Power monitors:
-		+ GameTypes:
+	= Power probe:
+		- Rename: "Monitor"->"Probe" in current code
+		- GameTypes:
 			+ First off, tag ObjectId
 			+ Add PowerMonitorId
 			+ Add Switch types:
 				! ToggleSwitch
 				+ PushSwitch
+			- Add PowerProbe types:
+				- TODO: Type 1, 2, and 3 below
 		+ EventHandler:
 			+ Add power monitor events
-		- Simulation:
+		- These ElectricalMaterial's announce themselves as power probes:
+			- PowerMonitor (announcement type 1)
+			- Engine (announcement type 2)
+			- Generator (announcement type 3)
+		- Simulation of PowerMonitor:
 			- Make it a sink
-			- Keep state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
-		- MainFrame:
-			- Register for power monitor events
+			- Keep cur state at state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
 		+ UI:
 			+ ElectricalElementControl
 				+ InteractiveToggleSwitchElectricalElementControl
 				+ InteractivePushSwitchElectricalElementControl
 				+ AutomaticSwitchElectricalElementControl
 				+ PowerMonitorElectricalElementControl
-		- Add element to electrical elements json
+		- Add three materials to electrical elements json
 		- Switchboard:
-			+ Register for power monitor events
+			+ Register for power probe events
 			- Swap bitmaps: 
 				+ Current non-interactive becomes power monitor
-			= Add power monitor to switchboard
+				- Also rename pngs
+			= Add power probes to switchboard
+				- Type 1:
+				- Type 2:
+				- Type 3: Volt gauge (also new control)
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)
@@ -1394,6 +1404,14 @@ Render:
 
 
 	- Propulsion
+		- 1 new ElectricalElementType: Engine
+		- 2 electrical materials: engine x {LR/UD}
+		- 1 new ElectricalElementType: EngineControl
+		- 1 electrical material
+		- EngineControl (telegraph) controls all connected, value={-1.0,...,+1.0}
+		- EngineControl announces EngineControl
+		- Engine announces PowerMonitor
+		- TODOOLD:
 		- New electrical element - engine
 			- Publicized like switch, and switchboard shows slider
 				- Need custom-drawn ShipSliderControl control
@@ -1401,6 +1419,7 @@ Render:
 		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
 			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
 				- And smarter zeroing of Mechanical
+				- OR: requires position-based springs
 			- Or can we piggyback on the "non-spring" force buffer that we talk about at "force rearc" above?
 
 	- Logic Gates

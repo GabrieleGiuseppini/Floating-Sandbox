@@ -2,7 +2,7 @@
 
 #include "gmock/gmock.h"
 
-class _MockHandler
+class _MockGameEventHandler
     : public IStructuralGameEventHandler
     , public ILifecycleGameEventHandler
 {
@@ -15,7 +15,7 @@ public:
 
 using namespace ::testing;
 
-using MockHandler = StrictMock<_MockHandler>;
+using MockHandler = StrictMock<_MockGameEventHandler>;
 
 StructuralMaterial MakeStructuralMaterial(std::string name)
 {
@@ -25,14 +25,17 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         1.0f,
         1.0f,
+        1.0f,
         vec4f::zero(),
         std::nullopt,
         std::nullopt,
+        // Water
         false,
         1.0f,
         1.0f,
         1.0f,
         1.0f,
+        // Heat
         1.0f,
         1.0f,
         1.0f,

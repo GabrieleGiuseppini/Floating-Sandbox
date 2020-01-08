@@ -66,12 +66,22 @@ public:
 
     virtual void OnGameReset() override;
 
+    virtual void OnElectricalElementAnnouncementsBegin() override;
+
     virtual void OnSwitchCreated(
         SwitchId switchId,
         ElectricalElementInstanceIndex instanceIndex,
-        std::string const & instanceName,
         SwitchType type,
-        ElectricalState state) override;
+        ElectricalState state,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
+    virtual void OnPowerMonitorCreated(
+        PowerMonitorId powerMonitorId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalState state,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
+    virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
         SwitchId switchId,
@@ -80,12 +90,6 @@ public:
     virtual void OnSwitchToggled(
         SwitchId switchId,
         ElectricalState newState) override;
-
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId powerMonitorId,
-        ElectricalElementInstanceIndex instanceIndex,
-        std::string const & instanceName,
-        ElectricalState state) override;
 
     virtual void OnPowerMonitorToggled(
         PowerMonitorId powerMonitorId,
@@ -149,10 +153,14 @@ private:
     struct ElectricalElementInfo
     {
         ElectricalElementControl * Control;
+        std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
         bool IsEnabled;
 
-        ElectricalElementInfo(ElectricalElementControl * control)
+        ElectricalElementInfo(
+            ElectricalElementControl * control,
+            std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
             : Control(control)
+            , PanelElementMetadata(panelElementMetadata)
             , IsEnabled(true)
         {}
     };
