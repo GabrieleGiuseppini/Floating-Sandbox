@@ -409,7 +409,37 @@ INSTANTIATE_TEST_CASE_P(
             1,
             3, -1, 1,
             std::vector<std::optional<int>>{1000, std::nullopt, 10})
-        // TODO: fills-in empty spaces before growing, and grows by 2
+
+        // [Dec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -1, 0) },
+            2,
+            3, -1, 1,
+            std::vector<std::optional<int>>{10, 1000, 1001})
+        // [Undec][Dec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, 0, 0) },
+            2,
+            3, -1, 1,
+            std::vector<std::optional<int>>{1000, 10, 1001})
+        // [Undec][Undec][Dec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, 1, 0) },
+            2,
+            3, -1, 1,
+            std::vector<std::optional<int>>{1000, 1001, 10})
+
+        // [Undec][Dec][Undec][Undec][.]: grows cols only after having filled-in empty spaces, and grows by two
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -1, 0) },
+            3,
+            5, -2, 1,
+            std::vector<std::optional<int>>{1000, 10, 1001, 1002, std::nullopt})
+
+        // TODO: with one row, reaches maxPerRow and then doubles height
+
+        // TODO: with two rows, goes beyond maxPerRow
+
         // TODO: starts 3rd row only if something's laid out already there
     ));
 TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
@@ -462,7 +492,7 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
 
     LayoutHelper::Layout<int>(
         elements,
-        11,
+        7,
         handler.onBegin,
         handler.onLayout);
 

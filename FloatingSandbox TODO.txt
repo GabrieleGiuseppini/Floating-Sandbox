@@ -1246,7 +1246,7 @@ Render:
 								- Store ctrl and panel MD in ElementInfo
 							- OnElectricalElementAnnouncementsEnd: do positioning for all
 								- Position each element automagically if no panel element metadata
-								- Sort algo
+								= Layout algo in LayoutHelper
 								! AddControl(ctrl, x, y)
 
 						- Website: add FAQ for heat controls -> Gabe's blog
@@ -1276,6 +1276,7 @@ Render:
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 						+ Try with whole panel, rather than with SwitchPanel only
 						- Try other background
+						- See background for hint panel, w/drawn label
 					- See suspend/resume layout for flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
