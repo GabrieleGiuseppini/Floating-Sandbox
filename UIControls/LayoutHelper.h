@@ -50,7 +50,8 @@ public:
     {
         assert(maxElementsPerRow > 0);
 
-        int allElementsCount = static_cast<int>(layoutElements.size());
+        // TODO
+        //int allElementsCount = static_cast<int>(layoutElements.size());
 
         //
         // - Split elements;
@@ -78,28 +79,82 @@ public:
         }
 
         //
-        // Calculate bounding box
+        // Calculate bounding box for decorated elements only
         //
 
-        // Bounding box among decorated elements
         int const decoratedWidth = decoratedElements.empty() ? 0 : maxDecoratedX * 2 + 1;
         int const decoratedHeight = decoratedElements.empty() ? 0 : maxDecoratedY + 1;
 
-        // Calculate how many extra cells we need
-        int const extraCells = std::max(0, allElementsCount - decoratedWidth * decoratedHeight);
+        //
+        // Distribute surplus elements
+        //
 
-        // Calculate number of extra rows and columns needed for the extra cells
-        // - We arbitrarily spread these out over (right) segments that are maxElementsPerRow wide,
-        //   even if that means that rows will be more than maxElementsPerRow wide
-        int const maxElementsPerRowAvailable = maxElementsPerRow;
-        int const extraWidth = extraCells >= maxElementsPerRowAvailable ? maxElementsPerRowAvailable : extraCells;
-        int const extraHeight = (extraCells / maxElementsPerRowAvailable) + ((extraCells % maxElementsPerRowAvailable) != 0 ? 1 : 0);
+        int width = decoratedWidth;
+        int height = decoratedHeight;
 
-        LogMessage("Layout: decoratedW=", decoratedWidth, ", decoratedH=", decoratedHeight, ", extraW=", extraWidth, ", extraH=", extraHeight);
+        int surplusCells = std::max(0, static_cast<int>(undecoratedElements.size()) - width * height);
 
-        // Calculate final bounding box
-        int const width = decoratedWidth + extraWidth;
-        int const height = decoratedHeight + extraHeight;
+        // 1: Make sure there's at least room for one element
+        if (surplusCells > 0
+            && (width == 0 && height == 0))
+        {
+            width = 1;
+            height = 1;
+
+            // Distribute this one out
+            surplusCells -= 1;
+        }
+
+        // 2: Make wider up to max width
+        //  - As long as we don't have more than one row
+        if (surplusCells > 0
+            && (height == 0 || height == 1))
+        {
+            // Calculate number of cells we may grow horizontally on row 1
+            int availableCells = std::max(0, maxElementsPerRow - width);
+            int extraCols = std::min(surplusCells, availableCells);
+
+            // Calculate additional number of columns now, making
+            // sure we're symmetric wrt x=0
+            int extraWidth = extraCols + (extraCols % 2);
+
+            // Adjust width and surplus cell
+            width += extraWidth;
+            surplusCells = std::max(0, surplusCells - extraWidth);
+        }
+
+        // 3: Add a second row
+        //  - As long as we have only one row
+        if (surplusCells > 0
+            && height == 1)
+        {
+            assert(width == maxElementsPerRow); // If we're here, we've exhausted row 1
+
+            // Grow by one row
+            height = 2;
+            surplusCells = std::max(0, surplusCells - width);
+        }
+
+        // 4: Distribute vertically first, then horizontally
+        if (surplusCells > 0)
+        {
+            assert(height > 0); // By now...
+
+            // Distribute all remaining cells vertically, then horizontally
+            int extraCols = surplusCells / height + ((surplusCells % height) != 0 ? 1 : 0);
+
+            // Calculate additional number of columns now, making
+            // sure we're symmetric wrt x=0
+            int extraWidth = extraCols + (extraCols % 2);
+
+            // Adjust width and surplus cell
+            width += extraWidth;
+            surplusCells = std::max(0, surplusCells - extraWidth * height);
+        }
+
+        assert(surplusCells == 0);
+
+        LogMessage("Layout: decoratedW=", decoratedWidth, ", decoratedH=", decoratedHeight, ", W=", width, ", H=", height);
 
         //
         // Announce bounding box
@@ -156,7 +211,7 @@ public:
                 }
 
                 // TODOTEST
-                //std::cout << "X=" << col << " Y=" << h << std::endl;
+                std::cout << "X=" << col << " Y=" << h << ":" << (!!positionElement ? std::to_string(*positionElement) : "N/A") << std::endl;
 
                 onPosition(
                     positionElement,
@@ -167,6 +222,5 @@ public:
 
         assert(decoratedIt == decoratedElements.cend());
         assert(undecoratedIt == undecoratedElements.cend());
-
     }
 };

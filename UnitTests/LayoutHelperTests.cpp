@@ -62,20 +62,24 @@ INSTANTIATE_TEST_CASE_P(
     UndecoratedOnlyLayoutTest,
     ::testing::Values(
         std::make_tuple(1, 1, 0, 1)
-        , std::make_tuple(2, 2, -1, 1)
+        , std::make_tuple(2, 3, -1, 1)
         , std::make_tuple(3, 3, -1, 1)
-        , std::make_tuple(6, 6, -3, 1)
+        , std::make_tuple(4, 5, -2, 1)
+        , std::make_tuple(5, 5, -2, 1)
+        , std::make_tuple(6, 7, -3, 1)
         , std::make_tuple(7, 7, -3, 1)
-        , std::make_tuple(10, 10, -5, 1)
+        , std::make_tuple(8, 9, -4, 1)
+        , std::make_tuple(9, 9, -4, 1)
+        , std::make_tuple(10, 11, -5, 1)
         , std::make_tuple(11, 11, -5, 1)
         , std::make_tuple(12, 11, -5, 2)
         , std::make_tuple(13, 11, -5, 2)
         , std::make_tuple(21, 11, -5, 2)
         , std::make_tuple(22, 11, -5, 2)
-        , std::make_tuple(23, 11, -5, 3)
-        , std::make_tuple(24, 11, -5, 3)
-        , std::make_tuple(33, 11, -5, 3)
-        , std::make_tuple(34, 11, -5, 4)
+        , std::make_tuple(23, 13, -6, 2)
+        , std::make_tuple(24, 13, -6, 2)
+        , std::make_tuple(33, 17, -8, 2)
+        , std::make_tuple(34, 17, -8, 2)
     ));
 TEST_P(UndecoratedOnlyLayoutTest, UndecoratedOnlyLayoutTest)
 {
@@ -370,4 +374,101 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOnePlusOne)
     Mock::VerifyAndClear(&handler);
 }
 
-// NonPanelAndPanel TODO
+// Decorated, Undecorated count (IDs will start from 1000), expected width, col start, expected height, expected opt<IDs>
+class DecoratedAndUndecoratedLayoutTest : public testing::TestWithParam<
+    std::tuple<
+        std::vector<std::tuple<int, int, int>>,
+        size_t,
+        int, int, int,
+        std::vector<std::optional<int>>>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_CASE_P(
+    LayoutHelperTests,
+    DecoratedAndUndecoratedLayoutTest,
+    ::testing::Values(
+        // [Undec][Dec][.]
+        std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, 0, 0) },
+            1,
+            3, -1, 1,
+            std::vector<std::optional<int>>{1000, 10, std::nullopt})
+        // [Dec][Undec][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -1, 0) },
+            1,
+            3, -1, 1,
+            std::vector<std::optional<int>>{10, 1000, std::nullopt})
+        // TODO: with Dec at x=+1
+        // TODO: fills-in empty spaces before growing, and grows by 2
+        // TODO: starts 3rd row only if something's laid out already there
+    ));
+TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
+{
+    std::vector<std::tuple<int, int, int>> const & decoratedElements = std::get<0>(GetParam());
+    size_t nUndecoratedElements = std::get<1>(GetParam());
+    int const expectedWidth = std::get<2>(GetParam());
+    int const expectedColStart = std::get<3>(GetParam());
+    int const expectedHeight = std::get<4>(GetParam());
+
+    std::vector<std::optional<int>> const & expectedIds = std::get<5>(GetParam());
+
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements;
+
+    for (auto const & decoratedElement : decoratedElements)
+    {
+        elements.emplace_back(
+            std::get<0>(decoratedElement),
+            std::make_pair(std::get<1>(decoratedElement), std::get<2>(decoratedElement)));
+    }
+
+    for (size_t i = 0; i < nUndecoratedElements; ++i)
+    {
+        elements.emplace_back(
+            int(1000 + i),
+            std::nullopt);
+    }
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(expectedWidth, expectedHeight)).Times(1);
+
+    size_t iElement = 0;
+    for (int row = 0; row < expectedHeight; ++row)
+    {
+        for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
+        {
+            if (!!(expectedIds[iElement]))
+            {
+                EXPECT_CALL(handler, OnLayout(expectedIds[iElement], col, row)).Times(1);
+                ++iElement;
+            }
+            else
+                EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), col, row)).Times(1);
+        }
+    }
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+
+    EXPECT_EQ(iElement, elements.size());
+}
