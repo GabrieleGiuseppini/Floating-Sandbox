@@ -403,7 +403,12 @@ INSTANTIATE_TEST_CASE_P(
             1,
             3, -1, 1,
             std::vector<std::optional<int>>{10, 1000, std::nullopt})
-        // TODO: with Dec at x=+1
+        // [Undec][.][Dec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, 1, 0) },
+            1,
+            3, -1, 1,
+            std::vector<std::optional<int>>{1000, std::nullopt, 10})
         // TODO: fills-in empty spaces before growing, and grows by 2
         // TODO: starts 3rd row only if something's laid out already there
     ));
@@ -448,13 +453,8 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
     {
         for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
         {
-            if (!!(expectedIds[iElement]))
-            {
-                EXPECT_CALL(handler, OnLayout(expectedIds[iElement], col, row)).Times(1);
-                ++iElement;
-            }
-            else
-                EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), col, row)).Times(1);
+            EXPECT_CALL(handler, OnLayout(expectedIds[iElement], col, row)).Times(1);
+            ++iElement;
         }
     }
 
@@ -469,6 +469,4 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
     // Verify
 
     Mock::VerifyAndClear(&handler);
-
-    EXPECT_EQ(iElement, elements.size());
 }

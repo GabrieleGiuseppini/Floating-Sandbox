@@ -50,8 +50,7 @@ public:
     {
         assert(maxElementsPerRow > 0);
 
-        // TODO
-        //int allElementsCount = static_cast<int>(layoutElements.size());
+        int allElementsCount = static_cast<int>(layoutElements.size());
 
         //
         // - Split elements;
@@ -92,7 +91,7 @@ public:
         int width = decoratedWidth;
         int height = decoratedHeight;
 
-        int surplusCells = std::max(0, static_cast<int>(undecoratedElements.size()) - width * height);
+        int surplusCells = std::max(0, allElementsCount - width * height);
 
         // 1: Make sure there's at least room for one element
         if (surplusCells > 0
