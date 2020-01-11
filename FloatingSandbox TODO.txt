@@ -1271,9 +1271,12 @@ Render:
 					+ Grey hint panel
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 						+ Try with whole panel, rather than with SwitchPanel only
-						- Try other background
-						- Try ad-hoc background for hint panel, w/drawn label
-					- See TODO for layout flicker issue
+						+ Try other background
+						+ Nail down color of text labels
+						- Hint panel center:
+							- Try same panel tricks as control label
+							- Try ad-hoc background for hint panel, w/drawn label
+					= See TODO for layout flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
@@ -1284,11 +1287,9 @@ Render:
 		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
 
 		- Cleanup:
-			- See if need different sound for push switch vs toggle switch
-			= More intuitive pin
+			+ More intuitive pin
 				+ Closer to "Switches" label
 			- Clear TODOTEST's in SwitchboardPanel
-			- Remove test switch adding from MainFrame.cpp
 			+ Mouse pointer on switchboard
 				+ SwitchboardPanel::cctor: SetCursor
 				+ See whether tool controller should set it only on canvas rather than on application

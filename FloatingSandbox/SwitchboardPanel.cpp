@@ -153,8 +153,6 @@ SwitchboardPanel::~SwitchboardPanel()
 
 void SwitchboardPanel::HideFully()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::HideFully()");
-
     ShowDockCheckbox(false);
     InstallMouseTracking(false);
 
@@ -173,8 +171,6 @@ void SwitchboardPanel::HideFully()
 
 void SwitchboardPanel::ShowPartially()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::ShowPartially()");
-
     if (mShowingMode == ShowingMode::NotShowing)
     {
         InstallMouseTracking(true);
@@ -199,8 +195,6 @@ void SwitchboardPanel::ShowPartially()
 
 void SwitchboardPanel::ShowFullyFloating()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::ShowFullyFloating()");
-
     if (mShowingMode == ShowingMode::ShowingHint)
     {
         mDockCheckbox->SetChecked(false);
@@ -226,8 +220,6 @@ void SwitchboardPanel::ShowFullyFloating()
 
 void SwitchboardPanel::ShowFullyDocked()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::ShowFullyDocked()");
-
     if (mShowingMode == ShowingMode::ShowingFullyFloating)
     {
         InstallMouseTracking(false);
@@ -309,8 +301,6 @@ bool SwitchboardPanel::OnKeyboardShortcut(
 
 void SwitchboardPanel::OnGameReset()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::OnGameReset()");
-
     ShowDockCheckbox(false);
     InstallMouseTracking(false);
 
@@ -332,8 +322,6 @@ void SwitchboardPanel::OnGameReset()
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 {
-    LogMessage("TODOTEST:SwitchboardPanel::OnElectricalElementAnnouncementsBegin()");
-
     // Clear map
     mElementMap.clear();
 
@@ -348,7 +336,7 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
+    LogMessage("SwitchboardPanel::OnSwitchCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
 
     //
     // Make label, if needed
@@ -457,7 +445,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnPowerProbeCreated: ", instanceIndex);
+    LogMessage("SwitchboardPanel::OnPowerProbeCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
 
     //
     // Create control
@@ -475,7 +463,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     {
         case PowerProbeType::Engine:
         {
-            // TODO: use new gauge control
+            // TODO: use new gauge control w/RPM bitmaps
             ctrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
@@ -496,7 +484,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
         case PowerProbeType::Generator:
         {
-            // TODO: use new gauge control
+            // TODO: use new gauge control w/Voltage bitmaps
             ctrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
@@ -634,7 +622,6 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         });
 
     // Ask sizer to resize panel accordingly
-    // TODOTEST: needed?
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
     // Re-layout from parent

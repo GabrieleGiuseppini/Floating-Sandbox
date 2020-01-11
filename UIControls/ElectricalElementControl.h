@@ -84,8 +84,21 @@ protected:
         mImageBitmap = new wxStaticBitmap(this, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
         vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
 
-        wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
-        vSizer->Add(labelStaticText, 0, wxALIGN_CENTRE_HORIZONTAL);
+        vSizer->AddSpacer(4);
+
+        wxPanel * labelPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
+        {
+            labelPanel->SetBackgroundColour(wxColour(165, 167, 156));
+
+            wxStaticText * labelStaticText = new wxStaticText(
+                labelPanel, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+            labelStaticText->SetForegroundColour(wxColour(0x20, 0x20, 0x20));
+
+            wxBoxSizer* labelSizer = new wxBoxSizer(wxVERTICAL);
+            labelSizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, 6);
+            labelPanel->SetSizerAndFit(labelSizer);
+        }
+        vSizer->Add(labelPanel, 0, wxEXPAND | wxALIGN_CENTRE_HORIZONTAL);
 
         this->SetSizerAndFit(vSizer);
     }
