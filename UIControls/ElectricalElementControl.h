@@ -93,6 +93,9 @@ protected:
             wxStaticText * labelStaticText = new wxStaticText(
                 labelPanel, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
             labelStaticText->SetForegroundColour(wxColour(0x20, 0x20, 0x20));
+            wxFont font = labelStaticText->GetFont();
+            font.SetPointSize(7);
+            labelStaticText->SetFont(font);
 
             wxBoxSizer* labelSizer = new wxBoxSizer(wxVERTICAL);
             labelSizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, 6);

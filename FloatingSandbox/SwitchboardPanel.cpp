@@ -116,6 +116,9 @@ SwitchboardPanel::SwitchboardPanel(
 
         wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Electrical Panel", wxDefaultPosition, wxDefaultSize, 0);
         hintStaticText->SetForegroundColour(wxColour(0x20, 0x20, 0x20));
+        wxFont font = hintStaticText->GetFont();
+        font.SetPointSize(7);
+        hintStaticText->SetFont(font);
         hintStaticText->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
         mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");

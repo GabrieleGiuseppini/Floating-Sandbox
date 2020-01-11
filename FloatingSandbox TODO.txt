@@ -1276,6 +1276,7 @@ Render:
 						= Hint panel center:
 							= Try same panel tricks as control label
 							- If not: try ad-hoc background for hint panel, w/drawn label
+					+ Nail down font size
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
