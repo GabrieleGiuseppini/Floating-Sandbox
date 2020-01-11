@@ -56,6 +56,7 @@ SwitchboardPanel::SwitchboardPanel(
         wxDefaultSize,
         wxBORDER_SIMPLE);
 
+    // Set background bitmap
     wxBitmap backgroundBitmap;
     backgroundBitmap.LoadFile(resourceLoader.GetIconFilepath("switchboard_background").string(), wxBITMAP_TYPE_PNG);
     SetBackgroundBitmap(backgroundBitmap);
@@ -103,15 +104,18 @@ SwitchboardPanel::SwitchboardPanel(
     mMainVSizer = new wxBoxSizer(wxVERTICAL);
 
     // Hint panel
-    mHintPanel = new wxPanel(this);
-    mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
+    mHintPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     {
+        mHintPanel->SetBackgroundColour(wxColour(165, 167, 156));
+        mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
+
         wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
         wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("undocked_icon").string(), wxBITMAP_TYPE_PNG);
 
         wxPanel * fillerPanel = new wxPanel(mHintPanel, wxID_ANY, wxDefaultPosition, dockCheckboxCheckedBitmap.GetSize());
 
         wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Electrical Panel", wxDefaultPosition, wxDefaultSize, 0);
+        hintStaticText->SetForegroundColour(wxColour(0x20, 0x20, 0x20));
         hintStaticText->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
         mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
@@ -119,8 +123,8 @@ SwitchboardPanel::SwitchboardPanel(
 
         mHintPanelSizer = new wxBoxSizer(wxHORIZONTAL);
         mHintPanelSizer->Add(fillerPanel, 0, 0);
-        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT, 10);
-        mHintPanelSizer->Add(mDockCheckbox, 0, wxRESERVE_SPACE_EVEN_IF_HIDDEN);
+        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, 7);
+        mHintPanelSizer->Add(mDockCheckbox, 0, wxALL | wxRESERVE_SPACE_EVEN_IF_HIDDEN, 1);
 
         // Hide docking icon for now
         mDockCheckbox->Hide();

@@ -226,9 +226,11 @@ public:
             label,
             currentState)
         , mOnSwitchToggled(std::move(onSwitchToggled))
+        , mIsPushed(false)
     {
         mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
         mImageBitmap->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+        mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
     }
 
 private:
@@ -246,12 +248,14 @@ private:
                 : ElectricalState::On;
 
             mOnSwitchToggled(newState);
+
+            mIsPushed = true;
         }
     }
 
     void OnLeftUp(wxMouseEvent & /*event*/)
     {
-        if (mIsEnabled)
+        if (mIsPushed)
         {
             //
             // Just invoke the callback, we'll end up being toggled when the event travels back
@@ -262,12 +266,34 @@ private:
                 : ElectricalState::On;
 
             mOnSwitchToggled(newState);
+
+            mIsPushed = false;
+        }
+    }
+
+    void OnLeaveWindow(wxMouseEvent & /*event*/)
+    {
+        if (mIsPushed)
+        {
+            //
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            //
+
+            ElectricalState const newState = (mCurrentState == ElectricalState::On)
+                ? ElectricalState::Off
+                : ElectricalState::On;
+
+            mOnSwitchToggled(newState);
+
+            mIsPushed = false;
         }
     }
 
 private:
 
     std::function<void(ElectricalState)> const mOnSwitchToggled;
+
+    bool mIsPushed;
 };
 
 class AutomaticSwitchElectricalElementControl : public ElectricalElementControl
