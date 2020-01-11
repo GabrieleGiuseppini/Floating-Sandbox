@@ -232,7 +232,7 @@ public:
 	void TriggerLightning();
 
     void SetSwitchState(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState switchState);
 
     void SetSilence(float silenceAmount);

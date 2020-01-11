@@ -882,16 +882,6 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
 		LogMessage(worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
-
-        // TODOTEST
-        static ElementIndex TODOID(1);
-        ++TODOID;
-        mSwitchboardPanel->OnSwitchCreated(
-            SwitchId(0, TODOID),
-            TODOID,
-            "Test " + std::to_string(TODOID),
-            TODOID % 3 == 0 ? SwitchType::InteractivePushSwitch : (TODOID % 3 == 1 ? SwitchType::InteractiveToggleSwitch : SwitchType::AutomaticSwitch),
-            ElectricalState::Off);
     }
     else if (event.GetKeyCode() == 'B')
     {

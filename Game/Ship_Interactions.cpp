@@ -1331,12 +1331,12 @@ void Ship::ApplyLightning(
 }
 
 void Ship::SetSwitchState(
-    SwitchId switchId,
+    ElectricalElementId electricalElementId,
     ElectricalState switchState)
 {
     assert(switchId.GetShipId() == mId);
 
-    mElectricalElements.SetSwitchState(switchId, switchState);
+    mElectricalElements.SetSwitchState(electricalElementId, switchState);
 }
 
 }

@@ -69,30 +69,31 @@ public:
     virtual void OnElectricalElementAnnouncementsBegin() override;
 
     virtual void OnSwitchCreated(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId powerMonitorId,
+    virtual void OnPowerProbeCreated(
+        ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        PowerProbeType type,
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnSwitchToggled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
-    virtual void OnPowerMonitorToggled(
-        PowerMonitorId powerMonitorId,
+    virtual void OnPowerProbeToggled(
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
 private:
@@ -109,10 +110,6 @@ private:
     void ShowDockCheckbox(bool doShow);
 
     void InstallMouseTracking(bool isActive);
-
-    void AddControl(
-        ElectricalElementControl * ctrl,
-        ElectricalElementInstanceIndex instanceIndex);
 
     void LayoutParent();
 
@@ -165,8 +162,7 @@ private:
         {}
     };
 
-    std::unordered_map<SwitchId, ElectricalElementInfo> mSwitchMap;
-    std::unordered_map<PowerMonitorId, ElectricalElementInfo> mPowerMonitorMap;
+    std::unordered_map<ElectricalElementId, ElectricalElementInfo> mElementMap;
 
 private:
 
@@ -196,4 +192,6 @@ private:
 
     wxBitmap mPowerMonitorOnBitmap;
     wxBitmap mPowerMonitorOffBitmap;
+
+    wxSize mMinBitmapSize;
 };

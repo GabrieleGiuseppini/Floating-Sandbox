@@ -143,10 +143,14 @@ namespace std {
 
 }
 
+// Generic ID for generic elements (points, springs, etc.)
 using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
+
+// ID for a bomb
 using BombId = ObjectId<LocalBombId, struct BombTypeTag>;
-using SwitchId = ObjectId<ElementIndex, struct SwitchTypeTag>;
-using PowerMonitorId = ObjectId<ElementIndex, struct PowerMonitorTypeTag>;
+
+// ID for electrical elements (switches, probes, etc.)
+using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
 
 /*
  * A sequence number which is never zero.
@@ -226,13 +230,23 @@ enum class ExplosionType
 };
 
 /*
- * Types of switches (duh).
+ * Types of electrical switches.
  */
 enum class SwitchType
 {
     InteractiveToggleSwitch,
     InteractivePushSwitch,
     AutomaticSwitch
+};
+
+/*
+ * Types of power probes.
+ */
+enum class PowerProbeType
+{
+    PowerMonitor,
+    Engine,
+    Generator
 };
 
 /*

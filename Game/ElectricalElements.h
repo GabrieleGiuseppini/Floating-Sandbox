@@ -256,7 +256,7 @@ public:
     void AnnounceInstancedElements();
 
     void SetSwitchState(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState switchState);
 
     void Destroy(ElementIndex electricalElementIndex);

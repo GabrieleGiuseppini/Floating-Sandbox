@@ -186,7 +186,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnSwitchCreated(
-        SwitchId /*switchId*/,
+        ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         SwitchType /*type*/,
         ElectricalState /*state*/,
@@ -195,9 +195,10 @@ struct IElectricalElementGameEventHandler
         // Default-implemented
     }
 
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId /*powerMonitorId*/,
+    virtual void OnPowerProbeCreated(
+        ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
+        PowerProbeType /*type*/,
         ElectricalState /*state*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
@@ -214,21 +215,21 @@ struct IElectricalElementGameEventHandler
     //
 
     virtual void OnSwitchEnabled(
-        SwitchId /*switchId*/,
+        ElectricalElementId /*electricalElementId*/,
         bool /*isEnabled*/)
     {
         // Default-implemented
     }
 
     virtual void OnSwitchToggled(
-        SwitchId /*switchId*/,
+        ElectricalElementId /*electricalElementId*/,
         ElectricalState /*newState*/)
     {
         // Default-implemented
     }
 
-    virtual void OnPowerMonitorToggled(
-        PowerMonitorId /*powerMonitorId*/,
+    virtual void OnPowerProbeToggled(
+        ElectricalElementId /*electricalElementId*/,
         ElectricalState /*newState*/)
     {
         // Default-implemented

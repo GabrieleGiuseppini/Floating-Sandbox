@@ -83,15 +83,15 @@ public:
         unsigned int size) override;
 
     virtual void OnSwitchEnabled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnSwitchToggled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
-    virtual void OnPowerMonitorToggled(
-        PowerMonitorId powerMonitorId,
+    virtual void OnPowerProbeToggled(
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnBombPlaced(

@@ -579,12 +579,12 @@ void World::TriggerRogueWave()
         mWind);
 }
 
-void World::SetSwitchState(SwitchId switchId, ElectricalState switchState)
+void World::SetSwitchState(ElectricalElementId electricalElementId, ElectricalState switchState)
 {
-    auto const shipId = switchId.GetShipId();
+    auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->SetSwitchState(switchId, switchState);
+    mAllShips[shipId]->SetSwitchState(electricalElementId, switchState);
 }
 
 void World::SetSilence(float silenceAmount)

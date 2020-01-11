@@ -293,7 +293,7 @@ public:
     }
 
     virtual void OnSwitchCreated(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
@@ -302,20 +302,21 @@ public:
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchCreated(switchId, instanceIndex, type, state, panelElementMetadata);
+            sink->OnSwitchCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
         }
     }
 
-    virtual void OnPowerMonitorCreated(
-        PowerMonitorId powerMonitorId,
+    virtual void OnPowerProbeCreated(
+        ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        PowerProbeType type,
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnPowerMonitorCreated(powerMonitorId, instanceIndex, state, panelElementMetadata);
+            sink->OnPowerProbeCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
         }
     }
 
@@ -329,35 +330,35 @@ public:
     }
 
     virtual void OnSwitchEnabled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         bool isEnabled)
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchEnabled(switchId, isEnabled);
+            sink->OnSwitchEnabled(electricalElementId, isEnabled);
         }
     }
 
     virtual void OnSwitchToggled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState newState)
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchToggled(switchId, newState);
+            sink->OnSwitchToggled(electricalElementId, newState);
         }
     }
 
-    virtual void OnPowerMonitorToggled(
-        PowerMonitorId powerMonitorId,
+    virtual void OnPowerProbeToggled(
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnPowerMonitorToggled(powerMonitorId, newState);
+            sink->OnPowerProbeToggled(electricalElementId, newState);
         }
     }
 

@@ -1280,7 +1280,7 @@ void SoundController::OnLightFlicker(
 }
 
 void SoundController::OnSwitchToggled(
-    SwitchId /*switchId*/,
+    ElectricalElementId /*electricalElementId*/,
     ElectricalState newState)
 {
     PlayOneShotMultipleChoiceSound(

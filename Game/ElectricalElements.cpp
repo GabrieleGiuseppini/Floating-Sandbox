@@ -127,7 +127,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 prolog();
 
                 mGameEventHandler->OnSwitchCreated(
-                    SwitchId(mShipId, elementIndex),
+                    ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::InteractivePushSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
@@ -141,7 +141,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 prolog();
 
                 mGameEventHandler->OnSwitchCreated(
-                    SwitchId(mShipId, elementIndex),
+                    ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::InteractiveToggleSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
@@ -154,9 +154,10 @@ void ElectricalElements::AnnounceInstancedElements()
             {
                 prolog();
 
-                mGameEventHandler->OnPowerMonitorCreated(
-                    PowerMonitorId(mShipId, elementIndex),
+                mGameEventHandler->OnPowerProbeCreated(
+                    ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
+                    PowerProbeType::PowerMonitor,
                     ElectricalState::Off, // We start with off; we'll figure out actual state at the next update
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
@@ -168,7 +169,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 prolog();
 
                 mGameEventHandler->OnSwitchCreated(
-                    SwitchId(mShipId, elementIndex),
+                    ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::AutomaticSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
@@ -186,10 +187,10 @@ void ElectricalElements::AnnounceInstancedElements()
 }
 
 void ElectricalElements::SetSwitchState(
-    SwitchId switchId,
+    ElectricalElementId electricalElementId,
     ElectricalState switchState)
 {
-    auto const electricalElementIndex = switchId.GetLocalObjectId();
+    auto const electricalElementIndex = electricalElementId.GetLocalObjectId();
 
     if (static_cast<bool>(switchState) != mConductivityBuffer[electricalElementIndex].ConductsElectricity)
     {
@@ -239,7 +240,7 @@ void ElectricalElements::SetSwitchState(
         }
 
         // Notify
-        mGameEventHandler->OnSwitchToggled(switchId, switchState);
+        mGameEventHandler->OnSwitchToggled(electricalElementId, switchState);
     }
 }
 
@@ -263,7 +264,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
     {
-        mGameEventHandler->OnSwitchEnabled(SwitchId(mShipId, electricalElementIndex), false);
+        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
     }
 
     // Invoke destroy handler
@@ -292,7 +293,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
         || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
     {
-        mGameEventHandler->OnSwitchEnabled(SwitchId(mShipId, electricalElementIndex), true);
+        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
     }
 }
 

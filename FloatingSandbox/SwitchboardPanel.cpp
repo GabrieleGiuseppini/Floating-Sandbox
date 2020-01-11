@@ -7,6 +7,8 @@
 
 #include "WxHelpers.h"
 
+#include <UIControls/LayoutHelper.h>
+
 #include <wx/cursor.h>
 
 #include <cassert>
@@ -37,11 +39,11 @@ SwitchboardPanel::SwitchboardPanel(
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
     //
-    , mSwitchMap()
-    , mPowerMonitorMap()
+    , mElementMap()
     , mGameController(gameController)
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
+    , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
     wxPanel::Create(
         parent,
@@ -72,19 +74,23 @@ SwitchboardPanel::SwitchboardPanel(
     mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
     mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
     mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
     mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
     mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
     //
     // Setup panel
@@ -259,9 +265,8 @@ void SwitchboardPanel::OnGameReset()
     // Hide
     HideFully();
 
-    // Clear maps
-    mSwitchMap.clear();
-    mPowerMonitorMap.clear();
+    // Clear map
+    mElementMap.clear();
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
@@ -269,12 +274,11 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
     LogMessage("TODOTEST:SwitchboardPanel::OnElectricalElementAnnouncementsBegin()");
 
     // Clear maps
-    mSwitchMap.clear();
-    mPowerMonitorMap.clear();
+    mElementMap.clear();
 }
 
 void SwitchboardPanel::OnSwitchCreated(
-    SwitchId switchId,
+    ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     SwitchType type,
     ElectricalState state,
@@ -315,9 +319,9 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractivePushSwitchOnDisabledBitmap,
                 mInteractivePushSwitchOffDisabledBitmap,
                 label,
-                [this, switchId](ElectricalState newState)
+                [this, electricalElementId](ElectricalState newState)
                 {
-                    this->mGameController->SetSwitchState(switchId, newState);
+                    this->mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
 
@@ -333,9 +337,9 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractiveToggleSwitchOnDisabledBitmap,
                 mInteractiveToggleSwitchOffDisabledBitmap,
                 label,
-                [this, switchId](ElectricalState newState)
+                [this, electricalElementId](ElectricalState newState)
                 {
-                    this->mGameController->SetSwitchState(switchId, newState);
+                    this->mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
 
@@ -367,72 +371,173 @@ void SwitchboardPanel::OnSwitchCreated(
     // Add switch to map
     //
 
-    assert(mSwitchMap.find(switchId) == mSwitchMap.end());
-    mSwitchMap.emplace(
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
         std::piecewise_construct,
-        std::forward_as_tuple(switchId),
+        std::forward_as_tuple(electricalElementId),
         std::forward_as_tuple(ctrl, panelElementMetadata));
 }
 
-void SwitchboardPanel::OnPowerMonitorCreated(
-    PowerMonitorId powerMonitorId,
+void SwitchboardPanel::OnPowerProbeCreated(
+    ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
+    PowerProbeType type,
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnPowerMonitorCreated: ", instanceIndex);
+    LogMessage("TODOTEST: SwitchboardPanel::OnPowerProbeCreated: ", instanceIndex);
 
     //
-    // Make label, if needed
+    // Create control
     //
 
     std::string label;
+    ElectricalElementControl * ctrl;
+
     if (!!panelElementMetadata)
     {
         label = panelElementMetadata->Label;
     }
-    else
+
+    switch (type)
     {
-        // Make label
-        std::stringstream ss;
-        ss << "Switch " << " #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        case PowerProbeType::Engine:
+        {
+            // TODO: use new gauge control
+            ctrl = new PowerMonitorElectricalElementControl(
+                mSwitchPanel,
+                mPowerMonitorOnBitmap,
+                mPowerMonitorOffBitmap,
+                label,
+                state);
+
+            if (!panelElementMetadata)
+            {
+                // Make label
+                std::stringstream ss;
+                ss << "Engine #" << static_cast<int>(instanceIndex);
+                label = ss.str();
+            }
+
+            break;
+        }
+
+        case PowerProbeType::Generator:
+        {
+            // TODO: use new gauge control
+            ctrl = new PowerMonitorElectricalElementControl(
+                mSwitchPanel,
+                mPowerMonitorOnBitmap,
+                mPowerMonitorOffBitmap,
+                label,
+                state);
+
+            if (!panelElementMetadata)
+            {
+                // Make label
+                std::stringstream ss;
+                ss << "Generator #" << static_cast<int>(instanceIndex);
+                label = ss.str();
+            }
+
+            break;
+        }
+
+        case PowerProbeType::PowerMonitor:
+        {
+            ctrl = new PowerMonitorElectricalElementControl(
+                mSwitchPanel,
+                mPowerMonitorOnBitmap,
+                mPowerMonitorOffBitmap,
+                label,
+                state);
+
+            if (!panelElementMetadata)
+            {
+                // Make label
+                std::stringstream ss;
+                ss << "Monitor #" << static_cast<int>(instanceIndex);
+                label = ss.str();
+            }
+
+            break;
+        }
     }
 
-    //
-    // Make control
-    //
-
-    ElectricalElementControl * ctrl = new PowerMonitorElectricalElementControl(
-        mSwitchPanel,
-        mPowerMonitorOnBitmap,
-        mPowerMonitorOffBitmap,
-        label,
-        state);
+    assert(ctrl != nullptr);
 
     //
     // Add monitor to map
     //
 
-    assert(mPowerMonitorMap.find(powerMonitorId) == mPowerMonitorMap.end());
-    mPowerMonitorMap.emplace(
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
         std::piecewise_construct,
-        std::forward_as_tuple(powerMonitorId),
+        std::forward_as_tuple(electricalElementId),
         std::forward_as_tuple(ctrl, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 {
-    // TODOHERE
+    //
+    // Layout
+    //
+
+    std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
+    for (auto const it : mElementMap)
+    {
+        if (!!(it.second.PanelElementMetadata))
+            layoutElements.emplace_back(
+                it.first,
+                std::make_pair(it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y));
+        else
+            layoutElements.emplace_back(
+                it.first,
+                std::nullopt);
+    }
+
+    LayoutHelper::Layout<ElectricalElementId>(
+        layoutElements,
+        11, // Max these elements per row
+        [this](int width, int height)
+        {
+            mSwitchPanelSizer->SetCols(width);
+            mSwitchPanelSizer->SetRows(height);
+        },
+        [this](std::optional<ElectricalElementId> element, int x, int y)
+        {
+            if (!!element)
+            {
+                // Add control to sizer
+
+                auto it = mElementMap.find(*element);
+                assert(it != mElementMap.end());
+
+                mSwitchPanelSizer->Add(
+                    it->second.Control,
+                    wxGBPosition(y, x + (mSwitchPanelSizer->GetCols() / 2)),
+                    wxGBSpan(1, 1),
+                    wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    8);
+            }
+        });
+
+    // Ask sizer to resize panel accordingly
+    // TODOTEST: needed?
+    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
+
+    // Re-layout from parent
+    LayoutParent();
+
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
-    SwitchId switchId,
+    ElectricalElementId electricalElementId,
     bool isEnabled)
 {
-    // Enable/disable switch control
-    auto it = mSwitchMap.find(switchId);
-    assert(it != mSwitchMap.end());
+    // Enable/disable control
+    auto it = mElementMap.find(electricalElementId);
+    assert(it != mElementMap.end());
     it->second.Control->SetEnabled(isEnabled);
 
     // Remember enable state
@@ -440,22 +545,22 @@ void SwitchboardPanel::OnSwitchEnabled(
 }
 
 void SwitchboardPanel::OnSwitchToggled(
-    SwitchId switchId,
+    ElectricalElementId electricalElementId,
     ElectricalState newState)
 {
-    // Toggle switch control
-    auto it = mSwitchMap.find(switchId);
-    assert(it != mSwitchMap.end());
+    // Toggle control
+    auto it = mElementMap.find(electricalElementId);
+    assert(it != mElementMap.end());
     it->second.Control->SetState(newState);
 }
 
-void SwitchboardPanel::OnPowerMonitorToggled(
-    PowerMonitorId powerMonitorId,
+void SwitchboardPanel::OnPowerProbeToggled(
+    ElectricalElementId electricalElementId,
     ElectricalState newState)
 {
     // Toggle power monitor control
-    auto it = mPowerMonitorMap.find(powerMonitorId);
-    assert(it != mPowerMonitorMap.end());
+    auto it = mElementMap.find(electricalElementId);
+    assert(it != mElementMap.end());
     it->second.Control->SetState(newState);
 }
 
@@ -465,6 +570,7 @@ void SwitchboardPanel::MakeSwitchPanel()
 {
     // Create grid sizer for switch panel
     mSwitchPanelSizer = new wxGridBagSizer(0, 15);
+    mSwitchPanelSizer->SetEmptyCellSize(mMinBitmapSize);
 
     // Create (scrollable) panel for switches
     mSwitchPanel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL);
@@ -499,31 +605,6 @@ void SwitchboardPanel::InstallMouseTracking(bool isActive)
     {
         mLeaveWindowTimer->Stop();
     }
-}
-
-void SwitchboardPanel::AddControl(
-    ElectricalElementControl * ctrl,
-    ElectricalElementInstanceIndex instanceIndex)
-{
-    // Calculate row and column
-    // TODOTEST
-    int const r = static_cast<int>(instanceIndex) / 11;
-    int const c = static_cast<int>(instanceIndex) % 11;
-
-    // Add to sizer
-    mSwitchPanelSizer->Add(
-        ctrl,
-        wxGBPosition(r, c),
-        wxGBSpan(1, 1),
-        wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-        8);
-
-    // Ask sizer to resize panel accordingly
-    // TODOTEST: needed?
-    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
-
-    // Re-layout from parent
-    LayoutParent();
 }
 
 void SwitchboardPanel::LayoutParent()

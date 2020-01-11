@@ -69,6 +69,13 @@ public:
             std::max(this->Height, other.Height));
     }
 
+    inline ImageSize Intersection(ImageSize const & other) const
+    {
+        return ImageSize(
+            std::min(this->Width, other.Width),
+            std::min(this->Height, other.Height));
+    }
+
     std::string ToString() const
     {
         std::stringstream ss;

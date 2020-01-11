@@ -198,7 +198,7 @@ public:
 		GameParameters const & gameParameters);
 
     void SetSwitchState(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState switchState);
 
 public:

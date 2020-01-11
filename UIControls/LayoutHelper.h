@@ -206,8 +206,6 @@ public:
                     positionElement = std::nullopt;
                 }
 
-                LogDebug("Layout: X=", col, " Y=", h, ":", (!!positionElement ? std::to_string(*positionElement) : "N/A"));
-
                 onPosition(
                     positionElement,
                     col,

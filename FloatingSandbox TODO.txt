@@ -1239,17 +1239,15 @@ Render:
 							+ OnElectricalElementAnnouncementsBegin/End
 							+ Switch and PowerMonitor announcements take extra:
 								+ ShipMetadata::ElectricalPanelMetadata
-						- Panel:
+						= Panel:
 							+ OnElectricalElementAnnouncementsBegin: clear maps
-							= On...:
+							+ On...:
 								+ Make label if no panel element metadata, then pass to control
-								- Store ctrl and panel MD in ElementInfo
-							- OnElectricalElementAnnouncementsEnd: do positioning for all
-								= Layout algo in LayoutHelper
-								! AddControl(ctrl, x, y)						
-
-						- Do also at PowerMonitor
-							- Can't power monitor be a Control, and we store type in single map?
+								+ Store ctrl and panel MD in ElementInfo
+							+ OnElectricalElementAnnouncementsEnd: do positioning for all
+								+ Layout algo in LayoutHelper
+								! AddControl(ctrl, x, y)
+						+ Nuke PowerMonitor extra map and add type to map element (own enum)
 						- Change CircuitTest's electrical:
 							- 1) Test very L and very R
 								- a) 1st row only
@@ -1311,21 +1309,26 @@ Render:
 		- Merge into trunk
 
 	= Power probe:
-		- Rename: "Monitor"->"Probe" in current code
-		- GameTypes:
+		+ Rename: "Monitor"->"Probe" in current code
+		+ GameTypes:
 			+ First off, tag ObjectId
 			+ Add PowerMonitorId
 			+ Add Switch types:
 				! ToggleSwitch
 				+ PushSwitch
-			- Add PowerProbe types:
-				- TODO: Type 1, 2, and 3 below
+			+ Add PowerProbe types: 1, 2, and 3 below
 		+ EventHandler:
 			+ Add power monitor events
+		- Generator becomes instanced
+			- Change generator: make it instanced
+				- Electrical elements json
+				- Materials
+			- ShipBuilder: trick for default instance ID (==current blue of engine's material color key)
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
 			- Engine (announcement type 2)
 			- Generator (announcement type 3)
+		- Destroy/Repair
 		- Simulation of PowerMonitor:
 			- Make it a sink
 			- Keep cur state at state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
@@ -1335,14 +1338,14 @@ Render:
 				+ InteractivePushSwitchElectricalElementControl
 				+ AutomaticSwitchElectricalElementControl
 				+ PowerMonitorElectricalElementControl
-		- Add three materials to electrical elements json
+		- Add two materials to electrical elements json
 		- Switchboard:
 			+ Register for power probe events
-			- Swap bitmaps: 
+			+ Swap bitmaps: 
 				+ Current non-interactive becomes power monitor
-				- Also rename pngs
+				+ Also rename pngs
 			= Add power probes to switchboard
-				- Type 1:
+				+ Type 1 (PowerMonitor): current green lamp
 				- Type 2:
 				- Type 3: Volt gauge (also new control)
 		- Refresh electrical elements' materials template				

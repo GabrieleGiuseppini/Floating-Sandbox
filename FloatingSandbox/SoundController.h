@@ -238,7 +238,7 @@ public:
         unsigned int size) override;
 
     virtual void OnSwitchToggled(
-        SwitchId switchId,
+        ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnBombPlaced(
