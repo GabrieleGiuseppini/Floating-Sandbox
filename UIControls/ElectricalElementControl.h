@@ -25,8 +25,7 @@ public:
 
     void SetKeyboardShortcutLabel(std::string const & label)
     {
-        LogMessage("TODOHERE:", label);
-        SetToolTip(label);
+        mImageBitmap->SetToolTip(label);
     }
 
     ElectricalState GetState() const
