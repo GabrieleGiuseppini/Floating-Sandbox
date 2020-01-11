@@ -436,11 +436,141 @@ INSTANTIATE_TEST_CASE_P(
             5, -2, 1,
             std::vector<std::optional<int>>{1000, 10, 1001, 1002, std::nullopt})
 
-        // TODO: with one row, reaches maxPerRow and then doubles height
+        // Right before MaxWidth, one dec
+        // [Undec][Dec][Undec][Undec][Undec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0) },
+            6,
+            7, -3, 1,
+            std::vector<std::optional<int>>{1000, 10, 1001, 1002, 1003, 1004, 1005, std::nullopt})
 
-        // TODO: with two rows, goes beyond maxPerRow
+        // Right before MaxWidth, two dec's
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            5,
+            7, -3, 1,
+            std::vector<std::optional<int>>{1000, 10, 1001, 1002, 1003, 11, 1004, std::nullopt})
 
-        // TODO: starts 3rd row only if something's laid out already there
+        // With one row, one more than MaxWidth makes it add the second row
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        // [Undec][.][.][.][.][.][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            6,
+            7, -3, 2,
+            std::vector<std::optional<int>>{
+                1000, 10, 1001, 1002, 1003, 11, 1004
+                , 1005, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt})
+
+        // With one row, one more than MaxWidth makes it add the second row
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        // [Undec][Undec][.][.][.][.][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            7,
+            7, -3, 2,
+            std::vector<std::optional<int>>{
+                1000, 10, 1001, 1002, 1003, 11, 1004
+                , 1005, 1006, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt})
+
+        // With one row, one more than MaxWidth makes it add the second row
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            12,
+            7, -3, 2,
+            std::vector<std::optional<int>>{
+                1000, 10, 1001, 1002, 1003, 11, 1004
+                , 1005, 1006, 1007, 1008, 1009, 1010, 1011})
+
+        // With two rows, one more adds two full columns
+        // [Undec][Undec][Dec][Undec][Undec][Undec][Dec][Undec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][.][.][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            13,
+            9, -4, 2,
+            std::vector<std::optional<int>>{
+                1000, 1001, 10, 1002, 1003, 1004, 11, 1005, 1006
+                , 1007, 1008, 1009, 1010, 1011, 1012, std::nullopt, std::nullopt, std::nullopt })
+
+        // With two rows, one more adds two full columns
+        // [Undec][Undec][Dec][Undec][Undec][Undec][Dec][Undec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][Undec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{ std::make_tuple(10, -2, 0), std::make_tuple(11, 2, 0) },
+            16,
+            9, -4, 2,
+            std::vector<std::optional<int>>{
+                1000, 1001, 10, 1002, 1003, 1004, 11, 1005, 1006
+                , 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015 })
+
+        // Starts third row only when something's already there
+        // [Dec][Undec][Undec][Undec][Dec]
+        // [Undec][Undec][Undec][Undec][Undec]
+        // [Undec][Undec][Dec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{
+                    std::make_tuple(10, -2, 0)
+                    , std::make_tuple(11, 2, 0)
+                    , std::make_tuple(12, 0, 2)},
+            12,
+            5, -2, 3,
+            std::vector<std::optional<int>>{
+                10, 1000, 1001, 1002, 11
+                , 1003, 1004, 1005, 1006, 1007
+                , 1008, 1009, 12, 1010, 1011 })
+
+        // After third row, grows evenly on both sides
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][Undec]
+        // [Undec][.][.][Dec][.][.][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{
+                    std::make_tuple(10, -2, 0)
+                    , std::make_tuple(11, 2, 0)
+                    , std::make_tuple(12, 0, 2)},
+            13,
+            7, -3, 3,
+            std::vector<std::optional<int>>{
+                1000, 10, 1001, 1002, 1003, 11, 1004
+                , 1005, 1006, 1007, 1008, 1009, 1010, 1011
+                , 1012, std::nullopt, std::nullopt, 12, std::nullopt, std::nullopt, std::nullopt })
+
+        // After third row, grows evenly on both sides
+        // [Undec][Dec][Undec][Undec][Undec][Dec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][Undec]
+        // [Undec][Undec][Undec][Dec][Undec][Undec][Undec]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{
+                    std::make_tuple(10, -2, 0)
+                    , std::make_tuple(11, 2, 0)
+                    , std::make_tuple(12, 0, 2)},
+            18, // Fill
+            7, -3, 3,
+            std::vector<std::optional<int>>{
+                1000, 10, 1001, 1002, 1003, 11, 1004
+                , 1005, 1006, 1007, 1008, 1009, 1010, 1011
+                , 1012, 1013, 1014, 12, 1015, 1016, 1017 })
+
+        // After third row, grows evenly on both sides
+        // [Undec][Undec][Dec][Undec][Undec][Undec][Dec][Undec][Undec]
+        // [Undec][Undec][Undec][Undec][Undec][Undec][Undec][Undec][Undec]
+        // [Undec][Undec][Undec][.][Dec][.][.][.][.]
+        , std::make_tuple(
+            std::vector<std::tuple<int, int, int>>{
+                    std::make_tuple(10, -2, 0)
+                    , std::make_tuple(11, 2, 0)
+                    , std::make_tuple(12, 0, 2)},
+            19, // One more
+            9, -4, 3,
+            std::vector<std::optional<int>>{
+                1000, 1001, 10, 1002, 1003, 1004, 11, 1005, 1006
+                , 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015
+                , 1016, 1017, 1018, std::nullopt, 12, std::nullopt, std::nullopt, std::nullopt, std::nullopt })
+
     ));
 TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
 {
@@ -483,6 +613,7 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
     {
         for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
         {
+            EXPECT_LT(iElement, expectedIds.size());
             EXPECT_CALL(handler, OnLayout(expectedIds[iElement], col, row)).Times(1);
             ++iElement;
         }

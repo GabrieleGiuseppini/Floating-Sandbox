@@ -1245,13 +1245,11 @@ Render:
 								+ Make label if no panel element metadata, then pass to control
 								- Store ctrl and panel MD in ElementInfo
 							- OnElectricalElementAnnouncementsEnd: do positioning for all
-								- Position each element automagically if no panel element metadata
 								= Layout algo in LayoutHelper
-								! AddControl(ctrl, x, y)
-
-						- Website: add FAQ for heat controls -> Gabe's blog
+								! AddControl(ctrl, x, y)						
 
 						- Do also at PowerMonitor
+							- Can't power monitor be a Control, and we store type in single map?
 						- Change CircuitTest's electrical:
 							- 1) Test very L and very R
 								- a) 1st row only
@@ -1285,7 +1283,7 @@ Render:
 			= Do push switch (mechanical)
 			- Do automatic switch (mechanical)
 
-		- Do not propagate switch characteristics through ropes
+		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
 
 		- Cleanup:
 			- See if need different sound for push switch vs toggle switch
@@ -1308,6 +1306,7 @@ Render:
 					- is_instanced - with warning not to change
 			- Redo electrical materials template			-
 			- Decide whether SwitchboardPanel should be double-buffered or not
+			- Website: add FAQ for heat controls -> Gabe's blog
 		- Run in Debug
 		- Merge into trunk
 
