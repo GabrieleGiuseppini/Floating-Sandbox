@@ -238,15 +238,18 @@ private:
 
     void OnLeftUp(wxMouseEvent & /*event*/)
     {
-        //
-        // Just invoke the callback, we'll end up being toggled when the event travels back
-        //
+        if (mIsEnabled)
+        {
+            //
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            //
 
-        ElectricalState const newState = (mCurrentState == ElectricalState::On)
-            ? ElectricalState::Off
-            : ElectricalState::On;
+            ElectricalState const newState = (mCurrentState == ElectricalState::On)
+                ? ElectricalState::Off
+                : ElectricalState::On;
 
-        mOnSwitchToggled(newState);
+            mOnSwitchToggled(newState);
+        }
     }
 
 private:
