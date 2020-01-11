@@ -52,6 +52,10 @@ public:
 
     void ShowFullyDocked();
 
+    bool OnKeyboardShortcut(
+        int keyCode,
+        int keyModifier);
+
 public:
 
     //
@@ -166,6 +170,9 @@ private:
     };
 
     std::unordered_map<ElectricalElementId, ElectricalElementInfo> mElementMap;
+
+    // Keyboard shortcuts - indexed by key (Ctrl/Alt 1,...,0,-)
+    std::vector<ElectricalElementId> mKeyboardShortcutToElementId;
 
 private:
 

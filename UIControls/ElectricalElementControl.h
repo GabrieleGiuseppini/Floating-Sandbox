@@ -10,6 +10,7 @@
 
 #include <wx/bitmap.h>
 #include <wx/stattext.h>
+#include <wx/tooltip.h>
 #include <wx/wx.h>
 
 #include <cassert>
@@ -21,6 +22,17 @@
 class ElectricalElementControl : public wxPanel
 {
 public:
+
+    void SetKeyboardShortcutLabel(std::string const & label)
+    {
+        LogMessage("TODOHERE:", label);
+        SetToolTip(label);
+    }
+
+    ElectricalState GetState() const
+    {
+        return mCurrentState;
+    }
 
     void SetState(ElectricalState state)
     {

@@ -622,17 +622,17 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create switchboard panel
+    // Create electrical panel
     //
 
-    mSwitchboardPanel = SwitchboardPanel::Create(
+    mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
         mMainPanel,
         mMainFrameSizer,
         mGameController,
         *mResourceLoader);
 
-    mMainFrameSizer->Add(mSwitchboardPanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND);
 
     mMainPanel->Layout();
 
@@ -751,7 +751,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     this->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
     mEventTickerPanel->RegisterEventHandler(*mGameController);
-    mSwitchboardPanel->RegisterEventHandler(*mGameController);
+    mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
 
@@ -893,7 +893,18 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
         // around this, but this is an Easter Egg after all....
     }
+    else
+    {
+        // Deliver to electric panel
+        if (!!mElectricalPanel)
+        {
+            mElectricalPanel->OnKeyboardShortcut(
+                event.GetKeyCode(),
+                event.GetModifiers());
+        }
+    }
 
+    // Allow it to be further handled
     event.Skip();
 }
 

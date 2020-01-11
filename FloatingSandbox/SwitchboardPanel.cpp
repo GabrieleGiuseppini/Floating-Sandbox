@@ -14,6 +14,9 @@
 #include <cassert>
 #include <utility>
 
+static constexpr int MaxElementsPerRow = 11;
+static constexpr int MaxKeyboardShortcuts = 20;
+
 std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parent,
     wxWindow * parentLayoutWindow,
@@ -40,6 +43,7 @@ SwitchboardPanel::SwitchboardPanel(
     , mLeaveWindowTimer()
     //
     , mElementMap()
+    , mKeyboardShortcutToElementId()
     , mGameController(gameController)
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
@@ -247,6 +251,60 @@ void SwitchboardPanel::ShowFullyDocked()
     LayoutParent();
 }
 
+bool SwitchboardPanel::OnKeyboardShortcut(
+    int keyCode,
+    int keyModifier)
+{
+    //
+    // Translate key into index
+    //
+
+    int keyIndex;
+    if (keyCode >= '1' && keyCode <= '9')
+        keyIndex = keyCode - '1';
+    else if (keyCode == '0')
+        keyIndex = 9;
+    else
+        return false;
+
+    if (keyModifier == wxMOD_CONTROL)
+    {
+        // 0-9
+    }
+    else if (keyModifier == wxMOD_ALT)
+    {
+        // 10-19
+        keyIndex += 10;
+    }
+    else
+    {
+        // Ignore
+        return false;
+    }
+
+
+    //
+    // Map and toggle
+    //
+
+    if (keyIndex < mKeyboardShortcutToElementId.size())
+    {
+        auto const elementId = mKeyboardShortcutToElementId[keyIndex];
+        auto & elementInfo = mElementMap.at(elementId);
+        assert(elementInfo.IsInteractive);
+
+        if (elementInfo.IsEnabled)
+        {
+            elementInfo.Control->ToggleState();
+            mGameController->SetSwitchState(elementId, elementInfo.Control->GetState());
+            return true;
+        }
+    }
+
+    // Ignore
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SwitchboardPanel::OnGameReset()
@@ -267,14 +325,20 @@ void SwitchboardPanel::OnGameReset()
 
     // Clear map
     mElementMap.clear();
+
+    // Clear keyboard shortcuts map
+    mKeyboardShortcutToElementId.clear();
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 {
     LogMessage("TODOTEST:SwitchboardPanel::OnElectricalElementAnnouncementsBegin()");
 
-    // Clear maps
+    // Clear map
     mElementMap.clear();
+
+    // Clear keyboard shortcuts map
+    mKeyboardShortcutToElementId.clear();
 }
 
 void SwitchboardPanel::OnSwitchCreated(
@@ -494,7 +558,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 {
     //
-    // Layout
+    // Layout and assign keys
     //
 
     std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
@@ -512,7 +576,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 
     LayoutHelper::Layout<ElectricalElementId>(
         layoutElements,
-        11, // Max these elements per row
+        MaxElementsPerRow,
         [this](int width, int height)
         {
             mSwitchPanelSizer->SetCols(width);
@@ -522,17 +586,50 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         {
             if (!!element)
             {
-                // Add control to sizer
-
+                // Get this element
                 auto it = mElementMap.find(*element);
                 assert(it != mElementMap.end());
 
+                // Add control to sizer
                 mSwitchPanelSizer->Add(
                     it->second.Control,
                     wxGBPosition(y, x + (mSwitchPanelSizer->GetCols() / 2)),
                     wxGBSpan(1, 1),
                     wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
                     8);
+
+                // If interactive, make keyboard shortcut
+                if (it->second.IsInteractive
+                    && mKeyboardShortcutToElementId.size() < MaxKeyboardShortcuts)
+                {
+                    int keyIndex = static_cast<int>(mKeyboardShortcutToElementId.size());
+
+                    // Store key mapping
+                    mKeyboardShortcutToElementId.emplace_back(*element);
+
+                    // Create shortcut label
+
+                    std::stringstream ss;
+                    if (keyIndex < 10)
+                    {
+                        ss << "Ctrl-";
+                    }
+                    else
+                    {
+                        assert(keyIndex < 20);
+                        keyIndex -= 10;
+                        ss << "Alt-";
+                    }
+
+                    assert(keyIndex >= 0 && keyIndex <= 9);
+                    if (keyIndex == 9)
+                        ss << "0";
+                    else
+                        ss << char('1' + keyIndex);
+
+                    // Assign label
+                    it->second.Control->SetKeyboardShortcutLabel(ss.str());
+                }
             }
         });
 

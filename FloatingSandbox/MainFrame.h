@@ -94,7 +94,7 @@ private:
     wxMenuItem * mMuteMenuItem;
     std::unique_ptr<ProbePanel> mProbePanel;
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
-    std::unique_ptr<SwitchboardPanel> mSwitchboardPanel;
+    std::unique_ptr<SwitchboardPanel> mElectricalPanel;
 
 
     //
@@ -213,14 +213,6 @@ private:
 
     virtual void OnGameReset() override
     {
-        // TODOTEST
-        ////// Hide switchboard panel if showing in any form
-        ////assert(!!mSwitchboardPanel);
-        ////if (mSwitchboardPanel->IsShowing())
-        ////{
-        ////    mSwitchboardPanel->HideFully();
-        ////}
-
         // Refresh title bar
         mCurrentShipTitles.clear();
         UpdateFrameTitle();
@@ -256,18 +248,18 @@ private:
         // Show switchboard if required
         //
 
-        assert(!!mSwitchboardPanel);
+        assert(!!mElectricalPanel);
         assert(!!mUIPreferencesManager);
 
-        if (!mSwitchboardPanel->IsShowing())
+        if (!mElectricalPanel->IsShowing())
         {
             if (mUIPreferencesManager->GetAutoShowSwitchboard())
             {
-                mSwitchboardPanel->ShowFullyDocked();
+                mElectricalPanel->ShowFullyDocked();
             }
             else
             {
-                mSwitchboardPanel->ShowPartially();
+                mElectricalPanel->ShowPartially();
             }
         }
     }

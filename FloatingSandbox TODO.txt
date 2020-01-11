@@ -1191,7 +1191,7 @@ Render:
 					+ Does not invoke lambda in this case
 				+ Images:
 					+ {on, off} X {enabled, disabled}
-				- Tooltip displays keys (whose labels are provided by creator via cctor)
+				= Tooltip displays keys (whose labels are provided by creator via cctor)
 			+ ShipAutomaticSwitchControl
 				+ Merge two switch controls into one - base and two derived classes; both expose:
 					+ SetEnabled
@@ -1255,18 +1255,18 @@ Render:
 					+ Leave in map
 				+ OnSwitchToggled(ObjectId, new state):
 					+ Lookup from map and call SetState(new state) on control (regardless of disabling)
-				- Keys:
-					- At layout: if interactive, calc key and store in vector<integer from key, ElectricalElementId> 
+				= Keys:
+					+ At layout: if interactive, calc key and store in vector<ElectricalElementId> 
 					  for key mappings
-						- Make constant w/max elements per row (11)
-						- Ctrl/Alt 1...0, -
-					- Gets key events from MainFrame when MainFrame does not recognize
-						- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain					
-						- Uses key mappings to figure out ElectricalElementId
-						- On key:
-							- If SwitchInfo.IsEnabled:
-								- Call SwitchControl->ToggleState() -> newState
-								- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
+						+ Make constant w/max elements per row (11)
+						+ Ctrl/Alt 1...0
+					+ Gets key events from MainFrame when MainFrame does not recognize
+						+ OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain					
+						+ Uses key mappings to figure out ElectricalElementId
+						+ On key:
+							+ If SwitchInfo.IsEnabled:
+								+ Call SwitchControl->ToggleState() -> newState
+								+ Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
 				= Gfx:
 					+ Grey hint panel
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
