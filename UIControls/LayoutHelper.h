@@ -14,9 +14,6 @@
 #include <utility>
 #include <vector>
 
-// TODOTEST
-#include <iostream>
-
 class LayoutHelper
 {
 public:
@@ -209,8 +206,7 @@ public:
                     positionElement = std::nullopt;
                 }
 
-                // TODOTEST
-                std::cout << "X=" << col << " Y=" << h << ":" << (!!positionElement ? std::to_string(*positionElement) : "N/A") << std::endl;
+                LogDebug("Layout: X=", col, " Y=", h, ":", (!!positionElement ? std::to_string(*positionElement) : "N/A"));
 
                 onPosition(
                     positionElement,
