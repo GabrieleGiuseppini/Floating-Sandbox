@@ -1334,7 +1334,7 @@ void Ship::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState)
 {
-    assert(switchId.GetShipId() == mId);
+    assert(electricalElementId.GetShipId() == mId);
 
     mElectricalElements.SetSwitchState(electricalElementId, switchState);
 }

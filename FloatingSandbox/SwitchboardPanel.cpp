@@ -114,9 +114,9 @@ SwitchboardPanel::SwitchboardPanel(
         mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
         mHintPanelSizer = new wxBoxSizer(wxHORIZONTAL);
-        mHintPanelSizer->Add(fillerPanel, 0, wxALIGN_CENTER_HORIZONTAL);
-        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_HORIZONTAL, 10);
-        mHintPanelSizer->Add(mDockCheckbox, 0, wxALIGN_CENTER_HORIZONTAL | wxRESERVE_SPACE_EVEN_IF_HIDDEN);
+        mHintPanelSizer->Add(fillerPanel, 0, 0);
+        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT, 10);
+        mHintPanelSizer->Add(mDockCheckbox, 0, wxRESERVE_SPACE_EVEN_IF_HIDDEN);
 
         // Hide docking icon for now
         mDockCheckbox->Hide();
@@ -284,7 +284,7 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", instanceIndex);
+    LogMessage("TODOTEST: SwitchboardPanel::OnSwitchCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
 
     //
     // Make label, if needed
@@ -308,6 +308,8 @@ void SwitchboardPanel::OnSwitchCreated(
     //
 
     ElectricalElementControl * ctrl;
+    bool isInteractive;
+
     switch (type)
     {
         case SwitchType::InteractivePushSwitch:
@@ -324,6 +326,8 @@ void SwitchboardPanel::OnSwitchCreated(
                     this->mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
+
+            isInteractive = true;
 
             break;
         }
@@ -343,6 +347,8 @@ void SwitchboardPanel::OnSwitchCreated(
                 },
                 state);
 
+            isInteractive = true;
+
             break;
         }
 
@@ -356,6 +362,8 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOffDisabledBitmap,
                 label,
                 state);
+
+            isInteractive = false;
 
             break;
         }
@@ -375,7 +383,7 @@ void SwitchboardPanel::OnSwitchCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata));
+        std::forward_as_tuple(ctrl, panelElementMetadata, isInteractive));
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
@@ -462,6 +470,12 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
             break;
         }
+
+        default:
+        {
+            assert(false);
+            return;
+        }
     }
 
     assert(ctrl != nullptr);
@@ -474,7 +488,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata));
+        std::forward_as_tuple(ctrl, panelElementMetadata, false));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()

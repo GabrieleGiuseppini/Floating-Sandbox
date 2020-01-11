@@ -70,7 +70,7 @@ protected:
     {
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
-        mImageBitmap = new wxStaticBitmap(this, wxID_ANY, mOnEnabledImage, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+        mImageBitmap = new wxStaticBitmap(this, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
         vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
@@ -81,32 +81,37 @@ protected:
 
 private:
 
-    void SetImageForCurrentState()
+    wxBitmap const & GetImageForCurrentState() const
     {
         if (mIsEnabled)
         {
             if (mCurrentState == ElectricalState::On)
             {
-                mImageBitmap->SetBitmap(mOnEnabledImage);
+                return mOnEnabledImage;
             }
             else
             {
                 assert(mCurrentState == ElectricalState::Off);
-                mImageBitmap->SetBitmap(mOffEnabledImage);
+                return mOffEnabledImage;
             }
         }
         else
         {
             if (mCurrentState == ElectricalState::On)
             {
-                mImageBitmap->SetBitmap(mOnDisabledImage);
+                return mOnDisabledImage;
             }
             else
             {
                 assert(mCurrentState == ElectricalState::Off);
-                mImageBitmap->SetBitmap(mOffDisabledImage);
+                return mOffDisabledImage;
             }
         }
+    }
+
+    void SetImageForCurrentState()
+    {
+        mImageBitmap->SetBitmap(GetImageForCurrentState());
 
         Refresh();
     }

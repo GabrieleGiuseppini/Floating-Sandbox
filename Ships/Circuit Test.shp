@@ -1,9 +1,17 @@
 {
 	"structure_image":"circuit_test_structural.png.dat",
 	"electrical_image":"circuit_test_electrical.png.dat",
-	"electrical_element_labels":["First light", "Light 2", "Another label"],
+	"electrical_panel":{
+		"0": {"panel_x":-5, "panel_y":0, "label":"Main L Switch" },
+		"1": {"panel_x":-4, "panel_y":0, "label":"Main R Switch" },
+		"4": {"panel_x":-3, "panel_y":0, "label":"Smoke" },
+
+		"2": {"panel_x":0, "panel_y":0, "label":"Lamp 1" },
+		"3": {"panel_x":1, "panel_y":0, "label":"Lamp 2" }
+
+	},
 	"ship_name":"Circuit Test",
 	"offset":{"x":0.0, "y":0.0},
 	"description":
-		"The 'Circuit Test' is a simple test to see if a circuit works underwater and above it. Either way, it was just a test to see if it works during pre-beta before this game was released."	
+		"The 'Circuit Test' is a simple test for complex electrical circuits. This 'ship' showcases most of the interactive electrical elements that you may build into your ships in Floating Sandbox. Make sure you open up the electrical panel after loading this ship!"
 }

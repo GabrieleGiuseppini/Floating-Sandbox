@@ -122,7 +122,8 @@ public:
         // Electrical materials
         //
 
-        std::map<ColorKey, ElectricalMaterial> electricalMaterialsMap;
+        std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialsMap;
+        std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
 
         picojson::value electricalMaterialsRoot = Utils::ParseJSONFile(
             materialsRootDirectory / "materials_electrical.json");
@@ -148,29 +149,37 @@ public:
             ElectricalMaterial material = ElectricalMaterial::Create(materialObject);
 
             // Make sure there are no dupes
-            if (electricalMaterialsMap.count(colorKey) != 0)
+            if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0
+                || instancedElectricalMaterialsMap.count(colorKey) != 0)
             {
                 throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
             }
 
             // Store
-            electricalMaterialsMap.emplace(
-                std::make_pair(
-                    colorKey,
-                    material));
+            if (material.IsInstanced)
+                instancedElectricalMaterialsMap.emplace(
+                    std::make_pair(
+                        colorKey,
+                        material));
+            else
+                nonInstancedElectricalMaterialsMap.emplace(
+                    std::make_pair(
+                        colorKey,
+                        material));
         }
 
 
         //
         // Make sure there are no structural materials whose key appears
-        // in electrical materials, with the exception for"legacy" electrical
+        // in electrical materials, with the exception for "legacy" electrical
         // materials
         //
 
         for (auto const & kv : structuralMaterialsMap)
         {
             if (!kv.second.IsLegacyElectrical
-                && 0 != electricalMaterialsMap.count(kv.first))
+                && (0 != nonInstancedElectricalMaterialsMap.count(kv.first)
+                    || 0 != instancedElectricalMaterialsMap.count(kv.first)))
             {
                 throw GameException("color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
             }
@@ -180,7 +189,8 @@ public:
 
         return MaterialDatabase(
             std::move(structuralMaterialsMap),
-            std::move(electricalMaterialsMap),
+            std::move(nonInstancedElectricalMaterialsMap),
+            std::move(instancedElectricalMaterialsMap),
             uniqueStructuralMaterials);
     }
 
@@ -211,8 +221,16 @@ public:
 
     ElectricalMaterial const * FindElectricalMaterial(ColorKey const & colorKey) const
     {
-        auto srchIt = mElectricalMaterialMap.find(colorKey);
-        if (srchIt != mElectricalMaterialMap.end())
+        // Try non-instanced first
+        if (auto srchIt = mNonInstancedElectricalMaterialMap.find(colorKey);
+            srchIt != mNonInstancedElectricalMaterialMap.end())
+        {
+            return &(srchIt->second);
+        }
+
+        // Try instanced now
+        if (auto srchIt = mInstancedElectricalMaterialMap.find(colorKey);
+            srchIt != mInstancedElectricalMaterialMap.end())
         {
             return &(srchIt->second);
         }
@@ -247,18 +265,38 @@ public:
 
 private:
 
+    struct NonInstancedColorKeyComparer
+    {
+        size_t operator()(ColorKey const & lhs, ColorKey const & rhs) const
+        {
+            return lhs < rhs;
+        }
+    };
+
+    struct InstancedColorKeyComparer
+    {
+        size_t operator()(ColorKey const & lhs, ColorKey const & rhs) const
+        {
+            return lhs.r < rhs.r
+                || (lhs.r == rhs.r && lhs.g < rhs.g);
+        }
+    };
+
     MaterialDatabase(
         std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
-        std::map<ColorKey, ElectricalMaterial> electricalMaterialMap,
+        std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
+        std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
-        , mElectricalMaterialMap(std::move(electricalMaterialMap))
+        , mNonInstancedElectricalMaterialMap(std::move(nonInstancedElectricalMaterialMap))
+        , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
     {
     }
 
     std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
-    std::map<ColorKey, ElectricalMaterial> mElectricalMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
 };

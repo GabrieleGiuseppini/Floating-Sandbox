@@ -151,13 +151,16 @@ private:
     {
         ElectricalElementControl * Control;
         std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
+        bool const IsInteractive;
         bool IsEnabled;
 
         ElectricalElementInfo(
             ElectricalElementControl * control,
-            std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
+            std::optional<ElectricalPanelElementMetadata> panelElementMetadata,
+            bool isInteractive)
             : Control(control)
             , PanelElementMetadata(panelElementMetadata)
+            , IsInteractive(isInteractive)
             , IsEnabled(true)
         {}
     };

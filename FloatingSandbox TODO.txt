@@ -1214,13 +1214,11 @@ Render:
 					+ SwitchInfo:
 						+ uq_ptr<SwitchControl>
 						+ bool IsEnabled					
-				- OnSwitchCreated:
-					- Calc key and store in vector<integer from key, ObjectId> for key mappings
-						- Ctrl/Alt 1...0, -, =
+				+ OnSwitchCreated:
 					+ Create uq_ptr<SwitchControl(key)>
 						+ Does the mapping here from switch type to images and class
 					+ Add SwitchInfo to map
-					= Add to panel - center-aligned, overflow and grow
+					+ Add to panel - center-aligned, overflow and grow
 						+ json:
 							"electrical_panel":{
 								"0": {"panel_x"=-1, "panel_y"=0, "label"="Test 1" },
@@ -1239,41 +1237,43 @@ Render:
 							+ OnElectricalElementAnnouncementsBegin/End
 							+ Switch and PowerMonitor announcements take extra:
 								+ ShipMetadata::ElectricalPanelMetadata
-						= Panel:
+						+ Panel:
 							+ OnElectricalElementAnnouncementsBegin: clear maps
 							+ On...:
 								+ Make label if no panel element metadata, then pass to control
 								+ Store ctrl and panel MD in ElementInfo
 							+ OnElectricalElementAnnouncementsEnd: do positioning for all
 								+ Layout algo in LayoutHelper
-								! AddControl(ctrl, x, y)
+								+ AddControl(ctrl, x, y)
 						+ Nuke PowerMonitor extra map and add type to map element (own enum)
-						- Change CircuitTest's electrical:
-							- 1) Test very L and very R
-								- a) 1st row only
-								- b) 2nd row only
-								- c) 1st and 2nd row
-							- 2) (current) single instance at center, 1st row
+						+ Change CircuitTest's electrical:
+							+ 1: SingleSwitch (just rename of current): single instance at center, 1st row, no metadata
+							+ 2: <normal>: Add switches w/whole json
 				+ OnSwitchEnabled: 
 					+ Enable/Disable switch control
 					+ Enable/Disable in SwitchInfo
 					+ Leave in map
 				+ OnSwitchToggled(ObjectId, new state):
 					+ Lookup from map and call SetState(new state) on control (regardless of disabling)
-				- Gets key events from MainFrame when MainFrame does not recognize
-					- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain					
-					- Uses key mappings to figure out ObjectId
-					- On key:
-						- If SwitchInfo.IsEnabled:
-							- Call SwitchControl->ToggleState() -> newState
-							- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
-				- Gfx:
-					= Grey hint panel
+				- Keys:
+					- At layout: if interactive, calc key and store in vector<integer from key, ElectricalElementId> 
+					  for key mappings
+						- Make constant w/max elements per row (11)
+						- Ctrl/Alt 1...0, -
+					- Gets key events from MainFrame when MainFrame does not recognize
+						- OnKeyEvent: returns bool for processed/not processed, so MainFrame can chain					
+						- Uses key mappings to figure out ElectricalElementId
+						- On key:
+							- If SwitchInfo.IsEnabled:
+								- Call SwitchControl->ToggleState() -> newState
+								- Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
+				= Gfx:
+					+ Grey hint panel
 					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 						+ Try with whole panel, rather than with SwitchPanel only
 						- Try other background
-						- See background for hint panel, w/drawn label
-					- See suspend/resume layout for flicker issue
+						- Try ad-hoc background for hint panel, w/drawn label
+					- See TODO for layout flicker issue
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
@@ -1319,19 +1319,19 @@ Render:
 			+ Add PowerProbe types: 1, 2, and 3 below
 		+ EventHandler:
 			+ Add power monitor events
-		- Generator becomes instanced
-			- Change generator: make it instanced
-				- Electrical elements json
-				- Materials
-			- ShipBuilder: trick for default instance ID (==current blue of engine's material color key)
+		- New Instanced Generator electrical material
+			- Add to json, new generator altogether, other is !IsInstanced
+			- ElectricalElements::Add: add both to sources, treat both of them equally
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
 			- Engine (announcement type 2)
-			- Generator (announcement type 3)
+			- (Instanced)Generator (announcement type 3)
 		- Destroy/Repair
 		- Simulation of PowerMonitor:
 			- Make it a sink
-			- Keep cur state at state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
+			- Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
+		- Simulation of Engine:
+			- Keep cur state at Generator state machine at ElectricalElements::UpdateSources() and fire toggle events upon state toggle
 		+ UI:
 			+ ElectricalElementControl
 				+ InteractiveToggleSwitchElectricalElementControl

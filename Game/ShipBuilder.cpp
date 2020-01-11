@@ -1195,7 +1195,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             electricalElementInstanceIndices.cend(),
             it.first) == electricalElementInstanceIndices.cend())
         {
-            throw GameException("Index '" + std::to_string(it.first) + " of electrical panel metadata cannot be found among electrical element indices");
+            throw GameException("Index '" + std::to_string(it.first) + "' of electrical panel metadata cannot be found among electrical element indices");
         }
     }
 
@@ -1235,6 +1235,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             if (electricalMaterial->IsInstanced)
             {
                 auto const findIt = panelMetadata.find(instanceIndex);
+
                 if (findIt != panelMetadata.end())
                 {
                     // Take metadata
