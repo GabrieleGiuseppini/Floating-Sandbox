@@ -1202,7 +1202,7 @@ Render:
 			+ Floating/Docked state machine:
 				+ Fix stack overflow issue
 				+ Test with EventTicker/ProbePanel on				
-			= Panel: much like ProbePanel
+			+ Panel: much like ProbePanel
 				+ Has:
 					+ ResourceLoader const & (used @ cctor only for button images)
 					+ GameController (see others for shared_ptr or &)
@@ -1267,16 +1267,17 @@ Render:
 							+ If SwitchInfo.IsEnabled:
 								+ Call SwitchControl->ToggleState() -> newState
 								+ Call GameController->SetSwitchState(SwitchId, ctrl->GetState())
-				= Gfx:
+				+ Gfx:
 					+ Grey hint panel
-					= Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
+					+ Use wxCustomBackgroundWindow for the switchboard panel, with a (tiled) background
 						+ Try with whole panel, rather than with SwitchPanel only
 						+ Try other background
 						+ Nail down color of text labels
-						= Hint panel center:
-							= Try same panel tricks as control label
-							- If not: try ad-hoc background for hint panel, w/drawn label
 					+ Nail down font size
+					+ Test:
+						+ Remove hint label
+						+ Just change checkbox's graphics
+						+ Move checkbox to top right
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
 
@@ -1289,7 +1290,7 @@ Render:
 		- Cleanup:
 			+ More intuitive pin
 				+ Closer to "Switches" label
-			- Clear TODOTEST's in SwitchboardPanel
+			+ Clear TODOTEST's in SwitchboardPanel
 			+ Mouse pointer on switchboard
 				+ SwitchboardPanel::cctor: SetCursor
 				+ See whether tool controller should set it only on canvas rather than on application

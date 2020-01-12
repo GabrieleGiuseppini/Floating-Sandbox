@@ -138,14 +138,16 @@ private:
     ShowingMode mShowingMode;
 
 
-    wxBoxSizer * mMainVSizer;
+    wxBoxSizer * mMainHSizer1;
+    wxBoxSizer * mMainVSizer2;
 
     wxPanel * mHintPanel;
-    BitmappedCheckbox * mDockCheckbox;
     wxBoxSizer * mHintPanelSizer;
 
     wxScrolled<wxPanel> * mSwitchPanel;
     wxGridBagSizer * mSwitchPanelSizer;
+
+    BitmappedCheckbox * mDockCheckbox;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
 

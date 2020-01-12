@@ -97,52 +97,74 @@ SwitchboardPanel::SwitchboardPanel(
     mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
+    wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
+
     //
     // Setup panel
     //
+    // HSizer1: |DockCheckbox(ShowToggable)| VSizer2 | Filler |
+    //
+    // VSizer2: ---------------
+    //          |  HintPanel  |
+    //          ---------------
+    //          | SwitchPanel |
+    //          ---------------
 
-    mMainVSizer = new wxBoxSizer(wxVERTICAL);
-
-    // Hint panel
-    mHintPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
+    mMainHSizer1 = new wxBoxSizer(wxHORIZONTAL);
     {
-        mHintPanel->SetBackgroundColour(wxColour(165, 167, 156));
-        mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
+        // DockCheckbox
+        {
+            mDockCheckbox = new BitmappedCheckbox(this, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
+            mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
-        wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("docked_icon").string(), wxBITMAP_TYPE_PNG);
-        wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("undocked_icon").string(), wxBITMAP_TYPE_PNG);
+            mMainHSizer1->Add(mDockCheckbox, 0, wxALIGN_TOP, 0);
+        }
 
-        wxPanel * fillerPanel = new wxPanel(mHintPanel, wxID_ANY, wxDefaultPosition, dockCheckboxCheckedBitmap.GetSize());
+        // VSizer2
+        {
+            mMainVSizer2 = new wxBoxSizer(wxVERTICAL);
 
-        wxStaticText * hintStaticText = new wxStaticText(mHintPanel, wxID_ANY, "Electrical Panel", wxDefaultPosition, wxDefaultSize, 0);
-        hintStaticText->SetForegroundColour(wxColour(0x20, 0x20, 0x20));
-        wxFont font = hintStaticText->GetFont();
-        font.SetPointSize(7);
-        hintStaticText->SetFont(font);
-        hintStaticText->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
+            // Hint panel
+            {
+                mHintPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 16), 0);
+                mHintPanel->SetMinSize(wxSize(-1, 16)); // Determines height of hint panel
+                mHintPanel->Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
-        mDockCheckbox = new BitmappedCheckbox(mHintPanel, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
-        mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
+                mMainVSizer2->Add(mHintPanel, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+            }
 
-        mHintPanelSizer = new wxBoxSizer(wxHORIZONTAL);
-        mHintPanelSizer->Add(fillerPanel, 0, 0);
-        mHintPanelSizer->Add(hintStaticText, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, 7);
-        mHintPanelSizer->Add(mDockCheckbox, 0, wxALL | wxRESERVE_SPACE_EVEN_IF_HIDDEN, 1);
+            // Switch panel
+            {
+                MakeSwitchPanel();
 
-        // Hide docking icon for now
-        mDockCheckbox->Hide();
+                // The panel adds itself to VSizer2
+            }
 
-        mHintPanel->SetSizer(mHintPanelSizer);
+            mMainHSizer1->Add(mMainVSizer2, 1, wxEXPAND, 0);
+        }
+
+        // Filler
+        {
+            mMainHSizer1->Add(dockCheckboxUncheckedBitmap.GetSize().GetWidth(), 1, 0, wxALIGN_TOP, 0);
+        }
     }
-    mMainVSizer->Add(mHintPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as tall and as large as it is
-    mMainVSizer->Hide(mHintPanel); // Hide it
 
-    // Switch panel
-    MakeSwitchPanel();
-    mMainVSizer->Hide(mSwitchPanel); // Hide it
+    // Hide dock checkbox and filler now
+    mMainHSizer1->Hide(size_t(0));
+    mMainHSizer1->Hide(size_t(2));
 
-    SetSizer(mMainVSizer);
+    // Hide hint panel now
+    mMainVSizer2->Hide(mHintPanel);
 
+    // Hide switch panel now
+    mMainVSizer2->Hide(mSwitchPanel);
+
+    //
+    // Set main sizer
+    //
+
+    SetSizer(mMainHSizer1);
 
     //
     // Setup enter/leave mouse events
@@ -164,10 +186,10 @@ void SwitchboardPanel::HideFully()
     InstallMouseTracking(false);
 
     // Hide hint panel
-    mMainVSizer->Hide(mHintPanel);
+    mMainVSizer2->Hide(mHintPanel);
 
     // Hide switch panel
-    mMainVSizer->Hide(mSwitchPanel);
+    mMainVSizer2->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::NotShowing;
@@ -188,10 +210,10 @@ void SwitchboardPanel::ShowPartially()
     }
 
     // Show hint panel
-    mMainVSizer->Show(mHintPanel);
+    mMainVSizer2->Show(mHintPanel);
 
     // Hide switch panel
-    mMainVSizer->Hide(mSwitchPanel);
+    mMainVSizer2->Hide(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::ShowingHint;
@@ -213,10 +235,10 @@ void SwitchboardPanel::ShowFullyFloating()
     }
 
     // Show hint panel
-    mMainVSizer->Show(mHintPanel);
+    mMainVSizer2->Show(mHintPanel);
 
     // Show switch panel
-    mMainVSizer->Show(mSwitchPanel);
+    mMainVSizer2->Show(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::ShowingFullyFloating;
@@ -238,10 +260,10 @@ void SwitchboardPanel::ShowFullyDocked()
     }
 
     // Show hint panel
-    mMainVSizer->Show(mHintPanel);
+    mMainVSizer2->Show(mHintPanel);
 
     // Show switch panel
-    mMainVSizer->Show(mSwitchPanel);
+    mMainVSizer2->Show(mSwitchPanel);
 
     // Transition state
     mShowingMode = ShowingMode::ShowingFullyDocked;
@@ -684,16 +706,16 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
 
     // Add switch panel to v-sizer
-    mMainVSizer->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as wide and as tall as it is
+    assert(mMainVSizer2->GetItemCount() == 1);
+    mMainVSizer2->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as wide and as tall as it is
 }
 
 void SwitchboardPanel::ShowDockCheckbox(bool doShow)
 {
-    assert(!!mHintPanelSizer);
-
-    mDockCheckbox->Show(doShow);
-
-    mHintPanelSizer->Layout();
+    assert(!!mMainHSizer1);
+    assert(mMainHSizer1->GetItemCount() == 3);
+    mMainHSizer1->Show(size_t(0), doShow);
+    mMainHSizer1->Show(size_t(2), doShow);
 }
 
 void SwitchboardPanel::InstallMouseTracking(bool isActive)
