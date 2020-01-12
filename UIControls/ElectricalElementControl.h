@@ -101,7 +101,7 @@ protected:
             labelSizer->Add(labelStaticText, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, 6);
             labelPanel->SetSizerAndFit(labelSizer);
         }
-        vSizer->Add(labelPanel, 0, wxEXPAND | wxALIGN_CENTRE_HORIZONTAL);
+        vSizer->Add(labelPanel, 0, wxEXPAND);
 
         this->SetSizerAndFit(vSizer);
     }

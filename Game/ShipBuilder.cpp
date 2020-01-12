@@ -1228,12 +1228,13 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
         if (nullptr != electricalMaterial)
         {
             auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
-            assert(NoneElectricalElementInstanceIndex != instanceIndex);
 
             // Get panel metadata
             std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
             if (electricalMaterial->IsInstanced)
             {
+                assert(NoneElectricalElementInstanceIndex != instanceIndex);
+
                 auto const findIt = panelMetadata.find(instanceIndex);
 
                 if (findIt != panelMetadata.end())

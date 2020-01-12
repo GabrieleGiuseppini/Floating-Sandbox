@@ -663,10 +663,12 @@ void Ship::RepairAt(
             //
             // 3) Restore eligible endpoints
             //
-            // Eligible endpoints are damaged points that now have all of their factory springs
+            // Eligible endpoints are damaged points that now have all of their factory springs and all
+            // of their factory triangles
             //
 
             if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
+                && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles.size()
                 && mPoints.IsDamaged(pointIndex))
             {
                 mPoints.Restore(pointIndex);

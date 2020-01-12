@@ -1104,7 +1104,7 @@ Render:
 					+ Sets conductsElectricity
 					+ Then updates ConductingConnectedElectricalElements (see below)
 					+ Then fires OnSwitchToggled(SwitchId, new state) event
-		+ ElectricalElements connectivity:
+		= ElectricalElements connectivity:
 			! Most performing approach is to alter connectivity graph with switch toggles
 			+ mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
 				+ Changes with structural changes only:
@@ -1152,6 +1152,10 @@ Render:
 					+ Keep also count of repaired points
 				+ Generator doesn't get repaired
 				+ Leaking at times doesn't get repaired				
+			= Fix repair problem: springs::Restore adds connected electrical elements, but these are deleted
+			  and won't be undeleted unless point is restored
+				+ Where we restore elec connections now: only do for !Deleted electrical elements
+				+ At ElectricalElement::Restore: also here restore (eligible) connections
 		= Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
 			+ Uses list of elements (which included water-sensing switches) for perf
 				+ mAutomaticSwitches
@@ -1337,13 +1341,23 @@ Render:
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
 			- Engine (announcement type 2)
+				- Uses own state's IsProducingCurrent as current state
 			- (Instanced)Generator (announcement type 3)
-		- Destroy/Repair at ElectricalElements::Destroy/Repair
+		- Destroy/Repair at ElectricalElements::Destroy/Repair:
+			! Make sure announcement follows when generator is restored and becomes powered
+			! Alignment of state::IsProducingCurrent with announced state: it's the same
+			- At Destroy:
+				- If IsProducingCurrent:
+					- Toggle to false and announce
+			- At Restore:
+				! Nothing to do: at the next UpdateSources() the generator will start 
+				  producing current again and it will announce it
 		- Simulation of PowerMonitor:
 			- Make it a sink
 			- Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
-		- Simulation of Engine:
-			- Keep cur state at Generator state machine at ElectricalElements::UpdateSources() and fire toggle events upon state toggle
+		- Simulation of Generator:
+			! IsProducingCurrent is same as announced state
+			- At ElectricalElements::UpdateSources(): fire toggle events upon state toggle
 		+ UI:
 			+ ElectricalElementControl
 				+ InteractiveToggleSwitchElectricalElementControl

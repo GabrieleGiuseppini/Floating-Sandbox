@@ -200,17 +200,12 @@ void ElectricalElements::AnnounceInstancedElements()
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 {
-    assert(electricalElementIndex < mElementCount);
+    // Connectivity is taken care by ship destroy handler, as usual
+
     assert(!IsDeleted(electricalElementIndex));
 
     // Zero out our light
     mAvailableLightBuffer[electricalElementIndex] = 0.0f;
-
-    // Note: no need to remove self from connected electrical elements, as Ship's PointDestroyHandler,
-    // which is the caller of this Destroy(), has already destroyed the point's springs, hence
-    // this electrical element has no connected points anymore already and viceversa
-    assert(mConnectedElectricalElementsBuffer[electricalElementIndex].empty());
-    assert(mConductingConnectedElectricalElementsBuffer[electricalElementIndex].empty());
 
     // Notify switch disabling
     auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
@@ -231,6 +226,8 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
 void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 {
+    // Connectivity is taken care by ship destroy handler, as usual
+
     assert(IsDeleted(electricalElementIndex));
 
     // Clear the deleted flag

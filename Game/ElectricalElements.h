@@ -324,10 +324,21 @@ public:
     // Connected elements
     //
 
+    auto const & GetConnectedElectricalElements(ElementIndex electricalElementIndex) const
+    {
+        return mConnectedElectricalElementsBuffer[electricalElementIndex];
+    }
+
+    auto const & GetConductingConnectedElectricalElements(ElementIndex electricalElementIndex) const
+    {
+        return mConductingConnectedElectricalElementsBuffer[electricalElementIndex];
+    }
+
     inline void AddConnectedElectricalElement(
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
     {
+        assert(!mConnectedElectricalElementsBuffer[electricalElementIndex].contains(connectedElectricalElementIndex));
         mConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
 
         // If both elements conduct electricity (at this moment), then connect them also electrically
