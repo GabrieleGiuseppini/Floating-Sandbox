@@ -236,6 +236,22 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     // Clear the deleted flag
     mIsDeletedBuffer[electricalElementIndex] = false;
 
+    // Reset our state machine
+    switch (GetMaterialType(electricalElementIndex))
+    {
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            mElementStateBuffer[electricalElementIndex].Lamp.Reset();
+            break;
+        }
+
+        default:
+        {
+            // These types do not have a state machine that needs to be reset
+            break;
+        }
+    }
+
     // Invoke restore handler
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandleElectricalElementRestore(electricalElementIndex);

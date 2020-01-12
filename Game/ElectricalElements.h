@@ -128,6 +128,12 @@ private:
                 , NextStateTransitionTimePoint()
                 , NextWetFailureCheckTimePoint()
             {}
+
+            void Reset()
+            {
+                State = StateType::Initial;
+                FlickerCounter = 0;
+            }
         };
 
         struct OtherSinkState

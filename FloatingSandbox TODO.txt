@@ -458,7 +458,6 @@ Render:
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
 				- @ Ship::DestroyHandler's
-		- Repair tool: repair electrics (*)
 
 		- Do shader at Anti-Matter bomb pre-implosion
 			- Shader already started: https://www.shadertoy.com/view/3sVSRc
@@ -978,8 +977,6 @@ Render:
 		- Then merge scrub tool into this one, with SHIFT 
 		- Icon: ?
 
-	- Repair tool: repair electrics (*)
-
 	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
 
 	- Randomize decay
@@ -1107,7 +1104,7 @@ Render:
 					+ Sets conductsElectricity
 					+ Then updates ConductingConnectedElectricalElements (see below)
 					+ Then fires OnSwitchToggled(SwitchId, new state) event
-		= ElectricalElements connectivity:
+		+ ElectricalElements connectivity:
 			! Most performing approach is to alter connectivity graph with switch toggles
 			+ mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
 				+ Changes with structural changes only:
@@ -1149,12 +1146,12 @@ Render:
 								+ assert already in
 			+ ElectricalElements::UpdateSourcesAndPropagation: only consider ConductingConnectedElectricalElements
 				+ Make ConnectedElectricalElementsBuffer private
-			- Test repair
+			+ Test repair
 				+ Fix repair:
 					+ Repair point if it's in a "bad state"
 					+ Keep also count of repaired points
-				- Generator doesn't get repaired
-				- Leaking at times doesn't get repaired				
+				+ Generator doesn't get repaired
+				+ Leaking at times doesn't get repaired				
 		= Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
 			+ Uses list of elements (which included water-sensing switches) for perf
 				+ mAutomaticSwitches
