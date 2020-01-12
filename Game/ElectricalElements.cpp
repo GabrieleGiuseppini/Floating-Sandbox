@@ -36,6 +36,7 @@ void ElectricalElements::Add(
     mConductingConnectedElectricalElementsBuffer.emplace_back(); // Will be populated later
     mAvailableLightBuffer.emplace_back(0.f);
 
+    // Per-type initialization
     switch (electricalMaterial.ElectricalType)
     {
         case ElectricalMaterial::ElectricalElementType::Cable:
@@ -74,6 +75,17 @@ void ElectricalElements::Add(
             mSinks.emplace_back(elementIndex);
             mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
             break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+            break;
+        }
+
+        default:
+        {
+            // Nothing to do in these cases
         }
     }
 
@@ -186,64 +198,6 @@ void ElectricalElements::AnnounceInstancedElements()
     }
 }
 
-void ElectricalElements::SetSwitchState(
-    ElectricalElementId electricalElementId,
-    ElectricalState switchState)
-{
-    auto const electricalElementIndex = electricalElementId.GetLocalObjectId();
-
-    if (static_cast<bool>(switchState) != mConductivityBuffer[electricalElementIndex].ConductsElectricity)
-    {
-        // Update current value
-        mConductivityBuffer[electricalElementIndex].ConductsElectricity = static_cast<bool>(switchState);
-
-        // Update conductive connectivity
-        if (static_cast<bool>(switchState) == true)
-        {
-            // OFF->ON
-
-            // For each electrical element connected to this one: if both elements conduct electricity,
-            // conduct-connect elements to each other
-            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[electricalElementIndex])
-            {
-                assert(!mConductingConnectedElectricalElementsBuffer[electricalElementIndex].contains(otherElementIndex));
-                assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(electricalElementIndex));
-                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
-                {
-                    mConductingConnectedElectricalElementsBuffer[electricalElementIndex].push_back(otherElementIndex);
-                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].push_back(electricalElementIndex);
-                }
-            }
-        }
-        else
-        {
-            // ON->OFF
-
-            // For each electrical element connected to this one: if the other element conducts electricity,
-            // sever conduct-connection to each other
-            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[electricalElementIndex])
-            {
-                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
-                {
-                    assert(mConductingConnectedElectricalElementsBuffer[electricalElementIndex].contains(otherElementIndex));
-                    assert(mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(electricalElementIndex));
-
-                    mConductingConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(otherElementIndex);
-                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].erase_first(electricalElementIndex);
-                }
-                else
-                {
-                    assert(!mConductingConnectedElectricalElementsBuffer[electricalElementIndex].contains(otherElementIndex));
-                    assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(electricalElementIndex));
-                }
-            }
-        }
-
-        // Notify
-        mGameEventHandler->OnSwitchToggled(electricalElementId, switchState);
-    }
-}
-
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 {
     assert(electricalElementIndex < mElementCount);
@@ -277,7 +231,6 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
 void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 {
-    assert(electricalElementIndex < mElementCount);
     assert(IsDeleted(electricalElementIndex));
 
     // Clear the deleted flag
@@ -323,6 +276,49 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
         // Remember new parameters
         mCurrentLightSpreadAdjustment = gameParameters.LightSpreadAdjustment;
         mCurrentLuminiscenceAdjustment = gameParameters.LuminiscenceAdjustment;
+    }
+}
+
+void ElectricalElements::UpdateAutomaticConductivityToggles(
+    Points & points)
+{
+    //
+    // Visit all elements that change their conductivity automatically,
+    // and eventually change their conductivity
+    //
+
+    for (auto elementIndex : mAutomaticConductivityTogglingElements)
+    {
+        switch (GetMaterialType(elementIndex))
+        {
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            {
+                // When higher than watermark: conductivity state toggles to opposite than material's
+                // When lower than watermark: conductivity state toggles to same as material's
+
+                float constexpr WaterLowWatermark = 0.15f;
+                float constexpr WaterHighWatermark = 0.3f;
+
+                if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                    && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                {
+                    SetSwitchState(elementIndex, static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                }
+                else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                    && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+                {
+                    SetSwitchState(elementIndex, static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                }
+
+                break;
+            }
+
+            default:
+            {
+                // Shouldn't be here - all automatically-toggling elements should have been handled
+                assert(false);
+            }
+        }
     }
 }
 
@@ -599,6 +595,66 @@ void ElectricalElements::UpdateSinks(
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ElectricalElements::SetSwitchState(
+    ElementIndex elementIndex,
+    ElectricalState switchState)
+{
+    if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
+    {
+        // Update current value
+        mConductivityBuffer[elementIndex].ConductsElectricity = static_cast<bool>(switchState);
+
+        // Update conductive connectivity
+        if (static_cast<bool>(switchState) == true)
+        {
+            // OFF->ON
+
+            // For each electrical element connected to this one: if both elements conduct electricity,
+            // conduct-connect elements to each other
+            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+            {
+                assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+                {
+                    mConductingConnectedElectricalElementsBuffer[elementIndex].push_back(otherElementIndex);
+                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].push_back(elementIndex);
+                }
+            }
+        }
+        else
+        {
+            // ON->OFF
+
+            // For each electrical element connected to this one: if the other element conducts electricity,
+            // sever conduct-connection to each other
+            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+            {
+                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+                {
+                    assert(mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                    assert(mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+
+                    mConductingConnectedElectricalElementsBuffer[elementIndex].erase_first(otherElementIndex);
+                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].erase_first(elementIndex);
+                }
+                else
+                {
+                    assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                    assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+                }
+            }
+        }
+
+        // Notify
+        mGameEventHandler->OnSwitchToggled(
+            ElectricalElementId(mShipId, elementIndex),
+            switchState);
+    }
+}
+
 void ElectricalElements::RunLampStateMachine(
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallclockTime,
@@ -624,6 +680,7 @@ void ElectricalElements::RunLampStateMachine(
                 || lamp.IsSelfPowered)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
             {
+                // Transition to ON
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
                 lamp.State = ElementState::LampState::StateType::LightOn;
                 lamp.NextWetFailureCheckTimePoint = currentWallclockTime + std::chrono::seconds(1);

@@ -96,7 +96,6 @@ void Springs::Destroy(
     GameParameters const & gameParameters,
     Points const & points)
 {
-    assert(springElementIndex < mElementCount);
     assert(!IsDeleted(springElementIndex));
 
     // Invoke destroy handler
@@ -130,7 +129,6 @@ void Springs::Restore(
     GameParameters const & gameParameters,
     Points const & points)
 {
-    assert(springElementIndex < mElementCount);
     assert(IsDeleted(springElementIndex));
 
     // Clear the deleted flag

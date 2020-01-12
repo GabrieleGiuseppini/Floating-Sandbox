@@ -1107,33 +1107,33 @@ Render:
 					+ Sets conductsElectricity
 					+ Then updates ConductingConnectedElectricalElements (see below)
 					+ Then fires OnSwitchToggled(SwitchId, new state) event
-		- ElectricalElements connectivity:
+		= ElectricalElements connectivity:
 			! Most performing approach is to alter connectivity graph with switch toggles
-			= mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
-				= Changes with structural changes only:
+			+ mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
+				+ Changes with structural changes only:
 					! Point destruction: just mark as deleted, as springs have been destroyed already
 						! assert
 					! Spring destruction: remove s.endpoints from each other *iff both A and B are electrical elements*
 						! Do via ElectricalElements::RemoveConnectedElectricalElement
-					- Point restore: just clear deleted flag, as springs will be restored later
-						- Do via ElectricalElements::Restore(idx)
-					- Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
-						- Do via ElectricalElements::AddConnectedElectricalElement
-			= mConductingConnectedElectricalElementsBuffer:
+					+ Point restore: just clear deleted flag, as springs will be restored later
+						+ Do via ElectricalElements::Restore(idx)
+					+ Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
+						+ Do via ElectricalElements::AddConnectedElectricalElement
+			+ mConductingConnectedElectricalElementsBuffer:
 				! Intersection of mConnectedElectricalElementsBuffer and mConductsElectricityBuffer:
 					! For each electrical element A: A.ConductingConnectedElectricalElements contains B iff:
 						! A.ConnectedElectricalElements contains B
 						! AND A.ConductsElectricity
 						! AND B.ConductsElectricity
-				= Changes with:
-					= Structural changes:
+				+ Changes with:
+					+ Structural changes:
 						+ Point destruction: <nothing, as springs have been destroyed already> 
 							+ assert
 						+ Spring destruction: remove s.endpoints from each other *iff both A and B are electrical elements*
 							+ Do via ElectricalElements::RemoveConnectedElectricalElement
-						- Point restore: <nothing, as springs will be restored later>
-							- Do via ElectricalElements::Restore(idx)
-						= Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
+						+ Point restore: <nothing, as springs will be restored later>
+							+ Do via ElectricalElements::Restore(idx)
+						+ Spring restore: add s.endpoints to each other *iff both A and B are electrical elements*
 						  AND *iff A.ConductsElectricity AND B.ConductsElectricity*
 							+ Do via ElectricalElements::AddConnectedElectricalElement
 					+ ConductsElectricity changes (i.e. @ SetSwitchState):
@@ -1149,14 +1149,23 @@ Render:
 								+ assert already in
 			+ ElectricalElements::UpdateSourcesAndPropagation: only consider ConductingConnectedElectricalElements
 				+ Make ConnectedElectricalElementsBuffer private
-		- Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
-			- Uses list of elements (including water-sensing switches) for perf
-				- mAutomaticSwitches
-			- If current conductsElectricity==material's && water > high watermark:
-				- SetSwitchState(!current)
-			- Else if current conductsElectricity==!material's && water < low watermark:
-				- SetSwitchState(current)
-		= New game events:
+			- Test repair
+				+ Fix repair:
+					+ Repair point if it's in a "bad state"
+					+ Keep also count of repaired points
+				- Generator doesn't get repaired
+				- Leaking at times doesn't get repaired				
+		= Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
+			+ Uses list of elements (which included water-sensing switches) for perf
+				+ mAutomaticSwitches
+			+ If current conductsElectricity==material's && water > high watermark:
+				+ SetSwitchState(!current)
+			+ Else if current conductsElectricity!=material's && water < low watermark:
+				+ SetSwitchState(current)
+			- Test water switching
+				- See why light is always on
+			- Finalize high/low watermarks
+		+ New game events:
 			+ Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
 				+ New IGameHandler: "electrical"
 					+ Also includes lights fizzling
@@ -1165,10 +1174,10 @@ Render:
 			+ Ship::ElectricalElementDestroy/RepairHandler's fire OnSwitchEnabled(SwitchId, false)
 				! Also clears (on destroy) ConductsElectricity
 					+ Thus see if may avoid checking for deleted at UpdateElectricalPropagation
-			= Ship::ElectricalElements fires OnSwitchToggled(SwitchId, new state) at:
+			+ Ship::ElectricalElements fires OnSwitchToggled(SwitchId, new state) at:
 				+ 1) ToggleSwitch(SwitchId switchId)
-				- 2) Water-sensing switching - which is done at ElectricalUpdate()
-					- But invokes ToggleSwitch(.) anyway
+				+ 2) Water-sensing switching - which is done at ElectricalUpdate()
+					+ But invokes ToggleSwitch(.) anyway
 				+ state is new value of ConductsElectricity, i.e. after the toggle
 		! MainFrame gets switches via AddSwitch event, with all metadata (SwitchId, name, type, state)
 			! SwitchBoard panel (see below)
@@ -1179,7 +1188,7 @@ Render:
 			+ Also registers for AddSwitch and shows SwitchBoard on first add
 				+ As long as UIPreferences::AutoShowSwitchBoard is set (default=true)
 			+ Hides it again only at Reset()
-		= SwitchboardPanel:
+		+ SwitchboardPanel:
 			+ MainFrame menu pops it up and down (and MainFrame also pops it up automagically at first switch add, see above)
 			+ Has control to hide it back (kinda like "close" button at top-right corner)
 			+ ShipInteractiveSwitchControl: much like slider, button (w/2*2 switch images, via cctor) with label below
@@ -1288,6 +1297,8 @@ Render:
 		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
 
 		- Cleanup:
+			- See if can avoid flickering at reload of ship w/circuit
+			- Test electrical panel w/all controls bottom-aligned
 			+ More intuitive pin
 				+ Closer to "Switches" label
 			+ Clear TODOTEST's in SwitchboardPanel
@@ -1308,6 +1319,8 @@ Render:
 			- Decide whether SwitchboardPanel should be double-buffered or not
 			- Website: add FAQ for heat controls -> Gabe's blog
 		- Run in Debug
+			- Test panel across loading ships
+			- Test electrical repair
 		- Merge into trunk
 
 	= Power probe:
@@ -1328,7 +1341,7 @@ Render:
 			- PowerMonitor (announcement type 1)
 			- Engine (announcement type 2)
 			- (Instanced)Generator (announcement type 3)
-		- Destroy/Repair
+		- Destroy/Repair at ElectricalElements::Destroy/Repair
 		- Simulation of PowerMonitor:
 			- Make it a sink
 			- Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
@@ -1558,6 +1571,7 @@ Render:
 	- ShipLoadDialog:
 		- Ship preview database/cache
 		- Move most used ships at top
+			- Need "view selector": Alphabetically (like now), Most Recent (the new one)
 
 - Sounds:
 

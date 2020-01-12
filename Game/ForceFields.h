@@ -137,12 +137,12 @@ public:
         vec2f const & centerPosition,
         float blastRadius,
         float strength,
-        bool detachPoint)
+        bool doDetachPoint)
         : ForceField(Type::Blast)
         , mCenterPosition(centerPosition)
         , mBlastRadius(blastRadius)
         , mStrength(strength)
-        , mDetachPoint(detachPoint)
+        , mDoDetachPoint(doDetachPoint)
     {}
 
     virtual void Apply(
@@ -155,7 +155,7 @@ private:
     vec2f const mCenterPosition;
     float const mBlastRadius;
     float const mStrength;
-    bool const mDetachPoint;
+    bool const mDoDetachPoint;
 };
 
 /*

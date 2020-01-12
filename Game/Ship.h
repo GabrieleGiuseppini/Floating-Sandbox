@@ -362,8 +362,12 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
+    virtual void HandlePointDamaged(ElementIndex pointElementIndex) override;
+
     virtual void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) override;
+
+    virtual void HandlePointRestore(ElementIndex pointElementIndex) override;
 
     virtual void HandleSpringDestroy(
         ElementIndex springElementIndex,
@@ -496,6 +500,7 @@ private:
 
     // Counts of elements currently broken - update each time an element is broken
     // or restored
+    ElementCount mDamagedPointsCount;
     ElementCount mBrokenSpringsCount;
     ElementCount mBrokenTrianglesCount;
 

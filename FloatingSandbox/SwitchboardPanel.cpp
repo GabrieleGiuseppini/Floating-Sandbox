@@ -330,17 +330,14 @@ bool SwitchboardPanel::OnKeyboardShortcut(
 
 void SwitchboardPanel::OnGameReset()
 {
-    ShowDockCheckbox(false);
-    InstallMouseTracking(false);
+    // Hide
+    HideFully();
 
     // Reset all switch controls
     mSwitchPanel->Destroy();
     mSwitchPanel = nullptr;
     mSwitchPanelSizer = nullptr;
     MakeSwitchPanel();
-
-    // Hide
-    HideFully();
 
     // Clear map
     mElementMap.clear();

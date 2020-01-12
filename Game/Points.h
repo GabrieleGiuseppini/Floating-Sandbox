@@ -414,6 +414,7 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
+        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, false)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -707,6 +708,16 @@ public:
         Render::RenderContext & renderContext) const;
 
 public:
+
+    //
+    // IsDamaged (i.e. whether it has been irrevocable modified, such as detached or
+    // set to leaking)
+    //
+
+    bool IsDamaged(ElementIndex springElementIndex) const
+    {
+        return mIsDamagedBuffer[springElementIndex];
+    }
 
     //
     // Materials
@@ -1045,6 +1056,16 @@ public:
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+
+        // Check if it's the first time we get damaged
+        if (!mIsDamagedBuffer[pointElementIndex])
+        {
+            // Invoke handler
+            mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+
+            // Flag ourselves as damaged
+            mIsDamagedBuffer[pointElementIndex] = true;
+        }
     }
 
     //
@@ -1447,6 +1468,11 @@ private:
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
+
+    // Damage: true when the point has been irrevocably modified
+    // (such as detached or set to leaking); only a Restore will
+    // make things right again
+    Buffer<bool> mIsDamagedBuffer;
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;

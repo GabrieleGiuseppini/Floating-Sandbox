@@ -299,7 +299,7 @@ void Ship::RepairAt(
             && (mPoints.GetRepairState(pointIndex).LastAttractedSessionId != sessionId
                  || mPoints.GetRepairState(pointIndex).LastAttractedSessionStepId + 1 < sessionStepId))
         {
-            // Remember this point has taken over the role of attractor in this step
+            // Remember that this point has taken over the role of attractor in this step
             mPoints.GetRepairState(pointIndex).LastAttractorSessionId = sessionId;
             mPoints.GetRepairState(pointIndex).LastAttractorSessionStepId = sessionStepId;
 
@@ -663,11 +663,11 @@ void Ship::RepairAt(
             //
             // 3) Restore eligible endpoints
             //
-            // Eligible endpoints are those that now have all of their factory springs
+            // Eligible endpoints are damaged points that now have all of their factory springs
             //
 
-            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
-                == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size())
+            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
+                && mPoints.IsDamaged(pointIndex))
             {
                 mPoints.Restore(pointIndex);
             }

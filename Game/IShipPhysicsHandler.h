@@ -37,6 +37,14 @@ struct IShipPhysicsHandler
         GameParameters const & gameParameters) = 0;
 
     /*
+     * Invoked whenever a point is irrevocably modified, including when it is being detached,
+     * but also in other situations.
+     *
+     * The dual of this is assumed to be handled by HandlePointRestored().
+     */
+    virtual void HandlePointDamaged(ElementIndex pointElementIndex) = 0;
+
+    /*
      * Invoked whenever an ephemeral particle is destroyed.
      *
      * The handler is invoked right before the particle is modified for the destroy.
@@ -46,6 +54,16 @@ struct IShipPhysicsHandler
      */
     virtual void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) = 0;
+
+    /*
+     * Invoked whenever a point is restored.
+     *
+     * The handler is invoked right after the point is modified for the restore.
+     *
+     * The repair tool will invoke this only after connected springs and triangles
+     * have also been restored.
+     */
+    virtual void HandlePointRestore(ElementIndex pointElementIndex) = 0;
 
     /*
      * Invoked whenever a spring is destroyed.

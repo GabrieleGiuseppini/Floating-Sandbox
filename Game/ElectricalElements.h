@@ -47,7 +47,7 @@ private:
 
         explicit Conductivity(bool materialConductsElectricity)
             : MaterialConductsElectricity(materialConductsElectricity)
-            , ConductsElectricity(materialConductsElectricity) // Init with material
+            , ConductsElectricity(materialConductsElectricity) // Init with material's
         {}
     };
 
@@ -223,6 +223,7 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
+        , mAutomaticConductivityTogglingElements()
         , mSources()
         , mSinks()
         , mLamps()
@@ -257,13 +258,20 @@ public:
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState);
+        ElectricalState switchState)
+    {
+        assert(electricalElementId.GetShipId() == mShipId);
+        SetSwitchState(electricalElementId.GetLocalObjectId(), switchState);
+    }
 
     void Destroy(ElementIndex electricalElementIndex);
 
     void Restore(ElementIndex electricalElementIndex);
 
     void UpdateForGameParameters(GameParameters const & gameParameters);
+
+    void UpdateAutomaticConductivityToggles(
+        Points & points);
 
     void UpdateSourcesAndPropagation(
         SequenceNumber newConnectivityVisitSequenceNumber,
@@ -316,7 +324,7 @@ public:
     {
         mConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
 
-        // If both elements conduct electricity, then connect them also electrically
+        // If both elements conduct electricity (at this moment), then connect them also electrically
         assert(!mConductingConnectedElectricalElementsBuffer[electricalElementIndex].contains(connectedElectricalElementIndex));
         if (mConductivityBuffer[electricalElementIndex].ConductsElectricity
             && mConductivityBuffer[connectedElectricalElementIndex].ConductsElectricity)
@@ -334,7 +342,7 @@ public:
         assert(found);
 
         // Unconditionally remove from conducting and connected elements
-        // (it's there in case they're both conducting)
+        // (it's there in case they're both conducting at this moment)
         found = mConductingConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(connectedElectricalElementIndex);
         assert(!mConductivityBuffer[electricalElementIndex].ConductsElectricity
             || !mConductivityBuffer[connectedElectricalElementIndex].ConductsElectricity
@@ -424,6 +432,10 @@ public:
     }
 
 private:
+
+    void SetSwitchState(
+        ElementIndex elementIndex,
+        ElectricalState switchState);
 
     void RunLampStateMachine(
         ElementIndex elementLampIndex,
@@ -523,6 +535,7 @@ private:
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Indices of specific types in this container - just a shortcut
+    std::vector<ElementIndex> mAutomaticConductivityTogglingElements;
     std::vector<ElementIndex> mSources;
     std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
