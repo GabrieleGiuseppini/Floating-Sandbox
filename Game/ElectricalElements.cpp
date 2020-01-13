@@ -630,6 +630,12 @@ void ElectricalElements::UpdateSinks(
             }
         }
     }
+
+    //
+    // Clear switch toggle dirtyness
+    //
+
+    mHasSwitchBeenToggledInStep = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -638,9 +644,10 @@ void ElectricalElements::SetSwitchState(
     ElementIndex elementIndex,
     ElectricalState switchState)
 {
+    // Make sure it's a state change
     if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
     {
-        // Update current value
+        // Change current value
         mConductivityBuffer[elementIndex].ConductsElectricity = static_cast<bool>(switchState);
 
         // Update conductive connectivity
@@ -689,6 +696,9 @@ void ElectricalElements::SetSwitchState(
         mGameEventHandler->OnSwitchToggled(
             ElectricalElementId(mShipId, elementIndex),
             switchState);
+
+        // Remember that a switch has been toggled
+        mHasSwitchBeenToggledInStep = true;
     }
 }
 
@@ -747,18 +757,34 @@ void ElectricalElements::RunLampStateMachine(
                 ))
             {
                 //
-                // Start flicker state machine
+                // Turn off
                 //
 
                 mAvailableLightBuffer[elementLampIndex] = 0.f;
 
-                // Transition state, choose whether to A or B
-                lamp.FlickerCounter = 0u;
-                lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerStartInterval;
-                if (GameRandomEngine::GetInstance().Choose(2) == 0)
-                    lamp.State = ElementState::LampState::StateType::FlickerA;
+                // Check whether we need to flicker or just turn off gracefully
+                if (mHasSwitchBeenToggledInStep)
+                {
+                    //
+                    // Turn off gracefully
+                    //
+
+                    lamp.State = ElementState::LampState::StateType::LightOff;
+                }
                 else
-                    lamp.State = ElementState::LampState::StateType::FlickerB;
+                {
+                    //
+                    // Start flicker state machine
+                    //
+
+                    // Transition state, choose whether to A or B
+                    lamp.FlickerCounter = 0u;
+                    lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerStartInterval;
+                    if (GameRandomEngine::GetInstance().Choose(2) == 0)
+                        lamp.State = ElementState::LampState::StateType::FlickerA;
+                    else
+                        lamp.State = ElementState::LampState::StateType::FlickerB;
+                }
             }
 
             break;
@@ -898,6 +924,7 @@ void ElectricalElements::RunLampStateMachine(
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
+                // Notify flicker event, so we play light-on sound
                 mGameEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,
                     mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),

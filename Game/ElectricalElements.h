@@ -243,6 +243,7 @@ public:
         , mLamps()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
+        , mHasSwitchBeenToggledInStep(false)
     {
         mInstanceInfos.reserve(mElementCount);
     }
@@ -570,6 +571,16 @@ private:
     // of pre-calculated coefficients
     float mCurrentLightSpreadAdjustment;
     float mCurrentLuminiscenceAdjustment;
+
+    // Flag indicating whether or not a switch has been toggled
+    // during the current simulation step; cleared at the end
+    // of sinks' update.
+    // Used to distinguish malfunctions from explicit actions.
+    // A bit of a hack, as the sink that gets a power state toggle
+    // won't know for sure if that's because of a switch toggle,
+    // but the real problem is in practice also ambiguous, and
+    // this is good enough.
+    bool mHasSwitchBeenToggledInStep;
 };
 
 }
