@@ -1104,7 +1104,7 @@ Render:
 					+ Sets conductsElectricity
 					+ Then updates ConductingConnectedElectricalElements (see below)
 					+ Then fires OnSwitchToggled(SwitchId, new state) event
-		= ElectricalElements connectivity:
+		+ ElectricalElements connectivity:
 			! Most performing approach is to alter connectivity graph with switch toggles
 			+ mConnectedElectricalElementsBuffer: stays as is, i.e. structural connectivity
 				+ Changes with structural changes only:
@@ -1152,20 +1152,23 @@ Render:
 					+ Keep also count of repaired points
 				+ Generator doesn't get repaired
 				+ Leaking at times doesn't get repaired				
-			= Fix repair problem: springs::Restore adds connected electrical elements, but these are deleted
+			+ Fix repair problem: springs::Restore adds connected electrical elements, but these are deleted
 			  and won't be undeleted unless point is restored
 				+ Where we restore elec connections now: only do for !Deleted electrical elements
 				+ At ElectricalElement::Restore: also here restore (eligible) connections
-		= Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
+		+ Repair: move eligible points' restore flat into radius points
+			+ i.e. not subject to session constraints
+			+ Test before and after
+		+ Water switching: at Ship::<UpdateElectricityPhase>::UpdateAutomaticElectricalConductivity()
 			+ Uses list of elements (which included water-sensing switches) for perf
 				+ mAutomaticSwitches
 			+ If current conductsElectricity==material's && water > high watermark:
 				+ SetSwitchState(!current)
 			+ Else if current conductsElectricity!=material's && water < low watermark:
 				+ SetSwitchState(current)
-			- Test water switching
-				- See why light is always on
-			- Finalize high/low watermarks
+			+ Test water switching
+				+ See why light is always on
+			+ Finalize high/low watermarks
 		+ New game events:
 			+ Ship::cctor invokes ElectricalElements::AnnounceInteractiveElements(GameEventDispatcher &) 
 				+ New IGameHandler: "electrical"
@@ -1293,7 +1296,8 @@ Render:
 
 		= Gfx:
 			+ Do push switch (mechanical)
-			- Do automatic switch (mechanical)
+			- Do automatic switch: grey, blue, grey (disabled)
+			- Do powermonitor: red, green, grey (disabled)
 
 		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
 
@@ -1341,8 +1345,8 @@ Render:
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
 			- Engine (announcement type 2)
-				- Uses own state's IsProducingCurrent as current state
 			- (Instanced)Generator (announcement type 3)
+				- Uses own state's IsProducingCurrent as current state
 		- Destroy/Repair at ElectricalElements::Destroy/Repair:
 			! Make sure announcement follows when generator is restored and becomes powered
 			! Alignment of state::IsProducingCurrent with announced state: it's the same
@@ -1371,9 +1375,9 @@ Render:
 				+ Current non-interactive becomes power monitor
 				+ Also rename pngs
 			= Add power probes to switchboard
-				+ Type 1 (PowerMonitor): current green lamp
-				- Type 2:
-				- Type 3: Volt gauge (also new control)
+				+ Type 1 (PowerMonitor): red/green/grey above
+				- Type 2 (Engine): 
+				- Type 3 (Generator): Volt gauge (also new control)
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)

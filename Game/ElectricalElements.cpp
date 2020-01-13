@@ -36,81 +36,105 @@ void ElectricalElements::Add(
     mConductingConnectedElectricalElementsBuffer.emplace_back(); // Will be populated later
     mAvailableLightBuffer.emplace_back(0.f);
 
+    //
     // Per-type initialization
+    //
+
     switch (electricalMaterial.ElectricalType)
     {
         case ElectricalMaterial::ElectricalElementType::Cable:
         {
+            // State
             mElementStateBuffer.emplace_back(ElementState::CableState());
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            mSources.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::GeneratorState(true));
+
+            // Indices
+            mSources.emplace_back(elementIndex);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
-            mSinks.emplace_back(elementIndex);
-            mLamps.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
                     electricalMaterial.IsSelfPowered,
                     electricalMaterial.WetFailureRate));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+            mLamps.emplace_back(elementIndex);
+
+            // Lighting
+
+            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+                electricalMaterial.LightSpread,
+                mCurrentLightSpreadAdjustment);
+
+            mLampRawDistanceCoefficientBuffer.emplace_back(
+                CalculateLampRawDistanceCoefficient(
+                    electricalMaterial.Luminiscence,
+                    mCurrentLuminiscenceAdjustment,
+                    lampLightSpreadMaxDistance));
+
+            mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         {
-            mSinks.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::OtherSinkState());
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
-            mSinks.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::DummyState());
+
+            // Indices
             mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+
             break;
         }
 
         default:
         {
-            // Nothing to do in these cases
+            // State - dummy
+            mElementStateBuffer.emplace_back(ElementState::DummyState());
+
+            break;
         }
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
     mInstanceInfos.emplace_back(instanceIndex, panelElementMetadata);
-
-    //
-    // Lamp
-    //
-
-    if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial.ElectricalType)
-    {
-        float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-            electricalMaterial.LightSpread,
-            mCurrentLightSpreadAdjustment);
-
-        mLampRawDistanceCoefficientBuffer.emplace_back(
-            CalculateLampRawDistanceCoefficient(
-                electricalMaterial.Luminiscence,
-                mCurrentLuminiscenceAdjustment,
-                lampLightSpreadMaxDistance));
-
-        mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
-    }
 }
 
 
@@ -310,7 +334,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                 // When lower than watermark: conductivity state toggles to same as material's
 
                 float constexpr WaterLowWatermark = 0.15f;
-                float constexpr WaterHighWatermark = 0.3f;
+                float constexpr WaterHighWatermark = 0.45f;
 
                 if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
                     && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)

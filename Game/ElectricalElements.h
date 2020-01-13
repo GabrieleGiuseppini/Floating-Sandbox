@@ -158,11 +158,15 @@ private:
             {}
         };
 
+        struct DummyState
+        {};
+
         CableState Cable;
         GeneratorState Generator;
         LampState Lamp;
         OtherSinkState OtherSink;
         SmokeEmitterState SmokeEmitter;
+        DummyState Dummy;
 
         ElementState(CableState cable)
             : Cable(cable)
@@ -182,6 +186,10 @@ private:
 
         ElementState(SmokeEmitterState smokeEmitter)
             : SmokeEmitter(smokeEmitter)
+        {}
+
+        ElementState(DummyState dummy)
+            : Dummy(dummy)
         {}
     };
 

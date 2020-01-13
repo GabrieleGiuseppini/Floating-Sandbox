@@ -293,9 +293,12 @@ void Ship::RepairAt(
         // Note: if we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
         // the effort put by the main structure's points
+
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
+        if (squareRadius > squareSearchRadius)
+            continue;
+
+        if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
             && (mPoints.GetRepairState(pointIndex).LastAttractedSessionId != sessionId
                  || mPoints.GetRepairState(pointIndex).LastAttractedSessionStepId + 1 < sessionStepId))
         {
@@ -658,21 +661,20 @@ void Ship::RepairAt(
                     }
                 }
             }
+        }
 
+        //
+        // 3) Restore eligible endpoints
+        //
+        // Eligible endpoints are damaged points that now have all of their factory springs and all
+        // of their factory triangles
+        //
 
-            //
-            // 3) Restore eligible endpoints
-            //
-            // Eligible endpoints are damaged points that now have all of their factory springs and all
-            // of their factory triangles
-            //
-
-            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
-                && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles.size()
-                && mPoints.IsDamaged(pointIndex))
-            {
-                mPoints.Restore(pointIndex);
-            }
+        if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
+            && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles.size()
+            && mPoints.IsDamaged(pointIndex))
+        {
+            mPoints.Restore(pointIndex);
         }
     }
 }

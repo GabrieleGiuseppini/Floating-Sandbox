@@ -879,7 +879,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-		LogMessage(worldCoords.toString(), ":");
+		LogMessage("@ ", worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
     }
