@@ -287,21 +287,6 @@
         }
     },
 
-
-    {
-        "color_key": "#FC2020",
-	"conducts_electricity": true,
-        "electrical_type": "OtherSink", 
-        "heat_generated": 50000.0, 
-        "maximum_operating_temperature": 1783.15, 
-        "minimum_operating_temperature": 173.15, 
-        "name": "Heating Element", 
-        "template": {
-            "column": "0|Heating Element", 
-            "row": "7|Heating"
-        }
-    }, 
-
     {
         "color_key": "#804000",
 	"conducts_electricity": true,
@@ -312,8 +297,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch ON",
         "template": {
-            "column": 0,
-            "row": "8|I-TSwitch ON"
+            "column": "0|Toggle Switch ON",
+            "row": "8|Switches"
         }
     }, 
     {
@@ -326,8 +311,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch OFF",
         "template": {
-            "column": 1,
-            "row": "8|I-TSwitch OFF"
+            "column": "1|Toggle Switch OFF",
+            "row": "8|Switches"
         }
     }, 
 
@@ -341,8 +326,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch ON",
         "template": {
-            "column": 2,
-            "row": "8|I-PSwitch ON"
+            "column": "2|Push Switch ON",
+            "row": "8|Switches"
         }
     }, 
     {
@@ -355,8 +340,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch OFF",
         "template": {
-            "column": 3,
-            "row": "8|I-PSwitch OFF"
+            "column": "3|Push Switch OFF",
+            "row": "8|Switches"
         }
     }, 
 
@@ -370,8 +355,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch ON",
         "template": {
-            "column": 4,
-            "row": "8|W-Switch ON"
+            "column": "4|Water Switch ON",
+            "row": "8|Switches"
         }
     }, 
     {
@@ -384,10 +369,24 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch OFF",
         "template": {
-            "column": 5,
-            "row": "8|W-Switch OFF"
+            "column": "5|Water Switch OFF",
+            "row": "8|Switches"
         }
     },
+
+    {
+        "color_key": "#FC2020",
+	"conducts_electricity": true,
+        "electrical_type": "OtherSink", 
+        "heat_generated": 50000.0, 
+        "maximum_operating_temperature": 1783.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heating Element", 
+        "template": {
+            "column": "0|Heating Element", 
+            "row": "9|Misc"
+        }
+    }, 
 
     {
         "color_key": "#209010",
@@ -400,7 +399,7 @@
         "name": "Smoke Emitter", 
 	"particle_emission_rate": 0.05,
         "template": {
-            "column": "0|Smoke Emitter", 
+            "column": "1|Smoke Emitter", 
             "row": "9|Misc"
         }
     }

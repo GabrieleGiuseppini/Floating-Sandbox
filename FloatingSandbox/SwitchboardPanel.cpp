@@ -333,21 +333,21 @@ void SwitchboardPanel::OnGameReset()
     // Hide
     HideFully();
 
-    // Reset all switch controls
-    mSwitchPanel->Destroy();
-    mSwitchPanel = nullptr;
-    mSwitchPanelSizer = nullptr;
-    MakeSwitchPanel();
-
-    // Clear map
-    mElementMap.clear();
-
     // Clear keyboard shortcuts map
     mKeyboardShortcutToElementId.clear();
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 {
+    // Stop refreshing - we'll resume when announcements are over
+    Freeze();
+
+    // Reset all switch controls
+    mSwitchPanel->Destroy();
+    mSwitchPanel = nullptr;
+    mSwitchPanelSizer = nullptr;
+    MakeSwitchPanel();
+
     // Clear map
     mElementMap.clear();
 
@@ -575,6 +575,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Layout and assign keys
     //
 
+    // Prepare elements for layout helper
     std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
     for (auto const it : mElementMap)
     {
@@ -650,9 +651,11 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
+    // Resume refresh
+    Thaw();
+
     // Re-layout from parent
     LayoutParent();
-
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
