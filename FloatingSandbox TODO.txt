@@ -1303,6 +1303,9 @@ Render:
 		- Cleanup:
 			+ Test electrical panel w/all controls bottom-aligned
 			- See how to avoid lights flickering with plain switch off
+				- Hack: each time a switch is toggled to off, ElectricalElements::mHasSwitchBeenToggledToOff is set to true
+				- Use it at lamp state machine
+				- It is set back to false after ElectricalElements::UpdateSinks()
 			- See if can avoid flickering at reload of ship w/circuit
 			- See if can avoid weird position of board at initial load						
 			+ More intuitive pin
