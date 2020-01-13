@@ -1296,8 +1296,8 @@ Render:
 
 		= Gfx:
 			+ Do push switch (mechanical)
-			- Do automatic switch: grey, blue, grey (disabled)
-			- Do powermonitor: red, green, grey (disabled)
+			= Do automatic switch: grey, blue, grey (disabled)
+			= Do powermonitor: red, green, grey (disabled)
 
 		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
 
