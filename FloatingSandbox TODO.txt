@@ -1293,14 +1293,10 @@ Render:
 						+ Move checkbox to top right
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
-		= Gfx:
+		+ Gfx:
 			+ Do push switch (mechanical)
 			+ Do automatic switch: grey, blue, grey (disabled)
-			= Do powermonitor: red, green, grey (disabled)
-				- Blue: more bright
-				- Transparency is broken
-				- Round border is broken
-
+			+ Do powermonitor: red, green, grey (disabled)
 		+ ShipBuilder: do not propagate new materials (switch, etc.) through ropes
 
 		- Cleanup:
