@@ -609,7 +609,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                     it->second.Control,
                     wxGBPosition(y, x + (mSwitchPanelSizer->GetCols() / 2)),
                     wxGBSpan(1, 1),
-                    wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_BOTTOM,
                     8);
 
                 // If interactive, make keyboard shortcut

@@ -542,8 +542,22 @@ void ShipBuilder::AppendRopes(
         vec2f endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
 
         // Get endpoint electrical materials
-        ElectricalMaterial const * startElectricalMaterial = pointInfos1[ropeSegment.PointAIndex1].ElectricalMtl;
-        ElectricalMaterial const * endElectricalMaterial = pointInfos1[ropeSegment.PointBIndex1].ElectricalMtl;
+
+        ElectricalMaterial const * startElectricalMaterial = nullptr;
+        if (auto const pointAElectricalMaterial = pointInfos1[ropeSegment.PointAIndex1].ElectricalMtl;
+            nullptr != pointAElectricalMaterial
+            && (pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
+                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
+                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+            startElectricalMaterial = pointAElectricalMaterial;
+
+        ElectricalMaterial const * endElectricalMaterial = nullptr;
+        if (auto const pointBElectricalMaterial = pointInfos1[ropeSegment.PointBIndex1].ElectricalMtl;
+            nullptr != pointBElectricalMaterial
+            && (pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
+                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
+                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+            endElectricalMaterial = pointBElectricalMaterial;
 
         //
         // "Draw" line from start position to end position

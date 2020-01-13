@@ -2253,14 +2253,12 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // Make non-hull endpoints leak
+    // Damage both endpoints
+    //  - They'll start leaking if they're not hull, among other things
     //
 
-    if (!mPoints.GetMaterialIsHull(pointAIndex))
-        mPoints.SetLeaking(pointAIndex);
-
-    if (!mPoints.GetMaterialIsHull(pointBIndex))
-        mPoints.SetLeaking(pointBIndex);
+    mPoints.Damage(pointAIndex);
+    mPoints.Damage(pointBIndex);
 
 
     //

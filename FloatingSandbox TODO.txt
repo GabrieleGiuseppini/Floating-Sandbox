@@ -1293,17 +1293,18 @@ Render:
 						+ Move checkbox to top right
 		+ SoundController::OnSwitchToggled(., new state)
 			+ {on, off} x {3} sounds
-
-		= Gfx:
+		+ Gfx:
 			+ Do push switch (mechanical)
-			= Do automatic switch: grey, blue, grey (disabled)
-			= Do powermonitor: red, green, grey (disabled)
+			+ Do automatic switch: grey, blue, grey (disabled)
+			+ Do powermonitor: red, green, grey (disabled)
 
-		- ShipBuilder: do not propagate new materials (switch, etc.)through ropes
+		+ ShipBuilder: do not propagate new materials (switch, etc.) through ropes
 
 		- Cleanup:
+			+ Test electrical panel w/all controls bottom-aligned
+			- See how to avoid lights flickering with plain switch off
 			- See if can avoid flickering at reload of ship w/circuit
-			- Test electrical panel w/all controls bottom-aligned
+			- See if can avoid weird position of board at initial load						
 			+ More intuitive pin
 				+ Closer to "Switches" label
 			+ Clear TODOTEST's in SwitchboardPanel
@@ -1320,12 +1321,11 @@ Render:
 				- Add new properties:
 					- conducts_electricity
 					- is_instanced - with warning not to change
-			- Redo electrical materials template			-
 			- Decide whether SwitchboardPanel should be double-buffered or not
-			- Website: add FAQ for heat controls -> Gabe's blog
+			- Website: add FAQ for heat settings -> Gabe's blog
 		- Run in Debug
 			- Test panel across loading ships
-			- Test electrical repair
+			+ Test electrical repair
 		- Merge into trunk
 
 	= Power probe:
@@ -1336,26 +1336,30 @@ Render:
 			+ Add Switch types:
 				! ToggleSwitch
 				+ PushSwitch
-			+ Add PowerProbe types: 1, 2, and 3 below
+			- Add PowerProbe types: PowerMonitor and Generator
 		+ EventHandler:
 			+ Add power monitor events
 		- New Instanced Generator electrical material
 			- Add to json, new generator altogether, other is !IsInstanced
 			- ElectricalElements::Add: add both to sources, treat both of them equally
+		- New PowerMonitor electrical material - and type
+			- Add to json
+			- ElectricalElements::Add: add to sinks
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
-			- Engine (announcement type 2)
-			- (Instanced)Generator (announcement type 3)
+			- (Instanced)Generator (announcement type 2)
 				- Uses own state's IsProducingCurrent as current state
 		- Destroy/Repair at ElectricalElements::Destroy/Repair:
 			! Make sure announcement follows when generator is restored and becomes powered
 			! Alignment of state::IsProducingCurrent with announced state: it's the same
 			- At Destroy:
-				- If IsProducingCurrent:
+				- Generator: if IsProducingCurrent:
 					- Toggle to false and announce
+				- PowerMonitor: TODO
 			- At Restore:
-				! Nothing to do: at the next UpdateSources() the generator will start 
+				! Generator: nothing to do: at the next UpdateSources() the generator will start 
 				  producing current again and it will announce it
+				- PowerMonitor: TODO
 		- Simulation of PowerMonitor:
 			- Make it a sink
 			- Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
@@ -1368,16 +1372,14 @@ Render:
 				+ InteractivePushSwitchElectricalElementControl
 				+ AutomaticSwitchElectricalElementControl
 				+ PowerMonitorElectricalElementControl
-		- Add two materials to electrical elements json
 		- Switchboard:
 			+ Register for power probe events
 			+ Swap bitmaps: 
 				+ Current non-interactive becomes power monitor
 				+ Also rename pngs
 			= Add power probes to switchboard
-				+ Type 1 (PowerMonitor): red/green/grey above
-				- Type 2 (Engine): 
-				- Type 3 (Generator): Volt gauge (also new control)
+				- Type 1 (PowerMonitor): red/green/grey above
+				- Type 2 (Generator): Volt gauge (also new control)
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)

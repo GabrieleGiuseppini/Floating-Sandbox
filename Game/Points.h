@@ -1050,12 +1050,20 @@ public:
         return mIsLeakingBuffer[pointElementIndex];
     }
 
-    void SetLeaking(ElementIndex pointElementIndex)
+    void Damage(ElementIndex pointElementIndex)
     {
-        mIsLeakingBuffer[pointElementIndex] = true;
+        if (!mMaterialIsHullBuffer[pointElementIndex])
+        {
+            //
+            // Start leaking
+            //
 
-        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
-        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+            // Set as leaking
+            mIsLeakingBuffer[pointElementIndex] = true;
+
+            // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
+            mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+        }
 
         // Check if it's the first time we get damaged
         if (!mIsDamagedBuffer[pointElementIndex])
@@ -1445,6 +1453,14 @@ private:
         return GameRandomEngine::GetInstance().GenerateUniformReal(
             0.0f,
             cumulatedIntakenWaterThresholdForAirBubbles);
+    }
+
+    inline void SetLeaking(ElementIndex pointElementIndex)
+    {
+        mIsLeakingBuffer[pointElementIndex] = true;
+
+        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
+        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
     }
 
     ElementIndex FindFreeEphemeralParticle(
