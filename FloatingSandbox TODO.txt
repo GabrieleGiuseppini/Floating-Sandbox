@@ -1296,13 +1296,14 @@ Render:
 		+ Gfx:
 			+ Do push switch (mechanical)
 			+ Do automatic switch: grey, blue, grey (disabled)
+				+ Darker blue, but brighter
 			+ Do powermonitor: red, green, grey (disabled)
 		+ ShipBuilder: do not propagate new materials (switch, etc.) through ropes
 
 		- Cleanup:
 			+ Test electrical panel w/all controls bottom-aligned
 			- See how to avoid lights flickering with plain switch off
-				- Hack: each time a switch is toggled to off, ElectricalElements::mHasSwitchBeenToggledToOff is set to true
+				- Hack: each time a switch is toggled, ElectricalElements::mHasSwitchBeenToggledInStep is set to true
 				- Use it at lamp state machine
 				- It is set back to false after ElectricalElements::UpdateSinks()
 			+ See if can avoid flickering at reload of ship w/circuit
