@@ -187,8 +187,8 @@ MainFrame::MainFrame(
 
     mMainFrameSizer->Add(
         mMainGLCanvas.get(),
-        1,                  // Proportion
-        wxALL | wxEXPAND,   // Flags
+        1,                  // Occupy all available vertical space
+        wxEXPAND,           // Expand also horizontally
         0);                 // Border
 
     // Take context for this canvas
@@ -505,7 +505,7 @@ MainFrame::MainFrame(
 
     mProbePanel = std::make_unique<ProbePanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND); // Expand horizontally
 
     mMainFrameSizer->Hide(mProbePanel.get());
 
@@ -517,7 +517,7 @@ MainFrame::MainFrame(
 
     mEventTickerPanel = std::make_unique<EventTickerPanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND); // Expand horizontally
 
     mMainFrameSizer->Hide(mEventTickerPanel.get());
 
@@ -632,9 +632,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController,
         *mResourceLoader);
 
-    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
 
-    mMainPanel->Layout();
+    mMainFrameSizer->Layout();
 
 
     //

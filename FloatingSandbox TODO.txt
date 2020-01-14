@@ -1443,13 +1443,21 @@ Render:
 
 
 	- Propulsion
+		! Requires "Forces Rearc" or "Position-based Springs"
 		- 1 new ElectricalElementType: Engine
 		- 2 electrical materials: engine x {LR/UD}
+			- Need a new engine-specific electrical material property: engine_direction
 		- 1 new ElectricalElementType: EngineControl
 		- 1 electrical material
 		- EngineControl (telegraph) controls all connected, value={-1.0,...,+1.0}
+			- Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
+			  material
 		- EngineControl announces EngineControl
 		- Engine announces PowerMonitor
+			- To be decided, really
+		- UpdateSinks: 
+			- EngineControl: TODOHERE
+			- Engine: TODOHERE
 		- TODOOLD:
 		- New electrical element - engine
 			- Publicized like switch, and switchboard shows slider
@@ -1458,8 +1466,17 @@ Render:
 		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
 			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
 				- And smarter zeroing of Mechanical
-				- OR: requires position-based springs
+			- OR: requires position-based springs
 			- Or can we piggyback on the "non-spring" force buffer that we talk about at "force rearc" above?
+		- TODOOLD:
+		- Since engine will be adding forces, which are zeroed before mechanical dynamics:
+			- Test moving electricals before mechanical dynamics
+				- Forces need to be zeroed out before electricals, then
+				- Move out zeroing from mechanical dynamics
+				- Test:
+					- Pay attention to lights:
+						- At beginning of game
+						- Delay of one step w/breakages
 
 	- Logic Gates
 		- New ElectricalMaterial type
