@@ -527,7 +527,7 @@ MainFrame::MainFrame(
     // Finalize frame
     //
 
-    mMainPanel->SetSizerAndFit(mMainFrameSizer);
+    mMainPanel->SetSizer(mMainFrameSizer);
 
 
 
@@ -633,8 +633,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mResourceLoader);
 
     mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
-
-    mMainFrameSizer->Layout();
 
 
     //
@@ -1070,6 +1068,8 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
+    LogMessage("OnMainGLCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
+
     if (!!mGameController
         && event.GetSize().GetX() > 0
         && event.GetSize().GetY() > 0)
