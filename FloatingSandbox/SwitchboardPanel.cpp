@@ -52,7 +52,7 @@ SwitchboardPanel::SwitchboardPanel(
     , mKeyboardShortcutToElementId()
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
-    , mUiPreferencesManager(std::move(uiPreferencesManager))
+    , mUIPreferencesManager(std::move(uiPreferencesManager))
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
@@ -188,98 +188,6 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-void SwitchboardPanel::HideFully()
-{
-    ShowDockCheckbox(false);
-    InstallMouseTracking(false);
-
-    // Hide hint panel
-    mMainVSizer2->Hide(mHintPanel);
-
-    // Hide switch panel
-    mMainVSizer2->Hide(mSwitchPanel);
-
-    // Transition state
-    mShowingMode = ShowingMode::NotShowing;
-
-    // Re-layout from parent
-    LayoutParent();
-}
-
-void SwitchboardPanel::ShowPartially()
-{
-    if (mShowingMode == ShowingMode::NotShowing)
-    {
-        InstallMouseTracking(true);
-    }
-    else if (mShowingMode == ShowingMode::ShowingFullyFloating)
-    {
-        ShowDockCheckbox(false);
-    }
-
-    // Show hint panel
-    mMainVSizer2->Show(mHintPanel);
-
-    // Hide switch panel
-    mMainVSizer2->Hide(mSwitchPanel);
-
-    // Transition state
-    mShowingMode = ShowingMode::ShowingHint;
-
-    // Re-layout from parent
-    LayoutParent();
-}
-
-void SwitchboardPanel::ShowFullyFloating()
-{
-    if (mShowingMode == ShowingMode::ShowingHint)
-    {
-        mDockCheckbox->SetChecked(false);
-        ShowDockCheckbox(true);
-    }
-    else if (mShowingMode == ShowingMode::ShowingFullyDocked)
-    {
-        InstallMouseTracking(true);
-    }
-
-    // Show hint panel
-    mMainVSizer2->Show(mHintPanel);
-
-    // Show switch panel
-    mMainVSizer2->Show(mSwitchPanel);
-
-    // Transition state
-    mShowingMode = ShowingMode::ShowingFullyFloating;
-
-    // Re-layout from parent
-    LayoutParent();
-}
-
-void SwitchboardPanel::ShowFullyDocked()
-{
-    if (mShowingMode == ShowingMode::ShowingFullyFloating)
-    {
-        InstallMouseTracking(false);
-    }
-    else if (mShowingMode == ShowingMode::NotShowing)
-    {
-        mDockCheckbox->SetChecked(true);
-        ShowDockCheckbox(true);
-    }
-
-    // Show hint panel
-    mMainVSizer2->Show(mHintPanel);
-
-    // Show switch panel
-    mMainVSizer2->Show(mSwitchPanel);
-
-    // Transition state
-    mShowingMode = ShowingMode::ShowingFullyDocked;
-
-    // Re-layout from parent
-    LayoutParent();
-}
-
 bool SwitchboardPanel::OnKeyboardShortcut(
     int keyCode,
     int keyModifier)
@@ -335,15 +243,6 @@ bool SwitchboardPanel::OnKeyboardShortcut(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
-
-void SwitchboardPanel::OnGameReset()
-{
-    // Hide
-    HideFully();
-
-    // Clear keyboard shortcuts map
-    mKeyboardShortcutToElementId.clear();
-}
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 {
@@ -659,6 +558,42 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Ask sizer to resize panel accordingly
     mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
 
+    //
+    // Decide panel visibility
+    //
+
+    if (mElementMap.empty())
+    {
+        // No elements
+
+        // TODOTEST
+        LogMessage("TODOHERE: NoElements - HideFully");
+
+        // Hide
+        HideFully();
+    }
+    else
+    {
+        // We have elements
+
+        // TODOHERE
+
+        if (mUIPreferencesManager->GetAutoShowSwitchboard())
+        {
+            // TODOTEST
+            LogMessage("TODOHERE: Elements - YesAutoShow");
+
+            ShowFullyDocked();
+        }
+        else
+        {
+            // TODOTEST
+            LogMessage("TODOHERE: Elements - NoAutoShow");
+
+            ShowPartially();
+        }
+    }
+
     // Resume refresh
     Thaw();
 
@@ -718,12 +653,87 @@ void SwitchboardPanel::MakeSwitchPanel()
     mMainVSizer2->Add(mSwitchPanel, 0, wxALIGN_CENTER_HORIZONTAL); // We want it as wide and as tall as it is
 }
 
+void SwitchboardPanel::HideFully()
+{
+    // Hide hint panel
+    mMainVSizer2->Hide(mHintPanel);
+    ShowDockCheckbox(false);
+    InstallMouseTracking(false);
+
+    // Hide switch panel
+    mMainVSizer2->Hide(mSwitchPanel);
+
+    // Transition state
+    mShowingMode = ShowingMode::NotShowing;
+}
+
+void SwitchboardPanel::ShowPartially()
+{
+    // Show hint panel
+    InstallMouseTracking(true);
+    ShowDockCheckbox(false);
+    mMainVSizer2->Show(mHintPanel);
+
+    // Hide switch panel
+    mMainVSizer2->Hide(mSwitchPanel);
+
+    // Transition state
+    mShowingMode = ShowingMode::ShowingHint;
+}
+
+void SwitchboardPanel::ShowFullyFloating()
+{
+    // Show hint panel
+    if (mDockCheckbox->IsChecked())
+        mDockCheckbox->SetChecked(false);
+    ShowDockCheckbox(true);
+    InstallMouseTracking(true);
+    mMainVSizer2->Show(mHintPanel);
+
+    // Show switch panel
+    mMainVSizer2->Show(mSwitchPanel);
+
+    // Transition state
+    mShowingMode = ShowingMode::ShowingFullyFloating;
+}
+
+void SwitchboardPanel::ShowFullyDocked()
+{
+    // Show hint panel
+    if (!mDockCheckbox->IsChecked())
+        mDockCheckbox->SetChecked(true);
+    ShowDockCheckbox(true);
+    InstallMouseTracking(false);
+    mMainVSizer2->Show(mHintPanel);
+
+    // Show switch panel
+    mMainVSizer2->Show(mSwitchPanel);
+
+    // Transition state
+    mShowingMode = ShowingMode::ShowingFullyDocked;
+}
+
 void SwitchboardPanel::ShowDockCheckbox(bool doShow)
 {
+    LogMessage("SwitchboardPanel::ShowDockCheckbox: ", doShow);
+
     assert(!!mMainHSizer1);
     assert(mMainHSizer1->GetItemCount() == 3);
-    mMainHSizer1->Show(size_t(0), doShow);
-    mMainHSizer1->Show(size_t(2), doShow);
+
+    if (doShow)
+    {
+        if (!mMainHSizer1->IsShown(size_t(0)))
+            mMainHSizer1->Show(size_t(0), true);
+        if (!mMainHSizer1->IsShown(size_t(2)))
+            mMainHSizer1->Show(size_t(2), true);
+    }
+    else
+    {
+        if (mMainHSizer1->IsShown(size_t(0)))
+            mMainHSizer1->Show(size_t(0), false);
+        if (mMainHSizer1->IsShown(size_t(2)))
+            mMainHSizer1->Show(size_t(2), false);
+    }
 }
 
 void SwitchboardPanel::InstallMouseTracking(bool isActive)
@@ -732,11 +742,11 @@ void SwitchboardPanel::InstallMouseTracking(bool isActive)
 
     assert(!!mLeaveWindowTimer);
 
-    if (isActive)
+    if (isActive && !mLeaveWindowTimer->IsRunning())
     {
         mLeaveWindowTimer->Start(500, false);
     }
-    else
+    else if (!isActive && mLeaveWindowTimer->IsRunning())
     {
         mLeaveWindowTimer->Stop();
     }
@@ -758,7 +768,9 @@ void SwitchboardPanel::OnLeaveWindowTimer(wxTimerEvent & /*event*/)
 
 void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 {
-    if (event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyFloating)
+    // TODOTEST
+    //if (event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyFloating)
+    if (event.IsChecked())
     {
         //
         // Dock
@@ -766,9 +778,15 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 
         ShowFullyDocked();
 
+        // Re-layout from parent
+        LayoutParent();
+
+        // Play sound
         mSoundController->PlayElectricalPanelDockSound(false);
     }
-    else if (!event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyDocked)
+    // TODOTEST
+    //else if (!event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyDocked)
+    else
     {
         //
         // Undock
@@ -776,6 +794,10 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 
         ShowFullyFloating();
 
+        // Re-layout from parent
+        LayoutParent();
+
+        // Play sound
         mSoundController->PlayElectricalPanelDockSound(true);
     }
 }
@@ -785,6 +807,9 @@ void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
     if (mShowingMode == ShowingMode::ShowingHint)
     {
         ShowFullyFloating();
+
+        // Re-layout from parent
+        LayoutParent();
     }
 }
 
@@ -793,5 +818,8 @@ void SwitchboardPanel::OnLeaveWindow()
     if (mShowingMode == ShowingMode::ShowingFullyFloating)
     {
         ShowPartially();
+
+        // Re-layout from parent
+        LayoutParent();
     }
 }

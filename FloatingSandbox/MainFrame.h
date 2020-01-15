@@ -45,7 +45,6 @@ class MainFrame
     : public wxFrame
     , public ILifecycleGameEventHandler
 	, public IAtmosphereGameEventHandler
-    , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -207,7 +206,6 @@ private:
     {
         gameController.RegisterLifecycleEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
-        gameController.RegisterElectricalElementEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -241,28 +239,6 @@ private:
 	{
 		mTriggerStormMenuItem->Enable(true);
 	}
-
-    virtual void OnElectricalElementAnnouncementsBegin() override
-    {
-        //
-        // Show switchboard if required
-        //
-
-        assert(!!mElectricalPanel);
-        assert(!!mUIPreferencesManager);
-
-        if (!mElectricalPanel->IsShowing())
-        {
-            if (mUIPreferencesManager->GetAutoShowSwitchboard())
-            {
-                mElectricalPanel->ShowFullyDocked();
-            }
-            else
-            {
-                mElectricalPanel->ShowPartially();
-            }
-        }
-    }
 
     virtual void OnBombPlaced(
         BombId /*bombId*/,

@@ -140,17 +140,7 @@ void ElectricalElements::Add(
 
 void ElectricalElements::AnnounceInstancedElements()
 {
-    bool hasAnnounced = false;
-
-    auto const prolog =
-        [this, &hasAnnounced]()
-        {
-            if (!hasAnnounced)
-            {
-                mGameEventHandler->OnElectricalElementAnnouncementsBegin();
-                hasAnnounced = true;
-            }
-        };
+    mGameEventHandler->OnElectricalElementAnnouncementsBegin();
 
     for (auto elementIndex : *this)
     {
@@ -160,8 +150,6 @@ void ElectricalElements::AnnounceInstancedElements()
         {
             case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
             {
-                prolog();
-
                 mGameEventHandler->OnSwitchCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
@@ -174,8 +162,6 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
             {
-                prolog();
-
                 mGameEventHandler->OnSwitchCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
@@ -188,8 +174,6 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::PowerMonitor:
             {
-                prolog();
-
                 mGameEventHandler->OnPowerProbeCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
@@ -202,8 +186,6 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
-                prolog();
-
                 mGameEventHandler->OnSwitchCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
@@ -216,10 +198,7 @@ void ElectricalElements::AnnounceInstancedElements()
         }
     }
 
-    if (hasAnnounced)
-    {
-        mGameEventHandler->OnElectricalElementAnnouncementsEnd();
-    }
+    mGameEventHandler->OnElectricalElementAnnouncementsEnd();
 }
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)

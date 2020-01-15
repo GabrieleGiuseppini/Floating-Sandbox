@@ -44,19 +44,6 @@ public:
 
     virtual ~SwitchboardPanel();
 
-    bool IsShowing() const
-    {
-        return mShowingMode != ShowingMode::NotShowing;
-    }
-
-    void HideFully();
-
-    void ShowPartially();
-
-    void ShowFullyFloating();
-
-    void ShowFullyDocked();
-
     bool OnKeyboardShortcut(
         int keyCode,
         int keyModifier);
@@ -72,8 +59,6 @@ public:
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterElectricalElementEventHandler(this);
     }
-
-    virtual void OnGameReset() override;
 
     virtual void OnElectricalElementAnnouncementsBegin() override;
 
@@ -117,6 +102,19 @@ private:
         ResourceLoader & resourceLoader);
 
     void MakeSwitchPanel();
+
+    bool IsShowing() const
+    {
+        return mShowingMode != ShowingMode::NotShowing;
+    }
+
+    void HideFully();
+
+    void ShowPartially();
+
+    void ShowFullyFloating();
+
+    void ShowFullyDocked();
 
     void ShowDockCheckbox(bool doShow);
 
@@ -187,7 +185,7 @@ private:
 
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
-    std::shared_ptr<UIPreferencesManager> const mUiPreferencesManager;
+    std::shared_ptr<UIPreferencesManager> const mUIPreferencesManager;
 
     wxWindow * const mParentLayoutWindow;
     wxSizer * const mParentLayoutSizer;
