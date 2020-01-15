@@ -427,8 +427,9 @@ Render:
 		+ Switches
 		+ Slicer sound is not controller by Tools Volume
 			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
+		+ Try transmogrifying all textures
 
-		- Try transmogrifying all textures
+		- See keyboard shortcut for push switch
 
 		- See if fire may emit Heavy smoke
 
