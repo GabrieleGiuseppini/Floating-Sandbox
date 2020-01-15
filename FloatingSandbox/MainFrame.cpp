@@ -622,20 +622,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create electrical panel
-    //
-
-    mElectricalPanel = SwitchboardPanel::Create(
-        mMainPanel,
-        mMainPanel,
-        mMainFrameSizer,
-        mGameController,
-        *mResourceLoader);
-
-    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
-
-
-    //
     // Create Sound controller
     //
 
@@ -713,6 +699,21 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 	ReconcileWithUIPreferences();
 
+
+    //
+    // Create electrical panel
+    //
+
+    mElectricalPanel = SwitchboardPanel::Create(
+        mMainPanel,
+        mMainPanel,
+        mMainFrameSizer,
+        mGameController,
+        mSoundController,
+        mUIPreferencesManager,
+        *mResourceLoader);
+
+    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
 
 
     //

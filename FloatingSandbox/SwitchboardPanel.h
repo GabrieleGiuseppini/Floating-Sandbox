@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SoundController.h"
+#include "UIPreferencesManager.h"
+
 #include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ElectricalElementControl.h>
 
@@ -35,6 +38,8 @@ public:
         wxWindow * parentLayoutWindow,
         wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         ResourceLoader & resourceLoader);
 
     virtual ~SwitchboardPanel();
@@ -107,6 +112,8 @@ private:
         wxWindow * parentLayoutWindow,
         wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         ResourceLoader & resourceLoader);
 
     void MakeSwitchPanel();
@@ -179,6 +186,8 @@ private:
 private:
 
     std::shared_ptr<IGameController> const mGameController;
+    std::shared_ptr<SoundController> const mSoundController;
+    std::shared_ptr<UIPreferencesManager> const mUiPreferencesManager;
 
     wxWindow * const mParentLayoutWindow;
     wxSizer * const mParentLayoutSizer;

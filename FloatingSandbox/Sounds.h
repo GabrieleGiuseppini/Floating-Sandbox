@@ -47,6 +47,8 @@ enum class SoundType
     LightFlicker,
     InteractiveSwitchOn,
     InteractiveSwitchOff,
+    ElectricalPanelDock,
+    ElectricalPanelUndock,
     WaterRush,
     WaterSplash,
     Wave,

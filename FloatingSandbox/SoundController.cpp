@@ -419,7 +419,9 @@ SoundController::SoundController(
                 || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub
                 || soundType == SoundType::InteractiveSwitchOn
-                || soundType == SoundType::InteractiveSwitchOff)
+                || soundType == SoundType::InteractiveSwitchOff
+                || soundType == SoundType::ElectricalPanelDock
+                || soundType == SoundType::ElectricalPanelUndock)
         {
             //
             // - one-shot sound
@@ -901,6 +903,14 @@ void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Snapshot,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayElectricalPanelDockSound(bool isUndock)
+{
+    PlayOneShotMultipleChoiceSound(
+        isUndock ? SoundType::ElectricalPanelUndock : SoundType::ElectricalPanelDock,
         100.0f,
         true);
 }

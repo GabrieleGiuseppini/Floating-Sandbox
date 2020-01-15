@@ -22,6 +22,8 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parentLayoutWindow,
     wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
     ResourceLoader & resourceLoader)
 {
     return std::unique_ptr<SwitchboardPanel>(
@@ -29,7 +31,9 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
             parent,
             parentLayoutWindow,
             parentLayoutSizer,
-            gameController,
+            std::move(gameController),
+            std::move(soundController),
+            std::move(uiPreferencesManager),
             resourceLoader));
 }
 
@@ -38,13 +42,17 @@ SwitchboardPanel::SwitchboardPanel(
     wxWindow * parentLayoutWindow,
     wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
     ResourceLoader & resourceLoader)
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
     //
     , mElementMap()
     , mKeyboardShortcutToElementId()
-    , mGameController(gameController)
+    , mGameController(std::move(gameController))
+    , mSoundController(std::move(soundController))
+    , mUiPreferencesManager(std::move(uiPreferencesManager))
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
@@ -752,11 +760,23 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 {
     if (event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyFloating)
     {
+        //
+        // Dock
+        //
+
         ShowFullyDocked();
+
+        mSoundController->PlayElectricalPanelDockSound(false);
     }
     else if (!event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyDocked)
     {
+        //
+        // Undock
+        //
+
         ShowFullyFloating();
+
+        mSoundController->PlayElectricalPanelDockSound(true);
     }
 }
 

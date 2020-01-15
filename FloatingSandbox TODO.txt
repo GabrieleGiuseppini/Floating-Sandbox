@@ -1310,6 +1310,7 @@ Render:
 			= See if can avoid weird position of board at initial load						
 				- It's really about initial size of whole frame - see to maximize it earlier
 					- MainFrame.cpp:530: mMainPanel->SetSizer[---AndFit---](mMainFrameSizer);
+			+ Docking sounds
 			+ More intuitive pin
 				+ Closer to "Switches" label
 			+ Clear TODOTEST's in SwitchboardPanel
