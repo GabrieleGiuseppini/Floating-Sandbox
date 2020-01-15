@@ -733,7 +733,7 @@ void SwitchboardPanel::InstallMouseTracking(bool isActive)
 
     if (isActive && !mLeaveWindowTimer->IsRunning())
     {
-        mLeaveWindowTimer->Start(500, false);
+        mLeaveWindowTimer->Start(750, false);
     }
     else if (!isActive && mLeaveWindowTimer->IsRunning())
     {
@@ -791,10 +791,17 @@ void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
 {
     if (mShowingMode == ShowingMode::ShowingHint)
     {
+        //
+        // Open the panel
+        //
+
         ShowFullyFloating();
 
         // Re-layout from parent
         LayoutParent();
+
+        // Play sound
+        mSoundController->PlayElectricalPanelOpenSound(false);
     }
 }
 
@@ -802,9 +809,16 @@ void SwitchboardPanel::OnLeaveWindow()
 {
     if (mShowingMode == ShowingMode::ShowingFullyFloating)
     {
+        //
+        // Lower the panel
+        //
+
         ShowPartially();
 
         // Re-layout from parent
         LayoutParent();
+
+        // Play sound
+        mSoundController->PlayElectricalPanelOpenSound(true);
     }
 }

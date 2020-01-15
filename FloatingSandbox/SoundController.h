@@ -141,6 +141,8 @@ public:
 
     void PlaySnapshotSound();
 
+    void PlayElectricalPanelOpenSound(bool isClose);
+
     void PlayElectricalPanelDockSound(bool isUndock);
 
     //

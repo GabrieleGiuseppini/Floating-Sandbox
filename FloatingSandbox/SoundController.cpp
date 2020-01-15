@@ -420,6 +420,8 @@ SoundController::SoundController(
                 || soundType == SoundType::Scrub
                 || soundType == SoundType::InteractiveSwitchOn
                 || soundType == SoundType::InteractiveSwitchOff
+                || soundType == SoundType::ElectricalPanelClose
+                || soundType == SoundType::ElectricalPanelOpen
                 || soundType == SoundType::ElectricalPanelDock
                 || soundType == SoundType::ElectricalPanelUndock)
         {
@@ -903,6 +905,14 @@ void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Snapshot,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayElectricalPanelOpenSound(bool isClose)
+{
+    PlayOneShotMultipleChoiceSound(
+        isClose ? SoundType::ElectricalPanelClose: SoundType::ElectricalPanelOpen,
         100.0f,
         true);
 }
