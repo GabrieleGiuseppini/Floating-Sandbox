@@ -425,10 +425,10 @@ Render:
 		+ Send for testing
 		+ Bump up version
 		+ Switches
+		+ Slicer sound is not controller by Tools Volume
+			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
 
 		- Try transmogrifying all textures
-
-		- Slicer sound is not controller by Tools Volume
 
 		- See if fire may emit Heavy smoke
 
@@ -935,6 +935,8 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:
+
+	- Lightning tool that summons lightning wherever it has been clicked
 
 	- Consider making world 1.5 times wider
 

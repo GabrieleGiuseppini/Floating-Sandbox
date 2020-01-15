@@ -15,6 +15,7 @@
 - Repairing a ship's structure now also repairs its electricals
 - Adjusted physical properties of ropes, which were too light and too strong
 - 11 new ships
+- ...and a few more small improvements here and there
 
 1.13.0.7
 - Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings
