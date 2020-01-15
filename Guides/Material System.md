@@ -115,12 +115,17 @@ Here's an explanation of the elements:
 - _name_: the name of the material, only useful to humans.
 - _template_: coordinates of the material in the automatically-generated materials template.
 - _color key_: the RGB colour to use in the structural or electrical image to tell the game which electrical characteristics to use for the vertex.
+- _conducts electricity_: whether by default allows current to flow through the material. Used by switches to indicate whether they are "on" or "off" by default.
 - _electrical type_: the type of electrical behaviour of points and springs of this material. Valid values are:
-   - "Generator": propagates an electrical current through all connected cables.
+   - "Generator": injects an electrical current into all connected cables.
    - "Cable": propagates an electrical current through its endpoints.
+   - "InteractivePushSwitch": a switch that may be controlled via the electrical panel. The switch returns to its rest position when released.
+   - "InteractiveToggleSwitch": a switch that may be controlled via the electrical panel. The switch can be toggled on and off.
    - "Lamp": emits light.
    - "OtherSink": just heats while operating.
+   - "PowerMonitor": displays a light on the electrical panel when current flows through it.
    - "SmokeEmitter": emits smoke - ideal for funnels and engine exhaust pipes.
+   - "WaterSensingSwitch": a switch that toggles automatically when wet.
 - _heat generated_: the amount of heat generated when functioning, in KJ/s.
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
 - _luminiscence_: the amount of light emitted by a lamp; between 0.0 and 1.0.
