@@ -566,9 +566,6 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     {
         // No elements
 
-        // TODOTEST
-        LogMessage("TODOHERE: NoElements - HideFully");
-
         // Hide
         HideFully();
     }
@@ -576,20 +573,12 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     {
         // We have elements
 
-        // TODOHERE
-
         if (mUIPreferencesManager->GetAutoShowSwitchboard())
         {
-            // TODOTEST
-            LogMessage("TODOHERE: Elements - YesAutoShow");
-
             ShowFullyDocked();
         }
         else
         {
-            // TODOTEST
-            LogMessage("TODOHERE: Elements - NoAutoShow");
-
             ShowPartially();
         }
     }
@@ -768,8 +757,6 @@ void SwitchboardPanel::OnLeaveWindowTimer(wxTimerEvent & /*event*/)
 
 void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
 {
-    // TODOTEST
-    //if (event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyFloating)
     if (event.IsChecked())
     {
         //
@@ -784,8 +771,6 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         // Play sound
         mSoundController->PlayElectricalPanelDockSound(false);
     }
-    // TODOTEST
-    //else if (!event.IsChecked() && mShowingMode == ShowingMode::ShowingFullyDocked)
     else
     {
         //
