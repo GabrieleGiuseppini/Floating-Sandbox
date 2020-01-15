@@ -258,6 +258,8 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
         shipDefinitionFilepath,
         shipId);
 
+    mWorld->Announce();
+
     return shipMetadata;
 }
 
@@ -286,6 +288,8 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         std::move(shipDefinition),
         shipDefinitionFilepath,
         shipId);
+
+    mWorld->Announce();
 
     return shipMetadata;
 }
@@ -325,6 +329,8 @@ void GameController::ReloadLastShip()
         std::move(shipDefinition),
         mLastShipLoadedFilepath,
         shipId);
+
+    mWorld->Announce();
 }
 
 RgbImageData GameController::TakeScreenshot()
@@ -1023,6 +1029,14 @@ void GameController::TriggerLightning()
 {
 	assert(!!mWorld);
 	mWorld->TriggerLightning();
+}
+
+void GameController::SetSwitchState(
+    ElectricalElementId electricalElementId,
+    ElectricalState switchState)
+{
+    assert(!!mWorld);
+    mWorld->SetSwitchState(electricalElementId, switchState);
 }
 
 //

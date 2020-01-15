@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -200,7 +201,6 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         leakingPointsCount);
 
 
-
     //
     // Optimize order of PointInfo's and SpringInfo's to minimize cache misses
     //
@@ -240,17 +240,18 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ////LogMessage("Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
 
 
-
     //
     // Visit all PointInfo's and create Points, i.e. the entire set of points
     //
 
-    Points points = CreatePoints(
+    std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices;
+    Physics::Points points = CreatePoints(
         pointInfos2,
         parentWorld,
         materialDatabase,
         gameEventDispatcher,
-        gameParameters);
+        gameParameters,
+        electricalElementInstanceIndices);
 
 
     //
@@ -302,6 +303,9 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
+        electricalElementInstanceIndices,
+        shipDefinition.Metadata.ElectricalPanelMetadata,
+        shipId,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
@@ -427,12 +431,16 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
         for (int y = 0; y < height; ++y)
         {
             // Get color
-            MaterialDatabase::ColorKey colorKey = layerImage.Data[x + (height - y - 1) * width];
+            MaterialDatabase::ColorKey const & colorKey = layerImage.Data[x + (height - y - 1) * width];
 
             // Check if it's an electrical material
-            ElectricalMaterial const * electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
+            ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
             if (nullptr == electricalMaterial)
             {
+                //
+                // Not an electrical material
+                //
+
                 if (isDedicatedElectricalLayer
                     && colorKey != BackgroundColorKey)
                 {
@@ -443,11 +451,17 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                         + (isDedicatedElectricalLayer ? "electrical" : "structural")
                         + " layer image");
                 }
-
-                // Just ignore
+                else
+                {
+                    // Just ignore
+                }
             }
             else
             {
+                //
+                // Electrical material found on this particle
+                //
+
                 // Make sure we have a structural point here
                 if (!pointIndexMatrix[x + 1][y + 1])
                 {
@@ -461,6 +475,36 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 auto const pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
                 assert(nullptr == pointInfos1[pointIndex].ElectricalMtl);
                 pointInfos1[pointIndex].ElectricalMtl = electricalMaterial;
+
+                // Store instance index, if material requires one
+                if (electricalMaterial->IsInstanced)
+                {
+                    pointInfos1[pointIndex].ElectricalElementInstanceIndex = MaterialDatabase::GetElectricalElementInstanceIndex(colorKey);
+                }
+                else
+                {
+                    assert(pointInfos1[pointIndex].ElectricalElementInstanceIndex == NoneElectricalElementInstanceIndex);
+                }
+            }
+        }
+    }
+
+    //
+    // Check for duplicate electrical element instance indices
+    //
+
+    std::set<ElectricalElementInstanceIndex> seenInstanceIndices;
+    for (auto const & pi : pointInfos1)
+    {
+        if (nullptr != pi.ElectricalMtl
+            && pi.ElectricalMtl->IsInstanced)
+        {
+            if (!seenInstanceIndices.insert(pi.ElectricalElementInstanceIndex).second)
+            {
+                throw GameException(
+                    std::string("Found more that one electrical element with index \"")
+                    + std::to_string(pi.ElectricalElementInstanceIndex)
+                    + "\" in electrical layer image");
             }
         }
     }
@@ -498,8 +542,22 @@ void ShipBuilder::AppendRopes(
         vec2f endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
 
         // Get endpoint electrical materials
-        ElectricalMaterial const * startElectricalMaterial = pointInfos1[ropeSegment.PointAIndex1].ElectricalMtl;
-        ElectricalMaterial const * endElectricalMaterial = pointInfos1[ropeSegment.PointBIndex1].ElectricalMtl;
+
+        ElectricalMaterial const * startElectricalMaterial = nullptr;
+        if (auto const pointAElectricalMaterial = pointInfos1[ropeSegment.PointAIndex1].ElectricalMtl;
+            nullptr != pointAElectricalMaterial
+            && (pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
+                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
+                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+            startElectricalMaterial = pointAElectricalMaterial;
+
+        ElectricalMaterial const * endElectricalMaterial = nullptr;
+        if (auto const pointBElectricalMaterial = pointInfos1[ropeSegment.PointBIndex1].ElectricalMtl;
+            nullptr != pointBElectricalMaterial
+            && (pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
+                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
+                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+            endElectricalMaterial = pointBElectricalMaterial;
 
         //
         // "Draw" line from start position to end position
@@ -811,12 +869,13 @@ void ShipBuilder::CreateShipElementInfos(
     }
 }
 
-Points ShipBuilder::CreatePoints(
+Physics::Points ShipBuilder::CreatePoints(
     std::vector<PointInfo> const & pointInfos2,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
@@ -824,6 +883,8 @@ Points ShipBuilder::CreatePoints(
         materialDatabase,
         std::move(gameEventDispatcher),
         gameParameters);
+
+    electricalElementInstanceIndices.reserve(pointInfos2.size());
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -852,6 +913,12 @@ Points ShipBuilder::CreatePoints(
             pointInfo.RenderColor,
             pointInfo.TextureCoordinates,
 			GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
+
+        //
+        // Store electrical element instance index
+        //
+
+        electricalElementInstanceIndices.push_back(pointInfo.ElectricalElementInstanceIndex);
     }
 
     return points;
@@ -1124,24 +1191,76 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
+    std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
+    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
+    ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
     //
-    // Get indices of points with electrical elements, and count
-    // number of lamps
+    // Verify all panel metadata indices are valid instance IDs
     //
 
-    std::vector<ElementIndex> electricalElementPointIndices;
+    for (auto const it : panelMetadata)
+    {
+        if (std::find(
+            electricalElementInstanceIndices.cbegin(),
+            electricalElementInstanceIndices.cend(),
+            it.first) == electricalElementInstanceIndices.cend())
+        {
+            throw GameException("Index '" + std::to_string(it.first) + "' of electrical panel metadata cannot be found among electrical element indices");
+        }
+    }
+
+    //
+    // - Get indices of points with electrical elements, together with their panel metadata
+    // - Count number of lamps
+    //
+
+    struct ElectricalElementInfo
+    {
+        ElementIndex elementIndex;
+        ElectricalElementInstanceIndex instanceIndex;
+        std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
+
+        ElectricalElementInfo(
+            ElementIndex _elementIndex,
+            ElectricalElementInstanceIndex _instanceIndex,
+            std::optional<ElectricalPanelElementMetadata> _panelElementMetadata)
+            : elementIndex(_elementIndex)
+            , instanceIndex(_instanceIndex)
+            , panelElementMetadata(_panelElementMetadata)
+        {}
+    };
+
+    std::vector<ElectricalElementInfo> electricalElementInfos;
     ElementIndex lampElementCount = 0;
     for (auto pointIndex : points)
     {
-        if (NoneElementIndex != points.GetElectricalElement(pointIndex))
+        ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(pointIndex);
+        if (nullptr != electricalMaterial)
         {
-            electricalElementPointIndices.push_back(pointIndex);
+            auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
 
-            if (ElectricalMaterial::ElectricalElementType::Lamp == points.GetElectricalMaterial(pointIndex)->ElectricalType)
+            // Get panel metadata
+            std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
+            if (electricalMaterial->IsInstanced)
+            {
+                assert(NoneElectricalElementInstanceIndex != instanceIndex);
+
+                auto const findIt = panelMetadata.find(instanceIndex);
+
+                if (findIt != panelMetadata.end())
+                {
+                    // Take metadata
+                    panelElementMetadata = findIt->second;
+                }
+            }
+
+            electricalElementInfos.emplace_back(pointIndex, instanceIndex, panelElementMetadata);
+
+            if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial->ElectricalType)
                 ++lampElementCount;
         }
     }
@@ -1151,17 +1270,24 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     //
 
     ElectricalElements electricalElements(
-        static_cast<ElementCount>(electricalElementPointIndices.size()),
+        static_cast<ElementCount>(electricalElementInfos.size()),
         lampElementCount,
+        shipId,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
 
-    for (auto pointIndex : electricalElementPointIndices)
+    for (auto const & elementInfo : electricalElementInfos)
     {
+        ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(elementInfo.elementIndex);
+        assert(nullptr != electricalMaterial);
+
+        // Add element
         electricalElements.Add(
-            pointIndex,
-            *points.GetElectricalMaterial(pointIndex));
+            elementInfo.elementIndex,
+            elementInfo.instanceIndex,
+            elementInfo.panelElementMetadata,
+            *electricalMaterial);
     }
 
 

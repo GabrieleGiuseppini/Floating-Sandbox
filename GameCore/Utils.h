@@ -44,6 +44,19 @@ public:
         std::filesystem::path const & filepath);
 
     template<typename T>
+    static T const & GetJsonValueAs(
+        picojson::value const & value,
+        std::string const & memberName)
+    {
+        if (!value.is<T>())
+        {
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the expected type");
+        }
+
+        return value.get<T>();
+    }
+
+    template<typename T>
     static T GetOptionalJsonMember(
         picojson::object const & obj,
         std::string const & memberName,
@@ -57,7 +70,7 @@ public:
 
         if (!memberIt->second.is<T>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the specified type");
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the expected type");
         }
 
         return memberIt->second.get<T>();
@@ -76,7 +89,7 @@ public:
 
         if (!memberIt->second.is<T>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the specified type");
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the expected type");
         }
 
         return std::make_optional<T>(memberIt->second.get<T>());
@@ -94,7 +107,7 @@ public:
 
         if (!memberIt->second.is<picojson::object>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the object type");
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of type 'object'");
         }
 
         return memberIt->second.get<picojson::object>();
@@ -113,7 +126,7 @@ public:
 
         if (!memberIt->second.is<T>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the specified type");
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the expected type");
         }
 
         return memberIt->second.get<T>();
@@ -131,7 +144,7 @@ public:
 
         if (!memberIt->second.is<picojson::object>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the object type");
+            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of type 'object'");
         }
 
         return memberIt->second.get<picojson::object>();
@@ -149,7 +162,7 @@ public:
 
         if (!memberIt->second.is<picojson::array>())
         {
-            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of the array type");
+            throw GameException("Error parsing JSON: requested member \"" + memberName + "\" is not of type 'array'");
         }
 
         return memberIt->second.get<picojson::array>();
@@ -264,6 +277,26 @@ public:
             return false;
 
         *outValue = value;
+        return true;
+    }
+
+    template<>
+    static bool LexicalCast(
+        std::string const & str,
+        uint8_t * outValue)
+    {
+        std::istringstream iss;
+        iss.unsetf(std::ios::skipws);
+
+        iss.str(str);
+
+        int value;
+        iss >> value;
+
+        if (iss.bad() || iss.get() != EOF || value < 0 || value > std::numeric_limits<uint8_t>::max())
+            return false;
+
+        *outValue = static_cast<uint8_t>(value);
         return true;
     }
 

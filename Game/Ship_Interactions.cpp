@@ -293,13 +293,16 @@ void Ship::RepairAt(
         // Note: if we were to attempt to restore also orphaned points, then two formerly-connected
         // orphaned points within the search radius would interact with each other and nullify
         // the effort put by the main structure's points
+
         float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
+        if (squareRadius > squareSearchRadius)
+            continue;
+
+        if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0
             && (mPoints.GetRepairState(pointIndex).LastAttractedSessionId != sessionId
                  || mPoints.GetRepairState(pointIndex).LastAttractedSessionStepId + 1 < sessionStepId))
         {
-            // Remember this point has taken over the role of attractor in this step
+            // Remember that this point has taken over the role of attractor in this step
             mPoints.GetRepairState(pointIndex).LastAttractorSessionId = sessionId;
             mPoints.GetRepairState(pointIndex).LastAttractorSessionStepId = sessionStepId;
 
@@ -658,19 +661,20 @@ void Ship::RepairAt(
                     }
                 }
             }
+        }
 
+        //
+        // 3) Restore eligible endpoints
+        //
+        // Eligible endpoints are damaged points that now have all of their factory springs and all
+        // of their factory triangles
+        //
 
-            //
-            // 3) Restore eligible endpoints
-            //
-            // Eligible endpoints are those that now have all of their factory springs
-            //
-
-            if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
-                == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size())
-            {
-                mPoints.Restore(pointIndex);
-            }
+        if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
+            && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles.size()
+            && mPoints.IsDamaged(pointIndex))
+        {
+            mPoints.Restore(pointIndex);
         }
     }
 }
@@ -1328,6 +1332,15 @@ void Ship::ApplyLightning(
 				std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
 		}
 	}
+}
+
+void Ship::SetSwitchState(
+    ElectricalElementId electricalElementId,
+    ElectricalState switchState)
+{
+    assert(electricalElementId.GetShipId() == mId);
+
+    mElectricalElements.SetSwitchState(electricalElementId, switchState);
 }
 
 }

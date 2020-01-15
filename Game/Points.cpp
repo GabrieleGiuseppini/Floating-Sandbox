@@ -25,8 +25,9 @@ void Points::Add(
     vec2f const & textureCoordinates,
 	float randomNormalizedUniformFloat)
 {
-    ElementIndex const pointIndex = static_cast<ElementIndex>(mMaterialsBuffer.GetCurrentPopulatedSize());
+    ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDamagedBuffer.GetCurrentPopulatedSize());
 
+    mIsDamagedBuffer.emplace_back(false);
     mMaterialsBuffer.emplace_back(&structuralMaterial, electricalMaterial);
     mIsRopeBuffer.emplace_back(isRope);
 
@@ -125,6 +126,7 @@ void Points::CreateEphemeralParticleAirBubble(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -196,6 +198,7 @@ void Points::CreateEphemeralParticleDebris(
     // Store attributes
     //
 
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -276,6 +279,7 @@ void Points::CreateEphemeralParticleSmoke(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -348,6 +352,7 @@ void Points::CreateEphemeralParticleSparkle(
     // Store attributes
     //
 
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     mForceBuffer[pointIndex] = vec2f::zero();
@@ -404,6 +409,9 @@ void Points::Detach(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    // We don't detach ephemeral points
+    assert(pointElementIndex < mAlignedShipPointCount);
+
     // Invoke ship detach handler
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandlePointDetach(
@@ -418,15 +426,34 @@ void Points::Detach(
     {
         mVelocityBuffer[pointElementIndex] = velocity;
     }
+
+    // Check if it's the first time we get damaged
+    if (!mIsDamagedBuffer[pointElementIndex])
+    {
+        // Invoke handler
+        mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+
+        // Flag ourselves as damaged
+        mIsDamagedBuffer[pointElementIndex] = true;
+    }
 }
 
 void Points::Restore(ElementIndex pointElementIndex)
 {
+    assert(IsDamaged(pointElementIndex));
+
+    // Clear the damaged flag
+    mIsDamagedBuffer[pointElementIndex] = false;
+
     // Restore factory-time IsLeaking
     mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
 
     // Restore combustion state
     mCombustionStateBuffer[pointElementIndex].Reset();
+
+    // Invoke ship handler
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandlePointRestore(pointElementIndex);
 }
 
 void Points::OnOrphaned(ElementIndex pointElementIndex)
@@ -1088,7 +1115,7 @@ void Points::UpdateEphemeralParticles(
                 {
                     // Calculate progress
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
-                    assert(maxSimulationLifetime > 0.0f);
+                    assert(mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime > 0.0f);
                     float const lifetimeProgress =
                         elapsedSimulationLifetime
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;

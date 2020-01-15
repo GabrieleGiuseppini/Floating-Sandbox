@@ -1,4 +1,5 @@
-#include <Game/RenderCore.h>
+#include <Game/RenderTypes.h>
+#include <Game/ShaderTypes.h>
 
 #include <GameOpenGL/ShaderManager.h>
 

@@ -175,6 +175,35 @@ void EventTickerPanel::OnTriangleRepaired(
     AppendFutureTickerText(ss.str());
 }
 
+void EventTickerPanel::OnSwitchEnabled(
+    ElectricalElementId electricalElementId,
+    bool isEnabled)
+{
+    std::stringstream ss;
+    ss << "Switch '" << electricalElementId << "' "
+        << (isEnabled ? "enabled" : "disabled")
+        << "!";
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnSwitchToggled(
+    ElectricalElementId electricalElementId,
+    ElectricalState newState)
+{
+    std::stringstream ss;
+    ss << "Switch '" << electricalElementId << "' toggled to " << newState << "!";
+    AppendFutureTickerText(ss.str());
+}
+
+void EventTickerPanel::OnPowerProbeToggled(
+    ElectricalElementId electricalElementId,
+    ElectricalState newState)
+{
+    std::stringstream ss;
+    ss << "Monitor '" << electricalElementId << "' toggled to " << newState << "!";
+    AppendFutureTickerText(ss.str());
+}
+
 void EventTickerPanel::OnBombPlaced(
     BombId /*bombId*/,
     BombType bombType,

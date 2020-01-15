@@ -414,6 +414,7 @@ public:
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
+        , mIsDamagedBuffer(mBufferElementCount, shipPointCount, false)
         // Materials
         , mMaterialsBuffer(mBufferElementCount, shipPointCount, Materials(nullptr, nullptr))
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
@@ -709,6 +710,16 @@ public:
 public:
 
     //
+    // IsDamaged (i.e. whether it has been irrevocable modified, such as detached or
+    // set to leaking)
+    //
+
+    bool IsDamaged(ElementIndex springElementIndex) const
+    {
+        return mIsDamagedBuffer[springElementIndex];
+    }
+
+    //
     // Materials
     //
 
@@ -733,12 +744,12 @@ public:
     // Dynamics
     //
 
-    vec2f const & GetPosition(ElementIndex pointElementIndex) const
+    vec2f const & GetPosition(ElementIndex pointElementIndex) const noexcept
     {
         return mPositionBuffer[pointElementIndex];
     }
 
-    vec2f & GetPosition(ElementIndex pointElementIndex)
+    vec2f & GetPosition(ElementIndex pointElementIndex) noexcept
     {
         return mPositionBuffer[pointElementIndex];
     }
@@ -753,12 +764,12 @@ public:
         return reinterpret_cast<float *>(mPositionBuffer.data());
     }
 
-    vec2f const & GetVelocity(ElementIndex pointElementIndex) const
+    vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
     {
         return mVelocityBuffer[pointElementIndex];
     }
 
-    vec2f & GetVelocity(ElementIndex pointElementIndex)
+    vec2f & GetVelocity(ElementIndex pointElementIndex) noexcept
     {
         return mVelocityBuffer[pointElementIndex];
     }
@@ -775,24 +786,24 @@ public:
 
     void SetVelocity(
         ElementIndex pointElementIndex,
-        vec2f const & velocity)
+        vec2f const & velocity) noexcept
     {
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetForce(ElementIndex pointElementIndex) const
+    vec2f const & GetForce(ElementIndex pointElementIndex) const noexcept
     {
         return mForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetForce(ElementIndex pointElementIndex)
+    vec2f & GetForce(ElementIndex pointElementIndex) noexcept
     {
         return mForceBuffer[pointElementIndex];
     }
 
     void AddForce(
         ElementIndex pointElementIndex,
-        vec2f const & force)
+        vec2f const & force) noexcept
     {
         mForceBuffer[pointElementIndex] += force;
     }
@@ -814,7 +825,7 @@ public:
      * Only valid after a call to UpdateTotalMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    float GetMass(ElementIndex pointElementIndex)
+    float GetMass(ElementIndex pointElementIndex) noexcept
     {
         return mMassBuffer[pointElementIndex];
     }
@@ -1039,12 +1050,30 @@ public:
         return mIsLeakingBuffer[pointElementIndex];
     }
 
-    void SetLeaking(ElementIndex pointElementIndex)
+    void Damage(ElementIndex pointElementIndex)
     {
-        mIsLeakingBuffer[pointElementIndex] = true;
+        if (!mMaterialIsHullBuffer[pointElementIndex])
+        {
+            //
+            // Start leaking
+            //
 
-        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
-        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+            // Set as leaking
+            mIsLeakingBuffer[pointElementIndex] = true;
+
+            // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
+            mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+        }
+
+        // Check if it's the first time we get damaged
+        if (!mIsDamagedBuffer[pointElementIndex])
+        {
+            // Invoke handler
+            mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+
+            // Flag ourselves as damaged
+            mIsDamagedBuffer[pointElementIndex] = true;
+        }
     }
 
     //
@@ -1426,6 +1455,14 @@ private:
             cumulatedIntakenWaterThresholdForAirBubbles);
     }
 
+    inline void SetLeaking(ElementIndex pointElementIndex)
+    {
+        mIsLeakingBuffer[pointElementIndex] = true;
+
+        // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
+        mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+    }
+
     ElementIndex FindFreeEphemeralParticle(
         float currentSimulationTime,
         bool force);
@@ -1447,6 +1484,11 @@ private:
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
+
+    // Damage: true when the point has been irrevocably modified
+    // (such as detached or set to leaking); only a Restore will
+    // make things right again
+    Buffer<bool> mIsDamagedBuffer;
 
     // Materials
     Buffer<Materials> mMaterialsBuffer;
@@ -1513,7 +1555,7 @@ private:
     // Electrical dynamics
     //
 
-    // Electrical element, when any
+    // Electrical element (index in ElectricalElements container), if any
     Buffer<ElementIndex> mElectricalElementBuffer;
 
     // Total illumination, 0.0->1.0

@@ -17,6 +17,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     std::optional<RgbImageData> electricalLayerImage;
     std::filesystem::path absoluteTextureLayerImageFilePath;
     ShipDefinition::TextureOriginType textureOrigin;
+    std::vector<std::string> electricalElementLabels;
     std::optional<ShipMetadata> shipMetadata;
 
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))

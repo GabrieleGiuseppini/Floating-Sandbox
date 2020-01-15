@@ -1,6 +1,7 @@
 [
     {
-        "color_key": "#FFE010", 
+        "color_key": "#FFE010",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 600.0, 
         "is_self_powered": false, 
@@ -17,7 +18,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#FFE011", 
+        "color_key": "#FFE011",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 200.0, 
         "is_self_powered": false, 
@@ -34,7 +36,8 @@
         "wet_failure_rate": 4.5
     }, 
     {
-        "color_key": "#DFE010", 
+        "color_key": "#DFE010",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 600.0, 
         "is_self_powered": false, 
@@ -51,7 +54,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#DFE011", 
+        "color_key": "#DFE011",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 200.0, 
         "is_self_powered": false, 
@@ -68,7 +72,8 @@
         "wet_failure_rate": 3.0
     }, 
     {
-        "color_key": "#EFE010", 
+        "color_key": "#EFE010",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 0.0, 
         "is_self_powered": false, 
@@ -85,7 +90,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#EFE011", 
+        "color_key": "#EFE011",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 0.0, 
         "is_self_powered": false, 
@@ -102,7 +108,8 @@
         "wet_failure_rate": 3.0
     }, 
     {
-        "color_key": "#FFFF00", 
+        "color_key": "#FFFF00",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 600.0, 
         "is_self_powered": true, 
@@ -119,7 +126,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#FFFF01", 
+        "color_key": "#FFFF01",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 200.0, 
         "is_self_powered": true, 
@@ -136,7 +144,8 @@
         "wet_failure_rate": 4.5
     }, 
     {
-        "color_key": "#DFFF00", 
+        "color_key": "#DFFF00",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 600.0, 
         "is_self_powered": true, 
@@ -153,7 +162,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#DFFF01", 
+        "color_key": "#DFFF01",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 200.0, 
         "is_self_powered": true, 
@@ -170,7 +180,8 @@
         "wet_failure_rate": 3.0
     }, 
     {
-        "color_key": "#EFFF00", 
+        "color_key": "#EFFF00",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 0.0, 
         "is_self_powered": true, 
@@ -187,10 +198,11 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#EFFF01", 
+        "color_key": "#EFFF01",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 0.0, 
-        "is_self_powered": true, 
+        "is_self_powered": true,
         "light_color": "#FFFF40", 
         "light_spread": 0.0, 
         "luminiscence": 0.25, 
@@ -204,8 +216,9 @@
         "wet_failure_rate": 3.0
     }, 
     {
-        "color_key": "#FC0808", 
-        "electrical_type": "Generator", 
+        "color_key": "#FC0808",
+	"conducts_electricity": true,
+        "electrical_type": "Generator",
         "heat_generated": 900.0, 
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
@@ -216,7 +229,8 @@
         }
     }, 
     {
-        "color_key": "#FC1010", 
+        "color_key": "#FC1010",
+	"conducts_electricity": true,
         "electrical_type": "Generator", 
         "heat_generated": 2400.0, 
         "maximum_operating_temperature": 698.15, 
@@ -228,19 +242,8 @@
         }
     }, 
     {
-        "color_key": "#FC2020", 
-        "electrical_type": "OtherSink", 
-        "heat_generated": 50000.0, 
-        "maximum_operating_temperature": 1783.15, 
-        "minimum_operating_temperature": 173.15, 
-        "name": "Heating Element", 
-        "template": {
-            "column": "0|Heating Element", 
-            "row": "7|Heating"
-        }
-    }, 
-    {
-        "color_key": "#FFE018", 
+        "color_key": "#FFE018",
+	"conducts_electricity": true,
         "electrical_type": "Lamp", 
         "heat_generated": 2400.0, 
         "is_self_powered": false, 
@@ -257,7 +260,8 @@
         "wet_failure_rate": 0.0
     }, 
     {
-        "color_key": "#4C0000", 
+        "color_key": "#4C0000",
+	"conducts_electricity": true,
         "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.", 
         "electrical_type": "Cable", 
         "heat_generated": 0.0, 
@@ -270,7 +274,8 @@
         }
     }, 
     {
-        "color_key": "#700000", 
+        "color_key": "#700000",
+	"conducts_electricity": true,
         "electrical_type": "Cable", 
         "heat_generated": 0.0, 
         "maximum_operating_temperature": 1000000.0, 
@@ -283,7 +288,109 @@
     },
 
     {
+        "color_key": "#804000",
+	"conducts_electricity": true,
+        "electrical_type": "InteractiveToggleSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Toggle Switch ON",
+        "template": {
+            "column": "0|Toggle Switch ON",
+            "row": "8|Switches"
+        }
+    }, 
+    {
+        "color_key": "#104000",
+	"conducts_electricity": false,
+        "electrical_type": "InteractiveToggleSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Toggle Switch OFF",
+        "template": {
+            "column": "1|Toggle Switch OFF",
+            "row": "8|Switches"
+        }
+    }, 
+
+    {
+        "color_key": "#884800",
+	"conducts_electricity": true,
+        "electrical_type": "InteractivePushSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Push Switch ON",
+        "template": {
+            "column": "2|Push Switch ON",
+            "row": "8|Switches"
+        }
+    }, 
+    {
+        "color_key": "#184800",
+	"conducts_electricity": false,
+        "electrical_type": "InteractivePushSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Interactive Push Switch OFF",
+        "template": {
+            "column": "3|Push Switch OFF",
+            "row": "8|Switches"
+        }
+    }, 
+
+    {
+        "color_key": "#886000",
+	"conducts_electricity": true,
+        "electrical_type": "WaterSensingSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Water Sensing Switch ON",
+        "template": {
+            "column": "4|Water Switch ON",
+            "row": "8|Switches"
+        }
+    }, 
+    {
+        "color_key": "#186000",
+	"conducts_electricity": false,
+        "electrical_type": "WaterSensingSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Water Sensing Switch OFF",
+        "template": {
+            "column": "5|Water Switch OFF",
+            "row": "8|Switches"
+        }
+    },
+
+    {
+        "color_key": "#FC2020",
+	"conducts_electricity": true,
+        "electrical_type": "OtherSink", 
+        "heat_generated": 50000.0, 
+        "maximum_operating_temperature": 1783.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heating Element", 
+        "template": {
+            "column": "0|Heating Element", 
+            "row": "9|Misc"
+        }
+    }, 
+
+    {
         "color_key": "#209010",
+	"conducts_electricity": true,
         "electrical_type": "SmokeEmitter", 
         "heat_generated": 200.0, 
         "is_self_powered": false, 
@@ -292,8 +399,8 @@
         "name": "Smoke Emitter", 
 	"particle_emission_rate": 0.05,
         "template": {
-            "column": "0|Smoke Emitter", 
-            "row": "8|Misc"
+            "column": "1|Smoke Emitter", 
+            "row": "9|Misc"
         }
     }
 ]

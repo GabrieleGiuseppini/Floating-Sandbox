@@ -28,8 +28,6 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: detaching other points from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandlePointDetach(
         ElementIndex pointElementIndex,
@@ -39,17 +37,33 @@ struct IShipPhysicsHandler
         GameParameters const & gameParameters) = 0;
 
     /*
+     * Invoked whenever a point is irrevocably modified, including when it is being detached,
+     * but also in other situations.
+     *
+     * The dual of this is assumed to be handled by HandlePointRestored().
+     */
+    virtual void HandlePointDamaged(ElementIndex pointElementIndex) = 0;
+
+    /*
      * Invoked whenever an ephemeral particle is destroyed.
      *
      * The handler is invoked right before the particle is modified for the destroy.
      *
      * The handler is not re-entrant: destroying other ephemeral particles from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) = 0;
+
+    /*
+     * Invoked whenever a point is restored.
+     *
+     * The handler is invoked right after the point is modified for the restore.
+     *
+     * The repair tool will invoke this only after connected springs and triangles
+     * have also been restored.
+     */
+    virtual void HandlePointRestore(ElementIndex pointElementIndex) = 0;
 
     /*
      * Invoked whenever a spring is destroyed.
@@ -60,8 +74,6 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: destroying other springs from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleSpringDestroy(
         ElementIndex springElementIndex,
@@ -77,8 +89,6 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: restoring other springs from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleSpringRestore(
         ElementIndex springElementIndex,
@@ -93,8 +103,6 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: destroying other triangles from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleTriangleDestroy(ElementIndex triangleElementIndex) = 0;
 
@@ -107,8 +115,6 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: restoring other triangles from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) = 0;
 
@@ -121,10 +127,20 @@ struct IShipPhysicsHandler
      *
      * The handler is not re-entrant: destroying other electrical elements from it is not supported
      * and leads to undefined behavior.
-     *
-     * Setting more than one handler is not supported and leads to undefined behavior.
      */
     virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) = 0;
+
+    /*
+     * Invoked whenever an electrical element is restored.
+     *
+     * The handler is invoked right after the element is modified to be restored. However,
+     * other elements connected to the soon-to-be-restored element might not have been
+     * restored yet.
+     *
+     * The handler is not re-entrant: restoring other elements from it is not supported
+     * and leads to undefined behavior.
+     */
+    virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) = 0;
 
     //
     // Explosions

@@ -124,27 +124,27 @@ public:
 		return x < other.x || (x == other.x && y < other.y);
 	}
 
-	inline float dot(vec2f const & other) const
+	inline float dot(vec2f const & other) const noexcept
 	{
 		return x * other.x + y * other.y;
 	}
 
-    inline float cross(vec2f const & other) const
+    inline float cross(vec2f const & other) const noexcept
     {
         return x * other.y - y * other.x;
     }
 
-	inline float length() const
+	inline float length() const noexcept
 	{
         return sqrtf(x * x + y * y);
 	}
 
-    inline float squareLength() const
+    inline float squareLength() const noexcept
     {
         return x * x + y * y;
     }
 
-	inline vec2f normalise() const
+	inline vec2f normalise() const noexcept
 	{
         float const squareLength = x * x + y * y;
         if (squareLength > 0)
@@ -157,7 +157,7 @@ public:
         }
 	}
 
-    inline vec2f normalise(float length) const
+    inline vec2f normalise(float length) const noexcept
     {
         if (length > 0)
         {
@@ -169,7 +169,7 @@ public:
         }
     }
 
-    inline vec2f square() const
+    inline vec2f square() const noexcept
     {
         // |vector|^2 * normal
         return (*this) * this->length();
@@ -200,7 +200,7 @@ public:
     /*
      * Returns the vector rotated by PI/2.
      */
-    inline vec2f to_perpendicular() const
+    inline vec2f to_perpendicular() const noexcept
     {
         return vec2f(-y, x);
     }
@@ -343,22 +343,22 @@ public:
 		return x < other.x || (x == other.x && (y < other.y || (y == other.y && z < other.z)));
 	}
 
-	float dot(vec3f const & other) const
+	float dot(vec3f const & other) const noexcept
 	{
 		return x * other.x + y * other.y + z * other.z;
 	}
 
-	float length() const
+	float length() const noexcept
 	{
 		return sqrtf(x * x + y * y + z * z);
 	}
 
-    float squareLength() const
+    float squareLength() const noexcept
     {
         return x * x + y * y + z * z;
     }
 
-	vec3f normalise() const
+	vec3f normalise() const noexcept
 	{
         float const squareLength = x * x + y * y + z * z;
         if (squareLength > 0)
@@ -371,7 +371,7 @@ public:
         }
 	}
 
-    vec3f ceilPositive() const
+    vec3f ceilPositive() const noexcept
     {
         return vec3f(
             std::max(x, 0.0f),

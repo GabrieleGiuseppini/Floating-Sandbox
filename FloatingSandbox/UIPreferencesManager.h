@@ -157,6 +157,16 @@ public:
         mGameController->SetShowTsunamiNotifications(value);
     }
 
+    bool GetAutoShowSwitchboard() const
+    {
+        return mAutoShowSwitchboard;
+    }
+
+    void SetAutoShowSwitchboard(bool value)
+    {
+        mAutoShowSwitchboard = value;
+    }
+
     float GetZoomIncrement() const
     {
         return mZoomIncrement;
@@ -277,6 +287,7 @@ private:
     bool mShowStartupTip;
     bool mSaveSettingsOnExit;
     bool mShowShipDescriptionsAtShipLoad;
+    bool mAutoShowSwitchboard;
 
     float mZoomIncrement;
     float mPanIncrement;

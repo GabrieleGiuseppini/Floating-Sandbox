@@ -33,6 +33,7 @@ UIPreferencesManager::UIPreferencesManager(
     mShowStartupTip = true;
     mSaveSettingsOnExit = true;
     mShowShipDescriptionsAtShipLoad = true;
+    mAutoShowSwitchboard = true;
 
     mZoomIncrement = 1.05f;
     mPanIncrement = 20.0f;
@@ -206,6 +207,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Auto show switchboard
+        //
+
+        auto autoShowSwitchboardIt = preferencesRootObject.find("auto_show_switchboard");
+        if (autoShowSwitchboardIt != preferencesRootObject.end()
+            && autoShowSwitchboardIt->second.is<bool>())
+        {
+            mAutoShowSwitchboard = autoShowSwitchboardIt->second.get<bool>();
+        }
+
+        //
         // Zoom increment
         //
 
@@ -339,6 +351,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetShowTsunamiNotifications());
+
+    // Add auto show switchboard
+    preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
 
     // Add zoom increment
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));

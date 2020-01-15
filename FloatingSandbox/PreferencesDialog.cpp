@@ -163,6 +163,14 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
 	mOnChangeCallback();
 }
 
+void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -459,6 +467,25 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
+        mAutoShowSwitchboardCheckBox = new wxCheckBox(panel, wxID_ANY, _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
+
+        mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded.");
+
+        mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mAutoShowSwitchboardCheckBox,
+            wxGBPosition(6, 0),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    //
+    // Row 8
+    //
+
+    {
         mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
 
         mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
@@ -467,7 +494,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         gridSizer->Add(
             mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(6, 0),
+            wxGBPosition(7, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -482,7 +509,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         40,
         0,
         wxGBPosition(0, 1),
-        wxGBSpan(7, 1));
+        wxGBSpan(8, 1));
 
 
     // Finalize panel
@@ -673,6 +700,7 @@ void PreferencesDialog::ReadSettings()
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
+    mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));

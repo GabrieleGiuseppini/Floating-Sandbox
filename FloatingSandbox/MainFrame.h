@@ -16,12 +16,13 @@
 #include "SettingsManager.h"
 #include "ShipLoadDialog.h"
 #include "SoundController.h"
+#include "SwitchboardPanel.h"
 #include "ToolController.h"
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
 
 #include <Game/GameController.h>
-#include <Game/GameEventHandlers.h>
+#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/filedlg.h>
@@ -62,6 +63,8 @@ public:
 
 private:
 
+    wxPanel * mMainPanel;
+
     //
     // Canvas
     //
@@ -88,8 +91,10 @@ private:
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
-    std::unique_ptr<EventTickerPanel> mEventTickerPanel;
     std::unique_ptr<ProbePanel> mProbePanel;
+    std::unique_ptr<EventTickerPanel> mEventTickerPanel;
+    std::unique_ptr<SwitchboardPanel> mElectricalPanel;
+
 
     //
     // Dialogs
@@ -206,8 +211,8 @@ private:
 
     virtual void OnGameReset() override
     {
+        // Refresh title bar
         mCurrentShipTitles.clear();
-
         UpdateFrameTitle();
     }
 

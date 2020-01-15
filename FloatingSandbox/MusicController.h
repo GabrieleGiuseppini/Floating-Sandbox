@@ -7,8 +7,8 @@
 
 #include "Music.h"
 
-#include <Game/GameEventHandlers.h>
 #include <Game/IGameController.h>
+#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <GameCore/GameRandomEngine.h>

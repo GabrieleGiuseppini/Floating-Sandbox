@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <limits>
 #include <sstream>
@@ -48,19 +49,29 @@ using PlaneId = std::uint32_t;
 static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
 
 /*
+ * IDs (sequential) of electrical elements that have an identity.
+ *
+ * Comparable and ordered. Start from 0.
+ */
+using ElectricalElementInstanceIndex = std::uint8_t; // Max 255 instances
+static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
+
+/*
  * Various other identifiers.
  */
 using LocalBombId = std::uint32_t;
+
 
 /*
  * Object ID's, identifying objects of ships across ships.
  *
  * An ObjectId is unique only in the context in which it's used; for example,
- * a bomb might have the same object ID as a switch.
+ * a bomb might have the same object ID as a switch. That's where the type tag
+ * comes from.
  *
  * Not comparable, not ordered.
  */
-template<typename TLocalObjectId>
+template<typename TLocalObjectId, typename TTypeTag>
 struct ObjectId
 {
     using LocalObjectId = TLocalObjectId;
@@ -72,12 +83,12 @@ struct ObjectId
         , mLocalObjectId(localObjectId)
     {}
 
-    inline ShipId GetShipId() const
+    inline ShipId GetShipId() const noexcept
     {
         return mShipId;
     };
 
-    inline LocalObjectId GetLocalObjectId() const
+    inline LocalObjectId GetLocalObjectId() const noexcept
     {
         return mLocalObjectId;
     }
@@ -111,22 +122,35 @@ private:
     LocalObjectId mLocalObjectId;
 };
 
+template<typename TLocalObjectId, typename TTypeTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
+{
+    os << oid.ToString();
+    return os;
+}
+
 namespace std {
 
-    template <typename TLocalObjectId>
-    struct hash<ObjectId<TLocalObjectId>>
+    template <typename TLocalObjectId, typename TTypeTag>
+    struct hash<ObjectId<TLocalObjectId, TTypeTag>>
     {
-        std::size_t operator()(ObjectId<TLocalObjectId> const & objectId) const
+        std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
         {
             return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-                ^ std::hash<typename ObjectId<TLocalObjectId>::LocalObjectId>()(objectId.GetLocalObjectId());
+                ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
         }
     };
 
 }
 
-using ElementId = ObjectId<ElementIndex>;
-using BombId = ObjectId<LocalBombId>;
+// Generic ID for generic elements (points, springs, etc.)
+using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
+
+// ID for a bomb
+using BombId = ObjectId<LocalBombId, struct BombTypeTag>;
+
+// ID for electrical elements (switches, probes, etc.)
+using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
 
 /*
  * A sequence number which is never zero.
@@ -206,6 +230,50 @@ enum class ExplosionType
 };
 
 /*
+ * Types of electrical switches.
+ */
+enum class SwitchType
+{
+    InteractiveToggleSwitch,
+    InteractivePushSwitch,
+    AutomaticSwitch
+};
+
+/*
+ * Types of power probes.
+ */
+enum class PowerProbeType
+{
+    PowerMonitor,
+    Engine,
+    Generator
+};
+
+/*
+ * Electrical states.
+ */
+enum class ElectricalState : bool
+{
+    Off = false,
+    On = true
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ElectricalState const & s)
+{
+    if (s == ElectricalState::On)
+    {
+        os << "ON";
+    }
+    else
+    {
+        assert(s == ElectricalState::Off);
+        os << "OFF";
+    }
+
+    return os;
+}
+
+/*
  * Generic duration enum - short and long.
  */
 enum class DurationShortLongType
@@ -215,6 +283,25 @@ enum class DurationShortLongType
 };
 
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
+
+/*
+ * Information (layout, etc.) for an element in the electrical panel.
+ */
+struct ElectricalPanelElementMetadata
+{
+    int X;
+    int Y;
+    std::string Label;
+
+    ElectricalPanelElementMetadata(
+        int x,
+        int y,
+        std::string const & label)
+        : X(x)
+        , Y(y)
+        , Label(label)
+    {}
+};
 
 /*
  * Repair session IDs and step IDs in a session.

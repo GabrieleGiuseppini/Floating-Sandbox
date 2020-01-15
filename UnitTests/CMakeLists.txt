@@ -26,6 +26,7 @@ set (UNIT_TEST_SOURCES
 	FloatingPointTests.cpp
 	GameEventDispatcherTests.cpp
 	GameMathTests.cpp
+	LayoutHelperTests.cpp
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
@@ -56,6 +57,7 @@ target_link_libraries (UnitTests
 	GameCoreLib
 	GameLib
 	GPUCalcLib
+	UIControlsLib
 	${OPENGL_LIBRARIES}
 	gmock
 	gtest_main

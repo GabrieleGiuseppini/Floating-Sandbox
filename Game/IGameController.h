@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventHandlers.h"
+#include "IGameEventHandlers.h"
 #include "ShipMetadata.h"
 
 #include <GameCore/Colors.h>
@@ -29,7 +29,8 @@ struct IGameController
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
     virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
-	virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) = 0;
+	virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
+    virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
@@ -101,6 +102,8 @@ struct IGameController
     virtual void TriggerRogueWave() = 0;
     virtual void TriggerStorm() = 0;
 	virtual void TriggerLightning() = 0;
+
+    virtual void SetSwitchState(ElectricalElementId electricalElementId, ElectricalState switchState) = 0;
 
     //
     // Rendering controls

@@ -5,10 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <optional>
 #include <string>
+#include <map>
 
 /*
  * Metadata for a ship.
@@ -27,17 +29,21 @@ public:
 
     vec2f const Offset;
 
+    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> ElectricalPanelMetadata;
+
     ShipMetadata(
         std::string shipName,
         std::optional<std::string> author,
         std::optional<std::string> yearBuilt,
         std::optional<std::string> description,
-        vec2f offset)
+        vec2f offset,
+        std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata)
         : ShipName(std::move(shipName))
         , Author(std::move(author))
         , YearBuilt(std::move(yearBuilt))
         , Description(std::move(description))
         , Offset(std::move(offset))
+        , ElectricalPanelMetadata(std::move(electricalPanelMetadata))
     {
     }
 
@@ -47,8 +53,10 @@ public:
         , YearBuilt()
         , Description()
         , Offset()
+        , ElectricalPanelMetadata()
     {
     }
 
     ShipMetadata(ShipMetadata const & other) = default;
+    ShipMetadata(ShipMetadata && other) = default;
 };

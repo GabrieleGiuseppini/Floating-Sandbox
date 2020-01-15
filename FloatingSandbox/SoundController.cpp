@@ -95,7 +95,6 @@ SoundController::SoundController(
         }
 
 
-
         //
         // Parse filename
         //
@@ -418,7 +417,13 @@ SoundController::SoundController(
                 || soundType == SoundType::Snapshot
                 || soundType == SoundType::TerrainAdjust
                 || soundType == SoundType::ThanosSnap
-                || soundType == SoundType::Scrub)
+                || soundType == SoundType::Scrub
+                || soundType == SoundType::InteractiveSwitchOn
+                || soundType == SoundType::InteractiveSwitchOff
+                || soundType == SoundType::ElectricalPanelClose
+                || soundType == SoundType::ElectricalPanelOpen
+                || soundType == SoundType::ElectricalPanelDock
+                || soundType == SoundType::ElectricalPanelUndock)
         {
             //
             // - one-shot sound
@@ -904,6 +909,22 @@ void SoundController::PlaySnapshotSound()
         true);
 }
 
+void SoundController::PlayElectricalPanelOpenSound(bool isClose)
+{
+    PlayOneShotMultipleChoiceSound(
+        isClose ? SoundType::ElectricalPanelClose: SoundType::ElectricalPanelOpen,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayElectricalPanelDockSound(bool isUndock)
+{
+    PlayOneShotMultipleChoiceSound(
+        isUndock ? SoundType::ElectricalPanelUndock : SoundType::ElectricalPanelDock,
+        100.0f,
+        true);
+}
+
 void SoundController::Update()
 {
     mFireBurningSound.Update();
@@ -1133,21 +1154,6 @@ void SoundController::OnBreak(
     }
 }
 
-void SoundController::OnLightFlicker(
-    DurationShortLongType duration,
-    bool isUnderwater,
-    unsigned int size)
-{
-    PlayDslUOneShotMultipleChoiceSound(
-        SoundType::LightFlicker,
-        duration,
-        isUnderwater,
-        std::max(
-            100.0f,
-            30.0f * size),
-        true);
-}
-
 void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
@@ -1276,6 +1282,31 @@ void SoundController::OnLightning()
 		SoundType::Lightning,
 		100.0f,
 		true);
+}
+
+void SoundController::OnLightFlicker(
+    DurationShortLongType duration,
+    bool isUnderwater,
+    unsigned int size)
+{
+    PlayDslUOneShotMultipleChoiceSound(
+        SoundType::LightFlicker,
+        duration,
+        isUnderwater,
+        std::max(
+            100.0f,
+            30.0f * size),
+        true);
+}
+
+void SoundController::OnSwitchToggled(
+    ElectricalElementId /*electricalElementId*/,
+    ElectricalState newState)
+{
+    PlayOneShotMultipleChoiceSound(
+        newState == ElectricalState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+        100.0f,
+        false);
 }
 
 void SoundController::OnBombPlaced(

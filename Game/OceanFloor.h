@@ -45,7 +45,7 @@ public:
         float x2,
         float targetY2);
 
-    float GetHeightAt(float x) const
+    float GetHeightAt(float x) const noexcept
     {
         //
         // Find sample index and interpolate in-between that sample and the next

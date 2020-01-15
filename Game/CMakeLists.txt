@@ -7,13 +7,13 @@ set  (GAME_SOURCES
 	GameController.cpp
 	GameController_StateMachines.cpp
 	GameController.h
-	GameEventDispatcher.h
-	GameEventHandlers.h
+	GameEventDispatcher.h	
 	GameParameters.cpp
 	GameParameters.h
 	IGameController.h
 	IGameControllerSettings.h
 	IGameControllerSettingsOptions.h
+	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
 	Materials.cpp

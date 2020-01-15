@@ -6,11 +6,11 @@
 #pragma once
 
 #include "GameEventDispatcher.h"
-#include "GameEventHandlers.h"
 #include "GameParameters.h"
 #include "IGameController.h"
 #include "IGameControllerSettings.h"
 #include "IGameControllerSettingsOptions.h"
+#include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
@@ -97,6 +97,12 @@ public:
 		mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
 	}
 
+    void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterElectricalElementEventHandler(handler);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
@@ -174,6 +180,8 @@ public:
     void TriggerRogueWave() override;
     void TriggerStorm() override;
 	void TriggerLightning() override;
+
+    void SetSwitchState(ElectricalElementId electricalElementId, ElectricalState switchState) override;
 
     //
     // Render controls

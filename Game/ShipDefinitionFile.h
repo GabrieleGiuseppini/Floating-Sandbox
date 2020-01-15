@@ -51,7 +51,7 @@ public:
         std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
         std::optional<std::filesystem::path> const & textureLayerImageFilePath,
-        ShipMetadata shipMetadata)
+        ShipMetadata && shipMetadata)
         : StructuralLayerImageFilePath(structuralLayerImageFilePath)
         , RopesLayerImageFilePath(ropesLayerImageFilePath)
         , ElectricalLayerImageFilePath(electricalLayerImageFilePath)

@@ -137,8 +137,8 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    wxPanel* mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
+    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
 
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -168,7 +168,7 @@ MainFrame::MainFrame(
     };
 
     mMainGLCanvas = std::make_unique<wxGLCanvas>(
-        mainPanel,
+        mMainPanel,
         ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
         wxDefaultPosition,
@@ -187,8 +187,8 @@ MainFrame::MainFrame(
 
     mMainFrameSizer->Add(
         mMainGLCanvas.get(),
-        1,                  // Proportion
-        wxALL | wxEXPAND,   // Flags
+        1,                  // Occupy all available vertical space
+        wxEXPAND,           // Expand also horizontally
         0);                 // Border
 
     // Take context for this canvas
@@ -498,33 +498,36 @@ MainFrame::MainFrame(
     SetMenuBar(mainMenuBar);
 
 
+
     //
     // Probe panel
     //
 
-    mProbePanel = std::make_unique<ProbePanel>(mainPanel);
+    mProbePanel = std::make_unique<ProbePanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND); // Expand horizontally
 
     mMainFrameSizer->Hide(mProbePanel.get());
+
 
 
     //
     // Event ticker panel
     //
 
-    mEventTickerPanel = std::make_unique<EventTickerPanel>(mainPanel);
+    mEventTickerPanel = std::make_unique<EventTickerPanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND);
+    mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND); // Expand horizontally
 
     mMainFrameSizer->Hide(mEventTickerPanel.get());
+
 
 
     //
     // Finalize frame
     //
 
-    mainPanel->SetSizerAndFit(mMainFrameSizer);
+    mMainPanel->SetSizer(mMainFrameSizer);
 
 
 
@@ -601,6 +604,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
+                // 0.0 -> 0.5
                 splash->UpdateProgress(progress / 2.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -627,7 +631,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             *mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
-                splash->UpdateProgress(0.5f + progress / 3.0f, message);
+                // 0.5 -> 0.66
+                splash->UpdateProgress(0.5f + progress / 6.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -653,7 +658,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             *mResourceLoader,
             [&splash, this](float progress, std::string const & message)
             {
-                splash->UpdateProgress(0.5f + 0.33333f + progress / 3.0f, message);
+                // 0.66 -> 0.83
+                splash->UpdateProgress(0.666f + progress / 6.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -694,6 +700,21 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 	ReconcileWithUIPreferences();
 
 
+    //
+    // Create electrical panel
+    //
+
+    mElectricalPanel = SwitchboardPanel::Create(
+        mMainPanel,
+        mMainPanel,
+        mMainFrameSizer,
+        mGameController,
+        mSoundController,
+        mUIPreferencesManager,
+        *mResourceLoader);
+
+    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
+
 
     //
     // Create Tool controller
@@ -707,7 +728,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mToolController = std::make_unique<ToolController>(
             initialToolType,
-            this,
+            mMainGLCanvas.get(),
             mGameController,
             mSoundController,
             *mResourceLoader);
@@ -727,8 +748,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     this->RegisterEventHandler(*mGameController);
-    mEventTickerPanel->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
+    mEventTickerPanel->RegisterEventHandler(*mGameController);
+    mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
 
@@ -856,7 +878,7 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-		LogMessage(worldCoords.toString(), ":");
+		LogMessage("@ ", worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
     }
@@ -870,7 +892,18 @@ void MainFrame::OnKeyDown(wxKeyEvent & event)
         // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
         // around this, but this is an Easter Egg after all....
     }
+    else
+    {
+        // Deliver to electric panel
+        if (!!mElectricalPanel)
+        {
+            mElectricalPanel->OnKeyboardShortcut(
+                event.GetKeyCode(),
+                event.GetModifiers());
+        }
+    }
 
+    // Allow it to be further handled
     event.Skip();
 }
 
@@ -948,13 +981,13 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
-        // Update event ticker
-        assert(!!mEventTickerPanel);
-        mEventTickerPanel->Update();
-
         // Update probe panel
         assert(!!mProbePanel);
         mProbePanel->Update();
+
+        // Update event ticker
+        assert(!!mEventTickerPanel);
+        mEventTickerPanel->Update();
 
         // Update sound controller
         assert(!!mSoundController);
@@ -1036,7 +1069,11 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
-    if (!!mGameController)
+    LogMessage("OnMainGLCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
+
+    if (!!mGameController
+        && event.GetSize().GetX() > 0
+        && event.GetSize().GetY() > 0)
     {
         mGameController->SetCanvasSize(
             event.GetSize().GetX(),

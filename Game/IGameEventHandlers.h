@@ -166,6 +166,76 @@ struct IAtmosphereGameEventHandler
 	}
 };
 
+struct IElectricalElementGameEventHandler
+{
+    virtual void OnLightFlicker(
+        DurationShortLongType /*duration*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    //
+    // Announcements
+    //
+
+    virtual void OnElectricalElementAnnouncementsBegin()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSwitchCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        SwitchType /*type*/,
+        ElectricalState /*state*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPowerProbeCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        PowerProbeType /*type*/,
+        ElectricalState /*state*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnElectricalElementAnnouncementsEnd()
+    {
+        // Default-implemented
+    }
+
+    //
+    // State changes
+    //
+
+    virtual void OnSwitchEnabled(
+        ElectricalElementId /*electricalElementId*/,
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSwitchToggled(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalState /*newState*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPowerProbeToggled(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalState /*newState*/)
+    {
+        // Default-implemented
+    }
+};
+
 struct IGenericGameEventHandler
 {
     virtual void OnDestroy(
@@ -202,14 +272,6 @@ struct IGenericGameEventHandler
     virtual void OnPinToggled(
         bool /*isPinned*/,
         bool /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnLightFlicker(
-        DurationShortLongType /*duration*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
     {
         // Default-implemented
     }

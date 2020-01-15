@@ -96,7 +96,7 @@ void BlastForceField::Apply(
     // Eventually detach the closest point
     //
 
-    if (mDetachPoint
+    if (mDoDetachPoint
         && NoneElementIndex != closestPointIndex)
     {
         // Choose a detach velocity - using the same distribution as Debris

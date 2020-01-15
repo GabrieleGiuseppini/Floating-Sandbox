@@ -93,6 +93,7 @@ Ship::Ship(
     , mCurrentElectricalVisitSequenceNumber()
     , mConnectedComponentSizes()
     , mIsStructureDirty(true)
+    , mDamagedPointsCount(0)
     , mBrokenSpringsCount(0)
     , mBrokenTrianglesCount(0)
     , mIsSinking(false)
@@ -115,8 +116,10 @@ Ship::Ship(
     RunConnectivityVisit();
 }
 
-Ship::~Ship()
+void Ship::Announce()
 {
+    // Announce instanced electrical elements
+    mElectricalElements.AnnounceInstancedElements();
 }
 
 void Ship::Update(
@@ -1322,9 +1325,17 @@ void Ship::UpdateElectricalDynamics(
     ++mCurrentElectricalVisitSequenceNumber;
 
     //
-    // Update sources and connectivity first
+    // 1. Update automatic conductivity toggles (e.g. water-sensing switches)
     //
-    // We do this regardless of dirty elements, as generators might become wet
+
+    mElectricalElements.UpdateAutomaticConductivityToggles(
+        mPoints);
+
+    //
+    // 2. Update sources and connectivity
+    //
+    // We do this regardless of dirty elements, as elements might have changed their state
+    // (e.g. generators might have become wet, switches might have been toggled, etc.)
     //
 
     mElectricalElements.UpdateSourcesAndPropagation(
@@ -1334,7 +1345,7 @@ void Ship::UpdateElectricalDynamics(
 
 
     //
-    // Update sinks
+    // 3. Update sinks
     //
 
     mElectricalElements.UpdateSinks(
@@ -2101,14 +2112,17 @@ void Ship::HandlePointDetach(
     // Destroy the connected electrical element, if any
     //
     // Note: we rely on the fact that this happens after connected springs have been destroyed, which
-    // ensures that the electrical element's set of connected electrical elements is empty
+    // ensures that the electrical element's set of connected electrical elements is now empty
     //
 
-    if (NoneElementIndex != mPoints.GetElectricalElement(pointElementIndex))
+    auto const electricalElementIndex = mPoints.GetElectricalElement(pointElementIndex);
+    if (NoneElementIndex != electricalElementIndex)
     {
-        assert(!mElectricalElements.IsDeleted(mPoints.GetElectricalElement(pointElementIndex)));
+        assert(!mElectricalElements.IsDeleted(electricalElementIndex));
+        assert(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty());
+        assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
-        mElectricalElements.Destroy(mPoints.GetElectricalElement(pointElementIndex));
+        mElectricalElements.Destroy(electricalElementIndex);
 
         hasAnythingBeenDestroyed = true;
     }
@@ -2141,10 +2155,42 @@ void Ship::HandlePointDetach(
     }
 }
 
+void Ship::HandlePointDamaged(ElementIndex /*pointElementIndex*/)
+{
+    // Update count of damaged points
+    ++mDamagedPointsCount;
+}
+
 void Ship::HandleEphemeralParticleDestroy(ElementIndex pointElementIndex)
 {
     // Notify pins
     mPinnedPoints.OnEphemeralParticleDestroyed(pointElementIndex);
+}
+
+void Ship::HandlePointRestore(ElementIndex pointElementIndex)
+{
+    //
+    // Restore the connected electrical element, if any and if it's deleted
+    //
+    // Note: this happens after connected springs have been restored
+    //
+
+    auto const electricalElementIndex = mPoints.GetElectricalElement(pointElementIndex);
+    if (NoneElementIndex != electricalElementIndex
+        && mElectricalElements.IsDeleted(electricalElementIndex))
+    {
+        mElectricalElements.Restore(electricalElementIndex);
+    }
+
+    // Update count of damaged points
+    assert(mDamagedPointsCount > 0);
+    --mDamagedPointsCount;
+
+    // Notify if we've just completely restored the ship
+    if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
+    {
+        mGameEventHandler->OnShipRepaired(mId);
+    }
 }
 
 void Ship::HandleSpringDestroy(
@@ -2207,14 +2253,12 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // Make non-hull endpoints leak
+    // Damage both endpoints
+    //  - They'll start leaking if they're not hull, among other things
     //
 
-    if (!mPoints.GetMaterialIsHull(pointAIndex))
-        mPoints.SetLeaking(pointAIndex);
-
-    if (!mPoints.GetMaterialIsHull(pointBIndex))
-        mPoints.SetLeaking(pointBIndex);
+    mPoints.Damage(pointAIndex);
+    mPoints.Damage(pointBIndex);
 
 
     //
@@ -2238,6 +2282,10 @@ void Ship::HandleSpringDestroy(
         }
     }
 
+    //
+    // Misc
+    //
+
     // Notify bombs
     mBombs.OnSpringDestroyed(springElementIndex);
 
@@ -2252,6 +2300,9 @@ void Ship::HandleSpringRestore(
     ElementIndex springElementIndex,
     GameParameters const & /*gameParameters*/)
 {
+    auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
+    auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
+
     //
     // Add others to self
     //
@@ -2264,14 +2315,41 @@ void Ship::HandleSpringRestore(
     //
 
     // Connect self to endpoints
-    mPoints.ConnectSpring(mSprings.GetEndpointAIndex(springElementIndex), springElementIndex, mSprings.GetEndpointBIndex(springElementIndex), true); // Owner
-    mPoints.ConnectSpring(mSprings.GetEndpointBIndex(springElementIndex), springElementIndex, mSprings.GetEndpointAIndex(springElementIndex), false); // Not owner
+    mPoints.ConnectSpring(pointAIndex, springElementIndex, pointBIndex, true); // Owner
+    mPoints.ConnectSpring(pointBIndex, springElementIndex, pointAIndex, false); // Not owner
 
     // Add spring to set of sub springs at each super-triangle
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
     {
         mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
     }
+
+    //
+    // If both endpoints are electrical elements, and neither is deleted,
+    // then connect them - i.e. add them to each other's set of connected electrical elements
+    //
+
+    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
+    if (NoneElementIndex != electricalElementAIndex
+        && !mElectricalElements.IsDeleted(electricalElementAIndex))
+    {
+        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
+        if (NoneElementIndex != electricalElementBIndex
+            && !mElectricalElements.IsDeleted(electricalElementBIndex))
+        {
+            mElectricalElements.AddConnectedElectricalElement(
+                electricalElementAIndex,
+                electricalElementBIndex);
+
+            mElectricalElements.AddConnectedElectricalElement(
+                electricalElementBIndex,
+                electricalElementAIndex);
+        }
+    }
+
+    //
+    // Misc
+    //
 
     // Fire event - using point A's properties (quite arbitrarily)
     mGameEventHandler->OnSpringRepaired(
@@ -2287,7 +2365,7 @@ void Ship::HandleSpringRestore(
     --mBrokenSpringsCount;
 
     // Notify if we've just completely restored the ship
-    if (mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
+    if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
         mGameEventHandler->OnShipRepaired(mId);
     }
@@ -2364,16 +2442,53 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     --mBrokenTrianglesCount;
 
     // Notify if we've just completely restored the ship
-    if (mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
+    if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
         mGameEventHandler->OnShipRepaired(mId);
     }
 }
 
-void Ship::HandleElectricalElementDestroy(ElementIndex /*electricalElementIndex*/)
+void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
 {
-    // Remember our structure is now dirty
-    mIsStructureDirty = true;
+    //
+    // For all of the connected electrical elements: remove electrical connections
+    // (when should have one)
+    //
+
+    while (!mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty())
+    {
+        auto const connectedElectricalElementIndex =
+            *(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).begin());
+
+        mElectricalElements.RemoveConnectedElectricalElement(electricalElementIndex, connectedElectricalElementIndex);
+        mElectricalElements.RemoveConnectedElectricalElement(connectedElectricalElementIndex, electricalElementIndex);
+    }
+}
+
+void Ship::HandleElectricalElementRestore(ElementIndex electricalElementIndex)
+{
+    //
+    // For all of the connected springs: restore electrical connections if eligible
+    //
+
+    assert(!mElectricalElements.IsDeleted(electricalElementIndex));
+
+    auto const pointIndex = mElectricalElements.GetPointIndex(electricalElementIndex);
+    for (auto const & connected : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+    {
+        auto otherElectricalElementIndex = mPoints.GetElectricalElement(connected.OtherEndpointIndex);
+        if (NoneElementIndex != otherElectricalElementIndex
+            && !mElectricalElements.IsDeleted(otherElectricalElementIndex))
+        {
+            mElectricalElements.AddConnectedElectricalElement(
+                electricalElementIndex,
+                otherElectricalElementIndex);
+
+            mElectricalElements.AddConnectedElectricalElement(
+                otherElectricalElementIndex,
+                electricalElementIndex);
+        }
+    }
 }
 
 void Ship::StartExplosion(

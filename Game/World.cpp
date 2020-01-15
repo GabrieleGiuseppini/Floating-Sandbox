@@ -57,6 +57,16 @@ ShipId World::AddShip(
     return shipId;
 }
 
+void World::Announce()
+{
+    // Nothing to announce in non-ship stuff...
+    // ...ask all ships to announce
+    for (auto & ship : mAllShips)
+    {
+        ship->Announce();
+    }
+}
+
 size_t World::GetShipCount() const
 {
     return mAllShips.size();
@@ -567,6 +577,14 @@ void World::TriggerRogueWave()
     mOceanSurface.TriggerRogueWave(
         mCurrentSimulationTime,
         mWind);
+}
+
+void World::SetSwitchState(ElectricalElementId electricalElementId, ElectricalState switchState)
+{
+    auto const shipId = electricalElementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->SetSwitchState(electricalElementId, switchState);
 }
 
 void World::SetSilence(float silenceAmount)

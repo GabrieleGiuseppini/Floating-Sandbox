@@ -38,7 +38,7 @@ public:
         Triangles && triangles,
         ElectricalElements && electricalElements);
 
-    ~Ship();
+    void Announce();
 
     ShipId GetId() const { return mId; }
 
@@ -49,15 +49,6 @@ public:
 
     auto const & GetPoints() const { return mPoints; }
     auto & GetPoints() { return mPoints; }
-
-    auto const & GetSprings() const { return mSprings; }
-    auto & GetSprings() { return mSprings; }
-
-    auto const & GetTriangles() const { return mTriangles; }
-    auto & GetTriangles() { return mTriangles; }
-
-    auto const & GetElectricalElements() const { return mElectricalElements; }
-    auto & GetElectricalElements() { return mElectricalElements; }
 
     void Update(
         float currentSimulationTime,
@@ -205,6 +196,10 @@ public:
 		vec2f const & targetPos,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
+
+    void SetSwitchState(
+        ElectricalElementId electricalElementId,
+        ElectricalState switchState);
 
 public:
 
@@ -367,8 +362,12 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
+    virtual void HandlePointDamaged(ElementIndex pointElementIndex) override;
+
     virtual void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) override;
+
+    virtual void HandlePointRestore(ElementIndex pointElementIndex) override;
 
     virtual void HandleSpringDestroy(
         ElementIndex springElementIndex,
@@ -384,6 +383,8 @@ private:
     virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
     virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
+
+    virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 
     virtual void StartExplosion(
         float currentSimulationTime,
@@ -499,6 +500,7 @@ private:
 
     // Counts of elements currently broken - update each time an element is broken
     // or restored
+    ElementCount mDamagedPointsCount;
     ElementCount mBrokenSpringsCount;
     ElementCount mBrokenTrianglesCount;
 

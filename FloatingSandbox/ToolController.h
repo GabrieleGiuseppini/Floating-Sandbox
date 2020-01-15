@@ -22,7 +22,7 @@ public:
 
     ToolController(
         ToolType initialToolType,
-        wxFrame * parentFrame,
+        wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -109,7 +109,7 @@ private:
 
 private:
 
-    wxFrame * const mParentFrame;
+    wxWindow * const mParentWindow;
     std::unique_ptr<wxCursor> mPanCursor;
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;

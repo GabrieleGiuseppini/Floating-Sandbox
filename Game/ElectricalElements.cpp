@@ -15,6 +15,8 @@ constexpr float LampWetFailureWaterThreshold = 0.1f;
 
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
     ElectricalMaterial const & electricalMaterial)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -22,6 +24,7 @@ void ElectricalElements::Add(
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
     mMaterialTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
+    mConductivityBuffer.emplace_back(electricalMaterial.ConductsElectricity);
     mMaterialHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
     mMaterialOperatingTemperaturesBuffer.emplace_back(
         electricalMaterial.MinimumOperatingTemperature,
@@ -29,84 +32,192 @@ void ElectricalElements::Add(
     mMaterialLuminiscenceBuffer.emplace_back(electricalMaterial.Luminiscence);
     mMaterialLightColorBuffer.emplace_back(electricalMaterial.LightColor);
     mMaterialLightSpreadBuffer.emplace_back(electricalMaterial.LightSpread);
-    mConnectedElectricalElementsBuffer.emplace_back();
+    mConnectedElectricalElementsBuffer.emplace_back(); // Will be populated later
+    mConductingConnectedElectricalElementsBuffer.emplace_back(); // Will be populated later
     mAvailableLightBuffer.emplace_back(0.f);
+
+    //
+    // Per-type initialization
+    //
 
     switch (electricalMaterial.ElectricalType)
     {
         case ElectricalMaterial::ElectricalElementType::Cable:
         {
+            // State
             mElementStateBuffer.emplace_back(ElementState::CableState());
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            mSources.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::GeneratorState(true));
+
+            // Indices
+            mSources.emplace_back(elementIndex);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
-            mSinks.emplace_back(elementIndex);
-            mLamps.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
                     electricalMaterial.IsSelfPowered,
                     electricalMaterial.WetFailureRate));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+            mLamps.emplace_back(elementIndex);
+
+            // Lighting
+
+            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+                electricalMaterial.LightSpread,
+                mCurrentLightSpreadAdjustment);
+
+            mLampRawDistanceCoefficientBuffer.emplace_back(
+                CalculateLampRawDistanceCoefficient(
+                    electricalMaterial.Luminiscence,
+                    mCurrentLuminiscenceAdjustment,
+                    lampLightSpreadMaxDistance));
+
+            mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         {
-            mSinks.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::OtherSinkState());
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
-            mSinks.emplace_back(elementIndex);
+            // State
             mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::DummyState());
+
+            // Indices
+            mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+
+            break;
+        }
+
+        default:
+        {
+            // State - dummy
+            mElementStateBuffer.emplace_back(ElementState::DummyState());
+
             break;
         }
     }
 
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
-    //
-    // Lamp
-    //
+    mInstanceInfos.emplace_back(instanceIndex, panelElementMetadata);
+}
 
-    if (ElectricalMaterial::ElectricalElementType::Lamp == electricalMaterial.ElectricalType)
+
+void ElectricalElements::AnnounceInstancedElements()
+{
+    mGameEventHandler->OnElectricalElementAnnouncementsBegin();
+
+    for (auto elementIndex : *this)
     {
-        float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-            electricalMaterial.LightSpread,
-            mCurrentLightSpreadAdjustment);
+        assert(elementIndex < mInstanceInfos.size());
 
-        mLampRawDistanceCoefficientBuffer.emplace_back(
-            CalculateLampRawDistanceCoefficient(
-                electricalMaterial.Luminiscence,
-                mCurrentLuminiscenceAdjustment,
-                lampLightSpreadMaxDistance));
+        switch (GetMaterialType(elementIndex))
+        {
+            case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    SwitchType::InteractivePushSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
 
-        mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    SwitchType::InteractiveToggleSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+            {
+                mGameEventHandler->OnPowerProbeCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    PowerProbeType::PowerMonitor,
+                    ElectricalState::Off, // We start with off; we'll figure out actual state at the next update
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            {
+                mGameEventHandler->OnSwitchCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    SwitchType::AutomaticSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+        }
     }
+
+    mGameEventHandler->OnElectricalElementAnnouncementsEnd();
 }
 
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 {
-    assert(electricalElementIndex < mElementCount);
+    // Connectivity is taken care by ship destroy handler, as usual
+
     assert(!IsDeleted(electricalElementIndex));
 
     // Zero out our light
     mAvailableLightBuffer[electricalElementIndex] = 0.0f;
 
-    // Note: no need to remove self from connected electrical elements, as Ship's PointDestroyHandler,
-    // which is the caller of this Destroy(), has already destroyed the point's springs, hence
-    // this electrical element has no connected points anymore already and viceversa
-    assert(GetConnectedElectricalElements(electricalElementIndex).empty());
+    // Notify switch disabling
+    auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
+    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
+    {
+        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+    }
 
     // Invoke destroy handler
     assert(nullptr != mShipPhysicsHandler);
@@ -114,6 +225,45 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
+}
+
+void ElectricalElements::Restore(ElementIndex electricalElementIndex)
+{
+    // Connectivity is taken care by ship destroy handler, as usual
+
+    assert(IsDeleted(electricalElementIndex));
+
+    // Clear the deleted flag
+    mIsDeletedBuffer[electricalElementIndex] = false;
+
+    // Reset our state machine
+    switch (GetMaterialType(electricalElementIndex))
+    {
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            mElementStateBuffer[electricalElementIndex].Lamp.Reset();
+            break;
+        }
+
+        default:
+        {
+            // These types do not have a state machine that needs to be reset
+            break;
+        }
+    }
+
+    // Invoke restore handler
+    assert(nullptr != mShipPhysicsHandler);
+    mShipPhysicsHandler->HandleElectricalElementRestore(electricalElementIndex);
+
+    // Notify switch enabling
+    auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
+    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
+        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
+    {
+        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+    }
 }
 
 void ElectricalElements::UpdateForGameParameters(GameParameters const & gameParameters)
@@ -142,6 +292,49 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
         // Remember new parameters
         mCurrentLightSpreadAdjustment = gameParameters.LightSpreadAdjustment;
         mCurrentLuminiscenceAdjustment = gameParameters.LuminiscenceAdjustment;
+    }
+}
+
+void ElectricalElements::UpdateAutomaticConductivityToggles(
+    Points & points)
+{
+    //
+    // Visit all elements that change their conductivity automatically,
+    // and eventually change their conductivity
+    //
+
+    for (auto elementIndex : mAutomaticConductivityTogglingElements)
+    {
+        switch (GetMaterialType(elementIndex))
+        {
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            {
+                // When higher than watermark: conductivity state toggles to opposite than material's
+                // When lower than watermark: conductivity state toggles to same as material's
+
+                float constexpr WaterLowWatermark = 0.15f;
+                float constexpr WaterHighWatermark = 0.45f;
+
+                if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                    && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                {
+                    SetSwitchState(elementIndex, static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                }
+                else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                    && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+                {
+                    SetSwitchState(elementIndex, static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                }
+
+                break;
+            }
+
+            default:
+            {
+                // Shouldn't be here - all automatically-toggling elements should have been handled
+                assert(false);
+            }
+        }
     }
 }
 
@@ -225,7 +418,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     assert(electricalElementsToVisit.empty());
                     electricalElementsToVisit.push(sourceIndex);
 
-                    // Visit all electrical elements reachable from this source
+                    // Visit all electrical elements electrically reachable from this source
                     while (!electricalElementsToVisit.empty())
                     {
                         auto e = electricalElementsToVisit.front();
@@ -234,18 +427,18 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         // Already marked as visited
                         assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
 
-                        for (auto reachableElectricalElementIndex : GetConnectedElectricalElements(e))
+                        for (auto conductingConnectedElectricalElementIndex : mConductingConnectedElectricalElementsBuffer[e])
                         {
-                            assert(!IsDeleted(reachableElectricalElementIndex));
+                            assert(!IsDeleted(conductingConnectedElectricalElementIndex));
 
                             // Make sure not visited already
-                            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[reachableElectricalElementIndex])
+                            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex])
                             {
                                 // Add to queue
-                                electricalElementsToVisit.push(reachableElectricalElementIndex);
+                                electricalElementsToVisit.push(conductingConnectedElectricalElementIndex);
 
                                 // Mark it as visited
-                                mCurrentConnectivityVisitSequenceNumberBuffer[reachableElectricalElementIndex] = newConnectivityVisitSequenceNumber;
+                                mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex] = newConnectivityVisitSequenceNumber;
                             }
                         }
                     }
@@ -416,6 +609,76 @@ void ElectricalElements::UpdateSinks(
             }
         }
     }
+
+    //
+    // Clear switch toggle dirtyness
+    //
+
+    mHasSwitchBeenToggledInStep = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ElectricalElements::SetSwitchState(
+    ElementIndex elementIndex,
+    ElectricalState switchState)
+{
+    // Make sure it's a state change
+    if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
+    {
+        // Change current value
+        mConductivityBuffer[elementIndex].ConductsElectricity = static_cast<bool>(switchState);
+
+        // Update conductive connectivity
+        if (static_cast<bool>(switchState) == true)
+        {
+            // OFF->ON
+
+            // For each electrical element connected to this one: if both elements conduct electricity,
+            // conduct-connect elements to each other
+            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+            {
+                assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+                {
+                    mConductingConnectedElectricalElementsBuffer[elementIndex].push_back(otherElementIndex);
+                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].push_back(elementIndex);
+                }
+            }
+        }
+        else
+        {
+            // ON->OFF
+
+            // For each electrical element connected to this one: if the other element conducts electricity,
+            // sever conduct-connection to each other
+            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+            {
+                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+                {
+                    assert(mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                    assert(mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+
+                    mConductingConnectedElectricalElementsBuffer[elementIndex].erase_first(otherElementIndex);
+                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].erase_first(elementIndex);
+                }
+                else
+                {
+                    assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                    assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+                }
+            }
+        }
+
+        // Notify
+        mGameEventHandler->OnSwitchToggled(
+            ElectricalElementId(mShipId, elementIndex),
+            switchState);
+
+        // Remember that a switch has been toggled
+        mHasSwitchBeenToggledInStep = true;
+    }
 }
 
 void ElectricalElements::RunLampStateMachine(
@@ -427,7 +690,7 @@ void ElectricalElements::RunLampStateMachine(
 {
     //
     // Lamp is only on if visited or self-powered and within operating temperature;
-    // actual lights depends on flicker state machine
+    // actual light depends on flicker state machine
     //
 
     auto const pointIndex = GetPointIndex(elementLampIndex);
@@ -443,6 +706,7 @@ void ElectricalElements::RunLampStateMachine(
                 || lamp.IsSelfPowered)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
             {
+                // Transition to ON
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
                 lamp.State = ElementState::LampState::StateType::LightOn;
                 lamp.NextWetFailureCheckTimePoint = currentWallclockTime + std::chrono::seconds(1);
@@ -472,18 +736,34 @@ void ElectricalElements::RunLampStateMachine(
                 ))
             {
                 //
-                // Start flicker state machine
+                // Turn off
                 //
 
                 mAvailableLightBuffer[elementLampIndex] = 0.f;
 
-                // Transition state, choose whether to A or B
-                lamp.FlickerCounter = 0u;
-                lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerStartInterval;
-                if (GameRandomEngine::GetInstance().Choose(2) == 0)
-                    lamp.State = ElementState::LampState::StateType::FlickerA;
+                // Check whether we need to flicker or just turn off gracefully
+                if (mHasSwitchBeenToggledInStep)
+                {
+                    //
+                    // Turn off gracefully
+                    //
+
+                    lamp.State = ElementState::LampState::StateType::LightOff;
+                }
                 else
-                    lamp.State = ElementState::LampState::StateType::FlickerB;
+                {
+                    //
+                    // Start flicker state machine
+                    //
+
+                    // Transition state, choose whether to A or B
+                    lamp.FlickerCounter = 0u;
+                    lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerStartInterval;
+                    if (GameRandomEngine::GetInstance().Choose(2) == 0)
+                        lamp.State = ElementState::LampState::StateType::FlickerA;
+                    else
+                        lamp.State = ElementState::LampState::StateType::FlickerB;
+                }
             }
 
             break;
@@ -623,6 +903,7 @@ void ElectricalElements::RunLampStateMachine(
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
+                // Notify flicker event, so we play light-on sound
                 mGameEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,
                     mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
