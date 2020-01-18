@@ -804,7 +804,7 @@ void Points::UpdateCombustionLowFrequency(
 }
 
 void Points::UpdateCombustionHighFrequency(
-    float /*currentSimulationTime*/,
+    float currentSimulationTime,
     float dt,
     GameParameters const & gameParameters)
 {
@@ -823,11 +823,13 @@ void Points::UpdateCombustionHighFrequency(
 
     for (auto const pointIndex : mBurningPoints)
     {
+        auto & pointCombustionState = mCombustionStateBuffer[pointIndex];
+
         //
         // Check if this point should stop developing/burning or start extinguishing faster
         //
 
-        auto const currentState = mCombustionStateBuffer[pointIndex].State;
+        auto const currentState = pointCombustionState.State;
 
         if ((currentState == CombustionState::StateType::Developing_1
             || currentState == CombustionState::StateType::Developing_2
@@ -874,12 +876,58 @@ void Points::UpdateCombustionHighFrequency(
             }
         }
 
+        /* FUTUREWORK
+
+        The following code emits smoke for burning particles, but there are rendering problems:
+        Smoke should be drawn behind flames, hence GenericTexture's should be drawn in a layer that is earlier than flames.
+        However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
+        that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P.
+        The only way out that I may think of, at this moment, is to draw flames and generic textures alternative, for each
+        plane ID (!), or to make smoke fully opaque.
+
+        //
+        // Check if this point should emit smoke
+        //
+
+        if (pointCombustionState.State != CombustionState::StateType::NotBurning)
+        {
+            // See if we need to calculate the next emission timestamp
+            if (pointCombustionState.NextSmokeEmissionSimulationTimestamp == 0.0f)
+            {
+                pointCombustionState.NextSmokeEmissionSimulationTimestamp =
+                    currentSimulationTime
+                    + GameRandomEngine::GetInstance().GenerateExponentialReal(
+                        gameParameters.SmokeEmissionDensityAdjustment
+                        * pointCombustionState.FlameDevelopment
+                        / 1.5f); // TODOHERE: replace with Material's properties, precalc'd with gameParameters.SmokeEmissionDensityAdjustment
+            }
+
+            // See if it's time to emit smoke
+            if (currentSimulationTime >= pointCombustionState.NextSmokeEmissionSimulationTimestamp)
+            {
+                //
+                // Emit smoke
+                //
+
+                // Generate particle
+                CreateEphemeralParticleHeavySmoke(
+                    GetPosition(pointIndex),
+                    GetTemperature(pointIndex),
+                    currentSimulationTime,
+                    GetPlaneId(pointIndex),
+                    gameParameters);
+
+                // Make sure we re-calculate the next emission timestamp
+                pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
+            }
+        }
+        */
 
         //
         // Run development/extinguishing state machine now
         //
 
-        switch (mCombustionStateBuffer[pointIndex].State)
+        switch (pointCombustionState.State)
         {
             case CombustionState::StateType::Developing_1:
             {
@@ -890,13 +938,13 @@ void Points::UpdateCombustionHighFrequency(
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.1,%22valid%22:true}]&expression=f(n-1)%20+%200.105*f(n-1)&target=0&endTarget=25&range=true
                 //
 
-                mCombustionStateBuffer[pointIndex].FlameDevelopment +=
-                    0.105f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                pointCombustionState.FlameDevelopment +=
+                    0.105f * pointCombustionState.FlameDevelopment;
 
                 // Check whether it's time to transition to the next development phase
-                if (mCombustionStateBuffer[pointIndex].FlameDevelopment > mCombustionStateBuffer[pointIndex].MaxFlameDevelopment + 0.2f)
+                if (pointCombustionState.FlameDevelopment > pointCombustionState.MaxFlameDevelopment + 0.2f)
                 {
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Developing_2;
+                    pointCombustionState.State = CombustionState::StateType::Developing_2;
                 }
 
                 break;
@@ -912,19 +960,19 @@ void Points::UpdateCombustionHighFrequency(
                 //
 
                 // FlameDevelopment is now in the (MFD, MFD + 0.2) range
-                auto extraFlameDevelopment = mCombustionStateBuffer[pointIndex].FlameDevelopment - mCombustionStateBuffer[pointIndex].MaxFlameDevelopment;
+                auto extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
                 extraFlameDevelopment =
                     extraFlameDevelopment
                     - 0.2f * extraFlameDevelopment;
 
-                mCombustionStateBuffer[pointIndex].FlameDevelopment =
-                    mCombustionStateBuffer[pointIndex].MaxFlameDevelopment + extraFlameDevelopment;
+                pointCombustionState.FlameDevelopment =
+                    pointCombustionState.MaxFlameDevelopment + extraFlameDevelopment;
 
                 // Check whether it's time to transition to burning
                 if (extraFlameDevelopment < 0.02f)
                 {
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Burning;
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment = mCombustionStateBuffer[pointIndex].MaxFlameDevelopment;
+                    pointCombustionState.State = CombustionState::StateType::Burning;
+                    pointCombustionState.FlameDevelopment = pointCombustionState.MaxFlameDevelopment;
                 }
 
                 break;
@@ -938,48 +986,48 @@ void Points::UpdateCombustionHighFrequency(
                 // Un-develop
                 //
 
-                if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_Consumed)
+                if (pointCombustionState.State == CombustionState::StateType::Extinguishing_Consumed)
                 {
                     //
                     // f(n-1) - 0.0625*(1.01 - f(n-1)): when starting from 1, after 75 steps (1.5s) it's under 0.02
                     // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.0625*(1.01%20-%20f(n-1))&target=0&endTarget=80&range=true
                     //
 
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment -=
+                    pointCombustionState.FlameDevelopment -=
                         0.0625f
-                        * (mCombustionStateBuffer[pointIndex].MaxFlameDevelopment - mCombustionStateBuffer[pointIndex].FlameDevelopment + 0.01f);
+                        * (pointCombustionState.MaxFlameDevelopment - pointCombustionState.FlameDevelopment + 0.01f);
                 }
-                else if (mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_SmotheredRain)
+                else if (pointCombustionState.State == CombustionState::StateType::Extinguishing_SmotheredRain)
                 {
                     //
                     // f(n-1) - 0.075*f(n-1): when starting from 1, after 50 steps (1.0s) it's under 0.02
                     // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.075*f(n-1)&target=0&endTarget=75&range=true
                     //
 
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment -=
-                        0.075f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                    pointCombustionState.FlameDevelopment -=
+                        0.075f * pointCombustionState.FlameDevelopment;
                 }
                 else
                 {
-                    assert(mCombustionStateBuffer[pointIndex].State == CombustionState::StateType::Extinguishing_SmotheredWater);
+                    assert(pointCombustionState.State == CombustionState::StateType::Extinguishing_SmotheredWater);
 
                     //
                     // f(n-1) - 0.3*f(n-1): when starting from 1, after 10 steps (0.2s) it's under 0.02
                     // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=f(n-1)%20-%200.3*f(n-1)&target=0&endTarget=25&range=true
                     //
 
-                    mCombustionStateBuffer[pointIndex].FlameDevelopment -=
-                        0.3f * mCombustionStateBuffer[pointIndex].FlameDevelopment;
+                    pointCombustionState.FlameDevelopment -=
+                        0.3f * pointCombustionState.FlameDevelopment;
                 }
 
                 // Check whether we are done now
-                if (mCombustionStateBuffer[pointIndex].FlameDevelopment <= 0.02f)
+                if (pointCombustionState.FlameDevelopment <= 0.02f)
                 {
                     //
                     // Stop burning
                     //
 
-                    mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::NotBurning;
+                    pointCombustionState.State = CombustionState::StateType::NotBurning;
 
                     // Remove point from set of burning points
                     auto pointIt = std::find(

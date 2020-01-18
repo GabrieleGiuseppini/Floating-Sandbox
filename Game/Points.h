@@ -120,6 +120,7 @@ private:
 
         float FlameDevelopment;
         float MaxFlameDevelopment;
+        float NextSmokeEmissionSimulationTimestamp;
 
         CombustionState()
         {
@@ -131,6 +132,7 @@ private:
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
+            NextSmokeEmissionSimulationTimestamp = 0.0f;
         }
     };
 
