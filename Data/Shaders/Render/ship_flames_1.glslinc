@@ -39,8 +39,9 @@ in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
 in float noBorder;
 in vec2 noiseOffset;
 
-// The texture
+// The textures
 uniform sampler2D paramNoiseTexture1;
+uniform sampler2D paramGenericTexturesAtlasTexture;
 
 // Params
 uniform float paramFlameWindRotationAngle;
@@ -72,6 +73,8 @@ void main()
     // Rotate around bottom
     vec2 uv = GetRotationMatrix(windAngle) * flameSpacePosition - vec2(0.0, 0.5);
 
+    // uv now is in the (x=[-0.5, 0.5], y=[-0.5, 0.5]) range
+
 
     //
     // Get noise for this fragment and time
@@ -100,6 +103,7 @@ void main()
     // Rotate and add!
     uv += GetRotationMatrix(angle) * uv;    
         
+    // uv now is in the (x=[-1.0, 1.0], y=[-1.0, 1.0]) range
     
     //
     // Calculate thickness
@@ -122,6 +126,7 @@ void main()
     // Emit
     //
 	        
+    /* TODOTEST
     // Core1 (white->yellow)
     vec4 col1 = mix(vec4(1.0, 0.764, 0.1, 0.0), vec4(1.0, 1.0, 1.0, 0.0), smoothstep(0.8, 1.5, thickness));
 
@@ -139,4 +144,28 @@ void main()
     // Make final color
     vec3 constantList = vec3(1.0f, 0.0f, alpha);
     gl_FragColor = col1.xyzw * constantList.xxxy + constantList.yyyz;
+    */
+
+    // Sample flame texture
+    // TODOHERE
+    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
+    //virtualTextureCoords.y = fract(virtualTextureCoords.y + noiseOffset.y);
+
+    vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
+    vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
+    vec2 textureCoords = 
+        textureFrameBottomLeft
+        + (textureFrameTopRight - textureFrameBottomLeft) * ( virtualTextureCoords / 7.0 );
+    vec4 col1 = texture2D(paramGenericTexturesAtlasTexture, textureCoords);
+
+    if (col1.w < 0.2)
+        discard;
+
+    // Blend with background
+    // When no border: transparent < 0.7  --- opaque > 1.2
+    // When border:    transparent < 0.0 --- opaque > 0.5
+    float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
+
+    // Make final color
+    gl_FragColor = vec4(col1.xyz, col1.w *alpha);
 }

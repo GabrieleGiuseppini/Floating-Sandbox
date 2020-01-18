@@ -572,7 +572,16 @@ RenderContext::RenderContext(
     // Set texture parameter
     mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
     mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
-
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
+    // TODO
+    //mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground2>();
+    //mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground2>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
+    // TODO
+    //mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
+    //mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
 
     //
     // Initialize explosions texture atlas

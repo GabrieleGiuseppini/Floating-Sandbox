@@ -95,6 +95,7 @@ enum class GenericTextureGroups : uint16_t
     AntiMatterBombArmor,
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
+    Fire,
     ImpactBomb,
     PinnedPoint,
     RcBomb,
@@ -123,6 +124,8 @@ struct GenericTextureTextureDatabaseTraits
             return TextureGroups::AntiMatterBombSphereCloud;
         else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombSphere"))
             return TextureGroups::AntiMatterBombSphere;
+        else if (Utils::CaseInsensitiveEquals(str, "Fire"))
+            return TextureGroups::Fire;
         else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
             return TextureGroups::ImpactBomb;
         else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))

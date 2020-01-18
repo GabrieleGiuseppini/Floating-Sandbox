@@ -436,11 +436,16 @@ Render:
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
 			- Do cleanup tasks
 
-		- Try flames with texture
-			- Add a new "Flame" texture to GenericTextures atlas
-			- Test shader, using hardcoded atlas coords for flame texture
+		= Try flames with texture
+			= Add a new "Flame" texture to GenericTextures atlas
+				- Try to flange its bottom
+			= Test shader, using hardcoded atlas coords for flame texture
+				- Incorporate noise offset in texture offset
 			- If it works, cleanup:
 				- Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
+				- See whether we want to do it also for flame type # 2
+					- If so, get rid of two-stage flames
+
 
 		- Try with SpringRelaxation updating only positions (*)
 
