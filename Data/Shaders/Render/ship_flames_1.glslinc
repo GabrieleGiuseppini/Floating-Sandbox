@@ -114,7 +114,7 @@ void main()
     float thickness = 1.3 - abs(uv.x) * FlameWidth;
     
     // Taper flame depending on randomized height
-    thickness *= 1.0 - smoothstep(fragmentNoise * 0.75, 1.3, flameSpacePosition.y); // Taper up
+    //thickness *= 1.0 - smoothstep(fragmentNoise * 0.75, 1.3, flameSpacePosition.y); // Taper up
     thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
 
     // Discard if we are on the edge, i.e. if:
@@ -151,7 +151,7 @@ void main()
     // TODOHERE
     vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
     virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
-    virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
+    //virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
 
     vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
     vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);

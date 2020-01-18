@@ -583,6 +583,12 @@ RenderContext::RenderContext(
     //mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
     //mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
 
+    // TODOTEST
+    LogMessage("TODOHERE: ",
+        mGenericTextureAtlasMetadata->GetFrameMetadata(GenericTextureGroups::Fire, 0).TextureCoordinatesBottomLeft.toString(),
+        " ",
+        mGenericTextureAtlasMetadata->GetFrameMetadata(GenericTextureGroups::Fire, 0).TextureCoordinatesTopRight.toString());
+
     //
     // Initialize explosions texture atlas
     //
