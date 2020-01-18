@@ -823,7 +823,7 @@ void Points::UpdateCombustionHighFrequency(
 
     for (auto const pointIndex : mBurningPoints)
     {
-        auto & pointCombustionState = mCombustionStateBuffer[pointIndex];
+        CombustionState & pointCombustionState = mCombustionStateBuffer[pointIndex];
 
         //
         // Check if this point should stop developing/burning or start extinguishing faster
