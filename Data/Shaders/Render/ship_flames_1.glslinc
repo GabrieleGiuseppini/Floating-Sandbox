@@ -158,14 +158,15 @@ void main()
         + (textureFrameTopRight - textureFrameBottomLeft) * ( virtualTextureCoords / 7.0 );
     vec4 col1 = texture2D(paramGenericTexturesAtlasTexture, textureCoords);
 
-    if (col1.w < 0.2)
-        discard;
-
     // Blend with background
     // When no border: transparent < 0.7  --- opaque > 1.2
     // When border:    transparent < 0.0 --- opaque > 0.5
     float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
 
+    alpha = col1.w * alpha;
+    if (alpha < 0.75)
+        discard;
+
     // Make final color
-    gl_FragColor = vec4(col1.xyz, col1.w *alpha);
+    gl_FragColor = vec4(col1.xyz, alpha);
 }
