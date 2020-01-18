@@ -428,12 +428,15 @@ Render:
 		+ Slicer sound is not controller by Tools Volume
 			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
 		+ Try transmogrifying all textures
-
-		- See keyboard shortcut for push switch
+		+ See keyboard shortcut for push switch
 
 		- See if fire may emit Heavy smoke
 
 		- Try with SpringRelaxation updating only positions (*)
+
+		- Propulsion (*)
+
+		- Flood doors (*)
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
@@ -467,10 +470,8 @@ Render:
 		
 		- Continuous Auto-focus (*)
 
-		- Batisphere with pumps and propulsion (*)
-			- Flood doors (*)
-			- Pumps (*)
-			- Propulsion (*)
+		- Batisphere with pumps
+			- Pumps (*)			
 			- Batisphere ship
 			- Electrical layer view (*)
 

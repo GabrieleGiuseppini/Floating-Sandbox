@@ -61,6 +61,14 @@ public:
 
     virtual ~MainFrame();
 
+    bool ProcessKeyDown(
+        int keyCode,
+        int keyModifiers);
+
+    bool ProcessKeyUp(
+        int keyCode,
+        int keyModifiers);
+
 private:
 
     wxPanel * mMainPanel;

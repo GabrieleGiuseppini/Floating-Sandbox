@@ -44,7 +44,14 @@ void SignalHandler(int signal)
 class MainApp : public wxApp
 {
 public:
+
     virtual bool OnInit() override;
+
+    virtual int FilterEvent(wxEvent & event) override;
+
+private:
+
+    MainFrame * mMainFrame{ nullptr };
 };
 
 IMPLEMENT_APP(MainApp);
@@ -104,11 +111,11 @@ bool MainApp::OnInit()
 
     try
     {
-        MainFrame* frame = new MainFrame(
+        mMainFrame = new MainFrame(
             this,
             wxICON(BBB_SHIP_ICON));
 
-        SetTopWindow(frame);
+        SetTopWindow(mMainFrame);
 
         return true;
     }
@@ -118,4 +125,22 @@ bool MainApp::OnInit()
 
         return false;
     }
+}
+
+int MainApp::FilterEvent(wxEvent & event)
+{
+    // This is the only way for us to catch KEY_UP events
+    if (event.GetEventType() == wxEVT_KEY_UP
+        && nullptr != mMainFrame)
+    {
+        bool isProcessed = mMainFrame->ProcessKeyUp(
+            ((wxKeyEvent&)event).GetKeyCode(),
+            ((wxKeyEvent&)event).GetModifiers());
+
+        if (isProcessed)
+            return true;
+    }
+
+    // Not handled, continue processing
+    return -1;
 }

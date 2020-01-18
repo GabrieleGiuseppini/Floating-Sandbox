@@ -138,8 +138,7 @@ MainFrame::MainFrame(
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
-
+    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this); // Just for arrow keys
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -567,6 +566,99 @@ MainFrame::~MainFrame()
 {
 }
 
+bool MainFrame::ProcessKeyDown(
+    int keyCode,
+    int keyModifiers)
+{
+    assert(!!mUIPreferencesManager);
+    auto const panIncrement = mUIPreferencesManager->GetPanIncrement();
+
+    if (keyCode == WXK_LEFT)
+    {
+        // Left
+        mGameController->Pan(vec2f(-panIncrement, 0.0f));
+        return true;
+    }
+    else if (keyCode == WXK_UP)
+    {
+        // Up
+        mGameController->Pan(vec2f(00.0f, -panIncrement));
+        return true;
+    }
+    else if (keyCode == WXK_RIGHT)
+    {
+        // Right
+        mGameController->Pan(vec2f(panIncrement, 0.0f));
+        return true;
+    }
+    else if (keyCode == WXK_DOWN)
+    {
+        // Down
+        mGameController->Pan(vec2f(0.0f, panIncrement));
+        return true;
+    }
+    else if (keyCode == '/')
+    {
+        // Query
+
+        vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
+        vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
+
+		LogMessage("@ ", worldCoords.toString(), ":");
+
+        mGameController->QueryNearestPointAt(screenCoords);
+
+        return true;
+    }
+    else if (keyCode == 'B')
+    {
+        // Air Bubbles tool
+
+        assert(!!mToolController);
+        mToolController->SetTool(ToolType::InjectAirBubbles);
+
+        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
+        // around this, but this is an Easter Egg after all....
+
+        return true;
+    }
+    else
+    {
+        // Deliver to electric panel
+        if (!!mElectricalPanel)
+        {
+            if (mElectricalPanel->ProcessKeyDown(
+                keyCode,
+                keyModifiers))
+            {
+                return true;
+            }
+        }
+    }
+
+    // Allow it to be handled
+    return false;
+}
+
+bool MainFrame::ProcessKeyUp(
+    int keyCode,
+    int keyModifiers)
+{
+    // Deliver to electric panel
+    if (!!mElectricalPanel)
+    {
+        if (mElectricalPanel->ProcessKeyUp(
+            keyCode,
+            keyModifiers))
+        {
+            return true;
+        }
+    }
+
+    // Allow it to be handled
+    return false;
+}
+
 //
 // App event handlers
 //
@@ -848,63 +940,10 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnKeyDown(wxKeyEvent & event)
 {
-    assert(!!mUIPreferencesManager);
-    auto const panIncrement = mUIPreferencesManager->GetPanIncrement();
+    bool isProcessed = ProcessKeyDown(event.GetKeyCode(), event.GetModifiers());
 
-    if (event.GetKeyCode() == WXK_LEFT)
-    {
-        // Left
-        mGameController->Pan(vec2f(-panIncrement, 0.0f));
-    }
-    else if (event.GetKeyCode() == WXK_UP)
-    {
-        // Up
-        mGameController->Pan(vec2f(00.0f, -panIncrement));
-    }
-    else if (event.GetKeyCode() == WXK_RIGHT)
-    {
-        // Right
-        mGameController->Pan(vec2f(panIncrement, 0.0f));
-    }
-    else if (event.GetKeyCode() == WXK_DOWN)
-    {
-        // Down
-        mGameController->Pan(vec2f(0.0f, panIncrement));
-    }
-    else if (event.GetKeyCode() == '/')
-    {
-        // Query
-
-        vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
-        vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
-
-		LogMessage("@ ", worldCoords.toString(), ":");
-
-        mGameController->QueryNearestPointAt(screenCoords);
-    }
-    else if (event.GetKeyCode() == 'B')
-    {
-        // Air Bubbles tool
-
-        assert(!!mToolController);
-        mToolController->SetTool(ToolType::InjectAirBubbles);
-
-        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
-        // around this, but this is an Easter Egg after all....
-    }
-    else
-    {
-        // Deliver to electric panel
-        if (!!mElectricalPanel)
-        {
-            mElectricalPanel->OnKeyboardShortcut(
-                event.GetKeyCode(),
-                event.GetModifiers());
-        }
-    }
-
-    // Allow it to be further handled
-    event.Skip();
+    if (!isProcessed)
+        event.Skip();
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)

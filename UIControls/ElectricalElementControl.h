@@ -23,6 +23,14 @@ class ElectricalElementControl : public wxPanel
 {
 public:
 
+    virtual ~ElectricalElementControl()
+    {}
+
+    bool IsInteractive() const
+    {
+        return mIsInteractive;
+    }
+
     void SetKeyboardShortcutLabel(std::string const & label)
     {
         mImageBitmap->SetToolTip(label);
@@ -40,13 +48,6 @@ public:
         SetImageForCurrentState();
     }
 
-    ElectricalState ToggleState()
-    {
-        SetState(mCurrentState == ElectricalState::On ? ElectricalState::Off : ElectricalState::On);
-
-        return mCurrentState;
-    }
-
     void SetEnabled(bool isEnabled)
     {
         mIsEnabled = isEnabled;
@@ -58,6 +59,7 @@ protected:
 
     ElectricalElementControl(
         wxWindow * parent,
+        bool isInteractive,
         wxBitmap const & onEnabledImage,
         wxBitmap const & offEnabledImage,
         wxBitmap const & onDisabledImage,
@@ -70,6 +72,7 @@ protected:
             wxDefaultPosition,
             wxDefaultSize,
             wxBORDER_NONE)
+        , mIsInteractive(isInteractive)
         , mCurrentState(currentState)
         , mIsEnabled(true)
         , mImageBitmap(nullptr)
@@ -145,6 +148,8 @@ private:
 
 protected:
 
+    bool const mIsInteractive;
+
     ElectricalState mCurrentState;
     bool mIsEnabled;
 
@@ -158,7 +163,44 @@ private:
     wxBitmap const & mOffDisabledImage;
 };
 
-class InteractiveToggleSwitchElectricalElementControl : public ElectricalElementControl
+class InteractiveSwitchElectricalElementControl : public ElectricalElementControl
+{
+public:
+
+    virtual void OnKeyboardShortcutDown() = 0;
+
+    virtual void OnKeyboardShortcutUp() = 0;
+
+protected:
+
+    InteractiveSwitchElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & onEnabledImage,
+        wxBitmap const & offEnabledImage,
+        wxBitmap const & onDisabledImage,
+        wxBitmap const & offDisabledImage,
+        std::string const & label,
+        std::function<void(ElectricalState)> onSwitchToggled,
+        ElectricalState currentState)
+        : ElectricalElementControl(
+            parent,
+            true,
+            onEnabledImage,
+            offEnabledImage,
+            onDisabledImage,
+            offDisabledImage,
+            label,
+            currentState)
+        , mOnSwitchToggled(std::move(onSwitchToggled))
+    {
+    }
+
+protected:
+
+    std::function<void(ElectricalState)> const mOnSwitchToggled;
+};
+
+class InteractiveToggleSwitchElectricalElementControl : public InteractiveSwitchElectricalElementControl
 {
 public:
 
@@ -171,22 +213,37 @@ public:
         std::string const & label,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
-        : ElectricalElementControl(
+        : InteractiveSwitchElectricalElementControl(
             parent,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
             offDisabledImage,
             label,
+            std::move(onSwitchToggled),
             currentState)
-        , mOnSwitchToggled(std::move(onSwitchToggled))
     {
         mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
+    }
+
+    void OnKeyboardShortcutDown() override
+    {
+        OnDown();
+    }
+
+    void OnKeyboardShortcutUp() override
+    {
+        // Ignore
     }
 
 private:
 
     void OnLeftDown(wxMouseEvent & /*event*/)
+    {
+        OnDown();
+    }
+
+    void OnDown()
     {
         if (mIsEnabled)
         {
@@ -201,13 +258,9 @@ private:
             mOnSwitchToggled(newState);
         }
     }
-
-private:
-
-    std::function<void(ElectricalState)> const mOnSwitchToggled;
 };
 
-class InteractivePushSwitchElectricalElementControl : public ElectricalElementControl
+class InteractivePushSwitchElectricalElementControl : public InteractiveSwitchElectricalElementControl
 {
 public:
 
@@ -220,15 +273,15 @@ public:
         std::string const & label,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
-        : ElectricalElementControl(
+        : InteractiveSwitchElectricalElementControl(
             parent,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
             offDisabledImage,
             label,
+            std::move(onSwitchToggled),
             currentState)
-        , mOnSwitchToggled(std::move(onSwitchToggled))
         , mIsPushed(false)
     {
         mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
@@ -236,11 +289,36 @@ public:
         mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
     }
 
+    void OnKeyboardShortcutDown() override
+    {
+        OnDown();
+    }
+
+    void OnKeyboardShortcutUp() override
+    {
+        OnUp();
+    }
+
 private:
 
     void OnLeftDown(wxMouseEvent & /*event*/)
     {
-        if (mIsEnabled)
+        OnDown();
+    }
+
+    void OnLeftUp(wxMouseEvent & /*event*/)
+    {
+        OnUp();
+    }
+
+    void OnLeaveWindow(wxMouseEvent & /*event*/)
+    {
+        OnUp();
+    }
+
+    void OnDown()
+    {
+        if (mIsEnabled && !mIsPushed)
         {
             //
             // Just invoke the callback, we'll end up being toggled when the event travels back
@@ -256,25 +334,7 @@ private:
         }
     }
 
-    void OnLeftUp(wxMouseEvent & /*event*/)
-    {
-        if (mIsPushed)
-        {
-            //
-            // Just invoke the callback, we'll end up being toggled when the event travels back
-            //
-
-            ElectricalState const newState = (mCurrentState == ElectricalState::On)
-                ? ElectricalState::Off
-                : ElectricalState::On;
-
-            mOnSwitchToggled(newState);
-
-            mIsPushed = false;
-        }
-    }
-
-    void OnLeaveWindow(wxMouseEvent & /*event*/)
+    void OnUp()
     {
         if (mIsPushed)
         {
@@ -293,8 +353,6 @@ private:
     }
 
 private:
-
-    std::function<void(ElectricalState)> const mOnSwitchToggled;
 
     bool mIsPushed;
 };
@@ -313,6 +371,7 @@ public:
         ElectricalState currentState)
         : ElectricalElementControl(
             parent,
+            false,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
@@ -335,6 +394,7 @@ public:
         ElectricalState currentState)
         : ElectricalElementControl(
             parent,
+            false,
             onImage,
             offImage,
             onImage,

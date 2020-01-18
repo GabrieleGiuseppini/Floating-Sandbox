@@ -50,6 +50,8 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mElementMap()
     , mKeyboardShortcutToElementId()
+    , mCurrentKeyDownElectricalElementId()
+    //
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
     , mUIPreferencesManager(std::move(uiPreferencesManager))
@@ -188,10 +190,17 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-bool SwitchboardPanel::OnKeyboardShortcut(
+bool SwitchboardPanel::ProcessKeyDown(
     int keyCode,
-    int keyModifier)
+    int keyModifiers)
 {
+    if (!!mCurrentKeyDownElectricalElementId)
+    {
+        // This is the subsequent in a sequence of key downs...
+        // ...ignore it
+        return false;
+    }
+
     //
     // Translate key into index
     //
@@ -202,13 +211,13 @@ bool SwitchboardPanel::OnKeyboardShortcut(
     else if (keyCode == '0')
         keyIndex = 9;
     else
-        return false;
+        return false; // Not for us
 
-    if (keyModifier == wxMOD_CONTROL)
+    if (keyModifiers == wxMOD_CONTROL)
     {
         // 0-9
     }
-    else if (keyModifier == wxMOD_ALT)
+    else if (keyModifiers == wxMOD_ALT)
     {
         // 10-19
         keyIndex += 10;
@@ -219,7 +228,6 @@ bool SwitchboardPanel::OnKeyboardShortcut(
         return false;
     }
 
-
     //
     // Map and toggle
     //
@@ -228,18 +236,59 @@ bool SwitchboardPanel::OnKeyboardShortcut(
     {
         auto const elementId = mKeyboardShortcutToElementId[keyIndex];
         auto & elementInfo = mElementMap.at(elementId);
-        assert(elementInfo.IsInteractive);
 
         if (elementInfo.IsEnabled)
         {
-            elementInfo.Control->ToggleState();
-            mGameController->SetSwitchState(elementId, elementInfo.Control->GetState());
+            assert(elementInfo.Control->IsInteractive());
+
+            auto switchControl = dynamic_cast<InteractiveSwitchElectricalElementControl *>(elementInfo.Control);
+            assert(nullptr != switchControl);
+
+            // Deliver event
+            switchControl->OnKeyboardShortcutDown();
+
+            // Remember this is the first keydown
+            mCurrentKeyDownElectricalElementId = elementId;
+
+            // Processed
             return true;
         }
     }
 
     // Ignore
     return false;
+}
+
+bool SwitchboardPanel::ProcessKeyUp(
+    int keyCode,
+    int keyModifiers)
+{
+    if (!mCurrentKeyDownElectricalElementId)
+        return false; // This is the subsequent in a sequence of key ups...
+
+    // Check if it's a panel key
+    if (keyCode < '0' || keyCode > '9')
+        return false; // Not for the panel
+
+    //
+    // Map and toggle
+    //
+
+    auto & elementInfo = mElementMap.at(*mCurrentKeyDownElectricalElementId);
+
+    assert(elementInfo.Control->IsInteractive());
+
+    auto switchControl = dynamic_cast<InteractiveSwitchElectricalElementControl *>(elementInfo.Control);
+    assert(nullptr != switchControl);
+
+    // Deliver event
+    switchControl->OnKeyboardShortcutUp();
+
+    // Remember this is the first keyup
+    mCurrentKeyDownElectricalElementId.reset();
+
+    // Processed
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +342,6 @@ void SwitchboardPanel::OnSwitchCreated(
     //
 
     ElectricalElementControl * ctrl;
-    bool isInteractive;
 
     switch (type)
     {
@@ -311,8 +359,6 @@ void SwitchboardPanel::OnSwitchCreated(
                     this->mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
-
-            isInteractive = true;
 
             break;
         }
@@ -332,8 +378,6 @@ void SwitchboardPanel::OnSwitchCreated(
                 },
                 state);
 
-            isInteractive = true;
-
             break;
         }
 
@@ -347,8 +391,6 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOffDisabledBitmap,
                 label,
                 state);
-
-            isInteractive = false;
 
             break;
         }
@@ -368,7 +410,7 @@ void SwitchboardPanel::OnSwitchCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata, isInteractive));
+        std::forward_as_tuple(ctrl, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
@@ -473,7 +515,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata, false));
+        std::forward_as_tuple(ctrl, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
@@ -521,7 +563,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                     8);
 
                 // If interactive, make keyboard shortcut
-                if (it->second.IsInteractive
+                if (it->second.Control->IsInteractive()
                     && mKeyboardShortcutToElementId.size() < MaxKeyboardShortcuts)
                 {
                     int keyIndex = static_cast<int>(mKeyboardShortcutToElementId.size());

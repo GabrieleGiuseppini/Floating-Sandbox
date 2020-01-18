@@ -23,6 +23,7 @@
 #include <wx/wx.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -44,9 +45,13 @@ public:
 
     virtual ~SwitchboardPanel();
 
-    bool OnKeyboardShortcut(
+    bool ProcessKeyDown(
         int keyCode,
-        int keyModifier);
+        int keyModifiers);
+
+    bool ProcessKeyUp(
+        int keyCode,
+        int keyModifiers);
 
 public:
 
@@ -162,16 +167,13 @@ private:
     {
         ElectricalElementControl * Control;
         std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
-        bool const IsInteractive;
         bool IsEnabled;
 
         ElectricalElementInfo(
             ElectricalElementControl * control,
-            std::optional<ElectricalPanelElementMetadata> panelElementMetadata,
-            bool isInteractive)
+            std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
             : Control(control)
             , PanelElementMetadata(panelElementMetadata)
-            , IsInteractive(isInteractive)
             , IsEnabled(true)
         {}
     };
@@ -180,6 +182,12 @@ private:
 
     // Keyboard shortcuts - indexed by key (Ctrl/Alt 1,...,0,-)
     std::vector<ElectricalElementId> mKeyboardShortcutToElementId;
+
+    // The electrical element that we last delivered a KeyDown to,
+    // so that we know whom to deliver KeyUp.
+    // Note that we care only about the first key down in a sequence of key downs,
+    // and only about the first key up in a sequence of key ups
+    std::optional<ElectricalElementId> mCurrentKeyDownElectricalElementId;
 
 private:
 
