@@ -152,11 +152,6 @@ void main()
     vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
     virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
     virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
-    //virtualTextureCoords.y = (virtualTextureCoords.y + noiseOffset.y) / 7.0;
-    //virtualTextureCoords.y = fract(virtualTextureCoords.y / 7.0 + noiseOffset.y);
-    //virtualTextureCoords.y = fract(virtualTextureCoords.y / 7.0 - noiseOffset.y);
-    //virtualTextureCoords /= 7.0;
-    //virtualTextureCoords.y = fract(virtualTextureCoords.y + noiseOffset.y);
 
     vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
     vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
