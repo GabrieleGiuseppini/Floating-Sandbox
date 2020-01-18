@@ -114,8 +114,10 @@ void main()
     float thickness = 1.3 - abs(uv.x) * FlameWidth;
     
     // Taper flame depending on randomized height
+    // TODOTEST
     //thickness *= 1.0 - smoothstep(fragmentNoise * 0.75, 1.3, flameSpacePosition.y); // Taper up
-    thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
+    // TODOTEST
+    //thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
 
     // Discard if we are on the edge, i.e. if:
     // thickness < 0.62996 => focusedThickness < 0.25 (@FlameFocus=3.0)
