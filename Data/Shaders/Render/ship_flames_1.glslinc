@@ -147,9 +147,11 @@ void main()
     */
 
     // TODO: these have to become params
-    vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
-    vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
+    vec2 textureFrameBottomLeft = vec2(0.0009765625, 0.001953125);
+    vec2 textureFrameSize = vec2(1.0, 0.5);
+    float dy = 0.5 / 128.0;
 
+    /*
     vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
     virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
 
@@ -167,6 +169,7 @@ void main()
 
     // Calculate final alpha
     float finalAlpha = sampledAlpha.w * calculatedAlpha;
+    */
     // TODOTEST2
     //if (finalAlpha < 0.75)
     //    discard;
@@ -177,12 +180,12 @@ void main()
 
     // TODO: testing boundaries of col texture
     //vec2 todoCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * ((flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 0.95) + vec2(0.0, 0.025));
-    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0);
+    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
     srCoords.y = fract(srCoords.y - paramFlameSpeed);
     //srCoords.y = fract(srCoords.y - paramFlameSpeed);
-    //srCoords.y = clamp(srCoords.y, 0.25, 0.75);
+    srCoords.y = clamp(srCoords.y, dy * 2.0, 1.0 - dy * 2.0);
     //srCoords.y = 0.025 + fract(srCoords.y - paramFlameSpeed) * 0.95;
-    vec2 todoCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * srCoords;
+    vec2 todoCoords = textureFrameBottomLeft + textureFrameSize * srCoords;
     vec4 colz = texture2D(paramGenericLinearTexturesAtlasTexture, todoCoords);
     gl_FragColor = vec4(colz.xyz, 1.0);
 

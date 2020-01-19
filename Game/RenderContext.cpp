@@ -1951,7 +1951,7 @@ void RenderContext::UpdateWorldBorder()
         mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0)
         .FrameMetadata.Size;
 
-    // Calculate width, in world coordinates, of the world border, under the constraint
+    // Calculate width and height, in world coordinates, of the world border, under the constraint
     // that we want to ensure that the texture is rendered with half of its original pixel size
     float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.Width)) / 2.0f;
     float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.Height)) / 2.0f;
@@ -1961,7 +1961,6 @@ void RenderContext::UpdateWorldBorder()
     float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
 
     // Dx for drawing texture at dead-center pixel
-    // TODO: should be half of this, as we now have half of the pixel size
     //float const dx = 0.5f / static_cast<float>(worldBorderTextureSize.Width);
 
 
