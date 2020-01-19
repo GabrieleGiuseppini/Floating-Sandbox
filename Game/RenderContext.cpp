@@ -1961,7 +1961,8 @@ void RenderContext::UpdateWorldBorder()
     float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
 
     // Dx for drawing texture at dead-center pixel
-    float const dx = 0.5f / static_cast<float>(worldBorderTextureSize.Width);
+    //float const dx = 0.5f / static_cast<float>(worldBorderTextureSize.Width);
+
 
     //
     // Check which sides of the border we need to draw
@@ -1976,13 +1977,13 @@ void RenderContext::UpdateWorldBorder()
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
-            0.0f + dx,
-            0.0f + dx,
+            0.0f,
+            textureSpaceHeight,
             // Bottom-right
             -GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            1.0f - dx,
-            textureSpaceHeight - dx,
+            1.0f,
+            0.0f,
             mWorldBorderVertexBuffer);
     }
 
@@ -1993,13 +1994,13 @@ void RenderContext::UpdateWorldBorder()
             // Top-left
             GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth,
             GameParameters::HalfMaxWorldHeight,
-            0.0f + dx,
-            0.0f + dx,
+            0.0f,
+            textureSpaceHeight,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            1.0f - dx,
-            textureSpaceHeight - dx,
+            1.0f,
+            0.0f,
             mWorldBorderVertexBuffer);
     }
 
@@ -2010,13 +2011,13 @@ void RenderContext::UpdateWorldBorder()
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
-            0.0f + dx,
-            0.0f + dx,
+            0.0f,
+            1.0f,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight,
-            textureSpaceWidth - dx,
-            1.0f - dx,
+            textureSpaceWidth,
+            0.0f,
             mWorldBorderVertexBuffer);
     }
 
@@ -2027,13 +2028,13 @@ void RenderContext::UpdateWorldBorder()
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight,
-            0.0f + dx,
-            0.0f + dx,
+            0.0f,
+            1.0f,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            textureSpaceWidth - dx,
-            1.0f - dx,
+            textureSpaceWidth,
+            0.0f,
             mWorldBorderVertexBuffer);
     }
 

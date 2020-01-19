@@ -437,7 +437,7 @@ Render:
 			+ Make it new flame mode, 1
 				+ Rename others as 2 and 3
 			+ Restrict two-stage rendering only to modes 2 and 3
-			- Test putting back vertical time-changing offset
+			= Test putting back vertical time-changing offset
 				+ Texture has colors for all values of alpha mask
 				= Shader samples twice
 				= Do MipMapped and Linear Generic Textures
@@ -446,7 +446,12 @@ Render:
 					+ Shaders' parameter names: GenericTexture -> GenericMipMappedTexture
 					+ Flame 1 shader parameter name: GenericTexture -> GenericLinearTexture
 					+ WorldBorder/End parameter name: -> GenericLinearTexture
-					- WorldBorder: provide atlas coords for border texture into shader via param - once and for all at RenderContext initialization time
+					= WorldBorder: provide atlas coords for border texture into shader via param - once and for all at RenderContext initialization time
+						- Cleanup:
+							- RenderContext::RenderWorldEnd
+							- RenderContext::cctor: 
+								- remove logs
+								- put back linear gentex filter
 				- Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
 				- Redo frame texture coords
 			- Test making whole flame horizontally narrower (for mode 1 only)

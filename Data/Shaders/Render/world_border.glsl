@@ -41,7 +41,11 @@ void main()
     vec2 textureFrameBottomLeft = vec2(0.0009765625, 0.501953125);
     vec2 textureFrameSize = vec2(0.0390625, 0.078125);
 
-    vec2 textureCoords = textureFrameBottomLeft + textureFrameSize * fract(textureSpaceCoords);
+    // TODO: from param
+    //#define DX (0.025 + 0.005)
+    #define DX (0.025 * 2.0)
+    vec2 uv = clamp(fract(textureSpaceCoords), vec2(DX), vec2(1.0-DX));
+    vec2 textureCoords = textureFrameBottomLeft + textureFrameSize * uv;
     vec4 textureColor = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);
     gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 0.75);
 } 
