@@ -32,12 +32,12 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
+in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
 in vec2 noiseOffset;
 
 // The textures
 uniform sampler2D paramNoiseTexture1;
-uniform sampler2D paramGenericTexturesAtlasTexture;
+uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
 uniform float paramFlameWindRotationAngle;
@@ -117,8 +117,9 @@ void main()
 
     // Discard if we are on the edge, i.e. if:
     // thickness < 0.62996 => focusedThickness < 0.25 (@FlameFocus=3.0)
-    if (thickness < 0.62996)
-        discard;
+    // TODOTEST2
+    //if (thickness < 0.62996)
+    //    discard;
     
    
     //
@@ -154,23 +155,36 @@ void main()
 
     // Sample flame texture alpha        
     vec2 alphaTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
-    vec4 sampledAlpha = texture2D(paramGenericTexturesAtlasTexture, alphaTextureCoords);
+    vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaTextureCoords);
 
     // Sample flame texture color - sample coords change with time    
     virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
     vec2 colorTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
-    vec4 sampledColor = texture2D(paramGenericTexturesAtlasTexture, colorTextureCoords);
+    vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorTextureCoords);
 
     // Calculate implicit alpha
     float calculatedAlpha = smoothstep(0.7, 1.2, thickness);
 
     // Calculate final alpha
     float finalAlpha = sampledAlpha.w * calculatedAlpha;
-    if (finalAlpha < 0.75)
-        discard;
+    // TODOTEST2
+    //if (finalAlpha < 0.75)
+    //    discard;
 
     // Make final color
-    gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
+    // TODOTEST2
+    //gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
+
+    // TODO: testing boundaries of col texture
+    //vec2 todoCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * ((flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 0.95) + vec2(0.0, 0.025));
+    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0);
+    srCoords.y = fract(srCoords.y - paramFlameSpeed);
+    //srCoords.y = fract(srCoords.y - paramFlameSpeed);
+    //srCoords.y = clamp(srCoords.y, 0.25, 0.75);
+    //srCoords.y = 0.025 + fract(srCoords.y - paramFlameSpeed) * 0.95;
+    vec2 todoCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * srCoords;
+    vec4 colz = texture2D(paramGenericLinearTexturesAtlasTexture, todoCoords);
+    gl_FragColor = vec4(colz.xyz, 1.0);
 
     /*
     // Sample flame texture

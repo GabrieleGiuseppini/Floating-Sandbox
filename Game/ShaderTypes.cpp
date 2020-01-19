@@ -53,8 +53,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFlamesForeground2;
     else if (lstr == "ship_flames_foreground_3")
         return ProgramType::ShipFlamesForeground3;
-    else if (lstr == "ship_generic_textures")
-        return ProgramType::ShipGenericTextures;
+    else if (lstr == "ship_generic_mipmapped_textures")
+        return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
     else if (lstr == "ship_points_color_with_temperature")
@@ -139,8 +139,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFlamesForeground2";
     case ProgramType::ShipFlamesForeground3:
         return "ShipFlamesForeground3";
-    case ProgramType::ShipGenericTextures:
-        return "ShipGenericTextures";
+    case ProgramType::ShipGenericMipMappedTextures:
+        return "ShipGenericMipMappedTextures";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
     case ProgramType::ShipPointsColorWithTemperature:
@@ -234,8 +234,10 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::CloudsAtlasTexture;
     else if (str == "ExplosionsAtlasTexture")
         return ProgramParameterType::ExplosionsAtlasTexture;
-    else if (str == "GenericTexturesAtlasTexture")
-        return ProgramParameterType::GenericTexturesAtlasTexture;
+    else if (str == "GenericLinearTexturesAtlasTexture")
+        return ProgramParameterType::GenericLinearTexturesAtlasTexture;
+    else if (str == "GenericMipMappedTexturesAtlasTexture")
+        return ProgramParameterType::GenericMipMappedTexturesAtlasTexture;
     else if (str == "LandTexture")
         return ProgramParameterType::LandTexture;
     else if (str == "NoiseTexture1")
@@ -244,8 +246,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::NoiseTexture2;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
-    else if (str == "WorldBorderTexture")
-        return ProgramParameterType::WorldBorderTexture;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -301,8 +301,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "CloudsAtlasTexture";
     case ProgramParameterType::ExplosionsAtlasTexture:
         return "ExplosionsAtlasTexture";
-    case ProgramParameterType::GenericTexturesAtlasTexture:
-        return "GenericTexturesAtlasTexture";
+    case ProgramParameterType::GenericLinearTexturesAtlasTexture:
+        return "GenericLinearTexturesAtlasTexture";
+    case ProgramParameterType::GenericMipMappedTexturesAtlasTexture:
+        return "GenericMipMappedTexturesAtlasTexture";
     case ProgramParameterType::LandTexture:
         return "LandTexture";
     case ProgramParameterType::NoiseTexture1:
@@ -311,8 +313,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "NoiseTexture2";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
-    case ProgramParameterType::WorldBorderTexture:
-        return "WorldBorderTexture";
     default:
         assert(false);
         throw GameException("Unsupported ProgramParameterType");
@@ -367,12 +367,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Sparkle1;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle2"))
         return VertexAttributeType::Sparkle2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture1"))
-        return VertexAttributeType::GenericTexture1;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture2"))
-        return VertexAttributeType::GenericTexture2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericTexture3"))
-        return VertexAttributeType::GenericTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture1"))
+        return VertexAttributeType::GenericMipMappedTexture1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture2"))
+        return VertexAttributeType::GenericMipMappedTexture2;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture3"))
+        return VertexAttributeType::GenericMipMappedTexture3;
     else if (Utils::CaseInsensitiveEquals(str, "Flame1"))
         return VertexAttributeType::Flame1;
     else if (Utils::CaseInsensitiveEquals(str, "Flame2"))

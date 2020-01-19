@@ -30,8 +30,10 @@ ShipRenderContext::ShipRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
     TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-    GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
-    TextureAtlasMetadata<GenericTextureGroups> const & genericTextureAtlasMetadata,
+    GameOpenGLTexture & genericLinearTextureAtlasOpenGLHandle,
+    TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
+    GameOpenGLTexture & genericMipMappedTextureAtlasOpenGLHandle,
+    TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
     RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
     float effectiveAmbientLightIntensity,
@@ -78,10 +80,10 @@ ShipRenderContext::ShipRenderContext(
     , mSparkleVertexVBO()
     //
     , mAirBubbleVertexBuffer()
-    , mGenericTexturePlaneVertexBuffers()
-    , mGenericTextureTotalPlaneVertexCount(0)
-    , mGenericTextureVBO()
-    , mGenericTextureVBOAllocatedVertexCount(0)
+    , mGenericMipMappedTexturePlaneVertexBuffers()
+    , mGenericMipMappedTextureTotalPlaneVertexCount(0)
+    , mGenericMipMappedTextureVBO()
+    , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
     //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
@@ -103,15 +105,17 @@ ShipRenderContext::ShipRenderContext(
     , mFlameVAO()
     , mExplosionVAO()
     , mSparkleVAO()
-    , mGenericTextureVAO()
+    , mGenericMipMappedTextureVAO()
     , mVectorArrowVAO()
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
     , mExplosionTextureAtlasOpenGLHandle(explosionTextureAtlasOpenGLHandle)
     , mExplosionTextureAtlasMetadata(explosionTextureAtlasMetadata)
-    , mGenericTextureAtlasOpenGLHandle(genericTextureAtlasOpenGLHandle)
-    , mGenericTextureAtlasMetadata(genericTextureAtlasMetadata)
+    , mGenericLinearTextureAtlasOpenGLHandle(genericLinearTextureAtlasOpenGLHandle)
+    , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
+    , mGenericMipMappedTextureAtlasOpenGLHandle(genericMipMappedTextureAtlasOpenGLHandle)
+    , mGenericMipMappedTextureAtlasMetadata(genericMipMappedTextureAtlasMetadata)
     // Managers
     , mShaderManager(shaderManager)
     // Parameters
@@ -180,10 +184,10 @@ ShipRenderContext::ShipRenderContext(
     mSparkleVertexVBO = vbos[7];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericTextureVBO = vbos[8];
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
-    mGenericTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
-    glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
+    mGenericMipMappedTextureVBO = vbos[8];
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
+    mGenericMipMappedTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
+    glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
     mVectorArrowVBO = vbos[9];
 
@@ -326,24 +330,24 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Initialize GenericTexture VAO
+    // Initialize GenericMipMappedTexture VAO
     //
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mGenericTextureVAO = tmpGLuint;
+        mGenericMipMappedTextureVAO = tmpGLuint;
 
-        glBindVertexArray(*mGenericTextureVAO);
+        glBindVertexArray(*mGenericMipMappedTextureVAO);
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
         static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericTexture3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -707,8 +711,8 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -806,8 +810,8 @@ void ShipRenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
@@ -1037,14 +1041,14 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
     mExplosionPlaneVertexBuffers.resize(maxMaxPlaneId + 1);
     mExplosionTotalPlaneVertexCount = 0;
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
-    mAirBubbleVertexBuffer.map(mGenericTextureVBOAllocatedVertexCount);
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
+    mAirBubbleVertexBuffer.map(mGenericMipMappedTextureVBOAllocatedVertexCount);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    mGenericTexturePlaneVertexBuffers.clear();
-    mGenericTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericTextureTotalPlaneVertexCount = 0;
+    mGenericMipMappedTexturePlaneVertexBuffers.clear();
+    mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
+    mGenericMipMappedTextureTotalPlaneVertexCount = 0;
 
 
     //
@@ -1809,7 +1813,7 @@ void ShipRenderContext::RenderEnd()
     // Render generic textures
     //
 
-    RenderGenericTextures();
+    RenderGenericMipMappedTextures();
 
 
 
@@ -1904,11 +1908,11 @@ void ShipRenderContext::RenderSparkles()
     }
 }
 
-void ShipRenderContext::RenderGenericTextures()
+void ShipRenderContext::RenderGenericMipMappedTextures()
 {
     // Unmap generic texture VBO (which we have mapped regardless of whether or not there
     // are air bubbles)
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
     mAirBubbleVertexBuffer.unmap();
 
     //
@@ -1916,17 +1920,17 @@ void ShipRenderContext::RenderGenericTextures()
     //
 
     if (mAirBubbleVertexBuffer.size() > 0
-        || mGenericTextureTotalPlaneVertexCount > 0)
+        || mGenericMipMappedTextureTotalPlaneVertexCount > 0)
     {
-        glBindVertexArray(*mGenericTextureVAO);
+        glBindVertexArray(*mGenericMipMappedTextureVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::ShipGenericTextures>();
+        mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
 
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
         // Bind VBO (need to do this after VAO change)
-        glBindBuffer(GL_ARRAY_BUFFER, *mGenericTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
 
 
         //
@@ -1940,26 +1944,26 @@ void ShipRenderContext::RenderGenericTextures()
             glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAirBubbleVertexBuffer.size()));
 
             // Update stats
-            mRenderStatistics.LastRenderedShipGenericTextures += mAirBubbleVertexBuffer.size() / 6; // # of quads
+            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mAirBubbleVertexBuffer.size() / 6; // # of quads
         }
 
 
         //
-        // Generic textures
+        // Generic mipmapped textures
         //
 
-        if (mGenericTextureTotalPlaneVertexCount > 0)
+        if (mGenericMipMappedTextureTotalPlaneVertexCount > 0)
         {
             //
             // Upload vertex buffers
             //
 
             // (Re-)Allocate vertex buffer, if needed
-            if (mGenericTextureVBOAllocatedVertexCount < mGenericTextureTotalPlaneVertexCount)
+            if (mGenericMipMappedTextureVBOAllocatedVertexCount < mGenericMipMappedTextureTotalPlaneVertexCount)
             {
-                mGenericTextureVBOAllocatedVertexCount = mGenericTextureTotalPlaneVertexCount;
+                mGenericMipMappedTextureVBOAllocatedVertexCount = mGenericMipMappedTextureTotalPlaneVertexCount;
 
-                glBufferData(GL_ARRAY_BUFFER, mGenericTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
                 CheckOpenGLError();
             }
 
@@ -1968,7 +1972,7 @@ void ShipRenderContext::RenderGenericTextures()
             CheckOpenGLError();
 
             // Copy all buffers
-            for (auto const & plane : mGenericTexturePlaneVertexBuffers)
+            for (auto const & plane : mGenericMipMappedTexturePlaneVertexBuffers)
             {
                 if (!plane.vertexBuffer.empty())
                 {
@@ -1988,15 +1992,15 @@ void ShipRenderContext::RenderGenericTextures()
             // Render
             //
 
-            assert(0 == (mGenericTextureTotalPlaneVertexCount % 6));
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericTextureTotalPlaneVertexCount));
+            assert(0 == (mGenericMipMappedTextureTotalPlaneVertexCount % 6));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericMipMappedTextureTotalPlaneVertexCount));
 
 
             //
             // Update stats
             //
 
-            mRenderStatistics.LastRenderedShipGenericTextures += mGenericTextureTotalPlaneVertexCount / 6;
+            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalPlaneVertexCount / 6;
         }
 
         glBindVertexArray(0);

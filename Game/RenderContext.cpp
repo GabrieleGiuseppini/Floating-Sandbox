@@ -65,8 +65,10 @@ RenderContext::RenderContext(
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     , mIsWorldBorderVisible(false)
-    , mGenericTextureAtlasOpenGLHandle()
-    , mGenericTextureAtlasMetadata()
+    , mGenericLinearTextureAtlasOpenGLHandle()
+    , mGenericLinearTextureAtlasMetadata()
+    , mGenericMipMappedTextureAtlasOpenGLHandle()
+    , mGenericMipMappedTextureAtlasMetadata()
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
     , mUploadedNoiseTexturesManager()
@@ -117,7 +119,8 @@ RenderContext::RenderContext(
     static constexpr float CloudAtlasProgressSteps = 10.0f;
     static constexpr float OceanProgressSteps = 10.0f;
     static constexpr float LandProgressSteps = 10.0f;
-    static constexpr float GenericTextureAtlasProgressSteps = 10.0f;
+    static constexpr float GenericLinearTextureAtlasProgressSteps = 2.0f;
+    static constexpr float GenericMipMappedTextureAtlasProgressSteps = 10.0f;
     static constexpr float ExplosionAtlasProgressSteps = 10.0f;
 
     static constexpr float TotalProgressSteps =
@@ -126,8 +129,8 @@ RenderContext::RenderContext(
         + CloudAtlasProgressSteps
         + OceanProgressSteps
         + LandProgressSteps
-        + 1.0f // WorldEnd
-        + GenericTextureAtlasProgressSteps
+        + GenericLinearTextureAtlasProgressSteps
+        + GenericMipMappedTextureAtlasProgressSteps
         + ExplosionAtlasProgressSteps
         + 2.0f; // Noise
 
@@ -500,61 +503,110 @@ RenderContext::RenderContext(
         progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + progress * LandProgressSteps) / TotalProgressSteps, "Loading world textures...");
     }
 
-    // World end texture
-
-    mShaderManager->ActivateTexture<ProgramParameterType::WorldBorderTexture>();
-
-    mUploadedWorldTextureManager.UploadGroup(
-        worldTextureDatabase.GetGroup(WorldTextureGroups::WorldBorder),
-        GL_LINEAR,
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + progress) / TotalProgressSteps, "Loading world textures...");
-        });
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedWorldTextureManager.GetOpenGLHandle(WorldTextureGroups::WorldBorder, 0));
-    CheckOpenGLError();
-
-    // Set texture in shader
-    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
-    mShaderManager->SetTextureParameters<ProgramType::WorldBorder>();
-
 
     //
-    // Create generic texture atlas
+    // Create generic linear texture atlas
     //
 
     // Load texture database
-    auto genericTextureDatabase = TextureDatabase<Render::GenericTextureTextureDatabaseTraits>::Load(
+    auto genericLinearTextureDatabase = TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>::Load(
         resourceLoader.GetTexturesRootFolderPath());
 
     // Create atlas
-    auto genericTextureAtlas = TextureAtlasBuilder<GenericTextureGroups>::BuildAtlas(
-        genericTextureDatabase,
+    auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
+        genericLinearTextureDatabase,
         AtlasOptions::None,
         [&progressCallback](float progress, std::string const & /*message*/)
         {
-            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f + progress * GenericTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
+            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + progress * GenericLinearTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
         });
 
-    LogMessage("Generic texture atlas size: ", genericTextureAtlas.AtlasData.Size.Width, "x", genericTextureAtlas.AtlasData.Size.Height);
+    LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
 
     // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::GenericTexturesAtlasTexture>();
+    mShaderManager->ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
 
     // Create texture OpenGL handle
     glGenTextures(1, &tmpGLuint);
-    mGenericTextureAtlasOpenGLHandle = tmpGLuint;
+    mGenericLinearTextureAtlasOpenGLHandle = tmpGLuint;
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mGenericTextureAtlasOpenGLHandle);
+    glBindTexture(GL_TEXTURE_2D, *mGenericLinearTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.AtlasData));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Store metadata
+    mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericLinearTextureGroups>>(
+        genericLinearTextureAtlas.Metadata);
+
+    // Set texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
+    mShaderManager->SetTextureParameters<ProgramType::WorldBorder>();
+
+    // TODOTEST
+    LogMessage("TODOHERE: Fire: ",
+        mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureCoordinatesBottomLeft.toString(),
+        " ",
+        "W=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureSpaceWidth,
+        " H=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureSpaceHeight);
+
+    // TODOTEST
+    LogMessage("TODOHERE: WorldBorder: ",
+        mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureCoordinatesBottomLeft.toString(),
+        " ",
+        "W=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureSpaceWidth,
+        " H=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureSpaceHeight);
+
+    //
+    // Create generic mipmapped texture atlas
+    //
+
+    // Load texture database
+    auto genericMipMappedTextureDatabase = TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>::Load(
+        resourceLoader.GetTexturesRootFolderPath());
+
+    // Create atlas
+    auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
+        genericMipMappedTextureDatabase,
+        AtlasOptions::None,
+        [&progressCallback](float progress, std::string const & /*message*/)
+        {
+            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps + progress * GenericMipMappedTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
+        });
+
+    LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
+
+    // Activate texture
+    mShaderManager->ActivateTexture<ProgramParameterType::GenericMipMappedTexturesAtlasTexture>();
+
+    // Create texture OpenGL handle
+    glGenTextures(1, &tmpGLuint);
+    mGenericMipMappedTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mGenericMipMappedTextureAtlasOpenGLHandle);
     CheckOpenGLError();
 
     // Upload atlas texture
     GameOpenGL::UploadMipmappedPowerOfTwoTexture(
-        std::move(genericTextureAtlas.AtlasData),
-        genericTextureAtlas.Metadata.GetMaxDimension());
+        std::move(genericMipMappedTextureAtlas.AtlasData),
+        genericMipMappedTextureAtlas.Metadata.GetMaxDimension());
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -567,29 +619,20 @@ RenderContext::RenderContext(
     CheckOpenGLError();
 
     // Store metadata
-    mGenericTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericTextureGroups>>(genericTextureAtlas.Metadata);
+    mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericMipMappedTextureGroups>>(genericMipMappedTextureAtlas.Metadata);
 
-    // Set texture parameter
-    mShaderManager->ActivateProgram<ProgramType::ShipGenericTextures>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
+    // Set texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipGenericMipMappedTextures>();
 
-    // TODOTEST
-    LogMessage("TODOHERE: ",
-        mGenericTextureAtlasMetadata->GetFrameMetadata(GenericTextureGroups::Fire, 0).TextureCoordinatesBottomLeft.toString(),
-        " ",
-        mGenericTextureAtlasMetadata->GetFrameMetadata(GenericTextureGroups::Fire, 0).TextureCoordinatesTopRight.toString());
 
     //
     // Initialize explosions texture atlas
     //
 
     progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
-            + GenericTextureAtlasProgressSteps + 0.0f) / TotalProgressSteps, "Loading explosion textures...");
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
+            + GenericMipMappedTextureAtlasProgressSteps + 0.0f) / TotalProgressSteps, "Loading explosion textures...");
 
     // Load atlas
     TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
@@ -597,8 +640,8 @@ RenderContext::RenderContext(
         resourceLoader.GetTexturesRootFolderPath());
 
     progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
-            + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps) / TotalProgressSteps, "Loading explosion textures...");
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
+            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps) / TotalProgressSteps, "Loading explosion textures...");
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
 
@@ -630,7 +673,7 @@ RenderContext::RenderContext(
     // Store metadata
     mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<ExplosionTextureGroups>>(explosionTextureAtlas.Metadata);
 
-    // Set texture in shader
+    // Set texture in shaders
     mShaderManager->ActivateProgram<ProgramType::ShipExplosions>();
     mShaderManager->SetTextureParameters<ProgramType::ShipExplosions>();
 
@@ -653,8 +696,8 @@ RenderContext::RenderContext(
         GL_LINEAR);
 
     progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
-            + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
+            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
@@ -684,8 +727,8 @@ RenderContext::RenderContext(
         GL_LINEAR);
 
     progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + 1.0f
-            + GenericTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
+        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
+            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
@@ -813,8 +856,10 @@ void RenderContext::AddShip(
             *mShaderManager,
             mExplosionTextureAtlasOpenGLHandle,
             *mExplosionTextureAtlasMetadata,
-            mGenericTextureAtlasOpenGLHandle,
-            *mGenericTextureAtlasMetadata,
+            mGenericLinearTextureAtlasOpenGLHandle,
+            *mGenericLinearTextureAtlasMetadata,
+            mGenericMipMappedTextureAtlasOpenGLHandle,
+            *mGenericMipMappedTextureAtlasMetadata,
             mRenderStatistics,
             mViewModel,
             mEffectiveAmbientLightIntensity,
@@ -1903,17 +1948,17 @@ static void MakeQuad(
 void RenderContext::UpdateWorldBorder()
 {
     ImageSize const & worldBorderTextureSize =
-        mUploadedWorldTextureManager.GetFrameMetadata(WorldTextureGroups::WorldBorder, 0)
-        .Size;
+        mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0)
+        .FrameMetadata.Size;
 
     // Calculate width, in world coordinates, of the world border, under the constraint
     // that we want to ensure that the texture is rendered with its original size
     float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.Width / 2));
     float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.Height / 2));
 
-    // Max texture coordinates - chosen so that texture dimensions do not depend on zoom
-    float const textureWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
-    float const textureHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
+    // Max coordinates in texture space (e.g. 3.0 means three frames)
+    float const textureSpaceWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
+    float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
 
     // Dx for drawing texture at dead-center pixel
     float const dx = 0.5f / static_cast<float>(worldBorderTextureSize.Width);
@@ -1937,7 +1982,7 @@ void RenderContext::UpdateWorldBorder()
             -GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
             1.0f - dx,
-            textureHeight - dx,
+            textureSpaceHeight - dx,
             mWorldBorderVertexBuffer);
     }
 
@@ -1954,7 +1999,7 @@ void RenderContext::UpdateWorldBorder()
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
             1.0f - dx,
-            textureHeight - dx,
+            textureSpaceHeight - dx,
             mWorldBorderVertexBuffer);
     }
 
@@ -1970,7 +2015,7 @@ void RenderContext::UpdateWorldBorder()
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight,
-            textureWidth - dx,
+            textureSpaceWidth - dx,
             1.0f - dx,
             mWorldBorderVertexBuffer);
     }
@@ -1987,7 +2032,7 @@ void RenderContext::UpdateWorldBorder()
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            textureWidth - dx,
+            textureSpaceWidth - dx,
             1.0f - dx,
             mWorldBorderVertexBuffer);
     }

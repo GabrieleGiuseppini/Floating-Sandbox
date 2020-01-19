@@ -71,6 +71,11 @@ int TextureAtlasMetadata<TextureGroups>::GetMaxDimension() const
 template <typename TextureGroups>
 void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
 {
+    picojson::object textureSpaceSize;
+    textureSpaceSize["width"] = picojson::value(static_cast<double>(TextureSpaceWidth));
+    textureSpaceSize["height"] = picojson::value(static_cast<double>(TextureSpaceHeight));
+    root["texture_space_size"] = picojson::value(std::move(textureSpaceSize));
+
     picojson::object textureCoordinates;
     textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
     textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
@@ -91,6 +96,10 @@ void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root
 template <typename TextureGroups>
 TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
 {
+    picojson::object const & textureSpaceSizeJson = root.at("texture_space_size").get<picojson::object>();
+    float const textureSpaceWidth = static_cast<float>(textureSpaceSizeJson.at("width").get<double>());
+    float const textureSpaceHeight = static_cast<float>(textureSpaceSizeJson.at("height").get<double>());
+
     picojson::object const & textureCoordinatesJson = root.at("texture_coordinates").get<picojson::object>();
     vec2f textureCoordinatesBottomLeft(
         static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
@@ -107,6 +116,8 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
     TextureFrameMetadata<TextureGroups> frameMetadata = TextureFrameMetadata<TextureGroups>::Deserialize(frameMetadataJson);
 
     return TextureAtlasFrameMetadata<TextureGroups>(
+        textureSpaceWidth,
+        textureSpaceHeight,
         textureCoordinatesBottomLeft,
         textureCoordinatesTopRight,
         frameLeftX,
@@ -271,6 +282,132 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
 
 template <typename TextureGroups>
 typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+{
+    //
+    // Sort input texture info's by height, from tallest to shortest,
+    // and then by width
+    //
+
+    std::vector<TextureInfo> sortedTextureInfos = inputTextureInfos;
+    std::sort(
+        sortedTextureInfos.begin(),
+        sortedTextureInfos.end(),
+        [](TextureInfo const & a, TextureInfo const & b)
+        {
+            return a.Size.Height > b.Size.Height
+                || (a.Size.Height == b.Size.Height && a.Size.Width > b.Size.Width);
+        });
+
+
+    //
+    // Calculate size of atlas
+    //
+
+    uint64_t totalArea = 0;
+    for (auto const & ti : sortedTextureInfos)
+    {
+        totalArea += static_cast<uint64_t>(ti.Size.Width * ti.Size.Height);
+    }
+
+    // Square root of area, floor'd to next power of two, minimized
+    int const atlasSide = ceil_power_of_two(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
+    int atlasWidth = atlasSide;
+    int atlasHeight = atlasSide;
+
+
+    //
+    // Place tiles
+    //
+
+    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    texturePositions.reserve(inputTextureInfos.size());
+
+    struct Position
+    {
+        int x;
+        int y;
+
+        Position(
+            int _x,
+            int _y)
+            : x(_x)
+            , y(_y)
+        {}
+    };
+
+    std::vector<Position> positionStack;
+    positionStack.emplace_back(0, 0);
+
+    for (TextureInfo const & t : sortedTextureInfos)
+    {
+        while (true)
+        {
+            Position const currentPosition = positionStack.back();
+
+            if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
+                || positionStack.size() == 1                    // We can't backtrack
+                || (ceil_power_of_two(currentPosition.x + t.Size.Width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
+            {
+                // Put it at the current location
+                texturePositions.emplace_back(
+                    t.FrameId,
+                    currentPosition.x,
+                    currentPosition.y);
+
+                if (positionStack.size() == 1
+                    || currentPosition.y + t.Size.Height < std::next(positionStack.rbegin())->y)
+                {
+                    // Move current location up to top
+                    positionStack.back().y += t.Size.Height;
+                }
+                else
+                {
+                    // Current location is completed
+                    assert(currentPosition.y + t.Size.Height == std::next(positionStack.rbegin())->y);
+
+                    // Pop it from stack
+                    positionStack.pop_back();
+                }
+
+                // Add new location to the right of this tile
+                positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
+
+                // Adjust atlas dimensions
+                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.Width));
+                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.Height));
+
+                // We are done with this tile
+                break;
+            }
+            else
+            {
+                // Backtrack
+                positionStack.pop_back();
+                assert(!positionStack.empty());
+            }
+        }
+    }
+
+
+    //
+    // Round final size
+    //
+
+    atlasWidth = ceil_power_of_two(atlasWidth);
+    atlasHeight = ceil_power_of_two(atlasHeight);
+
+
+    //
+    // Return atlas
+    //
+
+    return AtlasSpecification(
+        std::move(texturePositions),
+        ImageSize(atlasWidth, atlasHeight));
+}
+
+template <typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildMipMappableAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Sort input texture info's by height, from tallest to shortest
@@ -504,8 +641,14 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             texturePosition.FrameLeftX,
             texturePosition.FrameBottomY);
 
-        // Store texture coordinates
+        // Calculate frame dimensions in texture space
+        float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width);
+        float const textureSpaceFrameHeight = static_cast<float>(textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height);
+
+        // Store texture metadata
         frameMetadata.emplace_back(
+            textureSpaceFrameWidth,
+            textureSpaceFrameHeight,
             // Bottom-left
             vec2f(
                 dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
@@ -567,19 +710,22 @@ void TextureAtlasBuilder<TextureGroups>::CopyImage(
 }
 
 //
-// Explicit specializations for all database groups
+// Explicit specializations for all texture groups
 //
 
 #include "TextureTypes.h"
 
 template struct Render::TextureAtlasMetadata<Render::CloudTextureGroups>;
-template struct Render::TextureAtlasMetadata<Render::GenericTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::GenericLinearTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::ExplosionTextureGroups>;
 
 template struct Render::TextureAtlas<Render::CloudTextureGroups>;
-template struct Render::TextureAtlas<Render::GenericTextureGroups>;
+template struct Render::TextureAtlas<Render::GenericLinearTextureGroups>;
+template struct Render::TextureAtlas<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlas<Render::ExplosionTextureGroups>;
 
 template class Render::TextureAtlasBuilder<Render::CloudTextureGroups>;
-template class Render::TextureAtlasBuilder<Render::GenericTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::GenericLinearTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::GenericMipMappedTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::ExplosionTextureGroups>;

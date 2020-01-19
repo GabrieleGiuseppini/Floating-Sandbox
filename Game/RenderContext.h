@@ -1323,24 +1323,24 @@ public:
             alpha);
     }
 
-    inline void UploadShipGenericTextureRenderSpecification(
+    inline void UploadShipGenericMipMappedTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position);
     }
 
-    inline void UploadShipGenericTextureRenderSpecification(
+    inline void UploadShipGenericMipMappedTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
@@ -1349,7 +1349,7 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position,
@@ -1359,10 +1359,10 @@ public:
             alpha);
     }
 
-    inline void UploadShipGenericTextureRenderSpecification(
+    inline void UploadShipGenericMipMappedTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angle,
@@ -1370,7 +1370,7 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position,
@@ -1379,18 +1379,18 @@ public:
             alpha);
     }
 
-    inline void UploadShipGenericTextureRenderSpecification(
+    inline void UploadShipGenericMipMappedTextureRenderSpecification(
         ShipId shipId,
         PlaneId planeId,
         float personalitySeed,
-        GenericTextureGroups textureGroup,
+        GenericMipMappedTextureGroups textureGroup,
         vec2f const & position,
         float scale,
         float alpha)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadGenericTextureRenderSpecification(
+        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             personalitySeed,
             textureGroup,
@@ -1821,8 +1821,11 @@ private:
 
     bool mIsWorldBorderVisible;
 
-    GameOpenGLTexture mGenericTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericTextureGroups>> mGenericTextureAtlasMetadata;
+    GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
+
+    GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
+    std::unique_ptr<TextureAtlasMetadata<GenericMipMappedTextureGroups>> mGenericMipMappedTextureAtlasMetadata;
 
     GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;

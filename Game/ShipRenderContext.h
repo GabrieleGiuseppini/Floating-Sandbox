@@ -45,8 +45,10 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-        GameOpenGLTexture & genericTextureAtlasOpenGLHandle,
-        TextureAtlasMetadata<GenericTextureGroups> const & genericTextureAtlasMetadata,
+        GameOpenGLTexture & genericLinearTextureAtlasOpenGLHandle,
+        TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
+        GameOpenGLTexture & genericMipMappedTextureAtlasOpenGLHandle,
+        TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float effectiveAmbientLightIntensity,
@@ -589,9 +591,9 @@ public:
         float scale,
         float alpha)
     {
-        StoreGenericTextureRenderSpecification(
+        StoreGenericMipMappedTextureRenderSpecification(
             planeId,
-            TextureFrameId<GenericTextureGroups>(GenericTextureGroups::AirBubble, 0),
+            TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::AirBubble, 0),
             position,
             scale,
             0.0f, // angle
@@ -599,12 +601,12 @@ public:
             mAirBubbleVertexBuffer);
     }
 
-    inline void UploadGenericTextureRenderSpecification(
+    inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
-        UploadGenericTextureRenderSpecification(
+        UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position,
@@ -613,16 +615,16 @@ public:
             1.0f);
     }
 
-    inline void UploadGenericTextureRenderSpecification(
+    inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
         vec2f const & rotationOffset,
         float alpha)
     {
-        UploadGenericTextureRenderSpecification(
+        UploadGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position,
@@ -631,16 +633,16 @@ public:
             alpha);
     }
 
-    inline void UploadGenericTextureRenderSpecification(
+    inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
         float personalitySeed,
-        GenericTextureGroups textureGroup,
+        GenericMipMappedTextureGroups textureGroup,
         vec2f const & position,
         float scale,
         float alpha)
     {
         // Choose frame
-        size_t const frameCount = mGenericTextureAtlasMetadata.GetFrameCount(textureGroup);
+        size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
         float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
             static_cast<TextureFrameIndex>(floor(frameIndexF)),
@@ -649,18 +651,18 @@ public:
         // Choose angle
         float const angleCw = (frameIndexF - static_cast<float>(frameIndex)) * 2.0f * Pi<float>;
 
-        UploadGenericTextureRenderSpecification(
+        UploadGenericMipMappedTextureRenderSpecification(
             planeId,
-            TextureFrameId<GenericTextureGroups>(textureGroup, frameIndex),
+            TextureFrameId<GenericMipMappedTextureGroups>(textureGroup, frameIndex),
             position,
             scale,
             angleCw,
             alpha);
     }
 
-    inline void UploadGenericTextureRenderSpecification(
+    inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -669,13 +671,13 @@ public:
         size_t const planeIndex = static_cast<size_t>(planeId);
 
         // Pre-sized
-        assert(planeIndex < mGenericTexturePlaneVertexBuffers.size());
+        assert(planeIndex < mGenericMipMappedTexturePlaneVertexBuffers.size());
 
         // Get this plane's vertex buffer
-        auto & vertexBuffer = mGenericTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
+        auto & vertexBuffer = mGenericMipMappedTexturePlaneVertexBuffers[planeIndex].vertexBuffer;
 
         // Populate the texture quad
-        StoreGenericTextureRenderSpecification(
+        StoreGenericMipMappedTextureRenderSpecification(
             planeId,
             textureFrameId,
             position,
@@ -685,7 +687,7 @@ public:
             vertexBuffer);
 
         // Update total count of vertices
-        mGenericTextureTotalPlaneVertexCount += 6;
+        mGenericMipMappedTextureTotalPlaneVertexCount += 6;
     }
 
     //
@@ -723,9 +725,9 @@ public:
 private:
 
     template<typename TVertexBuffer>
-    inline void StoreGenericTextureRenderSpecification(
+    inline void StoreGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericTextureGroups> const & textureFrameId,
+        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -736,7 +738,8 @@ private:
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata<GenericTextureGroups> const & frame = mGenericTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+        TextureAtlasFrameMetadata<GenericMipMappedTextureGroups> const & frame =
+            mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorWorldX;
         float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
@@ -835,7 +838,7 @@ private:
         size_t flameCount);
 
     void RenderSparkles();
-    void RenderGenericTextures();
+    void RenderGenericMipMappedTextures();
     void RenderExplosions();
     void RenderVectorArrows();
 
@@ -1032,10 +1035,10 @@ private:
     GameOpenGLVBO mSparkleVertexVBO;
 
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
-    std::vector<GenericTexturePlaneData> mGenericTexturePlaneVertexBuffers;
-    size_t mGenericTextureTotalPlaneVertexCount;
-    GameOpenGLVBO mGenericTextureVBO;
-    size_t mGenericTextureVBOAllocatedVertexCount;
+    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers;
+    size_t mGenericMipMappedTextureTotalPlaneVertexCount;
+    GameOpenGLVBO mGenericMipMappedTextureVBO;
+    size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
@@ -1072,7 +1075,7 @@ private:
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mExplosionVAO;
     GameOpenGLVAO mSparkleVAO;
-    GameOpenGLVAO mGenericTextureVAO;
+    GameOpenGLVAO mGenericMipMappedTextureVAO;
     GameOpenGLVAO mVectorArrowVAO;
 
 
@@ -1086,8 +1089,11 @@ private:
     GameOpenGLTexture & mExplosionTextureAtlasOpenGLHandle;
     TextureAtlasMetadata<ExplosionTextureGroups> const & mExplosionTextureAtlasMetadata;
 
-    GameOpenGLTexture & mGenericTextureAtlasOpenGLHandle;
-    TextureAtlasMetadata<GenericTextureGroups> const & mGenericTextureAtlasMetadata;
+    GameOpenGLTexture & mGenericLinearTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+
+    GameOpenGLTexture & mGenericMipMappedTextureAtlasOpenGLHandle;
+    TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
 private:
 

@@ -254,7 +254,7 @@ void Points::CreateEphemeralParticleDebris(
 }
 
 void Points::CreateEphemeralParticleSmoke(
-    Render::GenericTextureGroups textureGroup,
+    Render::GenericMipMappedTextureGroups textureGroup,
     EphemeralState::SmokeState::GrowthType growth,
     vec2f const & position,
     float temperature,
@@ -1525,7 +1525,7 @@ void Points::UploadEphemeralParticles(
                     - SmoothStep(0.7f, 1.0f, lifetimeProgress);
 
                 // Upload smoke
-                renderContext.UploadShipGenericTextureRenderSpecification(
+                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
                     shipId,
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,

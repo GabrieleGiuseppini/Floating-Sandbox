@@ -42,6 +42,9 @@ struct TextureAtlasFrameMetadata
 {
 public:
 
+    float TextureSpaceWidth;
+    float TextureSpaceHeight;
+
     vec2f TextureCoordinatesBottomLeft;
     vec2f TextureCoordinatesTopRight;
 
@@ -51,12 +54,16 @@ public:
     TextureFrameMetadata<TextureGroups> FrameMetadata;
 
     TextureAtlasFrameMetadata(
+        float textureSpaceWidth,
+        float textureSpaceHeight,
         vec2f textureCoordinatesBottomLeft,
         vec2f textureCoordinatesTopRight,
         int frameLeftX,
         int frameBottomY,
         TextureFrameMetadata<TextureGroups> frameMetadata)
-        : TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
+        : TextureSpaceWidth(textureSpaceWidth)
+        , TextureSpaceHeight(textureSpaceHeight)
+        , TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
         , TextureCoordinatesTopRight(textureCoordinatesTopRight)
         , FrameLeftX(frameLeftX)
         , FrameBottomY(frameBottomY)
@@ -258,6 +265,39 @@ public:
             progressCallback);
     }
 
+    /*
+     * Builds an atlas with the entire content of the specified database, assuming that each
+     * frame's side size is a power of two.
+     */
+    template<typename TextureDatabaseTraits>
+    static TextureAtlas<TextureGroups> BuildMipMappableAtlas(
+        TextureDatabase<TextureDatabaseTraits> const & database,
+        AtlasOptions options,
+        ProgressCallback const & progressCallback)
+    {
+        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (auto const & group : database.GetGroups())
+        {
+            AddTextureInfos(group, textureInfos);
+        }
+
+        // Build specification
+        auto const specification = BuildMipMappableAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            options,
+            [&database](TextureFrameId<TextureGroups> const & frameId)
+            {
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+            },
+            progressCallback);
+    }
+
 public:
 
     TextureAtlasBuilder()
@@ -322,6 +362,9 @@ private:
     static AtlasSpecification BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
 
     // Unit-tested
+    static AtlasSpecification BuildMipMappableAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
+
+    // Unit-tested
     static AtlasSpecification BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
 
     static TextureAtlas<TextureGroups> BuildAtlas(
@@ -356,9 +399,10 @@ private:
 
 private:
 
-    friend class TextureAtlasTests_OneTexture_Test;
-    friend class TextureAtlasTests_Placement1_Test;
-    friend class TextureAtlasTests_RoundsAtlasSize_Test;
+    friend class TextureAtlasTests_OneTexture_MipMappable_Test;
+    friend class TextureAtlasTests_Placement1_MipMappable_Test;
+    friend class TextureAtlasTests_Placement1_NonMipMappable_Test;
+    friend class TextureAtlasTests_RoundsAtlasSize_MipMappable_Test;
     friend class TextureAtlasTests_RegularAtlas_Test;
 
 private:

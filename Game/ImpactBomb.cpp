@@ -135,10 +135,10 @@ void ImpactBomb::Upload(
         case State::Idle:
         case State::TriggeringExplosion:
         {
-            renderContext.UploadShipGenericTextureRenderSpecification(
+            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(Render::GenericTextureGroups::ImpactBomb, 0),
+                TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
                 mRotationBaseAxis,
@@ -155,10 +155,10 @@ void ImpactBomb::Upload(
                 static_cast<float>(mExplosionFadeoutCounter + 1)
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
-            renderContext.UploadShipGenericTextureRenderSpecification(
+            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
                 shipId,
                 GetPlaneId(),
-                TextureFrameId(Render::GenericTextureGroups::ImpactBomb, 0),
+                TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),
                 1.0f, // Scale
                 mRotationBaseAxis,

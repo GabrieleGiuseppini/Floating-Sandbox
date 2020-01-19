@@ -37,7 +37,7 @@ enum class ProgramType
     ShipFlamesForeground1,
     ShipFlamesForeground2,
     ShipFlamesForeground3,
-    ShipGenericTextures,
+    ShipGenericMipMappedTextures,
     ShipPointsColor,
     ShipPointsColorWithTemperature,
     ShipRopes,
@@ -89,18 +89,18 @@ enum class ProgramParameterType : uint8_t
     WaterLevelThreshold,
 
     // Textures
-    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
-    CloudsAtlasTexture,             // 1
-    ExplosionsAtlasTexture,         // 2
-    GenericTexturesAtlasTexture,    // 3
-    LandTexture,                    // 4
-    NoiseTexture1,                  // 5
-    NoiseTexture2,                  // 6
-    OceanTexture,                   // 7
-    WorldBorderTexture,             // 8
+    SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
+    CloudsAtlasTexture,                     // 1
+    ExplosionsAtlasTexture,                 // 2
+    GenericLinearTexturesAtlasTexture,      // 3
+    GenericMipMappedTexturesAtlasTexture,   // 4
+    LandTexture,                            // 5
+    NoiseTexture1,                          // 6
+    NoiseTexture2,                          // 7
+    OceanTexture,                           // 8
 
     _FirstTexture = SharedTexture,
-    _LastTexture = WorldBorderTexture
+    _LastTexture = OceanTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -155,9 +155,9 @@ enum class VertexAttributeType : GLuint
     Sparkle1 = 0,
     Sparkle2 = 1,
 
-    GenericTexture1 = 0,
-    GenericTexture2 = 1,
-    GenericTexture3 = 2,
+    GenericMipMappedTexture1 = 0,
+    GenericMipMappedTexture2 = 1,
+    GenericMipMappedTexture3 = 2,
 
     Flame1 = 0,
     Flame2 = 1,

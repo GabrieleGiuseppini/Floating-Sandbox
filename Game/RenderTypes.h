@@ -53,7 +53,7 @@ struct RenderStatistics
     std::uint64_t LastRenderedShipTriangles;
     std::uint64_t LastRenderedShipPlanes;
     std::uint64_t LastRenderedShipFlames;
-    std::uint64_t LastRenderedShipGenericTextures;
+    std::uint64_t LastRenderedShipGenericMipMappedTextures;
 
     RenderStatistics()
     {
@@ -68,7 +68,7 @@ struct RenderStatistics
         LastRenderedShipTriangles = 0;
         LastRenderedShipPlanes = 0;
         LastRenderedShipFlames = 0;
-        LastRenderedShipGenericTextures = 0;
+        LastRenderedShipGenericMipMappedTextures = 0;
     }
 };
 
