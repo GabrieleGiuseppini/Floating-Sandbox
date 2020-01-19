@@ -437,11 +437,12 @@ Render:
 			+ Make it new flame mode, 1
 				+ Rename others as 2 and 3
 			+ Restrict two-stage rendering only to modes 2 and 3
-			- Test making whole flame horizontally narrower (for mode 1 only)
-				- Then scale uv.x
 			- Test putting back vertical time-changing offset
 				+ Texture has colors for all values of alpha mask
 				- Shader samples twice
+				- Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
+			- Test making whole flame horizontally narrower (for mode 1 only)
+				- Then scale uv.x
 			- Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 
 		- Try with SpringRelaxation updating only positions (*)

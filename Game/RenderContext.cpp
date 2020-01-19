@@ -504,9 +504,9 @@ RenderContext::RenderContext(
 
     mShaderManager->ActivateTexture<ProgramParameterType::WorldBorderTexture>();
 
-    mUploadedWorldTextureManager.UploadMipmappedGroup(
+    mUploadedWorldTextureManager.UploadGroup(
         worldTextureDatabase.GetGroup(WorldTextureGroups::WorldBorder),
-        GL_LINEAR_MIPMAP_NEAREST,
+        GL_LINEAR,
         [&progressCallback](float progress, std::string const &)
         {
             progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + progress) / TotalProgressSteps, "Loading world textures...");

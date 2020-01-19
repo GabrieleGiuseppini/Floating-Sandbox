@@ -145,30 +145,51 @@ void main()
     gl_FragColor = col1.xyzw * constantList.xxxy + constantList.yyyz;
     */
 
+    // TODO: these have to become params
+    vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
+    vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
+
+    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
+    virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
+
+    // Sample flame texture alpha        
+    vec2 alphaTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
+    vec4 sampledAlpha = texture2D(paramGenericTexturesAtlasTexture, alphaTextureCoords);
+
+    // Sample flame texture color - sample coords change with time    
+    virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
+    vec2 colorTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
+    vec4 sampledColor = texture2D(paramGenericTexturesAtlasTexture, colorTextureCoords);
+
+    // Calculate implicit alpha
+    float calculatedAlpha = smoothstep(0.7, 1.2, thickness);
+
+    // Calculate final alpha
+    float finalAlpha = sampledAlpha.w * calculatedAlpha;
+    if (finalAlpha < 0.75)
+        discard;
+
+    // Make final color
+    gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
+
+    /*
     // Sample flame texture
     // TODOHERE
     vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
     virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
     //virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
 
-    vec2 textureFrameBottomLeft = vec2(0.750122070313, 0.875244140625);
-    vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
     vec2 textureCoords = 
         textureFrameBottomLeft
         + (textureFrameTopRight - textureFrameBottomLeft) * (virtualTextureCoords);
     vec4 col1 = texture2D(paramGenericTexturesAtlasTexture, textureCoords);
+    */
 
     // Blend with background
     // TODOHERE
     // When no border: transparent < 0.7  --- opaque > 1.2
     // When border:    transparent < 0.0 --- opaque > 0.5
     //float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
-    float alpha = smoothstep(0.7, 1.2, thickness);
+    
 
-    alpha = col1.w * alpha;
-    if (alpha < 0.75)
-        discard;
-
-    // Make final color
-    gl_FragColor = vec4(col1.xyz, alpha);
 }
