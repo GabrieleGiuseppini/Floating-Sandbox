@@ -37,6 +37,10 @@ uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
+    //
+    // Wrap the atlas texture tile
+    //
+
     // TODO: from param
     vec2 textureFrameBottomLeft = vec2(0.0009765625, 0.501953125);
     vec2 textureFrameSize = vec2(0.0390625, 0.078125);
