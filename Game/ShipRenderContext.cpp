@@ -540,6 +540,10 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
 
     //
     // Layer 2: Springs
@@ -667,6 +671,9 @@ void ShipRenderContext::UpdateOrthoMatrices()
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
 
     //
     // Layer 7: Sparkles
@@ -1358,6 +1365,19 @@ void ShipRenderContext::UploadFlamesStart(
                 break;
             }
 
+            case ShipFlameRenderMode::Mode3:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                break;
+            }
+
             case ShipFlameRenderMode::NoDraw:
             {
                 break;
@@ -1512,11 +1532,15 @@ void ShipRenderContext::RenderEnd()
             0,
             mFlameBackgroundCount);
     }
-    else
+    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode2)
     {
-        assert(mShipFlameRenderMode == ShipFlameRenderMode::Mode2);
-
         RenderFlames<ProgramType::ShipFlamesBackground2>(
+            0,
+            mFlameBackgroundCount);
+    }
+    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode3)
+    {
+        RenderFlames<ProgramType::ShipFlamesBackground3>(
             0,
             mFlameBackgroundCount);
     }
@@ -1758,11 +1782,15 @@ void ShipRenderContext::RenderEnd()
             mFlameBackgroundCount,
             mFlameForegroundCount);
     }
-    else
+    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode2)
     {
-        assert(mShipFlameRenderMode == ShipFlameRenderMode::Mode2);
-
         RenderFlames<ProgramType::ShipFlamesForeground2>(
+            mFlameBackgroundCount,
+            mFlameForegroundCount);
+    }
+    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode3)
+    {
+        RenderFlames<ProgramType::ShipFlamesForeground3>(
             mFlameBackgroundCount,
             mFlameForegroundCount);
     }
@@ -1833,11 +1861,21 @@ void ShipRenderContext::RenderFlames(
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
 
         // Render
-        glDrawArraysInstanced(
-            GL_TRIANGLES,
-            static_cast<GLint>(startFlameIndex * 6u),
-            static_cast<GLint>(flameCount * 6u),
-            2); // Without border, with border
+        if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+        {
+            glDrawArrays(
+                GL_TRIANGLES,
+                static_cast<GLint>(startFlameIndex * 6u),
+                static_cast<GLint>(flameCount * 6u));
+        }
+        else
+        {
+            glDrawArraysInstanced(
+                GL_TRIANGLES,
+                static_cast<GLint>(startFlameIndex * 6u),
+                static_cast<GLint>(flameCount * 6u),
+                2); // Without border, with border
+        }
 
         glBindVertexArray(0);
 

@@ -517,6 +517,10 @@ void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*ev
 	{
 		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode2);
 	}
+    else if (mMode3ShipFlameRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode3);
+    }
 	else
 	{
 		assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
@@ -3113,6 +3117,12 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode2ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
+                    mMode3ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 3"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mMode3ShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
+                    mMode3ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
+                    fireRenderModeBoxSizer2->Add(mMode3ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
                     mNoDrawShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Not Drawn"),
                         wxDefaultPosition, wxDefaultSize);
                     mNoDrawShipFlameRenderModeRadioButton->SetToolTip("Changes the way flames are drawn.");
@@ -4049,6 +4059,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         case ShipFlameRenderMode::Mode2:
         {
             mMode2ShipFlameRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case ShipFlameRenderMode::Mode3:
+        {
+            mMode3ShipFlameRenderModeRadioButton->SetValue(true);
             break;
         }
 

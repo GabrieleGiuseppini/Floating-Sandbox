@@ -804,7 +804,7 @@ void Points::UpdateCombustionLowFrequency(
 }
 
 void Points::UpdateCombustionHighFrequency(
-    float currentSimulationTime,
+    float /*currentSimulationTime*/,
     float dt,
     GameParameters const & gameParameters)
 {

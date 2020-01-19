@@ -45,10 +45,14 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFlamesBackground1;
     else if (lstr == "ship_flames_background_2")
         return ProgramType::ShipFlamesBackground2;
+    else if (lstr == "ship_flames_background_3")
+        return ProgramType::ShipFlamesBackground3;
     else if (lstr == "ship_flames_foreground_1")
         return ProgramType::ShipFlamesForeground1;
     else if (lstr == "ship_flames_foreground_2")
         return ProgramType::ShipFlamesForeground2;
+    else if (lstr == "ship_flames_foreground_3")
+        return ProgramType::ShipFlamesForeground3;
     else if (lstr == "ship_generic_textures")
         return ProgramType::ShipGenericTextures;
     else if (lstr == "ship_points_color")
@@ -127,10 +131,14 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFlamesBackground1";
     case ProgramType::ShipFlamesBackground2:
         return "ShipFlamesBackground2";
+    case ProgramType::ShipFlamesBackground3:
+        return "ShipFlamesBackground3";
     case ProgramType::ShipFlamesForeground1:
         return "ShipFlamesForeground1";
     case ProgramType::ShipFlamesForeground2:
         return "ShipFlamesForeground2";
+    case ProgramType::ShipFlamesForeground3:
+        return "ShipFlamesForeground3";
     case ProgramType::ShipGenericTextures:
         return "ShipGenericTextures";
     case ProgramType::ShipPointsColor:

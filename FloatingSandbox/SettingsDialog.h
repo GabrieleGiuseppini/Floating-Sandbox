@@ -188,6 +188,7 @@ private:
     SliderControl<float> * mHeatOverlayTransparencySlider;
     wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
     wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
+    wxRadioButton * mMode3ShipFlameRenderModeRadioButton;
     wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;

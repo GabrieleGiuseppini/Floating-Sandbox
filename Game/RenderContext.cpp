@@ -574,14 +574,8 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::ShipGenericTextures>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
-    // TODO
-    //mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground2>();
-    //mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground2>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
-    // TODO
-    //mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
-    //mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
 
     // TODOTEST
     LogMessage("TODOHERE: ",
@@ -671,10 +665,14 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground2>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground2>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground3>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground3>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
+    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground3>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground3>();
 
     // Noise 2
 

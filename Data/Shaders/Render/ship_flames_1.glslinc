@@ -1,7 +1,6 @@
 ###VERTEX
 
 #version 120
-#extension GL_ARB_draw_instanced : enable
 
 #define in attribute
 #define out varying
@@ -12,7 +11,6 @@ in vec2 inFlame2; // FlameSpacePosition
 
 // Outputs
 out vec2 flameSpacePosition;
-out float noBorder;
 out vec2 noiseOffset;
 
 // Params
@@ -22,7 +20,6 @@ uniform float paramFlameSpeed;
 void main()
 {
     flameSpacePosition = inFlame2.xy;
-    noBorder = float(gl_InstanceIDARB);
     noiseOffset = vec2(inFlame1.w, inFlame1.w - paramFlameSpeed);
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
@@ -36,7 +33,6 @@ void main()
 
 // Inputs from previous shader
 in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
-in float noBorder;
 in vec2 noiseOffset;
 
 // The textures
@@ -159,13 +155,15 @@ void main()
     vec2 textureFrameTopRight = vec2(0.874877929688, 0.937255859375);
     vec2 textureCoords = 
         textureFrameBottomLeft
-        + (textureFrameTopRight - textureFrameBottomLeft) * ( virtualTextureCoords);
+        + (textureFrameTopRight - textureFrameBottomLeft) * (virtualTextureCoords);
     vec4 col1 = texture2D(paramGenericTexturesAtlasTexture, textureCoords);
 
     // Blend with background
+    // TODOHERE
     // When no border: transparent < 0.7  --- opaque > 1.2
     // When border:    transparent < 0.0 --- opaque > 0.5
-    float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
+    //float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
+    float alpha = smoothstep(0.7, 1.2, thickness);
 
     alpha = col1.w * alpha;
     if (alpha < 0.75)
