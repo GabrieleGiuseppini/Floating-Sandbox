@@ -35,7 +35,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec2 flameSpacePosition; // (x=[-0.5, 0.5], y=[0.0, 1.0])
+in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
 in float noBorder;
 in vec2 noiseOffset;
 

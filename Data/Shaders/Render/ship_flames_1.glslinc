@@ -47,7 +47,7 @@ uniform float paramFlameWindRotationAngle;
 uniform float paramFlameSpeed;
 
 //
-// Based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
+// Loosely based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
 //
 
 mat2 GetRotationMatrix(float angle)
@@ -128,82 +128,41 @@ void main()
     //
     // Emit
     //
-	        
-    /* TODOTEST
-    // Core1 (white->yellow)
-    vec4 col1 = mix(vec4(1.0, 0.764, 0.1, 0.0), vec4(1.0, 1.0, 1.0, 0.0), smoothstep(0.8, 1.5, thickness));
 
-    // Core2 (->red)
-    col1 = mix(vec4(1.0, 0.35, 0.0, 0.0), col1, smoothstep(0.72, 1.6, thickness));
-
-    // Border (->dark red)
-    col1 = mix(vec4(0.3, 0.0, 0.0, 0.0), col1, smoothstep(0.585, 0.843, thickness) + noBorder);
-    
-    // Blend with background
-    // When no border: transparent < 0.7  --- opaque > 1.2
-    // When border:    transparent < 0.0 --- opaque > 0.5
-    float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
-    
-    // Make final color
-    vec3 constantList = vec3(1.0f, 0.0f, alpha);
-    gl_FragColor = col1.xyzw * constantList.xxxy + constantList.yyyz;
-    */
-
-    // TODO: these have to become params
-    vec2 textureFrameBottomLeft = vec2(0.0009765625, 0.001953125);
-    vec2 textureFrameSize = vec2(1.0, 0.5);
-    float dy = 0.5 / 128.0;
-
-    /*
-    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
-    virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
+    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]    
 
     // Sample flame texture alpha        
-    vec2 alphaTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
-    vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaTextureCoords);
+    virtualTextureCoords.x = 
+        (virtualTextureCoords.x + noiseOffset.x) / 2.0; // For alpha sampling we halve x
 
-    // Sample flame texture color - sample coords change with time    
-    virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
-    vec2 colorTextureCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * virtualTextureCoords;
-    vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorTextureCoords);
+    vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * virtualTextureCoords;
+    vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
+
+    // Sample flame texture color - sample coords change with time      
+    virtualTextureCoords.y = fract(
+        (flameSpacePosition.y - paramFlameSpeed) / 2.0 // For color sampling we halve y and wrap
+        + noiseOffset.x); // Randomize Y displacement per-flame
+    virtualTextureCoords.y = clamp(virtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y); // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
+    vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * virtualTextureCoords;
+    vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
 
     // Calculate implicit alpha
+    // TODO: move above and discard early w/threshold
     float calculatedAlpha = smoothstep(0.7, 1.2, thickness);
 
     // Calculate final alpha
     float finalAlpha = sampledAlpha.w * calculatedAlpha;
-    */
-    // TODOTEST2
-    //if (finalAlpha < 0.75)
-    //    discard;
+    
+    if (finalAlpha < 0.75) // For Z test
+        discard;
 
     // Make final color
-    // TODOTEST2
-    //gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
+    gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
 
 
     /*
-    // Sample flame texture
-    // TODOHERE
-    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0; // [0.0, 1.0] [0.0, 1.0]
-    virtualTextureCoords.x = (virtualTextureCoords.x + noiseOffset.x) / 2.0;
-    //virtualTextureCoords.y = fract((flameSpacePosition.y - paramFlameSpeed) / 2.0 + noiseOffset.x);
-
-    vec2 textureCoords = 
-        textureFrameBottomLeft
-        + (textureFrameTopRight - textureFrameBottomLeft) * (virtualTextureCoords);
-    vec4 col1 = texture2D(paramGenericTexturesAtlasTexture, textureCoords);
-    */
-
-    // Blend with background
-    // TODOHERE
-    // When no border: transparent < 0.7  --- opaque > 1.2
-    // When border:    transparent < 0.0 --- opaque > 0.5
-    //float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
-    
-
     //
-    // Test for tile wrapping logic
+    // Test for tile wrapping
     //
 
     vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
@@ -212,4 +171,5 @@ void main()
     vec2 sampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * srCoords;
     vec4 testCol = texture2D(paramGenericLinearTexturesAtlasTexture, sampleCoords);
     gl_FragColor = vec4(testCol.xyz, 1.0);
+    */
 }
