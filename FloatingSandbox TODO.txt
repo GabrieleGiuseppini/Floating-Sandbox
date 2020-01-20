@@ -453,6 +453,7 @@ Render:
 				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
 				+ Redo frame texture coords
 				- Color texture: do better wrapping 
+				- See if alpha sampling is really necessary
 				- Cleanup last shader items
 			- Test making whole flame horizontally narrower (for mode 1 only)
 				- Then scale uv.x so width stays
