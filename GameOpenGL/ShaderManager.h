@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <iomanip>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -23,6 +24,8 @@ template <typename Traits>
 class ShaderManager
 {
 private:
+
+    static constexpr GLint NoParameterLocation = std::numeric_limits<GLint>::min();
 
     template <typename T>
     static std::string ToString(T const & v)
@@ -53,23 +56,28 @@ public:
         // Find all texture parameters
         for (auto parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
         {
-            typename Traits::ProgramParameterType parameter = static_cast<typename Traits::ProgramParameterType>(parameterIndex);
-
-            // See if it's a texture/sampler parameter
-            if (parameter >= Traits::ProgramParameterType::_FirstTexture
-                && parameter <= Traits::ProgramParameterType::_LastTexture)
+            if (mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation)
             {
-                //
-                // Set it
-                //
+                typename Traits::ProgramParameterType parameter = static_cast<typename Traits::ProgramParameterType>(parameterIndex);
 
-                auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(Traits::ProgramParameterType::_FirstTexture);
+                // See if it's a texture/sampler parameter
+                if (parameter >= Traits::ProgramParameterType::_FirstTexture
+                    && parameter <= Traits::ProgramParameterType::_LastTexture)
+                {
+                    //
+                    // Set it
+                    //
 
-                glUniform1i(
-                    mPrograms[programIndex].UniformLocations[parameterIndex],
-                    textureUnitIndex);
+                    auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(Traits::ProgramParameterType::_FirstTexture);
 
-                CheckUniformError(Program, parameter);
+                    assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+                    glUniform1i(
+                        mPrograms[programIndex].UniformLocations[parameterIndex],
+                        textureUnitIndex);
+
+                    CheckUniformError(Program, parameter);
+                }
             }
         }
     }
@@ -88,6 +96,8 @@ public:
         const uint32_t programIndex = static_cast<uint32_t>(program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
+        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
         glUniform1f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
             value);
@@ -100,6 +110,8 @@ public:
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
 
         glUniform2f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
@@ -114,6 +126,8 @@ public:
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
 
         glUniform3f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
@@ -130,6 +144,8 @@ public:
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
 
+        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
         glUniform4f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
             val1,
@@ -145,6 +161,8 @@ public:
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
 
         glUniformMatrix4fv(
             mPrograms[programIndex].UniformLocations[parameterIndex],
@@ -241,7 +259,8 @@ private:
         // The OpenGL handle to the program
         GameOpenGLShaderProgram OpenGLHandle;
 
-        // The uniform locations, indexed by shader parameter type
+        // The uniform locations, indexed by shader parameter type;
+        // set to NoLocation when not specified in the shader
         std::vector<GLint> UniformLocations;
     };
 
@@ -273,6 +292,7 @@ private:
 
     friend class ShaderManagerTests_ExtractsShaderParameters_Single_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_Multiple_Test;
+    friend class ShaderManagerTests_ExtractsShaderParameters_IgnoresTrailingComment_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_IgnoresCommentedOutParameters_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnUnrecognizedParameter_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_ErrorsOnRedefinedParameter_Test;

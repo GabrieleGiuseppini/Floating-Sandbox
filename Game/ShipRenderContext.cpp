@@ -813,10 +813,6 @@ void ShipRenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
 }
 
 void ShipRenderContext::OnWaterColorUpdated()

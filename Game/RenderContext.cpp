@@ -551,27 +551,47 @@ RenderContext::RenderContext(
     mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericLinearTextureGroups>>(
         genericLinearTextureAtlas.Metadata);
 
-    // Set texture in shaders
+    // Set FlamesBackground1 shader parameters
+    auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1Dx>(
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1Size>(
+        fireAtlasFrameMetadata.TextureSpaceWidth,
+        fireAtlasFrameMetadata.TextureSpaceHeight);
+
+    // Set FlamesForeground1 shader parameters
     mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
     mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1Dx>(
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
+    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1Size>(
+        fireAtlasFrameMetadata.TextureSpaceWidth,
+        fireAtlasFrameMetadata.TextureSpaceHeight);
+
+    // Set WorldBorder shader parameters
+    auto const & worldBorderAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0);
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager->SetTextureParameters<ProgramType::WorldBorder>();
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Width),
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Height));
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
+    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
+        worldBorderAtlasFrameMetadata.TextureSpaceWidth,
+        worldBorderAtlasFrameMetadata.TextureSpaceHeight);
 
-    // TODOTEST
-    LogMessage("TODOHERE: Fire: ",
-        mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureCoordinatesBottomLeft.toString(),
-        " ",
-        "W=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureSpaceWidth,
-        " H=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0).TextureSpaceHeight);
-
-    // TODOTEST
-    LogMessage("TODOHERE: WorldBorder: ",
-        mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureCoordinatesBottomLeft.toString(),
-        " ",
-        "W=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureSpaceWidth,
-        " H=", mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0).TextureSpaceHeight);
 
     //
     // Create generic mipmapped texture atlas
@@ -1959,9 +1979,6 @@ void RenderContext::UpdateWorldBorder()
     // Max coordinates in texture space (e.g. 3.0 means three frames)
     float const textureSpaceWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
     float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
-
-    // Dx for drawing texture at dead-center pixel
-    //float const dx = 0.5f / static_cast<float>(worldBorderTextureSize.Width);
 
 
     //

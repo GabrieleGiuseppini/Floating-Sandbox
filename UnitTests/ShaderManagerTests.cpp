@@ -276,6 +276,21 @@ uniform mat4 paramOrthoMatrix;
     EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
+TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresTrailingComment)
+{
+    std::string source = R"!!!(
+uniform float paramEffectiveAmbientLightIntensity; // this is a comment
+foobar;
+uniform mat4 paramOrthoMatrix;
+)!!!";
+
+    auto result = TestShaderManager::ExtractShaderParameters(source);
+
+    ASSERT_EQ(2, result.size());
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
+    EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
+}
+
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresCommentedOutParameters)
 {
     std::string source = R"!!!(

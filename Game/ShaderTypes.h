@@ -67,7 +67,10 @@ std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
 {
-    EffectiveAmbientLightIntensity = 0,
+    AtlasTile1Dx = 0,
+    AtlasTile1LeftBottomTextureCoordinates,
+    AtlasTile1Size,
+    EffectiveAmbientLightIntensity,
     FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,

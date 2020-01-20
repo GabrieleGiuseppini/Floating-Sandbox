@@ -187,7 +187,13 @@ std::string ProgramTypeToStr(ProgramType program)
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
-    if (str == "EffectiveAmbientLightIntensity")
+    if (str == "AtlasTile1Dx")
+        return ProgramParameterType::AtlasTile1Dx;
+    else if (str == "AtlasTile1LeftBottomTextureCoordinates")
+        return ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates;
+    else if (str == "AtlasTile1Size")
+        return ProgramParameterType::AtlasTile1Size;
+    else if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
     else if (str == "FlameSpeed")
         return ProgramParameterType::FlameSpeed;
@@ -254,6 +260,12 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {
+    case ProgramParameterType::AtlasTile1Dx:
+        return "AtlasTile1Dx";
+    case ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates:
+        return "AtlasTile1LeftBottomTextureCoordinates";
+    case ProgramParameterType::AtlasTile1Size:
+        return "AtlasTile1Size";
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
     case ProgramParameterType::FlameSpeed:

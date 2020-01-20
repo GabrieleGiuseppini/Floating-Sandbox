@@ -40,6 +40,9 @@ uniform sampler2D paramNoiseTexture1;
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
+uniform vec2 paramAtlasTile1Dx; // span across two pixels
+uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
+uniform vec2 paramAtlasTile1Size;
 uniform float paramFlameWindRotationAngle;
 uniform float paramFlameSpeed;
 
@@ -178,16 +181,6 @@ void main()
     // TODOTEST2
     //gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
 
-    // TODO: testing boundaries of col texture
-    //vec2 todoCoords = textureFrameBottomLeft + (textureFrameTopRight - textureFrameBottomLeft) * ((flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 0.95) + vec2(0.0, 0.025));
-    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
-    srCoords.y = fract(srCoords.y - paramFlameSpeed);
-    //srCoords.y = fract(srCoords.y - paramFlameSpeed);
-    srCoords.y = clamp(srCoords.y, dy * 2.0, 1.0 - dy * 2.0);
-    //srCoords.y = 0.025 + fract(srCoords.y - paramFlameSpeed) * 0.95;
-    vec2 todoCoords = textureFrameBottomLeft + textureFrameSize * srCoords;
-    vec4 colz = texture2D(paramGenericLinearTexturesAtlasTexture, todoCoords);
-    gl_FragColor = vec4(colz.xyz, 1.0);
 
     /*
     // Sample flame texture
@@ -209,4 +202,14 @@ void main()
     //float alpha = smoothstep(0.0 + noBorder * 0.7, 0.5 + noBorder * 0.7, thickness);
     
 
+    //
+    // Test for tile wrapping logic
+    //
+
+    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
+    srCoords.y = fract(srCoords.y - paramFlameSpeed); // Wrap
+    srCoords.y = clamp(srCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y); // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
+    vec2 sampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * srCoords;
+    vec4 testCol = texture2D(paramGenericLinearTexturesAtlasTexture, sampleCoords);
+    gl_FragColor = vec4(testCol.xyz, 1.0);
 }
