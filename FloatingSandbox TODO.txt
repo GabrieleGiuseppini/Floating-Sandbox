@@ -454,6 +454,7 @@ Render:
 				+ Redo frame texture coords
 				- Color texture: do better wrapping 
 				- See if alpha sampling is really necessary
+				- Alpha texture: avoid vertically-separated parts
 				- Cleanup last shader items
 			- Test making whole flame horizontally narrower (for mode 1 only)
 				- Then scale uv.x so width stays
