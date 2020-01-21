@@ -95,7 +95,7 @@ void main()
     angle /= max(0.1, length(uv));
         
     // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-0.8, 0.5, flameSpacePosition.y);    
+    angle *= smoothstep(-1.0, 0.3, flameSpacePosition.y);    
     
     // Smooth the angle
     angle *= 0.45;
@@ -103,7 +103,7 @@ void main()
     // Rotate and add!
     uv += GetRotationMatrix(angle) * uv;    
         
-    // uv now is in the (x=[-2.0, 2.0], y=[-1.0, 1.0]) range
+    // uv now is in the (x=[-2.0, 2.0], y=[-1.0, 1.0]) range (really?)
     
     //
     // Calculate thickness
