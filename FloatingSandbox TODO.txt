@@ -453,10 +453,10 @@ Render:
 				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
 				+ See if alpha sampling is really necessary
 				+ Color texture: do better wrapping 				
+				- Try changing noise resolution (more fine-grained) - eventually balance with color resolution
 				- Alpha texture: avoid vertically-separated parts 
 					- Straighten up flames
-					- Or, use another image for alpha
-				- Try changing noise resolution - eventually balance with color resolution
+					- Or, use another image for alpha				
 				- Cleanup last shader items
 			- Test w/triangle stripes
 				- If it works, test also with all other quads

@@ -464,8 +464,12 @@ void Points::OnOrphaned(ElementIndex pointElementIndex)
 
     if (mCombustionStateBuffer[pointElementIndex].State == CombustionState::StateType::Burning)
     {
-        mCombustionStateBuffer[pointElementIndex].FlameDevelopment =
-			0.1f + 0.04f * mRandomNormalizedUniformFloatBuffer[pointElementIndex];
+        // New target: fraction of current size plus something
+        mCombustionStateBuffer[pointElementIndex].MaxFlameDevelopment =
+            mCombustionStateBuffer[pointElementIndex].FlameDevelopment / 3.0f
+            + 0.04f * mRandomNormalizedUniformFloatBuffer[pointElementIndex];
+
+        mCombustionStateBuffer[pointElementIndex].State = CombustionState::StateType::Developing_2;
     }
 }
 
@@ -959,7 +963,7 @@ void Points::UpdateCombustionHighFrequency(
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.2,%22valid%22:true}]&expression=f(n-1)%20-%200.2*f(n-1)&target=0&endTarget=25&range=true
                 //
 
-                // FlameDevelopment is now in the (MFD, MFD + 0.2) range
+                // FlameDevelopment is now in the (MFD + 0.2, MFD) range
                 auto extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
                 extraFlameDevelopment =
                     extraFlameDevelopment
