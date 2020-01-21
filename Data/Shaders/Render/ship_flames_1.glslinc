@@ -112,17 +112,14 @@ void main()
     #define FlameWidth 1.4 // The higher, the narrower
     float thickness = 1.3 - abs(uv.x) * FlameWidth;
     
-    // Taper flame depending on randomized height
-    // TODOTEST
-    //thickness *= 1.0 - smoothstep(fragmentNoise * 0.75, 1.3, flameSpacePosition.y); // Taper up    
+    // Taper flame down depending on randomized height
     thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
 
-    // Discard if we are on the edge, i.e. if:
-    // thickness < 0.62996 => focusedThickness < 0.25 (@FlameFocus=3.0)
-    // TODOTEST2
-    //if (thickness < 0.62996)
-    //    discard;
-    
+    // Calculate implicit alpha
+    float implicitAlpha = smoothstep(0.7, 1.2, thickness);
+
+    if (implicitAlpha < 0.75) // For perf
+        discard;   
    
     //
     // Emit
@@ -145,12 +142,8 @@ void main()
     vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * virtualTextureCoords;
     vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
 
-    // Calculate implicit alpha
-    // TODO: move above and discard early w/threshold
-    float calculatedAlpha = smoothstep(0.7, 1.2, thickness);
-
     // Calculate final alpha
-    float finalAlpha = sampledAlpha.w * calculatedAlpha;
+    float finalAlpha = sampledAlpha.w * implicitAlpha;
     
     if (finalAlpha < 0.75) // For Z test
         discard;

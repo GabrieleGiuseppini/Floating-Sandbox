@@ -457,7 +457,7 @@ Render:
 				- Alpha texture: avoid vertically-separated parts 
 					- Straighten up flames
 					- Or, use another image for alpha				
-				- Cleanup last shader items
+				+ Cleanup last shader items
 			- Test w/triangle stripes
 				- If it works, test also with all other quads
 			- Test making whole flame horizontally narrower (for mode 1 only)
