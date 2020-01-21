@@ -451,15 +451,21 @@ Render:
 							+ RenderContext::RenderWorldEnd
 							+ RenderContext::cctor: 
 				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
-				+ Redo frame texture coords
-				- Color texture: do better wrapping 
-				- See if alpha sampling is really necessary
-				- Alpha texture: avoid vertically-separated parts
+				+ See if alpha sampling is really necessary
+				+ Color texture: do better wrapping 				
+				- Alpha texture: avoid vertically-separated parts 
+					- Straighten up flames
+					- Or, use another image for alpha
+				- Try changing noise resolution - eventually balance with color resolution
 				- Cleanup last shader items
+			- Test w/triangle stripes
+				- If it works, test also with all other quads
 			- Test making whole flame horizontally narrower (for mode 1 only)
 				- Then scale uv.x so width stays
 				! For efficiency only
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
+			- merge
+			- changes.txt
 
 		- Try with SpringRelaxation updating only positions (*)
 
