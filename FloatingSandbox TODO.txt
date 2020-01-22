@@ -462,6 +462,7 @@ Render:
 				- Then scale uv.x so width stays
 				! For efficiency only
 			= Try to bend flame quad based on velocity
+				- Limit must length of Q (but not its direction!)
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- merge
 			- changes.txt
