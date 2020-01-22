@@ -458,14 +458,15 @@ Render:
 					- Straighten up flames
 					- Or, use another image for alpha				
 				+ Cleanup last shader items
-			- Test w/triangle stripes
-				- If it works, test also with all other quads
 			- Test making whole flame horizontally narrower (for mode 1 only)
 				- Then scale uv.x so width stays
 				! For efficiency only
+			= Try to bend flame quad based on velocity
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- merge
 			- changes.txt
+
+		- Re-try world border, using right total texture space width and height (i.e. - 1/S)
 
 		- Try with SpringRelaxation updating only positions (*)
 
@@ -854,6 +855,11 @@ Render:
 
 
 - Gfx optimizations:
+
+	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering)
+		- If fine:
+			- Do stars once and for all
+			- Spec gfx niceties such as reflections and after-effect
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

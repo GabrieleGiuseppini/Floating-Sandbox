@@ -278,97 +278,13 @@ public:
     /*
      * Note: assumption is that upload happens in plane ID order (for depth sorting).
      */
-    inline void UploadFlame(
+    void UploadFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
+        vec2f const & velocity,
         float scale,
         float flamePersonalitySeed,
-        bool isOnChain)
-    {
-        //
-        // Calculate flame quad
-        //
-
-        // Y offset to focus bottom of flame at specified position
-        float constexpr YOffset = -0.25f;
-
-        // Calculate quad coordinates
-        float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth * scale;
-        float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth * scale;
-        float const topY = baseCenterPosition.y + mFlameQuadHeight * scale + YOffset;
-        float const bottomY = baseCenterPosition.y + YOffset;
-
-
-        //
-        // Store quad vertices
-        //
-
-        size_t vertexIndex;
-        if (isOnChain)
-        {
-            vertexIndex = mFlameBackgroundCount * 6u;
-            ++mFlameBackgroundCount;
-        }
-        else
-        {
-            ++mFlameForegroundCount;
-            vertexIndex = mFlameVertexBuffer.size() - mFlameForegroundCount * 6u;
-        }
-
-        assert(vertexIndex < mFlameVertexBuffer.size());
-
-        // Triangle 1
-
-        // Top-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(leftX, topY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(-1.0f, 1.0f));
-
-        // Top-right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(rightX, topY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(1.0f, 1.0f));
-
-        // Bottom-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(leftX, bottomY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(-1.0f, 0.0f));
-
-        // Triangle 2
-
-        // Top-Right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(rightX, topY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(1.0f, 1.0f));
-
-        // Bottom-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(leftX, bottomY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(-1.0f, 0.0f));
-
-        // Bottom-right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(rightX, bottomY),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(1.0f, 0.0f));
-    }
+        bool isOnChain);
 
     void UploadFlamesEnd();
 

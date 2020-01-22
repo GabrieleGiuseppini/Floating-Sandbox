@@ -1406,6 +1406,7 @@ void Points::UploadFlames(
                 shipId,
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
+                GetVelocity(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameDevelopment,
                 mRandomNormalizedUniformFloatBuffer[pointIndex],
                 // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,

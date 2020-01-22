@@ -1388,6 +1388,204 @@ void ShipRenderContext::UploadFlamesStart(
     }
 }
 
+/*
+ * Note: assumption is that upload happens in plane ID order (for depth sorting).
+ */
+void ShipRenderContext::UploadFlame(
+    PlaneId planeId,
+    vec2f const & baseCenterPosition,
+    vec2f const & velocity,
+    float scale,
+    float flamePersonalitySeed,
+    bool isOnChain)
+{
+    //
+    // Calculate flame quad
+    //
+    // The quad encloses a vector Q that is the resultant of the "rest" upward vector (R)
+    // added to a scaled down opposite of the particle's velocity:
+    //  Q = R - velocityScale * V
+    //
+
+    float constexpr VelocityScale = 0.2f;
+
+    vec2f const R = vec2f(0, mFlameQuadHeight * scale);
+    vec2f const Q = R - velocity * VelocityScale;
+    vec2f const Qn = Q.normalise();
+    vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/s, i.e. oriented to the left (wrt rest vector)
+
+    // Y offset to focus bottom of flame at specified position; depends mostly on shader
+    float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+        ? (0.75f / 1.25f) * scale
+        : (0.25f / 1.25f) * scale;
+
+    // P' = point P lowered by yOffset
+    vec2f const Pp = baseCenterPosition - Qn * yOffset;
+    // P'' = opposite of P' on top
+    vec2f const Ppp = Pp + Q;
+
+    // Qhw = vector delineating one half of the quad horizontal segment, the one to the left
+    vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale;
+
+    // A, B = left-bottom, right-bottom
+    vec2f const A = Pp + Qhw;
+    vec2f const B = Pp - Qhw;
+    // C, D = left-top, right-top
+    vec2f const C = Ppp + Qhw;
+    vec2f const D = Ppp - Qhw;
+
+    //
+    // Store quad vertices
+    //
+
+    size_t vertexIndex;
+    if (isOnChain)
+    {
+        // Background flame
+        vertexIndex = mFlameBackgroundCount * 6u;
+        ++mFlameBackgroundCount;
+    }
+    else
+    {
+        // Foreground flame
+        ++mFlameForegroundCount;
+        vertexIndex = mFlameVertexBuffer.size() - mFlameForegroundCount * 6u;
+    }
+
+    assert(vertexIndex < mFlameVertexBuffer.size());
+
+    // Triangle 1
+
+    // Top-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(C.x, C.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 1.0f));
+
+    // Top-right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(D.x, D.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 1.0f));
+
+    // Bottom-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(A.x, A.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 0.0f));
+
+    // Triangle 2
+
+    // Top-Right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(D.x, D.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 1.0f));
+
+    // Bottom-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(A.x, A.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 0.0f));
+
+    // Bottom-right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(B.x, B.y),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 0.0f));
+
+    /* TODOOLD
+    // Calculate quad coordinates
+    float const leftX = baseCenterPosition.x - mHalfFlameQuadWidth * scale;
+    float const rightX = baseCenterPosition.x + mHalfFlameQuadWidth * scale;
+    float const topY = baseCenterPosition.y + mFlameQuadHeight * scale + YOffset;
+    float const bottomY = baseCenterPosition.y + YOffset;
+
+
+    //
+    // Store quad vertices
+    //
+
+    size_t vertexIndex;
+    if (isOnChain)
+    {
+        vertexIndex = mFlameBackgroundCount * 6u;
+        ++mFlameBackgroundCount;
+    }
+    else
+    {
+        ++mFlameForegroundCount;
+        vertexIndex = mFlameVertexBuffer.size() - mFlameForegroundCount * 6u;
+    }
+
+    assert(vertexIndex < mFlameVertexBuffer.size());
+
+    // Triangle 1
+
+    // Top-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(leftX, topY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 1.0f));
+
+    // Top-right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(rightX, topY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 1.0f));
+
+    // Bottom-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(leftX, bottomY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 0.0f));
+
+    // Triangle 2
+
+    // Top-Right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(rightX, topY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 1.0f));
+
+    // Bottom-left
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(leftX, bottomY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(-1.0f, 0.0f));
+
+    // Bottom-right
+    mFlameVertexBuffer.emplace_at(
+        vertexIndex++,
+        vec2f(rightX, bottomY),
+        static_cast<float>(planeId),
+        flamePersonalitySeed,
+        vec2f(1.0f, 0.0f));
+    */
+}
+
 void ShipRenderContext::UploadFlamesEnd()
 {
     assert((mFlameBackgroundCount + mFlameForegroundCount) * 6u == mFlameVertexBuffer.size());
