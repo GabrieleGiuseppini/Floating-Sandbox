@@ -1419,7 +1419,7 @@ void ShipRenderContext::UploadFlame(
     // A-------B
     //
 
-    float constexpr VelocityScale = 0.2f;
+    float constexpr VelocityScale = 0.4f;
 
     vec2f const R = vec2f(0, mFlameQuadHeight * scale);
     vec2f const Q = R - velocity * VelocityScale;
@@ -1427,10 +1427,11 @@ void ShipRenderContext::UploadFlame(
     vec2f const Qn = Q.normalise(Ql);
     vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/s, i.e. oriented to the left (wrt rest vector)
 
-    // Y offset to focus bottom of flame at specified position; depends mostly on shader
+    // Y offset to focus bottom of flame at specified position; depends mostly on shader,
+    // and must be proportional to whole Q
     float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
-        ? (0.75f / 1.25f) * scale * Ql / (mFlameQuadHeight * scale)
-        : (0.25f / 1.25f) * scale * Ql / (mFlameQuadHeight * scale);
+        ? 1.0f * Ql / mFlameQuadHeight //  0.6 * scale * Ql / (mFlameQuadHeight * scale)
+        : 0.2f * Ql / mFlameQuadHeight; // 0.2 * scale * Ql / (mFlameQuadHeight * scale)
 
     // P' = point P lowered by yOffset
     vec2f const Pp = baseCenterPosition - Qn * yOffset;
