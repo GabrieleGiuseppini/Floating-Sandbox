@@ -1419,26 +1419,27 @@ void ShipRenderContext::UploadFlame(
     // A-------B
     //
 
-    float constexpr VelocityScale = 0.4f;
+    float constexpr VelocityScale = 0.021333f; // 0.4 / (15.0 * 1.25)
 
-    vec2f const R = vec2f(0, mFlameQuadHeight * scale);
+    // R and Q are scale- and quad_size-independent
+    vec2f constexpr R = vec2f(0, 1.0f);
     vec2f const Q = R - velocity * VelocityScale;
     float const Ql = Q.length();
     vec2f const Qn = Q.normalise(Ql);
-    vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/s, i.e. oriented to the left (wrt rest vector)
+    vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
 
-    // Y offset to focus bottom of flame at specified position; depends mostly on shader,
-    // and must be proportional to whole Q
+    // Y offset to focus bottom of flame at specified position; depends mostly on shader
     float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
-        ? 1.0f * Ql / mFlameQuadHeight //  0.6 * scale * Ql / (mFlameQuadHeight * scale)
-        : 0.2f * Ql / mFlameQuadHeight; // 0.2 * scale * Ql / (mFlameQuadHeight * scale)
+        ? 0.066666f
+        : 0.013333f;
 
     // P' = point P lowered by yOffset
-    vec2f const Pp = baseCenterPosition - Qn * yOffset;
+    vec2f const Pp = baseCenterPosition - Qn * yOffset * mFlameQuadHeight * scale;
     // P'' = opposite of P' on top
-    vec2f const Ppp = Pp + Q;
+    vec2f const Ppp = Pp + Q * mFlameQuadHeight * scale;
 
-    // Qhw = vector delineating one half of the quad horizontal segment, the one to the left
+    // Qhw = vector delineating one half of the quad width, the one to the left;
+    // its length is not affected by velocity, only its direction
     vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale;
 
     // A, B = left-bottom, right-bottom
