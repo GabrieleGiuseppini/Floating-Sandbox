@@ -1423,10 +1423,18 @@ void ShipRenderContext::UploadFlame(
 
     // R and Q are scale- and quad_size-independent
     vec2f constexpr R = vec2f(0, 1.0f);
-    vec2f const Q = R - velocity * VelocityScale;
-    float const Ql = Q.length();
+    vec2f Q = R - velocity * VelocityScale;
+    float Ql = Q.length();
+
+    // Qn = normalized Q
+    // Qnp = perpendicular to Qn (i.e. Q's normal)
     vec2f const Qn = Q.normalise(Ql);
     vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
+
+    // Limit length of Q: no more than Qlmax
+    float constexpr Qlmax = 2.0f; // Twice the height at rest
+    Ql = std::min(Ql, Qlmax);
+    Q = Qn * Ql;
 
     // Y offset to focus bottom of flame at specified position; depends mostly on shader
     float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)

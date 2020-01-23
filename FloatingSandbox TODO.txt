@@ -463,9 +463,9 @@ Render:
 				- Then scale uv.x so width stays
 				! For efficiency only
 			= Try to bend flame quad based on velocity
-				- Limit max length of Q (but not its direction!), being proportional to scale at the same time
+				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
-				  - Try simple edge function
+				  + Try simple edge function
 				  - Try sqrt of velocity
 				  - Try exponential towards asymptote, which itself depends on scale
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
