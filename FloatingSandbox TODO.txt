@@ -429,6 +429,7 @@ Render:
 			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
 		+ Try transmogrifying all textures
 		+ See keyboard shortcut for push switch
+		+ Repair: better algo to restore points
 
 		= Try flames with texture
 			+ Add a new "Flame" texture to GenericTextures atlas
@@ -465,14 +466,12 @@ Render:
 			= Try to bend flame quad based on velocity
 				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
-				  + Use simple edge function
-				  - See how to impart inertia
+					+ Use simple edge function
+					- See how to impart inertia
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- Test with flame size slider
 			- merge
-			- changes.txt
-
-		- Repair: better algo to restore points
+			- changes.txt		
 
 		- Re-try world border, using right total texture space width and height (i.e. - 1/S)
 

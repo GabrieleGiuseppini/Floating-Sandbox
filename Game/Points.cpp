@@ -448,8 +448,19 @@ void Points::Restore(ElementIndex pointElementIndex)
     // Restore factory-time IsLeaking
     mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
 
-    // Restore combustion state
-    mCombustionStateBuffer[pointElementIndex].Reset();
+    // Remove point from set of burning points, in case it was burning
+    if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::NotBurning)
+    {
+        auto pointIt = std::find(
+            mBurningPoints.cbegin(),
+            mBurningPoints.cend(),
+            pointElementIndex);
+        assert(pointIt != mBurningPoints.cend());
+        mBurningPoints.erase(pointIt);
+
+        // Restore combustion state
+        mCombustionStateBuffer[pointElementIndex].Reset();
+    }
 
     // Invoke ship handler
     assert(nullptr != mShipPhysicsHandler);

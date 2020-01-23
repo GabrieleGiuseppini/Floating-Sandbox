@@ -287,6 +287,8 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
+    void AttemptPointRestore(ElementIndex pointElementIndex);
+
     void GenerateAirBubbles(
         vec2f const & position,
         float temperature,

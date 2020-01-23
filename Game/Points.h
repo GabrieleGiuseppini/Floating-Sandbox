@@ -1118,7 +1118,7 @@ public:
     }
 
     /*
-     * Checks whether a point is eligible for being extinguished by smotherning.
+     * Checks whether a point is eligible for being extinguished by smothering.
      */
     bool IsBurningForSmothering(ElementIndex pointElementIndex) const
     {

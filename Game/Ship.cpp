@@ -1911,6 +1911,21 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
+void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
+{
+    //
+    // A point is eligible for restore if it's damaged and has all of its factory springs and all
+    // of its factory triangles
+    //
+
+    if (mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointElementIndex).ConnectedSprings.size()
+        && mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointElementIndex).ConnectedTriangles.size()
+        && mPoints.IsDamaged(pointElementIndex))
+    {
+        mPoints.Restore(pointElementIndex);
+    }
+}
+
 void Ship::GenerateAirBubbles(
     vec2f const & position,
     float temperature,
