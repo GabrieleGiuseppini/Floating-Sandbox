@@ -465,13 +465,14 @@ Render:
 			= Try to bend flame quad based on velocity
 				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
-				  + Try simple edge function
-				  - Try sqrt of velocity
-				  - Try exponential towards asymptote, which itself depends on scale
+				  + Use simple edge function
+				  - See how to impart inertia
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- Test with flame size slider
 			- merge
 			- changes.txt
+
+		- Repair: better algo to restore points
 
 		- Re-try world border, using right total texture space width and height (i.e. - 1/S)
 

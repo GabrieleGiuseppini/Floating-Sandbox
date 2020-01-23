@@ -1419,7 +1419,7 @@ void ShipRenderContext::UploadFlame(
     // A-------B
     //
 
-    float constexpr VelocityScale = 0.021333f; // 0.4 / (15.0 * 1.25)
+    float constexpr VelocityScale = 0.5 / (15.0 * 1.25);
 
     // R and Q are scale- and quad_size-independent
     vec2f constexpr R = vec2f(0, 1.0f);
