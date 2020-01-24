@@ -1107,9 +1107,8 @@ void Points::UpdateCombustionHighFrequency(
         // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
 
         // Rate depends on the magnitude of velocity
-        // TODO: make independent from dt
-        float constexpr minConvergenceRate = 0.07f;
-        float constexpr maxConvergenceRate = 0.2f;
+        float constexpr minConvergenceRate = 0.07f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        float constexpr maxConvergenceRate = 0.2f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
         float const convergenceRate =
             minConvergenceRate
             + (maxConvergenceRate - minConvergenceRate) * SmoothStep(20.0f, 50.0f, Ql);
