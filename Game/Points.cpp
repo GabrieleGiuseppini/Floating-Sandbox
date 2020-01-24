@@ -1083,10 +1083,10 @@ void Points::UpdateCombustionHighFrequency(
         // Vector Q is the vector describing the ideal, final flame's
         // direction and (unscaled) length. At rest it's (0, 1).
         // When the particle has velocity V, it is the resultant of the rest upward
-        // vector (B) added to a scaled down opposite of the particle's velocity:
-        //  Q = R - velocityScale * V
+        // vector (B) added to a scaled-down opposite of the particle's velocity:
+        //  Q = B - velocityScale * V
 
-        float constexpr VelocityScale = 1.0 / (15.0 * 1.25);
+        float constexpr VelocityScale = 2.0 / (15.0 * 1.25); // Magic number
 
         vec2f constexpr B = vec2f(0, 1.0f);
         vec2f Q = B - GetVelocity(pointIndex) * VelocityScale;
@@ -1106,7 +1106,7 @@ void Points::UpdateCombustionHighFrequency(
         // rate * Q + (1 - rate) * f(n-1)
         // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
 
-        // rate depends on the magnitude of velocity
+        // Rate depends on the magnitude of velocity
         // TODO: make independent from dt
         float constexpr minConvergenceRate = 0.07f;
         float constexpr maxConvergenceRate = 0.2f;
