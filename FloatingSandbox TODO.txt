@@ -430,6 +430,7 @@ Render:
 		+ Try transmogrifying all textures
 		+ See keyboard shortcut for push switch
 		+ Repair: better algo to restore points
+		+ Re-try world border, using right total texture space width and height (i.e. - 1/S)
 
 		= Try flames with texture
 			+ Add a new "Flame" texture to GenericTextures atlas
@@ -469,9 +470,7 @@ Render:
 			+ Test with flame size slider
 			- merge
 			- changes.txt		
-
-		- Re-try world border, using right total texture space width and height (i.e. - 1/S)
-
+		
 		- Try with SpringRelaxation updating only positions (*)
 
 		- Propulsion (*)

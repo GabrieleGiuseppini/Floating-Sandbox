@@ -1976,9 +1976,13 @@ void RenderContext::UpdateWorldBorder()
     float const worldBorderWorldWidth = mViewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.Width)) / 2.0f;
     float const worldBorderWorldHeight = mViewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.Height)) / 2.0f;
 
-    // Max coordinates in texture space (e.g. 3.0 means three frames)
-    float const textureSpaceWidth = GameParameters::MaxWorldWidth / worldBorderWorldWidth;
-    float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight;
+    // Max coordinates in texture space (e.g. 3.0 means three frames); note that the texture bottom-left origin
+    // already starts at a dead pixel (0.5/size)
+    float const textureSpaceWidth =
+        GameParameters::MaxWorldWidth / worldBorderWorldWidth
+        - 1.0f / static_cast<float>(worldBorderTextureSize.Width);
+    float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight
+        - 1.0f / static_cast<float>(worldBorderTextureSize.Height);
 
 
     //
