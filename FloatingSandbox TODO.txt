@@ -457,12 +457,8 @@ Render:
 				+ Alpha texture: avoid vertically-separated parts 
 					+ Straighten up flames
 				+ Cleanup last shader items
-			- Test making whole flame horizontally narrower (for mode 1 only)
-				- Gather first ratio between quad and flame via shader blackening
-				- Then scale uv.x so width stays
-				! For efficiency only
 			= Try to bend flame quad based on velocity
-				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
+				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
 					+ Use simple edge function
 				= See how to impart inertia:
