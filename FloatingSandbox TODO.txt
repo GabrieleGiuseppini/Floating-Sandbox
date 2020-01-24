@@ -438,7 +438,7 @@ Render:
 			+ Make it new flame mode, 1
 				+ Rename others as 2 and 3
 			+ Restrict two-stage rendering only to modes 2 and 3
-			= Test putting back vertical time-changing offset
+			+ Test putting back vertical time-changing offset
 				+ Texture has colors for all values of alpha mask
 				+ Shader samples twice
 				+ Do MipMapped and Linear Generic Textures
@@ -454,10 +454,8 @@ Render:
 				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
 				+ See if alpha sampling is really necessary
 				+ Color texture: do better wrapping 				
-				- Try changing noise resolution (more fine-grained) - eventually balance with color resolution
-				- Alpha texture: avoid vertically-separated parts 
-					- Straighten up flames
-					- Or, use another image for alpha				
+				+ Alpha texture: avoid vertically-separated parts 
+					+ Straighten up flames
 				+ Cleanup last shader items
 			- Test making whole flame horizontally narrower (for mode 1 only)
 				- Gather first ratio between quad and flame via shader blackening
@@ -467,12 +465,13 @@ Render:
 				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
 					+ Use simple edge function
-					- See how to impart inertia:
-						- Points::CombustionState has (current) FlameVector, which converges to
-						  target vector
-						- CombustionState::Reset(): take starting flame vector, calculated
-						  based on current velocity
-							- See if can use directly the (current) target vector as the initial vector
+				= See how to impart inertia:
+					+ Points::CombustionState has (current) FlameVector, which converges to
+					  target vector
+					- Convergence speed should depend on velocity magnitude
+					- CombustionState::Reset(): take starting flame vector, calculated
+					  based on current velocity
+						- See if can use directly the (current) target vector as the initial vector
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- Test with flame size slider
 			- merge
