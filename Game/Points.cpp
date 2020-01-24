@@ -459,7 +459,8 @@ void Points::Restore(ElementIndex pointElementIndex)
         mBurningPoints.erase(pointIt);
 
         // Restore combustion state
-        mCombustionStateBuffer[pointElementIndex].Reset();
+        // TODO: See if can use directly the (current) target vector as the initial vector
+        mCombustionStateBuffer[pointElementIndex].Reset(vec2f(0.0f, 1.0f));
     }
 
     // Invoke ship handler
@@ -1057,13 +1058,59 @@ void Points::UpdateCombustionHighFrequency(
             }
 
             case CombustionState::StateType::Burning:
-            case CombustionState::StateType::NotBurning:
             case CombustionState::StateType::Exploded:
             {
                 // Nothing to do here
                 break;
             }
+
+            case CombustionState::StateType::NotBurning:
+            {
+                // Shouldn't be in set of burning points
+                assert(false);
+
+                // Nothing to do here
+                break;
+            }
         }
+
+
+        //
+        // Calculate flame vector
+        //
+        // Note: the point might not be burning anymore, in case we've just extinguished it
+        //
+
+        // Vector Q is the vector describing the ideal, final flame's
+        // direction and (unscaled) length. At rest it's (0, 1).
+        // When the particle has velocity V, it is the resultant of the rest upward
+        // vector (B) added to a scaled down opposite of the particle's velocity:
+        //  Q = R - velocityScale * V
+
+        float constexpr VelocityScale = 1.0 / (15.0 * 1.25);
+
+        vec2f constexpr B = vec2f(0, 1.0f);
+        vec2f Q = B - GetVelocity(pointIndex) * VelocityScale;
+        float Ql = Q.length();
+
+        // Qn = normalized Q
+        vec2f const Qn = Q.normalise(Ql);
+
+        // Limit length of Q: no more than Qlmax
+        float constexpr Qlmax = 2.0f; // Magic number: twice the height at rest
+        Ql = std::min(Ql, Qlmax);
+        Q = Qn * Ql;
+
+        //
+        // Converge current flame vector towards target vector Q
+        //
+
+        // alpha * Q + (1 - alpha) * f(n-1)
+        // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
+        float constexpr convergenceAlpha = 0.07f;
+        pointCombustionState.FlameVector =
+            Q * convergenceAlpha
+            + pointCombustionState.FlameVector * (1.0f - convergenceAlpha);
     }
 }
 
@@ -1417,8 +1464,8 @@ void Points::UploadFlames(
                 shipId,
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
-                GetVelocity(pointIndex),
-                mCombustionStateBuffer[pointIndex].FlameDevelopment,
+                mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
                 mRandomNormalizedUniformFloatBuffer[pointIndex],
                 // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
                 // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire

@@ -82,6 +82,9 @@ public:
 
 private:
 
+    /*
+     * Packed precalculated buoyancy coefficients.
+     */
     struct BuoyancyCoefficients
     {
         float Coefficient1; // Temperature-independent
@@ -122,17 +125,24 @@ private:
         float MaxFlameDevelopment;
         float NextSmokeEmissionSimulationTimestamp;
 
+        // The current flame vector, which provides direction and magnitude
+        // of the flame quad. Slowly converges to the target vector, which
+        // is the resultant of buoyancy making the flame upwards, and of
+        // the particle's current velocity
+        vec2f FlameVector;
+
         CombustionState()
         {
-            Reset();
+            Reset(vec2f(0.0f, 1.0f));
         }
 
-        inline void Reset()
+        inline void Reset(vec2f const & initialFlameVector)
         {
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
             NextSmokeEmissionSimulationTimestamp = 0.0f;
+            FlameVector = initialFlameVector;
         }
     };
 

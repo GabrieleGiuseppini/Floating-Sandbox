@@ -281,7 +281,7 @@ public:
     void UploadFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
-        vec2f const & velocity,
+        vec2f const & flameVector,
         float scale,
         float flamePersonalitySeed,
         bool isOnChain);

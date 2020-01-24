@@ -467,7 +467,12 @@ Render:
 				= Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
 					+ Use simple edge function
-					- See how to impart inertia
+					- See how to impart inertia:
+						- Points::CombustionState has (current) FlameVector, which converges to
+						  target vector
+						- CombustionState::Reset(): take starting flame vector, calculated
+						  based on current velocity
+							- See if can use directly the (current) target vector as the initial vector
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			- Test with flame size slider
 			- merge
