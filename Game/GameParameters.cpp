@@ -79,7 +79,7 @@ GameParameters::GameParameters()
     , FloodRadius(0.75f)
     , FloodQuantity(1.0f)
     , FireExtinguisherRadius(5.0f)
-    , ScrubRadius(7.0f)
+    , ScrubRadius(5.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
 {

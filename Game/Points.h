@@ -127,22 +127,22 @@ private:
 
         // The current flame vector, which provides direction and magnitude
         // of the flame quad. Slowly converges to the target vector, which
-        // is the resultant of buoyancy making the flame upwards, and of
+        // is the resultant of buoyancy making the flame upwards, added to
         // the particle's current velocity
         vec2f FlameVector;
 
         CombustionState()
         {
-            Reset(vec2f(0.0f, 1.0f));
+            Reset();
         }
 
-        inline void Reset(vec2f const & initialFlameVector)
+        inline void Reset()
         {
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
             NextSmokeEmissionSimulationTimestamp = 0.0f;
-            FlameVector = initialFlameVector;
+            FlameVector = vec2f(0.0f, 1.0f);
         }
     };
 

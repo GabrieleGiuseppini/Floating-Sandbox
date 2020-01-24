@@ -459,8 +459,7 @@ void Points::Restore(ElementIndex pointElementIndex)
         mBurningPoints.erase(pointIt);
 
         // Restore combustion state
-        // TODO: See if can use directly the (current) target vector as the initial vector
-        mCombustionStateBuffer[pointElementIndex].Reset(vec2f(0.0f, 1.0f));
+        mCombustionStateBuffer[pointElementIndex].Reset();
     }
 
     // Invoke ship handler
