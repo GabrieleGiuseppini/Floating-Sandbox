@@ -431,8 +431,7 @@ Render:
 		+ See keyboard shortcut for push switch
 		+ Repair: better algo to restore points
 		+ Re-try world border, using right total texture space width and height (i.e. - 1/S)
-
-		= Try flames with texture
+		+ Try flames with texture
 			+ Add a new "Flame" texture to GenericTextures atlas
 				+ Try to flange its bottom
 			+ Test shader, using hardcoded atlas coords for flame texture
@@ -469,8 +468,8 @@ Render:
 						+ Try with linear step
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			+ Test with flame size slider
-			- merge
-			- changes.txt		
+			+ merge
+			+ changes.txt		
 		
 		- Try with SpringRelaxation updating only positions (*)
 
