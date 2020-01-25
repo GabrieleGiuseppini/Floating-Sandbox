@@ -458,15 +458,15 @@ Render:
 				+ Alpha texture: avoid vertically-separated parts 
 					+ Straighten up flames
 				+ Cleanup last shader items
-			= Try to bend flame quad based on velocity
+			+ Try to bend flame quad based on velocity
 				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
 					+ Use simple edge function
 				= See how to impart inertia:
 					+ Points::CombustionState has (current) FlameVector, which converges to
 					  target vector
-					= Convergence speed should depend on velocity magnitude
-						- Try with linear step
+					+ Convergence speed should depend on velocity magnitude
+						+ Try with linear step
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			+ Test with flame size slider
 			- merge

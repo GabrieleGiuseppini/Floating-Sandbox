@@ -1102,10 +1102,10 @@ void Points::UpdateCombustionHighFrequency(
 
         // Rate depends on the magnitude of velocity
         float constexpr minConvergenceRate = 0.07f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
-        float constexpr maxConvergenceRate = 0.2f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        float constexpr maxConvergenceRate = 0.5f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
         float const convergenceRate =
             minConvergenceRate
-            + (maxConvergenceRate - minConvergenceRate) * LinearStep(20.0f, 50.0f, Ql);
+            + (maxConvergenceRate - minConvergenceRate) * LinearStep(12.0f, 40.0f, Ql);
         pointCombustionState.FlameVector =
             Q * convergenceRate
             + pointCombustionState.FlameVector * (1.0f - convergenceRate);
