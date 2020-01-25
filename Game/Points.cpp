@@ -840,6 +840,8 @@ void Points::UpdateCombustionHighFrequency(
     {
         CombustionState & pointCombustionState = mCombustionStateBuffer[pointIndex];
 
+        assert(pointCombustionState.State != CombustionState::StateType::NotBurning); // Otherwise it wouldn't be in this set
+
         //
         // Check if this point should stop developing/burning or start extinguishing faster
         //
@@ -1058,16 +1060,8 @@ void Points::UpdateCombustionHighFrequency(
 
             case CombustionState::StateType::Burning:
             case CombustionState::StateType::Exploded:
-            {
-                // Nothing to do here
-                break;
-            }
-
             case CombustionState::StateType::NotBurning:
             {
-                // Shouldn't be in set of burning points
-                assert(false);
-
                 // Nothing to do here
                 break;
             }
@@ -1111,7 +1105,7 @@ void Points::UpdateCombustionHighFrequency(
         float constexpr maxConvergenceRate = 0.2f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
         float const convergenceRate =
             minConvergenceRate
-            + (maxConvergenceRate - minConvergenceRate) * SmoothStep(20.0f, 50.0f, Ql);
+            + (maxConvergenceRate - minConvergenceRate) * LinearStep(20.0f, 50.0f, Ql);
         pointCombustionState.FlameVector =
             Q * convergenceRate
             + pointCombustionState.FlameVector * (1.0f - convergenceRate);

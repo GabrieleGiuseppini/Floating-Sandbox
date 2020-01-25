@@ -261,7 +261,7 @@ bool SwitchboardPanel::ProcessKeyDown(
 
 bool SwitchboardPanel::ProcessKeyUp(
     int keyCode,
-    int keyModifiers)
+    int /*keyModifiers*/)
 {
     if (!mCurrentKeyDownElectricalElementId)
         return false; // This is the subsequent in a sequence of key ups...
