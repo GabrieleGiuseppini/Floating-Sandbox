@@ -125,6 +125,16 @@ inline T Mix(
     return val1 * (1.0f - x) + val2 * x;
 }
 
+inline float LinearStep(
+    float lEdge,
+    float rEdge,
+    float x) noexcept
+{
+    assert(lEdge <= rEdge);
+
+    return Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
+}
+
 inline float SmoothStep(
     float lEdge,
     float rEdge,
@@ -139,7 +149,7 @@ inline float SmoothStep(
 
 /*
  * Maps a x value, belonging to [minX, maxX], to [minOutput, maxOutput],
- * such that when x is 1.0, output is oneOutput. 
+ * such that when x is 1.0, output is oneOutput.
  */
 inline float MixPiecewiseLinear(
 	float minOutput,

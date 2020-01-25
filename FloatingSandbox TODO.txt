@@ -466,6 +466,7 @@ Render:
 					+ Points::CombustionState has (current) FlameVector, which converges to
 					  target vector
 					= Convergence speed should depend on velocity magnitude
+						- Try with linear step
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			+ Test with flame size slider
 			- merge
