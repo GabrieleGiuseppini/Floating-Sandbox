@@ -576,6 +576,10 @@ void Ship::RepairAt(
                                 fcs.SpringIndex,
                                 mSprings.GetFactoryRestLength(fcs.SpringIndex));
 
+                            // Attempt to restore both endpoints
+                            AttemptPointRestore(pointIndex);
+                            AttemptPointRestore(otherEndpointIndex);
+
                             // Remember to recalculate the spring's coefficients, now that we
                             // have changed its rest length
                             doRecalculateSpringCoefficients = true;
@@ -658,23 +662,14 @@ void Ship::RepairAt(
                     {
                         // Restore it
                         mTriangles.Restore(fct);
+
+                        // Attempt to restore all endpoints
+                        AttemptPointRestore(mTriangles.GetPointAIndex(fct));
+                        AttemptPointRestore(mTriangles.GetPointBIndex(fct));
+                        AttemptPointRestore(mTriangles.GetPointCIndex(fct));
                     }
                 }
             }
-        }
-
-        //
-        // 3) Restore eligible endpoints
-        //
-        // Eligible endpoints are damaged points that now have all of their factory springs and all
-        // of their factory triangles
-        //
-
-        if (mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() == mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size()
-            && mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles.size()
-            && mPoints.IsDamaged(pointIndex))
-        {
-            mPoints.Restore(pointIndex);
         }
     }
 }
@@ -831,7 +826,7 @@ bool Ship::ExtinguishFireAt(
 
                 mPoints.AddHeat(
                     pointIndex,
-                    -800000.0f * strength);
+                    -950000.0f * strength);
             }
 
             // Remember we've found a point

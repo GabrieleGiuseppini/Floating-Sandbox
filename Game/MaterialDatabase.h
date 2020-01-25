@@ -10,6 +10,7 @@
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Utils.h>
 
 #include <picojson.h>

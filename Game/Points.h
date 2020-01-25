@@ -82,6 +82,9 @@ public:
 
 private:
 
+    /*
+     * Packed precalculated buoyancy coefficients.
+     */
     struct BuoyancyCoefficients
     {
         float Coefficient1; // Temperature-independent
@@ -120,6 +123,13 @@ private:
 
         float FlameDevelopment;
         float MaxFlameDevelopment;
+        float NextSmokeEmissionSimulationTimestamp;
+
+        // The current flame vector, which provides direction and magnitude
+        // of the flame quad. Slowly converges to the target vector, which
+        // is the resultant of buoyancy making the flame upwards, added to
+        // the particle's current velocity
+        vec2f FlameVector;
 
         CombustionState()
         {
@@ -131,6 +141,8 @@ private:
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
+            NextSmokeEmissionSimulationTimestamp = 0.0f;
+            FlameVector = vec2f(0.0f, 1.0f);
         }
     };
 
@@ -174,14 +186,14 @@ private:
                 Fast
             };
 
-            Render::GenericTextureGroups TextureGroup;
+            Render::GenericMipMappedTextureGroups TextureGroup;
             GrowthType Growth;
             float PersonalitySeed;
             float LifetimeProgress;
             float ScaleProgress;
 
             SmokeState()
-                : TextureGroup(Render::GenericTextureGroups::SmokeLight) // Arbitrary
+                : TextureGroup(Render::GenericMipMappedTextureGroups::SmokeLight) // Arbitrary
                 , Growth(GrowthType::Slow) // Arbitrary
                 , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
@@ -189,7 +201,7 @@ private:
             {}
 
             SmokeState(
-                Render::GenericTextureGroups textureGroup,
+                Render::GenericMipMappedTextureGroups textureGroup,
                 GrowthType growth,
                 float personalitySeed)
                 : TextureGroup(textureGroup)
@@ -597,7 +609,7 @@ public:
         GameParameters const & gameParameters)
     {
         CreateEphemeralParticleSmoke(
-            Render::GenericTextureGroups::SmokeLight,
+            Render::GenericMipMappedTextureGroups::SmokeLight,
             EphemeralState::SmokeState::GrowthType::Slow,
             position,
             temperature,
@@ -614,7 +626,7 @@ public:
         GameParameters const & gameParameters)
     {
         CreateEphemeralParticleSmoke(
-            Render::GenericTextureGroups::SmokeDark,
+            Render::GenericMipMappedTextureGroups::SmokeDark,
             EphemeralState::SmokeState::GrowthType::Fast,
             position,
             temperature,
@@ -624,7 +636,7 @@ public:
     }
 
     void CreateEphemeralParticleSmoke(
-        Render::GenericTextureGroups textureGroup,
+        Render::GenericMipMappedTextureGroups textureGroup,
         EphemeralState::SmokeState::GrowthType growth,
         vec2f const & position,
         float temperature,
@@ -1116,7 +1128,7 @@ public:
     }
 
     /*
-     * Checks whether a point is eligible for being extinguished by smotherning.
+     * Checks whether a point is eligible for being extinguished by smothering.
      */
     bool IsBurningForSmothering(ElementIndex pointElementIndex) const
     {

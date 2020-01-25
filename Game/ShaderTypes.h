@@ -33,9 +33,11 @@ enum class ProgramType
     ShipExplosions,
     ShipFlamesBackground1,
     ShipFlamesBackground2,
+    ShipFlamesBackground3,
     ShipFlamesForeground1,
     ShipFlamesForeground2,
-    ShipGenericTextures,
+    ShipFlamesForeground3,
+    ShipGenericMipMappedTextures,
     ShipPointsColor,
     ShipPointsColorWithTemperature,
     ShipRopes,
@@ -65,7 +67,10 @@ std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
 {
-    EffectiveAmbientLightIntensity = 0,
+    AtlasTile1Dx = 0,
+    AtlasTile1LeftBottomTextureCoordinates,
+    AtlasTile1Size,
+    EffectiveAmbientLightIntensity,
     FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,
@@ -87,18 +92,18 @@ enum class ProgramParameterType : uint8_t
     WaterLevelThreshold,
 
     // Textures
-    SharedTexture,                  // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
-    CloudsAtlasTexture,             // 1
-    ExplosionsAtlasTexture,         // 2
-    GenericTexturesAtlasTexture,    // 3
-    LandTexture,                    // 4
-    NoiseTexture1,                  // 5
-    NoiseTexture2,                  // 6
-    OceanTexture,                   // 7
-    WorldBorderTexture,             // 8
+    SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
+    CloudsAtlasTexture,                     // 1
+    ExplosionsAtlasTexture,                 // 2
+    GenericLinearTexturesAtlasTexture,      // 3
+    GenericMipMappedTexturesAtlasTexture,   // 4
+    LandTexture,                            // 5
+    NoiseTexture1,                          // 6
+    NoiseTexture2,                          // 7
+    OceanTexture,                           // 8
 
     _FirstTexture = SharedTexture,
-    _LastTexture = WorldBorderTexture
+    _LastTexture = OceanTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -153,9 +158,9 @@ enum class VertexAttributeType : GLuint
     Sparkle1 = 0,
     Sparkle2 = 1,
 
-    GenericTexture1 = 0,
-    GenericTexture2 = 1,
-    GenericTexture3 = 2,
+    GenericMipMappedTexture1 = 0,
+    GenericMipMappedTexture2 = 1,
+    GenericMipMappedTexture3 = 2,
 
     Flame1 = 0,
     Flame2 = 1,

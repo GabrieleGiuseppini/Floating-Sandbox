@@ -136,7 +136,7 @@ void TextLayer::SetStatusTexts(
             << " SPR:" << renderStatistics.LastRenderedShipSprings
             << " TRI:" << renderStatistics.LastRenderedShipTriangles
             << " PLN:" << renderStatistics.LastRenderedShipPlanes
-            << " GENTEX:" << renderStatistics.LastRenderedShipGenericTextures
+            << " GENTEX:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
             << " FLM:" << renderStatistics.LastRenderedShipFlames;
 
         ss << std::fixed << std::setprecision(2)

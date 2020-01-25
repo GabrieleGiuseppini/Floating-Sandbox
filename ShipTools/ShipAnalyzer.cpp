@@ -57,11 +57,11 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
 
                 airBuoyantMass +=
                     structuralMaterial->GetMass()
-                    - (structuralMaterial->WaterVolumeFill * GameParameters::AirMass);
+                    - (structuralMaterial->BuoyancyVolumeFill * GameParameters::AirMass);
 
                 waterBuoyantMass +=
                     structuralMaterial->GetMass()
-                    - (structuralMaterial->WaterVolumeFill * GameParameters::WaterMass);
+                    - (structuralMaterial->BuoyancyVolumeFill * GameParameters::WaterMass);
 
                 // Update center of mass
                 analysisInfo.BaricentricX += worldX * structuralMaterial->GetMass();

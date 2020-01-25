@@ -27,6 +27,9 @@ class ElectricalElements : public ElementContainer
 {
 private:
 
+    /*
+     * The information we maintain with each instanced element.
+     */
     struct InstanceInfo
     {
         ElectricalElementInstanceIndex InstanceIndex;
@@ -149,7 +152,7 @@ private:
         {
             float EmissionRate;
             bool IsOperating;
-            float NextEmissionSimulationTimestamp;
+            float NextEmissionSimulationTimestamp; // When zero, it will be calculated
 
             SmokeEmitterState(float emissionRate)
                 : EmissionRate(emissionRate)

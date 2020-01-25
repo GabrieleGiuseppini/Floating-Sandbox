@@ -43,9 +43,8 @@ enum class WorldTextureGroups : uint16_t
 {
     Land = 0,
     Ocean,
-    WorldBorder,
 
-    _Last = WorldBorder
+    _Last = Ocean
 };
 
 struct WorldTextureDatabaseTraits
@@ -60,8 +59,6 @@ struct WorldTextureDatabaseTraits
             return TextureGroups::Land;
         else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
             return TextureGroups::Ocean;
-        else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
-            return TextureGroups::WorldBorder;
         else
             throw GameException("Unrecognized World texture group \"" + str + "\"");
     }
@@ -89,7 +86,7 @@ struct NoiseTextureDatabaseTraits
     }
 };
 
-enum class GenericTextureGroups : uint16_t
+enum class GenericMipMappedTextureGroups : uint16_t
 {
     AirBubble = 0,
     AntiMatterBombArmor,
@@ -107,11 +104,11 @@ enum class GenericTextureGroups : uint16_t
     _Last = TimerBombFuse
 };
 
-struct GenericTextureTextureDatabaseTraits
+struct GenericMipMappedTextureTextureDatabaseTraits
 {
-    static inline std::string DatabaseName = "GenericTexture";
+    static inline std::string DatabaseName = "GenericMipMappedTexture";
 
-    using TextureGroups = GenericTextureGroups;
+    using TextureGroups = GenericMipMappedTextureGroups;
 
     static TextureGroups StrToTextureGroup(std::string const & str)
     {
@@ -140,7 +137,32 @@ struct GenericTextureTextureDatabaseTraits
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return TextureGroups::TimerBombFuse;
         else
-            throw GameException("Unrecognized GenericTexture texture group \"" + str + "\"");
+            throw GameException("Unrecognized GenericMipMappedTexture texture group \"" + str + "\"");
+    }
+};
+
+enum class GenericLinearTextureGroups : uint16_t
+{
+    Fire,
+    WorldBorder,
+
+    _Last = WorldBorder
+};
+
+struct GenericLinearTextureTextureDatabaseTraits
+{
+    static inline std::string DatabaseName = "GenericLinearTexture";
+
+    using TextureGroups = GenericLinearTextureGroups;
+
+    static TextureGroups StrToTextureGroup(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Fire"))
+            return TextureGroups::Fire;
+        else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
+            return TextureGroups::WorldBorder;
+        else
+            throw GameException("Unrecognized GenericLinearTexture texture group \"" + str + "\"");
     }
 };
 

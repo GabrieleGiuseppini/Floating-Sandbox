@@ -147,6 +147,16 @@ TEST(GameMathTests, Clamp_Basic)
     EXPECT_EQ(3.0f, Clamp(3.0f, 2.0f, 4.0f));
 }
 
+TEST(GameMathTests, LinearStep_Basic)
+{
+    EXPECT_EQ(0.0f, LinearStep(1.0f, 2.0f, 0.5f));
+    EXPECT_EQ(1.0f, LinearStep(1.0f, 2.0f, 2.5f));
+
+    EXPECT_TRUE(ApproxEquals(LinearStep(1.0f, 2.0f, 1.25f), 0.25f, 0.05f));
+    EXPECT_TRUE(ApproxEquals(LinearStep(1.0f, 2.0f, 1.5f), 0.5f, 0.05f));
+    EXPECT_TRUE(ApproxEquals(LinearStep(1.0f, 2.0f, 1.75f), 0.75f, 0.05f));
+}
+
 TEST(GameMathTests, SmoothStep_Basic)
 {
     EXPECT_EQ(0.0f, SmoothStep(1.0f, 2.0f, 0.5f));

@@ -192,7 +192,7 @@ void ShaderManager<Traits>::CompileShader(
             size_t programParameterIndex = static_cast<size_t>(programParameter);
             while (mPrograms[programIndex].UniformLocations.size() <= programParameterIndex)
             {
-                mPrograms[programIndex].UniformLocations.push_back(-1);
+                mPrograms[programIndex].UniformLocations.push_back(NoParameterLocation);
             }
 
             // Get and store
@@ -409,7 +409,7 @@ std::string ShaderManager<Traits>::SubstituteStaticParameters(
 template<typename Traits>
 std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractShaderParameters(std::string const & source)
 {
-    static std::regex ShaderParamNameRegex(R"!(^\s*(//\s*)?\buniform\s+.*\s+param([_a-zA-Z0-9]+);\s*$)!");
+    static std::regex ShaderParamNameRegex(R"!(^\s*(//\s*)?\buniform\s+.*\s+param([_a-zA-Z0-9]+);\s*(?://.*)?$)!");
 
     std::set<typename Traits::ProgramParameterType> shaderParameters;
 

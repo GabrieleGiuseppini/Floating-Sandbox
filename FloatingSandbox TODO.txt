@@ -429,9 +429,49 @@ Render:
 			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
 		+ Try transmogrifying all textures
 		+ See keyboard shortcut for push switch
+		+ Repair: better algo to restore points
+		+ Re-try world border, using right total texture space width and height (i.e. - 1/S)
 
-		- See if fire may emit Heavy smoke
-
+		= Try flames with texture
+			+ Add a new "Flame" texture to GenericTextures atlas
+				+ Try to flange its bottom
+			+ Test shader, using hardcoded atlas coords for flame texture
+			+ Make it new flame mode, 1
+				+ Rename others as 2 and 3
+			+ Restrict two-stage rendering only to modes 2 and 3
+			+ Test putting back vertical time-changing offset
+				+ Texture has colors for all values of alpha mask
+				+ Shader samples twice
+				+ Do MipMapped and Linear Generic Textures
+					+ Code
+					+ Rename ship gen tex shader
+					+ Shaders' parameter names: GenericTexture -> GenericMipMappedTexture
+					+ Flame 1 shader parameter name: GenericTexture -> GenericLinearTexture
+					+ WorldBorder/End parameter name: -> GenericLinearTexture
+					+ WorldBorder: provide atlas coords for border texture into shader via param - once and for all at RenderContext initialization time
+						+ Cleanup:
+							+ RenderContext::RenderWorldEnd
+							+ RenderContext::cctor: 
+				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
+				+ See if alpha sampling is really necessary
+				+ Color texture: do better wrapping 				
+				+ Alpha texture: avoid vertically-separated parts 
+					+ Straighten up flames
+				+ Cleanup last shader items
+			+ Try to bend flame quad based on velocity
+				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
+				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
+					+ Use simple edge function
+				= See how to impart inertia:
+					+ Points::CombustionState has (current) FlameVector, which converges to
+					  target vector
+					+ Convergence speed should depend on velocity magnitude
+						+ Try with linear step
+			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
+			+ Test with flame size slider
+			- merge
+			- changes.txt		
+		
 		- Try with SpringRelaxation updating only positions (*)
 
 		- Propulsion (*)
@@ -440,6 +480,12 @@ Render:
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		= See if fire may emit Heavy smoke
+			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
+			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
+			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
+			- Do cleanup tasks
 
 		- Spring and NonSpring force separation optimization (*)
 			- Unless "SpringRelaxation updating only positions" makes the trick
@@ -813,6 +859,11 @@ Render:
 
 
 - Gfx optimizations:
+
+	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering)
+		- If fine:
+			- Do stars once and for all
+			- Spec gfx niceties such as reflections and after-effect
 					
 	- Lights on the GPU with instanced drawing
 		- We begin with doing light at vertex (Gouraud)

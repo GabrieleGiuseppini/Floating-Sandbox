@@ -33,10 +33,10 @@ void PinnedPoints::Upload(
     {
         assert(mShipPoints.IsPinned(pinnedPointIndex));
 
-        renderContext.UploadShipGenericTextureRenderSpecification(
+        renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
             shipId,
             mShipPoints.GetPlaneId(pinnedPointIndex),
-            TextureFrameId(Render::GenericTextureGroups::PinnedPoint, 0),
+            TextureFrameId(Render::GenericMipMappedTextureGroups::PinnedPoint, 0),
             mShipPoints.GetPosition(pinnedPointIndex));
     }
 }

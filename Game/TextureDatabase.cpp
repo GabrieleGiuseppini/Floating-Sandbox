@@ -388,7 +388,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 }
 
 //
-// Explicit specializations for all database groups
+// Explicit specializations for all texture groups
 //
 
 #include "TextureTypes.h"
@@ -396,11 +396,13 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 template struct Render::TextureFrameMetadata<Render::CloudTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::WorldTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
-template struct Render::TextureFrameMetadata<Render::GenericTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::GenericLinearTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
 
 template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::NoiseTextureDatabaseTraits>;
-template class Render::TextureDatabase<Render::GenericTextureTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::ExplosionTextureDatabaseTraits>;
