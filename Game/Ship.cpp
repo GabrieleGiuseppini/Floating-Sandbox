@@ -632,7 +632,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const springDir = displacement.normalise(displacementLength);
 
         //
-        // 1. Hooke's law
+        // Hooke's law
         //
 
         // Calculate spring force on point A
@@ -641,28 +641,9 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
             * (displacementLength - mSprings.GetRestLength(springIndex))
             * mSprings.GetStiffnessCoefficient(springIndex);
 
-
-        //
-        // 2. Damper forces
-        //
-        // Damp the velocities of the two points, as if the points were also connected by a damper
-        // along the same direction as the spring
-        //
-
-        // Calculate damp force on point A
-        vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
-        vec2f const fDampA =
-            springDir
-            * relVelocity.dot(springDir)
-            * mSprings.GetDampingCoefficient(springIndex);
-
-
-        //
-        // Apply forces
-        //
-
-        mPoints.GetForce(pointAIndex) += fSpringA + fDampA;
-        mPoints.GetForce(pointBIndex) -= fSpringA + fDampA;
+        // Apply force
+        mPoints.GetForce(pointAIndex) += fSpringA;
+        mPoints.GetForce(pointBIndex) -= fSpringA;
     }
 }
 

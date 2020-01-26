@@ -728,6 +728,8 @@ Render:
 			  might get rid of force fields
 
 	- Try with SpringRelaxation updating only positions (*)
+		- First:
+			+ See if spring damping is needed
 		- Still runs N times, but only updates positions (does a local "integration" based on "forces")
 		- After last step, update velocity adding last step's position minus initial position
 			- Need to save velocity buffer first
@@ -736,6 +738,8 @@ Render:
 		- Test:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
+		- Cleanup:
+			- Nuke everything about spring damping
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
