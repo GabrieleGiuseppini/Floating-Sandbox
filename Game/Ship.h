@@ -220,6 +220,8 @@ public:
 
     void IntegrateAndResetPointForces(GameParameters const & gameParameters);
 
+    void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
+
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
     void TrimForWorldBounds(GameParameters const & gameParameters);
