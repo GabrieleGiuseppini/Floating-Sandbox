@@ -473,6 +473,13 @@ Render:
 		
 		- Try with SpringRelaxation updating only positions (*)
 
+		- Baked sounds
+
+		- Also GoodYear should be full of hydrogen
+		- Lower gunpowder strength
+		- Selector for panel background
+		- Check Mike's materials
+
 		- Propulsion (*)
 
 		- Flood doors (*)
@@ -556,6 +563,10 @@ Render:
 			- Pac0master's Structures
 			- Hummel: 
 				- Mini Bismarck rar is empty
+			- SCS and Space Titanic - permission from John Smith to include in ship pack
+				You can find both versions on #architect-creations in the FS server
+			- Fuhrer from Kiko
+			- HMS_Mark_Hamil.png from TopHatLemons
 		- To take:
 			- All the ones under "Ready"		
 				
@@ -1101,6 +1112,7 @@ Render:
 	- Fireworks
 		- New emitter material, much like smoke emitter (*)
 		- Fires when wet for the first time
+		- "Whatever color block its on it explodes that color" (AwesomeYorkie)
 
 	= Power probe:
 		+ Rename: "Monitor"->"Probe" in current code
@@ -1228,6 +1240,9 @@ Render:
 		- UpdateSinks: 
 			- EngineControl: TODOHERE
 			- Engine: TODOHERE
+		- Gfx:
+			- Telegraph with hand
+				- Research credits
 		- TODOOLD:
 		- New electrical element - engine
 			- Publicized like switch, and switchboard shows slider

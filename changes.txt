@@ -11,6 +11,7 @@
 - Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
 - Re-worked flame physics and graphics
+	- Flames are now directional, adapting to the velocity of the particles that are burning
 - Re-worked explosion physics and graphics
 - Rain now floods exposed areas of a ship
 - Repairing a ship's structure now also repairs its electricals

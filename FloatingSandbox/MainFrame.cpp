@@ -1305,13 +1305,13 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
         std::stringstream ssFilename;
         ssFilename.fill('0');
         ssFilename
-            << shipName
-            << "_"
             << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
             << "_"
             << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
             << "_"
             << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
+            << "_"
+            << shipName
             << ".png";
 
         screenshotFilePath = folderPath / ssFilename.str();
