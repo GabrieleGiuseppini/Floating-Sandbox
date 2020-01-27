@@ -471,25 +471,30 @@ void Ship::UpdateMechanicalDynamics(
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // Apply force fields - if we have any
-        // TODOTEST
-        ////for (auto const & forceField : mCurrentForceFields)
-        ////{
-        ////    forceField->Apply(
-        ////        mPoints,
-        ////        currentSimulationTime,
-        ////        gameParameters);
-        ////}
-
-        // Update point forces
-        UpdatePointForces(gameParameters);
-
-        // TODOTEST: added
-        // Integrate and reset forces to zero
-        IntegrateAndResetPointForces(gameParameters);
+        // The order of these operations minimizes the displacements seen by
+        // the spring relaxation step:
+        //  - Spring relaxation -> A1
+        //  - Full Integration (DeltaPos = V*dt + A1*dt*dt, P += DeltaPos, V = DeltaPos/dt)
+        //  - Other forces -> A2
+        //  - Incremental Integration (DeltaPos = A2*dt*dt, P += DeltaPos, V += DeltaPos/dt)
 
         // Update spring forces
         UpdateSpringForces(gameParameters);
+
+        // Integrate spring forces - including velocity
+        IntegrateAndResetForces(gameParameters);
+
+        // Apply force fields - if we have any
+        for (auto const & forceField : mCurrentForceFields)
+        {
+            forceField->Apply(
+                mPoints,
+                currentSimulationTime,
+                gameParameters);
+        }
+
+        // Apply world forces
+        UpdatePointForces(gameParameters);
 
         // Check whether we need to save the last force buffer before we zero it out
         if (iter == numMechanicalDynamicsIterations - 1
@@ -498,10 +503,8 @@ void Ship::UpdateMechanicalDynamics(
             mPoints.CopyForceBufferToForceRenderBuffer();
         }
 
-        // TODOTEST
-        //IntegrateAndResetPointForces(gameParameters);
-        // Integrate and reset forces to zero
-        IntegrateAndResetSpringForces(gameParameters);
+        // Integrate - incrementally only, as velocity has already been integrated above
+        IntegrateAndResetForces_Incremental(gameParameters);
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor(gameParameters);
@@ -654,7 +657,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
     }
 }
 
-void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetForces(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
@@ -707,7 +710,7 @@ void Ship::IntegrateAndResetPointForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetForces_Incremental(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
@@ -751,7 +754,7 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
         // Verlet integration (fourth order, with velocity being first order)
         //
 
-        float const deltaPos = /*velocityBuffer[i] * dt +*/ forceBuffer[i] * integrationFactorBuffer[i];
+        float const deltaPos = forceBuffer[i] * integrationFactorBuffer[i];
         positionBuffer[i] += deltaPos;
         velocityBuffer[i] += deltaPos * globalDampCoefficient / dt;
 

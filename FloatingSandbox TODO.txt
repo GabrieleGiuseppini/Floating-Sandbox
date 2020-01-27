@@ -705,7 +705,7 @@ Render:
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
 		+ First, remove spring damping
-		= First, test that the reason two separate integrations explode is because of velocity
+		= Second, test that the reason two separate integrations explode is because of velocity
 		- Points has two Force buffers: SpringForces and NonSpringForces
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
@@ -728,9 +728,10 @@ Render:
 		- Test:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
-		- Cleanup:
+		- Finalization:
 			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
 			  might get rid of force fields and apply forces directly instead of queing force fields
+			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
 			- See if HandleCollisionsWithSeaFloor may be also done once
 				- First, check its impact
 			- Nuke everything about spring damping
@@ -751,8 +752,11 @@ Render:
 			- So no need to integrate afterwards
 		- However, need to update velocity, and it's faster if we do it for each point rather than for each spring:
 			- Save positions first
-			- Do all relaxation iterations
+			- Do iteration
 			- Add resulting velocity: (newPos-oldPos)/(DT/NumMechanicalIterations)
+		- Finalization:
+			- Initial positions snapshot and UpdateVelocitiesFromPositionDeltas: we only need them for the particles
+			  that might have springs - we definitely don't need ephemerals
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
