@@ -705,11 +705,30 @@ Render:
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
 		+ First, remove spring damping
-		= Second, test that the reason two separate integrations explode is because of velocity
+		+ Second, test that the reason two separate integrations explode is because of velocity
+		+ Split spring forces and point forces, achieving equivalence
+		- 1) Change integration scheme:
+			! So that position-based spring relaxation does not require extra semi/integration steps
+			- P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
+			- V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
+			- Verify equivalent
+		- 2) All non-spring forces calculated once, outside of loop
+			- Assumption: no deletions take place during mech loop
+			- Points has two Force buffers: SpringForces and NonSpringForces
+				! Only temporarily, until position-based springs are done
+			- TODOHERE
+			- Test L'n'F'
+		- 3) Spring relaxation based on position rather than forces
+			- TODOHERE
+			- Get rid of two force buffers and go back to one single "Force" buffer
+			
+		- TODOHERE
+
+		- TODOOLD
 		- Points has two Force buffers: SpringForces and NonSpringForces
 		- Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
-			! If we get rid of ForceFields, we need to preserve PointForces at this moment, se we need to clear them at the ned
+			! If we get rid of ForceFields, we need to preserve PointForces at this moment, se we need to clear them at the end
 			- All the forces created below assume dt=DT, as we'll apply them a 1/NumMechanicalIterations fraction at a time
 			- First, populates PointForces with gravity/buoyancy/water drag
 				- Rename UpdatePointForces to ApplyWorldForces
@@ -731,6 +750,8 @@ Render:
 		- Finalization:
 			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
 			  might get rid of force fields and apply forces directly instead of queing force fields
+			- If world forces may be calc'd once:
+				- See if can pre-integrate them (evt.lly in a separate temp buffer)
 			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
 			- See if HandleCollisionsWithSeaFloor may be also done once
 				- First, check its impact
