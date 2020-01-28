@@ -725,9 +725,18 @@ Render:
 				+ Check assembly
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
-			- Incorporate damp force as well
-			- TODOHERE
+			- 1) Integrate inline (multipy sum of forces by point's integration coeff)
+				- Get rid of spring integration in iterations loop
+				- Test
 			- Get rid of two force buffers and go back to one single "Force" buffer
+			- 2) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using new
+			     IntegrationFactors
+				- IntegrationFactors buffer, expected to be updated at Springs::CalculateIntegrationFactors before being used
+				- Need pre-step before loop: Springs::CalculateIntegrationFactors(Buffer<float> const & pointMassBuffer)
+				- Test
+			- 3) Optimize spring relaxation
+				! Assembly inspection-driven
+				- a) Add Hooke's and damping scalars and multiply only once with springDir
 		- Finalization:
 			- Do something for that shared pointer overhead
 			- If world forces may be calc'd once:
