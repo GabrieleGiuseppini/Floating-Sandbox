@@ -66,12 +66,13 @@ public:
      */
     void fill(TElement value)
     {
+        TElement * restrict const ptr = mBuffer;
         for (size_t i = 0; i < mSize; ++i)
-            mBuffer[i] = value;
+            ptr[i] = value;
     }
 
     /*
-     * Clears the buffer, by reducing its currently-populated 
+     * Clears the buffer, by reducing its currently-populated
      * element count to zero, so that it is ready for being re-populated.
      */
     void clear()

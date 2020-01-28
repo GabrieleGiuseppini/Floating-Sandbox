@@ -857,6 +857,26 @@ public:
         float offset,
         Springs & springs);
 
+    float * restrict GetSpringForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mSpringForceBuffer.data());
+    }
+
+    float * restrict GetNonSpringForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
+    }
+
+    void CopyNonSpringForceBufferToForceRenderBuffer()
+    {
+        mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
+    }
+
+    void ResetNonSpringForces()
+    {
+        mNonSpringForceBuffer.fill(vec2f::zero());
+    }
+
     /*
      * Returns the total mass of the point, which equals the point's material's mass with
      * all modifiers (offsets, water, etc.).
@@ -950,22 +970,6 @@ public:
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
             mFrozenCoefficientBuffer[pointElementIndex]);
-    }
-
-
-    float * restrict GetSpringForceBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mSpringForceBuffer.data());
-    }
-
-    float * restrict GetNonSpringForceBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
-    }
-
-    void CopyForceBufferToForceRenderBuffer()
-    {
-        mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
     }
 
     //

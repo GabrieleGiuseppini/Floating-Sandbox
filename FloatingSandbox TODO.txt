@@ -719,15 +719,18 @@ Render:
 			+ Points has two Force buffers: SpringForces and NonSpringForces
 				! Only temporarily, until position-based springs are done
 			+ Verify equivalence
-			- Move forces' application out
+			+ Move forces' application out
+			+ Do not reset forces at integrate
+			+ Zero forces after loop
+				+ Check assembly
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
-			- incorporate damp force as well
+			- Incorporate damp force as well
 			- TODOHERE
 			- Get rid of two force buffers and go back to one single "Force" buffer
-		- 4) See if may replace spring dampers with higher global damp
-			- Add new GameParameters::GlobalDampAdjust
 		- Finalization:
+			- See if may replace spring dampers with higher global damp
+				- Add new GameParameters::GlobalDampAdjust
 			- If we still have multiple Integrate()'s, unify global damp somewhere
 			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
 			  might get rid of force fields and apply forces directly instead of queing force fields
@@ -740,6 +743,14 @@ Render:
 			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
 			- If we keep spring damping: see if perf improves with velocity and force in the same buffer
 				- Be careful at integration
+				- Vector rendering: upload both components
+					- ShipRenderContext
+				- If it works: test with positions as well, as follows:
+					! Position buffer stays
+					- Velocity and Force buffer takes also Position
+					- Before loop: interleave position into buffer
+					- During loop: only deal with those positions
+					- After loop: de-interleave position again into its own buffer
 			- If we got rid of spring damping: nuke everything about spring damping
 				- Springs' coeffs
 				- Settings

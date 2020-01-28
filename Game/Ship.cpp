@@ -464,16 +464,31 @@ void Ship::UpdateMechanicalDynamics(
     mPoints.UpdateMasses(gameParameters);
 
     //
-    // 2. Run iterations
+    // 2. Update non-spring forces
+    //
+
+    // Apply force fields - if we have any
+    for (auto const & forceField : mCurrentForceFields)
+    {
+        forceField->Apply(
+            mPoints,
+            currentSimulationTime,
+            gameParameters);
+    }
+
+    // Apply world forces
+    ApplyWorldForces(gameParameters);
+
+    //
+    // 3. Run iterations
     //
 
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
-
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // Now:
-        // - Position = p0
-        // - Velocity = v0
+        // - Position = p(t)
+        // - Velocity = v(t)
 
         // Make copy of current positions
         auto const previousPositions = mPoints.MakePositionBufferCopy();
@@ -485,43 +500,33 @@ void Ship::UpdateMechanicalDynamics(
         IntegrateAndResetSpringForces(gameParameters);
 
         // Now:
-        // - Position = p0 + SpringDeltaP
-        // - Velocity = v0
-        // - Force = 0
-
-        // Apply force fields - if we have any
-        for (auto const & forceField : mCurrentForceFields)
-        {
-            forceField->Apply(
-                mPoints,
-                currentSimulationTime,
-                gameParameters);
-        }
-
-        // Apply world forces
-        ApplyWorldForces(gameParameters);
-
-        // Check whether we need to save the last force buffer before we zero it out
-        if (iter == numMechanicalDynamicsIterations - 1
-            && VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
-        {
-            mPoints.CopyForceBufferToForceRenderBuffer();
-        }
-
-        // Now:
-        // - Position = p0 + SpringDeltaP
-        // - Velocity = v0
-        // - Force = fWorld
+        // - Position = p(t) + SpringDeltaPos(t+1)
+        // - Velocity = v(t)
+        // - SpringForces = 0
+        // - NonSpringForces = fWorld(t+1)
 
         // Integrate
-        IntegrateAndResetNonSpringForces(*previousPositions, gameParameters);
+        IntegrateNonSpringForces(*previousPositions, gameParameters);
 
         // Handle collisions with sea floor
+        //  - Changes position and velocity
         HandleCollisionsWithSeaFloor(gameParameters);
     }
 
     // Consume force fields
     mCurrentForceFields.clear();
+
+    // Check whether we need to save the force buffer before we zero it out
+    if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+    {
+        mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
+    }
+
+    //
+    // 4. Reset non-spring forces, now that we have integrated them
+    //
+
+    mPoints.ResetNonSpringForces();
 }
 
 void Ship::ApplyWorldForces(GameParameters const & gameParameters)
@@ -712,18 +717,18 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::IntegrateAndResetNonSpringForces(
+void Ship::IntegrateNonSpringForces(
     Buffer<vec2f> const & previousPositions,
     GameParameters const & gameParameters)
 {
     //
-    // previousPos is p0
-    // pos is now p0 + SpringDeltaPos1
-    // vel is v0
-    // force is fWorld1
+    // previousPos is p(t)
+    // pos is now p(t) + SpringDeltaPos(t+1)
+    // vel is v(t)
+    // force is fWorld(t+1)
     //
-    // p1 = p0 + SpringDeltaPos1 + WorldDeltaPos1 + v0 * dt
-    // v1 = v0 + SpringDeltaPos1/dt + WorldDeltaPos1/dt
+    // p(t+1) = p(t) + SpringDeltaPos(t+1) + WorldDeltaPos(t+1) + v(t) * dt
+    // v(t+1) = v(t) + SpringDeltaPos(t+1)/dt + WorldDeltaPos(t+1)/dt
     //
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -771,9 +776,6 @@ void Ship::IntegrateAndResetNonSpringForces(
 
         positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
         velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient / dt;
-
-        // Zero out force now that we've integrated it
-        nonSpringForceBuffer[i] = 0.0f;
     }
 }
 

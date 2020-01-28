@@ -220,7 +220,7 @@ public:
 
     void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
 
-    void IntegrateAndResetNonSpringForces(
+    void IntegrateNonSpringForces(
         Buffer<vec2f> const & previousPositions,
         GameParameters const & gameParameters);
 
