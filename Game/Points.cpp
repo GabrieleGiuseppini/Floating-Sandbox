@@ -1667,19 +1667,25 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
+    float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
+    float const * restrict const waterBuffer = mWaterBuffer.data();
+    float const * restrict const materialBuoyancyVolumeFillBuffer = mMaterialBuoyancyVolumeFillBuffer.data();
+    float * restrict const massBuffer = mMassBuffer.data();
+    float const * restrict const integrationFactorTimeCoefficientBuffer = mIntegrationFactorTimeCoefficientBuffer.data();
+    vec2f * restrict const integrationFactorBuffer = mIntegrationFactorBuffer.data();
     for (ElementIndex i : *this)
     {
         float const mass =
-            mAugmentedMaterialMassBuffer[i]
-            + std::min(GetWater(i), mMaterialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
+            augmentedMaterialMassBuffer[i]
+            + std::min(waterBuffer[i], materialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
         assert(mass > 0.0f);
 
-        mMassBuffer[i] = mass;
+        massBuffer[i] = mass;
 
         mIntegrationFactorBuffer[i] = vec2f(
-            mIntegrationFactorTimeCoefficientBuffer[i] / mass,
-            mIntegrationFactorTimeCoefficientBuffer[i] / mass);
+            integrationFactorTimeCoefficientBuffer[i] / mass,
+            integrationFactorTimeCoefficientBuffer[i] / mass);
     }
 }
 
