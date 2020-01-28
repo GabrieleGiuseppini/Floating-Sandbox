@@ -714,11 +714,12 @@ Render:
 			+ P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
 			+ V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
 			+ Verify equivalent
-		- 2) All non-spring forces calculated once, outside of loop
-			- Assumption: no deletions take place during mech loop
-			- Points has two Force buffers: SpringForces and NonSpringForces
+		= 2) All non-spring forces calculated once, outside of loop
+			! Assumption: no deletions take place during mech loop
+			+ Points has two Force buffers: SpringForces and NonSpringForces
 				! Only temporarily, until position-based springs are done
-			- TODOHERE
+			+ Verify equivalence
+			- Move forces' application out
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
 			- incorporate damp force as well

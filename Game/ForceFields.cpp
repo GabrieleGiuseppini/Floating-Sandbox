@@ -25,7 +25,7 @@ void DrawForceField::Apply(
         vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 
-        points.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        points.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
     }
 }
 
@@ -44,7 +44,7 @@ void SwirlForceField::Apply(
         float const displacementLength = displacement.length();
         float forceMagnitude = mStrength / sqrtf(0.1f + displacementLength);
 
-        points.GetForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
+        points.GetNonSpringForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
     }
 }
 
@@ -83,7 +83,7 @@ void BlastForceField::Apply(
             // Create acceleration to flip the point
             vec2f flippedRadius = pointRadius.normalise() * (mBlastRadius + (mBlastRadius - pointRadius.length()));
             vec2f newPosition = mCenterPosition + flippedRadius;
-            points.GetForce(pointIndex) +=
+            points.GetNonSpringForce(pointIndex) +=
                 (newPosition - points.GetPosition(pointIndex))
                 / DtSquared
                 * mStrength
@@ -131,7 +131,7 @@ void RadialSpaceWarpForceField::Apply(
 
             float const strength = mStrength * (1.0f - absolutePointDistanceFromRadius / mRadiusThickness);
 
-            points.GetForce(pointIndex) +=
+            points.GetNonSpringForce(pointIndex) +=
                 pointRadius.normalise()
                 * strength
                 * direction;
@@ -154,14 +154,14 @@ void ImplosionForceField::Apply(
         float const massNormalization = points.GetMass(pointIndex) / 50.0f;
 
         // Angular (constant)
-        points.GetForce(pointIndex) +=
+        points.GetNonSpringForce(pointIndex) +=
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
             * mStrength
             * massNormalization
             / 10.0f; // Magic number
 
         // Radial (stronger when closer)
-        points.GetForce(pointIndex) +=
+        points.GetNonSpringForce(pointIndex) +=
             normalizedDisplacement
             * mStrength
             / (0.2f + sqrt(displacementLength))
@@ -184,7 +184,7 @@ void RadialExplosionForceField::Apply(
         vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
         float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
 
-        points.GetForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        points.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
     }
 }
 

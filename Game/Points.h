@@ -433,7 +433,8 @@ public:
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -812,21 +813,38 @@ public:
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetForce(ElementIndex pointElementIndex) const noexcept
+    vec2f const & GetSpringForce(ElementIndex pointElementIndex) const noexcept
     {
-        return mForceBuffer[pointElementIndex];
+        return mSpringForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetForce(ElementIndex pointElementIndex) noexcept
+    vec2f & GetSpringForce(ElementIndex pointElementIndex) noexcept
     {
-        return mForceBuffer[pointElementIndex];
+        return mSpringForceBuffer[pointElementIndex];
     }
 
-    void AddForce(
+    void AddSpringForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        mForceBuffer[pointElementIndex] += force;
+        mSpringForceBuffer[pointElementIndex] += force;
+    }
+
+    vec2f const & GetNonSpringForce(ElementIndex pointElementIndex) const noexcept
+    {
+        return mNonSpringForceBuffer[pointElementIndex];
+    }
+
+    vec2f & GetNonSpringForce(ElementIndex pointElementIndex) noexcept
+    {
+        return mNonSpringForceBuffer[pointElementIndex];
+    }
+
+    void AddNonSpringForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mNonSpringForceBuffer[pointElementIndex] += force;
     }
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
@@ -935,14 +953,19 @@ public:
     }
 
 
-    float * restrict GetForceBufferAsFloat()
+    float * restrict GetSpringForceBufferAsFloat()
     {
-        return reinterpret_cast<float *>(mForceBuffer.data());
+        return reinterpret_cast<float *>(mSpringForceBuffer.data());
+    }
+
+    float * restrict GetNonSpringForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
     }
 
     void CopyForceBufferToForceRenderBuffer()
     {
-        mForceRenderBuffer.copy_from(mForceBuffer);
+        mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
     }
 
     //
@@ -1486,7 +1509,7 @@ private:
 
     ElementIndex FindFreeEphemeralParticle(
         float currentSimulationTime,
-        bool force);
+        bool doForce);
 
     inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
     {
@@ -1521,7 +1544,8 @@ private:
 
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    Buffer<vec2f> mForceBuffer;
+    Buffer<vec2f> mSpringForceBuffer;
+    Buffer<vec2f> mNonSpringForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;

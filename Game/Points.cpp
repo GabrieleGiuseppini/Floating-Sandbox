@@ -33,7 +33,8 @@ void Points::Add(
 
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
-    mForceBuffer.emplace_back(vec2f::zero());
+    mSpringForceBuffer.emplace_back(vec2f::zero());
+    mNonSpringForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
@@ -129,7 +130,8 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mForceBuffer[pointIndex] = vec2f::zero();
+    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
@@ -201,7 +203,8 @@ void Points::CreateEphemeralParticleDebris(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mForceBuffer[pointIndex] = vec2f::zero();
+    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -282,7 +285,8 @@ void Points::CreateEphemeralParticleSmoke(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mForceBuffer[pointIndex] = vec2f::zero();
+    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
@@ -355,7 +359,8 @@ void Points::CreateEphemeralParticleSparkle(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mForceBuffer[pointIndex] = vec2f::zero();
+    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -1264,7 +1269,7 @@ void Points::UpdateEphemeralParticles(
                             0.3f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
                         vec2f const deviationDirection =
                             GetVelocity(pointIndex).normalise().to_perpendicular();
-                        mForceBuffer[pointIndex] +=
+                        mNonSpringForceBuffer[pointIndex] +=
                             deviationDirection * randomWalkMagnitude
                             * smokeRandomWalkVelocityImpulseToForceCoefficient;
                     }
@@ -1682,7 +1687,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
 ElementIndex Points::FindFreeEphemeralParticle(
     float currentSimulationTime,
-    bool force)
+    bool doForce)
 {
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the
@@ -1733,7 +1738,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     // No luck
     //
 
-    if (!force)
+    if (!doForce)
         return NoneElementIndex;
 
 

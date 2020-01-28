@@ -479,10 +479,10 @@ void Ship::UpdateMechanicalDynamics(
         auto const previousPositions = mPoints.MakePositionBufferCopy();
 
         // Update spring forces
-        UpdateSpringForces(gameParameters);
+        RelaxSprings(gameParameters);
 
         // Integrate spring forces - just positions
-        IntegrateAndResetForces_Partial(gameParameters);
+        IntegrateAndResetSpringForces(gameParameters);
 
         // Now:
         // - Position = p0 + SpringDeltaP
@@ -499,7 +499,7 @@ void Ship::UpdateMechanicalDynamics(
         }
 
         // Apply world forces
-        UpdatePointForces(gameParameters);
+        ApplyWorldForces(gameParameters);
 
         // Check whether we need to save the last force buffer before we zero it out
         if (iter == numMechanicalDynamicsIterations - 1
@@ -514,7 +514,7 @@ void Ship::UpdateMechanicalDynamics(
         // - Force = fWorld
 
         // Integrate
-        IntegrateAndResetForces(*previousPositions, gameParameters);
+        IntegrateAndResetNonSpringForces(*previousPositions, gameParameters);
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor(gameParameters);
@@ -524,7 +524,7 @@ void Ship::UpdateMechanicalDynamics(
     mCurrentForceFields.clear();
 }
 
-void Ship::UpdatePointForces(GameParameters const & gameParameters)
+void Ship::ApplyWorldForces(GameParameters const & gameParameters)
 {
     // Density of air, adjusted for temperature
     float const effectiveAirDensity =
@@ -562,7 +562,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         // Add gravity
         //
 
-        mPoints.GetForce(pointIndex) +=
+        mPoints.GetNonSpringForce(pointIndex) +=
             gameParameters.Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
@@ -579,14 +579,14 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             // Water
-            mPoints.GetForce(pointIndex).y +=
+            mPoints.GetNonSpringForce(pointIndex).y +=
                 buoyancyPush
                 * effectiveWaterDensity;
         }
         else
         {
             // Air
-            mPoints.GetForce(pointIndex).y +=
+            mPoints.GetNonSpringForce(pointIndex).y +=
                 buoyancyPush
                 * effectiveAirDensity;
         }
@@ -621,7 +621,7 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
             ////    * (-waterDragCoefficient);
 
             // Linear law:
-            mPoints.GetForce(pointIndex) +=
+            mPoints.GetNonSpringForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex)
                 * (-waterDragCoefficient);
         }
@@ -630,14 +630,14 @@ void Ship::UpdatePointForces(GameParameters const & gameParameters)
             // Wind force
             //
             // Note: should be based on relative velocity, but we simplify here for performance reasons
-            mPoints.GetForce(pointIndex) +=
+            mPoints.GetNonSpringForce(pointIndex) +=
                 windForce
                 * mPoints.GetMaterialWindReceptivity(pointIndex);
         }
     }
 }
 
-void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
+void Ship::RelaxSprings(GameParameters const & /*gameParameters*/)
 {
     for (auto springIndex : mSprings)
     {
@@ -680,12 +680,12 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         // Apply forces
         //
 
-        mPoints.GetForce(pointAIndex) += fSpringA + fDampA;
-        mPoints.GetForce(pointBIndex) -= fSpringA + fDampA;
+        mPoints.GetSpringForce(pointAIndex) += fSpringA + fDampA;
+        mPoints.GetSpringForce(pointBIndex) -= fSpringA + fDampA;
     }
 }
 
-void Ship::IntegrateAndResetForces_Partial(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
@@ -698,21 +698,21 @@ void Ship::IntegrateAndResetForces_Partial(GameParameters const & gameParameters
     //
 
     float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
+    float * restrict springForceBuffer = mPoints.GetSpringForceBufferAsFloat();
     float * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
     for (size_t i = 0; i < count; ++i)
     {
         // Integrate force and update position
-        positionBuffer[i] += forceBuffer[i] * integrationFactorBuffer[i];
+        positionBuffer[i] += springForceBuffer[i] * integrationFactorBuffer[i];
 
         // Zero out force now that we've integrated it
-        forceBuffer[i] = 0.0f;
+        springForceBuffer[i] = 0.0f;
     }
 }
 
-void Ship::IntegrateAndResetForces(
+void Ship::IntegrateAndResetNonSpringForces(
     Buffer<vec2f> const & previousPositions,
     GameParameters const & gameParameters)
 {
@@ -759,7 +759,7 @@ void Ship::IntegrateAndResetForces(
     float const * restrict previousPositionBuffer = reinterpret_cast<float const * restrict>(previousPositions.data());
     float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
     float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
+    float * restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
     float const * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
@@ -769,11 +769,11 @@ void Ship::IntegrateAndResetForces(
         // Verlet integration (fourth order, with velocity being first order)
         //
 
-        positionBuffer[i] += velocityBuffer[i] * dt + forceBuffer[i] * integrationFactorBuffer[i];
+        positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
         velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient / dt;
 
         // Zero out force now that we've integrated it
-        forceBuffer[i] = 0.0f;
+        nonSpringForceBuffer[i] = 0.0f;
     }
 }
 

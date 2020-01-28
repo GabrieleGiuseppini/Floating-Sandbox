@@ -214,13 +214,13 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
 
-    void UpdatePointForces(GameParameters const & gameParameters);
+    void ApplyWorldForces(GameParameters const & gameParameters);
 
-    void UpdateSpringForces(GameParameters const & gameParameters);
+    void RelaxSprings(GameParameters const & gameParameters);
 
-    void IntegrateAndResetForces_Partial(GameParameters const & gameParameters);
+    void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
 
-    void IntegrateAndResetForces(
+    void IntegrateAndResetNonSpringForces(
         Buffer<vec2f> const & previousPositions,
         GameParameters const & gameParameters);
 
