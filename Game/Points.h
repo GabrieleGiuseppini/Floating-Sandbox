@@ -771,6 +771,15 @@ public:
         return mPositionBuffer.data();
     }
 
+
+    std::shared_ptr<Buffer<vec2f>> MakePositionBufferCopy()
+    {
+        auto positionBufferCopy = mVec2fBufferAllocator.Allocate();
+        positionBufferCopy->copy_from(mPositionBuffer);
+
+        return positionBufferCopy;
+    }
+
     float * restrict GetPositionBufferAsFloat()
     {
         return reinterpret_cast<float *>(mPositionBuffer.data());

@@ -471,18 +471,23 @@ void Ship::UpdateMechanicalDynamics(
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // The order of these operations minimizes the displacements seen by
-        // the spring relaxation step:
-        //  - Spring relaxation -> A1
-        //  - Full Integration (DeltaPos = V*dt + A1*dt*dt, P += DeltaPos, V = DeltaPos/dt)
-        //  - Other forces -> A2
-        //  - Incremental Integration (DeltaPos = A2*dt*dt, P += DeltaPos, V += DeltaPos/dt)
+        // Now:
+        // - Position = p0
+        // - Velocity = v0
+
+        // Make copy of current positions
+        auto const previousPositions = mPoints.MakePositionBufferCopy();
 
         // Update spring forces
         UpdateSpringForces(gameParameters);
 
-        // Integrate spring forces - including velocity
-        IntegrateAndResetForces(gameParameters);
+        // Integrate spring forces - just positions
+        IntegrateAndResetForces_Partial(gameParameters);
+
+        // Now:
+        // - Position = p0 + SpringDeltaP
+        // - Velocity = v0
+        // - Force = 0
 
         // Apply force fields - if we have any
         for (auto const & forceField : mCurrentForceFields)
@@ -503,8 +508,13 @@ void Ship::UpdateMechanicalDynamics(
             mPoints.CopyForceBufferToForceRenderBuffer();
         }
 
-        // Integrate - incrementally only, as velocity has already been integrated above
-        IntegrateAndResetForces_Incremental(gameParameters);
+        // Now:
+        // - Position = p0 + SpringDeltaP
+        // - Velocity = v0
+        // - Force = fWorld
+
+        // Integrate
+        IntegrateAndResetForces(*previousPositions, gameParameters);
 
         // Handle collisions with sea floor
         HandleCollisionsWithSeaFloor(gameParameters);
@@ -642,7 +652,7 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
         vec2f const springDir = displacement.normalise(displacementLength);
 
         //
-        // Hooke's law
+        // 1. Hooke's law
         //
 
         // Calculate spring force on point A
@@ -651,12 +661,123 @@ void Ship::UpdateSpringForces(GameParameters const & /*gameParameters*/)
             * (displacementLength - mSprings.GetRestLength(springIndex))
             * mSprings.GetStiffnessCoefficient(springIndex);
 
-        // Apply force
-        mPoints.GetForce(pointAIndex) += fSpringA;
-        mPoints.GetForce(pointBIndex) -= fSpringA;
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of the two points, as if the points were also connected by a damper
+        // along the same direction as the spring
+        //
+
+        // Calculate damp force on point A
+        vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
+        vec2f const fDampA =
+            springDir
+            * relVelocity.dot(springDir)
+            * mSprings.GetDampingCoefficient(springIndex);
+
+
+        //
+        // Apply forces
+        //
+
+        mPoints.GetForce(pointAIndex) += fSpringA + fDampA;
+        mPoints.GetForce(pointBIndex) -= fSpringA + fDampA;
     }
 }
 
+void Ship::IntegrateAndResetForces_Partial(GameParameters const & gameParameters)
+{
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    //
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+    //
+    // This loop is compiled with single-precision packet SSE instructions on MSVC 17,
+    // integrating two points at each iteration
+    //
+
+    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
+    float * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
+    {
+        // Integrate force and update position
+        positionBuffer[i] += forceBuffer[i] * integrationFactorBuffer[i];
+
+        // Zero out force now that we've integrated it
+        forceBuffer[i] = 0.0f;
+    }
+}
+
+void Ship::IntegrateAndResetForces(
+    Buffer<vec2f> const & previousPositions,
+    GameParameters const & gameParameters)
+{
+    //
+    // previousPos is p0
+    // pos is now p0 + SpringDeltaPos1
+    // vel is v0
+    // force is fWorld1
+    //
+    // p1 = p0 + SpringDeltaPos1 + WorldDeltaPos1 + v0 * dt
+    // v1 = v0 + SpringDeltaPos1/dt + WorldDeltaPos1/dt
+    //
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
+    //
+    // Considering that:
+    //
+    //  v1 = d*v0
+    //  v2 = d*v1 =(d^2)*v0
+    //  ...
+    //  vN = (d^N)*v0
+    //
+    // ...the more the number of iterations, the more damped the initial velocity would be.
+    // We want damping to be independent from the number of iterations though, so we need to find the value
+    // d such that after N iterations the damping is the same as our reference value, which is based on
+    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
+    // this value.
+    //
+
+    float const globalDampCoefficient = pow(
+        GameParameters::GlobalDamp,
+        12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
+    //
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+    //
+    // This loop is compiled with single-precision packet SSE instructions on MSVC 17,
+    // integrating two points at each iteration
+    //
+
+    float const * restrict previousPositionBuffer = reinterpret_cast<float const * restrict>(previousPositions.data());
+    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
+    float const * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
+    {
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        positionBuffer[i] += velocityBuffer[i] * dt + forceBuffer[i] * integrationFactorBuffer[i];
+        velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient / dt;
+
+        // Zero out force now that we've integrated it
+        forceBuffer[i] = 0.0f;
+    }
+}
+
+/*
 void Ship::IntegrateAndResetForces(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -709,59 +830,7 @@ void Ship::IntegrateAndResetForces(GameParameters const & gameParameters)
         forceBuffer[i] = 0.0f;
     }
 }
-
-void Ship::IntegrateAndResetForces_Incremental(GameParameters const & gameParameters)
-{
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
-    // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
-    //
-    // Considering that:
-    //
-    //  v1 = d*v0
-    //  v2 = d*v1 =(d^2)*v0
-    //  ...
-    //  vN = (d^N)*v0
-    //
-    // ...the more the number of iterations, the more damped the initial velocity would be.
-    // We want damping to be independent from the number of iterations though, so we need to find the value
-    // d such that after N iterations the damping is the same as our reference value, which is based on
-    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
-    // this value.
-    //
-
-    float const globalDampCoefficient = pow(
-        GameParameters::GlobalDamp,
-        12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
-
-    //
-    // Take the four buffers that we need as restrict pointers, so that the compiler
-    // can better see it should parallelize this loop as much as possible
-    //
-    // This loop is compiled with single-precision packet SSE instructions on MSVC 17,
-    // integrating two points at each iteration
-    //
-
-    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * restrict forceBuffer = mPoints.GetForceBufferAsFloat();
-    float * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
-
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; ++i)
-    {
-        //
-        // Verlet integration (fourth order, with velocity being first order)
-        //
-
-        float const deltaPos = forceBuffer[i] * integrationFactorBuffer[i];
-        positionBuffer[i] += deltaPos;
-        velocityBuffer[i] += deltaPos * globalDampCoefficient / dt;
-
-        // Zero out force now that we've integrated it
-        forceBuffer[i] = 0.0f;
-    }
-}
+*/
 
 void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {

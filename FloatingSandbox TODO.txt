@@ -475,10 +475,13 @@ Render:
 
 		- Baked sounds
 
+		- Change light colors to match Desktop\LightColors.png
 		- Also GoodYear should be full of hydrogen
+		- See if should take Mike's Titanic electricals 
 		- Lower gunpowder strength
 		- Selector for panel background
 		- Check Mike's materials
+		- Reduce sea's little waves from gusts
 
 		- Propulsion (*)
 
@@ -704,14 +707,13 @@ Render:
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
-		+ First, remove spring damping
-		+ Second, test that the reason two separate integrations explode is because of velocity
+		+ Verify that the reason two separate integrations explode is because of velocity
 		+ Split spring forces and point forces, achieving equivalence
-		- 1) Change integration scheme:
+		= 1) Change integration scheme:
 			! So that position-based spring relaxation does not require extra semi/integration steps
-			- P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
-			- V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
-			- Verify equivalent
+			+ P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
+			+ V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
+			= Verify equivalent
 		- 2) All non-spring forces calculated once, outside of loop
 			- Assumption: no deletions take place during mech loop
 			- Points has two Force buffers: SpringForces and NonSpringForces
@@ -719,8 +721,26 @@ Render:
 			- TODOHERE
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
+			- incorporate damp force as well
 			- TODOHERE
 			- Get rid of two force buffers and go back to one single "Force" buffer
+		- Finalization:
+			- If we still have multiple Integrate()'s, unify global damp somewhere
+			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
+			  might get rid of force fields and apply forces directly instead of queing force fields
+			- If world forces may be calc'd once:
+				- See if can pre-integrate them (evt.lly in a separate temp buffer)
+				- They are not dependent anymore on interim positions, so may use springs relaxation's final
+				  positions as {P(t) + SpringForcesDeltaPos} in new integration scheme
+			- See if HandleCollisionsWithSeaFloor may be also done once
+				- First, check its impact
+			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
+			- If we keep spring damping: see if perf improves with velocity and force in the same buffer
+				- Be careful at integration
+			- If we got rid of spring damping: nuke everything about spring damping
+				- Springs' coeffs
+				- Settings
+				- SettingsDialog
 			
 		- TODOHERE
 
@@ -747,15 +767,6 @@ Render:
 		- Test:
 			- See bounces from ocean floor
 				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
-		- Finalization:
-			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
-			  might get rid of force fields and apply forces directly instead of queing force fields
-			- If world forces may be calc'd once:
-				- See if can pre-integrate them (evt.lly in a separate temp buffer)
-			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
-			- See if HandleCollisionsWithSeaFloor may be also done once
-				- First, check its impact
-			- Nuke everything about spring damping
 
 
 	- Try with SpringRelaxation updating only positions (*)
