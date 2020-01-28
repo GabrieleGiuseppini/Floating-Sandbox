@@ -725,17 +725,22 @@ Render:
 				+ Check assembly
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
-			- 1) Integrate inline (multipy sum of forces by point's integration coeff)
+			- 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
 				- Get rid of spring integration in iterations loop
 				- Test
+				- See if need to also update velocities because they're needed (updated) for damping			
 			- Get rid of two force buffers and go back to one single "Force" buffer
-			- 2) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using new
-			     IntegrationFactors
-				- IntegrationFactors buffer, expected to be updated at Springs::CalculateIntegrationFactors before being used
-				- Need pre-step before loop: Springs::CalculateIntegrationFactors(Buffer<float> const & pointMassBuffer)
+			- 2) If Gauss-Sedol sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
+				! Makes for unchanging particle positions and velocity during relaxation, back to Lagrange
+			- 3) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using 
+			     temporary IntegrationFactors buffer
+				- Need pre-step before loop
+				- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
+				- Populate inline				
 				- Test
-			- 3) Optimize spring relaxation
+			- 4) Optimize spring relaxation assembly
 				! Assembly inspection-driven
+				! Not sse yet
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
 		- Finalization:
 			- Do something for that shared pointer overhead
