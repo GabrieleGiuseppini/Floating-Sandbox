@@ -709,11 +709,11 @@ Render:
 			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
 		+ Verify that the reason two separate integrations explode is because of velocity
 		+ Split spring forces and point forces, achieving equivalence
-		= 1) Change integration scheme:
+		+ 1) Change integration scheme:
 			! So that position-based spring relaxation does not require extra semi/integration steps
 			+ P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
 			+ V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
-			= Verify equivalent
+			+ Verify equivalent
 		- 2) All non-spring forces calculated once, outside of loop
 			- Assumption: no deletions take place during mech loop
 			- Points has two Force buffers: SpringForces and NonSpringForces
@@ -724,6 +724,8 @@ Render:
 			- incorporate damp force as well
 			- TODOHERE
 			- Get rid of two force buffers and go back to one single "Force" buffer
+		- 4) See if may replace spring dampers with higher global damp
+			- Add new GameParameters::GlobalDampAdjust
 		- Finalization:
 			- If we still have multiple Integrate()'s, unify global damp somewhere
 			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
