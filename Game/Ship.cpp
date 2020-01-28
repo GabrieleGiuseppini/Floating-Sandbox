@@ -748,10 +748,14 @@ void Ship::IntegrateNonSpringForces(
     // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
     // this value.
     //
+    // We also pre-divide it by dt to provide the scalar factor which, when multiplied with a displacement,
+    // provides the final, damped velocity.
+    //
 
-    float const globalDampCoefficient = pow(
-        GameParameters::GlobalDamp,
-        12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+    float const globalDampCoefficient =
+        pow(GameParameters::GlobalDamp,
+            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>())
+        / dt;
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler
@@ -775,7 +779,7 @@ void Ship::IntegrateNonSpringForces(
         //
 
         positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
-        velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient / dt;
+        velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient;
     }
 }
 
