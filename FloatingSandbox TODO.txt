@@ -716,7 +716,7 @@ Render:
 			+ P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
 			+ V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
 			+ Verify equivalent
-		= 2) All non-spring forces calculated once, outside of loop
+		+ 2) All non-spring forces calculated once, outside of loop
 			! Assumption: no deletions take place during mech loop
 			+ Points has two Force buffers: SpringForces and NonSpringForces
 				! Only temporarily, until position-based springs are done
@@ -726,16 +726,15 @@ Render:
 			+ Zero forces after loop
 				+ Check assembly
 			+ See issue @ y=518.0, force = 1*e-06
-			- Test L'n'F'
+			+ Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
 			- 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
 				- Get rid of spring integration in iterations loop
 				- Test
 				- See if need to also update velocities because they're needed (updated) for damping			
 			- Get rid of two force buffers and go back to one single "Force" buffer
-			- 2) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
-				! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
 			- 2b) Experiment with different coeffs
+				- First, do all calculations in RelaxSprings, ignore coeffs for now
 				- Experiment with SpringReductionFraction set to 0.8 or 1.0
 				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
 				- Do we really need to pow C?
@@ -749,6 +748,8 @@ Render:
 				! Assembly inspection-driven
 				! Not sse yet
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
+		- 4) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
+			! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
 		- Finalization:
 			- Do something for that shared pointer overhead
 			- Verify integration assembly
@@ -1095,6 +1096,12 @@ Render:
 
 - Dynamics:
 
+	- Redo collision with sea floor
+
+	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
+
+	- Pinch tool
+
 	- Lightning tool that summons lightning wherever it has been clicked
 
 	- Consider making world 1.5 times wider
@@ -1137,8 +1144,6 @@ Render:
 	- Rot tool: rots without having to flood it
 		- Then merge scrub tool into this one, with SHIFT 
 		- Icon: ?
-
-	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
