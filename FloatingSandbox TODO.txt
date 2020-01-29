@@ -725,7 +725,7 @@ Render:
 			+ Do not reset forces at integrate
 			+ Zero forces after loop
 				+ Check assembly
-			- See issue @ y=518.0, force = 1*e-06
+			+ See issue @ y=518.0, force = 1*e-06
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
 			- 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
@@ -733,8 +733,8 @@ Render:
 				- Test
 				- See if need to also update velocities because they're needed (updated) for damping			
 			- Get rid of two force buffers and go back to one single "Force" buffer
-			- 2) If Gauss-Sedol sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
-				! Makes for unchanging particle positions and velocity during relaxation, back to Lagrange
+			- 2) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
+				! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
 			- 2b) Experiment with different coeffs
 				- Experiment with SpringReductionFraction set to 0.8 or 1.0
 				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
@@ -751,6 +751,10 @@ Render:
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
 		- Finalization:
 			- Do something for that shared pointer overhead
+			- Verify integration assembly
+			- Verify Points::UpdateMasses assembly
+			- See how to simplify integration:
+				- Can we avoid having to calculate springDeltaPos? Is actually having to calculate it so bad?
 			- See if multiple relax iterations (nested) improve cheaply rigidity
 				- Maintain all params the same (e.g. dt)
 			- If world forces may be calc'd once:
@@ -779,6 +783,7 @@ Render:
 				- SettingsDialog
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
+			- Adjust bomb blast strength
 			
 		- TODOHERE
 

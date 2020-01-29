@@ -1085,9 +1085,9 @@ void Points::UpdateCombustionHighFrequency(
         // vector (B) added to a scaled-down opposite of the particle's velocity:
         //  Q = B - velocityScale * V
 
-        float constexpr VelocityScale = 2.0 / (15.0 * 1.25); // Magic number
+        float constexpr VelocityScale = 2.0f / (15.0f * 1.25f); // Magic number
 
-        vec2f constexpr B = vec2f(0, 1.0f);
+        vec2f constexpr B = vec2f(0.0f, 1.0f);
         vec2f Q = B - GetVelocity(pointIndex) * VelocityScale;
         float Ql = Q.length();
 
@@ -1683,7 +1683,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
         massBuffer[i] = mass;
 
-        mIntegrationFactorBuffer[i] = vec2f(
+        integrationFactorBuffer[i] = vec2f(
             integrationFactorTimeCoefficientBuffer[i] / mass,
             integrationFactorTimeCoefficientBuffer[i] / mass);
     }

@@ -749,14 +749,14 @@ void Ship::IntegrateNonSpringForces(
     // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
     // this value.
     //
-    // We also pre-divide it by dt to provide the scalar factor which, when multiplied with a displacement,
-    // provides the final, damped velocity.
-    //
 
     float const globalDampCoefficient =
         pow(GameParameters::GlobalDamp,
-            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>())
-        / dt;
+            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
+    // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
+    // provides the final, damped velocity
+    float const velocityFactor = globalDampCoefficient / dt;
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler
@@ -779,8 +779,21 @@ void Ship::IntegrateNonSpringForces(
         // Verlet integration (fourth order, with velocity being first order)
         //
 
-        positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
-        velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient;
+        // NOTE: the below is the ideal implementation, but with large positions and small forces (e.g. p=1K and f=6K),
+        // positions stay unchanged (because, for example, 1K + 1e-6 = 1K) and thus {newPos - oldPos} would
+        // always be zero.
+        // To cater to this, it's preferable to first calculate a deltaPos (which would be very small indeed);
+        // this deltaPos added to pos would still leave pos unchanged, but it would at least give a non-zero
+        // contribution to velocity.
+        //
+        // positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
+        // velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient;
+
+        float const springDeltaPos = (positionBuffer[i] - previousPositionBuffer[i]);
+        float const worldDeltaPos = velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
+
+        positionBuffer[i] += worldDeltaPos;
+        velocityBuffer[i] = (springDeltaPos + worldDeltaPos) * velocityFactor;
     }
 }
 
