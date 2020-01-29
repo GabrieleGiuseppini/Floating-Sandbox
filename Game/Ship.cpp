@@ -560,9 +560,6 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
 
     for (auto pointIndex : mPoints)
     {
-        // Get height of water at this point
-        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
-
         //
         // Add gravity
         //
@@ -581,6 +578,10 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
             buoyancyCoefficients.Coefficient1
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
+        // Get height of water at this point
+        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
+
+        // Check whether we are above or below water
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             // Water
@@ -768,7 +769,7 @@ void Ship::IntegrateNonSpringForces(
     float const * restrict previousPositionBuffer = reinterpret_cast<float const * restrict>(previousPositions.data());
     float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
     float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
+    float const * restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
     float const * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector

@@ -674,6 +674,8 @@ Render:
 
 - Simulation Optimizations:
 
+	- See if additional springs (e.g. between i and i+2) help
+
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 
 		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
@@ -723,6 +725,7 @@ Render:
 			+ Do not reset forces at integrate
 			+ Zero forces after loop
 				+ Check assembly
+			- See issue @ y=518.0, force = 1*e-06
 			- Test L'n'F'
 		- 3) Spring relaxation based on position rather than forces
 			- 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
@@ -732,6 +735,10 @@ Render:
 			- Get rid of two force buffers and go back to one single "Force" buffer
 			- 2) If Gauss-Sedol sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
 				! Makes for unchanging particle positions and velocity during relaxation, back to Lagrange
+			- 2b) Experiment with different coeffs
+				- Experiment with SpringReductionFraction set to 0.8 or 1.0
+				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
+				- Do we really need to pow C?
 			- 3) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using 
 			     temporary IntegrationFactors buffer
 				- Need pre-step before loop
@@ -744,6 +751,8 @@ Render:
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
 		- Finalization:
 			- Do something for that shared pointer overhead
+			- See if multiple relax iterations (nested) improve cheaply rigidity
+				- Maintain all params the same (e.g. dt)
 			- If world forces may be calc'd once:
 				- See if can pre-integrate them (evt.lly in a separate temp buffer)
 				- They are not dependent anymore on interim positions, so may use springs relaxation's final
