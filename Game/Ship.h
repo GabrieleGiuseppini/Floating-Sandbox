@@ -216,13 +216,9 @@ public:
 
     void ApplyWorldForces(GameParameters const & gameParameters);
 
-    void RelaxSprings(GameParameters const & gameParameters);
+    void ApplySpringsForces(GameParameters const & gameParameters);
 
     void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
-
-    void IntegrateNonSpringForces(
-        Buffer<vec2f> const & previousPositions,
-        GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 

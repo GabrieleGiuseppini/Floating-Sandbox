@@ -489,24 +489,26 @@ void Ship::UpdateMechanicalDynamics(
         // Now:
         // - Position = p(t)
         // - Velocity = v(t)
+        // - SpringForce = 0
+        // - WorldForce = fw(t)
 
-        // Make copy of current positions
-        auto const previousPositions = mPoints.MakePositionBufferCopy();
+        // Apply spring forces
+        ApplySpringsForces(gameParameters);
 
-        // Update spring forces
-        RelaxSprings(gameParameters);
+        // Now:
+        // - Position = p(t)
+        // - Velocity = v(t)
+        // - SpringForce = fs(t)
+        // - WorldForce = fw
 
-        // Integrate spring forces - just positions
+        // Integrate
         IntegrateAndResetSpringForces(gameParameters);
 
         // Now:
-        // - Position = p(t) + SpringDeltaPos(t+1)
-        // - Velocity = v(t)
+        // - Position = p(t+1)
+        // - Velocity = v(t+1)
         // - SpringForces = 0
-        // - NonSpringForces = fWorld(t+1)
-
-        // Integrate
-        IntegrateNonSpringForces(*previousPositions, gameParameters);
+        // - NonSpringForces = fw
 
         // Handle collisions with sea floor
         //  - Changes position and velocity
@@ -516,7 +518,7 @@ void Ship::UpdateMechanicalDynamics(
     // Consume force fields
     mCurrentForceFields.clear();
 
-    // Check whether we need to save the force buffer before we zero it out
+    // Check whether we need to save the non-spring force buffer before we zero it out
     if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
     {
         mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
@@ -643,7 +645,7 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::RelaxSprings(GameParameters const & /*gameParameters*/)
+void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
 {
     for (auto springIndex : mSprings)
     {
@@ -695,45 +697,6 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
-    //
-    // Take the four buffers that we need as restrict pointers, so that the compiler
-    // can better see it should parallelize this loop as much as possible
-    //
-    // This loop is compiled with single-precision packet SSE instructions on MSVC 17,
-    // integrating two points at each iteration
-    //
-
-    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict springForceBuffer = mPoints.GetSpringForceBufferAsFloat();
-    float * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
-
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; ++i)
-    {
-        // Integrate force and update position
-        positionBuffer[i] += springForceBuffer[i] * integrationFactorBuffer[i];
-
-        // Zero out force now that we've integrated it
-        springForceBuffer[i] = 0.0f;
-    }
-}
-
-void Ship::IntegrateNonSpringForces(
-    Buffer<vec2f> const & previousPositions,
-    GameParameters const & gameParameters)
-{
-    //
-    // previousPos is p(t)
-    // pos is now p(t) + SpringDeltaPos(t+1)
-    // vel is v(t)
-    // force is fWorld(t+1)
-    //
-    // p(t+1) = p(t) + SpringDeltaPos(t+1) + WorldDeltaPos(t+1) + v(t) * dt
-    // v(t+1) = v(t) + SpringDeltaPos(t+1)/dt + WorldDeltaPos(t+1)/dt
-    //
-
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
     //
     // Considering that:
@@ -766,11 +729,11 @@ void Ship::IntegrateNonSpringForces(
     // integrating two points at each iteration
     //
 
-    float const * restrict previousPositionBuffer = reinterpret_cast<float const * restrict>(previousPositions.data());
-    float * restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
-    float const * restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * const restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * const restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float * const restrict springForceBuffer = mPoints.GetSpringForceBufferAsFloat();
+    float const * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
     for (size_t i = 0; i < count; ++i)
@@ -779,21 +742,12 @@ void Ship::IntegrateNonSpringForces(
         // Verlet integration (fourth order, with velocity being first order)
         //
 
-        // NOTE: the below is the ideal implementation, but with large positions and small forces (e.g. p=1K and f=6K),
-        // positions stay unchanged (because, for example, 1K + 1e-6 = 1K) and thus {newPos - oldPos} would
-        // always be zero.
-        // To cater to this, it's preferable to first calculate a deltaPos (which would be very small indeed);
-        // this deltaPos added to pos would still leave pos unchanged, but it would at least give a non-zero
-        // contribution to velocity.
-        //
-        // positionBuffer[i] += velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
-        // velocityBuffer[i] = (positionBuffer[i] - previousPositionBuffer[i]) * globalDampCoefficient;
+        float const deltaPos = velocityBuffer[i] * dt + (springForceBuffer[i] + nonSpringForceBuffer[i]) * integrationFactorBuffer[i];
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
 
-        float const springDeltaPos = (positionBuffer[i] - previousPositionBuffer[i]);
-        float const worldDeltaPos = velocityBuffer[i] * dt + nonSpringForceBuffer[i] * integrationFactorBuffer[i];
-
-        positionBuffer[i] += worldDeltaPos;
-        velocityBuffer[i] = (springDeltaPos + worldDeltaPos) * velocityFactor;
+        // Zero out spring force now that we've integrated it
+        springForceBuffer[i] = 0.0f;
     }
 }
 

@@ -741,23 +741,11 @@ Render:
 				- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
 				- Populate inline				
 				- Test				
-		= Finalize dual force buffer
+		+ Finalize dual force buffer
 			+ Methods and names
-			- Integration
-		- 4) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
-			! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
-			- TODO: is there really an advantage?
-				- If calculating deltaPos: 
-					- Relaxation: we may keep # of operations unchanged if we include integration factors
-					  in spring coeffs, but we need to have two coeffs per spring (because of different masses) => +0
-					- Integration: we save TODOHERE
-				- If calculating forces: 
-					- Relaxation: TODOHERE
-					- Integration: we need to add the two forces together before multiplying with integration factor => +1*ADD
-		- Test:
-			- See bounces from ocean floor
-				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
-		- Finalization:
+			+ Integration
+		+ Test
+		= Finalization:
 			- Optimize spring relaxation assembly
 				! Assembly inspection-driven
 				! Not sse yet
@@ -803,6 +791,23 @@ Render:
 				- SettingsDialog
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
+			- Possible optimizations:
+				- Spring relaxation calculates final deltaPos (in separate buffer)
+					! Makes for unchanging particle positions and velocity during relaxation, i.e. Jacobi
+					- Advantage:
+						- When calculating deltaPos: 
+							- Relaxation: we may keep # of operations unchanged if we include integration factors
+							  in spring coeffs, but we need to have two coeffs per spring (because of different masses) => +0
+							- Integration: we save add => +0
+						- When calculating forces: 
+							- Relaxation: unchanged => +0
+							- Integration: we need to add the two forces together before multiplying with integration factor => +1*ADD
+					- Disadvantage: a lot of memory required for new coeffs
+					- Merge particles' integration coefficients with springs' stiffness and damping coefficients, using 
+					  temporary IntegrationFactors buffer (per-spring and per-endpoint)
+						- Need pre-step before loop
+						- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
+						- Populate inline	
 			- Get rid of those methods that are now unused; possible candidates:
 				- Points::GetIntegrationFactor()
 				- Points::GetIntegrationFactorBuffer()
