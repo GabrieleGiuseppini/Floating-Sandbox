@@ -1672,8 +1672,10 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     float const * restrict const materialBuoyancyVolumeFillBuffer = mMaterialBuoyancyVolumeFillBuffer.data();
     float * restrict const massBuffer = mMassBuffer.data();
     float const * restrict const integrationFactorTimeCoefficientBuffer = mIntegrationFactorTimeCoefficientBuffer.data();
-    vec2f * restrict const integrationFactorBuffer = mIntegrationFactorBuffer.data();
-    for (ElementIndex i : *this)
+    float * restrict const integrationFactorBuffer = reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
+
+    size_t const count = GetBufferElementCount();
+    for (size_t i = 0; i < count; ++i)
     {
         float const mass =
             augmentedMaterialMassBuffer[i]
@@ -1683,9 +1685,8 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
         massBuffer[i] = mass;
 
-        integrationFactorBuffer[i] = vec2f(
-            integrationFactorTimeCoefficientBuffer[i] / mass,
-            integrationFactorTimeCoefficientBuffer[i] / mass);
+        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / mass;
+        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / mass;
     }
 }
 

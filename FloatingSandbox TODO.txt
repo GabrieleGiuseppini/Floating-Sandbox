@@ -747,9 +747,11 @@ Render:
 		+ Test
 		= Finalization:
 			+ Verify integration assembly
-			- Verify Points::UpdateMasses assembly
+			= Verify Points::UpdateMasses assembly
+			- See if multiple relax iterations (nested) improve cheaply rigidity
+				- Maintain all params the same (e.g. dt)			
 			- Experiment with different spring coeffs
-				- First, do all calculations in RelaxSprings, ignore coeffs for now
+				! First, do all calculations in RelaxSprings, ignore coeffs for now
 				- Experiment with SpringReductionFraction set to 0.8 or 1.0
 				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
 				- Do we really need to pow C?
@@ -757,20 +759,19 @@ Render:
 				! Assembly inspection-driven
 				! Not sse yet
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
-			- See if multiple relax iterations (nested) improve cheaply rigidity
-				- Maintain all params the same (e.g. dt)			
-			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
-			  might get rid of force fields and apply forces directly instead of queing force fields
 			- Spring relaxation: see if perf improves with velocity and force in the same buffer
 				- Be careful at integration
 				- Vector rendering: upload both components
 					- ShipRenderContext
 				- If it works: test with positions as well, as follows:
 					! Position buffer stays
-					- Velocity and Force buffer takes also Position
+					- The new Velocity-and-Force buffer takes also Position
 					- Before loop: interleave position into buffer
 					- During loop: only deal with those positions
+						- Also at integrate and collisions
 					- After loop: de-interleave position again into its own buffer
+			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
+			  might get rid of force fields and apply forces directly instead of queing force fields
 			- See if HandleCollisionsWithSeaFloor may be also done once
 				- First, check its current perf impact
 			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
