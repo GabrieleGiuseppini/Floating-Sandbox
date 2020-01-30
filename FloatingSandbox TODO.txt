@@ -471,18 +471,20 @@ Render:
 			+ merge
 			+ changes.txt		
 		
-		- Try with SpringRelaxation updating only positions (*)
-
-		- Baked sounds
+		= Forces Rearc (*)
+		- Sea floor collision revisit (*)
 
 		- Change light colors to match Desktop\LightColors.png
-		- Also GoodYear should be full of hydrogen
-		- See if should take Mike's Titanic electricals 
 		- Lower gunpowder strength
-		- Selector for panel background
+		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
 		- Reduce sea's little waves from gusts
 
+		- Baked sounds
+
+		- Also GoodYear should be full of hydrogen		
+		- Selector for panel background
+		
 		- Propulsion (*)
 
 		- Flood doors (*)
@@ -705,7 +707,7 @@ Render:
 					- Points::UpdateEphemeralParticles (AirBubbles)
 						- Need to do vortex with forces, though
 	
-	- Forces rearc (*):
+	= Forces rearc (*):
 		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
 		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
 			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
@@ -727,30 +729,47 @@ Render:
 				+ Check assembly
 			+ See issue @ y=518.0, force = 1*e-06
 			+ Test L'n'F'
-		- 3) Spring relaxation based on position rather than forces
-			- 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
-				- Get rid of spring integration in iterations loop
-				- Test
-				- See if need to also update velocities because they're needed (updated) for damping			
-			- Get rid of two force buffers and go back to one single "Force" buffer
-			- 2b) Experiment with different coeffs
-				- First, do all calculations in RelaxSprings, ignore coeffs for now
-				- Experiment with SpringReductionFraction set to 0.8 or 1.0
-				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
-				- Do we really need to pow C?
-			- 3) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using 
+		X 3) Spring relaxation based on position rather than forces
+			X 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
+				+ Get rid of spring integration in iterations loop
+				X !!! Test !!! SUCKS!
+				+ See if need to also update velocities because they're needed (updated) for damping
+			X Get rid of two force buffers and go back to one single "Force" buffer
+			X 2) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using 
 			     temporary IntegrationFactors buffer
 				- Need pre-step before loop
 				- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
 				- Populate inline				
-				- Test
-			- 4) Optimize spring relaxation assembly
+				- Test				
+		= Finalize dual force buffer
+			+ Methods and names
+			- Integration
+		- 4) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
+			! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
+			- TODO: is there really an advantage?
+				- If calculating deltaPos: 
+					- Relaxation: we may keep # of operations unchanged if we include integration factors
+					  in spring coeffs, but we need to have two coeffs per spring (because of different masses) => +0
+					- Integration: we save TODOHERE
+				- If calculating forces: 
+					- Relaxation: TODOHERE
+					- Integration: we need to add the two forces together before multiplying with integration factor => +1*ADD
+		- Test:
+			- See bounces from ocean floor
+				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
+		- Finalization:
+			- Optimize spring relaxation assembly
 				! Assembly inspection-driven
 				! Not sse yet
 				- a) Add Hooke's and damping scalars and multiply only once with springDir
-		- 4) If Gauss-Seidel sucks, may still optimize by calculating deltaPos (in a tmp buffer) rather than pos
-			! Makes for unchanging particle positions and velocity during relaxation, back to Jacobi
-		- Finalization:
+			- Experiment with different spring coeffs
+				- First, do all calculations in RelaxSprings, ignore coeffs for now
+				- Experiment with SpringReductionFraction set to 0.8 or 1.0
+				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
+				- Do we really need to pow C?
+			- If we go back to Jacobi and drop Gauss-Seidel:
+				- See if need that double dt*dt multiplication and division between spring coefficients
+				  and point integration factor
 			- Do something for that shared pointer overhead
 			- Verify integration assembly
 			- Verify Points::UpdateMasses assembly
@@ -784,13 +803,17 @@ Render:
 				- SettingsDialog
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
-			- Adjust bomb blast strength
+			- Get rid of those methods that are now unused; possible candidates:
+				- Points::GetIntegrationFactor()
+				- Points::GetIntegrationFactorBuffer()
+			- Adjust:
+				- Bomb blast strength
 			
 		- TODOHERE
 
 		- TODOOLD
-		- Points has two Force buffers: SpringForces and NonSpringForces
-		- Assumption: no deletions take place during mech loop
+		+ Points has two Force buffers: SpringForces and NonSpringForces
+		+ Assumption: no deletions take place during mech loop
 		- UpdateMechanicalDynamics:
 			! If we get rid of ForceFields, we need to preserve PointForces at this moment, se we need to clear them at the end
 			- All the forces created below assume dt=DT, as we'll apply them a 1/NumMechanicalIterations fraction at a time
@@ -807,10 +830,6 @@ Render:
 					- At this step we integrate using dt=DT/NumMechanicalIterations
 				- HandleCollisionsWithSeaFloor
 			- Finally, reset point forces, via Points::ZeroPointForces()
-		- Test final L'n'F'
-		- Test:
-			- See bounces from ocean floor
-				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
 
 
 	- Try with SpringRelaxation updating only positions (*)
@@ -1099,6 +1118,10 @@ Render:
 	- Redo collision with sea floor
 
 	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
+		- At floor collision: decompose velocity into normal and tangential
+			- https://www.cs.cmu.edu/~scoros/cs15467-s16/lectures/06-MassSpringSystems2.pdf, page 26
+		- Normal response: Vn' = -eVn (e = elasticity, [0.0 - 1.0])
+		- Tangential response: Vt' = aVt (a = friction, [0.0 - 1.0])
 
 	- Pinch tool
 

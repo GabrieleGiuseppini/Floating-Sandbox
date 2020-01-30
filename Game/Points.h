@@ -823,11 +823,9 @@ public:
         return mSpringForceBuffer[pointElementIndex];
     }
 
-    void AddSpringForce(
-        ElementIndex pointElementIndex,
-        vec2f const & force) noexcept
+    float * restrict GetSpringForceBufferAsFloat()
     {
-        mSpringForceBuffer[pointElementIndex] += force;
+        return reinterpret_cast<float *>(mSpringForceBuffer.data());
     }
 
     vec2f const & GetNonSpringForce(ElementIndex pointElementIndex) const noexcept
@@ -838,28 +836,6 @@ public:
     vec2f & GetNonSpringForce(ElementIndex pointElementIndex) noexcept
     {
         return mNonSpringForceBuffer[pointElementIndex];
-    }
-
-    void AddNonSpringForce(
-        ElementIndex pointElementIndex,
-        vec2f const & force) noexcept
-    {
-        mNonSpringForceBuffer[pointElementIndex] += force;
-    }
-
-    float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
-    {
-        return mAugmentedMaterialMassBuffer[pointElementIndex];
-    }
-
-    void AugmentMaterialMass(
-        ElementIndex pointElementIndex,
-        float offset,
-        Springs & springs);
-
-    float * restrict GetSpringForceBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mSpringForceBuffer.data());
     }
 
     float * restrict GetNonSpringForceBufferAsFloat()
@@ -876,6 +852,16 @@ public:
     {
         mNonSpringForceBuffer.fill(vec2f::zero());
     }
+
+    float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
+    {
+        return mAugmentedMaterialMassBuffer[pointElementIndex];
+    }
+
+    void AugmentMaterialMass(
+        ElementIndex pointElementIndex,
+        float offset,
+        Springs & springs);
 
     /*
      * Returns the total mass of the point, which equals the point's material's mass with

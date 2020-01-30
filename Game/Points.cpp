@@ -130,7 +130,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -203,7 +203,7 @@ void Points::CreateEphemeralParticleDebris(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
@@ -285,7 +285,7 @@ void Points::CreateEphemeralParticleSmoke(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -359,7 +359,7 @@ void Points::CreateEphemeralParticleSparkle(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
