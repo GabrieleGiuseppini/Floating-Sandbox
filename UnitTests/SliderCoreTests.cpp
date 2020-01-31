@@ -14,7 +14,7 @@ public:
 };
 
 INSTANTIATE_TEST_CASE_P(
-    TestCases,
+    LinearSliderCoreTests,
     LinearSliderCoreTest,
     ::testing::Values(
         std::make_tuple(0.0f, 0.5f, 60),

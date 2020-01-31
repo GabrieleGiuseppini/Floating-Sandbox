@@ -4,6 +4,7 @@ set (BENCHMARK_SOURCES
 	GameMath.cpp
 	Logarithm.cpp
 	PrecalculatedFunction.cpp
+	SingleVectorNormalization.cpp
 	TopN.cpp
 	UpdateSpringForces.cpp
 	Utils.cpp

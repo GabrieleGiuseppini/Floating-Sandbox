@@ -493,6 +493,7 @@ void Ship::UpdateMechanicalDynamics(
         // - WorldForce = fw(t)
 
         // Apply spring forces
+        // - Changes forces
         ApplySpringsForces(gameParameters);
 
         // Now:
@@ -502,6 +503,7 @@ void Ship::UpdateMechanicalDynamics(
         // - WorldForce = fw
 
         // Integrate
+        //  - Changes position and velocity
         IntegrateAndResetSpringForces(gameParameters);
 
         // Now:
@@ -616,8 +618,9 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
             //
             //  Drag force = -C * (|V|^2*Vn)
             //
-            // But when V >= m / (C * dt), the drag force overcomes the current velocity
-            // and thus it accelerates it, resulting in an unstable system.
+            // But when V >= m / (C * dt) (and also when V = 0), the drag force overcomes
+            // the current velocity and thus it accelerates it, resulting in an unstable system.
+            // The maximum force is thus -m^2/(C*dt^2).
             //
             // With a linear law, we know that the force will never accelerate the current velocity
             // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
@@ -664,9 +667,8 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         //
 
         // Calculate spring force on point A
-        vec2f const fSpringA =
-            springDir
-            * (displacementLength - mSprings.GetRestLength(springIndex))
+        float const fSpring =
+            (displacementLength - mSprings.GetRestLength(springIndex))
             * mSprings.GetStiffnessCoefficient(springIndex);
 
         //
@@ -678,9 +680,8 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
 
         // Calculate damp force on point A
         vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
-        vec2f const fDampA =
-            springDir
-            * relVelocity.dot(springDir)
+        float const fDamp =
+            relVelocity.dot(springDir)
             * mSprings.GetDampingCoefficient(springIndex);
 
 
@@ -688,8 +689,9 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         // Apply forces
         //
 
-        mPoints.GetSpringForce(pointAIndex) += fSpringA + fDampA;
-        mPoints.GetSpringForce(pointBIndex) -= fSpringA + fDampA;
+        vec2f const forceA = springDir * (fSpring + fDamp);
+        mPoints.GetSpringForce(pointAIndex) += forceA;
+        mPoints.GetSpringForce(pointBIndex) -= forceA;
     }
 }
 

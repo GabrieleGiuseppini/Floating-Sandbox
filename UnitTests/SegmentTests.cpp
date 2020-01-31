@@ -10,7 +10,7 @@ public:
 };
 
 INSTANTIATE_TEST_CASE_P(
-    TestCases,
+    SegmentIntersectionTests,
     SegmentIntersectionTest,
     ::testing::Values(
         // Basic

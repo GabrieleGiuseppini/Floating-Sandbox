@@ -470,8 +470,9 @@ Render:
 			+ Test with flame size slider
 			+ merge
 			+ changes.txt		
-		
-		= Forces Rearc (*)
+
+		= Spring and NonSpring force separation optimization (*)
+		- Attempt to re-instate square water drag (*)
 		- Sea floor collision revisit (*)
 
 		- Change light colors to match Desktop\LightColors.png
@@ -497,10 +498,7 @@ Render:
 			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
 			- Do cleanup tasks
-
-		- Spring and NonSpring force separation optimization (*)
-			- Unless "SpringRelaxation updating only positions" makes the trick
-		- Attempt to re-instate square water drag (*)
+		
 		- Attempt to use total point masses for springs (*)
 		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
@@ -747,18 +745,29 @@ Render:
 		+ Test
 		= Finalization:
 			+ Verify integration assembly
-			= Verify Points::UpdateMasses assembly
-			- See if multiple relax iterations (nested) improve cheaply rigidity
-				- Maintain all params the same (e.g. dt)			
-			- Experiment with different spring coeffs
-				! First, do all calculations in RelaxSprings, ignore coeffs for now
-				- Experiment with SpringReductionFraction set to 0.8 or 1.0
-				- Make SpringStiffnessAdjust between 0.0 and 1.0 -> so C is between 0.0 and 1.0 ?
-				- Do we really need to pow C?
-			- Optimize spring relaxation assembly
+			+ Verify Points::UpdateMasses assembly
+			X See if multiple relax iterations (nested) improve cheaply rigidity
+				X Maintain all params the same (e.g. dt)			
+			X Experiment with different spring coeffs
+				+ First, do all calculations in RelaxSprings, ignore coeffs for now
+				+ Experiment with SpringReductionFraction set to 0.8 or 1.0			
+			= Optimize spring relaxation assembly
 				! Assembly inspection-driven
 				! Not sse yet
-				- a) Add Hooke's and damping scalars and multiply only once with springDir
+				+ Start: 20.6-21.6ms, 31.80-32.10fps
+				+ a) Add Hooke's and damping scalars and multiply only once with springDir
+				= Do vector normalization in SSE
+					+ Benchmark: copy vector from vector
+					+ Unit Tests
+					- Start perf: 
+					- Integrate in Algorithms->Vectors
+						- Algorithms becomes templated on TVector
+						- Unit Tests
+						- Benchmark
+				- Perf: 
+				- Rollout spring loop
+				- Perf: 
+				- End: 				
 			- Spring relaxation: see if perf improves with velocity and force in the same buffer
 				- Be careful at integration
 				- Vector rendering: upload both components
@@ -770,11 +779,26 @@ Render:
 					- During loop: only deal with those positions
 						- Also at integrate and collisions
 					- After loop: de-interleave position again into its own buffer
-			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
-			  might get rid of force fields and apply forces directly instead of queing force fields
+			- Get rid of force fields and apply forces directly instead of queing force fields
+				- Ship_ForceFields: ApplyXYZ(.....)
+				- Test all manners of injecting force fields:
+					- Bomb blast
+					- AM bomb implosion
+					- ...TODO: all of the others
+				- Test perf improvement with many AM bombs
 			- See if HandleCollisionsWithSeaFloor may be also done once
 				- First, check its current perf impact
-			- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
+				- Take position snapshot before loop, and use it to calc 'before' position
+					- Do successive divisions of before->after segment to get close to surface
+				- Also trim for world boundaries
+					- "HandleWorldCollisions"
+				- TODOHERE
+					- OceanFloor: make sure we can ask for the derivative at x=MaxWorldWidth
+				- See if may merge CollisionsWithSeaFloor with collisions with world boundaries				
+					- Simply clamp x when sampling ocean floor					
+				- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
+
+
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
 			- Possible optimizations:
@@ -802,8 +826,6 @@ Render:
 				- Points::GetIntegrationFactorBuffer()
 			- Adjust:
 				- Bomb blast strength
-			
-		- TODOHERE
 
 		- TODOOLD
 		+ Points has two Force buffers: SpringForces and NonSpringForces
