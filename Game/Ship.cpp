@@ -650,10 +650,16 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
 
 void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
 {
-    for (auto springIndex : mSprings)
+    Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
+    float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
+    Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
+
+    ElementCount const springCount = mSprings.GetBufferElementCount();
+
+    for (ElementIndex springIndex = 0; springIndex < springCount; ++springIndex)
     {
-        auto const pointAIndex = mSprings.GetEndpointAIndex(springIndex);
-        auto const pointBIndex = mSprings.GetEndpointBIndex(springIndex);
+        auto const pointAIndex = endpointsBuffer[springIndex].PointAIndex;
+        auto const pointBIndex = endpointsBuffer[springIndex].PointBIndex;
 
         // No need to check whether the spring is deleted, as a deleted spring
         // has zero coefficients
@@ -668,8 +674,8 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
 
         // Calculate spring force on point A
         float const fSpring =
-            (displacementLength - mSprings.GetRestLength(springIndex))
-            * mSprings.GetStiffnessCoefficient(springIndex);
+            (displacementLength - restLengthBuffer[springIndex])
+            * coefficientsBuffer[springIndex].StiffnessCoefficient;
 
         //
         // 2. Damper forces
@@ -682,7 +688,7 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
         float const fDamp =
             relVelocity.dot(springDir)
-            * mSprings.GetDampingCoefficient(springIndex);
+            * coefficientsBuffer[springIndex].DampingCoefficient;
 
 
         //

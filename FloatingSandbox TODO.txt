@@ -756,8 +756,7 @@ Render:
 				! Not sse yet
 				+ Start: 20.6-21.6ms, 31.80-32.10fps
 				+ a) Add Hooke's and damping scalars and multiply only once with springDir
-				+ Perf: 18.9, 33.7 % 18.5, 34.2 % 18.3, 34.5
-					
+				+ Perf: 18.9, 33.7 | 18.5, 34.2 | 18.3, 34.5					
 				+ Do vector normalization in SSE
 					+ Benchmark: copy vector from vector
 					+ Unit Tests					
@@ -765,9 +764,10 @@ Render:
 						+ Algorithms becomes templated on TVector
 						+ Unit Tests
 						+ Benchmark
-				- Perf: 19.2, 33.6 % 
-				- Rollout spring loop
-				- Perf: 
+				X Perf: 19.2, 33.6 % 
+				X Rollout spring loop
+				+ restrict spring buffers 
+				- Perf: 18.2, 34.5
 				- End: 				
 			- Spring relaxation: see if perf improves with velocity and force in the same buffer
 				- Be careful at integration
@@ -788,18 +788,21 @@ Render:
 					- ...TODO: all of the others
 				- Test perf improvement with many AM bombs
 			- See if HandleCollisionsWithSeaFloor may be also done once
-				- First, check its current perf impact
-				- Take position snapshot before loop, and use it to calc 'before' position
-					- Do successive divisions of before->after segment to get close to surface
-				- Also trim for world boundaries
-					- "HandleWorldCollisions"
-				- TODOHERE
+				- Perf before:
+				- When sampling sea floor, clamp x
 					- OceanFloor: make sure we can ask for the derivative at x=MaxWorldWidth
-				- See if may merge CollisionsWithSeaFloor with collisions with world boundaries				
-					- Simply clamp x when sampling ocean floor					
-				- See if last step of UpdateMechanicalDynamics might take care of trimming for world boundaries as well
-
-
+				- Take position snapshot before loop, and use it to calc 'before' position and effective velocity 
+				  when dealing with collision
+					- Do successive divisions of before->after segment to get closer to surface
+					- Add OceanFloor elasticity and friction
+						- New GameParameters
+						- Also at SettingsDialog
+				- Perf after 1:
+				- Also trim for world boundaries in it
+					- "HandleWorldCollisions"
+					- After dealing with floor, additionally deal w/x & y, exactly like now
+					- Nuke TrimForWorldBoundaries
+				- Perf after 2:
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
 			- Possible optimizations:
