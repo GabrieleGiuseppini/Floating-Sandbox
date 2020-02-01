@@ -129,14 +129,14 @@ void Ship::ApplyRadialSpaceWarpForceField(
         float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
         if (absolutePointDistanceFromRadius <= radiusThickness)
         {
-            float const direction = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+            float const forceDirection = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
 
-            float const strength = strength * (1.0f - absolutePointDistanceFromRadius / radiusThickness);
+            float const forceStrength = strength * (1.0f - absolutePointDistanceFromRadius / radiusThickness);
 
             mPoints.GetNonSpringForce(pointIndex) +=
                 pointRadius.normalise()
-                * strength
-                * direction;
+                * forceStrength
+                * forceDirection;
         }
     }
 }

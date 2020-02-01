@@ -773,16 +773,15 @@ Render:
 				+ Perf: 17.7, 35.21 (| 18.0, 34.8 | 18.1, 34.7)
 			X See if it's faster to not reset forces at Integrate, but in a separate fill call
 				+ Perf: 18.4
-			= Get rid of force fields and apply forces directly instead of queing force fields
+			+ Get rid of force fields and apply forces directly instead of queing force fields
 				+ Ship_ForceFields: ApplyXYZ(.....)
-				= Test all manners of injecting force fields:
+				+ Test all manners of injecting force fields:
 					+ Draw & Swirl
 					+ Bomb blast
 						+ Radius: 1.5
 						+ Heat: 100K
-					- AM: pre-implosion, implosion, explosion
-				- Test perf improvement with many AM bombs
-				- Redo cross of light
+					+ AM: pre-implosion, implosion, explosion
+				+ Test perf improvement with many AM bombs
 			- See if HandleCollisionsWithSeaFloor may be also done once
 				- Perf before:
 				- When sampling sea floor, clamp x
