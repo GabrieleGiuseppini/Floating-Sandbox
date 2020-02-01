@@ -756,15 +756,16 @@ Render:
 				! Not sse yet
 				+ Start: 20.6-21.6ms, 31.80-32.10fps
 				+ a) Add Hooke's and damping scalars and multiply only once with springDir
-				= Do vector normalization in SSE
+				+ Perf: 18.9, 33.7 % 18.5, 34.2 % 18.3, 34.5
+					
+				+ Do vector normalization in SSE
 					+ Benchmark: copy vector from vector
-					+ Unit Tests
-					- Start perf: 
-					- Integrate in Algorithms->Vectors
-						- Algorithms becomes templated on TVector
-						- Unit Tests
-						- Benchmark
-				- Perf: 
+					+ Unit Tests					
+					+ Integrate in Algorithms->Vectors
+						+ Algorithms becomes templated on TVector
+						+ Unit Tests
+						+ Benchmark
+				- Perf: 19.2, 33.6 % 
 				- Rollout spring loop
 				- Perf: 
 				- End: 				

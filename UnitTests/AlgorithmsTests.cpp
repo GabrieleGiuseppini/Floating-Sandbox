@@ -1,4 +1,5 @@
 #include <GameCore/Algorithms.h>
+#include <GameCore/Vectors.h>
 
 #include "Utils.h"
 

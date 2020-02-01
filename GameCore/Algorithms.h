@@ -7,22 +7,62 @@
 
 #include "GameTypes.h"
 #include "SysSpecifics.h"
-#include "Vectors.h"
 
 namespace Algorithms {
 
-template<typename EndpointStruct>
+template<typename TVector>
+inline TVector NormalizeVector2(TVector const & v) noexcept
+{
+    __m128 const Zero = _mm_setzero_ps();
+    __m128 const One = _mm_set_ss(1.0f);
+
+    __m128 x = _mm_load_ss(&(v.x));
+    __m128 y = _mm_load_ss(&(v.y));
+
+    __m128 len = _mm_sqrt_ss(
+        _mm_add_ss(
+            _mm_mul_ss(x, x),
+            _mm_mul_ss(y, y)));
+
+    __m128 invLen = _mm_div_ss(One, len);
+    __m128 validMask = _mm_cmpneq_ss(invLen, Zero);
+    invLen = _mm_and_ps(invLen, validMask);
+
+    x = _mm_mul_ss(x, invLen);
+    y = _mm_mul_ss(y, invLen);
+
+    return TVector(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
+}
+
+template<typename TVector>
+inline TVector NormalizeVector2(TVector const & v, float length) noexcept
+{
+    __m128 const Zero = _mm_setzero_ps();
+    __m128 const One = _mm_set_ss(1.0f);
+
+    __m128 _l = _mm_set_ss(length);
+    __m128 _revl = _mm_div_ss(One, _l);
+    __m128 validMask = _mm_cmpneq_ss(_l, Zero);
+    _revl = _mm_and_ps(_revl, validMask);
+
+    __m128 _x = _mm_mul_ss(_mm_load_ss(&(v.x)), _revl);
+    __m128 _y = _mm_mul_ss(_mm_load_ss(&(v.y)), _revl);
+
+    return TVector(_mm_cvtss_f32(_x), _mm_cvtss_f32(_y));
+}
+
+template<typename EndpointStruct, typename TVector>
 inline void CalculateVectorDirsAndReciprocalLengths(
-    vec2f const * pointPositions,
+    TVector const * pointPositions,
     EndpointStruct const * endpoints,
-    vec2f * restrict outDirs,
+    TVector * restrict outDirs,
     float * restrict outReciprocalLengths,
     size_t const elementCount)
 {
     assert(elementCount % 4 == 0); // Element counts are aligned
 
-    __m128 const Zero = _mm_set_ps(0.0f, 0.0f, 0.0f, 0.0f);
-    
+    __m128 const Zero = _mm_setzero_ps();
+
     for (size_t s = 0; s < elementCount; s += 4)
     {
         __m128 const vecA0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 0].PointAIndex)));
@@ -57,7 +97,7 @@ inline void CalculateVectorDirsAndReciprocalLengths(
         __m128 rspringLength = _mm_rsqrt_ps(displacementXY);
 
         // L==0 => 1/L == 0, to maintain normal == (0, 0) from vec2f
-        rspringLength = _mm_and_ps(rspringLength, validMask); 
+        rspringLength = _mm_and_ps(rspringLength, validMask);
 
         displacementX = _mm_mul_ps(displacementX, rspringLength);
         displacementY = _mm_mul_ps(displacementY, rspringLength);
@@ -76,11 +116,12 @@ inline void CalculateVectorDirsAndReciprocalLengths(
  * Diffuse light from each lamp to all points on the same or lower plane ID,
  * inverse-proportionally to the lamp-point distance
  */
+template<typename TVector>
 inline void DiffuseLight_Naive(
-    vec2f const * pointPositions,
+    TVector const * pointPositions,
     PlaneId const * pointPlaneIds,
     ElementIndex const pointCount,
-    vec2f const * lampPositions,
+    TVector const * lampPositions,
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
@@ -123,11 +164,12 @@ inline void DiffuseLight_Naive(
  * Diffuse light from each lamp to all points on the same or lower plane ID,
  * inverse-proportionally to the lamp-point distance
  */
+template<typename TVector>
 inline void DiffuseLight_Vectorized(
-    vec2f const * restrict pointPositions,
+    TVector const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
     ElementIndex const pointCount,
-    vec2f const * restrict lampPositions,
+    TVector const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
@@ -154,7 +196,7 @@ inline void DiffuseLight_Vectorized(
     //
 
     for (ElementIndex p = 0; p < pointCount; p += 4)
-    {   
+    {
         //
         // 1. Prepare point data at slots 0,1,2,3
 

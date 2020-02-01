@@ -36,45 +36,6 @@ inline vec2f normalise_naive(vec2f const & v, float length) noexcept
     }
 }
 
-inline vec2f normalise_SSEx1(vec2f const & v) noexcept
-{
-    __m128 const Zero = _mm_setzero_ps();
-    __m128 const One = _mm_set_ss(1.0f);
-
-    __m128 x = _mm_load_ss(&(v.x));
-    __m128 y = _mm_load_ss(&(v.y));
-
-    __m128 len = _mm_sqrt_ss(
-        _mm_add_ss(
-            _mm_mul_ss(x, x),
-            _mm_mul_ss(y, y)));
-
-    __m128 invLen = _mm_div_ss(One, len);
-    __m128 validMask = _mm_cmpneq_ss(invLen, Zero);
-    invLen = _mm_and_ps(invLen, validMask);
-
-    x = _mm_mul_ss(x, invLen);
-    y = _mm_mul_ss(y, invLen);
-
-    return vec2f(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
-}
-
-inline vec2f normalise_SSEx1(vec2f const & v, float length) noexcept
-{
-    __m128 const Zero = _mm_setzero_ps();
-    __m128 const One = _mm_set_ss(1.0f);
-
-    __m128 _l = _mm_set_ss(length);
-    __m128 _revl = _mm_div_ss(One, _l);
-    __m128 validMask = _mm_cmpneq_ss(_l, Zero);
-    _revl = _mm_and_ps(_revl, validMask);
-
-    __m128 _x = _mm_mul_ss(_mm_load_ss(&(v.x)), _revl);
-    __m128 _y = _mm_mul_ss(_mm_load_ss(&(v.y)), _revl);
-
-    return vec2f(_mm_cvtss_f32(_x), _mm_cvtss_f32(_y));
-}
-
 inline vec2f normalise_SSEx2(vec2f const & v, float length) noexcept
 {
     float fResult[4];
@@ -125,7 +86,7 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded(benchmark:
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = normalise_SSEx1(vectors[i], lengths[i]);
+            vec2f norm = Algorithms::NormalizeVector2(vectors[i], lengths[i]);
 
             results[i] = (norm.x > norm.y);
         }
@@ -193,7 +154,7 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultStored(benchmark::St
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = normalise_SSEx1(vectors[i], lengths[i]);
+            vec2f norm = Algorithms::NormalizeVector2(vectors[i], lengths[i]);
 
             ptrResults[i] = norm;
         }
@@ -260,7 +221,7 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded(benchmark::
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = normalise_SSEx1(vectors[i]);
+            vec2f norm = Algorithms::NormalizeVector2(vectors[i]);
 
             results[i] = (norm.x > norm.y);
         }
@@ -302,7 +263,7 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::Sta
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = normalise_SSEx1(vectors[i]);
+            vec2f norm = Algorithms::NormalizeVector2(vectors[i]);
 
             results[i] = norm;
         }
