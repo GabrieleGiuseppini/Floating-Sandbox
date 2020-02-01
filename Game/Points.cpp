@@ -736,6 +736,9 @@ void Points::UpdateCombustionLowFrequency(
                 0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
+            // Flame vector is based on current velocity
+            mCombustionStateBuffer[pointIndex].FlameVector = GetVelocity(pointIndex).normalise();
+
             // Add point to vector of burning points, sorted by plane ID
             assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
             mBurningPoints.insert(
@@ -1135,7 +1138,6 @@ void Points::UpdateEphemeralParticles(
     // Transformation from desired velocity impulse to force
     float const smokeRandomWalkVelocityImpulseToForceCoefficient =
         GameParameters::AirMass
-        /// gameParameters.MechanicalSimulationStepTimeDuration<float>();
         / gameParameters.SimulationStepTimeDuration<float>;
 
     for (ElementIndex pointIndex : this->EphemeralPoints())

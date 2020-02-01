@@ -476,6 +476,7 @@ Render:
 		- Sea floor collision revisit (*)
 
 		- Change light colors to match Desktop\LightColors.png
+			- And add new render param for shaders
 		- Lower gunpowder strength
 		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
