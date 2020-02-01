@@ -1135,7 +1135,8 @@ void Points::UpdateEphemeralParticles(
     // Transformation from desired velocity impulse to force
     float const smokeRandomWalkVelocityImpulseToForceCoefficient =
         GameParameters::AirMass
-        / gameParameters.MechanicalSimulationStepTimeDuration<float>();
+        /// gameParameters.MechanicalSimulationStepTimeDuration<float>();
+        / gameParameters.SimulationStepTimeDuration<float>;
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {

@@ -645,8 +645,7 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
     Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
 
-    ElementCount const springCount = mSprings.GetBufferElementCount();
-
+    ElementCount const springCount = mSprings.GetElementCount();
     for (ElementIndex springIndex = 0; springIndex < springCount; ++springIndex)
     {
         auto const pointAIndex = endpointsBuffer[springIndex].PointAIndex;
