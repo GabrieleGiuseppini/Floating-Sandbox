@@ -847,8 +847,8 @@ void Ship::DrawTo(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Store the force field
-    AddOrResetForceField<DrawForceField>(
+    // Apply the force field
+    ApplyDrawForceField(
         targetPos,
         strength);
 }
@@ -863,8 +863,8 @@ void Ship::SwirlAt(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Store the force field
-    AddOrResetForceField<SwirlForceField>(
+    // Apply the force field
+    ApplySwirlForceField(
         targetPos,
         strength);
 }

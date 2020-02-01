@@ -86,7 +86,6 @@ Ship::Ship(
         *this,
         mPoints,
         mSprings)
-    , mCurrentForceFields()
     , mCurrentSimulationSequenceNumber()
     , mCurrentConnectivityVisitSequenceNumber()
     , mMaxMaxPlaneId(0)
@@ -453,7 +452,7 @@ void Ship::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateMechanicalDynamics(
-    float currentSimulationTime,
+    float /*currentSimulationTime*/,
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
@@ -466,15 +465,6 @@ void Ship::UpdateMechanicalDynamics(
     //
     // 2. Update non-spring forces
     //
-
-    // Apply force fields - if we have any
-    for (auto const & forceField : mCurrentForceFields)
-    {
-        forceField->Apply(
-            mPoints,
-            currentSimulationTime,
-            gameParameters);
-    }
 
     // Apply world forces
     ApplyWorldForces(gameParameters);
@@ -516,9 +506,6 @@ void Ship::UpdateMechanicalDynamics(
         //  - Changes position and velocity
         HandleCollisionsWithSeaFloor(gameParameters);
     }
-
-    // Consume force fields
-    mCurrentForceFields.clear();
 
     // Check whether we need to save the non-spring force buffer before we zero it out
     if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
@@ -2584,8 +2571,8 @@ void Ship::DoAntiMatterBombPreimplosion(
         100000.0f
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    // Store the force field
-    AddForceField<RadialSpaceWarpForceField>(
+    // Apply the force field
+    ApplyRadialSpaceWarpForceField(
         centerPosition,
         7.0f + sequenceProgress * 100.0f,
         10.0f,
@@ -2603,8 +2590,8 @@ void Ship::DoAntiMatterBombImplosion(
         * 10000.0f
         * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
-    // Store the force field
-    AddForceField<ImplosionForceField>(
+    // Apply the force field
+    ApplyImplosionForceField(
         centerPosition,
         strength);
 }
@@ -2624,8 +2611,8 @@ void Ship::DoAntiMatterBombExplosion(
             30000.0f
             * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
-        // Store the force field
-        AddForceField<RadialExplosionForceField>(
+        // Apply the force field
+        ApplyRadialExplosionForceField(
             centerPosition,
             strength);
     }

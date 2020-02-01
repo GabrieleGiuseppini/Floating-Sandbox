@@ -151,7 +151,7 @@ bool TimerBomb::Update(
 
                 // Blast strength
                 float const blastStrength =
-                    500.0f // Magic number
+                    55.0f // Magic number
                     * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat

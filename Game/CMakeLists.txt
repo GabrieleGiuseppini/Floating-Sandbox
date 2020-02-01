@@ -46,8 +46,6 @@ set  (PHYSICS_SOURCES
 	Clouds.h
 	ElectricalElements.cpp
 	ElectricalElements.h
-	ForceFields.cpp
-	ForceFields.h
 	ImpactBomb.cpp
 	ImpactBomb.h
 	IShipPhysicsHandler.h
@@ -63,6 +61,7 @@ set  (PHYSICS_SOURCES
 	RCBomb.cpp
 	RCBomb.h
 	Ship.cpp
+	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
 	Ship_StateMachines.cpp
 	Ship_StateMachines.h

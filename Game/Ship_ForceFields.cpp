@@ -11,47 +11,48 @@
 
 namespace Physics {
 
-void DrawForceField::Apply(
-    Points & points,
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/) const
+void Ship::ApplyDrawForceField(
+    vec2f const & centerPosition,
+    float strength)
 {
     //
     // F = ForceStrength/sqrt(distance), along radius
     //
 
-    for (auto pointIndex : points)
+    for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
-        float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
+        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
+        float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-        points.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        mPoints.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
     }
 }
 
-void SwirlForceField::Apply(
-    Points & points,
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/) const
+void Ship::ApplySwirlForceField(
+    vec2f const & centerPosition,
+    float strength)
 {
     //
     // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
     //
 
-    for (auto pointIndex : points)
+    for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
+        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
         float const displacementLength = displacement.length();
-        float forceMagnitude = mStrength / sqrtf(0.1f + displacementLength);
+        float forceMagnitude = strength / sqrtf(0.1f + displacementLength);
 
-        points.GetNonSpringForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
+        mPoints.GetNonSpringForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
     }
 }
 
-void BlastForceField::Apply(
-    Points & points,
+void Ship::ApplyBlastForceField(
+    vec2f const & centerPosition,
+    float blastRadius,
+    float strength,
+    bool doDetachPoint,
     float currentSimulationTime,
-    GameParameters const & gameParameters) const
+    GameParameters const & gameParameters)
 {
     //
     // Go through all points and, for each point in radius:
@@ -60,16 +61,16 @@ void BlastForceField::Apply(
     // - Flip over the point outside of the radius
     //
 
-    float const squareBlastRadius = mBlastRadius * mBlastRadius;
+    float const squareBlastRadius = blastRadius * blastRadius;
     constexpr float DtSquared = GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
 
     float closestPointSquareDistance = std::numeric_limits<float>::max();
     ElementIndex closestPointIndex = NoneElementIndex;
 
     // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
-    for (auto pointIndex : points.RawShipPoints())
+    for (auto pointIndex : mPoints.RawShipPoints())
     {
-        vec2f pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
+        vec2f pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
         float squarePointDistance = pointRadius.squareLength();
         if (squarePointDistance < squareBlastRadius)
         {
@@ -81,13 +82,13 @@ void BlastForceField::Apply(
             }
 
             // Create acceleration to flip the point
-            vec2f flippedRadius = pointRadius.normalise() * (mBlastRadius + (mBlastRadius - pointRadius.length()));
-            vec2f newPosition = mCenterPosition + flippedRadius;
-            points.GetNonSpringForce(pointIndex) +=
-                (newPosition - points.GetPosition(pointIndex))
+            vec2f flippedRadius = pointRadius.normalise() * (blastRadius + (blastRadius - pointRadius.length()));
+            vec2f newPosition = centerPosition + flippedRadius;
+            mPoints.GetNonSpringForce(pointIndex) +=
+                (newPosition - mPoints.GetPosition(pointIndex))
                 / DtSquared
-                * mStrength
-                * points.GetMass(pointIndex);
+                * strength
+                * mPoints.GetMass(pointIndex);
         }
     }
 
@@ -96,7 +97,7 @@ void BlastForceField::Apply(
     // Eventually detach the closest point
     //
 
-    if (mDoDetachPoint
+    if (doDetachPoint
         && NoneElementIndex != closestPointIndex)
     {
         // Choose a detach velocity - using the same distribution as Debris
@@ -105,7 +106,7 @@ void BlastForceField::Apply(
             GameParameters::MaxDebrisParticlesVelocity);
 
         // Detach point
-        points.Detach(
+        mPoints.Detach(
             closestPointIndex,
             detachVelocity,
             Points::DetachOptions::GenerateDebris
@@ -115,23 +116,24 @@ void BlastForceField::Apply(
     }
 }
 
-void RadialSpaceWarpForceField::Apply(
-    Points & points,
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/) const
+void Ship::ApplyRadialSpaceWarpForceField(
+    vec2f const & centerPosition,
+    float radius,
+    float radiusThickness,
+    float strength)
 {
-    for (auto pointIndex : points)
+    for (auto pointIndex : mPoints)
     {
-        vec2f const pointRadius = points.GetPosition(pointIndex) - mCenterPosition;
-        float const pointDistanceFromRadius = pointRadius.length() - mRadius;
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
+        float const pointDistanceFromRadius = pointRadius.length() - radius;
         float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
-        if (absolutePointDistanceFromRadius <= mRadiusThickness)
+        if (absolutePointDistanceFromRadius <= radiusThickness)
         {
             float const direction = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
 
-            float const strength = mStrength * (1.0f - absolutePointDistanceFromRadius / mRadiusThickness);
+            float const strength = strength * (1.0f - absolutePointDistanceFromRadius / radiusThickness);
 
-            points.GetNonSpringForce(pointIndex) +=
+            mPoints.GetNonSpringForce(pointIndex) +=
                 pointRadius.normalise()
                 * strength
                 * direction;
@@ -139,52 +141,50 @@ void RadialSpaceWarpForceField::Apply(
     }
 }
 
-void ImplosionForceField::Apply(
-    Points & points,
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/) const
+void Ship::ApplyImplosionForceField(
+    vec2f const & centerPosition,
+    float strength)
 {
-    for (auto pointIndex : points)
+    for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (mCenterPosition - points.GetPosition(pointIndex));
+        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
         float const displacementLength = displacement.length();
         vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
         // Make final acceleration somewhat independent from mass
-        float const massNormalization = points.GetMass(pointIndex) / 50.0f;
+        float const massNormalization = mPoints.GetMass(pointIndex) / 50.0f;
 
         // Angular (constant)
-        points.GetNonSpringForce(pointIndex) +=
+        mPoints.GetNonSpringForce(pointIndex) +=
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
-            * mStrength
+            * strength
             * massNormalization
             / 10.0f; // Magic number
 
         // Radial (stronger when closer)
-        points.GetNonSpringForce(pointIndex) +=
+        mPoints.GetNonSpringForce(pointIndex) +=
             normalizedDisplacement
-            * mStrength
+            * strength
             / (0.2f + sqrt(displacementLength))
             * massNormalization
             * 10.0f; // Magic number
     }
 }
 
-void RadialExplosionForceField::Apply(
-    Points & points,
-    float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/) const
+void Ship::ApplyRadialExplosionForceField(
+    vec2f const & centerPosition,
+    float strength)
 {
     //
     // F = ForceStrength/sqrt(distance), along radius
     //
 
-    for (auto pointIndex : points)
+    for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (points.GetPosition(pointIndex) - mCenterPosition);
-        float forceMagnitude = mStrength / sqrtf(0.1f + displacement.length());
+        vec2f displacement = (mPoints.GetPosition(pointIndex) - centerPosition);
+        float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-        points.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        mPoints.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
     }
 }
 
