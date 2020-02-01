@@ -751,7 +751,7 @@ Render:
 			X Experiment with different spring coeffs
 				+ First, do all calculations in RelaxSprings, ignore coeffs for now
 				+ Experiment with SpringReductionFraction set to 0.8 or 1.0			
-			= Optimize spring relaxation assembly
+			+ Optimize spring relaxation assembly
 				! Assembly inspection-driven
 				! Not sse yet
 				+ Start: 20.6-21.6ms, 31.80-32.10fps
@@ -767,8 +767,24 @@ Render:
 				X Perf: 19.2, 33.6 % 
 				X Rollout spring loop
 				+ restrict spring buffers 
-				- Perf: 18.2, 34.5
-				- End: 				
+				+ Perf: 18.2, 34.5
+				+ restrict point buffers
+				+ Perf: 17.7, 35.21 (| 18.0, 34.8 | 18.1, 34.7)
+			- See if it's faster to not reset forces at Integrate, but in a separate fill call
+				- Verify assembly
+				- Perf: 
+			- Spring relaxation: see if perf improves with position and velocity in the same buffer
+				- Pre-test:
+					- Perf before:
+					- 2 position vec2f, followed by 2 velocity vec2f
+						- struct
+					- Interleave before loop
+					- RelaxSprings
+					- Integrate
+					- Collisions
+					- De-interleave after loop
+					- Perf:
+
 			- Spring relaxation: see if perf improves with velocity and force in the same buffer
 				- Be careful at integration
 				- Vector rendering: upload both components

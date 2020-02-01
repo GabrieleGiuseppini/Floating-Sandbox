@@ -819,6 +819,11 @@ public:
         return reinterpret_cast<float *>(mSpringForceBuffer.data());
     }
 
+    vec2f * restrict GetSpringForceBufferAsVec2()
+    {
+        return mSpringForceBuffer.data();
+    }
+
     vec2f const & GetNonSpringForce(ElementIndex pointElementIndex) const noexcept
     {
         return mNonSpringForceBuffer[pointElementIndex];

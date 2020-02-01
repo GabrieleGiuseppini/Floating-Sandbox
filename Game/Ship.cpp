@@ -650,6 +650,10 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
 
 void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
 {
+    vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * restrict const pointSpringForceBuffer = mPoints.GetSpringForceBufferAsVec2();
+
     Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
     Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
@@ -664,7 +668,7 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         // No need to check whether the spring is deleted, as a deleted spring
         // has zero coefficients
 
-        vec2f const displacement = mPoints.GetPosition(pointBIndex) - mPoints.GetPosition(pointAIndex);
+        vec2f const displacement = pointPositionBuffer[pointBIndex] - pointPositionBuffer[pointAIndex];
         float const displacementLength = displacement.length();
         vec2f const springDir = displacement.normalise(displacementLength);
 
@@ -685,7 +689,7 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         //
 
         // Calculate damp force on point A
-        vec2f const relVelocity = mPoints.GetVelocity(pointBIndex) - mPoints.GetVelocity(pointAIndex);
+        vec2f const relVelocity = pointVelocityBuffer[pointBIndex] - pointVelocityBuffer[pointAIndex];
         float const fDamp =
             relVelocity.dot(springDir)
             * coefficientsBuffer[springIndex].DampingCoefficient;
@@ -696,8 +700,8 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         //
 
         vec2f const forceA = springDir * (fSpring + fDamp);
-        mPoints.GetSpringForce(pointAIndex) += forceA;
-        mPoints.GetSpringForce(pointBIndex) -= forceA;
+        pointSpringForceBuffer[pointAIndex] += forceA;
+        pointSpringForceBuffer[pointBIndex] -= forceA;
     }
 }
 
