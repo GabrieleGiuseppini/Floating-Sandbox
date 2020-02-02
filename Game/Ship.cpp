@@ -757,11 +757,10 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
     {
         auto const & position = mPoints.GetPosition(pointIndex);
 
-        //
-        // Check sea floor collision
-        //
-
         // Check if point is below the sea floor
+        //
+        // At this moment the point might be outside of world boundaries,
+        // so better clamp its x before sampling ocean floor height
         float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
         float const floorHeight = mParentWorld.GetOceanFloorHeightAt(clampedX);
         if (position.y <= floorHeight)
@@ -772,26 +771,33 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             // Calculate post-bounce velocity
             //
 
+            vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
+
+            // Calculate sea floor normal
+            // (optimized)
+            ////////vec2f const seaFloorAntiNormal = -vec2f(
+            ////////    floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
+            ////////    0.01f).normalise(); // Points below
+            vec2f const seaFloorAntiNormal = vec2f(
+                mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f) - floorHeight,
+                -0.01f).normalise(); // Points below
+
             // Decompose point velocity into normal and tangential
-            vec2f const collisionVelocity = mPoints.GetVelocity(pointIndex);
-            vec2f const seaFloorAntiNormal = -vec2f(
-                floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
-                0.01f).normalise(); // Points below
-            vec2f const normalVelocity = seaFloorAntiNormal * collisionVelocity.dot(seaFloorAntiNormal);
-            vec2f const tangentialVelocity = collisionVelocity - normalVelocity;
+            vec2f const normalVelocity = seaFloorAntiNormal * pointVelocity.dot(seaFloorAntiNormal);
+            vec2f const tangentialVelocity = pointVelocity - normalVelocity;
 
             // Calculate normal reponse: Vn' = -eVn (e = elasticity, [0.0 - 1.0])
             vec2f const normalResponse =
                 normalVelocity
                 * elasticityFactor; // Already negative
 
-            // Calculate tangential response: Vt' = aVt (a = friction, [0.0 - 1.0])
+            // Calculate tangential response: Vt' = aVt (a = (1.0-friction), [0.0 - 1.0])
             vec2f const tangentialResponse =
                 tangentialVelocity
                 * inverseFriction;
 
             // Impart final position and velocity
-            mPoints.GetPosition(pointIndex) -= collisionVelocity * dt; // Move point back to where it was in the previous step
+            mPoints.GetPosition(pointIndex) -= pointVelocity * dt; // Move point back to where it was in the previous step
             mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
         }
     }
@@ -849,7 +855,7 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
 void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)
 {
-    static constexpr float MaxBounceVelocity = 50.0f;
+    static constexpr float MaxBounceVelocity = 150.0f; // Magic number
 
     float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
     float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
