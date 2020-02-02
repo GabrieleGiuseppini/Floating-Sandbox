@@ -128,6 +128,8 @@ private:
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
+    SliderControl<float> * mOceanFloorElasticitySlider;
+    SliderControl<float> * mOceanFloorFrictionSlider;
     SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
 	SliderControl<float> * mStormStrengthAdjustmentSlider;

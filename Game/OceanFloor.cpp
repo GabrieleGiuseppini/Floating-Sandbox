@@ -197,14 +197,14 @@ bool OceanFloor::AdjustTo(
             mSamples[s - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[s - 1].SampleValue;
 
         // Update this sample's delta;
-        // no point in updating delta of extra sample, as it's never used, and no point
-        // in updating delta of last sample, as it's always zero
-        if (s < SamplesCount - 1) 
+        // no point in updating delta of extra sample, as it's always zero,
+        // and no point in updating delta of last sample, as it's always zero
+        if (s < SamplesCount - 1)
             mSamples[s].SampleValuePlusOneMinusSampleValue = mSamples[s + 1].SampleValue - newSampleValue;
     }
 
     // Make sure the extra sample has the same value as the last sample,
-    // in case we've just changed the latter 
+    // in case we've just changed the latter
     mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
 
     return hasAdjusted;
@@ -254,7 +254,7 @@ void OceanFloor::CalculateResultantSampleValues()
 
     // Populate extra sample - same value as last sample
     mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Never used
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Accessed only for derivative at x=MaxWorldWidth
 }
 
 }

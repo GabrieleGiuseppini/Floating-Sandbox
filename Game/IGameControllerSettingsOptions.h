@@ -144,6 +144,12 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinOceanFloorDetailAmplification() const = 0;
 	virtual float GetMaxOceanFloorDetailAmplification() const = 0;
 
+    virtual float GetMinOceanFloorElasticity() const = 0;
+    virtual float GetMaxOceanFloorElasticity() const = 0;
+
+    virtual float GetMinOceanFloorFriction() const = 0;
+    virtual float GetMaxOceanFloorFriction() const = 0;
+
 	virtual float GetMinDestroyRadius() const = 0;
 	virtual float GetMaxDestroyRadius() const = 0;
 

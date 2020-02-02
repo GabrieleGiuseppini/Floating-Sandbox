@@ -456,6 +456,10 @@ void Ship::UpdateMechanicalDynamics(
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
+    // Now:
+    // - SpringForces = 0
+    // - NonSpringForces = fw' (interactions, etc.)
+
     //
     // 1. Recalculate current masses and everything else that derives from them, once and for all
     //
@@ -477,35 +481,24 @@ void Ship::UpdateMechanicalDynamics(
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // Now:
-        // - Position = p(t)
-        // - Velocity = v(t)
-        // - SpringForce = 0
-        // - WorldForce = fw(t)
+        // - SpringForces = 0
+        // - NonSpringForces = fw' + fw''
 
         // Apply spring forces
-        // - Changes forces
         ApplySpringsForces(gameParameters);
 
-        // Now:
-        // - Position = p(t)
-        // - Velocity = v(t)
-        // - SpringForce = fs(t)
-        // - WorldForce = fw
-
-        // Integrate
-        //  - Changes position and velocity
+        // Integrate spring and non-spring forces,
+        // and reset spring forces
         IntegrateAndResetSpringForces(gameParameters);
-
-        // Now:
-        // - Position = p(t+1)
-        // - Velocity = v(t+1)
-        // - SpringForces = 0
-        // - NonSpringForces = fw
 
         // Handle collisions with sea floor
         //  - Changes position and velocity
         HandleCollisionsWithSeaFloor(gameParameters);
     }
+
+    //
+    // 4. Reset non-spring forces, now that we have integrated them
+    //
 
     // Check whether we need to save the non-spring force buffer before we zero it out
     if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
@@ -513,11 +506,12 @@ void Ship::UpdateMechanicalDynamics(
         mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
     }
 
-    //
-    // 4. Reset non-spring forces, now that we have integrated them
-    //
-
+    // Zero-out non-spring forces
     mPoints.ResetNonSpringForces();
+
+    // Now:
+    // - SpringForces = 0
+    // - NonSpringForces = 0
 }
 
 void Ship::ApplyWorldForces(GameParameters const & gameParameters)
@@ -754,6 +748,55 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
 
 void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 {
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    float const elasticityFactor = -gameParameters.OceanFloorElasticity;
+    float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
+
+    for (auto pointIndex : mPoints)
+    {
+        auto const & position = mPoints.GetPosition(pointIndex);
+
+        //
+        // Check sea floor collision
+        //
+
+        // Check if point is below the sea floor
+        float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
+        float const floorHeight = mParentWorld.GetOceanFloorHeightAt(clampedX);
+        if (position.y <= floorHeight)
+        {
+            // Collision!
+
+            //
+            // Calculate post-bounce velocity
+            //
+
+            // Decompose point velocity into normal and tangential
+            vec2f const collisionVelocity = mPoints.GetVelocity(pointIndex);
+            vec2f const seaFloorAntiNormal = -vec2f(
+                floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
+                0.01f).normalise(); // Points below
+            vec2f const normalVelocity = seaFloorAntiNormal * collisionVelocity.dot(seaFloorAntiNormal);
+            vec2f const tangentialVelocity = collisionVelocity - normalVelocity;
+
+            // Calculate normal reponse: Vn' = -eVn (e = elasticity, [0.0 - 1.0])
+            vec2f const normalResponse =
+                normalVelocity
+                * elasticityFactor; // Already negative
+
+            // Calculate tangential response: Vt' = aVt (a = friction, [0.0 - 1.0])
+            vec2f const tangentialResponse =
+                tangentialVelocity
+                * inverseFriction;
+
+            // Impart final position and velocity
+            mPoints.GetPosition(pointIndex) -= collisionVelocity * dt; // Move point back to where it was in the previous step
+            mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
+        }
+    }
+
+    /* TODOOLD
     //
     // We handle collisions really simplistically: we move back points to where they were
     // at the last update, when they were NOT under the ocean floor, and bounce velocity back
@@ -801,6 +844,7 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             mPoints.SetVelocity(pointIndex, newVelocity);
         }
     }
+    */
 }
 
 void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)

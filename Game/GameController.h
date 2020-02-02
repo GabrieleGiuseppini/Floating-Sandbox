@@ -417,6 +417,16 @@ public:
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
+    float GetOceanFloorElasticity() const override { return mGameParameters.OceanFloorElasticity; }
+    void SetOceanFloorElasticity(float value) override { mGameParameters.OceanFloorElasticity = value; }
+    float GetMinOceanFloorElasticity() const override { return GameParameters::MinOceanFloorElasticity; }
+    float GetMaxOceanFloorElasticity() const override { return GameParameters::MaxOceanFloorElasticity; }
+
+    float GetOceanFloorFriction() const override { return mGameParameters.OceanFloorFriction; }
+    void SetOceanFloorFriction(float value) override { mGameParameters.OceanFloorFriction = value; }
+    float GetMinOceanFloorFriction() const override { return GameParameters::MinOceanFloorFriction; }
+    float GetMaxOceanFloorFriction() const override { return GameParameters::MaxOceanFloorFriction; }
+
     float GetDestroyRadius() const override { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mGameParameters.DestroyRadius = value; }
     float GetMinDestroyRadius() const override { return GameParameters::MinDestroyRadius; }

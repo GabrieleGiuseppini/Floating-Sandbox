@@ -1826,6 +1826,56 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 					CellBorder);
 			}
 
+            // Ocean Floor Elasticity
+            {
+                mOceanFloorElasticitySlider = new SliderControl<float>(
+                    oceanBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Ocean Floor Elasticity",
+                    "Adjusts the elasticity of collisions with the ocean floor.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorElasticity(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorElasticity()));
+
+                oceanSizer->Add(
+                    mOceanFloorElasticitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Ocean Floor Friction
+            {
+                mOceanFloorFrictionSlider = new SliderControl<float>(
+                    oceanBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Ocean Floor Friction",
+                    "Adjusts the friction exherted by the ocean floor.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorFriction, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorFriction(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorFriction()));
+
+                oceanSizer->Add(
+                    mOceanFloorFrictionSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             oceanBoxSizer->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -1834,7 +1884,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
         gridSizer->Add(
             oceanBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -1911,7 +1961,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 
         gridSizer->Add(
             smokeBox,
-            wxGBPosition(0, 3),
+            wxGBPosition(0, 5),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
@@ -3890,6 +3940,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
     mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
+    mOceanFloorElasticitySlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticity));
+    mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
 
     mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
     mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
