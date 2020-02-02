@@ -782,7 +782,7 @@ Render:
 						+ Heat: 100K
 					+ AM: pre-implosion, implosion, explosion
 				+ Test perf improvement with many AM bombs
-			= See if HandleCollisionsWithSeaFloor may be also done once
+			+ See if HandleCollisionsWithSeaFloor may be also done once
 				+ Perf before: 17.8/34.9, 17.5/35.4
 				+ When sampling sea floor, clamp x
 					+ OceanFloor: make sure we can ask for the derivative at x=MaxWorldWidth				
@@ -796,12 +796,12 @@ Render:
 						+ Tangential response: Vt' = aVt (a = friction, [0.0 - 1.0])
 				X Does not work, dt is too large
 				+ Just test friction and elasticity
-				- See if it's x-clamping that made 17.5ms go to 18.5
-				- Add friction and elasticity to changes
-			- Re-check world trimming and confirm it does what's expected
-				- Remove clamp at ocean floor and ocean surface
-					- Perf before:
-					- Perf after:
+				+ See if it's x-clamping that made 17.5ms go to 18.5
+				+ Add friction and elasticity to changes
+			= Remove clamp at ocean floor and ocean surface
+				- Perf before:
+				- Re-check world trimming and confirm it does what's expected			
+				- Perf after:
 				- Clamp at Repair when changing positions
 			- Nuke Points::SetVelocity
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer

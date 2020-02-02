@@ -10,6 +10,7 @@
 	- Noticeable with very light materials, such as Air and Hydrogen
 - Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
+- Re-worked collisions with ocean floor, and added new friction and elasticity settings
 - Re-worked flame physics and graphics
 	- Flames are now directional, adapting to the velocity of the particles that are burning
 - Re-worked explosion physics and graphics
