@@ -833,7 +833,8 @@ Render:
 
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
-			- Possible optimizations:
+				- SettingsDialog
+			- TODONUKE: Possible optimizations:
 				- See if can pre-integrate forces (save multiplication):
 					- World forces: at beginning of loop, in a separate temp buffer
 					- Spring forces: using temp factors, see below(*)
@@ -853,9 +854,6 @@ Render:
 						- Need pre-step before loop
 						- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
 						- Populate inline	
-			- Get rid of those methods that are now unused; possible candidates:
-				- Points::GetIntegrationFactor()
-				- Points::GetIntegrationFactorBuffer()
 			- Adjust:
 				+ Bomb blast strength
 
