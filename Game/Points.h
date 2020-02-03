@@ -785,6 +785,13 @@ public:
         return positionBufferCopy;
     }
 
+    void SetPosition(
+        ElementIndex pointElementIndex,
+        vec2f const & position) noexcept
+    {
+        mPositionBuffer[pointElementIndex] = position;
+    }
+
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
     {
         return mVelocityBuffer[pointElementIndex];

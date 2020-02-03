@@ -45,8 +45,13 @@ public:
         float x2,
         float targetY2);
 
+    /*
+     * Assumption: x is in world boundaries.
+     */
     float GetHeightAt(float x) const noexcept
     {
+        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+
         //
         // Find sample index and interpolate in-between that sample and the next
         //
@@ -60,22 +65,11 @@ public:
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        // FUTURE: the following checks are temporary; as long as we have multiple mechanical
-        // iterations per step, each of the interim steps might exceed the world boundaries. The checks
-        // might be removed once the mechanical simulation may guarantee that each position update
-        // is followed by a world boundary trim
-        if (sampleIndexF < 0)
-            return mSamples[0].SampleValue;
-        else if (sampleIndexI > SamplesCount)
-            return mSamples[SamplesCount].SampleValue;
-        else
-        {
-            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-            assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
-            return mSamples[sampleIndexI].SampleValue
-                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-        }
+        return mSamples[sampleIndexI].SampleValue
+            + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
 private:

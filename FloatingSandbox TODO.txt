@@ -798,7 +798,7 @@ Render:
 				+ Just test friction and elasticity
 				+ See if it's x-clamping that made 17.5ms go to 18.5
 				+ Add friction and elasticity to changes
-			= Remove clamp at ocean floor and ocean surface
+			+ Remove clamp at ocean floor and ocean surface
 				+ Perf before: 18.5/34.3
 				+ Test SEE clamp
 					+ Test, including assembly
@@ -806,15 +806,14 @@ Render:
 				+ Optimize calculation of anti-normal
 					+ Test
 				+ Re-check world trimming and confirm it does what's expected
-				- Clamp at Repair when changing positions
-				- Do
-				- Perf after:				
-			- Nuke Points::SetVelocity
+				+ Clamp at Repair when changing positions
+				+ Do
+				+ Perf after: 18.3/34.5 - 17.9/34.9
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer
 				- Pre-test:
 					- Perf before:
 					- position vec2f, velocity vec2f
-						- At points, with methods for interleaving and de-interleaving
+						- Struct at points, with methods for interleaving and de-interleaving
 					- Interleave before loop
 					- RelaxSprings
 					- Integrate
@@ -822,8 +821,7 @@ Render:
 					- De-interleave after loop
 					- Perf:
 				- Finalization:
-					- Vector rendering: upload both components
-						- ShipRenderContext
+					- See if may avoid having to interleave and de-interleave
 					- If it works: test with positions as well, as follows:
 						! Position buffer stays
 						- The new Velocity-and-Force buffer takes also Position
