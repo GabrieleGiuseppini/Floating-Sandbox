@@ -801,82 +801,39 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
         }
     }
-
-    /* TODOOLD
-    //
-    // We handle collisions really simplistically: we move back points to where they were
-    // at the last update, when they were NOT under the ocean floor, and bounce velocity back
-    // with some inelastic loss.
-    //
-    // Regarding calculating the post-collision position: ideally we would have to find the
-    // mid-point - between the position at t-1 and t - at which we really entered the sea floor,
-    // and then move the point there. We could find the midpoint with successive approximations,
-    // but this might not work when the floor is really rugged.
-    //
-    // Regarding calculating the post-collision velocity: ideally we would mirror velocity around
-    // the sea floor normal, but if we did this together with moving the point at the previous position,
-    // that point would start oscillating up and down, as the new position would allow it to gather
-    // momentum and come crashing down again.
-    //
-    // Hence we're gonna stick with this simple algorithm.
-    //
-
-    // The fraction of velocity that bounces back (we model inelastic bounces)
-    static constexpr float VelocityBounceFraction = -0.75f;
-
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
-    for (auto pointIndex : mPoints)
-    {
-        // Check if point is now below the sea floor
-        float const floorheight = mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x);
-        if (mPoints.GetPosition(pointIndex).y < floorheight)
-        {
-            // Move point back to where it was
-            mPoints.GetPosition(pointIndex) -= mPoints.GetVelocity(pointIndex) * dt;
-
-            //
-            // Calculate new velocity
-            //
-
-            vec2f seaFloorNormal = vec2f(
-                floorheight - mParentWorld.GetOceanFloorHeightAt(mPoints.GetPosition(pointIndex).x + 0.01f),
-                0.01f).normalise();
-
-            vec2f newVelocity =
-                (mPoints.GetVelocity(pointIndex) * VelocityBounceFraction) // Bounce velocity (naively), with some inelastic absorption
-                + (seaFloorNormal * 0.5f); // Add a small normal component, so to have some non-infinite friction
-
-            mPoints.SetVelocity(pointIndex, newVelocity);
-        }
-    }
-    */
 }
 
-void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)
+void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 {
-    static constexpr float MaxBounceVelocity = 150.0f; // Magic number
-
     float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
     float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
 
     float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
     float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
 
+    // Elasticity of the bounce against world boundaries
+    //  - We use the ocean floor's elasticity for convenience
+    float const elasticity = gameParameters.OceanFloorElasticity;
+
+    // We clamp velocity to damp system instabilities at extreme events
+    static constexpr float MaxBounceVelocity = 150.0f; // Magic number
+
+    // Visit all points
     for (auto pointIndex : mPoints)
     {
         auto & pos = mPoints.GetPosition(pointIndex);
 
         if (pos.x < MaxWorldLeft)
         {
-            pos.x = MaxWorldLeft;
+            // Simulate bounce
+            pos.x = MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).x = std::min(-mPoints.GetVelocity(pointIndex).x, MaxBounceVelocity);
         }
         else if (pos.x > MaxWorldRight)
         {
-            pos.x = MaxWorldRight;
+            pos.x = MaxWorldRight - elasticity * (pos.x - MaxWorldRight);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
@@ -884,14 +841,14 @@ void Ship::TrimForWorldBounds(GameParameters const & /*gameParameters*/)
 
         if (pos.y > MaxWorldTop)
         {
-            pos.y = MaxWorldTop;
+            pos.y = MaxWorldTop - elasticity * (pos.y - MaxWorldTop);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).y = std::max(-mPoints.GetVelocity(pointIndex).y, -MaxBounceVelocity);
         }
         else if (pos.y < MaxWorldBottom)
         {
-            pos.y = MaxWorldBottom;
+            pos.y = MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).y = std::min(-mPoints.GetVelocity(pointIndex).y, MaxBounceVelocity);

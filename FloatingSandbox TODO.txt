@@ -809,6 +809,7 @@ Render:
 				+ Clamp at Repair when changing positions
 				+ Do
 				+ Perf after: 18.3/34.5 - 17.9/34.9
+			+ World bounds: find right point to move back to
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer
 				- Pre-test:
 					- Perf before:
