@@ -1,6 +1,6 @@
 1.14.0.TODO
 - Added new electrical materials:
-	- Switches - both interactive and water-sensing
+	- Switches - interactive and water-sensing
 	- Smoke Emitter - emits smoke particles when powered
 		- Changed "R.M.S. Titanic (With Lights)" into "R.M.S. Titanic (With Lights and Smoke)", and changed "Cruise Vessel"'s funnel into a smoking funnel
 - Added electrical panel to control switches and other interactive electrical materials
@@ -10,7 +10,9 @@
 	- Noticeable with very light materials, such as Air and Hydrogen
 - Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
-- Re-worked collisions with ocean floor, and added new friction and elasticity settings
+- Re-worked collisions with terrain
+	- Impacts with ocean floor, land, and mountains are now more realistic than ever
+	- Added new friction and elasticity settings for terrain
 - Re-worked flame physics and graphics
 	- Flames are now directional, adapting to the velocity of the particles that are burning
 - Re-worked explosion physics and graphics
