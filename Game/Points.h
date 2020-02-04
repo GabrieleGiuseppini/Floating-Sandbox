@@ -854,6 +854,11 @@ public:
         return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
     }
 
+    vec2f * restrict GetNonSpringForceBufferAsVec2()
+    {
+        return mNonSpringForceBuffer.data();
+    }
+
     void CopyNonSpringForceBufferToForceRenderBuffer()
     {
         mForceRenderBuffer.copy_from(mNonSpringForceBuffer);

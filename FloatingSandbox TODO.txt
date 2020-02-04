@@ -813,20 +813,20 @@ Render:
 			- Spring relaxation: see if perf improves with loop by points, rather than by springs
 				X First iteration: sucks
 				+ Finalize isAtOwner (see below), change temporarily spring relaxation call, and commit
-					- Revert spring relaxation call
-				- Change spring loop to be unilateral, but still with forces
-					- Just to verify loop structure
-				- Try with integrating in loop as well
+					+ Revert spring relaxation call
+				+ Change spring loop to be unilateral, but still with forces
+					+ Just to verify loop structure
+				= Try with integrating in loop as well
 					! Gauss-Seidel 
 					+ Requires springs owned by point Pi to only be connected to Pj with j > i
-					- Integrate point at end of spring loop
-					- Nuke integration call
+					+ Integrate point at end of spring loop
+					+ Nuke integration call
 				- Try with position-based dynamics
 					- Resuscitate idea of pre-integrating world forces
 					- TODO
 				- Finalization:
-					- Point<->Spring ownership: calc's by Points::Add/Remove connected spring based on A < B
-						- Remove arg at Points::Add/Remove connected spring
+					- Re-think connected springs structure: 
+						- Incorporate coefficients 
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer
 				- Pre-test:
 					- Perf before:
@@ -855,7 +855,7 @@ Render:
 				- See if can pre-integrate forces (save multiplication):
 					- World forces: at beginning of loop, in a separate temp buffer
 					- Spring forces: using temp factors, see below(*)
-				- Spring relaxation calculates final deltaPos (in separate buffer)
+				- Spring relaxation calculates final deltaPos in separate buffer
 					! Makes for unchanging particle positions and velocity during relaxation, i.e. Jacobi
 					- Advantage:
 						- When calculating deltaPos: 

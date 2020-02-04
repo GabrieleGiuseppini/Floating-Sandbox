@@ -486,11 +486,12 @@ void Ship::UpdateMechanicalDynamics(
 
         // Apply spring forces
         // TODOTEST
-        ApplySpringsForces_BySprings(gameParameters);
-        //ApplySpringsForces_ByPoints(gameParameters);
+        //ApplySpringsForces_BySprings(gameParameters);
+        ApplySpringsForces_ByPoints(gameParameters);
 
         // Integrate spring and non-spring forces,
         // and reset spring forces
+        // TODOTEST
         IntegrateAndResetSpringForces(gameParameters);
 
         // Handle collisions with sea floor
@@ -687,11 +688,21 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
     }
 }
 
-void Ship::ApplySpringsForces_ByPoints(GameParameters const & /*gameParameters*/)
+void Ship::ApplySpringsForces_ByPoints(GameParameters const & gameParameters)
 {
-    vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
-    vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * restrict const pointSpringForceBuffer = mPoints.GetSpringForceBufferAsVec2();
+    vec2f const * restrict const pointNonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+    float const * const restrict pointIntegrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
+    float const globalDampCoefficient =
+        pow(GameParameters::GlobalDamp,
+            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
+    float const velocityFactor = globalDampCoefficient / dt;
 
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
     Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
@@ -699,20 +710,24 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & /*gameParameters*/
     ElementCount const pointCount = mPoints.GetElementCount();
     for (ElementIndex pointAIndex = 0; pointAIndex < pointCount; ++pointAIndex)
     {
-        vec2f const & pointAPosition = pointPositionBuffer[pointAIndex];
-        vec2f const & pointAVelocity = pointVelocityBuffer[pointAIndex];
+        //
+        // Apply spring forces
+        //
+
+        vec2f & pointAPosition = pointPositionBuffer[pointAIndex];
+        vec2f & pointAVelocity = pointVelocityBuffer[pointAIndex];
+        // TODOTEST
+        //vec2f pointASpringForce = vec2f::zero();
         vec2f & pointASpringForce = pointSpringForceBuffer[pointAIndex];
 
         auto const & connectedSprings = mPoints.GetConnectedSprings(pointAIndex);
-        auto const ownedSpringsCount = connectedSprings.OwnedConnectedSpringsCount;
 
-        for (ElementIndex s = 0; s < ownedSpringsCount; ++s)
+        auto const springsCount = connectedSprings.ConnectedSprings.size();
+        for (ElementIndex s = 0; s < springsCount; ++s)
         {
             auto const & connectedSpring = connectedSprings.ConnectedSprings[s];
 
             auto const pointBIndex = connectedSpring.OtherEndpointIndex;
-            assert(pointBIndex > pointAIndex); // Springs owned by point Pi are connected to Pj with j > i
-
             auto const springIndex = connectedSpring.SpringIndex;
 
             // No need to check whether the spring is deleted, as a deleted spring
@@ -752,8 +767,19 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & /*gameParameters*/
 
             vec2f const force = springDir * (fSpring + fDamp);
             pointASpringForce += force;
-            pointSpringForceBuffer[pointBIndex] -= force;
         }
+
+        //
+        // Integrate
+        //
+
+        /// TODOTEST
+        ////vec2f const deltaPos =
+        ////    pointAVelocity * dt
+        ////    + (pointASpringForce + pointNonSpringForceBuffer[pointAIndex]) * pointIntegrationFactorBuffer[pointAIndex];
+
+        ////pointAPosition += deltaPos;
+        ////pointAVelocity = deltaPos * velocityFactor;
     }
 }
 
