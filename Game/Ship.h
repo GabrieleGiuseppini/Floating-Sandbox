@@ -216,7 +216,9 @@ private:
 
     void ApplyWorldForces(GameParameters const & gameParameters);
 
-    void ApplySpringsForces(GameParameters const & gameParameters);
+    void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
+
+    void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
     void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
 

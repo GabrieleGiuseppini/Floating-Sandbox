@@ -56,6 +56,79 @@ public:
     };
 
     /*
+     * The metadata of a single spring connected to a point.
+     */
+    struct ConnectedSpring
+    {
+        ElementIndex SpringIndex;
+        ElementIndex OtherEndpointIndex;
+
+        ConnectedSpring()
+            : SpringIndex(NoneElementIndex)
+            , OtherEndpointIndex(NoneElementIndex)
+        {}
+
+        ConnectedSpring(
+            ElementIndex springIndex,
+            ElementIndex otherEndpointIndex)
+            : SpringIndex(springIndex)
+            , OtherEndpointIndex(otherEndpointIndex)
+        {}
+    };
+
+    /*
+     * The metadata of all the springs connected to a point.
+     */
+    struct ConnectedSpringsVector
+    {
+        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        size_t OwnedConnectedSpringsCount;
+
+        ConnectedSpringsVector()
+            : ConnectedSprings()
+            , OwnedConnectedSpringsCount(0u)
+        {}
+
+        inline void ConnectSpring(
+            ElementIndex springElementIndex,
+            ElementIndex otherEndpointElementIndex,
+            bool isAtOwner)
+        {
+            // Add so that all springs owned by this point come first
+            if (isAtOwner)
+            {
+                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+                ++OwnedConnectedSpringsCount;
+            }
+            else
+            {
+                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+            }
+        }
+
+        inline void DisconnectSpring(
+            ElementIndex springElementIndex,
+            bool isAtOwner)
+        {
+            bool found = ConnectedSprings.erase_first(
+                [springElementIndex](ConnectedSpring const & c)
+                {
+                    return c.SpringIndex == springElementIndex;
+                });
+
+            assert(found);
+            (void)found;
+
+            // Update count of owned springs, if this spring is owned
+            if (isAtOwner)
+            {
+                assert(OwnedConnectedSpringsCount > 0);
+                --OwnedConnectedSpringsCount;
+            }
+        }
+    };
+
+    /*
      * The state required for repairing particles.
      */
     struct RepairState
@@ -272,79 +345,6 @@ private:
             : State(EphemeralState::DebrisState()) // Arbitrary
             , MaxSimulationLifetime(0.0f)
         {}
-    };
-
-    /*
-     * The metadata of a single spring connected to a point.
-     */
-    struct ConnectedSpring
-    {
-        ElementIndex SpringIndex;
-        ElementIndex OtherEndpointIndex;
-
-        ConnectedSpring()
-            : SpringIndex(NoneElementIndex)
-            , OtherEndpointIndex(NoneElementIndex)
-        {}
-
-        ConnectedSpring(
-            ElementIndex springIndex,
-            ElementIndex otherEndpointIndex)
-            : SpringIndex(springIndex)
-            , OtherEndpointIndex(otherEndpointIndex)
-        {}
-    };
-
-    /*
-     * The metadata of all the springs connected to a point.
-     */
-    struct ConnectedSpringsVector
-    {
-        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
-        size_t OwnedConnectedSpringsCount;
-
-        ConnectedSpringsVector()
-            : ConnectedSprings()
-            , OwnedConnectedSpringsCount(0u)
-        {}
-
-        inline void ConnectSpring(
-            ElementIndex springElementIndex,
-            ElementIndex otherEndpointElementIndex,
-            bool isAtOwner)
-        {
-            // Add so that all springs owned by this point come first
-            if (isAtOwner)
-            {
-                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
-                ++OwnedConnectedSpringsCount;
-            }
-            else
-            {
-                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
-            }
-        }
-
-        inline void DisconnectSpring(
-            ElementIndex springElementIndex,
-            bool isAtOwner)
-        {
-            bool found = ConnectedSprings.erase_first(
-                [springElementIndex](ConnectedSpring const & c)
-                {
-                    return c.SpringIndex == springElementIndex;
-                });
-
-            assert(found);
-            (void)found;
-
-            // Update count of owned springs, if this spring is owned
-            if (isAtOwner)
-            {
-                assert(OwnedConnectedSpringsCount > 0);
-                --OwnedConnectedSpringsCount;
-            }
-        }
     };
 
     /*
@@ -1263,14 +1263,16 @@ public:
     void ConnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        ElementIndex otherEndpointElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
         assert(mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.contains(
             [springElementIndex](auto const & cs)
             {
                 return cs.SpringIndex == springElementIndex;
             }));
+
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
 
         mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
@@ -1281,8 +1283,11 @@ public:
     void DisconnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
+
         mConnectedSpringsBuffer[pointElementIndex].DisconnectSpring(
             springElementIndex,
             isAtOwner);
@@ -1296,18 +1301,19 @@ public:
     void AddFactoryConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        ElementIndex otherEndpointElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
-        // Add spring
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
+
+        // Add spring to factory-connected springs
         mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
             otherEndpointElementIndex,
             isAtOwner);
 
         // Connect spring
-        ConnectSpring(
-            pointElementIndex,
+        mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
             otherEndpointElementIndex,
             isAtOwner);

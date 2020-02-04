@@ -485,7 +485,9 @@ void Ship::UpdateMechanicalDynamics(
         // - NonSpringForces = fw' + fw''
 
         // Apply spring forces
-        ApplySpringsForces(gameParameters);
+        // TODOTEST
+        ApplySpringsForces_BySprings(gameParameters);
+        //ApplySpringsForces_ByPoints(gameParameters);
 
         // Integrate spring and non-spring forces,
         // and reset spring forces
@@ -629,7 +631,7 @@ void Ship::ApplyWorldForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
+void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*/)
 {
     vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
@@ -682,6 +684,76 @@ void Ship::ApplySpringsForces(GameParameters const & /*gameParameters*/)
         vec2f const forceA = springDir * (fSpring + fDamp);
         pointSpringForceBuffer[pointAIndex] += forceA;
         pointSpringForceBuffer[pointBIndex] -= forceA;
+    }
+}
+
+void Ship::ApplySpringsForces_ByPoints(GameParameters const & /*gameParameters*/)
+{
+    vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * restrict const pointSpringForceBuffer = mPoints.GetSpringForceBufferAsVec2();
+
+    float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
+    Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
+
+    ElementCount const pointCount = mPoints.GetElementCount();
+    for (ElementIndex pointAIndex = 0; pointAIndex < pointCount; ++pointAIndex)
+    {
+        vec2f const & pointAPosition = pointPositionBuffer[pointAIndex];
+        vec2f const & pointAVelocity = pointVelocityBuffer[pointAIndex];
+        vec2f & pointASpringForce = pointSpringForceBuffer[pointAIndex];
+
+        auto const & connectedSprings = mPoints.GetConnectedSprings(pointAIndex);
+        auto const ownedSpringsCount = connectedSprings.OwnedConnectedSpringsCount;
+
+        for (ElementIndex s = 0; s < ownedSpringsCount; ++s)
+        {
+            auto const & connectedSpring = connectedSprings.ConnectedSprings[s];
+
+            auto const pointBIndex = connectedSpring.OtherEndpointIndex;
+            assert(pointBIndex > pointAIndex); // Springs owned by point Pi are connected to Pj with j > i
+
+            auto const springIndex = connectedSpring.SpringIndex;
+
+            // No need to check whether the spring is deleted, as a deleted spring
+            // wouldn't be here
+            assert(!mSprings.IsDeleted(springIndex));
+
+            vec2f const displacement = pointPositionBuffer[pointBIndex] - pointAPosition;
+            float const displacementLength = displacement.length();
+            vec2f const springDir = displacement.normalise(displacementLength);
+
+            //
+            // 1. Hooke's law
+            //
+
+            // Calculate spring force on point A
+            float const fSpring =
+                (displacementLength - restLengthBuffer[springIndex])
+                * coefficientsBuffer[springIndex].StiffnessCoefficient;
+
+            //
+            // 2. Damper forces
+            //
+            // Damp the velocities of the two points, as if the points were also connected by a damper
+            // along the same direction as the spring
+            //
+
+            // Calculate damp force on point A
+            vec2f const relVelocity = pointVelocityBuffer[pointBIndex] - pointAVelocity;
+            float const fDamp =
+                relVelocity.dot(springDir)
+                * coefficientsBuffer[springIndex].DampingCoefficient;
+
+
+            //
+            // Apply forces
+            //
+
+            vec2f const force = springDir * (fSpring + fDamp);
+            pointASpringForce += force;
+            pointSpringForceBuffer[pointBIndex] -= force;
+        }
     }
 }
 
@@ -2267,8 +2339,8 @@ void Ship::HandleSpringDestroy(
     }
 
     // Remove the spring from its endpoints
-    mPoints.DisconnectSpring(pointAIndex, springElementIndex, true); // Owner
-    mPoints.DisconnectSpring(pointBIndex, springElementIndex, false); // Not owner
+    mPoints.DisconnectSpring(pointAIndex, springElementIndex, pointBIndex);
+    mPoints.DisconnectSpring(pointBIndex, springElementIndex, pointAIndex);
 
     // Notify endpoints that have become orphaned
     if (mPoints.GetConnectedSprings(pointAIndex).ConnectedSprings.empty())
@@ -2370,8 +2442,8 @@ void Ship::HandleSpringRestore(
     //
 
     // Connect self to endpoints
-    mPoints.ConnectSpring(pointAIndex, springElementIndex, pointBIndex, true); // Owner
-    mPoints.ConnectSpring(pointBIndex, springElementIndex, pointAIndex, false); // Not owner
+    mPoints.ConnectSpring(pointAIndex, springElementIndex, pointBIndex);
+    mPoints.ConnectSpring(pointBIndex, springElementIndex, pointAIndex);
 
     // Add spring to set of sub springs at each super-triangle
     for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
