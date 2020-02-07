@@ -509,7 +509,7 @@ void Ship::UpdateMechanicalDynamics(
     }
 
     //
-    // 4. Reset non-spring forces, now that we have integrated them
+    // Reset non-spring forces, now that we have integrated them
     //
 
     // Check whether we need to save the non-spring force buffer before we zero it out

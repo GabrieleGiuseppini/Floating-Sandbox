@@ -848,28 +848,16 @@ Render:
 					X Cleanup point integration factor buffer - make it float itself, if we really go ahead
 					X Re-think connected springs structure: 
 						X Incorporate coefficients 
-			- Spring relaxation: see if perf improves with position and velocity in the same buffer
-				- Pre-test:
-					+ Perf before: 18.08/34.6 18.5/34.3
-					- position vec2f, velocity vec2f
-						- Struct at points, with methods for interleaving and de-interleaving
-					- Interleave before loop
-					- RelaxSprings
-					- Integrate
-					- Collisions
-					- De-interleave after loop
-					- Perf:
-				- Finalization:
-					- See if may avoid having to interleave and de-interleave
-					- If it works: test with positions as well, as follows:
-						! Position buffer stays
-						- The new Velocity-and-Force buffer takes also Position
-						- Before loop: interleave position into buffer
-						- During loop: only deal with those positions
-							- Also at integrate and collisions
-						- After loop: de-interleave position again into its own buffer
-
-			- Cleanup:
+			X Spring relaxation: see if perf improves with position and velocity and spring force in the same buffer
+				+ Perf before: 18.08/34.6 18.5/34.3
+				+ position vec2f, velocity vec2f, spring force vec2f
+					+ Struct at points, with methods for interleaving and de-interleaving
+				+ Interleave before loop
+				+ RelaxSprings
+				+ Integrate
+				- Collisions
+				+ De-interleave after loop
+				+ Perf: 18.7/34.0
 
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
