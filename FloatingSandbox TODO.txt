@@ -850,7 +850,7 @@ Render:
 						X Incorporate coefficients 
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer
 				- Pre-test:
-					- Perf before:
+					+ Perf before: 18.08/34.6 18.5/34.3
 					- position vec2f, velocity vec2f
 						- Struct at points, with methods for interleaving and de-interleaving
 					- Interleave before loop

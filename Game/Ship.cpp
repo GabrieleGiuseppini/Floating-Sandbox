@@ -686,7 +686,6 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
             relVelocity.dot(springDir)
             * coefficientsBuffer[springIndex].DampingCoefficient;
 
-
         //
         // Apply forces
         //
