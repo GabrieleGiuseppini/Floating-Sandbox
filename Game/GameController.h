@@ -230,6 +230,11 @@ public:
     float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
     float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
+    float GetGlobalDampingAdjustment() const override { return mGameParameters.GlobalDampingAdjustment; }
+    void SetGlobalDampingAdjustment(float value) override { mGameParameters.GlobalDampingAdjustment = value; }
+    float GetMinGlobalDampingAdjustment() const override { return GameParameters::MinGlobalDampingAdjustment; }
+    float GetMaxGlobalDampingAdjustment() const override { return GameParameters::MaxGlobalDampingAdjustment; }
+
     float GetRotAcceler8r() const override { return mGameParameters.RotAcceler8r; }
     void SetRotAcceler8r(float value) override { mGameParameters.RotAcceler8r = value; }
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }

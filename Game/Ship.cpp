@@ -710,10 +710,17 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & gameParameters)
     float const * const restrict pointIntegrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-    float const globalDampCoefficient =
-        pow(GameParameters::GlobalDamp,
+    float const globalDamping =
+        pow((1.0f - GameParameters::GlobalDamping),
             12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
-    float const velocityFactor = globalDampCoefficient / dt;
+    float const globalDampingCoefficient = 1.0f - MixPiecewiseLinear(
+        0.0f,                   // Value at 0.0
+        1.0f - globalDamping,   // Value at 1.0
+        1.0f,                   // Value at MaxAdj
+        0.0f,                   // MinAdj
+        100.0f,                 // MaxAdj
+        gameParameters.GlobalDampingAdjustment);
+    float const velocityFactor = globalDampingCoefficient / dt;
 
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
     Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
@@ -819,13 +826,22 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
     // this value.
     //
 
-    float const globalDampCoefficient =
-        pow(GameParameters::GlobalDamp,
+    float const globalDamping =
+        pow((1.0f - GameParameters::GlobalDamping),
             12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
+    // Incorporate adjustment
+    float const globalDampingCoefficient = 1.0f - MixPiecewiseLinear(
+        0.0f,                   // Value at 0.0
+        1.0f - globalDamping,   // Value at 1.0
+        1.0f,                   // Value at MaxAdj
+        0.0f,                   // MinAdj
+        100.0f,                 // MaxAdj
+        gameParameters.GlobalDampingAdjustment);
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
     // provides the final, damped velocity
-    float const velocityFactor = globalDampCoefficient / dt;
+    float const velocityFactor = globalDampingCoefficient / dt;
 
     //
     // Take the four buffers that we need as restrict pointers, so that the compiler

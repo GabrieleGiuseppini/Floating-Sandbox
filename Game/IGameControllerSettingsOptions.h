@@ -36,6 +36,9 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinSpringStrengthAdjustment() const = 0;
 	virtual float GetMaxSpringStrengthAdjustment() const = 0;
 
+    virtual float GetMinGlobalDampingAdjustment() const = 0;
+    virtual float GetMaxGlobalDampingAdjustment() const = 0;
+
 	virtual float GetMinRotAcceler8r() const = 0;
 	virtual float GetMaxRotAcceler8r() const = 0;
 

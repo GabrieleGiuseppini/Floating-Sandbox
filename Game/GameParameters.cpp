@@ -11,6 +11,7 @@ GameParameters::GameParameters()
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
     , SpringStrengthAdjustment(1.0f)
+    , GlobalDampingAdjustment(1.0f)
     , RotAcceler8r(1.0f)
     // Water
     , WaterDensityAdjustment(1.0f)

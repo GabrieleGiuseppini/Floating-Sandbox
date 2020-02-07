@@ -17,6 +17,7 @@ enum class GameSettings : size_t
     SpringStiffnessAdjustment,
     SpringDampingAdjustment,
     SpringStrengthAdjustment,
+    GlobalDampingAdjustment,
     RotAcceler8r,
     WaterDensityAdjustment,
     WaterDragAdjustment,

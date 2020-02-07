@@ -972,7 +972,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Strength
+            // Strength Adjust
             {
                 mStrengthSlider = new SliderControl<float>(
                     mechanicsBox,
@@ -998,6 +998,32 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Global Damping Adjust
+            {
+                mGlobalDampingAdjustmentSlider = new SliderControl<float>(
+                    mechanicsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Global Damping Adjust",
+                    "Adjusts the global damping of velocities.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::GlobalDampingAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinGlobalDampingAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxGlobalDampingAdjustment()));
+
+                mechanicsSizer->Add(
+                    mGlobalDampingAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             // Rot Accelerator
             {
                 mRotAcceler8rSlider = new SliderControl<float>(
@@ -1018,7 +1044,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 mechanicsSizer->Add(
                     mRotAcceler8rSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1032,7 +1058,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
         gridSizer->Add(
             mechanicsBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -1108,7 +1134,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
         gridSizer->Add(
             lightsBox,
-            wxGBPosition(0, 3),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
@@ -2033,7 +2059,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     SliderWidth,
                     -1,
                     "Rain Flood Adjust",
-                    "Adjusts to which extent rain floods exposed areas of a ship.",
+                    "Adjusts the extent to which rain floods exposed areas of a ship.",
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
@@ -3892,6 +3918,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
+
+    mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
 
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 

@@ -44,6 +44,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, SpringStiffnessAdjustment);
     ADD_GC_SETTING(float, SpringDampingAdjustment);
     ADD_GC_SETTING(float, SpringStrengthAdjustment);
+    ADD_GC_SETTING(float, GlobalDampingAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
     ADD_GC_SETTING(float, WaterDensityAdjustment);
     ADD_GC_SETTING(float, WaterDragAdjustment);

@@ -112,7 +112,11 @@ struct GameParameters
     static float constexpr MinSpringStrengthAdjustment = 0.01f;
     static float constexpr MaxSpringStrengthAdjustment = 50.0f;
 
-    static float constexpr GlobalDamp = 0.9996f; // // We've shipped 1.7.5 with 0.9997, but splinter springs used to dance for too long
+    static float constexpr GlobalDamping = 0.0004f; // // We've shipped 1.7.5 with 0.0003, but splinter springs used to dance for too long
+
+    float GlobalDampingAdjustment;
+    static float constexpr MinGlobalDampingAdjustment = 0.0f;
+    static float constexpr MaxGlobalDampingAdjustment = 10.0f;
 
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;
