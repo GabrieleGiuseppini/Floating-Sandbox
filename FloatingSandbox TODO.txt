@@ -471,9 +471,11 @@ Render:
 			+ merge
 			+ changes.txt		
 
-		= Spring and NonSpring force separation optimization (*)
-		- Attempt to re-instate square water drag (*)
-		- Sea floor collision revisit (*)
+		= Spring and NonSpring force separation optimization (*)		
+		= Sea floor collision revisit (*)
+		+ Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
+
+		- Bump up spring iterations		
 
 		- Change light colors to match Desktop\LightColors.png
 			- And add new render param for shaders
@@ -481,6 +483,9 @@ Render:
 		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
 		- Reduce sea's little waves from gusts
+
+		- Particle-zation
+			- Just destroy springs with no other side-effects
 
 		- Baked sounds
 
@@ -494,6 +499,9 @@ Render:
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
 
+		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
+			- If it works: do "reshader" type of work (*)
+
 		= See if fire may emit Heavy smoke
 			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
 			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
@@ -501,7 +509,6 @@ Render:
 			- Do cleanup tasks
 		
 		- Attempt to use total point masses for springs (*)
-		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Cached quantities (*)
 
@@ -531,7 +538,7 @@ Render:
 			- Batisphere ship
 			- Electrical layer view (*)
 
-	- 1.15.0
+	- 1.15.0		
 
 		- Spring relaxation with intrinsics
 
@@ -810,23 +817,37 @@ Render:
 				+ Do
 				+ Perf after: 18.3/34.5 - 17.9/34.9
 			+ World bounds: find right point to move back to
-			- Spring relaxation: see if perf improves with loop by points, rather than by springs
+			X Spring relaxation: see if perf improves with loop by points, rather than by springs
 				X First iteration: sucks
 				+ Finalize isAtOwner (see below), change temporarily spring relaxation call, and commit
 					+ Revert spring relaxation call
 				+ Change spring loop to be unilateral, but still with forces
 					+ Just to verify loop structure
-				= Try with integrating in loop as well
-					! Gauss-Seidel 
+				X Try with Gauss-Seidel and (yes/no) spring force integration in loop as well					
+					+ Fix world forces - reistate integration but only for world
+						+ Loop:
+							+ Make copy of positions
+							+ Make copy of vels
+							+ Do spring loop:
+								+ For each point:
+									+ For each spring: sum all forces
+									+ Integrate force into deltaPos
+									+ positionA += deltaPos
+									+ velocityA += deltaPos/dt * damp
+							+ Integrate(startingPos, startingVels):
+								+ Ignore vels and only use startingVels
+				+ Try with full integration for each visited point
 					+ Requires springs owned by point Pi to only be connected to Pj with j > i
 					+ Integrate point at end of spring loop
 					+ Nuke integration call
-				- Try with position-based dynamics
-					- Resuscitate idea of pre-integrating world forces
-					- TODO
-				- Finalization:
-					- Re-think connected springs structure: 
-						- Incorporate coefficients 
+				X Finalization:
+					X If we go for it:
+						X See if SpringForces needed and if not, Nuke Points::SpringForces buffer and go back to single force buffer
+						X Pre-integrate world force buffer before loop
+					X See double-buffers to avoid integration step
+					X Cleanup point integration factor buffer - make it float itself, if we really go ahead
+					X Re-think connected springs structure: 
+						X Incorporate coefficients 
 			- Spring relaxation: see if perf improves with position and velocity in the same buffer
 				- Pre-test:
 					- Perf before:
@@ -847,6 +868,8 @@ Render:
 						- During loop: only deal with those positions
 							- Also at integrate and collisions
 						- After loop: de-interleave position again into its own buffer
+
+			- Cleanup:
 
 			- See if may replace spring dampers with higher global damp
 				- Add new GameParameters::GlobalDampAdjust
@@ -1176,9 +1199,7 @@ Render:
 
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
-- Dynamics:
-
-	- Redo collision with sea floor
+- Dynamics:	
 
 	- Pinch tool
 
@@ -1250,12 +1271,13 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 	
-	- Try to re-instate square velocity drag (*)
+	- Try to re-instate square velocity drag
 		- Goal: falling ship should break upon impact with water
+		- Better done after frontier and thus directional drag
 		- Need to clamp drag force 
 			- So better done after spring/nonspring forces rearc
 		- Then, increase the amount of drag adjustment users may do
-			- Goal: water should become lava
+			- Goal: water should become lava with high drag
 
 	- See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically
 	  at the end

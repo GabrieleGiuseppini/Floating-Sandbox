@@ -812,6 +812,14 @@ public:
         return reinterpret_cast<float *>(mVelocityBuffer.data());
     }
 
+    std::shared_ptr<Buffer<vec2f>> MakeVelocityBufferCopy()
+    {
+        auto velocityBufferCopy = mVec2fBufferAllocator.Allocate();
+        velocityBufferCopy->copy_from(mVelocityBuffer);
+
+        return velocityBufferCopy;
+    }
+
     void SetVelocity(
         ElementIndex pointElementIndex,
         vec2f const & velocity) noexcept
