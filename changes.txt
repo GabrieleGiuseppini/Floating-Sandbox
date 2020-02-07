@@ -17,6 +17,8 @@
 	- Flames are now directional, adapting to the velocity of the particles that are burning
 - Re-worked explosion physics and graphics
 - Rain now floods exposed areas of a ship
+- Slightly improved rigidity of structures
+	- ...but more improvements are yet to come!
 - Repairing a ship's structure now also repairs its electricals
 - Adjusted physical properties of ropes, which were too light and too strong
 - ...and a few more small improvements here and there
