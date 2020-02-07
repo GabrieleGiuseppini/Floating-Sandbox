@@ -710,16 +710,19 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & gameParameters)
     float const * const restrict pointIntegrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-    float const globalDamping =
+    float const globalDamping = 1.0f -
         pow((1.0f - GameParameters::GlobalDamping),
             12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
-    float const globalDampingCoefficient = 1.0f - MixPiecewiseLinear(
-        0.0f,                   // Value at 0.0
-        1.0f - globalDamping,   // Value at 1.0
-        1.0f,                   // Value at MaxAdj
-        0.0f,                   // MinAdj
-        100.0f,                 // MaxAdj
-        gameParameters.GlobalDampingAdjustment);
+    // Incorporate adjustment
+    float const globalDampingCoefficient = 1.0f -
+        (
+            gameParameters.GlobalDampingAdjustment <= 1.0f
+            ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
+            : globalDamping +
+            (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+            / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+            * (1.0f - globalDamping)
+            );
     float const velocityFactor = globalDampingCoefficient / dt;
 
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
@@ -826,18 +829,20 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
     // this value.
     //
 
-    float const globalDamping =
+    float const globalDamping = 1.0f -
         pow((1.0f - GameParameters::GlobalDamping),
             12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
 
     // Incorporate adjustment
-    float const globalDampingCoefficient = 1.0f - MixPiecewiseLinear(
-        0.0f,                   // Value at 0.0
-        1.0f - globalDamping,   // Value at 1.0
-        1.0f,                   // Value at MaxAdj
-        0.0f,                   // MinAdj
-        100.0f,                 // MaxAdj
-        gameParameters.GlobalDampingAdjustment);
+    float const globalDampingCoefficient = 1.0f -
+        (
+            gameParameters.GlobalDampingAdjustment <= 1.0f
+            ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
+            : globalDamping +
+                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+                * (1.0f - globalDamping)
+        );
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
     // provides the final, damped velocity

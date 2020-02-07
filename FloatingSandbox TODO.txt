@@ -475,7 +475,8 @@ Render:
 		= Sea floor collision revisit (*)
 		+ Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
-		- Bump up spring iterations		
+		= Bump up spring iterations		
+			= 24 -> 30: 22.5ms/30.0fps
 
 		- Change light colors to match Desktop\LightColors.png
 			- And add new render param for shaders
@@ -858,15 +859,15 @@ Render:
 				- Collisions
 				+ De-interleave after loop
 				+ Perf: 18.7/34.0
-
-			= See if may replace spring dampers with higher global damp
+			+ See if may replace spring dampers with higher global damp
 				+ Add new GameParameters::GlobalDampAdjust
 				+ SettingsDialog
 				X Test replacement
 				! Keep setting anyway
-				- Find better formula to map adjustment
+				+ Find better formula to map adjustment
 			+ Adjust:
 				+ Bomb blast strength
+			- Try with spring-only additional iterations (?)
 
 	X Try with SpringRelaxation updating only positions (*)
 		! This was done in NewSpringRelaxation branch, but was too unstable
