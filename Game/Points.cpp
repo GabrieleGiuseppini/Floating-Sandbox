@@ -33,7 +33,8 @@ void Points::Add(
 
     mPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
-    mForceBuffer.emplace_back(vec2f::zero());
+    mSpringForceBuffer.emplace_back(vec2f::zero());
+    mNonSpringForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
@@ -129,7 +130,8 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
@@ -201,7 +203,8 @@ void Points::CreateEphemeralParticleDebris(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -282,7 +285,8 @@ void Points::CreateEphemeralParticleSmoke(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    mForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
@@ -355,7 +359,8 @@ void Points::CreateEphemeralParticleSparkle(
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    mForceBuffer[pointIndex] = vec2f::zero();
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -731,6 +736,9 @@ void Points::UpdateCombustionLowFrequency(
                 0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
+            // Flame vector is based on current velocity
+            mCombustionStateBuffer[pointIndex].FlameVector = GetVelocity(pointIndex).normalise();
+
             // Add point to vector of burning points, sorted by plane ID
             assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
             mBurningPoints.insert(
@@ -1080,9 +1088,9 @@ void Points::UpdateCombustionHighFrequency(
         // vector (B) added to a scaled-down opposite of the particle's velocity:
         //  Q = B - velocityScale * V
 
-        float constexpr VelocityScale = 2.0 / (15.0 * 1.25); // Magic number
+        float constexpr VelocityScale = 2.0f / (15.0f * 1.25f); // Magic number
 
-        vec2f constexpr B = vec2f(0, 1.0f);
+        vec2f constexpr B = vec2f(0.0f, 1.0f);
         vec2f Q = B - GetVelocity(pointIndex) * VelocityScale;
         float Ql = Q.length();
 
@@ -1130,7 +1138,7 @@ void Points::UpdateEphemeralParticles(
     // Transformation from desired velocity impulse to force
     float const smokeRandomWalkVelocityImpulseToForceCoefficient =
         GameParameters::AirMass
-        / gameParameters.MechanicalSimulationStepTimeDuration<float>();
+        / gameParameters.SimulationStepTimeDuration<float>;
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
@@ -1264,7 +1272,7 @@ void Points::UpdateEphemeralParticles(
                             0.3f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
                         vec2f const deviationDirection =
                             GetVelocity(pointIndex).normalise().to_perpendicular();
-                        mForceBuffer[pointIndex] +=
+                        mNonSpringForceBuffer[pointIndex] +=
                             deviationDirection * randomWalkMagnitude
                             * smokeRandomWalkVelocityImpulseToForceCoefficient;
                     }
@@ -1662,19 +1670,26 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
 
-    for (ElementIndex i : *this)
+    float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
+    float const * restrict const waterBuffer = mWaterBuffer.data();
+    float const * restrict const materialBuoyancyVolumeFillBuffer = mMaterialBuoyancyVolumeFillBuffer.data();
+    float * restrict const massBuffer = mMassBuffer.data();
+    float const * restrict const integrationFactorTimeCoefficientBuffer = mIntegrationFactorTimeCoefficientBuffer.data();
+    float * restrict const integrationFactorBuffer = reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
+
+    size_t const count = GetBufferElementCount();
+    for (size_t i = 0; i < count; ++i)
     {
         float const mass =
-            mAugmentedMaterialMassBuffer[i]
-            + std::min(GetWater(i), mMaterialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
+            augmentedMaterialMassBuffer[i]
+            + std::min(waterBuffer[i], materialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
         assert(mass > 0.0f);
 
-        mMassBuffer[i] = mass;
+        massBuffer[i] = mass;
 
-        mIntegrationFactorBuffer[i] = vec2f(
-            mIntegrationFactorTimeCoefficientBuffer[i] / mass,
-            mIntegrationFactorTimeCoefficientBuffer[i] / mass);
+        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / mass;
+        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / mass;
     }
 }
 
@@ -1682,7 +1697,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
 ElementIndex Points::FindFreeEphemeralParticle(
     float currentSimulationTime,
-    bool force)
+    bool doForce)
 {
     //
     // Search for the firt free ephemeral particle; if a free one is not found, reuse the
@@ -1733,7 +1748,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
     // No luck
     //
 
-    if (!force)
+    if (!doForce)
         return NoneElementIndex;
 
 

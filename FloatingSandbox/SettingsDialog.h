@@ -101,6 +101,7 @@ private:
     // Mechanics, Fluids, and Light
     SliderControl<float> * mMechanicalQualitySlider;
     SliderControl<float> * mStrengthSlider;
+    SliderControl<float> * mGlobalDampingAdjustmentSlider;
     SliderControl<float> * mRotAcceler8rSlider;
     SliderControl<float> * mWaterDensitySlider;
     SliderControl<float> * mWaterDragSlider;
@@ -128,6 +129,8 @@ private:
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
+    SliderControl<float> * mOceanFloorElasticitySlider;
+    SliderControl<float> * mOceanFloorFrictionSlider;
     SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
 	SliderControl<float> * mStormStrengthAdjustmentSlider;

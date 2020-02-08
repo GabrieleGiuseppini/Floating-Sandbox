@@ -37,6 +37,9 @@ struct IGameControllerSettings
     virtual float GetSpringStrengthAdjustment() const = 0;
     virtual void SetSpringStrengthAdjustment(float value) = 0;
 
+    virtual float GetGlobalDampingAdjustment() const = 0;
+    virtual void SetGlobalDampingAdjustment(float value) = 0;
+
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 
@@ -155,6 +158,12 @@ struct IGameControllerSettings
     virtual float GetOceanFloorDetailAmplification() const = 0;
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
 	virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
+
+    virtual float GetOceanFloorElasticity() const = 0;
+    virtual void SetOceanFloorElasticity(float value) = 0;
+
+    virtual float GetOceanFloorFriction() const = 0;
+    virtual void SetOceanFloorFriction(float value) = 0;
 
     virtual float GetDestroyRadius() const = 0;
     virtual void SetDestroyRadius(float value) = 0;

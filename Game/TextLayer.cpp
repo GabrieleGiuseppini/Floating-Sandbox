@@ -51,7 +51,9 @@ void TextLayer::SetStatusTexts(
     float immediateFps,
     float averageFps,
     PerfStats const & lastDeltaPerfStats,
+    PerfStats const & totalPerfStats,
     uint64_t lastDeltaFrameCount,
+    uint64_t totalFrameCount,
     std::chrono::duration<float> elapsedGameSeconds,
     bool isPaused,
     float zoom,
@@ -89,12 +91,8 @@ void TextLayer::SetStatusTexts(
             ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
 
-        float const lastOceanSurfaceUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalOceanSurfaceUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
-
-        float const lastShipsUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalShipsUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+        float const avgUpdateDurationMillisecondsPerFrame = totalFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
             : 0.0f;
 
         float const lastRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
@@ -105,10 +103,6 @@ void TextLayer::SetStatusTexts(
             ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalSwapRenderBuffersDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
 
-        float const lastCloudRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalCloudRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
-
         float const lastShipsRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
             ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalShipsRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
@@ -117,14 +111,12 @@ void TextLayer::SetStatusTexts(
 
         ss.fill('0');
 
-        ss << std::fixed << std::setprecision(2)
-            << "U:" << lastUpdateDurationMillisecondsPerFrame << "MS"
-            << std::setprecision(1)
-            << " (OS:" << lastOceanSurfaceUpdateDurationMillisecondsPerFrame << " S:" << lastShipsUpdateDurationMillisecondsPerFrame << ")"
+        ss << std::fixed
             << std::setprecision(2)
-            << " R:" << lastRenderDurationMillisecondsPerFrame << "MS"
+            << "U:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS)"
+            << " R:(" << lastRenderDurationMillisecondsPerFrame << "MS"
             << std::setprecision(1)
-            << " (SWP:" << lastSwapRenderBuffersDuration << " CL:" << lastCloudRenderDurationMillisecondsPerFrame << " SH:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
+            << " SWP:" << lastSwapRenderBuffersDuration << " SH:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
 
 		mStatusTextLines[1].Text = ss.str();
 		mStatusTextLines[1].IsTextDirty = true;

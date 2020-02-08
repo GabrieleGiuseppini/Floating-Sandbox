@@ -116,12 +116,12 @@ bool RCBomb::Update(
 
                 // Blast strength
                 float const blastStrength =
-                    700.0f // Magic number
+                    75.0f // Magic number
                     * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat
                 float const blastHeat =
-                    gameParameters.BombBlastHeat
+                    gameParameters.BombBlastHeat * 0.8f // Just a bit less caustic
                     * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                 // Start explosion

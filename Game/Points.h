@@ -56,6 +56,79 @@ public:
     };
 
     /*
+     * The metadata of a single spring connected to a point.
+     */
+    struct ConnectedSpring
+    {
+        ElementIndex SpringIndex;
+        ElementIndex OtherEndpointIndex;
+
+        ConnectedSpring()
+            : SpringIndex(NoneElementIndex)
+            , OtherEndpointIndex(NoneElementIndex)
+        {}
+
+        ConnectedSpring(
+            ElementIndex springIndex,
+            ElementIndex otherEndpointIndex)
+            : SpringIndex(springIndex)
+            , OtherEndpointIndex(otherEndpointIndex)
+        {}
+    };
+
+    /*
+     * The metadata of all the springs connected to a point.
+     */
+    struct ConnectedSpringsVector
+    {
+        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        size_t OwnedConnectedSpringsCount;
+
+        ConnectedSpringsVector()
+            : ConnectedSprings()
+            , OwnedConnectedSpringsCount(0u)
+        {}
+
+        inline void ConnectSpring(
+            ElementIndex springElementIndex,
+            ElementIndex otherEndpointElementIndex,
+            bool isAtOwner)
+        {
+            // Add so that all springs owned by this point come first
+            if (isAtOwner)
+            {
+                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
+                ++OwnedConnectedSpringsCount;
+            }
+            else
+            {
+                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
+            }
+        }
+
+        inline void DisconnectSpring(
+            ElementIndex springElementIndex,
+            bool isAtOwner)
+        {
+            bool found = ConnectedSprings.erase_first(
+                [springElementIndex](ConnectedSpring const & c)
+                {
+                    return c.SpringIndex == springElementIndex;
+                });
+
+            assert(found);
+            (void)found;
+
+            // Update count of owned springs, if this spring is owned
+            if (isAtOwner)
+            {
+                assert(OwnedConnectedSpringsCount > 0);
+                --OwnedConnectedSpringsCount;
+            }
+        }
+    };
+
+    /*
      * The state required for repairing particles.
      */
     struct RepairState
@@ -275,79 +348,6 @@ private:
     };
 
     /*
-     * The metadata of a single spring connected to a point.
-     */
-    struct ConnectedSpring
-    {
-        ElementIndex SpringIndex;
-        ElementIndex OtherEndpointIndex;
-
-        ConnectedSpring()
-            : SpringIndex(NoneElementIndex)
-            , OtherEndpointIndex(NoneElementIndex)
-        {}
-
-        ConnectedSpring(
-            ElementIndex springIndex,
-            ElementIndex otherEndpointIndex)
-            : SpringIndex(springIndex)
-            , OtherEndpointIndex(otherEndpointIndex)
-        {}
-    };
-
-    /*
-     * The metadata of all the springs connected to a point.
-     */
-    struct ConnectedSpringsVector
-    {
-        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
-        size_t OwnedConnectedSpringsCount;
-
-        ConnectedSpringsVector()
-            : ConnectedSprings()
-            , OwnedConnectedSpringsCount(0u)
-        {}
-
-        inline void ConnectSpring(
-            ElementIndex springElementIndex,
-            ElementIndex otherEndpointElementIndex,
-            bool isAtOwner)
-        {
-            // Add so that all springs owned by this point come first
-            if (isAtOwner)
-            {
-                ConnectedSprings.emplace_front(springElementIndex, otherEndpointElementIndex);
-                ++OwnedConnectedSpringsCount;
-            }
-            else
-            {
-                ConnectedSprings.emplace_back(springElementIndex, otherEndpointElementIndex);
-            }
-        }
-
-        inline void DisconnectSpring(
-            ElementIndex springElementIndex,
-            bool isAtOwner)
-        {
-            bool found = ConnectedSprings.erase_first(
-                [springElementIndex](ConnectedSpring const & c)
-                {
-                    return c.SpringIndex == springElementIndex;
-                });
-
-            assert(found);
-            (void)found;
-
-            // Update count of owned springs, if this spring is owned
-            if (isAtOwner)
-            {
-                assert(OwnedConnectedSpringsCount > 0);
-                --OwnedConnectedSpringsCount;
-            }
-        }
-    };
-
-    /*
      * The metadata of all the triangles connected to a point.
      */
     struct ConnectedTrianglesVector
@@ -433,7 +433,8 @@ public:
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -776,6 +777,21 @@ public:
         return reinterpret_cast<float *>(mPositionBuffer.data());
     }
 
+    std::shared_ptr<Buffer<vec2f>> MakePositionBufferCopy()
+    {
+        auto positionBufferCopy = mVec2fBufferAllocator.Allocate();
+        positionBufferCopy->copy_from(mPositionBuffer);
+
+        return positionBufferCopy;
+    }
+
+    void SetPosition(
+        ElementIndex pointElementIndex,
+        vec2f const & position) noexcept
+    {
+        mPositionBuffer[pointElementIndex] = position;
+    }
+
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
     {
         return mVelocityBuffer[pointElementIndex];
@@ -796,6 +812,14 @@ public:
         return reinterpret_cast<float *>(mVelocityBuffer.data());
     }
 
+    std::shared_ptr<Buffer<vec2f>> MakeVelocityBufferCopy()
+    {
+        auto velocityBufferCopy = mVec2fBufferAllocator.Allocate();
+        velocityBufferCopy->copy_from(mVelocityBuffer);
+
+        return velocityBufferCopy;
+    }
+
     void SetVelocity(
         ElementIndex pointElementIndex,
         vec2f const & velocity) noexcept
@@ -803,21 +827,54 @@ public:
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetForce(ElementIndex pointElementIndex) const noexcept
+    vec2f const & GetSpringForce(ElementIndex pointElementIndex) const noexcept
     {
-        return mForceBuffer[pointElementIndex];
+        return mSpringForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetForce(ElementIndex pointElementIndex) noexcept
+    vec2f & GetSpringForce(ElementIndex pointElementIndex) noexcept
     {
-        return mForceBuffer[pointElementIndex];
+        return mSpringForceBuffer[pointElementIndex];
     }
 
-    void AddForce(
-        ElementIndex pointElementIndex,
-        vec2f const & force) noexcept
+    float * restrict GetSpringForceBufferAsFloat()
     {
-        mForceBuffer[pointElementIndex] += force;
+        return reinterpret_cast<float *>(mSpringForceBuffer.data());
+    }
+
+    vec2f * restrict GetSpringForceBufferAsVec2()
+    {
+        return mSpringForceBuffer.data();
+    }
+
+    vec2f const & GetNonSpringForce(ElementIndex pointElementIndex) const noexcept
+    {
+        return mNonSpringForceBuffer[pointElementIndex];
+    }
+
+    vec2f & GetNonSpringForce(ElementIndex pointElementIndex) noexcept
+    {
+        return mNonSpringForceBuffer[pointElementIndex];
+    }
+
+    float * restrict GetNonSpringForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
+    }
+
+    vec2f * restrict GetNonSpringForceBufferAsVec2()
+    {
+        return mNonSpringForceBuffer.data();
+    }
+
+    void CopyNonSpringForceBufferToForceRenderBuffer()
+    {
+        mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
+    }
+
+    void ResetNonSpringForces()
+    {
+        mNonSpringForceBuffer.fill(vec2f::zero());
     }
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
@@ -923,17 +980,6 @@ public:
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
             mFrozenCoefficientBuffer[pointElementIndex]);
-    }
-
-
-    float * restrict GetForceBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mForceBuffer.data());
-    }
-
-    void CopyForceBufferToForceRenderBuffer()
-    {
-        mForceRenderBuffer.copy_from(mForceBuffer);
     }
 
     //
@@ -1230,14 +1276,16 @@ public:
     void ConnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        ElementIndex otherEndpointElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
         assert(mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.contains(
             [springElementIndex](auto const & cs)
             {
                 return cs.SpringIndex == springElementIndex;
             }));
+
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
 
         mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
@@ -1248,8 +1296,11 @@ public:
     void DisconnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
+
         mConnectedSpringsBuffer[pointElementIndex].DisconnectSpring(
             springElementIndex,
             isAtOwner);
@@ -1263,18 +1314,19 @@ public:
     void AddFactoryConnectedSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
-        ElementIndex otherEndpointElementIndex,
-        bool isAtOwner)
+        ElementIndex otherEndpointElementIndex)
     {
-        // Add spring
+        // Make it so that a point owns only those springs whose other endpoint comes later
+        bool const isAtOwner = pointElementIndex < otherEndpointElementIndex;
+
+        // Add spring to factory-connected springs
         mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
             otherEndpointElementIndex,
             isAtOwner);
 
         // Connect spring
-        ConnectSpring(
-            pointElementIndex,
+        mConnectedSpringsBuffer[pointElementIndex].ConnectSpring(
             springElementIndex,
             otherEndpointElementIndex,
             isAtOwner);
@@ -1477,7 +1529,7 @@ private:
 
     ElementIndex FindFreeEphemeralParticle(
         float currentSimulationTime,
-        bool force);
+        bool doForce);
 
     inline void ExpireEphemeralParticle(ElementIndex pointElementIndex)
     {
@@ -1512,7 +1564,8 @@ private:
 
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    Buffer<vec2f> mForceBuffer;
+    Buffer<vec2f> mSpringForceBuffer;
+    Buffer<vec2f> mNonSpringForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;

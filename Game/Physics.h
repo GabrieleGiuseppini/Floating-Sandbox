@@ -48,7 +48,6 @@ namespace Physics
 #include "TimerBomb.h"
 #include "Bombs.h"
 
-#include "ForceFields.h"
 #include "PinnedPoints.h"
 
 #include "Ship.h"

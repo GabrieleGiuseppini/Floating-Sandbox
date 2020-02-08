@@ -682,7 +682,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create Game controller
+    // Create Game Controller
     //
 
     try
@@ -714,7 +714,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create Sound controller
+    // Create Sound Controller
     //
 
     try
@@ -741,7 +741,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create Music controller
+    // Create Music Controller
     //
 
     try
@@ -768,7 +768,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create Settings manager
+    // Create Settings Manager
     //
 
     mSettingsManager = std::make_shared<SettingsManager>(
@@ -782,7 +782,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create UI Preferences manager
+    // Create UI Preferences Manager
     //
 
     mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
@@ -793,7 +793,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create electrical panel
+    // Create Electrical Panel
     //
 
     mElectricalPanel = SwitchboardPanel::Create(
@@ -809,7 +809,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Create Tool controller
+    // Create Tool Controller
     //
 
     // Set initial tool

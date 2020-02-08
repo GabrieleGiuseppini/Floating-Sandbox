@@ -16,7 +16,7 @@ namespace Physics {
 bool Ship::UpdateExplosionStateMachine(
     ExplosionStateMachine & explosionStateMachine,
     float currentSimulationTime,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
     //
     // Update progress
@@ -54,12 +54,14 @@ bool Ship::UpdateExplosionStateMachine(
         // Blast force
         //
 
-        // Store the force field
-        AddForceField<BlastForceField>(
+        // Apply the force field
+        ApplyBlastForceField(
             centerPosition,
             blastRadius,
             explosionStateMachine.BlastStrength,
-            explosionStateMachine.IsFirstFrame);
+            explosionStateMachine.IsFirstFrame,
+            currentSimulationTime,
+            gameParameters);
 
         //
         // Blast heat

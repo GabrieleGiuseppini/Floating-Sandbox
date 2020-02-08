@@ -516,9 +516,12 @@ void Ship::RepairAt(
                                 * toolStrength;
 
                             // Move point
-                            mPoints.GetPosition(otherEndpointIndex) +=
-                                movementDir
-                                * movementMagnitude;
+                            mPoints.SetPosition(otherEndpointIndex,
+                                (mPoints.GetPosition(otherEndpointIndex) + movementDir * movementMagnitude)
+                                .clamp(-GameParameters::HalfMaxWorldWidth,
+                                        GameParameters::HalfMaxWorldWidth,
+                                        -GameParameters::HalfMaxWorldHeight,
+                                        GameParameters::HalfMaxWorldHeight));
 
                             // Adjust displacement
                             assert(movementMagnitude < displacementMagnitude);
@@ -533,9 +536,9 @@ void Ship::RepairAt(
                                 * pow(abs(movementMagnitude), 0.2f)
                                 / GameParameters::SimulationStepTimeDuration<float>
                                 * 0.5f;
-                            mPoints.GetVelocity(otherEndpointIndex) =
+                            mPoints.SetVelocity(otherEndpointIndex,
                                 (mPoints.GetVelocity(otherEndpointIndex) * 0.35f)
-                                + (displacementVelocity * 0.65f);
+                                + (displacementVelocity * 0.65f));
 
                             // Remember that we've acted on the other endpoint
                             hasOtherEndpointPointBeenMoved = true;
@@ -847,8 +850,8 @@ void Ship::DrawTo(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Store the force field
-    AddOrResetForceField<DrawForceField>(
+    // Apply the force field
+    ApplyDrawForceField(
         targetPos,
         strength);
 }
@@ -863,8 +866,8 @@ void Ship::SwirlAt(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Store the force field
-    AddOrResetForceField<SwirlForceField>(
+    // Apply the force field
+    ApplySwirlForceField(
         targetPos,
         strength);
 }

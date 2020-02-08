@@ -109,11 +109,12 @@ inline float FastPow(
 inline float Clamp(
     float x,
     float lLimit,
-    float rLimit)
+    float rLimit) noexcept
 {
     assert(lLimit <= rLimit);
 
-    return std::min(std::max(lLimit, x), rLimit);
+    float const mx = x < lLimit ? lLimit : x;
+    return mx > rLimit ? rLimit : mx;
 }
 
 template<typename T>

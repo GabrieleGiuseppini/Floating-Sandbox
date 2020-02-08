@@ -44,6 +44,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, SpringStiffnessAdjustment);
     ADD_GC_SETTING(float, SpringDampingAdjustment);
     ADD_GC_SETTING(float, SpringStrengthAdjustment);
+    ADD_GC_SETTING(float, GlobalDampingAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
     ADD_GC_SETTING(float, WaterDensityAdjustment);
     ADD_GC_SETTING(float, WaterDragAdjustment);
@@ -86,6 +87,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
     ADD_GC_SETTING(float, OceanFloorBumpiness);
 	ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
+    ADD_GC_SETTING(float, OceanFloorElasticity);
+    ADD_GC_SETTING(float, OceanFloorFriction);
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
     ADD_GC_SETTING(float, RepairSpeedAdjustment);

@@ -43,8 +43,6 @@ public:
         Rope = 2     // Ropes are drawn differently
     };
 
-private:
-
     /*
      * The endpoints of a spring.
      */
@@ -60,6 +58,24 @@ private:
             , PointBIndex(pointBIndex)
         {}
     };
+
+    /*
+     * The pre-calculated coefficients used for the spring dynamics.
+     */
+    struct Coefficients
+    {
+        float StiffnessCoefficient;
+        float DampingCoefficient;
+
+        Coefficients(
+            float stiffnessCoefficient,
+            float dampingCoefficient)
+            : StiffnessCoefficient(stiffnessCoefficient)
+            , DampingCoefficient(dampingCoefficient)
+        {}
+    };
+
+private:
 
     /*
      * The factory angle of the spring from the point of view
@@ -84,22 +100,6 @@ private:
      * The triangles that have an edge along this spring.
      */
     using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
-
-    /*
-     * The pre-calculated coefficients used for the spring dynamics.
-     */
-    struct Coefficients
-    {
-        float StiffnessCoefficient;
-        float DampingCoefficient;
-
-        Coefficients(
-            float stiffnessCoefficient,
-            float dampingCoefficient)
-            : StiffnessCoefficient(stiffnessCoefficient)
-            , DampingCoefficient(dampingCoefficient)
-        {}
-    };
 
 public:
 
@@ -277,6 +277,11 @@ public:
         }
     }
 
+    Endpoints const * restrict GetEndpointsBuffer() const noexcept
+    {
+        return mEndpointsBuffer.data();
+    }
+
     // Returns +1.0 if the spring is directed outward from the specified point;
     // otherwise, -1.0.
     float GetSpringDirectionFrom(
@@ -446,6 +451,11 @@ public:
         return mRestLengthBuffer[springElementIndex];
     }
 
+    float const * restrict GetRestLengthBuffer() const noexcept
+    {
+        return mRestLengthBuffer.data();
+    }
+
     void SetRestLength(
         ElementIndex springElementIndex,
         float restLength)
@@ -461,6 +471,11 @@ public:
     float GetDampingCoefficient(ElementIndex springElementIndex) const noexcept
     {
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
+    }
+
+    Coefficients const * restrict GetCoefficientsBuffer() const noexcept
+    {
+        return mCoefficientsBuffer.data();
     }
 
     StructuralMaterial const & GetBaseStructuralMaterial(ElementIndex springElementIndex) const

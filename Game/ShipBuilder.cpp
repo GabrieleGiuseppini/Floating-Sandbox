@@ -1152,13 +1152,11 @@ Physics::Springs ShipBuilder::CreateSprings(
         points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointAIndex1],
             s,
-            pointIndexRemap[springInfos2[s].PointBIndex1],
-            true); // Owner
+            pointIndexRemap[springInfos2[s].PointBIndex1]);
         points.AddFactoryConnectedSpring(
             pointIndexRemap[springInfos2[s].PointBIndex1],
             s,
-            pointIndexRemap[springInfos2[s].PointAIndex1],
-            false); // Not owner
+            pointIndexRemap[springInfos2[s].PointAIndex1]);
     }
 
     return springs;

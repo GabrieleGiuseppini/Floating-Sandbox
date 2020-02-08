@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+1.14
+- After forces rearc and iterations=30: FPS=30.16, Ums=22.5
+=================================================
 1.13
 - After DiffuseLight rearc: FPS=29.5, U/R=19
 =================================================
@@ -424,7 +427,7 @@ Render:
 		+ Ropes are too strong - they prevent ship parts from sinking
 		+ Send for testing
 		+ Bump up version
-		+ Switches
+		+ Switches (*)
 		+ Slicer sound is not controller by Tools Volume
 			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
 		+ Try transmogrifying all textures
@@ -461,7 +464,7 @@ Render:
 				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
 				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
 					+ Use simple edge function
-				= See how to impart inertia:
+				+ See how to impart inertia:
 					+ Points::CombustionState has (current) FlameVector, which converges to
 					  target vector
 					+ Convergence speed should depend on velocity magnitude
@@ -469,42 +472,59 @@ Render:
 			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
 			+ Test with flame size slider
 			+ merge
-			+ changes.txt		
-		
-		- Try with SpringRelaxation updating only positions (*)
+			+ changes.txt
+		+ Send for testing
+		+ Spring and NonSpring force separation optimization (*)		
+		+ Sea floor collision revisit (*)
+		+ Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
+		+ Bump up spring iterations		
+			+ 24 -> 30: 22.5ms/30.0fps
+		+ changes.txt
 
-		- Baked sounds
+		= Multi-threading, phase I:
+			= ThreadPool
+			- Create at controller and pass as shared_ptr down the hierarchy
+			- Samsung pre-perf:
+			- TODO
+			- Samsung post-perf:
 
-		- Also GoodYear should be full of hydrogen
+		- Change light colors to match Desktop\LightColors.png
+			- And add new render param for shaders
 		- Lower gunpowder strength
-		- Selector for panel background
+		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
+		- Reduce sea's little waves from gusts
 
+		- Also GoodYear should be full of hydrogen		
+		- Selector for panel background
+
+		
 		- Propulsion (*)
 
 		- Flood doors (*)
 
+		- Particle-zation
+			- Just destroy springs with no other side-effects
+
+		- Baked sounds
+
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
+			- If it works: do "reshader" type of work (*)
 
 		= See if fire may emit Heavy smoke
 			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
 			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
 			- Do cleanup tasks
-
-		- Spring and NonSpring force separation optimization (*)
-			- Unless "SpringRelaxation updating only positions" makes the trick
-		- Attempt to re-instate square water drag (*)
+		
 		- Attempt to use total point masses for springs (*)
-		- Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
 
 		- Cached quantities (*)
 
 		- Run w/OpenGL tracing to see if there's any errors
-
-		- Multi-threading, phase I:
-			- TBD
 
 		- Multi-threading, phase II:
 			- TBD
@@ -527,7 +547,7 @@ Render:
 			- Batisphere ship
 			- Electrical layer view (*)
 
-	- 1.15.0
+	- 1.15.0		
 
 		- Spring relaxation with intrinsics
 
@@ -671,6 +691,8 @@ Render:
 
 - Simulation Optimizations:
 
+	- See if additional springs (e.g. between i and i+2) help
+
 	- Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times 
 		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
@@ -700,42 +722,16 @@ Render:
 					- Points::UpdateEphemeralParticles (AirBubbles)
 						- Need to do vortex with forces, though
 	
-	- Forces rearc (*):
-		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
-		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
-			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
-		- Points has two Force buffers: SpringForces and PointForces (or "NonSpringForces")
-		- Assumption: no deletions take place during mech loop
-		- UpdateMechanicalDynamics:
-			- First resets PointForces (or not, may reorder the below to do a first "set" loop rather than "add")
-			- Then populates PointForces with force fields
-			- Then populates PointForces with gravity/buoyancy/water drag (this is the one that might "set" rather than "add",
-			  so we save the PointForces' reset step)
-			- Then ...propulsion, etc..... all PointForces
-			- Then does spring loop:
-				- Spring forces
-					- Have to add to spring forces (because of network), but they are already cleared by now
-				- Integrate both forces - and reset spring forces
-					- Later we try with position-based SpringRelaxation (*)
-					- At this step we integrate using dt=DT/NumMechanicalIterations
-				- HandleCollisionsWithSeaFloor
-		- Test final L'n'F'
-		- Test:
-			- See bounces from ocean floor
-				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
-		- Cleanup:
-			- If UpdateMechanicalDynamics ends up using PointForces as it is at the beginning of the loop, then
-			  might get rid of force fields
-
-	- Try with SpringRelaxation updating only positions (*)
-		- Still runs N times, but only updates positions (does a local "integration" based on "forces")
-		- After last step, update velocity adding last step's position minus initial position
-			- Need to save velocity buffer first
-			- Then add the saved velocity buffer with the resultant of the velocities generated by spring relaxation, which are the 
-			  resultant position delta's resulting from relaxation
-		- Test:
-			- See bounces from ocean floor
-				- The back-sending should be fine as it's based off real initial velocity TODO: double-check
+	- 2** Try with SpringRelaxation updating only positions **2 (*)
+		- RelaxSprings() updates position directly, no forces involved
+			- So no need to integrate afterwards
+		- However, need to update velocity, and it's faster if we do it for each point rather than for each spring:
+			- Save positions first
+			- Do iteration
+			- Add resulting velocity: (newPos-oldPos)/(DT/NumMechanicalIterations)
+		- Finalization:
+			- Initial positions snapshot and UpdateVelocitiesFromPositionDeltas: we only need them for the particles
+			  that might have springs - we definitely don't need ephemerals
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext
@@ -765,7 +761,6 @@ Render:
 			+ Test with FloatingSandbox
 			+ Send to guy
 			+ Commit after confirmation
-
 		+ 8: Redo Glad with 2.0 profile, and manual ARB's and EXT's for:
 			+ Framebuffer
 			+ Instanced Drawing
@@ -784,7 +779,6 @@ Render:
 							+ Load only one set based off version/ext, with LoadAndVerify
 					+ LoadAndVerify
 			+ Build all and commit and push
-
 		+ 9: Restructure GPUCalcTest
 			+ Log window, clear button
 				+ RichText: green/red for TEST_PASS: .../TEST_FAIL: ...
@@ -811,7 +805,7 @@ Render:
 				+ ShaderMgr takes absolute folder path
 			+ CMake adjustments to not need DevIL
 			+ Commit
-		+ 10: Sum test:
+		= 10: Sum test:
 			+ RenderBuffer and textures all have same dimensions
 				+ FrameSize this time is calc'd based off min of the three limits
 			+ Fragment shader gets texture coords from vertex shader
@@ -819,6 +813,7 @@ Render:
 			+ Cleanup:
 				+ See if need to replace ShaderMgr::SetTextureParams with new one
 			+ Commit & push
+			- Compare perf with normal sum
 		
 		- Other tests:
 			- Sum w/calculator reused twice
@@ -997,7 +992,9 @@ Render:
 
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
-- Dynamics:
+- Dynamics:	
+
+	- Pinch tool
 
 	- Lightning tool that summons lightning wherever it has been clicked
 
@@ -1042,8 +1039,6 @@ Render:
 		- Then merge scrub tool into this one, with SHIFT 
 		- Icon: ?
 
-	- Improve "friction" of sea floor: things don't slide down easily; may be add a slider
-
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
 		- Used as rotting increase
@@ -1069,12 +1064,13 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 	
-	- Try to re-instate square velocity drag (*)
+	- Try to re-instate square velocity drag
 		- Goal: falling ship should break upon impact with water
+		- Better done after frontier and thus directional drag
 		- Need to clamp drag force 
 			- So better done after spring/nonspring forces rearc
 		- Then, increase the amount of drag adjustment users may do
-			- Goal: water should become lava
+			- Goal: water should become lava with high drag
 
 	- See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically
 	  at the end
@@ -1888,7 +1884,7 @@ IF WX:
 		+ Final FPS test
 	+ See if can avoid other IsDeleted checks, via zero'ing of coefficients
 		+ UpdateSpringForces()
-	+ Retry cache layout optimization, new strategy: (*)
+	+ Retry cache layout optimization, new strategy:
 		+ Starting point:
 			! ReorderSpringsOptimally_Tiling<2>
 			! ReorderPointsOptimally_FollowingSprings
@@ -1916,7 +1912,7 @@ IF WX:
 			+ Starting ACMR: 1.01986 VMR: 0.49888
 			+ Ending ACMR: 1.00672 VMR: 0.101436
 			+ Test to decide whether to keep or not: NO KEEP
-	+ Lights perf improvement (*)
+	+ Lights perf improvement
 		+ Start: FPS=9.9 U/R=508/510 (Dorik 2)
 		+ 1: Add IsLegacyElectrical to structural materials
 		+ 2: Make spread linear, == max distance
@@ -1990,6 +1986,171 @@ IF WX:
 		+ Run in Debug
 		+ Now: FPS=18.1 U/R=235
 		+ Update changes.txt
+	+ Forces rearc:
+		! Rationale: multiple spring iterations are really artificial; in reality, changes due to spring position changes in-between 
+		  iterations shouldn't impact physical world (e.g. buoyancy/drag) yet
+			! So we may calculate point forces once and for all, assuming points' dynamics stay constant during spring relaxation
+		+ Verify that the reason two separate integrations explode is because of velocity
+		+ Split spring forces and point forces, achieving equivalence
+		+ 1) Change integration scheme:
+			! So that position-based spring relaxation does not require extra semi/integration steps
+			+ P(t+1) = P(t) + SpringForcesDeltaPos + WorldForcesDeltaPos + V(t)*dt
+			+ V(t+1) = (P(t+1) - P(t))/dt = V(t) + (SpringForcesDeltaPos + WorldForcesDeltaPos)/dt
+			+ Verify equivalent
+		+ 2) All non-spring forces calculated once, outside of loop
+			! Assumption: no deletions take place during mech loop
+			+ Points has two Force buffers: SpringForces and NonSpringForces
+				! Only temporarily, until position-based springs are done
+			+ Verify equivalence
+			+ Move forces' application out
+			+ Do not reset forces at integrate
+			+ Zero forces after loop
+				+ Check assembly
+			+ See issue @ y=518.0, force = 1*e-06
+			+ Test L'n'F'
+		X 3) Spring relaxation based on position rather than forces
+			X 1) Integrate inline (multipy sum of forces by point's integration coeff) and update positions
+				+ Get rid of spring integration in iterations loop
+				X !!! Test !!! SUCKS!
+				+ See if need to also update velocities because they're needed (updated) for damping
+			X Get rid of two force buffers and go back to one single "Force" buffer
+			X 2) Incorporate particles' integration coefficients into springs' stiffness and damping coefficients, using 
+			     temporary IntegrationFactors buffer
+				- Need pre-step before loop
+				- Buffer alloc'd via Springs::AllocWorkBufferEtc.()
+				- Populate inline				
+				- Test				
+		+ Finalize dual force buffer
+			+ Methods and names
+			+ Integration
+		+ Test
+		+ Finalization:
+			+ Verify integration assembly
+			+ Verify Points::UpdateMasses assembly
+			X See if multiple relax iterations (nested) improve cheaply rigidity
+				X Maintain all params the same (e.g. dt)			
+			X Experiment with different spring coeffs
+				+ First, do all calculations in RelaxSprings, ignore coeffs for now
+				+ Experiment with SpringReductionFraction set to 0.8 or 1.0			
+			+ Optimize spring relaxation assembly
+				! Assembly inspection-driven
+				! Not sse yet
+				+ Start: 20.6-21.6ms, 31.80-32.10fps
+				+ a) Add Hooke's and damping scalars and multiply only once with springDir
+				+ Perf: 18.9, 33.7 | 18.5, 34.2 | 18.3, 34.5					
+				+ Do vector normalization in SSE
+					+ Benchmark: copy vector from vector
+					+ Unit Tests					
+					+ Integrate in Algorithms->Vectors
+						+ Algorithms becomes templated on TVector
+						+ Unit Tests
+						+ Benchmark
+				X Perf: 19.2, 33.6 % 
+				X Rollout spring loop
+				+ restrict spring buffers 
+				+ Perf: 18.2, 34.5
+				+ restrict point buffers
+				+ Perf: 17.7, 35.21 (| 18.0, 34.8 | 18.1, 34.7)
+			X See if it's faster to not reset forces at Integrate, but in a separate fill call
+				+ Perf: 18.4
+			+ Get rid of force fields and apply forces directly instead of queing force fields
+				+ Ship_ForceFields: ApplyXYZ(.....)
+				+ Test all manners of injecting force fields:
+					+ Draw & Swirl
+					+ Bomb blast
+						+ Radius: 1.5
+						+ Heat: 100K
+					+ AM: pre-implosion, implosion, explosion
+				+ Test perf improvement with many AM bombs
+			+ See if HandleCollisionsWithSeaFloor may be also done once
+				+ Perf before: 17.8/34.9, 17.5/35.4
+				+ When sampling sea floor, clamp x
+					+ OceanFloor: make sure we can ask for the derivative at x=MaxWorldWidth				
+				+ Take position snapshot before loop, and use it to calc 'before' position and effective velocity 
+				  when dealing with collision
+					+ Do successive divisions of before->after segment to get closer to surface
+					+ Add OceanFloor elasticity and friction
+						+ New GameParameters
+						+ Also at SettingsDialog
+						+ Normal response: Vn' = -eVn (e = elasticity, [0.0 - 1.0])
+						+ Tangential response: Vt' = aVt (a = friction, [0.0 - 1.0])
+				X Does not work, dt is too large
+				+ Just test friction and elasticity
+				+ See if it's x-clamping that made 17.5ms go to 18.5
+				+ Add friction and elasticity to changes
+			+ Remove clamp at ocean floor and ocean surface
+				+ Perf before: 18.5/34.3
+				+ Test SEE clamp
+					+ Test, including assembly
+					+ See perf
+				+ Optimize calculation of anti-normal
+					+ Test
+				+ Re-check world trimming and confirm it does what's expected
+				+ Clamp at Repair when changing positions
+				+ Do
+				+ Perf after: 18.3/34.5 - 17.9/34.9
+			+ World bounds: find right point to move back to
+			X Spring relaxation: see if perf improves with loop by points, rather than by springs
+				X First iteration: sucks
+				+ Finalize isAtOwner (see below), change temporarily spring relaxation call, and commit
+					+ Revert spring relaxation call
+				+ Change spring loop to be unilateral, but still with forces
+					+ Just to verify loop structure
+				X Try with Gauss-Seidel and (yes/no) spring force integration in loop as well					
+					+ Fix world forces - reistate integration but only for world
+						+ Loop:
+							+ Make copy of positions
+							+ Make copy of vels
+							+ Do spring loop:
+								+ For each point:
+									+ For each spring: sum all forces
+									+ Integrate force into deltaPos
+									+ positionA += deltaPos
+									+ velocityA += deltaPos/dt * damp
+							+ Integrate(startingPos, startingVels):
+								+ Ignore vels and only use startingVels
+				+ Try with full integration for each visited point
+					+ Requires springs owned by point Pi to only be connected to Pj with j > i
+					+ Integrate point at end of spring loop
+					+ Nuke integration call
+				X Finalization:
+					X If we go for it:
+						X See if SpringForces needed and if not, Nuke Points::SpringForces buffer and go back to single force buffer
+						X Pre-integrate world force buffer before loop
+					X See double-buffers to avoid integration step
+					X Cleanup point integration factor buffer - make it float itself, if we really go ahead
+					X Re-think connected springs structure: 
+						X Incorporate coefficients 
+			X Spring relaxation: see if perf improves with position and velocity and spring force in the same buffer
+				+ Perf before: 18.08/34.6 18.5/34.3
+				+ position vec2f, velocity vec2f, spring force vec2f
+					+ Struct at points, with methods for interleaving and de-interleaving
+				+ Interleave before loop
+				+ RelaxSprings
+				+ Integrate
+				- Collisions
+				+ De-interleave after loop
+				+ Perf: 18.7/34.0
+			+ See if may replace spring dampers with higher global damp
+				+ Add new GameParameters::GlobalDampAdjust
+				+ SettingsDialog
+				X Test replacement
+				! Keep setting anyway
+				+ Find better formula to map adjustment
+			+ Adjust:
+				+ Bomb blast strength
+			X Try with spring-only additional iterations
+				X Test
+	X Try with SpringRelaxation updating only positions
+		! This was done in NewSpringRelaxation branch, but was too unstable
+		+ Still runs N times, but only updates positions (does a local "integration" based on "forces")
+		+ After last step, update velocity adding last step's position minus initial position
+			+ Need to save position buffer first
+			+ Then add the saved velocity buffer with the resultant of the velocities generated by spring relaxation, which are the 
+			  resultant position delta's resulting from relaxation
+		+ Test:
+			+ See bounces from ocean floor
+				+ The back-sending should be fine as it's based off real initial velocity TODO: double-check
 
 + Fix 4 BPP images
 	+ Need ilCopyPixels to convert to standard format (BPP:3, Format: RGB, Type: U_BYTE)
@@ -5960,6 +6121,8 @@ IF WX:
 		+ Run in Debug
 			+ Test panel across loading ships
 			+ Test electrical repair
+	+ Improve "friction" of sea floor: things don't slide down easily; may be add a slider
+
 + Water
 	+ Water
 		+ Ship::LeakWater:

@@ -201,7 +201,7 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState switchState);
 
-public:
+private:
 
     /////////////////////////////////////////////////////////////////////////
     // Dynamics
@@ -214,11 +214,13 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
 
-    void UpdatePointForces(GameParameters const & gameParameters);
+    void ApplyWorldForces(GameParameters const & gameParameters);
 
-    void UpdateSpringForces(GameParameters const & gameParameters);
+    void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
 
-    void IntegrateAndResetPointForces(GameParameters const & gameParameters);
+    void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
+
+    void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
@@ -279,6 +281,42 @@ public:
 
 private:
 
+    /////////////////////////////////////////////////////////////////////////
+    // Force Fields
+    /////////////////////////////////////////////////////////////////////////
+
+    void ApplyDrawForceField(
+        vec2f const & centerPosition,
+        float strength);
+
+    void ApplySwirlForceField(
+        vec2f const & centerPosition,
+        float strength);
+
+    void ApplyBlastForceField(
+        vec2f const & centerPosition,
+        float blastRadius,
+        float strength,
+        bool doDetachPoint,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void ApplyRadialSpaceWarpForceField(
+        vec2f const & centerPosition,
+        float radius,
+        float radiusThickness,
+        float strength);
+
+    void ApplyImplosionForceField(
+        vec2f const & centerPosition,
+        float strength);
+
+    void ApplyRadialExplosionForceField(
+        vec2f const & centerPosition,
+        float strength);
+
+private:
+
     void RunConnectivityVisit();
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
@@ -312,35 +350,6 @@ private:
 		ElementIndex pointElementIndex,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
-
-    template<typename TForceField, typename... TArgs>
-    void AddForceField(TArgs&&... args)
-    {
-        mCurrentForceFields.emplace_back(
-            new TForceField(std::forward<TArgs>(args)...));
-    }
-
-    template<typename TForceField, typename... TArgs>
-    void AddOrResetForceField(TArgs&&... args)
-    {
-        auto it = std::find_if(
-            mCurrentForceFields.begin(),
-            mCurrentForceFields.end(),
-            [](auto const & ff)
-            {
-                return ff->GetType() == TForceField::ForceFieldType;
-            });
-
-        if (it == mCurrentForceFields.end())
-        {
-            AddForceField<TForceField>(std::forward<TArgs>(args)...);
-        }
-        else
-        {
-            TForceField * forceField = dynamic_cast<TForceField *>(it->get());
-            forceField->Reset(std::forward<TArgs>(args)...);
-        }
-    }
 
     inline size_t GetPointConnectedComponentSize(ElementIndex pointIndex) const noexcept
     {
@@ -475,9 +484,6 @@ private:
 
     // Bombs
     Bombs mBombs;
-
-    // Force fields to apply at next iteration
-    std::vector<std::unique_ptr<ForceField>> mCurrentForceFields;
 
     // The current simulation sequence number
     SequenceNumber mCurrentSimulationSequenceNumber;

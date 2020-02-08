@@ -230,6 +230,11 @@ public:
     float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
     float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
+    float GetGlobalDampingAdjustment() const override { return mGameParameters.GlobalDampingAdjustment; }
+    void SetGlobalDampingAdjustment(float value) override { mGameParameters.GlobalDampingAdjustment = value; }
+    float GetMinGlobalDampingAdjustment() const override { return GameParameters::MinGlobalDampingAdjustment; }
+    float GetMaxGlobalDampingAdjustment() const override { return GameParameters::MaxGlobalDampingAdjustment; }
+
     float GetRotAcceler8r() const override { return mGameParameters.RotAcceler8r; }
     void SetRotAcceler8r(float value) override { mGameParameters.RotAcceler8r = value; }
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }
@@ -416,6 +421,16 @@ public:
 	void SetOceanFloorDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValueImmediate(value); }
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
+
+    float GetOceanFloorElasticity() const override { return mGameParameters.OceanFloorElasticity; }
+    void SetOceanFloorElasticity(float value) override { mGameParameters.OceanFloorElasticity = value; }
+    float GetMinOceanFloorElasticity() const override { return GameParameters::MinOceanFloorElasticity; }
+    float GetMaxOceanFloorElasticity() const override { return GameParameters::MaxOceanFloorElasticity; }
+
+    float GetOceanFloorFriction() const override { return mGameParameters.OceanFloorFriction; }
+    void SetOceanFloorFriction(float value) override { mGameParameters.OceanFloorFriction = value; }
+    float GetMinOceanFloorFriction() const override { return GameParameters::MinOceanFloorFriction; }
+    float GetMaxOceanFloorFriction() const override { return GameParameters::MaxOceanFloorFriction; }
 
     float GetDestroyRadius() const override { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mGameParameters.DestroyRadius = value; }

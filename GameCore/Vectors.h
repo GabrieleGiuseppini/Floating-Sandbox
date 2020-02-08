@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -101,12 +103,19 @@ public:
 		return *this;
 	}
 
-	inline vec2f& operator/=(float other)
+	inline vec2f & operator/=(float other)
 	{
 		x /= other;
 		y /= other;
 		return *this;
 	}
+
+    inline vec2f & clamp(float minX, float maxX, float minY, float maxY)
+    {
+        x = Clamp(x, minX, maxX);
+        y = Clamp(y, minY, maxY);
+        return *this;
+    }
 
 	inline bool operator==(vec2f const & other) const
 	{
