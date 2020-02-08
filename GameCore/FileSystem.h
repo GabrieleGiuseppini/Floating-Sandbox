@@ -8,8 +8,9 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <vector>
 
-/* 
+/*
  * Abstraction of file-system primitives to ease unit tests.
  */
 struct IFileSystem
@@ -53,7 +54,7 @@ struct IFileSystem
 /*
  * IFileSystem concrete implementation working against the real file system.
  */
-class FileSystem final : public IFileSystem 
+class FileSystem final : public IFileSystem
 {
 public:
 
@@ -77,7 +78,7 @@ public:
         {
             return std::shared_ptr<std::ifstream>(
                 new std::ifstream(
-                    filePath, 
+                    filePath,
                     std::ios_base::in | std::ios_base::binary));
         }
         else
@@ -90,7 +91,7 @@ public:
     {
         return std::shared_ptr<std::ostream>(
             new std::ofstream(
-                filePath, 
+                filePath,
                 std::ios_base::out | std::ios_base::binary | std::ios_base::trunc),
             [](std::ostream * os)
             {
