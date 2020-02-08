@@ -35,6 +35,7 @@ set (UNIT_TEST_SOURCES
 	ShaderManagerTests.cpp
 	SliderCoreTests.cpp
 	SysSpecificsTests.cpp
+	TaskThreadPoolTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp
 	TruncatedPriorityQueueTests.cpp
