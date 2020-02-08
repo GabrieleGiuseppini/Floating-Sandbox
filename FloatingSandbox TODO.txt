@@ -3,6 +3,27 @@ Current perf:
 =================================================
 1.14
 - After forces rearc and iterations=30: FPS=30.16, Ums=22.5
+- Call tree (45 sec game play, w/out PostInitialize):
+	- MainFrame::OnGameTimerTrigger: 90.91%
+		- World::UpdateAndRender: 87.23%
+			- Ship::Update: 62.09%
+				- Ship::UpdateMechanicalDynamics: 52.50%
+					- ApplySpringForces: 39.15%
+					- HandleCollisionsWithSeaFloor: 6.73%
+					- IntegrateAndResetSpringForces: 5.57%
+					- ApplyWorldForces: 0.40%
+					- UpdateMasses: 0.33%
+				- Ship::UpdateWaterDynamics: 6.91%
+				- Ship::UpdateHeatDynamics: 1.68%
+				- Ship::UpdateForStrains: 0.81%
+				- Ship::DiffuseLight: 0.23%
+				- Ship::TrimWorldBounds: 0.15%
+			- Ship::Render: 20.16%
+			- RenderContext::RenderOcean: 1.54%
+			- RenderContext::RenderStars: 1.19%
+			- OceanSurface::Update: 0.24%
+			- Wind::Update: 0.07%
+		- wxGLCanvas::SwapBuffers: 1.42%
 =================================================
 1.13
 - After DiffuseLight rearc: FPS=29.5, U/R=19
@@ -482,11 +503,36 @@ Render:
 		+ changes.txt
 
 		= Multi-threading, phase I:
-			= ThreadPool
-			- Create at controller and pass as shared_ptr down the hierarchy
-			- Samsung pre-perf:
-			- TODO
+			+ ThreadPool
+			+ Create at controller and pass as shared_ptr down the hierarchy
+			+ Samsung pre-perf: 96 ms/9.15 fps; Szerszen: 312ms/3.0 fps
+			+ BufferAllocator::Allocate() needs to become multi-thread friendly
+			+ Get timings of Ship::Update
+			- Fork
+			- Ship::Update: Run concurrently:
+				- 1) UpdateMechanicalDynamics: 
+					- At step i, do in parallel:
+						- ApplySpringForces(pi, vi) -> (fsi+1)
+						- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
+					- Do n+1 iterations:
+						- First iteration does not need to integrate+collisions
+						- Last iteration does not need to apply spring forces
+					- Samsung post-perf:
+				- 2) TODOHERE: identify other parallelizable tasks; candidates:
+					- WaterDynamics, HeatDynamics, DiffuseLight
+			- [If needed] Avoid firing events from threads:
+				- 1) World::Update() gets EventHandler from outside each time, not at cctor; and same down
+				  the hierarchy up to individual leaf methods that need it
+					! So if a method is not given the handler, then it can't fire events
+				- 2) GameEventDispatcher: events that are fired by other threads are to be aggregated,
+				  so that they are fired on main thread by Flush()
+					- Aggregation needs to become multi-thread friendly, at least for these events
+						- No major cost if we always lock at Flush()
+					- If a (concurrent) event producer is expected to produce a TON of these new to-be-aggregated
+					  events, then it's best if it "aggregates" itself before invoking the event dispatcher					
 			- Samsung post-perf:
+			- Merge
+			- changes.txt
 
 		- Change light colors to match Desktop\LightColors.png
 			- And add new render param for shaders

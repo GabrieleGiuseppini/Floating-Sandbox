@@ -14,6 +14,7 @@
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
+#include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
 #include <list>
@@ -33,6 +34,7 @@ public:
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<TaskThreadPool> taskThreadPool,
         Points && points,
         Springs && springs,
         Triangles && triangles,
@@ -472,6 +474,7 @@ private:
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
 
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;

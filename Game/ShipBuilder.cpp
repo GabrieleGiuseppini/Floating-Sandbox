@@ -26,6 +26,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<TaskThreadPool> taskThreadPool,
     ShipDefinition const & shipDefinition,
     MaterialDatabase const & materialDatabase,
     GameParameters const & gameParameters)
@@ -324,7 +325,8 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         shipId,
         parentWorld,
         materialDatabase,
-        gameEventDispatcher,
+        std::move(gameEventDispatcher),
+        std::move(taskThreadPool),
         std::move(points),
         std::move(springs),
         std::move(triangles),

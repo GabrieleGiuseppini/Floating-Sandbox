@@ -77,6 +77,7 @@ GameController::GameController(
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
+        std::make_shared<TaskThreadPool>(),
         mGameParameters))
     , mMaterialDatabase(std::move(materialDatabase))
     // Smoothing
@@ -230,6 +231,7 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     auto newWorld = std::make_unique<Physics::World>(
         std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
+        std::make_shared<TaskThreadPool>(),
         mGameParameters);
 
     // Load ship definition
@@ -302,6 +304,7 @@ void GameController::ReloadLastShip()
     auto newWorld = std::make_unique<Physics::World>(
         std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
         mGameEventDispatcher,
+        std::make_shared<TaskThreadPool>(),
         mGameParameters);
 
     // Load ship definition

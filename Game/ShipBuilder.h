@@ -13,6 +13,7 @@
 #include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageSize.h>
+#include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -33,6 +34,7 @@ public:
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<TaskThreadPool> taskThreadPool,
         ShipDefinition const & shipDefinition,
         MaterialDatabase const & materialDatabase,
         GameParameters const & gameParameters);

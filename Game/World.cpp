@@ -17,6 +17,7 @@ namespace Physics {
 World::World(
     OceanFloorTerrain && oceanFloorTerrain,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters)
     : mCurrentSimulationTime(0.0f)
     , mAllShips()
@@ -26,7 +27,8 @@ World::World(
     , mClouds()
     , mOceanSurface(gameEventDispatcher)
     , mOceanFloor(std::move(oceanFloorTerrain))
-    , mGameEventHandler(gameEventDispatcher)
+    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mTaskThreadPool(std::move(taskThreadPool))
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
@@ -48,6 +50,7 @@ ShipId World::AddShip(
         shipId,
         *this,
         mGameEventHandler,
+        mTaskThreadPool,
         shipDefinition,
         materialDatabase,
         gameParameters);

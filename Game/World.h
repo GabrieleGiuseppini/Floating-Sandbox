@@ -15,6 +15,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/GameChronometer.h>
+#include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
 #include <cstdint>
@@ -32,6 +33,7 @@ public:
     World(
         OceanFloorTerrain && oceanFloorTerrain,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters);
 
     ShipId AddShip(
@@ -261,6 +263,9 @@ private:
 
     // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+
+    // The task thread pool that we use for concurrency
+    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
 };
 
 }

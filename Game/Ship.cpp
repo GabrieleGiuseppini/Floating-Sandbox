@@ -61,6 +61,7 @@ Ship::Ship(
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<TaskThreadPool> taskThreadPool,
     Points && points,
     Springs && springs,
     Triangles && triangles,
@@ -69,6 +70,7 @@ Ship::Ship(
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
+    , mTaskThreadPool(std::move(taskThreadPool))
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
@@ -167,7 +169,7 @@ void Ship::Update(
     //
     // Update state machines
     //
-    // May queue force fields!
+    // May apply force fields!
     //
 
     UpdateStateMachines(currentSimulationTime, gameParameters);
@@ -1676,8 +1678,8 @@ void Ship::PropagateHeat(
 
     // Source and result temperature buffers
     auto oldPointTemperatureBuffer = mPoints.MakeTemperatureBufferCopy();
-    float const * restrict oldPointTemperatureBufferData = oldPointTemperatureBuffer->data();
-    float * restrict newPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
+    float const * restrict const oldPointTemperatureBufferData = oldPointTemperatureBuffer->data();
+    float * restrict const newPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
 
     // Outbound heat flows along each spring
     std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundHeatFlows;
