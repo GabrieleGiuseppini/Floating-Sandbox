@@ -17,14 +17,13 @@ TaskThreadPool::TaskThreadPool()
 TaskThreadPool::TaskThreadPool(size_t hardwareThreads)
     : mLock()
     , mThreads()
+    , mThreadSignal()
     , mRemainingTasks()
+    , mIsStop(false)
 {
     LogMessage("Number of hardware threads: ", hardwareThreads);
 
-    //
     // Start threads
-    //
-
     for (size_t i = 0; i < hardwareThreads - 1; ++i)
     {
         mThreads.emplace_back(&TaskThreadPool::ThreadLoop, this);
@@ -33,16 +32,11 @@ TaskThreadPool::TaskThreadPool(size_t hardwareThreads)
 
 TaskThreadPool::~TaskThreadPool()
 {
-    //
-    // Stop all threads
-    //
+    // Tell all threads to stop
+    mIsStop = true;
+    mThreadSignal.notify_all();
 
-    // TODOHERE
-
-    //
-    // Wait for threads to exit
-    //
-
+    // Wait for all threads to exit
     for (auto & t : mThreads)
     {
         t.join();
@@ -56,11 +50,11 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
     //
 
     {
-        std::lock_guard<std::mutex> const lock(mLock);
+        std::lock_guard const lock{ mLock };
 
         for (auto const & task : tasks)
         {
-            mRemainingTasks.push(task);
+            mRemainingTasks.push_back(task);
         }
     }
 
@@ -68,10 +62,102 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
     // Signal threads
     //
 
+    mThreadSignal.notify_all();
+
+    //
+    // Run the task loop for our own thread
+    //
+
+    RunTaskLoop();
+
+    assert(mRemainingTasks.empty());
+
+    //
+    // Make sure all threads are done
+    //
+
     // TODOHERE
 }
 
 void TaskThreadPool::ThreadLoop()
 {
-    // TODOHERE
+    while (true)
+    {
+        {
+            std::unique_lock lock{ mLock };
+
+            // Wait for a signal
+            mThreadSignal.wait(
+                lock,
+                [this]
+                {
+                    return mIsStop || !mRemainingTasks.empty();
+                });
+
+            if (mIsStop)
+            {
+                // We're done!
+                break;
+            }
+        }
+
+        // Tasks have been queued...
+
+        // ...run the tasks
+        RunTaskLoop();
+    }
+
+    LogMessage("Thread exiting");
+}
+
+void TaskThreadPool::RunTaskLoop()
+{
+    //
+    // Run tasks until queue is empty
+    //
+
+    while (true)
+    {
+        //
+        // Pick a task
+        //
+
+        Task task;
+        {
+            std::lock_guard const lock{ mLock };
+
+            if (!mRemainingTasks.empty())
+            {
+                task = mRemainingTasks.front();
+                mRemainingTasks.pop_front();
+            }
+        }
+
+        if (!task)
+        {
+            // No more tasks
+            return;
+        }
+
+        //
+        // Run the task
+        //
+
+        try
+        {
+            task();
+        }
+        catch (std::exception const & e)
+        {
+            LogMessage("Error running task: " + std::string(e.what()));
+
+            // Keep going...
+        }
+
+        //
+        // Signal task completion
+        //
+
+        // TODOHERE
+    }
 }

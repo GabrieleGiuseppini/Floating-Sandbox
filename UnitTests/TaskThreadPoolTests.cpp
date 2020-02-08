@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-class TaskCountTest : public testing::TestWithParam<size_t>
+class TaskThreadPoolTests_OneRuns : public testing::TestWithParam<size_t>
 {
 public:
     virtual void SetUp() {}
@@ -14,8 +14,8 @@ public:
 };
 
 INSTANTIATE_TEST_CASE_P(
-    TaskThreadPoolTests,
-    TaskCountTest,
+    One_Runs,
+    TaskThreadPoolTests_OneRuns,
     ::testing::Values(
         0,
         1,
@@ -23,7 +23,7 @@ INSTANTIATE_TEST_CASE_P(
         10
     ));
 
-TEST_P(TaskCountTest, One_Runs)
+TEST_P(TaskThreadPoolTests_OneRuns, One_Runs)
 {
     std::vector<bool> results(GetParam(), false);
 
@@ -46,9 +46,16 @@ TEST_P(TaskCountTest, One_Runs)
     ASSERT_TRUE(std::all_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 }
 
+class TaskThreadPoolTests_FourRuns : public testing::TestWithParam<size_t>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
 INSTANTIATE_TEST_CASE_P(
     Four_Runs,
-    TaskCountTest,
+    TaskThreadPoolTests_FourRuns,
     ::testing::Values(
         0,
         1,
@@ -62,7 +69,7 @@ INSTANTIATE_TEST_CASE_P(
         10
     ));
 
-TEST_P(TaskCountTest, Four_Runs)
+TEST_P(TaskThreadPoolTests_FourRuns, Four_Runs)
 {
     std::vector<bool> results(GetParam(), false);
 

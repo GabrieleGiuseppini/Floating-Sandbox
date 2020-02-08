@@ -6,9 +6,10 @@
 #pragma once
 
 #include <cassert>
+#include <condition_variable>
 #include <functional>
 #include <mutex>
-#include <queue>
+#include <deque>
 #include <thread>
 #include <vector>
 
@@ -36,15 +37,23 @@ private:
 
     void ThreadLoop();
 
+    void RunTaskLoop();
+
 private:
 
-    // The lock for everything
+    // Our thread lock
     std::mutex mLock;
 
     // Our threads
     std::vector<std::thread> mThreads;
 
+    // The condition variable to wake up threads
+    std::condition_variable mThreadSignal;
+
     // The tasks currently awaiting to be picked up;
     // expected to be empty at each Run invocation
-    std::queue<Task> mRemainingTasks;
+    std::deque<Task> mRemainingTasks;
+
+    // Set to true when have to stop
+    bool mIsStop;
 };

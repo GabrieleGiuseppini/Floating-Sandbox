@@ -27,6 +27,7 @@ set (UNIT_TEST_SOURCES
 	GameEventDispatcherTests.cpp
 	GameMathTests.cpp
 	LayoutHelperTests.cpp
+	main.cpp
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
@@ -61,7 +62,7 @@ target_link_libraries (UnitTests
 	UIControlsLib
 	${OPENGL_LIBRARIES}
 	gmock
-	gtest_main
+	gtest
 	${ADDITIONAL_LIBRARIES})
 
 #
