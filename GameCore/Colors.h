@@ -28,13 +28,10 @@ public:
 
     static constexpr rgbColor zero()
     {
-        return rgbColor();
+        return rgbColor(0, 0, 0);
     }
 
-    inline constexpr rgbColor()
-        : r(0)
-        , g(0)
-        , b(0)
+    rgbColor()
     {
     }
 
@@ -124,14 +121,10 @@ public:
 
     static constexpr rgbaColor zero()
     {
-        return rgbaColor();
+        return rgbaColor(0, 0, 0, 0);
     }
 
-    inline constexpr rgbaColor()
-        : r(0)
-        , g(0)
-        , b(0)
-        , a(0)
+    rgbaColor()
     {
     }
 
