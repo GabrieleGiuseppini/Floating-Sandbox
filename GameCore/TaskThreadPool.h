@@ -31,13 +31,18 @@ public:
 
     ~TaskThreadPool();
 
+    /*
+     * The first task is guaranteed to run on the main thread.
+     */
     void Run(std::vector<Task> const & tasks);
 
 private:
 
     void ThreadLoop();
 
-    void RunTaskLoop();
+    void RunRemainingTasksLoop();
+
+    void RunTask(Task const & task);
 
 private:
 
@@ -48,11 +53,17 @@ private:
     std::vector<std::thread> mThreads;
 
     // The condition variable to wake up threads
-    std::condition_variable mThreadSignal;
+    std::condition_variable mWorkerThreadSignal;
+
+    // The condition variable to wake up the main thread
+    std::condition_variable mMainThreadSignal;
 
     // The tasks currently awaiting to be picked up;
     // expected to be empty at each Run invocation
     std::deque<Task> mRemainingTasks;
+
+    // The number of tasks awaiting for completion
+    size_t mTasksToComplete;
 
     // Set to true when have to stop
     bool mIsStop;

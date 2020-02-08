@@ -481,6 +481,13 @@ Render:
 			+ 24 -> 30: 22.5ms/30.0fps
 		+ changes.txt
 
+		= Multi-threading, phase I:
+			= ThreadPool
+			- Create at controller and pass as shared_ptr down the hierarchy
+			- Samsung pre-perf:
+			- TODO
+			- Samsung post-perf:
+
 		- Change light colors to match Desktop\LightColors.png
 			- And add new render param for shaders
 		- Lower gunpowder strength
@@ -490,6 +497,7 @@ Render:
 
 		- Also GoodYear should be full of hydrogen		
 		- Selector for panel background
+
 		
 		- Propulsion (*)
 
@@ -517,9 +525,6 @@ Render:
 		- Cached quantities (*)
 
 		- Run w/OpenGL tracing to see if there's any errors
-
-		- Multi-threading, phase I:
-			- TBD
 
 		- Multi-threading, phase II:
 			- TBD
