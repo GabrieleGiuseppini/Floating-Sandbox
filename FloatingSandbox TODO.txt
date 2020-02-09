@@ -505,19 +505,32 @@ Render:
 		= Multi-threading, phase I:
 			+ ThreadPool
 			+ Create at controller and pass as shared_ptr down the hierarchy
-			+ Samsung pre-perf: 96 ms/9.15 fps; Szerszen: 312ms/3.0 fps
+			+ Pre-perf: 
+				+ Dell: 21.8 ms/30.5 fps
+				+ Samsung: 96 ms/9.15 fps; Szerszen: 312ms/3.0 fps				
 			+ BufferAllocator::Allocate() needs to become multi-thread friendly
 			+ Get timings of Ship::Update
-			- Fork
+			+ Fork
 			- Ship::Update: Run concurrently:
 				- 1) UpdateMechanicalDynamics: 
-					- At step i, do in parallel:
-						- ApplySpringForces(pi, vi) -> (fsi+1)
-						- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
+					- Nuke the old _ByPoints
 					- Do n+1 iterations:
+						- First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
 						- First iteration does not need to integrate+collisions
+						- (n-1) iterations in parallel; at each step i, do in parallel:
+							- ApplySpringForces(pi, vi) -> (fsi+1)
+							- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
 						- Last iteration does not need to apply spring forces
-					- Samsung post-perf:
+						- Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
+						  mBuffer and argument buffer
+					- TODO: DOUBLE-THINK: If not multi-threaded, then maintain current structure, but still the three
+					  functions take (restrict? potentially the same) pointer args
+					- Post-perf:
+						- Dell:
+						- Samsung:
+					- Cleanup:
+						- Can get rid of Points::SpringForces? If so, rename the remaining force buffer
+						  as plain "Force"
 				- 2) TODOHERE: identify other parallelizable tasks; candidates:
 					- WaterDynamics, HeatDynamics, DiffuseLight
 			- [If needed] Avoid firing events from threads:
@@ -534,12 +547,17 @@ Render:
 			- Merge
 			- changes.txt
 
-		- Change light colors to match Desktop\LightColors.png
+		- Add "Bluefox" to About box's ship engineers
+		- I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
+		  leaving it completely white.
+		- Change light colors to match Desktop\LightColors.png (CABCA5)
 			- And add new render param for shaders
 		- Lower gunpowder strength
+		- Cardboard flies too fast when hot - lower thermal expansion
 		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
 		- Reduce sea's little waves from gusts
+		- Hull should decay less
 
 		- Also GoodYear should be full of hydrogen		
 		- Selector for panel background
@@ -553,9 +571,15 @@ Render:
 			- Just destroy springs with no other side-effects
 
 		- Baked sounds
+			- Or not: people like the ability to change sounds
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		- Cursors at night
+			- Might just change luminosity in tools based on ambient light changes
+				- ToolController would have to be notified about it, may be via a new event fired by GameController
+				  (and one day by the day-night cycle)
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
@@ -609,6 +633,10 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- Ship Packs:
+		- Kiko's pack
+			- Screenshots and description in PM
+			+ I keep donations
+
 		- HummeL: asked for deliverables
 		- Mr. Woldemar: waiting for deliverables
 			+ I keep donations
@@ -616,7 +644,8 @@ Render:
 		+ MasterGarfield: have all
 			+ Have also his PayPal email
 		- Space ship pack: [free]
-			- JohnSmith: gave permission, but he'll be making a smaller one first
+			- JohnSmith: gave permission for his
+			- Ships in PM
 		- nomadavid's pack
 	- New ships:
 		- To test:
@@ -734,6 +763,9 @@ Render:
 			- No fullscreen mode
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
+
+- Mac:
+	- See replacement for "intrin.h" @ SysSpecifics.h
 
 - Simulation Optimizations:
 
@@ -933,7 +965,12 @@ Render:
 
 
 - Gfx:
-	- Selector to change color of water
+	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
+	  by just punching holes
+
+	- Background ships: just any of the other ships, that would sail in the background
+
+	- Selector to change color of (intaken) water
 
 	- Heat overlay more integrated in game play:
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaced black with alpha=0
@@ -1039,6 +1076,24 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:	
+
+	- Gases: 
+		- Spec:
+			- Drawn on separate layer and act as water, but with upside down gravity
+			- It will leak through holes
+			- Gets destroyed by water
+			- Causes air buoyancy
+		- Can be implemented as a parallel Point::Water system
+			- It will only slow down marginally, and only when the user specifies a gas layer
+
+	- Newton's 3rd law:
+		- Emitter materials, like smoke (and a new "jet engine" one), should impart an opposite force on the emitter
+		- Jet engine: need a way to render flames/particles coming out 
+
+	- Air drag
+		- Thinner moving up, MaxWorldHeight is open space
+
+	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
 	- Pinch tool
 

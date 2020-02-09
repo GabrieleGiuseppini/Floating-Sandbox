@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SysSpecifics.h"
+
 #include <cfloat>
 #include <limits>
-#include <pmmintrin.h>
-#include <xmmintrin.h>
 
 inline void EnableFloatingPointExceptions()
 {
