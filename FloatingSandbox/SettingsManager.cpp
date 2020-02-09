@@ -111,11 +111,13 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 
     // Render
     ADD_GC_SETTING(rgbColor, FlatSkyColor);
-    ADD_GC_SETTING(float, WaterContrast);
     ADD_GC_SETTING(float, OceanTransparency);
     ADD_GC_SETTING(float, OceanDarkeningRate);
-    ADD_GC_SETTING(bool, ShowShipThroughOcean);
+    ADD_GC_SETTING(rgbColor, FlatLampLightColor);
+    ADD_GC_SETTING(rgbColor, DefaultWaterColor);
+    ADD_GC_SETTING(float, WaterContrast);
     ADD_GC_SETTING(float, WaterLevelOfDetail);
+    ADD_GC_SETTING(bool, ShowShipThroughOcean);
     ADD_GC_SETTING(ShipRenderMode, ShipRenderMode);
     ADD_GC_SETTING(DebugShipRenderMode, DebugShipRenderMode);
     ADD_GC_SETTING(OceanRenderMode, OceanRenderMode);

@@ -547,18 +547,16 @@ Render:
 			- Merge
 			- changes.txt
 
-		- Add "Bluefox" to About box's ship engineers
 		- I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white.
-		- Change light colors to match Desktop\LightColors.png (CABCA5)
-			- And add new render param for shaders
+		+ Change light colors to match Mike's
+			+ And add new render param for shaders
 		- Lower gunpowder strength
 		- Cardboard flies too fast when hot - lower thermal expansion
 		- See if should take Mike's Titanic electricals 
 		- Check Mike's materials
 		- Reduce sea's little waves from gusts
 		- Hull should decay less
-
 		- Also GoodYear should be full of hydrogen		
 		- Selector for panel background
 
@@ -580,6 +578,8 @@ Render:
 			- Might just change luminosity in tools based on ambient light changes
 				- ToolController would have to be notified about it, may be via a new event fired by GameController
 				  (and one day by the day-night cycle)
+
+		- Pinch tool (*):
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
@@ -968,9 +968,7 @@ Render:
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
-	- Background ships: just any of the other ships, that would sail in the background
-
-	- Selector to change color of (intaken) water
+	- Background ships: just any of the other ships, that would sail in the background	
 
 	- Heat overlay more integrated in game play:
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaced black with alpha=0
@@ -1095,8 +1093,12 @@ Render:
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
-	- Pinch tool
-
+	- Pinch tool (*):
+		- Picks a point and keeps setting a force on it with a growing strength
+			- State machine (strength growth) done by tool
+		- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
+		- Cursor: pliers or tweezers
+		
 	- Lightning tool that summons lightning wherever it has been clicked
 
 	- Consider making world 1.5 times wider
@@ -3273,6 +3275,7 @@ IF WX:
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
+	+ Selector to change color of (intaken) water
 
 + Gfx Optimizations:
 	+ Try without buffer population: 			

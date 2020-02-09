@@ -84,11 +84,13 @@ enum class GameSettings : size_t
 
     // Render
     FlatSkyColor,
-    WaterContrast,
     OceanTransparency,
     OceanDarkeningRate,
-    ShowShipThroughOcean,
+    FlatLampLightColor,
+    DefaultWaterColor,
+    WaterContrast,
     WaterLevelOfDetail,
+    ShowShipThroughOcean,
     ShipRenderMode,
     DebugShipRenderMode,
     OceanRenderMode,

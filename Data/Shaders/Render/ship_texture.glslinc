@@ -36,6 +36,7 @@ in vec2 vertexTextureCoords;
 
 // Params
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec4 paramLampLightColor;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
@@ -68,7 +69,7 @@ void main()
     fragColour *= totalLightIntensity;
 
     // Apply point light color
-    fragColour = mix(fragColour, vec4(%LAMPLIGHT_COLOR_VEC4%), vertexAttributes.x);
+    fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
     
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 

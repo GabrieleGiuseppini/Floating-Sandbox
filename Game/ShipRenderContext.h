@@ -52,6 +52,7 @@ public:
         RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float effectiveAmbientLightIntensity,
+        vec4f const & lampLightColor,
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
@@ -84,6 +85,14 @@ public:
 
         // React
         OnEffectiveAmbientLightIntensityUpdated();
+    }
+
+    void SetLampLightColor(vec4f lampLightColor)
+    {
+        mLampLightColor = lampLightColor;
+
+        // React
+        OnLampLightColorUpdated();
     }
 
     void SetWaterColor(vec4f waterColor)
@@ -859,6 +868,7 @@ private:
 
     void UpdateOrthoMatrices();
     void OnEffectiveAmbientLightIntensityUpdated();
+    void OnLampLightColorUpdated();
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
@@ -1143,6 +1153,7 @@ private:
     ViewModel const & mViewModel;
 
     float mEffectiveAmbientLightIntensity;
+    vec4f mLampLightColor;
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;

@@ -474,6 +474,28 @@ void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & event)
     OnLiveSettingsChanged();
 }
 
+void SettingsDialog::OnFlatLampLightColorChanged(wxColourPickerEvent & event)
+{
+    auto color = event.GetColour();
+
+    mLiveSettings.SetValue(
+        GameSettings::FlatLampLightColor,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
+
+    OnLiveSettingsChanged();
+}
+
+void SettingsDialog::OnDefaultWaterColorChanged(wxColourPickerEvent & event)
+{
+    auto color = event.GetColour();
+
+    mLiveSettings.SetValue(
+        GameSettings::DefaultWaterColor,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
+
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
 	if (mTextureShipRenderModeRadioButton->GetValue())
@@ -3102,8 +3124,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             landBox,
             wxGBPosition(0, 2),
-            wxGBSpan(1, 1),
-            wxALL,
+            wxGBSpan(1, 2),
+            wxALL | wxEXPAND,
             CellBorder);
     }
 
@@ -3140,10 +3162,46 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             skyBox,
             wxGBPosition(1, 2),
             wxGBSpan(1, 1),
-            wxALL,
+            wxALL | wxALIGN_LEFT,
             CellBorder);
     }
 
+    // Lamp Light
+    {
+        wxStaticBox * lampLightBox = new wxStaticBox(panel, wxID_ANY, _("Lamp Light"));
+
+        wxBoxSizer * lampLightBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        lampLightBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * lampLightSizer = new wxGridBagSizer(0, 0);
+
+            // Lamp Light color
+            {
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(lampLightBox, wxID_ANY);
+                mFlatLampLightColorPicker->SetToolTip("Sets the color of lamp lights.");
+                mFlatLampLightColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatLampLightColorChanged, this);
+
+                lampLightSizer->Add(
+                    mFlatLampLightColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            lampLightBoxSizer1->Add(lampLightSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        lampLightBox->SetSizerAndFit(lampLightBoxSizer1);
+
+        gridSizer->Add(
+            lampLightBox,
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_RIGHT,
+            CellBorder);
+    }
 
     // Heat
     {
@@ -3371,7 +3429,10 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorder);
     }
 
+    //
     // Water
+    //
+
     {
         wxStaticBox * waterBox = new wxStaticBox(panel, wxID_ANY, _("Water"));
 
@@ -3381,12 +3442,14 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         {
             wxGridBagSizer * waterSizer = new wxGridBagSizer(0, 0);
 
+            waterSizer->AddGrowableRow(0, 1); // Slider above button
+
             // Water contrast
             {
                 mWaterContrastSlider = new SliderControl<float>(
                     waterBox,
                     SliderWidth,
-                    SliderHeight,
+                    -1,
                     "Water Contrast",
                     "Adjusts the contrast of water inside physical bodies.",
                     [this](float value)
@@ -3402,13 +3465,26 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mWaterContrastSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
+            // Default Water Color
             {
-                // Water Level of Detail
+                mDefaultWaterColorPicker = new wxColourPickerCtrl(waterBox, wxID_ANY);
+                mDefaultWaterColorPicker->SetToolTip("Sets the color of water which is used when ocean render mode is set to 'Texture'.");
+                mDefaultWaterColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDefaultWaterColorChanged, this);
 
+                waterSizer->Add(
+                    mDefaultWaterColorPicker,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_HORIZONTAL,
+                    CellBorder);
+            }
+
+            // Water Level of Detail
+            {
                 mWaterLevelOfDetailSlider = new SliderControl<float>(
                     waterBox,
                     SliderWidth,
@@ -3427,7 +3503,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 waterSizer->Add(
                     mWaterLevelOfDetailSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxALL,
                     CellBorder);
             }
@@ -3440,7 +3516,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             waterBox,
             wxGBPosition(2, 2),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxALL,
             CellBorder);
     }
@@ -4118,6 +4194,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     }
 
     mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
+
+    auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
+    mFlatLampLightColorPicker->SetColour(wxColor(flatLampLightColor.r, flatLampLightColor.g, flatLampLightColor.b));
+
+    auto defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
+    mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));
 
     mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
 

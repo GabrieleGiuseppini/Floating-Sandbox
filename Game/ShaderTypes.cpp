@@ -201,6 +201,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::FlameWindRotationAngle;
     else if (str == "HeatOverlayTransparency")
         return ProgramParameterType::HeatOverlayTransparency;
+    else if (str == "LampLightColor")
+        return ProgramParameterType::LampLightColor;
     else if (str == "LandFlatColor")
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
@@ -274,6 +276,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "FlameWindRotationAngle";
     case ProgramParameterType::HeatOverlayTransparency:
         return "HeatOverlayTransparency";
+    case ProgramParameterType::LampLightColor:
+        return "LampLightColor";
     case ProgramParameterType::LandFlatColor:
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:

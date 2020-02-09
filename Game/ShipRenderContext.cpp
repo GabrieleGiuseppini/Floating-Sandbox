@@ -37,6 +37,7 @@ ShipRenderContext::ShipRenderContext(
     RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
     float effectiveAmbientLightIntensity,
+    vec4f const & lampLightColor,
     vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
@@ -121,6 +122,7 @@ ShipRenderContext::ShipRenderContext(
     // Parameters
     , mViewModel(viewModel)
     , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
+    , mLampLightColor(lampLightColor)
     , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
@@ -458,6 +460,7 @@ ShipRenderContext::ShipRenderContext(
     OnViewModelUpdated();
 
     OnEffectiveAmbientLightIntensityUpdated();
+    OnLampLightColorUpdated();
     OnWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
@@ -813,6 +816,61 @@ void ShipRenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
+}
+
+void ShipRenderContext::OnLampLightColorUpdated()
+{
+    //
+    // Set parameter in all programs
+    //
+
+    mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipRopesWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipRopesWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColorWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColorWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTextureWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColorWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColorWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTextureWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipPointsColorWithTemperature>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorWithTemperature, ProgramParameterType::LampLightColor>(
+        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
 }
 
 void ShipRenderContext::OnWaterColorUpdated()

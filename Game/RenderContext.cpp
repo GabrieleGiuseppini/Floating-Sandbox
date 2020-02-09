@@ -91,11 +91,6 @@ RenderContext::RenderContext(
     , mAmbientLightIntensity(1.0f)
     , mOceanTransparency(0.8125f)
     , mOceanDarkeningRate(0.356993f)
-    , mShowShipThroughOcean(false)
-    , mWaterContrast(0.71875f)
-    , mWaterLevelOfDetail(0.6875f)
-    , mShipRenderMode(ShipRenderMode::Texture)
-    , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mOceanRenderMode(OceanRenderMode::Texture)
     , mOceanAvailableThumbnails()
     , mSelectedOceanTextureIndex(0) // Wavy Clear Thin
@@ -106,6 +101,14 @@ RenderContext::RenderContext(
     , mLandAvailableThumbnails()
     , mSelectedLandTextureIndex(3) // Rock Coarse 3
     , mFlatLandColor(0x72, 0x46, 0x05)
+    //
+    , mFlatLampLightColor(0xff, 0xff, 0xbf)
+    , mDefaultWaterColor(0x00, 0x00, 0xcc)
+    , mShowShipThroughOcean(false)
+    , mWaterContrast(0.71875f)
+    , mWaterLevelOfDetail(0.6875f)
+    , mShipRenderMode(ShipRenderMode::Texture)
+    , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
@@ -799,6 +802,9 @@ RenderContext::RenderContext(
     OnOceanTextureIndexUpdated();
     OnLandRenderParametersUpdated();
     OnLandTextureIndexUpdated();
+
+    OnFlatLampLightColorUpdated();
+    OnDefaultWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
     OnShipRenderModeUpdated();
@@ -883,6 +889,7 @@ void RenderContext::AddShip(
             mRenderStatistics,
             mViewModel,
             mEffectiveAmbientLightIntensity,
+            CalculateLampLightColor(),
             CalculateWaterColor(),
             mWaterContrast,
             mWaterLevelOfDetail,
@@ -1845,10 +1852,33 @@ void RenderContext::OnLandTextureIndexUpdated()
     }
 }
 
+void RenderContext::OnFlatLampLightColorUpdated()
+{
+    // Calculate new lamp light color
+    auto const lampLightColor = CalculateLampLightColor();
+
+    // Set parameter in all ships
+    for (auto & s : mShips)
+    {
+        s->SetLampLightColor(lampLightColor);
+    }
+}
+
+void RenderContext::OnDefaultWaterColorUpdated()
+{
+    // Calculate new water color
+    auto const waterColor = CalculateWaterColor();
+
+    // Set parameter in all ships
+    for (auto & s : mShips)
+    {
+        s->SetWaterColor(waterColor);
+    }
+}
+
 void RenderContext::OnWaterContrastUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetWaterContrast(mWaterContrast);
@@ -1858,7 +1888,6 @@ void RenderContext::OnWaterContrastUpdated()
 void RenderContext::OnWaterLevelOfDetailUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetWaterLevelThreshold(mWaterLevelOfDetail);
@@ -1878,7 +1907,6 @@ void RenderContext::OnShipRenderModeUpdated()
 void RenderContext::OnDebugShipRenderModeUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetDebugShipRenderMode(mDebugShipRenderMode);
@@ -1888,7 +1916,6 @@ void RenderContext::OnDebugShipRenderModeUpdated()
 void RenderContext::OnVectorFieldRenderModeUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetVectorFieldRenderMode(mVectorFieldRenderMode);
@@ -1898,7 +1925,6 @@ void RenderContext::OnVectorFieldRenderModeUpdated()
 void RenderContext::OnShowStressedSpringsUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetShowStressedSprings(mShowStressedSprings);
@@ -1908,7 +1934,6 @@ void RenderContext::OnShowStressedSpringsUpdated()
 void RenderContext::OnDrawHeatOverlayUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetDrawHeatOverlay(mDrawHeatOverlay);
@@ -1918,7 +1943,6 @@ void RenderContext::OnDrawHeatOverlayUpdated()
 void RenderContext::OnHeatOverlayTransparencyUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetHeatOverlayTransparency(mHeatOverlayTransparency);
@@ -1928,7 +1952,6 @@ void RenderContext::OnHeatOverlayTransparencyUpdated()
 void RenderContext::OnShipFlameRenderModeUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetShipFlameRenderMode(mShipFlameRenderMode);
@@ -1938,7 +1961,6 @@ void RenderContext::OnShipFlameRenderModeUpdated()
 void RenderContext::OnShipFlameSizeAdjustmentUpdated()
 {
     // Set parameter in all ships
-
     for (auto & s : mShips)
     {
         s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
@@ -2085,6 +2107,11 @@ void RenderContext::UpdateWorldBorder()
     }
 }
 
+vec4f RenderContext::CalculateLampLightColor() const
+{
+    return mFlatLampLightColor.toVec4f(1.0f);
+}
+
 vec4f RenderContext::CalculateWaterColor() const
 {
     switch (mOceanRenderMode)
@@ -2105,7 +2132,7 @@ vec4f RenderContext::CalculateWaterColor() const
         {
             assert(mOceanRenderMode == OceanRenderMode::Texture); // Darn VS - warns
 
-            return vec4f(0.0f, 0.0f, 0.8f, 1.0f);
+            return mDefaultWaterColor.toVec4f(1.0f);
         }
     }
 }

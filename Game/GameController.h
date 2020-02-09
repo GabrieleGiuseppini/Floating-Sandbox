@@ -524,22 +524,28 @@ public:
     float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
 
-    float GetWaterContrast() const override { return mRenderContext->GetWaterContrast(); }
-    void SetWaterContrast(float value) override { mRenderContext->SetWaterContrast(value); }
-
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
     float GetOceanDarkeningRate() const override { return mRenderContext->GetOceanDarkeningRate(); }
     void SetOceanDarkeningRate(float value) override { mRenderContext->SetOceanDarkeningRate(value); }
 
-    bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
-    void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
+    rgbColor const & GetFlatLampLightColor() const override { return mRenderContext->GetFlatLampLightColor(); }
+    void SetFlatLampLightColor(rgbColor const & color) override { mRenderContext->SetFlatLampLightColor(color); }
+
+    rgbColor const & GetDefaultWaterColor() const override { return mRenderContext->GetDefaultWaterColor(); }
+    void SetDefaultWaterColor(rgbColor const & color) override { mRenderContext->SetDefaultWaterColor(color); }
+
+    float GetWaterContrast() const override { return mRenderContext->GetWaterContrast(); }
+    void SetWaterContrast(float value) override { mRenderContext->SetWaterContrast(value); }
 
     float GetWaterLevelOfDetail() const override { return mRenderContext->GetWaterLevelOfDetail(); }
     void SetWaterLevelOfDetail(float value) override { mRenderContext->SetWaterLevelOfDetail(value); }
     float GetMinWaterLevelOfDetail() const override { return Render::RenderContext::MinWaterLevelOfDetail; }
     float GetMaxWaterLevelOfDetail() const override { return Render::RenderContext::MaxWaterLevelOfDetail; }
+
+    bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
+    void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
     ShipRenderMode GetShipRenderMode() const override { return mRenderContext->GetShipRenderMode(); }
     void SetShipRenderMode(ShipRenderMode shipRenderMode) override { mRenderContext->SetShipRenderMode(shipRenderMode); }
