@@ -514,13 +514,15 @@ Render:
 			- Ship::Update: Run concurrently:
 				- 1) UpdateMechanicalDynamics: 
 					- Nuke the old _ByPoints
-					- At step i, do in parallel:
-						- ApplySpringForces(pi, vi) -> (fsi+1)
-						- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
 					- Do n+1 iterations:
+						- First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
 						- First iteration does not need to integrate+collisions
-						- (n-1) iterations in parallel
+						- (n-1) iterations in parallel; at each step i, do in parallel:
+							- ApplySpringForces(pi, vi) -> (fsi+1)
+							- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
 						- Last iteration does not need to apply spring forces
+						- Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
+						  mBuffer and argument buffer
 					- TODO: DOUBLE-THINK: If not multi-threaded, then maintain current structure, but still the three
 					  functions take (restrict? potentially the same) pointer args
 					- Post-perf:
@@ -569,6 +571,7 @@ Render:
 			- Just destroy springs with no other side-effects
 
 		- Baked sounds
+			- Or not: people like the ability to change sounds
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
@@ -760,6 +763,9 @@ Render:
 			- No fullscreen mode
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
+
+- Mac:
+	- See replacement for "intrin.h" @ SysSpecifics.h
 
 - Simulation Optimizations:
 

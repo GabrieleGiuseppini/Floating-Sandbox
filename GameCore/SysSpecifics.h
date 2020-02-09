@@ -55,8 +55,31 @@ inline constexpr T ceil_square_power_of_two(T value)
 // Intrinsics
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// This probably requires some switching based on the compiler
-#include "intrin.h"
+/*
+<mmintrin.h>  MMX
+<xmmintrin.h> SSE
+<emmintrin.h> SSE2
+<pmmintrin.h> SSE3
+<tmmintrin.h> SSSE3
+<smmintrin.h> SSE4.1
+<nmmintrin.h> SSE4.2
+<ammintrin.h> SSE4A
+<wmmintrin.h> AES
+<immintrin.h> AVX, AVX2, FMA
+*/
+
+#include <pmmintrin.h>
+
+/*
+// MSVC
+#include <intrin.h>
+
+// GCC/Clang
+#include <x86intrin.h>
+
+// MAC
+#include <pmmintrin.h>
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Alignment

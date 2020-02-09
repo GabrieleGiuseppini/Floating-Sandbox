@@ -5,10 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SysSpecifics.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <xmmintrin.h>
 
 template<typename T>
 constexpr T Pi = T(3.1415926535897932385);
