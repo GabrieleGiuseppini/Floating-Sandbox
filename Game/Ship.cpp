@@ -372,83 +372,93 @@ void Ship::Update(
         gameParameters);
 
     ///////////////////////////////////////////////////////////////////
-    // Diffuse light from lamps
-    ///////////////////////////////////////////////////////////////////
-
-    // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
-    //      - EL.AvailableLight depends on electricals which depend on water
-    // - Outputs: P.Light
-    DiffuseLight(gameParameters);
-
-    ///////////////////////////////////////////////////////////////////
     // Update heat dynamics
     ///////////////////////////////////////////////////////////////////
 
-    //
-    // Propagate heat
-    //
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            //
+            // Propagate heat
+            //
 
-    // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
-    // - Outputs: P.Temperature
-    PropagateHeat(
-        currentSimulationTime,
-        GameParameters::SimulationStepTimeDuration<float>,
-        stormParameters,
-        gameParameters);
+            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
+            // - Outputs: P.Temperature
+            PropagateHeat(
+                currentSimulationTime,
+                GameParameters::SimulationStepTimeDuration<float>,
+                stormParameters,
+                gameParameters);
 
-    //
-    // Update slow combustion state machine
-    //
+            //
+            // Update slow combustion state machine
+            //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            0,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-            stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            1,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-            stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            2,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-            stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            3,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-            stormParameters,
-            gameParameters);
-    }
+            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    0,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    1,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    2,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    3,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
 
-    //
-    // Update fast combustion state machine
-    //
+            //
+            // Update fast combustion state machine
+            //
 
-    mPoints.UpdateCombustionHighFrequency(
-        currentSimulationTime,
-        GameParameters::SimulationStepTimeDuration<float>,
-        gameParameters);
+            mPoints.UpdateCombustionHighFrequency(
+                currentSimulationTime,
+                GameParameters::SimulationStepTimeDuration<float>,
+                gameParameters);
+        });
+
+    ///////////////////////////////////////////////////////////////////
+    // Diffuse light from lamps
+    ///////////////////////////////////////////////////////////////////
+
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
+            //      - EL.AvailableLight depends on electricals which depend on water
+            // - Outputs: P.Light
+            DiffuseLight(gameParameters);
+        });
+
+    mTaskThreadPool->RunAndClear(parallelTasks);
 
     ///////////////////////////////////////////////////////////////////
     // Update ephemeral particles

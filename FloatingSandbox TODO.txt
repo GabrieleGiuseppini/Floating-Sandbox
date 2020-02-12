@@ -531,13 +531,12 @@ Render:
 			+ HP post-perf: 46.4 ms/16.0 fps
 			+ Verify multi-threading
 			+ Undo
-			- Try DiffuseLight + Whole thermal
-				- Pre-perf Szerszen:
-					+ Dell: 70 ms/10 fps
-					- Samsung: x ms/x fps
-				- Post-perf Szerszen:
-					- Dell: x ms/x fps
-					- Samsung: x ms/x fps
+			+ Try DiffuseLight + Whole thermal
+				+ Pre-perf Titanic with Lights:
+					+ Samsung: 165 ms/5.6 fps
+				+ Post-perf Titanic with Lights:
+					+ Samsung: 162 ms/5.7 fps
+			- Commit?
 			- Try springs
 			- Merge
 			- changes.txt
