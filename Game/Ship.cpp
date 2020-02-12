@@ -375,6 +375,8 @@ void Ship::Update(
     // Update heat dynamics
     ///////////////////////////////////////////////////////////////////
 
+    assert(parallelTasks.empty()); // We want this to run on the main thread
+
     parallelTasks.emplace_back(
         [&]()
         {
