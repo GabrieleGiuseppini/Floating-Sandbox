@@ -36,6 +36,15 @@ public:
      */
     void Run(std::vector<Task> const & tasks);
 
+    /*
+     * The first task is guaranteed to run on the main thread.
+     */
+    inline void RunAndClear(std::vector<Task> & tasks)
+    {
+        Run(tasks);
+        tasks.clear();
+    }
+
 private:
 
     void ThreadLoop();
