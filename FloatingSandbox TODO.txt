@@ -1258,7 +1258,6 @@ Render:
 			- PowerMonitor (announcement type 1)
 			- (Instanced)Generator (announcement type 2)
 				- Uses own state's IsProducingCurrent as current state
-			- Engine (announcement type 3) (see below)
 		- Destroy/Repair at ElectricalElements::Destroy/Repair:
 			! Make sure announcement follows when generator is restored and becomes powered
 			! Alignment of state::IsProducingCurrent with announced state: it's the same
@@ -1290,7 +1289,6 @@ Render:
 			= Add power probes to switchboard
 				- Type 1 (PowerMonitor): red/green/grey above
 				- Type 2 (Generator): Volt gauge (on abs of value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
-				- Type 3 (Engine): RPM gauge (GaugeControl w/other bg)
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)
@@ -1353,22 +1351,48 @@ Render:
 		- 1 new ElectricalElementType: Engine
 		- 2 electrical materials: engine x {LR/UD}
 			- Need a new engine-specific electrical material property: engine_direction
-		- 1 new ElectricalElementType: EngineControl
+		- 1 new ElectricalElementType: EngineController
 		- 1 electrical material
-		- EngineControl (telegraph) controls all connected, value={-1.0, ..., +1.0}
+		- EngineController (telegraph) controls all connected, value={-1.0, ..., +1.0}
 			- Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
 			  material
-		- EngineControl announces EngineControl
-		- Engine announces PowerMonitor of type Engine
-			- See above
-		- UpdateSinks: 
-			- EngineControl: TODOHERE
-			- Engine: TODOHERE
+		- EngineController announces self as EngineController, and API's to set value (-1,...,+1)
+		- Engine announces self as EngineMonitor 
+			- And updates use (-1,...,+1) values
+		- Dynamics:
+			- ElectricalElements: next to connected electrical elements, also has:
+				- If spring provides easy access to octant (given an endpoint): SpringIndex
+					- In this case, consider having SpringIndex as a member of ConnectedElectricalElement struct
+				- Else:
+					- Octant (& Factory Octant for repair)
+				- Make sure this new info is also restored at repair
+			- EngineController is Sink
+			- Engine is *not* sink, but Engine (new type)
+			- UpdateSinks: 
+				- For each EngineController sink that is powered:
+					- For each connected electrical element that is Engine:
+						- Calculate power vector:
+							- Dir = f(octant, points, MaterialEngineAxis)
+							- Magnitude = f(controller's current state)
+						- Add power vector to Engine::State::CurrentPowerVector
+				- Then, for each Engine: 
+					- Calculate force=f(State::CurrentPowerVector)
+					- Apply force to point (NonSpringForce)
+					- Publishing via EngineMonitor:
+						- TODO: calc (-1,...,+1) value
+						- If val != State::LastPublishedPowerValue:
+							- Publish EngineMonitor -> Sound+Panel
+							- Update State::LastPublishedPowerValue:
+					- Reset State::CurrentPowerVector
 		- Gfx:
-			- Telegraph with hand
+			- EngineControl: Telegraph with hand
 				- N already-rotated hand bitmaps
 				- Research credits
-			- RPM Gauge
+			- EngineMonitor: RPM Gauge (GaugeControl w/other bg)
+		- Sound:
+			- Simple continuous sound, keyed by object ID
+			- Add pitch controls to Sound
+			- React to EngineMonitor, track object ID and set object's sound pitch
 
 	- Logic Gates
 		- New ElectricalMaterial type
@@ -1495,6 +1519,8 @@ Render:
 		- How to Guide
 
 - UI:
+
+	- Customizable key bindings for settings
 
 	- Ship descriptions: use Mike's drawings
 
