@@ -211,11 +211,6 @@ private:
 
     // Mechanical
 
-    void UpdateMechanicalDynamics(
-        float currentSimulationTime,
-        GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
-
     void ApplyWorldForces(GameParameters const & gameParameters);
 
     void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
@@ -229,11 +224,6 @@ private:
     void TrimForWorldBounds(GameParameters const & gameParameters);
 
     // Water
-
-    void UpdateWaterDynamics(
-        float currentSimulationTime,
-        Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
 
     void UpdateWaterInflow(
         float currentSimulationTime,
@@ -249,19 +239,9 @@ private:
 
     // Electrical
 
-    void UpdateElectricalDynamics(
-        GameWallClock::time_point currentWallclockTime,
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
     void DiffuseLight(GameParameters const & gameParameters);
 
     // Heat
-
-    void UpdateHeatDynamics(
-        float currentSimulationTime,
-		Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
 
     void PropagateHeat(
         float currentSimulationTime,

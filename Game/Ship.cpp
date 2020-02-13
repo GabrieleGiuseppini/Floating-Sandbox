@@ -129,6 +129,10 @@ void Ship::Update(
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
+    std::vector<TaskThreadPool::Task> parallelTasks;
+
+    /////////////////////////////////////////////////////////////////
+
     // Get the current wall clock time
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
 
@@ -139,9 +143,9 @@ void Ship::Update(
     VerifyInvariants();
 #endif
 
-    //
+    ///////////////////////////////////////////////////////////////////
     // Process eventual parameter changes
-    //
+    ///////////////////////////////////////////////////////////////////
 
     mPoints.UpdateForGameParameters(
         gameParameters);
@@ -166,14 +170,15 @@ void Ship::Update(
     mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 
 
-    //
+    ///////////////////////////////////////////////////////////////////
     // Update state machines
-    //
-    // May apply force fields!
-    //
+    ///////////////////////////////////////////////////////////////////
 
     UpdateStateMachines(currentSimulationTime, gameParameters);
 
+    /////////////////////////////////////////////////////////////////
+    // Update mechanical dynamics
+    /////////////////////////////////////////////////////////////////
 
     //
     // Rot points
@@ -181,6 +186,8 @@ void Ship::Update(
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, LowFrequencyPeriod))
     {
+        // - Inputs: Position, Water, IsLeaking
+        // - Output: Decay
         RotPoints(
             currentSimulationTime,
             gameParameters);
@@ -188,24 +195,73 @@ void Ship::Update(
 
 
     //
-    // Update mechanical dynamics
+    // Recalculate current masses and everything else that derives from them, once and for all
     //
 
-    UpdateMechanicalDynamics(
-        currentSimulationTime,
-        gameParameters,
-        renderContext);
+    // - Inputs: Water, AugmentedMaterialMass
+    // - Outputs: Mass
+    mPoints.UpdateMasses(gameParameters);
+
+
+    //
+    // Update non-spring forces
+    //
+
+    // Apply world forces
+    ApplyWorldForces(gameParameters);
+
+    //
+    // Run spring relaxation iterations
+    //
+
+    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
+    for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
+    {
+        // - SpringForces = 0
+
+        // Apply spring forces
+        ApplySpringsForces_BySprings(gameParameters);
+
+        // - SpringForces = fs
+
+        // Integrate spring and non-spring forces,
+        // and reset spring forces
+        IntegrateAndResetSpringForces(gameParameters);
+
+        // - SpringForces = 0
+
+        // Handle collisions with sea floor
+        //  - Changes position and velocity
+        HandleCollisionsWithSeaFloor(gameParameters);
+    }
+
+    //
+    // Reset non-spring forces, now that we have integrated them
+    //
+
+    // Check whether we need to save the non-spring force buffer before we zero it out
+    if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+    {
+        mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
+    }
+
+    // Zero-out non-spring forces
+    // - Outputs: NonSpringForce
+    mPoints.ResetNonSpringForces();
 
 
     //
     // Trim for world bounds
     //
 
+    // - Inputs: Position
+    // - Outputs: Position, Velocity
     TrimForWorldBounds(gameParameters);
 
-
-    //
+    /////////////////////////////////////////////////////////////////
     // Update bombs
+    /////////////////////////////////////////////////////////////////
+
     //
     // Might cause explosions; might cause elements to be detached/destroyed
     // (which would flag our structure as dirty)
@@ -217,49 +273,198 @@ void Ship::Update(
         gameParameters);
 
 
-    //
+    ///////////////////////////////////////////////////////////////////
     // Update strain for all springs; might cause springs to break
     // (which would flag our structure as dirty)
-    //
+    ///////////////////////////////////////////////////////////////////
 
+    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
+    // - Outputs: S.Destroy()
+    // - FiresEvents
     mSprings.UpdateForStrains(
         gameParameters,
         mPoints);
 
 
-    //
+    /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
+    /////////////////////////////////////////////////////////////////
+
+    //
+    // Update intake of water
     //
 
-    UpdateWaterDynamics(
+    float waterTakenInStep = 0.f;
+
+    // - Inputs: P.Position, P.Water, P.IsLeaking, P.Temperature, P.PlaneId
+    // - Outputs: P.Water, P.CumulatedIntakenWater
+    // - Creates ephemeral particles
+    UpdateWaterInflow(
         currentSimulationTime,
         stormParameters,
+        gameParameters,
+        waterTakenInStep);
+
+    // Notify intaken water
+    mGameEventHandler->OnWaterTaken(waterTakenInStep);
+
+
+    //
+    // Diffuse water
+    //
+
+    float waterSplashedInStep = 0.f;
+
+    // - Inputs: Position, Water, WaterVelocity, WaterMomentum, ConnectedSprings
+    // - Outpus: Water, WaterVelocity, WaterMomentum
+    UpdateWaterVelocities(gameParameters, waterSplashedInStep);
+
+    // Notify
+    mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
+
+
+    //
+    // Run sink/unsink detection
+    //
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, LowFrequencyPeriod))
+    {
+        UpdateSinking();
+    }
+
+
+    ///////////////////////////////////////////////////////////////////
+    // Update electrical dynamics
+    ///////////////////////////////////////////////////////////////////
+
+    // Generate a new visit sequence number
+    ++mCurrentElectricalVisitSequenceNumber;
+
+    //
+    // 1. Update automatic conductivity toggles (e.g. water-sensing switches)
+    //
+
+    mElectricalElements.UpdateAutomaticConductivityToggles(
+        mPoints);
+
+    //
+    // 2. Update sources and connectivity
+    //
+    // We do this regardless of dirty elements, as elements might have changed their state
+    // (e.g. generators might have become wet, switches might have been toggled, etc.)
+    //
+
+    mElectricalElements.UpdateSourcesAndPropagation(
+        mCurrentElectricalVisitSequenceNumber,
+        mPoints,
         gameParameters);
 
 
     //
-    // Update electrical dynamics
+    // 3. Update sinks
     //
 
-    UpdateElectricalDynamics(
+    mElectricalElements.UpdateSinks(
         currentWallClockTime,
         currentSimulationTime,
+        mCurrentElectricalVisitSequenceNumber,
+        mPoints,
         gameParameters);
 
-
-    //
+    ///////////////////////////////////////////////////////////////////
     // Update heat dynamics
-    //
+    ///////////////////////////////////////////////////////////////////
 
-    UpdateHeatDynamics(
-        currentSimulationTime,
-		stormParameters,
-        gameParameters);
+    assert(parallelTasks.empty()); // We want this to run on the main thread
 
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            //
+            // Propagate heat
+            //
 
-    //
+            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
+            // - Outputs: P.Temperature
+            PropagateHeat(
+                currentSimulationTime,
+                GameParameters::SimulationStepTimeDuration<float>,
+                stormParameters,
+                gameParameters);
+
+            //
+            // Update slow combustion state machine
+            //
+
+            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    0,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    1,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    2,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
+            {
+                mPoints.UpdateCombustionLowFrequency(
+                    3,
+                    4,
+                    currentSimulationTime,
+                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
+                    stormParameters,
+                    gameParameters);
+            }
+
+            //
+            // Update fast combustion state machine
+            //
+
+            mPoints.UpdateCombustionHighFrequency(
+                currentSimulationTime,
+                GameParameters::SimulationStepTimeDuration<float>,
+                gameParameters);
+        });
+
+    ///////////////////////////////////////////////////////////////////
+    // Diffuse light from lamps
+    ///////////////////////////////////////////////////////////////////
+
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
+            //      - EL.AvailableLight depends on electricals which depend on water
+            // - Outputs: P.Light
+            DiffuseLight(gameParameters);
+        });
+
+    mTaskThreadPool->RunAndClear(parallelTasks);
+
+    ///////////////////////////////////////////////////////////////////
     // Update ephemeral particles
-    //
+    ///////////////////////////////////////////////////////////////////
 
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
@@ -452,81 +657,6 @@ void Ship::Render(
 ///////////////////////////////////////////////////////////////////////////////////
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
-
-void Ship::UpdateMechanicalDynamics(
-    float /*currentSimulationTime*/,
-    GameParameters const & gameParameters,
-    Render::RenderContext const & renderContext)
-{
-    // Now:
-    // - SpringForces = 0
-    // - NonSpringForces = fw' (interactions, etc.)
-
-    //
-    // Recalculate current masses and everything else that derives from them, once and for all
-    //
-
-    mPoints.UpdateMasses(gameParameters);
-
-    //
-    // Update non-spring forces
-    //
-
-    // Apply world forces
-    ApplyWorldForces(gameParameters);
-
-    // Now:
-    // - SpringForces = 0
-    // - NonSpringForces = fw' + fw''
-
-    //
-    // Run spring relaxation iterations
-    //
-
-    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
-    for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
-    {
-        // Now:
-        // - SpringForces = 0
-        // - NonSpringForces = fw' + fw''
-
-        // Apply spring forces
-        ApplySpringsForces_BySprings(gameParameters);
-
-        // Now:
-        // - SpringForces = fs
-        // - NonSpringForces = fw' + fw''
-
-        // Integrate spring and non-spring forces,
-        // and reset spring forces
-        IntegrateAndResetSpringForces(gameParameters);
-
-        // Now:
-        // - SpringForces = 0
-        // - NonSpringForces = fw' + fw''
-
-        // Handle collisions with sea floor
-        //  - Changes position and velocity
-        HandleCollisionsWithSeaFloor(gameParameters);
-    }
-
-    //
-    // Reset non-spring forces, now that we have integrated them
-    //
-
-    // Check whether we need to save the non-spring force buffer before we zero it out
-    if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
-    {
-        mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
-    }
-
-    // Zero-out non-spring forces
-    mPoints.ResetNonSpringForces();
-
-    // Now:
-    // - SpringForces = 0
-    // - NonSpringForces = 0
-}
 
 void Ship::ApplyWorldForces(GameParameters const & gameParameters)
 {
@@ -997,48 +1127,6 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 // Water Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateWaterDynamics(
-    float currentSimulationTime,
-    Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
-{
-    //
-    // Update intake of water
-    //
-
-    float waterTakenInStep = 0.f;
-
-    UpdateWaterInflow(
-        currentSimulationTime,
-        stormParameters,
-        gameParameters,
-        waterTakenInStep);
-
-    // Notify
-    mGameEventHandler->OnWaterTaken(waterTakenInStep);
-
-
-    //
-    // Diffuse water
-    //
-
-    float waterSplashedInStep = 0.f;
-    UpdateWaterVelocities(gameParameters, waterSplashedInStep);
-
-    // Notify
-    mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
-
-
-    //
-    // Run sink/unsink detection
-    //
-
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, LowFrequencyPeriod))
-    {
-        UpdateSinking();
-    }
-}
-
 void Ship::UpdateWaterInflow(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
@@ -1493,52 +1581,6 @@ void Ship::UpdateSinking()
 // Electrical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateElectricalDynamics(
-    GameWallClock::time_point currentWallclockTime,
-    float currentSimulationTime,
-    GameParameters const & gameParameters)
-{
-    // Generate a new visit sequence number
-    ++mCurrentElectricalVisitSequenceNumber;
-
-    //
-    // 1. Update automatic conductivity toggles (e.g. water-sensing switches)
-    //
-
-    mElectricalElements.UpdateAutomaticConductivityToggles(
-        mPoints);
-
-    //
-    // 2. Update sources and connectivity
-    //
-    // We do this regardless of dirty elements, as elements might have changed their state
-    // (e.g. generators might have become wet, switches might have been toggled, etc.)
-    //
-
-    mElectricalElements.UpdateSourcesAndPropagation(
-        mCurrentElectricalVisitSequenceNumber,
-        mPoints,
-        gameParameters);
-
-
-    //
-    // 3. Update sinks
-    //
-
-    mElectricalElements.UpdateSinks(
-        currentWallclockTime,
-        currentSimulationTime,
-        mCurrentElectricalVisitSequenceNumber,
-        mPoints,
-        gameParameters);
-
-    //
-    // Diffuse light from lamps
-    //
-
-    DiffuseLight(gameParameters);
-}
-
 void Ship::DiffuseLight(GameParameters const & gameParameters)
 {
     //
@@ -1595,76 +1637,6 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 ///////////////////////////////////////////////////////////////////////////////////
 // Heat
 ///////////////////////////////////////////////////////////////////////////////////
-
-void Ship::UpdateHeatDynamics(
-    float currentSimulationTime,
-	Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
-{
-    //
-    // Propagate heat
-    //
-
-    PropagateHeat(
-        currentSimulationTime,
-        GameParameters::SimulationStepTimeDuration<float>,
-		stormParameters,
-        gameParameters);
-
-    //
-    // Update slow combustion state machine
-    //
-
-    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            0,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-			stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            1,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-			stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            2,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-			stormParameters,
-            gameParameters);
-    }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
-    {
-        mPoints.UpdateCombustionLowFrequency(
-            3,
-            4,
-            currentSimulationTime,
-            GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
-			stormParameters,
-            gameParameters);
-    }
-
-    //
-    // Update fast combustion state machine
-    //
-
-    mPoints.UpdateCombustionHighFrequency(
-        currentSimulationTime,
-        GameParameters::SimulationStepTimeDuration<float>,
-        gameParameters);
-}
 
 void Ship::PropagateHeat(
     float /*currentSimulationTime*/,

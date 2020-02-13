@@ -20,6 +20,7 @@
 - Slightly improved rigidity of structures
 	- ...but more improvements are yet to come!
 - Repairing a ship's structure now also repairs its electricals
+- Added ability to change color of lamp lights
 - Adjusted physical properties of ropes, which were too light and too strong
 - ...and a few more small improvements here and there
 

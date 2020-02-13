@@ -507,61 +507,53 @@ Render:
 			+ Create at controller and pass as shared_ptr down the hierarchy
 			+ Pre-perf: 
 				+ Dell: 21.8 ms/30.5 fps
-				+ Samsung: 96 ms/9.15 fps; Szerszen: 312ms/3.0 fps				
+				+ Samsung: 96 ms/9.15 fps; Szerszen: 312 ms/3.0 fps
+				+ HP: 47.32 ms/15.7 fps
 			+ BufferAllocator::Allocate() needs to become multi-thread friendly
 			+ Get timings of Ship::Update
 			+ Fork
-			- Ship::Update: Run concurrently:
-				- 1) UpdateMechanicalDynamics: 
-					- Nuke the old _ByPoints
-					- Do n+1 iterations:
-						- First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
-						- First iteration does not need to integrate+collisions
-						- (n-1) iterations in parallel; at each step i, do in parallel:
-							- ApplySpringForces(pi, vi) -> (fsi+1)
-							- Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
-						- Last iteration does not need to apply spring forces
-						- Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
+			+ Ship::Update: Run concurrently:
+				X 1) UpdateMechanicalDynamics: 
+					+ Nuke the old _ByPoints
+					X Do n+1 iterations:
+						+ First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
+						+ First iteration does not need to integrate+collisions
+						+ (n-1) iterations in parallel; at each step i, do in parallel:
+							+ ApplySpringForces(pi, vi) -> (fsi+1)
+							+ Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
+						+ Last iteration does not need to apply spring forces
+						+ Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
 						  mBuffer and argument buffer
-					- TODO: DOUBLE-THINK: If not multi-threaded, then maintain current structure, but still the three
-					  functions take (restrict? potentially the same) pointer args
-					- Post-perf:
-						- Dell:
-						- Samsung:
-					- Cleanup:
-						- Can get rid of Points::SpringForces? If so, rename the remaining force buffer
-						  as plain "Force"
-				- 2) TODOHERE: identify other parallelizable tasks; candidates:
-					- WaterDynamics, HeatDynamics, DiffuseLight
-			- [If needed] Avoid firing events from threads:
-				- 1) World::Update() gets EventHandler from outside each time, not at cctor; and same down
-				  the hierarchy up to individual leaf methods that need it
-					! So if a method is not given the handler, then it can't fire events
-				- 2) GameEventDispatcher: events that are fired by other threads are to be aggregated,
-				  so that they are fired on main thread by Flush()
-					- Aggregation needs to become multi-thread friendly, at least for these events
-						- No major cost if we always lock at Flush()
-					- If a (concurrent) event producer is expected to produce a TON of these new to-be-aggregated
-					  events, then it's best if it "aggregates" itself before invoking the event dispatcher					
-			- Samsung post-perf:
+						X Doesn't work
+				+ 2) TODOHERE: identify other parallelizable tasks; candidates:
+					+ WaterDynamics, HeatDynamics, DiffuseLight
+			+ Samsung post-perf: 94.5 ms/9.1 fps | 49.5 ms/16.9 fps; Szerszen: 298 ms/3.2 fps
+			+ HP post-perf: 46.4 ms/16.0 fps
+			+ Verify multi-threading
+			+ Undo
+			+ Try DiffuseLight + Whole thermal
+				+ Pre-perf Titanic with Lights:
+					+ Samsung: 165 ms/5.6 fps
+				+ Post-perf Titanic with Lights:
+					+ Samsung: 162 ms/5.7 fps
+			+ Commit
 			- Merge
 			- changes.txt
 
-		- Add "Bluefox" to About box's ship engineers
-		- I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
-		  leaving it completely white.
-		- Change light colors to match Desktop\LightColors.png (CABCA5)
-			- And add new render param for shaders
-		- Lower gunpowder strength
-		- Cardboard flies too fast when hot - lower thermal expansion
-		- See if should take Mike's Titanic electricals 
-		- Check Mike's materials
+		- TrimForWorldBounds: clamp coords to zero after bounce
+		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
+		  leaving it completely white"
+		+ Change light colors to match Mike's
+			+ And add new render param for shaders
+		- Materials changes:
+			- Lower gunpowder strength
+			- Cardboard flies too fast when hot - lower thermal expansion
+			- Check Mike's changes
+		- See if should take Mike's Titanic electricals 		
 		- Reduce sea's little waves from gusts
 		- Hull should decay less
-
 		- Also GoodYear should be full of hydrogen		
 		- Selector for panel background
-
 		
 		- Propulsion (*)
 
@@ -577,9 +569,23 @@ Render:
 			- Website: add FAQ for electrical panel -> Gabe's blog
 
 		- Cursors at night
-			- Might just change luminosity in tools based on ambient light changes
-				- ToolController would have to be notified about it, may be via a new event fired by GameController
-				  (and one day by the day-night cycle)
+			- ToolController is notified about effective ambient light changes, via a new event fired by GameController
+			  (and one day by the day-night cycle)
+				- Changes mCurrentEffectiveAmbientLightIntensity
+			- Tools don't have mParentWindow anymore, but cctor gets ICursorManager &
+				- virtual void ICursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f)
+			- ICursorManager stored at base
+			- Tools invoke mCursorManager.SetCursor(.)
+			- ToolController::ICursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f) override
+				- Store sh_ptr<Image> -> mCurrentCursorImage, strength -> mCurrentCursorStrength
+				- Calls InternalSetCurrentCursor()
+			- ToolController::InternalSetCurrentCursor():
+				- Make tmp image from mCurrentCursorImage and lighted based off mCurrentEffectiveAmbientLightIntensity
+				- Make power bar based off mCurrentCursorStrength
+				- Make wxCursor (local) and set on mParentWindow			 
+			- Power bar cursors: at power bar change, call mCursorManager.SetCursor(cur img, new strength)
+
+		- Pinch tool (*):
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
@@ -597,7 +603,24 @@ Render:
 		- Run w/OpenGL tracing to see if there's any errors
 
 		- Multi-threading, phase II:
-			- TBD
+			- Springs: each iteration done in parallel with NThreads partitions
+				- Pre-perf: 
+					- Dell: x ms/x fps
+					- Samsung: x ms/x fps
+				- Do
+					- Pool: if run 1, run straight away on main thread
+					- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
+						- @ShipBuilder:
+							- Is given # of partitions
+								- ...caller uses mThreadPool->GetNumberOfThreads();
+							- N-1 partitions plus one "stitching" partition
+								- Partition points and all springs between those points
+								- Put cross-partition springs into last partition
+					- Prepare parallel tasks
+					- Run parallel tasks
+				- Post-perf: 
+					- Dell: x ms/x fps
+					- Samsung: x ms/x fps
 
 		- Lights/materials breaking under pressure (*)		
 		- Break lights when structure gets "broken"
@@ -968,9 +991,7 @@ Render:
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
-	- Background ships: just any of the other ships, that would sail in the background
-
-	- Selector to change color of (intaken) water
+	- Background ships: just any of the other ships, that would sail in the background	
 
 	- Heat overlay more integrated in game play:
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaced black with alpha=0
@@ -1095,8 +1116,12 @@ Render:
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
-	- Pinch tool
-
+	- Pinch tool (*):
+		- Picks a point and keeps setting a force on it with a growing strength
+			- State machine (strength growth) done by tool
+		- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
+		- Cursor: pliers or tweezers
+		
 	- Lightning tool that summons lightning wherever it has been clicked
 
 	- Consider making world 1.5 times wider
@@ -1220,8 +1245,9 @@ Render:
 				! ToggleSwitch
 				+ PushSwitch
 			- Add PowerProbe types: PowerMonitor and Generator
-		+ EventHandler:
-			+ Add power monitor events
+		- EventHandler:
+			= Add power monitor events
+				- Take float between -1.0 and +1.0
 		- New Instanced Generator electrical material
 			- Add to json, new generator altogether, other is !IsInstanced
 			- ElectricalElements::Add: add both to sources, treat both of them equally
@@ -1232,6 +1258,7 @@ Render:
 			- PowerMonitor (announcement type 1)
 			- (Instanced)Generator (announcement type 2)
 				- Uses own state's IsProducingCurrent as current state
+			- Engine (announcement type 3) (see below)
 		- Destroy/Repair at ElectricalElements::Destroy/Repair:
 			! Make sure announcement follows when generator is restored and becomes powered
 			! Alignment of state::IsProducingCurrent with announced state: it's the same
@@ -1262,7 +1289,8 @@ Render:
 				+ Also rename pngs
 			= Add power probes to switchboard
 				- Type 1 (PowerMonitor): red/green/grey above
-				- Type 2 (Generator): Volt gauge (also new control)
+				- Type 2 (Generator): Volt gauge (on abs of value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
+				- Type 3 (Engine): RPM gauge (GaugeControl w/other bg)
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)
@@ -1320,45 +1348,27 @@ Render:
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
 
-
-	- Propulsion
+	- Propulsion (*)
 		! Requires "Forces Rearc" or "Position-based Springs"
 		- 1 new ElectricalElementType: Engine
 		- 2 electrical materials: engine x {LR/UD}
 			- Need a new engine-specific electrical material property: engine_direction
 		- 1 new ElectricalElementType: EngineControl
 		- 1 electrical material
-		- EngineControl (telegraph) controls all connected, value={-1.0,...,+1.0}
+		- EngineControl (telegraph) controls all connected, value={-1.0, ..., +1.0}
 			- Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
 			  material
 		- EngineControl announces EngineControl
-		- Engine announces PowerMonitor
-			- To be decided, really
+		- Engine announces PowerMonitor of type Engine
+			- See above
 		- UpdateSinks: 
 			- EngineControl: TODOHERE
 			- Engine: TODOHERE
 		- Gfx:
 			- Telegraph with hand
+				- N already-rotated hand bitmaps
 				- Research credits
-		- TODOOLD:
-		- New electrical element - engine
-			- Publicized like switch, and switchboard shows slider
-				- Need custom-drawn ShipSliderControl control
-		- Electrical current (0.0 vs !=0.0) and slider ("engine speed" buffer) control force
-		- At ElectricalElements::Update(): if powered, apply force to point (4 materials for 4 directions)
-			- Requires forces rearc, with separate "Mechanical" and "Other" force buffers
-				- And smarter zeroing of Mechanical
-			- OR: requires position-based springs
-			- Or can we piggyback on the "non-spring" force buffer that we talk about at "force rearc" above?
-		- TODOOLD:
-		- Since engine will be adding forces, which are zeroed before mechanical dynamics:
-			- Test moving electricals before mechanical dynamics
-				- Forces need to be zeroed out before electricals, then
-				- Move out zeroing from mechanical dynamics
-				- Test:
-					- Pay attention to lights:
-						- At beginning of game
-						- Delay of one step w/breakages
+			- RPM Gauge
 
 	- Logic Gates
 		- New ElectricalMaterial type
@@ -3273,6 +3283,7 @@ IF WX:
 			+ Research glFlush()
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
+	+ Selector to change color of (intaken) water
 
 + Gfx Optimizations:
 	+ Try without buffer population: 			

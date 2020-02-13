@@ -74,6 +74,7 @@ enum class ProgramParameterType : uint8_t
     FlameSpeed,
     FlameWindRotationAngle,
     HeatOverlayTransparency,
+    LampLightColor,
     LandFlatColor,
     MatteColor,
     OceanTransparency,

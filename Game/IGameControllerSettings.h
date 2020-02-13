@@ -229,20 +229,26 @@ struct IGameControllerSettings
     virtual float GetAmbientLightIntensity() const = 0;
     virtual void SetAmbientLightIntensity(float value) = 0;
 
-    virtual float GetWaterContrast() const = 0;
-    virtual void SetWaterContrast(float value) = 0;
-
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;
 
     virtual float GetOceanDarkeningRate() const = 0;
     virtual void SetOceanDarkeningRate(float value) = 0;
 
-    virtual bool GetShowShipThroughOcean() const = 0;
-    virtual void SetShowShipThroughOcean(bool value) = 0;
+    virtual rgbColor const & GetFlatLampLightColor() const = 0;
+    virtual void SetFlatLampLightColor(rgbColor const & color) = 0;
+
+    virtual rgbColor const & GetDefaultWaterColor() const = 0;
+    virtual void SetDefaultWaterColor(rgbColor const & color) = 0;
+
+    virtual float GetWaterContrast() const = 0;
+    virtual void SetWaterContrast(float value) = 0;
 
     virtual float GetWaterLevelOfDetail() const = 0;
     virtual void SetWaterLevelOfDetail(float value) = 0;
+
+    virtual bool GetShowShipThroughOcean() const = 0;
+    virtual void SetShowShipThroughOcean(bool value) = 0;
 
     virtual ShipRenderMode GetShipRenderMode() const = 0;
     virtual void SetShipRenderMode(ShipRenderMode shipRenderMode) = 0;

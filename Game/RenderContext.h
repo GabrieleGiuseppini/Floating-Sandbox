@@ -334,6 +334,34 @@ public:
         OnLandRenderParametersUpdated();
     }
 
+    //
+    // Ship rendering properties
+    //
+
+    rgbColor const & GetFlatLampLightColor() const
+    {
+        return mFlatLampLightColor;
+    }
+
+    void SetFlatLampLightColor(rgbColor const & color)
+    {
+        mFlatLampLightColor = color;
+
+        OnFlatLampLightColorUpdated();
+    }
+
+    rgbColor const & GetDefaultWaterColor() const
+    {
+        return mDefaultWaterColor;
+    }
+
+    void SetDefaultWaterColor(rgbColor const & color)
+    {
+        mDefaultWaterColor = color;
+
+        OnDefaultWaterColorUpdated();
+    }
+
     float GetWaterContrast() const
     {
         return mWaterContrast;
@@ -360,10 +388,6 @@ public:
 
     static constexpr float MinWaterLevelOfDetail = 0.0f;
     static constexpr float MaxWaterLevelOfDetail = 1.0f;
-
-    //
-    // Ship rendering properties
-    //
 
     ShipRenderMode GetShipRenderMode() const
     {
@@ -1578,6 +1602,9 @@ private:
     void OnOceanTextureIndexUpdated();
     void OnLandRenderParametersUpdated();
     void OnLandTextureIndexUpdated();
+
+    void OnFlatLampLightColorUpdated();
+    void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnShipRenderModeUpdated();
@@ -1590,6 +1617,7 @@ private:
     void OnShipFlameSizeAdjustmentUpdated();
 
     void UpdateWorldBorder();
+    vec4f CalculateLampLightColor() const;
     vec4f CalculateWaterColor() const;
 
 private:
@@ -1879,11 +1907,6 @@ private:
     float mAmbientLightIntensity;
     float mOceanTransparency;
     float mOceanDarkeningRate;
-    bool mShowShipThroughOcean;
-    float mWaterContrast;
-    float mWaterLevelOfDetail;
-    ShipRenderMode mShipRenderMode;
-    DebugShipRenderMode mDebugShipRenderMode;
     OceanRenderMode mOceanRenderMode;
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     size_t mSelectedOceanTextureIndex;
@@ -1894,6 +1917,14 @@ private:
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
     size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
+
+    rgbColor mFlatLampLightColor;
+    rgbColor mDefaultWaterColor;
+    bool mShowShipThroughOcean;
+    float mWaterContrast;
+    float mWaterLevelOfDetail;
+    ShipRenderMode mShipRenderMode;
+    DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;

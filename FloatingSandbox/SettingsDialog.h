@@ -56,7 +56,7 @@ private:
     void OnTextureOceanChanged(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
-    void OnFlatOceanColorChanged(wxColourPickerEvent & event);
+    void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
     void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
@@ -65,6 +65,9 @@ private:
     void OnTextureLandChanged(wxCommandEvent & event);
     void OnFlatLandColorChanged(wxColourPickerEvent & event);
     void OnFlatSkyColorChanged(wxColourPickerEvent & event);
+
+    void OnFlatOceanColorChanged(wxColourPickerEvent & event);
+    void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
 
     void OnShipRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnShowStressCheckBoxClick(wxCommandEvent & event);
@@ -185,6 +188,8 @@ private:
     wxRadioButton * mTextureShipRenderModeRadioButton;
     wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
+    wxColourPickerCtrl * mFlatLampLightColorPicker;
+    wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;
