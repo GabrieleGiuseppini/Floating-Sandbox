@@ -25,26 +25,24 @@
 #include <sstream>
 #include <string>
 
-class Utils
+namespace Utils
 {
-public:
-
     ////////////////////////////////////////////////////////
     // JSON
     ////////////////////////////////////////////////////////
 
-    static picojson::value ParseJSONFile(std::filesystem::path const & filepath);
+    picojson::value ParseJSONFile(std::filesystem::path const & filepath);
 
-    static picojson::value ParseJSONStream(std::istream const & stream);
+    picojson::value ParseJSONStream(std::istream const & stream);
 
-    static picojson::value ParseJSONString(std::string const & jsonString);
+    picojson::value ParseJSONString(std::string const & jsonString);
 
-    static void SaveJSONFile(
+    void SaveJSONFile(
         picojson::value const & value,
         std::filesystem::path const & filepath);
 
     template<typename T>
-    static T const & GetJsonValueAs(
+    inline T const & GetJsonValueAs(
         picojson::value const & value,
         std::string const & memberName)
     {
@@ -57,7 +55,7 @@ public:
     }
 
     template<typename T>
-    static T GetOptionalJsonMember(
+    inline T GetOptionalJsonMember(
         picojson::object const & obj,
         std::string const & memberName,
         T const & defaultValue)
@@ -76,8 +74,38 @@ public:
         return memberIt->second.get<T>();
     }
 
+    template<>
+    inline float GetOptionalJsonMember<float>(
+        picojson::object const & obj,
+        std::string const & memberName,
+        float const & defaultValue)
+    {
+        double defaultValueDouble = static_cast<double>(defaultValue);
+
+        return static_cast<float>(
+            GetOptionalJsonMember<double>(
+                obj,
+                memberName,
+                defaultValueDouble));
+    }
+
+    template<>
+    inline int GetOptionalJsonMember<int>(
+        picojson::object const & obj,
+        std::string const & memberName,
+        int const & defaultValue)
+    {
+        int64_t defaultValueInt64 = static_cast<int64_t>(defaultValue);
+
+        return static_cast<int>(
+            GetOptionalJsonMember<int64_t>(
+                obj,
+                memberName,
+                defaultValueInt64));
+    }
+
     template<typename T>
-    static std::optional<T> GetOptionalJsonMember(
+    inline std::optional<T> GetOptionalJsonMember(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -95,7 +123,31 @@ public:
         return std::make_optional<T>(memberIt->second.get<T>());
     }
 
-    static std::optional<picojson::object> GetOptionalJsonObject(
+    template<>
+    inline std::optional<float> GetOptionalJsonMember<float>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto r = GetOptionalJsonMember<double>(obj, memberName);
+        if (r)
+            return static_cast<float>(*r);
+        else
+            return std::nullopt;
+    }
+
+    template<>
+    inline std::optional<int> GetOptionalJsonMember<int>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto r = GetOptionalJsonMember<int64_t>(obj, memberName);
+        if (r)
+            return static_cast<int>(*r);
+        else
+            return std::nullopt;
+    }
+
+    inline std::optional<picojson::object> GetOptionalJsonObject(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -114,7 +166,7 @@ public:
     }
 
     template<typename T>
-    static T GetMandatoryJsonMember(
+    inline T GetMandatoryJsonMember(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -132,7 +184,29 @@ public:
         return memberIt->second.get<T>();
     }
 
-    static picojson::object GetMandatoryJsonObject(
+    template<>
+    inline float GetMandatoryJsonMember<float>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        return static_cast<float>(
+            Utils::GetMandatoryJsonMember<double>(
+                obj,
+                memberName));
+    }
+
+    template<>
+    inline int GetMandatoryJsonMember<int>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        return static_cast<int>(
+            Utils::GetMandatoryJsonMember<std::uint64_t>(
+                obj,
+                memberName));
+    }
+
+    inline picojson::object GetMandatoryJsonObject(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -150,7 +224,7 @@ public:
         return memberIt->second.get<picojson::object>();
     }
 
-    static picojson::array GetMandatoryJsonArray(
+    inline picojson::array GetMandatoryJsonArray(
         picojson::object const & obj,
         std::string const & memberName)
     {
@@ -172,7 +246,7 @@ public:
     // String
     ////////////////////////////////////////////////////////
 
-    static std::string Trim(std::string const & str)
+    inline std::string Trim(std::string const & str)
     {
         std::string str2 = str;
         str2.erase(str2.begin(), std::find_if(str2.begin(), str2.end(), [](int ch) {
@@ -182,7 +256,7 @@ public:
         return str2;
     }
 
-    static std::string ToLower(std::string const & str)
+    inline std::string ToLower(std::string const & str)
     {
         std::string lstr = str;
         std::transform(
@@ -194,7 +268,7 @@ public:
         return lstr;
     }
 
-    static bool CaseInsensitiveEquals(std::string const & str1, std::string const & str2)
+    inline bool CaseInsensitiveEquals(std::string const & str1, std::string const & str2)
     {
         if (str1.length() != str2.length())
             return false;
@@ -207,7 +281,7 @@ public:
     }
 
     template <typename TIterable>
-    static std::string Join(TIterable const & elements, std::string const & separator)
+    inline std::string Join(TIterable const & elements, std::string const & separator)
     {
         std::stringstream ss;
         bool first = true;
@@ -223,7 +297,7 @@ public:
         return ss.str();
     }
 
-    static uint8_t Hex2Byte(std::string const & str)
+    inline uint8_t Hex2Byte(std::string const & str)
     {
         std::stringstream ss;
         ss << std::hex << str;
@@ -233,7 +307,7 @@ public:
         return static_cast<uint8_t>(x);
     }
 
-    static std::string Byte2Hex(uint8_t byte)
+    inline std::string Byte2Hex(uint8_t byte)
     {
         std::stringstream ss;
         ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(byte);
@@ -241,7 +315,7 @@ public:
         return ss.str();
     }
 
-    static rgbColor Hex2RgbColor(std::string str)
+    inline rgbColor Hex2RgbColor(std::string str)
     {
         if (str[0] == '#')
             str = str.substr(1);
@@ -255,13 +329,13 @@ public:
             Hex2Byte(str.substr(4, 2)));
     }
 
-    static std::string RgbColor2Hex(rgbColor const & rgbColor)
+    inline std::string RgbColor2Hex(rgbColor const & rgbColor)
     {
         return std::string("#") + Byte2Hex(rgbColor.r) + Byte2Hex(rgbColor.g) + Byte2Hex(rgbColor.b);
     }
 
     template<typename TValue>
-    static bool LexicalCast(
+    inline bool LexicalCast(
         std::string const & str,
         TValue * outValue)
     {
@@ -281,7 +355,7 @@ public:
     }
 
     template<>
-    static bool LexicalCast(
+    inline bool LexicalCast(
         std::string const & str,
         uint8_t * outValue)
     {
@@ -304,7 +378,7 @@ public:
     // Text files
     ////////////////////////////////////////////////////////
 
-    static std::string LoadTextFile(std::filesystem::path const & filepath)
+    inline std::string LoadTextFile(std::filesystem::path const & filepath)
     {
         std::ifstream file(filepath.string(), std::ios::in);
         if (!file.is_open())
@@ -318,7 +392,7 @@ public:
         return ss.str();
     }
 
-    static std::string LoadTextStream(std::istream const & stream)
+    inline std::string LoadTextStream(std::istream const & stream)
     {
         std::stringstream ss;
         ss << stream.rdbuf();
@@ -326,7 +400,7 @@ public:
         return ss.str();
     }
 
-    static void SaveTextFile(
+    inline void SaveTextFile(
         std::string const & content,
         std::filesystem::path const & filepath)
     {
@@ -343,79 +417,3 @@ public:
         file << content;
     }
 };
-
-template<>
-inline float Utils::GetOptionalJsonMember<float>(
-    picojson::object const & obj,
-    std::string const & memberName,
-    float const & defaultValue)
-{
-    double defaultValueDouble = static_cast<double>(defaultValue);
-
-    return static_cast<float>(
-        GetOptionalJsonMember<double>(
-            obj,
-            memberName,
-            defaultValueDouble));
-}
-
-template<>
-inline int Utils::GetOptionalJsonMember<int>(
-    picojson::object const & obj,
-    std::string const & memberName,
-    int const & defaultValue)
-{
-    int64_t defaultValueInt64 = static_cast<int64_t>(defaultValue);
-
-    return static_cast<int>(
-        GetOptionalJsonMember<int64_t>(
-            obj,
-            memberName,
-            defaultValueInt64));
-}
-
-template<>
-inline std::optional<float> Utils::GetOptionalJsonMember<float>(
-    picojson::object const & obj,
-    std::string const & memberName)
-{
-    auto r = GetOptionalJsonMember<double>(obj, memberName);
-    if (r)
-        return static_cast<float>(*r);
-    else
-        return std::nullopt;
-}
-
-template<>
-inline std::optional<int> Utils::GetOptionalJsonMember<int>(
-    picojson::object const & obj,
-    std::string const & memberName)
-{
-    auto r = GetOptionalJsonMember<int64_t>(obj, memberName);
-    if (r)
-        return static_cast<int>(*r);
-    else
-        return std::nullopt;
-}
-
-template<>
-inline float Utils::GetMandatoryJsonMember<float>(
-    picojson::object const & obj,
-    std::string const & memberName)
-{
-    return static_cast<float>(
-        Utils::GetMandatoryJsonMember<double>(
-            obj,
-            memberName));
-}
-
-template<>
-inline int Utils::GetMandatoryJsonMember<int>(
-    picojson::object const & obj,
-    std::string const & memberName)
-{
-    return static_cast<int>(
-        Utils::GetMandatoryJsonMember<std::uint64_t>(
-            obj,
-            memberName));
-}

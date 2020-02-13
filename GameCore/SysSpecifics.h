@@ -157,7 +157,7 @@ inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
 #ifdef _MSC_VER
     return _aligned_malloc(aligned_byte_size, vectorization_byte_count<size_t>);
 #else
-    return std::aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
+    return aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
 #endif
 }
 
