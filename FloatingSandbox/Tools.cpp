@@ -11,7 +11,6 @@
 #include <wx/image.h>
 
 #include <cassert>
-static constexpr int CursorStep = 30;
 
 wxImage LoadCursorImage(
     std::string const & cursorName,

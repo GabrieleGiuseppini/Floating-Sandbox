@@ -147,6 +147,14 @@ TEST(GameMathTests, Clamp_Basic)
     EXPECT_EQ(3.0f, Clamp(3.0f, 2.0f, 4.0f));
 }
 
+TEST(GameMathTests, Step_Basic)
+{
+    EXPECT_EQ(0.0f, Step(1.0f, 0.5f));
+    EXPECT_EQ(0.0f, Step(1.0f, 0.995f));
+    EXPECT_EQ(1.0f, Step(1.0f, 1.0f));
+    EXPECT_EQ(1.0f, Step(1.0f, 2.0f));
+}
+
 TEST(GameMathTests, LinearStep_Basic)
 {
     EXPECT_EQ(0.0f, LinearStep(1.0f, 2.0f, 0.5f));

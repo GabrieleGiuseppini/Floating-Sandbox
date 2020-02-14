@@ -127,6 +127,13 @@ inline T Mix(
     return val1 * (1.0f - x) + val2 * x;
 }
 
+inline float Step(
+    float lEdge,
+    float x) noexcept
+{
+    return x < lEdge ? 0.0f : 1.0f;
+}
+
 inline float LinearStep(
     float lEdge,
     float rEdge,

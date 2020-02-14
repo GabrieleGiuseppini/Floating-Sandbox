@@ -530,6 +530,8 @@ public:
     float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
 
+    float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
+
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 

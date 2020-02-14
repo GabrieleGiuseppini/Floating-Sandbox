@@ -820,6 +820,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mToolController = std::make_unique<ToolController>(
             initialToolType,
+            mGameController->GetEffectiveAmbientLightIntensity(),
             mMainGLCanvas.get(),
             mGameController,
             mSoundController,
@@ -845,6 +846,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
+    mToolController->RegisterEventHandler(*mGameController);
 
 
     //

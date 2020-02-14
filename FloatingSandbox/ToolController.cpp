@@ -5,12 +5,14 @@
 ***************************************************************************************/
 #include "ToolController.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>
 
 #include <cassert>
 
 ToolController::ToolController(
     ToolType initialToolType,
+    float initialEffectiveAmbientLightIntensity,
     wxWindow * parentWindow,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
@@ -24,7 +26,7 @@ ToolController::ToolController(
     , mSoundController(soundController)
     // Cursor
     , mCurrentToolCursor()
-    , mCurrentEffectiveAmbientLightIntensity(0.0f)
+    , mCurrentEffectiveAmbientLightIntensity(initialEffectiveAmbientLightIntensity)
 {
     //
     // Initialize all tools
@@ -303,28 +305,56 @@ void ToolController::InternalSetCurrentToolCursor()
     unsigned char * const data = newCursorImage.GetData();
 
     // Calculate height of power bar
-    bool const isMaxStrength = (mCurrentToolCursor.Strength == 1.0f);
     int const powerHeight = static_cast<int>(floorf(static_cast<float>(imageHeight) * mCurrentToolCursor.Strength));
 
+    // Calculate target power bar color
+    // Red   = 0xDB0F0F
+    // Green = 0x039B0A (final)
+    rgbColor const powerColor = (mCurrentToolCursor.Strength == 1.0f)
+        ? rgbColor(0x03, 0x9B, 0x0A)
+        : rgbColor(0xDB, 0x0F, 0x0F);
+
+    // Target color when the scene is dark
+    vec3f const lightenedCursorColor(0.8f, 0.8f, 0.8f);
+    float const lighteningStrength = Step(0.6f, 1.0f - mCurrentEffectiveAmbientLightIntensity);
+
     // Start from top
-    for (int y = imageHeight - powerHeight; y < imageHeight; ++y)
+    for (int y = 0; y < imageHeight; ++y)
     {
         int rowStartIndex = (imageWidth * y);
 
-        // TODO: ambient light blending
-
-        // Red   = 0xDB0F0F
-        // Green = 0x039B0A (final)
-
-        float const targetR = (isMaxStrength ? 0x03 : 0xDB) / 255.0f;
-        float const targetG = (isMaxStrength ? 0x9B : 0x0F) / 255.0f;
-        float const targetB = (isMaxStrength ? 0x0A : 0x0F) / 255.0f;
-
-        for (int x = 0; x < imageWidth; ++x)
+        if (y >= imageHeight - powerHeight)
         {
-            data[(rowStartIndex + x) * 3] = static_cast<unsigned char>(targetR * 255.0f);
-            data[(rowStartIndex + x) * 3 + 1] = static_cast<unsigned char>(targetG * 255.0f);
-            data[(rowStartIndex + x) * 3 + 2] = static_cast<unsigned char>(targetB * 255.0f);
+            // Power zone
+            for (int x = 0; x < imageWidth; ++x)
+            {
+                data[(rowStartIndex + x) * 3] = powerColor.r;
+                data[(rowStartIndex + x) * 3 + 1] = powerColor.g;
+                data[(rowStartIndex + x) * 3 + 2] = powerColor.b;
+            }
+        }
+        else
+        {
+            // Original color, adjusted for ambient light
+            for (int x = 0; x < imageWidth; ++x)
+            {
+                vec3f originalColor = rgbColor(
+                    data[(rowStartIndex + x) * 3],
+                    data[(rowStartIndex + x) * 3 + 1],
+                    data[(rowStartIndex + x) * 3 + 2]).toVec3f();
+
+                // Linear interpolation
+                vec3f targetColor = Mix(
+                    originalColor,
+                    lightenedCursorColor,
+                    lighteningStrength);
+
+                rgbColor targetRgbColor = rgbColor(targetColor);
+
+                data[(rowStartIndex + x) * 3] = targetRgbColor.r;
+                data[(rowStartIndex + x) * 3 + 1] = targetRgbColor.g;
+                data[(rowStartIndex + x) * 3 + 2] = targetRgbColor.b;
+            }
         }
     }
 

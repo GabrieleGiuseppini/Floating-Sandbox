@@ -196,6 +196,11 @@ public:
         OnEffectiveAmbientLightIntensityUpdated();
     }
 
+    float GetEffectiveAmbientLightIntensity() const
+    {
+        return mEffectiveAmbientLightIntensity;
+    }
+
     float GetOceanTransparency() const
     {
         return mOceanTransparency;
