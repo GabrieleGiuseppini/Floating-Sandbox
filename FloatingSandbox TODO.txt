@@ -559,10 +559,10 @@ Render:
 			+ Do same formula at TextRenderContext
 				+ New param: TextLighteningStrength
 				+ Redo math in shader
-
-		- TrimForWorldBounds: clamp coords to zero after bounce
+		+ TrimForWorldBounds: clamp coords to zero after bounce
 		+ Change light colors to match Mike's
 			+ And add new render param for shaders
+
 		- Materials changes:
 			- Lower gunpowder strength
 			- Cardboard flies too fast when hot - lower thermal expansion
@@ -584,8 +584,6 @@ Render:
 		  leaving it completely white"
 		- See if should take Mike's Titanic electricals
 
-		= Ocean floor deforming upon impact (*)		
-
 		- Propulsion (*)
 
 		- Flood doors (*)		
@@ -598,6 +596,8 @@ Render:
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		= Ocean floor deforming upon impact (*)		
 
 		- Pinch tool (*):
 
@@ -1111,14 +1111,15 @@ Render:
 
 - Dynamics:	
 
-	= Ocean floor deforming upon impact (*)
-		= ParentWorld exposes DisplaceOceanFloor(x, offsetY)
+	- Ocean floor deforming upon impact (*)
+		! Better done after frontier work, so that may calculate pointness
+		+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
 		- @ Ocean floor collision: upon (non-orphaned) point entering floor:
-			- Point goes back by displacement * FloorHardness
-				- displacement is whatever displacement we currently use
-			- Ocean floor's H goes back (opposite) by displacement * (1 - FloorHardness) * (pointess)
-				- pointness = TBD
-			- Displacement of both might be influenced by point's connected component size
+			- Ocean floor's H goes back (opposite) by displacement * FloorFriability * f(pointness, massiveness)
+				- displacement is whatever displacement we moved (bounced) the point by
+				- FloorFriability = new param [0.0, ..., 1.0]
+				- pointness = TBD, based off frontier
+				- massiveness = point's connected component size
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 

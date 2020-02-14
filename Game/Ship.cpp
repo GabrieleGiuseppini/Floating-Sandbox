@@ -1053,12 +1053,12 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             vec2f const normalVelocity = seaFloorAntiNormal * pointVelocity.dot(seaFloorAntiNormal);
             vec2f const tangentialVelocity = pointVelocity - normalVelocity;
 
-            // Calculate normal reponse: Vn' = -eVn (e = elasticity, [0.0 - 1.0])
+            // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
             vec2f const normalResponse =
                 normalVelocity
                 * elasticityFactor; // Already negative
 
-            // Calculate tangential response: Vt' = aVt (a = (1.0-friction), [0.0 - 1.0])
+            // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
             vec2f const tangentialResponse =
                 tangentialVelocity
                 * inverseFriction;
@@ -1092,15 +1092,16 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 
         if (pos.x < MaxWorldLeft)
         {
-            // Simulate bounce
-            pos.x = MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x);
+            // Simulate bounce, bounded
+            pos.x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).x = std::min(-mPoints.GetVelocity(pointIndex).x, MaxBounceVelocity);
         }
         else if (pos.x > MaxWorldRight)
         {
-            pos.x = MaxWorldRight - elasticity * (pos.x - MaxWorldRight);
+            // Simulate bounce, bounded
+            pos.x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
@@ -1108,14 +1109,16 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 
         if (pos.y > MaxWorldTop)
         {
-            pos.y = MaxWorldTop - elasticity * (pos.y - MaxWorldTop);
+            // Simulate bounce, bounded
+            pos.y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).y = std::max(-mPoints.GetVelocity(pointIndex).y, -MaxBounceVelocity);
         }
         else if (pos.y < MaxWorldBottom)
         {
-            pos.y = MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y);
+            // Simulate bounce, bounded
+            pos.y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
 
             // Bounce bounded
             mPoints.GetVelocity(pointIndex).y = std::min(-mPoints.GetVelocity(pointIndex).y, MaxBounceVelocity);
