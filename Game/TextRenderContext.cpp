@@ -127,10 +127,12 @@ void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
 {
     mEffectiveAmbientLightIntensity = intensity;
 
+    float const lighteningStrength = Step(0.5f, 1.0f - mEffectiveAmbientLightIntensity);
+
     // Set parameter
     mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::TextLighteningStrength>(
+        lighteningStrength);
 }
 
 void TextRenderContext::Render()
@@ -264,7 +266,7 @@ void TextRenderContext::Render()
 
 		if (context.IsVertexBufferDirty())
 		{
-			glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());			
+			glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());
 
 			glBufferData(
 				GL_ARRAY_BUFFER,

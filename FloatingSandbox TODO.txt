@@ -537,8 +537,7 @@ Render:
 					+ Samsung: 162 ms/5.7 fps
 			+ Commit
 			+ Merge
-
-		= Cursors at night
+		+ Cursors at night
 			+ RenderContext fires OnEffectiveAmbientLightIntensity whenever this changes
 			+ ToolController is notified about effective ambient light changes
 				+ Registers
@@ -557,9 +556,9 @@ Render:
 				+ Make power bar based off mCurrentCursorStrength
 				+ Make wxCursor (local) and set on mParentWindow			 
 			+ Power bar cursors: at power bar change, call mCursorManager.SetCursor(cur img, new strength)
-			- Do same formula at TextRenderContext
-				- New param: TextLighteningStrength
-				- Redo math in shader
+			+ Do same formula at TextRenderContext
+				+ New param: TextLighteningStrength
+				+ Redo math in shader
 
 		- TrimForWorldBounds: clamp coords to zero after bounce
 		+ Change light colors to match Mike's

@@ -223,6 +223,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 		return ProgramParameterType::RainDensity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
+    else if (str == "TextLighteningStrength")
+        return ProgramParameterType::TextLighteningStrength;
     else if (str == "TextureScaling")
         return ProgramParameterType::TextureScaling;
     else if (str == "Time")
@@ -298,6 +300,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 		return "RainDensity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
+    case ProgramParameterType::TextLighteningStrength:
+        return "TextLighteningStrength";
     case ProgramParameterType::TextureScaling:
         return "TextureScaling";
     case ProgramParameterType::Time:

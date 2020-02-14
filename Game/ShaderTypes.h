@@ -85,6 +85,7 @@ enum class ProgramParameterType : uint8_t
     OrthoMatrix,
 	RainDensity,
     StarTransparency,
+    TextLighteningStrength,
     TextureScaling,
     Time,
     ViewportSize,

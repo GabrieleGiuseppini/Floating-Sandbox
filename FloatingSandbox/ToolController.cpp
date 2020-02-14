@@ -316,7 +316,7 @@ void ToolController::InternalSetCurrentToolCursor()
 
     // Target color when the scene is dark
     vec3f const lightenedCursorColor(0.8f, 0.8f, 0.8f);
-    float const lighteningStrength = Step(0.6f, 1.0f - mCurrentEffectiveAmbientLightIntensity);
+    float const lighteningStrength = Step(0.5f, 1.0f - mCurrentEffectiveAmbientLightIntensity);
 
     // Start from top
     for (int y = 0; y < imageHeight; ++y)
