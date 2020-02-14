@@ -72,13 +72,14 @@ SwitchboardPanel::SwitchboardPanel(
     SetBackgroundBitmap(backgroundBitmap);
 
     // Load cursor
-    auto upCursor = WxHelpers::MakeCursor(
-        resourceLoader.GetCursorFilepath("switch_cursor_up"),
+    auto upCursor = WxHelpers::LoadCursor(
+        "switch_cursor_up",
         8,
-        9);
+        9,
+        resourceLoader);
 
     // Set cursor
-    SetCursor(*upCursor);
+    SetCursor(upCursor);
 
 
     //

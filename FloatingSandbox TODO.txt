@@ -583,10 +583,12 @@ Render:
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 		- See if should take Mike's Titanic electricals
-		
+
+		= Ocean floor deforming upon impact (*)		
+
 		- Propulsion (*)
 
-		- Flood doors (*)
+		- Flood doors (*)		
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
@@ -731,7 +733,6 @@ Render:
 
 - Suggestions to spec:
 	- Temperature tool - to get temperature of points
-	- You should add ground burying and for the ships and debris
 	- Make lights not propagate through hull
 	- Sun rays
 	- Moving furniture
@@ -751,7 +752,7 @@ Render:
 	- Tool to increase or lower mass under the cursor
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
 	- I wonder if that's possible to make the UI dark once the brightness of the game gets lower than a specific level just like your make the FPS counter white
-		- Tools turning white at night
+		+ Tools turning white at night
 	- I wonder if you can add the "Ground" material, which is a material that cannot move.
 	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 	- Tornado
@@ -1110,6 +1111,17 @@ Render:
 
 - Dynamics:	
 
+	= Ocean floor deforming upon impact (*)
+		= ParentWorld exposes DisplaceOceanFloor(x, offsetY)
+		- @ Ocean floor collision: upon (non-orphaned) point entering floor:
+			- Point goes back by displacement * FloorHardness
+				- displacement is whatever displacement we currently use
+			- Ocean floor's H goes back (opposite) by displacement * (1 - FloorHardness) * (pointess)
+				- pointness = TBD
+			- Displacement of both might be influenced by point's connected component size
+		- WATCH OUT: might be ugly with peaks (very vertical slope)
+			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
+
 	- Gases: 
 		- Spec:
 			- Drawn on separate layer and act as water, but with upside down gravity
@@ -1135,15 +1147,14 @@ Render:
 		- Cursor: pliers or tweezers
 		
 	- Lightning tool that summons lightning wherever it has been clicked
-
-	- Consider making world 1.5 times wider
+		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
 
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
-	- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click.
-
 	- "Lightning rod" material
 		- Has precedence when looking for candidates
+
+	- Consider making world 1.5 times wider
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
@@ -1229,17 +1240,6 @@ Render:
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)
 		- Make ship with lifeboats, using multiple clamps to keep it
-
-	- Ocean floor deforming/breaking up upon impact
-		- WATCH OUT: might be ugly with peaks (very vertical slope)
-			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
-		- @ Ocean floor collision:
-			- Upon (non-orphaned) point entering floor:
-				- Point goes back by displacement * FloorHardness
-					- displacement is whatever displacement we currently use
-				- Ocean floor's H goes back (opposite) by displacement * (1 - FloorHardness) * (pointess)
-					- pointness = TBD
-				- Displacement of both might be influenced by point's connected component size
 
 	- Breaking waves (Muller's paper)
 

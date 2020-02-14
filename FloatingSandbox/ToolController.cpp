@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ToolController.h"
 
+#include "WxHelpers.h"
+
 #include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>
 
@@ -173,7 +175,7 @@ ToolController::ToolController(
             resourceLoader));
 
     // Prepare own cursor(s)
-    mPanCursor = wxCursor(LoadCursorImage("pan_cursor", 15, 15, resourceLoader));
+    mPanCursor = WxHelpers::LoadCursor("pan_cursor", 15, 15, resourceLoader);
 
     // Set current tool
     this->SetTool(initialToolType);

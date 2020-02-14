@@ -79,16 +79,29 @@ wxBitmap WxHelpers::MakeEmptyBitmap()
     return bitmap;
 }
 
-std::unique_ptr<wxCursor> WxHelpers::MakeCursor(
-    std::filesystem::path cursorFilepath,
+wxCursor WxHelpers::LoadCursor(
+    std::string const & cursorName,
     int hotspotX,
-    int hotspotY)
+    int hotspotY,
+    ResourceLoader & resourceLoader)
 {
-    wxBitmap* bmp = new wxBitmap(cursorFilepath.string(), wxBITMAP_TYPE_PNG);
-    if (nullptr == bmp)
-    {
-        throw GameException("Cannot load cursor '" + cursorFilepath.string() + "'");
-    }
+    wxImage img = LoadCursorImage(
+        cursorName,
+        hotspotX,
+        hotspotY,
+        resourceLoader);
+
+    return wxCursor(img);
+}
+
+wxImage WxHelpers::LoadCursorImage(
+    std::string const & cursorName,
+    int hotspotX,
+    int hotspotY,
+    ResourceLoader & resourceLoader)
+{
+    auto filepath = resourceLoader.GetCursorFilepath(cursorName);
+    auto bmp = std::make_unique<wxBitmap>(filepath.string(), wxBITMAP_TYPE_PNG);
 
     wxImage img = bmp->ConvertToImage();
 
@@ -96,5 +109,5 @@ std::unique_ptr<wxCursor> WxHelpers::MakeCursor(
     img.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_X, hotspotX);
     img.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_Y, hotspotY);
 
-    return std::make_unique<wxCursor>(img);
+    return img;
 }

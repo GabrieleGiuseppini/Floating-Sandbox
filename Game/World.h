@@ -67,6 +67,13 @@ public:
         return mOceanFloor.GetHeightAt(x);
     }
 
+    inline void DisplaceOceanFloorAt(
+        float x,
+        float yOffset)
+    {
+        mOceanFloor.DisplaceAt(x, yOffset);
+    }
+
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();

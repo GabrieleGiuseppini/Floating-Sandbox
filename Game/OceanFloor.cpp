@@ -183,34 +183,88 @@ bool OceanFloor::AdjustTo(
             (newSampleValue - mBumpProfile[s] + mCurrentSeaDepth)
             / (mCurrentOceanFloorDetailAmplification != 0.0f ? mCurrentOceanFloorDetailAmplification : 1.0f);
 
-        // Update terrain
-        mTerrain[s] = newTerrainProfileSampleValue;
-
-        // Recalculate sample value
-        newSampleValue = CalculateResultantSampleValue(s);
-
-        // Update sample value
-        mSamples[s].SampleValue = newSampleValue;
-
-        // Update previous sample's delta
-        if (s > 0)
-            mSamples[s - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[s - 1].SampleValue;
-
-        // Update this sample's delta;
-        // no point in updating delta of extra sample, as it's always zero,
-        // and no point in updating delta of last sample, as it's always zero
-        if (s < SamplesCount - 1)
-            mSamples[s].SampleValuePlusOneMinusSampleValue = mSamples[s + 1].SampleValue - newSampleValue;
+        // Update terrain and samples
+        SetTerrainHeight(s, newTerrainProfileSampleValue);
     }
-
-    // Make sure the extra sample has the same value as the last sample,
-    // in case we've just changed the latter
-    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
 
     return hasAdjusted;
 }
 
+void OceanFloor::DisplaceAt(
+    float x,
+    float yOffset)
+{
+    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+
+    //
+    // Find sample index
+    //
+
+    // Fractional index in the sample array
+    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+    // Integral part
+    int64_t const sampleIndexI = FastTruncateInt64(sampleIndexF);
+
+    // Fractional part within sample index and the next sample index
+    float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+    assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+    assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+    //
+    // Distribute offset according to position between two points
+    //
+
+    if (sampleIndexI < SamplesCount)
+    {
+        // Left
+        float lYOffset = yOffset * (1.0f - sampleIndexDx);
+        SetTerrainHeight(sampleIndexI, mTerrain[sampleIndexI] + lYOffset);
+
+        // Right
+        if (sampleIndexI < SamplesCount - 1)
+        {
+            float rYOffset = yOffset * sampleIndexDx;
+            SetTerrainHeight(sampleIndexI + 1, mTerrain[sampleIndexI + 1] + rYOffset);
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
+
+void OceanFloor::SetTerrainHeight(
+    size_t sampleIndex,
+    float terrainHeight)
+{
+    assert(sampleIndex >= 0 && sampleIndex < SamplesCount);
+
+    // Update terrain
+    mTerrain[sampleIndex] = terrainHeight;
+
+    // Recalculate sample value
+    float const newSampleValue = CalculateResultantSampleValue(sampleIndex);
+
+    // Update sample value
+    mSamples[sampleIndex].SampleValue = newSampleValue;
+
+    // Update previous sample's delta
+    if (sampleIndex > 0)
+        mSamples[sampleIndex - 1].SampleValuePlusOneMinusSampleValue = newSampleValue - mSamples[sampleIndex - 1].SampleValue;
+
+    if (sampleIndex < SamplesCount - 1)
+    {
+        // Update this sample's delta;
+        // no point in updating delta of extra sample, as it's always zero,
+        // and no point in updating delta of last sample, as it's always zero
+        mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - newSampleValue;
+    }
+    else if (sampleIndex == SamplesCount - 1)
+    {
+        // Make sure the final extra sample has the same value as the last sample
+        mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+    }
+}
 
 void OceanFloor::CalculateBumpProfile()
 {

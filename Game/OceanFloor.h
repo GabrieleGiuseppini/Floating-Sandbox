@@ -45,6 +45,10 @@ public:
         float x2,
         float targetY2);
 
+    void DisplaceAt(
+        float x,
+        float yOffset);
+
     /*
      * Assumption: x is in world boundaries.
      */
@@ -60,10 +64,10 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        int64_t sampleIndexI = FastTruncateInt64(sampleIndexF);
+        int64_t const sampleIndexI = FastTruncateInt64(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx = sampleIndexF - sampleIndexI;
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
@@ -73,6 +77,10 @@ public:
     }
 
 private:
+
+    void SetTerrainHeight(
+        size_t sampleIndex,
+        float terrainHeight);
 
     void CalculateBumpProfile();
 

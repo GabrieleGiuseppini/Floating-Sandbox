@@ -13,16 +13,11 @@
 #include <wx/image.h>
 #include <wx/window.h>
 
+#include <cassert>
 #include <chrono>
 #include <memory>
 #include <optional>
 #include <vector>
-
-wxImage LoadCursorImage(
-    std::string const & cursorName,
-    int hotspotX,
-    int hotspotY,
-    ResourceLoader & resourceLoader);
 
 struct IToolCursorManager
 {
