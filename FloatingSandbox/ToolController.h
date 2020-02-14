@@ -9,14 +9,18 @@
 #include "Tools.h"
 
 #include <Game/IGameController.h>
+#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
 #include <wx/frame.h>
+#include <wx/image.h>
 
 #include <memory>
 #include <vector>
 
 class ToolController
+    : public IRenderGameEventHandler
+    , public IToolCursorManager
 {
 public:
 
@@ -40,7 +44,7 @@ public:
         mCurrentTool->Initialize(mInputState);
 
         // Show its cursor
-        ShowCurrentCursor();
+        InternalSetCurrentToolCursor();
     }
 
     void UnsetTool()
@@ -49,15 +53,7 @@ public:
         if (nullptr != mCurrentTool)
         {
             mCurrentTool->Deinitialize(mInputState);
-            mCurrentTool->ShowCurrentCursor();
-        }
-    }
-
-    void ShowCurrentCursor()
-    {
-        if (nullptr != mCurrentTool)
-        {
-            mCurrentTool->ShowCurrentCursor();
+            InternalSetCurrentToolCursor();
         }
     }
 
@@ -98,6 +94,27 @@ public:
 
     void OnShiftKeyUp();
 
+    //
+    // Game event handlers
+    //
+
+    void RegisterEventHandler(IGameController & gameController)
+    {
+        gameController.RegisterRenderEventHandler(this);
+    }
+
+    virtual void OnEffectiveAmbientLightIntensityUpdated(float effectiveAmbientLightIntensity) override;
+
+    //
+    // IToolCursorHandler
+    //
+
+    virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) override;
+
+private:
+
+    void InternalSetCurrentToolCursor();
+
 private:
 
     // Input state
@@ -110,7 +127,35 @@ private:
 private:
 
     wxWindow * const mParentWindow;
-    std::unique_ptr<wxCursor> mPanCursor;
+    wxCursor mPanCursor;
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
+
+private:
+
+    //
+    // Cursor
+    //
+
+    struct ToolCursor
+    {
+        wxImage BasisImage;
+        float Strength;
+
+        ToolCursor()
+            : BasisImage()
+            , Strength(0.0f)
+        {}
+
+        ToolCursor(
+            wxImage const & basisImage,
+            float strength)
+            : BasisImage(basisImage)
+            , Strength(strength)
+        {}
+    };
+
+    ToolCursor mCurrentToolCursor;
+
+    float mCurrentEffectiveAmbientLightIntensity;
 };

@@ -10,7 +10,7 @@
 #include <Game/IGameController.h>
 #include <Game/ResourceLoader.h>
 
-#include <wx/cursor.h>
+#include <wx/image.h>
 #include <wx/window.h>
 
 #include <chrono>
@@ -18,17 +18,16 @@
 #include <optional>
 #include <vector>
 
-std::vector<std::unique_ptr<wxCursor>> MakeCursors(
+wxImage LoadCursorImage(
     std::string const & cursorName,
     int hotspotX,
     int hotspotY,
     ResourceLoader & resourceLoader);
 
-std::unique_ptr<wxCursor> MakeCursor(
-    std::string const & cursorName,
-    int hotspotX,
-    int hotspotY,
-    ResourceLoader & resourceLoader);
+struct IToolCursorManager
+{
+    virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) = 0;
+};
 
 enum class ToolType
 {
@@ -94,22 +93,20 @@ public:
     virtual void OnShiftKeyDown(InputState const & inputState) = 0;
     virtual void OnShiftKeyUp(InputState const & inputState) = 0;
 
-    virtual void ShowCurrentCursor() = 0;
-
 protected:
 
     Tool(
         ToolType toolType,
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : mToolType(toolType)
-        , mParentWindow(parentWindow)
+        , mToolCursorManager(toolCursorManager)
         , mGameController(gameController)
         , mSoundController(soundController)
     {}
 
-    wxWindow * const mParentWindow;
+    IToolCursorManager & mToolCursorManager;
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
 
@@ -135,32 +132,19 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-        assert(nullptr != mCurrentCursor);
-
-        mParentWindow->SetCursor(*mCurrentCursor);
-    }
-
 protected:
 
     OneShotTool(
         ToolType toolType,
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
-            parentWindow,
+            toolCursorManager,
             std::move(gameController),
             std::move(soundController))
-        , mCurrentCursor(nullptr)
     {}
-
-protected:
-
-    wxCursor * mCurrentCursor;
 };
 
 /*
@@ -195,57 +179,26 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-        assert(nullptr != mCurrentCursor);
-
-        mParentWindow->SetCursor(*mCurrentCursor);
-    }
-
 protected:
 
     ContinuousTool(
         ToolType toolType,
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
         : Tool(
             toolType,
-            parentWindow,
+            toolCursorManager,
             std::move(gameController),
             std::move(soundController))
-        , mCurrentCursor(nullptr)
         , mPreviousMousePosition()
         , mPreviousTimestamp(std::chrono::steady_clock::now())
         , mCumulatedTime(0)
     {}
 
-    void ModulateCursor(
-        std::vector<std::unique_ptr<wxCursor>> const & cursors,
-        float strength)
-    {
-        // Calculate cursor index (cursor 0 is the base, we don't use it here)
-        size_t const numberOfCursors = (cursors.size() - 1);
-        size_t cursorIndex = 1u + static_cast<size_t>(
-            floorf(
-                strength * static_cast<float>(numberOfCursors - 1)));
-
-        // Set cursor
-        mCurrentCursor = cursors[cursorIndex].get();
-
-        // Display cursor
-        ShowCurrentCursor();
-    }
-
     virtual void ApplyTool(
         std::chrono::microseconds const & cumulatedTime,
         InputState const & inputState) = 0;
-
-protected:
-
-    // The currently-selected cursor that will be shown
-    wxCursor * mCurrentCursor;
 
 private:
 
@@ -416,50 +369,46 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyDown(InputState const & inputState) override
     {
         ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyUp(InputState const & inputState) override
     {
         ProcessInputStateChange(inputState);
-        ShowCurrentCursor();
     }
 
 protected:
 
     BaseMoveTool(
         ToolType toolType,
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        std::unique_ptr<wxCursor> upCursor,
-        std::unique_ptr<wxCursor> downCursor,
-        std::unique_ptr<wxCursor> rotateUpCursor,
-        std::unique_ptr<wxCursor> rotateDownCursor)
+        wxImage upCursorImage,
+        wxImage downCursorImage,
+        wxImage rotateUpCursorImage,
+        wxImage rotateDownCursorImage)
         : OneShotTool(
             toolType,
-            parentWindow,
+            toolCursorManager,
             std::move(gameController),
             std::move(soundController))
         , mEngagedMovableObjectId()
         , mCurrentTrajectory()
         , mRotationCenter()
-        , mUpCursor(std::move(upCursor))
-        , mDownCursor(std::move(downCursor))
-        , mRotateUpCursor(std::move(rotateUpCursor))
-        , mRotateDownCursor(std::move(rotateDownCursor))
+        , mUpCursorImage(upCursorImage)
+        , mDownCursorImage(downCursorImage)
+        , mRotateUpCursorImage(rotateUpCursorImage)
+        , mRotateDownCursorImage(rotateDownCursorImage)
     {
     }
 
@@ -583,22 +532,22 @@ private:
         {
             if (!mRotationCenter)
             {
-                mCurrentCursor = mUpCursor.get();
+                mToolCursorManager.SetToolCursor(mUpCursorImage);
             }
             else
             {
-                mCurrentCursor = mRotateUpCursor.get();
+                mToolCursorManager.SetToolCursor(mRotateUpCursorImage);
             }
         }
         else
         {
             if (!mRotationCenter)
             {
-                mCurrentCursor = mDownCursor.get();
+                mToolCursorManager.SetToolCursor(mDownCursorImage);
             }
             else
             {
-                mCurrentCursor = mRotateDownCursor.get();
+                mToolCursorManager.SetToolCursor(mRotateDownCursorImage);
             }
         }
     }
@@ -634,10 +583,10 @@ private:
     std::optional<vec2f> mRotationCenter;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
-    std::unique_ptr<wxCursor> const mRotateUpCursor;
-    std::unique_ptr<wxCursor> const mRotateDownCursor;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
+    wxImage const mRotateUpCursorImage;
+    wxImage const mRotateDownCursorImage;
 };
 
 class MoveTool final : public BaseMoveTool<ElementId>
@@ -645,7 +594,7 @@ class MoveTool final : public BaseMoveTool<ElementId>
 public:
 
     MoveTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -656,7 +605,7 @@ class MoveAllTool final : public BaseMoveTool<ShipId>
 public:
 
     MoveAllTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -667,7 +616,7 @@ class SmashTool final : public ContinuousTool
 public:
 
     SmashTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -678,38 +627,26 @@ public:
     {
         ContinuousTool::Initialize(inputState);
 
-        // Reset current cursor
-        if (inputState.IsLeftMouseDown)
-        {
-            // Down
-            mCurrentCursor = mDownCursors[0].get();
-        }
-        else
-        {
-            // Up
-            mCurrentCursor = mUpCursor.get();
-        }
+        // Reset cursor
+        SetBasisCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        mCurrentCursor = mUpCursor.get();
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
-        // Set current cursor to the first down cursor
-        mCurrentCursor = mDownCursors[0].get();
-        ShowCurrentCursor();
+        // Reset cursor
+        SetBasisCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        // Set current cursor to the up cursor
-        mCurrentCursor = mUpCursor.get();
-        ShowCurrentCursor();
+        // Reset cursor
+        SetBasisCursor(inputState);
     }
 
 protected:
@@ -720,12 +657,22 @@ protected:
 
 private:
 
-    // The up cursor
-    std::unique_ptr<wxCursor> const mUpCursor;
+    void SetBasisCursor(InputState const & inputState)
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            // Down
+            mToolCursorManager.SetToolCursor(mDownCursorImage, 0.0f);
+        }
+        else
+        {
+            // Up
+            mToolCursorManager.SetToolCursor(mUpCursorImage, 0.0f);
+        }
+    }
 
-    // The force-modulated down cursors;
-    // cursor 0 is base; cursor 1 up to size-1 are strength-based
-    std::vector<std::unique_ptr<wxCursor>> const mDownCursors;
+    wxImage mUpCursorImage;
+    wxImage mDownCursorImage;
 };
 
 class SawTool final : public Tool
@@ -733,7 +680,7 @@ class SawTool final : public Tool
 public:
 
     SawTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -750,18 +697,15 @@ public:
 
             // Start sound
             mSoundController->PlaySawSound(mIsUnderwater);
-
-            // Set current cursor to the current down cursor
-            mCurrentCursor = (mDownCursorCounter % 2) ? mDownCursor2.get() : mDownCursor1.get();
         }
         else
         {
             // Reset state
             mPreviousMousePos = std::nullopt;
-
-            // Set current cursor to the up cursor
-            mCurrentCursor = mUpCursor.get();
         }
+
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -787,8 +731,7 @@ public:
 
             // Update down cursor
             ++mDownCursorCounter;
-            mCurrentCursor = (mDownCursorCounter % 2) ? mDownCursor2.get() : mDownCursor1.get();
-            ShowCurrentCursor();
+            SetCurrentCursor(inputState);
         }
     }
 
@@ -817,12 +760,11 @@ public:
         // Start sound
         mSoundController->PlaySawSound(mGameController->IsUnderwater(inputState.MousePosition));
 
-        // Set current cursor to the current down cursor
-        mCurrentCursor = (mDownCursorCounter % 2) ? mDownCursor2.get() : mDownCursor1.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         // Reset state
         mPreviousMousePos = std::nullopt;
@@ -830,31 +772,33 @@ public:
         // Stop sound
         mSoundController->StopSawSound();
 
-        // Set current cursor to the up cursor
-        mCurrentCursor = mUpCursor.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-        assert(nullptr != mCurrentCursor);
-
-        mParentWindow->SetCursor(*mCurrentCursor);
-    }
-
 private:
 
-    // Our cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor1;
-    std::unique_ptr<wxCursor> const mDownCursor2;
+    void SetCurrentCursor(InputState const & inputState)
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            // Set current cursor to the current down cursor
+            mToolCursorManager.SetToolCursor(mDownCursorCounter % 2 ? mDownCursorImage2 : mDownCursorImage1);
+        }
+        else
+        {
+            // Set current cursor to the up cursor
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
 
-    // The currently-selected cursor that will be shown
-    wxCursor * mCurrentCursor;
+    // Our cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage1;
+    wxImage const mDownCursorImage2;
 
     //
     // State
@@ -875,7 +819,7 @@ class HeatBlasterTool final : public Tool
 public:
 
     HeatBlasterTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -894,6 +838,8 @@ public:
         {
             mIsEngaged = false;
         }
+
+        SetCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -929,7 +875,7 @@ public:
                 mSoundController->PlayHeatBlasterSound(mCurrentAction);
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
         else
@@ -943,7 +889,7 @@ public:
                 mSoundController->StopHeatBlasterSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
             else if (mCurrentAction != currentAction)
             {
@@ -951,7 +897,7 @@ public:
                 mCurrentAction = currentAction;
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
     }
@@ -962,31 +908,29 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
+private:
 
+    void SetCurrentCursor()
+    {
         if (mIsEngaged)
         {
-            mParentWindow->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolDownCursor : *mHeatDownCursor);
+            mToolCursorManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolDownCursorImage : mHeatDownCursorImage);
         }
         else
         {
-            mParentWindow->SetCursor(mCurrentAction == HeatBlasterActionType::Cool ? *mCoolUpCursor : *mHeatUpCursor);
+            mToolCursorManager.SetToolCursor(mCurrentAction == HeatBlasterActionType::Cool ? mCoolUpCursorImage : mHeatUpCursorImage);
         }
     }
-
-private:
 
     // Our state
     bool mIsEngaged;
     HeatBlasterActionType mCurrentAction;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mHeatUpCursor;
-    std::unique_ptr<wxCursor> const mCoolUpCursor;
-    std::unique_ptr<wxCursor> const mHeatDownCursor;
-    std::unique_ptr<wxCursor> const mCoolDownCursor;
+    wxImage const mHeatUpCursorImage;
+    wxImage const mCoolUpCursorImage;
+    wxImage const mHeatDownCursorImage;
+    wxImage const mCoolDownCursorImage;
 };
 
 class FireExtinguisherTool final : public Tool
@@ -994,7 +938,7 @@ class FireExtinguisherTool final : public Tool
 public:
 
     FireExtinguisherTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1011,6 +955,8 @@ public:
         {
             mIsEngaged = false;
         }
+
+        SetCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1043,7 +989,7 @@ public:
                 mSoundController->PlayFireExtinguisherSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
         else
@@ -1057,7 +1003,7 @@ public:
                 mSoundController->StopFireExtinguisherSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
        }
     }
@@ -1068,28 +1014,26 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
+private:
 
+    void SetCurrentCursor()
+    {
         if (mIsEngaged)
         {
-            mParentWindow->SetCursor(*mDownCursor);
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            mParentWindow->SetCursor(*mUpCursor);
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
         }
     }
-
-private:
 
     // Our state
     bool mIsEngaged;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class GrabTool final : public ContinuousTool
@@ -1097,7 +1041,7 @@ class GrabTool final : public ContinuousTool
 public:
 
     GrabTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1132,7 +1076,6 @@ public:
 
         // Change cursor
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
@@ -1142,19 +1085,16 @@ public:
 
         // Change cursor
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyDown(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyUp(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
 protected:
@@ -1172,12 +1112,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Down minus
-                mCurrentCursor = mDownMinusCursors[0].get();
+                mToolCursorManager.SetToolCursor(mDownMinusCursorImage);
             }
             else
             {
                 // Down plus
-                mCurrentCursor = mDownPlusCursors[0].get();
+                mToolCursorManager.SetToolCursor(mDownPlusCursorImage);
             }
         }
         else
@@ -1185,24 +1125,20 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Up minus
-                mCurrentCursor = mUpMinusCursor.get();
+                mToolCursorManager.SetToolCursor(mUpMinusCursorImage);
             }
             else
             {
                 // Up plus
-                mCurrentCursor = mUpPlusCursor.get();
+                mToolCursorManager.SetToolCursor(mUpPlusCursorImage);
             }
         }
     }
 
-    // The up cursors
-    std::unique_ptr<wxCursor> const mUpPlusCursor;
-    std::unique_ptr<wxCursor> const mUpMinusCursor;
-
-    // The force-modulated down cursors;
-    // cursor 0 is base; cursor 1 up to size-1 are strength-based
-    std::vector<std::unique_ptr<wxCursor>> const mDownPlusCursors;
-    std::vector<std::unique_ptr<wxCursor>> const mDownMinusCursors;
+    wxImage const mUpPlusCursorImage;
+    wxImage const mUpMinusCursorImage;
+    wxImage const mDownPlusCursorImage;
+    wxImage const mDownMinusCursorImage;
 };
 
 class SwirlTool final : public ContinuousTool
@@ -1210,7 +1146,7 @@ class SwirlTool final : public ContinuousTool
 public:
 
     SwirlTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1245,7 +1181,6 @@ public:
 
         // Change cursor
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
@@ -1255,19 +1190,16 @@ public:
 
         // Change cursor
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyDown(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
     virtual void OnShiftKeyUp(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
-        ShowCurrentCursor();
     }
 
 protected:
@@ -1285,12 +1217,12 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Down minus
-                mCurrentCursor = mDownMinusCursors[0].get();
+                mToolCursorManager.SetToolCursor(mDownMinusCursorImage);
             }
             else
             {
                 // Down plus
-                mCurrentCursor = mDownPlusCursors[0].get();
+                mToolCursorManager.SetToolCursor(mDownPlusCursorImage);
             }
         }
         else
@@ -1298,24 +1230,20 @@ private:
             if (inputState.IsShiftKeyDown)
             {
                 // Up minus
-                mCurrentCursor = mUpMinusCursor.get();
+                mToolCursorManager.SetToolCursor(mUpMinusCursorImage);
             }
             else
             {
                 // Up plus
-                mCurrentCursor = mUpPlusCursor.get();
+                mToolCursorManager.SetToolCursor(mUpPlusCursorImage);
             }
         }
     }
 
-    // The up cursors
-    std::unique_ptr<wxCursor> const mUpPlusCursor;
-    std::unique_ptr<wxCursor> const mUpMinusCursor;
-
-    // The force-modulated down cursors;
-    // cursor 0 is base; cursor 1 up to size-1 are strength-based
-    std::vector<std::unique_ptr<wxCursor>> const mDownPlusCursors;
-    std::vector<std::unique_ptr<wxCursor>> const mDownMinusCursors;
+    wxImage const mUpPlusCursorImage;
+    wxImage const mUpMinusCursorImage;
+    wxImage const mDownPlusCursorImage;
+    wxImage const mDownMinusCursorImage;
 };
 
 class PinTool final : public OneShotTool
@@ -1323,7 +1251,7 @@ class PinTool final : public OneShotTool
 public:
 
     PinTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1333,8 +1261,7 @@ public:
     virtual void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        assert(!!mCursor);
-        mCurrentCursor = mCursor.get();
+        mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1347,7 +1274,7 @@ public:
 
 private:
 
-    std::unique_ptr<wxCursor> const mCursor;
+    wxImage const mCursorImage;
 };
 
 class InjectAirBubblesTool final : public Tool
@@ -1355,7 +1282,7 @@ class InjectAirBubblesTool final : public Tool
 public:
 
     InjectAirBubblesTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1372,6 +1299,8 @@ public:
         {
             mIsEngaged = false;
         }
+
+        SetCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1403,7 +1332,7 @@ public:
                 mSoundController->PlayAirBubblesSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
         else
@@ -1417,7 +1346,7 @@ public:
                 mSoundController->StopAirBubblesSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
     }
@@ -1428,21 +1357,19 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-
-        mParentWindow->SetCursor(mIsEngaged ? *mDownCursor : *mUpCursor);
-    }
-
 private:
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(mIsEngaged ? mDownCursorImage : mUpCursorImage);
+    }
 
     // Our state
     bool mIsEngaged;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class FloodHoseTool final : public Tool
@@ -1450,7 +1377,7 @@ class FloodHoseTool final : public Tool
 public:
 
     FloodHoseTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1459,6 +1386,8 @@ public:
 
     virtual void Initialize(InputState const & /*inputState*/) override
     {
+        // Update cursor
+        SetCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1498,7 +1427,7 @@ public:
             }
 
             // Update cursor
-            ShowCurrentCursor();
+            SetCurrentCursor();
         }
         else
         {
@@ -1511,7 +1440,7 @@ public:
                 mSoundController->StopFloodHoseSound();
 
                 // Update cursor
-                ShowCurrentCursor();
+                SetCurrentCursor();
             }
         }
     }
@@ -1522,25 +1451,23 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-
-        mParentWindow->SetCursor(
-            mIsEngaged
-            ? ((mDownCursorCounter % 2) ? *mDownCursor2 : *mDownCursor1)
-            : *mUpCursor);
-    }
-
 private:
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(
+            mIsEngaged
+            ? ((mDownCursorCounter % 2) ? mDownCursorImage2 : mDownCursorImage1)
+            : mUpCursorImage);
+    }
 
     // Our state
     bool mIsEngaged;
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor1;
-    std::unique_ptr<wxCursor> const mDownCursor2;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage1;
+    wxImage const mDownCursorImage2;
 
     // The current counter for the down cursors
     uint8_t mDownCursorCounter;
@@ -1551,7 +1478,7 @@ class AntiMatterBombTool final : public OneShotTool
 public:
 
     AntiMatterBombTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1561,8 +1488,7 @@ public:
     virtual void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        assert(!!mCursor);
-        mCurrentCursor = mCursor.get();
+        mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1575,7 +1501,7 @@ public:
 
 private:
 
-    std::unique_ptr<wxCursor> const mCursor;
+    wxImage const mCursorImage;
 };
 
 class ImpactBombTool final : public OneShotTool
@@ -1583,7 +1509,7 @@ class ImpactBombTool final : public OneShotTool
 public:
 
     ImpactBombTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1593,8 +1519,7 @@ public:
     virtual void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        assert(!!mCursor);
-        mCurrentCursor = mCursor.get();
+        mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1607,7 +1532,7 @@ public:
 
 private:
 
-    std::unique_ptr<wxCursor> const mCursor;
+    wxImage const mCursorImage;
 };
 
 class RCBombTool final : public OneShotTool
@@ -1615,7 +1540,7 @@ class RCBombTool final : public OneShotTool
 public:
 
     RCBombTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1625,8 +1550,7 @@ public:
     virtual void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        assert(!!mCursor);
-        mCurrentCursor = mCursor.get();
+        mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1639,7 +1563,7 @@ public:
 
 private:
 
-    std::unique_ptr<wxCursor> const mCursor;
+    wxImage const mCursorImage;
 };
 
 class TimerBombTool final : public OneShotTool
@@ -1647,7 +1571,7 @@ class TimerBombTool final : public OneShotTool
 public:
 
     TimerBombTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1657,8 +1581,7 @@ public:
     virtual void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
-        assert(!!mCursor);
-        mCurrentCursor = mCursor.get();
+        mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1671,7 +1594,7 @@ public:
 
 private:
 
-    std::unique_ptr<wxCursor> const mCursor;
+    wxImage const mCursorImage;
 };
 
 class WaveMakerTool final : public OneShotTool
@@ -1679,7 +1602,7 @@ class WaveMakerTool final : public OneShotTool
 public:
 
     WaveMakerTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1693,15 +1616,10 @@ public:
             mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
 
             mSoundController->PlayWaveMakerSound();
-
-            mCurrentCursor = mDownCursor.get();
-        }
-        else
-        {
-            mCurrentCursor = mUpCursor.get();
         }
 
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1723,25 +1641,37 @@ public:
 
         mSoundController->PlayWaveMakerSound();
 
-        mCurrentCursor = mDownCursor.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         mSoundController->StopWaveMakerSound();
 
         mGameController->AdjustOceanSurfaceTo(std::nullopt);
 
-        mCurrentCursor = mUpCursor.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
 private:
 
+    void SetCurrentCursor(InputState const & inputState)
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
+
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class TerrainAdjustTool final : public Tool
@@ -1749,7 +1679,7 @@ class TerrainAdjustTool final : public Tool
 public:
 
     TerrainAdjustTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1762,6 +1692,9 @@ public:
             mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
         else
             mCurrentTrajectoryPreviousPosition.reset();
+
+        // Set cursor
+        SetCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1798,7 +1731,7 @@ public:
             // State change
 
             // Update cursor
-            ShowCurrentCursor();
+            SetCurrentCursor();
         }
     }
 
@@ -1808,21 +1741,19 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-
-        mParentWindow->SetCursor(!!mCurrentTrajectoryPreviousPosition ? *mDownCursor : *mUpCursor);
-    }
-
 private:
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(!!mCurrentTrajectoryPreviousPosition ? mDownCursorImage : mUpCursorImage);
+    }
 
     // Our state
     std::optional<vec2f> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class ScrubTool final : public Tool
@@ -1830,7 +1761,7 @@ class ScrubTool final : public Tool
 public:
 
     ScrubTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -1843,22 +1774,19 @@ public:
         {
             // Initialize state
             mPreviousMousePos = inputState.MousePosition;
-
-            // Set current cursor to the down cursor
-            mCurrentCursor = mDownCursor.get();
         }
         else
         {
             // Reset state
             mPreviousMousePos = std::nullopt;
-
-            // Set current cursor to the up cursor
-            mCurrentCursor = mUpCursor.get();
         }
 
         // Reset scrub detection
         mPreviousScrub.reset();
         mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
+
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
@@ -1910,40 +1838,41 @@ public:
         mPreviousScrub.reset();
         mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
 
-        // Set current cursor to the down cursor
-        mCurrentCursor = mDownCursor.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         // Reset state
         mPreviousMousePos = std::nullopt;
 
-        // Set current cursor to the up cursor
-        mCurrentCursor = mUpCursor.get();
-        ShowCurrentCursor();
+        // Set cursor
+        SetCurrentCursor(inputState);
     }
 
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-        assert(nullptr != mCurrentCursor);
-
-        mParentWindow->SetCursor(*mCurrentCursor);
-    }
-
 private:
 
-    // Our cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    void SetCurrentCursor(InputState const & inputState)
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            // Set current cursor to the down cursor
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+        else
+        {
+            // Set current cursor to the up cursor
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
 
-    // The currently-selected cursor that will be shown
-    wxCursor * mCurrentCursor;
+    // Our cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 
     //
     // State
@@ -1965,15 +1894,18 @@ class RepairStructureTool final : public Tool
 public:
 
     RepairStructureTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
 
     virtual void Initialize(InputState const & /*inputState*/) override
     {
-        // Just set a cursor, we'll update it at Update()
-        mCurrentCursor = mUpCursor.get();
+        // Reset state
+        mEngagementStartTimestamp.reset();
+
+        // Update cursor
+        UpdateCurrentCursor();
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -2044,17 +1976,12 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
-    virtual void ShowCurrentCursor() override
-    {
-        assert(nullptr != mParentWindow);
-
-        mParentWindow->SetCursor(*mCurrentCursor);
-    }
-
 private:
 
     virtual void UpdateCurrentCursor()
     {
+        wxImage cursorImage;
+
         if (!!mEngagementStartTimestamp)
         {
             auto totalElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - *mEngagementStartTimestamp);
@@ -2062,30 +1989,30 @@ private:
             // Synchronize with sound
             auto cursorPhase = (totalElapsed.count() % 1000);
             if (cursorPhase < 87)
-                mCurrentCursor = mDownCursors[0].get(); // |
+                cursorImage = mDownCursorImages[0]; // |
             else if (cursorPhase < 175)
-                mCurrentCursor = mDownCursors[1].get(); //
+                cursorImage = mDownCursorImages[1]; //
             else if (cursorPhase < 237)
-                mCurrentCursor = mDownCursors[2].get(); // /* \ */
+                cursorImage = mDownCursorImages[2]; // /* \ */
             else if (cursorPhase < 300)
-                mCurrentCursor = mDownCursors[3].get(); //
+                cursorImage = mDownCursorImages[3]; //
             else if (cursorPhase < 500)
-                mCurrentCursor = mDownCursors[4].get(); // _
+                cursorImage = mDownCursorImages[4]; // _
             else if (cursorPhase < 526)
-                mCurrentCursor = mDownCursors[3].get(); //
+                cursorImage = mDownCursorImages[3]; //
             else if (cursorPhase < 553)
-                mCurrentCursor = mDownCursors[2].get(); // /* \ */
+                cursorImage = mDownCursorImages[2]; // /* \ */
             else if (cursorPhase < 580)
-                mCurrentCursor = mDownCursors[1].get(); //
+                cursorImage = mDownCursorImages[1]; //
             else
-                mCurrentCursor = mDownCursors[0].get(); // |
+                cursorImage = mDownCursorImages[0]; // |
         }
         else
         {
-            mCurrentCursor = mUpCursor.get();
+            cursorImage = mUpCursorImage;
         }
 
-        ShowCurrentCursor();
+        mToolCursorManager.SetToolCursor(cursorImage);
     }
 
 private:
@@ -2101,9 +2028,8 @@ private:
     wxCursor * mCurrentCursor;
 
     // Our cursors
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::array<std::unique_ptr<wxCursor>, 5> const mDownCursors;
-
+    wxImage const mUpCursorImage;
+    std::array<wxImage, 5> const mDownCursorImages;
 };
 
 class ThanosSnapTool final : public OneShotTool
@@ -2111,7 +2037,7 @@ class ThanosSnapTool final : public OneShotTool
 public:
 
     ThanosSnapTool(
-        wxWindow * parentWindow,
+        IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
@@ -2121,7 +2047,7 @@ public:
     virtual void Initialize(InputState const & inputState) override
     {
         // Reset cursor
-        mCurrentCursor = inputState.IsLeftMouseDown ? mDownCursor.get() : mUpCursor.get();
+        SetCurrentCursor(inputState);
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -2130,18 +2056,23 @@ public:
         mGameController->ApplyThanosSnapAt(inputState.MousePosition);
         mSoundController->PlayThanosSnapSound();
 
-        mCurrentCursor = mDownCursor.get();
-        ShowCurrentCursor();
+        // Update cursor
+        SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        mCurrentCursor = mUpCursor.get();
-        ShowCurrentCursor();
+        // Update cursor
+        SetCurrentCursor(inputState);
     }
 
 private:
 
-    std::unique_ptr<wxCursor> const mUpCursor;
-    std::unique_ptr<wxCursor> const mDownCursor;
+    void SetCurrentCursor(InputState const & inputState)
+    {
+        mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownCursorImage : mUpCursorImage);
+    }
+
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };

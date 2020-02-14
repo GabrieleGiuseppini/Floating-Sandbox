@@ -24,6 +24,7 @@
  */
 struct IGameController
 {
+    virtual void RegisterRenderEventHandler(IRenderGameEventHandler * handler) = 0;
     virtual void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) = 0;
     virtual void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) = 0;
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;

@@ -20,6 +20,7 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
     ResourceLoader & resourceLoader,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
     // Buffers
     : mStarVertexBuffer()
@@ -83,6 +84,7 @@ RenderContext::RenderContext(
     // Fire extinguisher
     , mFireExtinguisherSprayShaderToRender()
     // Managers
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mShaderManager()
     , mTextRenderContext()
     // Render parameters
@@ -1657,6 +1659,9 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
     // Update text context
     mTextRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
+
+    // Notify
+    mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
 }
 
 void RenderContext::OnRainDensityUpdated()

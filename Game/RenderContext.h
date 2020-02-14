@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "RenderTypes.h"
 #include "ResourceLoader.h"
 #include "ShaderTypes.h"
@@ -45,6 +46,7 @@ public:
 
     RenderContext(
         ResourceLoader & resourceLoader,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
@@ -1894,6 +1896,7 @@ private:
     // Managers
     //
 
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::shared_ptr<TextRenderContext> mTextRenderContext;
 

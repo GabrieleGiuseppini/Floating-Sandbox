@@ -20,11 +20,12 @@ std::unique_ptr<GameController> GameController::Create(
     MaterialDatabase materialDatabase = MaterialDatabase::Load(*resourceLoader);
 
     // Create game dispatcher
-    std::unique_ptr<GameEventDispatcher> gameEventDispatcher = std::make_unique<GameEventDispatcher>();
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         *resourceLoader,
+        gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
@@ -50,7 +51,7 @@ std::unique_ptr<GameController> GameController::Create(
 GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::function<void()> swapRenderBuffersFunction,
-    std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
 	std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
     std::shared_ptr<ResourceLoader> resourceLoader)

@@ -14,7 +14,8 @@
 #include <vector>
 
 class GameEventDispatcher
-    : public ILifecycleGameEventHandler
+    : public IRenderGameEventHandler
+    , public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
     , public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
@@ -37,6 +38,7 @@ public:
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
         // Sinks
+        , mRenderSinks()
         , mLifecycleSinks()
         , mStructuralSinks()
         , mWavePhenomenaSinks()
@@ -49,6 +51,18 @@ public:
     }
 
 public:
+
+    //
+    // Render
+    //
+
+    virtual void OnEffectiveAmbientLightIntensityUpdated(float effectiveAmbientLightIntensity) override
+    {
+        for (auto sink : mRenderSinks)
+        {
+            sink->OnEffectiveAmbientLightIntensityUpdated(effectiveAmbientLightIntensity);
+        }
+    }
 
     //
     // Lifecycle
@@ -658,6 +672,11 @@ public:
         mTimerBombDefusedEvents.clear();
     }
 
+    void RegisterRenderEventHandler(IRenderGameEventHandler * sink)
+    {
+        mRenderSinks.push_back(sink);
+    }
+
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
     {
         mLifecycleSinks.push_back(sink);
@@ -713,6 +732,7 @@ private:
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
 
     // The registered sinks
+    std::vector<IRenderGameEventHandler *> mRenderSinks;
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
     std::vector<IStructuralGameEventHandler *> mStructuralSinks;
     std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;

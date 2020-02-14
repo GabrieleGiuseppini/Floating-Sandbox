@@ -61,6 +61,12 @@ public:
     // IGameController
     /////////////////////////////////////////////////////////
 
+    void RegisterRenderEventHandler(IRenderGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterRenderEventHandler(handler);
+    }
+
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
@@ -621,7 +627,7 @@ private:
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
-        std::unique_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
 		std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLoader> resourceLoader);
