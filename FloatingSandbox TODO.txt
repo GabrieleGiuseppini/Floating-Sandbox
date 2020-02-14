@@ -562,12 +562,12 @@ Render:
 		+ TrimForWorldBounds: clamp coords to zero after bounce
 		+ Change light colors to match Mike's
 			+ And add new render param for shaders
+		+ Reduce sea's little waves from gusts
 
 		- Materials changes:
 			- Lower gunpowder strength
 			- Cardboard flies too fast when hot - lower thermal expansion
-			- Check Mike's changes
-		- Reduce sea's little waves from gusts
+			- Check Mike's changes		
 		- Hull should decay less
 		- Also GoodYear should be full of hydrogen		
 		- Selector for panel background

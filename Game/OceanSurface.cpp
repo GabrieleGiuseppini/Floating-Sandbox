@@ -738,7 +738,8 @@ void OceanSurface::GenerateSamples(
     // Wind gust ripples
     //
 
-    static float constexpr WindRippleWaveNumber = 0.5f;
+    float constexpr WindRippleWaveNumber = 2.5f;
+    float constexpr WindRippleWaveHeight = 0.25f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseAndStormSpeedMagnitude();
@@ -752,7 +753,7 @@ void OceanSurface::GenerateSamples(
         : -128.0f;
 
     float const smoothedWindNormalizedIncisiveness = mWindIncisivenessRunningAverage.Update(rawWindNormalizedIncisiveness);
-    float const windRipplesWaveHeight = 0.7f * smoothedWindNormalizedIncisiveness;
+    float const windRipplesWaveHeight = WindRippleWaveHeight * smoothedWindNormalizedIncisiveness;
 
 
     //
