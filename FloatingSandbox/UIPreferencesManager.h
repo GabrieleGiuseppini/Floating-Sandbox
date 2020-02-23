@@ -277,6 +277,7 @@ private:
 
     //
     // The preferences for which we are the owners/storage
+    //
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
 

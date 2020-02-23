@@ -1677,7 +1677,7 @@ void Points::UploadHighlights(
         renderContext.UploadShipHighlight(
             shipId,
             GetPosition(h.PointIndex),
-            7.0f, // Magic number
+            5.0f, // Magic number
             h.HighlightColor,
             h.Progress);
     }

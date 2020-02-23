@@ -40,16 +40,22 @@ in float progress; // [0.0, 1.0]
 void main()
 {
     #define NBands 4.0
-    #define BandWidth 0.3
+    #define HalfBandWidth 0.4
         
     float d = distance(vertexSpacePosition, vec2(.0, .0));
+    float d2 =d / 2.;
     
-    float t = fract((d - progress) * NBands);
+    float t = fract((d2 - progress) * NBands);
     float t2 = 
-        smoothstep(1.0 - BandWidth, 1.0, t)
-        + smoothstep(1.0 - BandWidth, 1.0, 1.0 - t);
+        smoothstep(1.0 - HalfBandWidth, 1.0, t)
+        + smoothstep(1.0 - HalfBandWidth, 1.0, 1.0 - t);
     
-    t2 *= 1.0 - smoothstep(0.7, 1.0, d);
+    // Truncate
+    t2 *= 1.0 - step(progress + HalfBandWidth / NBands + .05, d2); // truncate if d2 > outermost
+    t2 *= step(progress - HalfBandWidth / NBands - 0.5 - .05, d2); // truncate if d2 < innermost
+    
+    // Fade out outside quad 
+    t2 *= 1.0 - smoothstep(0.85, 1.0, d);
         
     gl_FragColor = vec4(color, t2);
 }
