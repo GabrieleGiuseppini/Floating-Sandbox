@@ -86,6 +86,9 @@ ShipRenderContext::ShipRenderContext(
     , mGenericMipMappedTextureVBO()
     , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
     //
+    , mHighlightVertexBuffer()
+    , mHighlightVertexVBO()
+    //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
     , mVectorArrowColor()
@@ -149,8 +152,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[10];
-    glGenBuffers(10, vbos);
+    GLuint vbos[11];
+    glGenBuffers(11, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -191,7 +194,10 @@ ShipRenderContext::ShipRenderContext(
     mGenericMipMappedTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
     glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
-    mVectorArrowVBO = vbos[9];
+    mHighlightVertexVBO = vbos[9];
+    mHighlightVertexBuffer.reserve(16); // Arbitrary
+
+    mVectorArrowVBO = vbos[10];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -357,6 +363,29 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
+    // Initialize Highlight VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mHighlightVAO = tmpGLuint;
+
+        glBindVertexArray(*mHighlightVAO);
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
+        static_assert(sizeof(HighlightVertex) == (2 + 2 + 3 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight2), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4) * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
     // Initialize VectorArrow VAO
     //
 
@@ -493,13 +522,14 @@ void ShipRenderContext::UpdateOrthoMatrices()
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Explosions
-    //      - 10: Vectors
+    //      - 10: Highlights
+    //      - 11: Vectors
     //
 
     constexpr float ShipRegionZStart = 1.0f; // Far
     constexpr float ShipRegionZWidth = -2.0f; // Near (-1)
 
-    constexpr int NLayers = 11;
+    constexpr int NLayers = 12;
 
     ViewModel::ProjectionMatrix shipOrthoMatrix;
 
@@ -737,7 +767,7 @@ void ShipRenderContext::UpdateOrthoMatrices()
         shipOrthoMatrix);
 
     //
-    // Layer 10: Vectors
+    // Layer 10: Highlights
     //
 
     mViewModel.CalculateShipOrthoMatrix(
@@ -747,6 +777,24 @@ void ShipRenderContext::UpdateOrthoMatrices()
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         10,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipHighlights>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipHighlights, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 11: Vectors
+    //
+
+    mViewModel.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        11,
         NLayers,
         shipOrthoMatrix);
 
@@ -1084,7 +1132,7 @@ void ShipRenderContext::OnShipFlameSizeAdjustmentUpdated()
 void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
 {
     //
-    // Reset flames, explosions, air bubbles, generic textures
+    // Reset flames, explosions, air bubbles, generic textures, highlights
     //
 
     mFlameVertexBuffer.reset();
@@ -1103,6 +1151,8 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
     mGenericMipMappedTexturePlaneVertexBuffers.clear();
     mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
     mGenericMipMappedTextureTotalPlaneVertexCount = 0;
+
+    mHighlightVertexBuffer.clear();
 
 
     //
@@ -1880,6 +1930,14 @@ void ShipRenderContext::RenderEnd()
 
 
     //
+    // Render highlights
+    //
+
+    RenderHighlights();
+
+
+
+    //
     // Render vectors, if we're asked to
     //
 
@@ -2113,6 +2171,43 @@ void ShipRenderContext::RenderExplosions()
 
         assert(0 == (mExplosionTotalPlaneVertexCount % 6));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mExplosionTotalPlaneVertexCount));
+
+        glBindVertexArray(0);
+    }
+}
+
+void ShipRenderContext::RenderHighlights()
+{
+    if (!mHighlightVertexBuffer.empty())
+    {
+        //
+        // Upload buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(HighlightVertex) * mHighlightVertexBuffer.size(),
+            mHighlightVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mHighlightVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipHighlights>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        assert(0 == (mHighlightVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHighlightVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

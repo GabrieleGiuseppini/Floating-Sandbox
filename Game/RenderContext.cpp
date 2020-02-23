@@ -1023,7 +1023,6 @@ void RenderContext::RenderStars()
 
 void RenderContext::RenderCloudsStart()
 {
-
 }
 
 void RenderContext::UploadLightningsStart(size_t lightningCount)

@@ -671,7 +671,7 @@ public:
         float const mappedX = virtualX * 2.0f;
         float const mappedY = virtualY * 2.0f;
 
-        // TEST: fitting everything in visible window
+        // TEST CODE: this code fits everything in the visible window
         ////float const mappedX = virtualX / 1.5f;
         ////float const mappedY = virtualY / 1.5f;
         ////scale /= 1.5f;
@@ -1431,6 +1431,7 @@ public:
             scale,
             alpha);
     }
+
     //
     // Ephemeral points
     //
@@ -1459,6 +1460,25 @@ public:
         mShips[shipId]->UploadElementEphemeralPointsEnd();
     }
 
+    //
+    // Highlights
+    //
+
+    inline void UploadShipHighlight(
+        ShipId shipId,
+        vec2f const & centerPosition,
+        float halfQuadSize,
+        rgbColor color,
+        float progress)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadHighlight(
+            centerPosition,
+            halfQuadSize,
+            color,
+            progress);
+    }
 
     //
     // Vectors

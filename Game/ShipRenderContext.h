@@ -747,6 +747,75 @@ public:
     void UploadElementEphemeralPointsEnd();
 
     //
+    // Highlights
+    //
+    // Highlights don't have a start/end as there are multiple
+    // physical sources of highlights.
+    //
+
+    inline void UploadHighlight(
+        vec2f const & centerPosition,
+        float halfQuadSize,
+        rgbColor color,
+        float progress)
+    {
+        vec3f const vColor = color.toVec3f();
+
+        // Append vertices - two triangles
+
+        float const leftX = centerPosition.x - halfQuadSize;
+        float const rightX = centerPosition.x + halfQuadSize;
+        float const topY = centerPosition.y - halfQuadSize;
+        float const bottomY = centerPosition.y + halfQuadSize;
+
+        // Triangle 1
+
+        // Top-left
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            vec2f(-1.0f, 1.0f),
+            vColor,
+            progress);
+
+        // Top-Right
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(1.0f, 1.0f),
+            vColor,
+            progress);
+
+        // Bottom-left
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(-1.0f, -1.0f),
+            vColor,
+            progress);
+
+        // Triangle 2
+
+        // Top-Right
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(1.0f, 1.0f),
+            vColor,
+            progress);
+
+        // Bottom-left
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(-1.0f, -1.0f),
+            vColor,
+            progress);
+
+        // Bottom-right
+        mHighlightVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            vec2f(1.0f, -1.0f),
+            vColor,
+            progress);
+    }
+
+    //
     // Vectors
     //
 
@@ -883,6 +952,7 @@ private:
     void RenderSparkles();
     void RenderGenericMipMappedTextures();
     void RenderExplosions();
+    void RenderHighlights();
     void RenderVectorArrows();
 
 private:
@@ -1032,6 +1102,26 @@ private:
         {}
     };
 
+    struct HighlightVertex
+    {
+        vec2f vertexPosition;
+        vec2f vertexSpacePosition;
+        vec3f color;
+
+        float progress;
+
+        HighlightVertex(
+            vec2f _vertexPosition,
+            vec2f _vertexSpacePosition,
+            vec3f _color,
+            float _progress)
+            : vertexPosition(_vertexPosition)
+            , vertexSpacePosition(_vertexSpacePosition)
+            , color(_color)
+            , progress(_progress)
+        {}
+    };
+
 #pragma pack(pop)
 
     struct ExplosionPlaneData
@@ -1083,6 +1173,9 @@ private:
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
 
+    std::vector<HighlightVertex> mHighlightVertexBuffer;
+    GameOpenGLVBO mHighlightVertexVBO;
+
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
     std::optional<vec4f> mVectorArrowColor;
@@ -1119,6 +1212,7 @@ private:
     GameOpenGLVAO mExplosionVAO;
     GameOpenGLVAO mSparkleVAO;
     GameOpenGLVAO mGenericMipMappedTextureVAO;
+    GameOpenGLVAO mHighlightVAO;
     GameOpenGLVAO mVectorArrowVAO;
 
 

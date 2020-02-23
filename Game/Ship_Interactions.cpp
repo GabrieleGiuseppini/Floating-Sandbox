@@ -9,6 +9,7 @@
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
 #include <GameCore/Segment.h>
 
@@ -1339,6 +1340,14 @@ void Ship::SetSwitchState(
     assert(electricalElementId.GetShipId() == mId);
 
     mElectricalElements.SetSwitchState(electricalElementId, switchState);
+
+    // Highlight point
+    rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
+    rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
+    mPoints.StartPointHighlight(
+        mElectricalElements.GetPointIndex(electricalElementId),
+        switchState == ElectricalState::On ? SwitchOnHighlightColor : SwitchOffHighlightColor,
+        GameWallClock::GetInstance().NowAsFloat());
 }
 
 }

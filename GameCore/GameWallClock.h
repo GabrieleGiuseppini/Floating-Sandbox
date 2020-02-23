@@ -21,6 +21,7 @@ public:
 
     using time_point = std::chrono::steady_clock::time_point;
     using duration = std::chrono::steady_clock::duration;
+    using float_time = float;
 
 public:
 
@@ -37,9 +38,9 @@ public:
      *
      * Useful as a "t" variable when the trend is important - not its absolute value.
      */
-    inline float ContinuousNowAsFloat() const
+    inline float_time ContinuousNowAsFloat() const
     {
-        return std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - mClockStartTime)            
+        return std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - mClockStartTime)
             .count();
     }
 
@@ -63,9 +64,20 @@ public:
      *
      * Useful as a "t" variable when the trend is important - not its absolute value.
      */
-    inline float NowAsFloat() const
+    inline float_time NowAsFloat() const
     {
         return ElapsedAsFloat(mClockStartTime);
+    }
+
+    /*
+     * Returns the specified time as a fractional number of seconds since an arbitrary
+     * reference moment.
+     *
+     * Useful as a "t" variable when the trend is important - not its absolute value.
+     */
+    inline float_time AsFloat(time_point timePoint) const
+    {
+        return std::chrono::duration_cast<std::chrono::duration<float>>(timePoint - mClockStartTime).count();
     }
 
     inline duration Elapsed(time_point previousTimePoint) const
@@ -73,7 +85,7 @@ public:
         return Now() - previousTimePoint;
     }
 
-    inline float ElapsedAsFloat(time_point previousTimePoint) const
+    inline float_time ElapsedAsFloat(time_point previousTimePoint) const
     {
         return std::chrono::duration_cast<std::chrono::duration<float>>(Now() - previousTimePoint).count();
     }
@@ -83,7 +95,7 @@ public:
      * specified interval.
      */
     template<typename TDuration>
-    inline float ProgressSince(
+    inline float_time ProgressSince(
         time_point previousTimePoint,
         TDuration interval) const
     {
@@ -98,13 +110,13 @@ public:
      * specified interval.
      */
     template<typename TDuration>
-    inline float ProgressSince(
+    inline float_time ProgressSince(
         float previousTime,
         TDuration interval) const
     {
         assert(interval.count() != 0);
 
-        return ProgressSince(
+        return Progress<TDuration>(
             NowAsFloat(),
             previousTime,
             interval);
@@ -115,9 +127,9 @@ public:
      * specified interval.
      */
     template<typename TDuration>
-    inline static float Progress(
-        float time,
-        float previousTime,
+    inline static float_time Progress(
+        float_time time,
+        float_time previousTime,
         TDuration interval)
     {
         assert(interval.count() != 0);

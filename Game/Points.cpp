@@ -1310,6 +1310,32 @@ void Points::UpdateEphemeralParticles(
     }
 }
 
+void Points::UpdateHighlights(GameWallClock::float_time currentWallClockTime)
+{
+    auto constexpr HighlightLifetime = 1s;
+
+    for (auto it = mHighlightedPoints.begin(); it != mHighlightedPoints.end(); /* incremented in loop */)
+    {
+        // Calculate progress
+        float const progress = GameWallClock::Progress(
+            currentWallClockTime,
+            it->StartTime,
+            HighlightLifetime);
+
+        if (progress > 1.0f)
+        {
+            // Expire
+            it = mHighlightedPoints.erase(it);
+        }
+        else
+        {
+            // Update
+            it->Progress = progress;
+            ++it;
+        }
+    }
+}
+
 void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex);
@@ -1639,6 +1665,21 @@ void Points::UploadEphemeralParticles(
 
         // Not dirty anymore
         mAreEphemeralPointsDirtyForRendering = false;
+    }
+}
+
+void Points::UploadHighlights(
+    ShipId shipId,
+    Render::RenderContext & renderContext) const
+{
+    for (auto const & h : mHighlightedPoints)
+    {
+        renderContext.UploadShipHighlight(
+            shipId,
+            GetPosition(h.PointIndex),
+            7.0f, // Magic number
+            h.HighlightColor,
+            h.Progress);
     }
 }
 

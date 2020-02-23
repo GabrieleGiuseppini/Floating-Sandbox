@@ -323,6 +323,11 @@ public:
         return mPointIndexBuffer[electricalElementIndex];
     }
 
+    inline ElementIndex GetPointIndex(ElectricalElementId electricalElementId) const
+    {
+        return mPointIndexBuffer[electricalElementId.GetLocalObjectId()];
+    }
+
     //
     // Type
     //

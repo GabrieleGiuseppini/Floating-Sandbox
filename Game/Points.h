@@ -19,8 +19,10 @@
 #include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstring>
@@ -414,6 +416,36 @@ private:
         {}
     };
 
+    /*
+     * A point being highlighted, half-way through its highlight state machine.
+     */
+    struct HighlightState
+    {
+        ElementIndex PointIndex;
+        rgbColor HighlightColor;
+        GameWallClock::float_time StartTime;
+        float Progress;
+
+        HighlightState(
+            ElementIndex pointIndex,
+            rgbColor const & highlightColor,
+            GameWallClock::float_time startTime)
+            : PointIndex(pointIndex)
+            , HighlightColor(highlightColor)
+            , StartTime(startTime)
+            , Progress(0.0f)
+        {}
+
+        void Reset(
+            rgbColor const & highlightColor,
+            GameWallClock::float_time startTime)
+        {
+            HighlightColor = highlightColor;
+            StartTime = startTime;
+            Progress = 0.0f;
+        }
+    };
+
 public:
 
     Points(
@@ -487,6 +519,8 @@ public:
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
         // Repair
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
+        // Highlight
+        , mHighlightedPoints()
 		// Randomness
 		, mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
@@ -501,6 +535,7 @@ public:
         , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
         , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
+        //
         , mParentWorld(parentWorld)
         , mMaterialDatabase(materialDatabase)
         , mGameEventHandler(std::move(gameEventDispatcher))
@@ -688,6 +723,8 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void UpdateHighlights(GameWallClock::float_time currentWallClockTime);
+
     void Query(ElementIndex pointElementIndex) const;
 
     //
@@ -717,6 +754,10 @@ public:
     }
 
     void UploadEphemeralParticles(
+        ShipId shipId,
+        Render::RenderContext & renderContext) const;
+
+    void UploadHighlights(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
@@ -1453,6 +1494,39 @@ public:
     }
 
     //
+    // Highlights
+    //
+
+    void StartPointHighlight(
+        ElementIndex pointElementIndex,
+        rgbColor highlightColor,
+        GameWallClock::float_time currentWallClockTime)
+    {
+        // See if we're already highlighting this point
+        auto pointIt = std::find_if(
+            mHighlightedPoints.begin(),
+            mHighlightedPoints.end(),
+            [&pointElementIndex](auto const & hs)
+            {
+                return hs.PointIndex == pointElementIndex;
+            });
+
+        if (pointIt != mHighlightedPoints.end())
+        {
+            // Restart it
+            pointIt->Reset(highlightColor, currentWallClockTime);
+        }
+        else
+        {
+            // Start new highlight altogether
+            mHighlightedPoints.emplace_back(
+                pointElementIndex,
+                highlightColor,
+                currentWallClockTime);
+        }
+    }
+
+    //
     // Immutable attributes
     //
 
@@ -1670,6 +1744,12 @@ private:
     //
 
     Buffer<RepairState> mRepairStateBuffer;
+
+    //
+    // Highlight state
+    //
+
+    std::vector<HighlightState> mHighlightedPoints;
 
 	//
 	// Randomness

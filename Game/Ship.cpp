@@ -135,6 +135,7 @@ void Ship::Update(
 
     // Get the current wall clock time
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
+    auto const currentWallClockTimeFloat = GameWallClock::GetInstance().AsFloat(currentWallClockTime);
 
     // Advance the current simulation sequence
     ++mCurrentSimulationSequenceNumber;
@@ -332,7 +333,6 @@ void Ship::Update(
         UpdateSinking();
     }
 
-
     ///////////////////////////////////////////////////////////////////
     // Update electrical dynamics
     ///////////////////////////////////////////////////////////////////
@@ -469,6 +469,12 @@ void Ship::Update(
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
         gameParameters);
+
+    ///////////////////////////////////////////////////////////////////
+    // Update highlights
+    ///////////////////////////////////////////////////////////////////
+
+    mPoints.UpdateHighlights(currentWallClockTimeFloat);
 
 #ifdef _DEBUG
     VerifyInvariants();
@@ -614,6 +620,15 @@ void Ship::Render(
     //
 
     mPoints.UploadEphemeralParticles(
+        mId,
+        renderContext);
+
+
+    //
+    // Upload highlights
+    //
+
+    mPoints.UploadHighlights(
         mId,
         renderContext);
 
