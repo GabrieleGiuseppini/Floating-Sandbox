@@ -1048,11 +1048,12 @@
         "is_hull": true, 
         "mass": {
             "density": 0.0935, 
-            "nominal_mass": 30
+            "nominal_mass": 50
         }, 
         "melting_temperature": 1000000.0, 
         "name": "Cardboard Hull", 
-        "render_color": "#A88848", 
+        "render_color": "#A88848",
+	"rust_receptivity": 10.0,
         "sound_type": "Wood", 
         "specific_heat": 1336.0, 
         "stiffness": 1.0, 
@@ -1061,9 +1062,10 @@
             "column": 0, 
             "row": "70|Cardboard Hull"
         }, 
-        "thermal_conductivity": 0.05, 
+        "thermal_conductivity": 0.05,
+	"thermal_expansion_coefficient": 0.0043,
         "water_diffusion_speed": 0.5, 
-        "water_retention": 0.05, 
+        "water_retention": 0.2, 
         "buoyancy_volume_fill": 0.0
     }, 
     {
@@ -1072,12 +1074,13 @@
         "ignition_temperature": 491.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.022935, 
-            "nominal_mass": 20
+            "density": 0.0935,
+            "nominal_mass": 25
         }, 
         "melting_temperature": 1000000.0, 
         "name": "Cardboard", 
-        "render_color": "#C1A46A", 
+        "render_color": "#C1A46A",
+	"rust_receptivity": 10.0,
         "sound_type": "Wood", 
         "specific_heat": 1336.0, 
         "stiffness": 1.0, 
@@ -1086,10 +1089,11 @@
             "column": 1, 
             "row": "70|Cardboard"
         }, 
-        "thermal_conductivity": 0.05, 
-        "water_diffusion_speed": 0.5, 
-        "water_retention": 0.05, 
-        "buoyancy_volume_fill": 1.0
+        "thermal_conductivity": 0.05,
+	"thermal_expansion_coefficient": 0.00434,
+        "water_diffusion_speed": 0.55,
+        "water_retention": 0.75,
+        "buoyancy_volume_fill": 0.9
     }, 
     {
         "color_key": "#A71000", 
@@ -3159,7 +3163,7 @@
         "is_hull": false, 
         "mass": {
             "density": 0.0417, 
-            "nominal_mass": 20
+            "nominal_mass": 50
         }, 
         "melting_temperature": 505.05, 
         "name": "Nails", 
@@ -3268,7 +3272,7 @@
         "melting_temperature": 1000000.0, 
         "name": "Rubber Hull Soft Red", 
         "render_color": "#E1BFBF", 
-        "rust_receptivity": 0, 
+        "rust_receptivity": 0,
         "sound_type": "Rubber", 
         "specific_heat": 1250.0, 
         "stiffness": 0.5, 

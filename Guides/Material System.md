@@ -86,9 +86,9 @@ Here's an explanation of the elements:
 - _thermal conductivity_: the speed with which heat propagates along this material, in W/(m*K).
 - _thermal_expansion_coefficient_: the amount by which the volume of the material changes with temperature, in 1/K.
 - _water diffusion speed_: the speed with which water at this particle spreads out of it. Technically, it's the fraction of water at this particle that is allowed to leave the particle towards its neighbors.
-- _water intake_: the amount of water that enters or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
+- _water intake_: the amount of water that enters (i.e. is absorbed) or leaves this particle when the particle is leaking; when not set, assumed to be 1.0.
 - _water retention_: the amount of water that will remain in this particle when the particle is leaking and finds itself at a pressure point lower than the pressure of the water it contains.
-- _wind receptivity_: the amount of wind force that this material feels when it is over the water line; when not set, assumed to be 0.0.
+- _wind receptivity_: the amount of wind force that this material feels when it is above the water line; when not set, assumed to be 0.0.
 
 # Electrical Materials
 

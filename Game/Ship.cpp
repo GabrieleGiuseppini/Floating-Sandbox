@@ -1851,7 +1851,7 @@ void Ship::RotPoints(
     {
         float waterEquivalent =
             mPoints.GetWater(p)
-            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? 0.2f : 0.0f); // Also rust a bit underwater points, even hull ones
+            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? 0.175f : 0.0f); // Also rust a bit underwater points, even hull ones
 
         // Adjust with material's rust receptivity
         waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);

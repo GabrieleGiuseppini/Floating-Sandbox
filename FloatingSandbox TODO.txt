@@ -564,12 +564,14 @@ Render:
 			+ And add new render param for shaders
 		+ Reduce sea's little waves from gusts
 
-		- Materials changes:
-			- Lower gunpowder strength
-			- Cardboard flies too fast when hot - lower thermal expansion
+		= Materials changes:
+			+ Lower gunpowder strength
+			+ Cardboard floats in air
+				+ Also set thermal expansion so that it flies when hot
 			- Check Mike's changes		
-		- Hull should decay less
-		- Also GoodYear should be full of hydrogen		
+			- Redo templates
+		= Hull should decay less
+		= Also GoodYear should be full of hydrogen		
 		- Selector for panel background
 			- Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
 				- ...or a floating context window?

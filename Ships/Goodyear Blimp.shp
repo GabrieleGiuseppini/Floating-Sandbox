@@ -1,7 +1,7 @@
 {
 	"structure_image":"goodyear_blimp_structure.png.dat",
 	"texture_image":"goodyear_blimp_texture.png.dat",
-	"offset":{"x":0.0, "y":50.0},
+	"offset":{"x":0.0, "y":10.0},
 	"ship_name":"Goodyear Blimp",
 	"created_by":"Michael Bozarth",
 	"year_built":"2016"
