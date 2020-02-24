@@ -189,8 +189,7 @@ public:
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState,
-        bool doRenderVisualNotification) override;
+        ElectricalState switchState) override;
 
     //
     // Render controls
@@ -208,8 +207,12 @@ public:
 	// Interaction parameters
 	//
 
-	bool GetShowTsunamiNotifications() const override { return mShowTsunamiNotifications; }
-	void SetShowTsunamiNotifications(bool value) override { mShowTsunamiNotifications = value; }
+	bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
+	void SetDoShowTsunamiNotifications(bool value) override { mDoShowTsunamiNotifications = value; }
+
+    bool GetDoShowElectricalNotifications() const override { return mGameParameters.DoShowElectricalNotifications; }
+    void SetDoShowElectricalNotifications(bool value) override { mGameParameters.DoShowElectricalNotifications = value; }
+
 
 	/////////////////////////////////////////////////////////
 	// IGameControllerSettings and IGameControllerSettingsOptions
@@ -614,8 +617,8 @@ public:
     // Interaction parameters
     //
 
-    bool GetDrawHeatBlasterFlame() const override { return mDrawHeatBlasterFlame; }
-    void SetDrawHeatBlasterFlame(bool value) override { mDrawHeatBlasterFlame = value; }
+    bool GetDrawHeatBlasterFlame() const override { return mDoDrawHeatBlasterFlame; }
+    void SetDrawHeatBlasterFlame(bool value) override { mDoDrawHeatBlasterFlame = value; }
 
 private:
 
@@ -693,8 +696,8 @@ private:
     // The parameters that we own
     //
 
-    bool mShowTsunamiNotifications;
-    bool mDrawHeatBlasterFlame;
+    bool mDoShowTsunamiNotifications;
+    bool mDoDrawHeatBlasterFlame;
 
 
     //

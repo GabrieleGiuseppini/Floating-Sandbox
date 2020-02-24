@@ -202,7 +202,7 @@ public:
     void SetSwitchState(
         ElectricalElementId electricalElementId,
         ElectricalState switchState,
-        bool doRenderVisualNotification);
+        GameParameters const & gameParameters);
 
 private:
 

@@ -106,8 +106,7 @@ struct IGameController
 
     virtual void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState,
-        bool doRenderVisualNotification) = 0;
+        ElectricalState switchState) = 0;
 
     //
     // Rendering controls
@@ -125,6 +124,9 @@ struct IGameController
     // Interaction parameters
     //
 
-    virtual bool GetShowTsunamiNotifications() const = 0;
-    virtual void SetShowTsunamiNotifications(bool value) = 0;
+    virtual bool GetDoShowTsunamiNotifications() const = 0;
+    virtual void SetDoShowTsunamiNotifications(bool value) = 0;
+
+    virtual bool GetDoShowElectricalNotifications() const = 0;
+    virtual void SetDoShowElectricalNotifications(bool value) = 0;
 };

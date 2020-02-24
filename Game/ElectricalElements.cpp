@@ -296,7 +296,8 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
 }
 
 void ElectricalElements::UpdateAutomaticConductivityToggles(
-    Points & points)
+    Points & points,
+    GameParameters const & gameParameters)
 {
     //
     // Visit all elements that change their conductivity automatically,
@@ -318,12 +319,20 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                 if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
                     && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
                 {
-                    SetSwitchState(elementIndex, static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                    InternalSetSwitchState(
+                        elementIndex,
+                        static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                        points,
+                        gameParameters);
                 }
                 else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
                     && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
                 {
-                    SetSwitchState(elementIndex, static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity));
+                    InternalSetSwitchState(
+                        elementIndex,
+                        static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                        points,
+                        gameParameters);
                 }
 
                 break;
@@ -619,9 +628,11 @@ void ElectricalElements::UpdateSinks(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ElectricalElements::SetSwitchState(
+void ElectricalElements::InternalSetSwitchState(
     ElementIndex elementIndex,
-    ElectricalState switchState)
+    ElectricalState switchState,
+    Points & points,
+    GameParameters const & gameParameters)
 {
     // Make sure it's a state change
     if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
@@ -675,6 +686,18 @@ void ElectricalElements::SetSwitchState(
         mGameEventHandler->OnSwitchToggled(
             ElectricalElementId(mShipId, elementIndex),
             switchState);
+
+        // Show notifications
+        if (gameParameters.DoShowElectricalNotifications)
+        {
+            // Highlight point
+            rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
+            rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                switchState == ElectricalState::On ? SwitchOnHighlightColor : SwitchOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+        }
 
         // Remember that a switch has been toggled
         mHasSwitchBeenToggledInStep = true;

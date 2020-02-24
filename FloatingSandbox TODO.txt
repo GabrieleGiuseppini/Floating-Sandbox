@@ -581,14 +581,15 @@ Render:
 					+ Now that you're at it, rename ResourceLoader::"Icon" to "Image" where appropriate
 				+ Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
 			+ New Preferences property: electrical panel background filename
-		- Do highlight also for water detector
-		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
-		  leaving it completely white"
+		+ Do highlight also for water detector
 		- See if should take Mike's Titanic electricals
 
 		- Talk with Mike about LEGO mass
 
 		- Propulsion (*)
+
+		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
+		  leaving it completely white"
 
 		- Flood doors (*)		
 

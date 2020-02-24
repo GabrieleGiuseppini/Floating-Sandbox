@@ -345,7 +345,8 @@ void Ship::Update(
     //
 
     mElectricalElements.UpdateAutomaticConductivityToggles(
-        mPoints);
+        mPoints,
+        gameParameters);
 
     //
     // 2. Update sources and connectivity

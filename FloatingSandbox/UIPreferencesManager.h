@@ -147,14 +147,14 @@ public:
         mShowShipDescriptionsAtShipLoad = value;
     }
 
-    bool GetShowTsunamiNotifications() const
+    bool GetDoShowTsunamiNotifications() const
     {
-        return mGameController->GetShowTsunamiNotifications();
+        return mGameController->GetDoShowTsunamiNotifications();
     }
 
-    void SetShowTsunamiNotifications(bool value)
+    void SetDoShowTsunamiNotifications(bool value)
     {
-        mGameController->SetShowTsunamiNotifications(value);
+        mGameController->SetDoShowTsunamiNotifications(value);
     }
 
     bool GetAutoShowSwitchboard() const
@@ -177,14 +177,14 @@ public:
         mSwitchboardBackgroundBitmapIndex = value;
     }
 
-    bool GetShowElectricalNotifications() const
+    bool GetDoShowElectricalNotifications() const
     {
-        return mShowElectricalNotifications;
+        return mGameController->GetDoShowElectricalNotifications();
     }
 
-    void SetShowElectricalNotifications(bool value)
+    void SetDoShowElectricalNotifications(bool value)
     {
-        mShowElectricalNotifications = value;
+        mGameController->SetDoShowElectricalNotifications(value);
     }
 
     float GetZoomIncrement() const
@@ -310,7 +310,6 @@ private:
     bool mShowShipDescriptionsAtShipLoad;
     bool mAutoShowSwitchboard;
     int mSwitchboardBackgroundBitmapIndex;
-    bool mShowElectricalNotifications;
 
     float mZoomIncrement;
     float mPanIncrement;

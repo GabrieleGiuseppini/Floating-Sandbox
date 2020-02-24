@@ -243,7 +243,7 @@ public:
     void SetSwitchState(
         ElectricalElementId electricalElementId,
         ElectricalState switchState,
-        bool doRenderVisualNotification);
+        GameParameters const & gameParameters);
 
     void SetSilence(float silenceAmount);
 

@@ -435,6 +435,8 @@ struct GameParameters
 
     float MoveToolInertia;
 
+    bool DoShowElectricalNotifications;
+
     //
     // Limits
     //

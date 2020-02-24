@@ -67,8 +67,8 @@ GameController::GameController(
     , mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
     // Parameters that we own
-    , mShowTsunamiNotifications(true)
-    , mDrawHeatBlasterFlame(true)
+    , mDoShowTsunamiNotifications(true)
+    , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
@@ -787,7 +787,7 @@ bool GameController::ApplyHeatBlasterAt(
 
     if (isApplied)
     {
-        if (mDrawHeatBlasterFlame)
+        if (mDoDrawHeatBlasterFlame)
         {
             // Remember to render the flame at the next Render() step
             mHeatBlasterFlameToRender.emplace(
@@ -1037,11 +1037,13 @@ void GameController::TriggerLightning()
 
 void GameController::SetSwitchState(
     ElectricalElementId electricalElementId,
-    ElectricalState switchState,
-    bool doRenderVisualNotification)
+    ElectricalState switchState)
 {
     assert(!!mWorld);
-    mWorld->SetSwitchState(electricalElementId, switchState, doRenderVisualNotification);
+    mWorld->SetSwitchState(
+        electricalElementId,
+        switchState,
+        mGameParameters);
 }
 
 //
@@ -1113,7 +1115,7 @@ vec2f GameController::ScreenToWorld(vec2f const & screenCoordinates) const
 
 void GameController::OnTsunami(float x)
 {
-    if (mShowTsunamiNotifications)
+    if (mDoShowTsunamiNotifications)
     {
         // Start state machine
         StartTsunamiNotificationStateMachine(x);

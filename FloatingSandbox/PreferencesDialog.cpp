@@ -174,7 +174,7 @@ void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowElectricalNotifications(mShowElectricalNotificationsCheckBox->GetValue());
+    mUIPreferencesManager->SetDoShowElectricalNotifications(mShowElectricalNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -182,7 +182,7 @@ void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEv
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
+    mUIPreferencesManager->SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
 
 	mOnChangeCallback();
 }
@@ -728,8 +728,8 @@ void PreferencesDialog::ReadSettings()
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
-    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowElectricalNotifications());
-    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetShowTsunamiNotifications());
+    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
+    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
 	mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());

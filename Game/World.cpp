@@ -585,12 +585,15 @@ void World::TriggerRogueWave()
 void World::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState,
-    bool doRenderVisualNotification)
+    GameParameters const & gameParameters)
 {
     auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->SetSwitchState(electricalElementId, switchState, doRenderVisualNotification);
+    mAllShips[shipId]->SetSwitchState(
+        electricalElementId,
+        switchState,
+        gameParameters);
 }
 
 void World::SetSilence(float silenceAmount)

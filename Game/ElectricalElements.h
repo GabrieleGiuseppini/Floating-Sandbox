@@ -276,10 +276,17 @@ public:
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState)
+        ElectricalState switchState,
+        Points & points,
+        GameParameters const & gameParameters)
     {
         assert(electricalElementId.GetShipId() == mShipId);
-        SetSwitchState(electricalElementId.GetLocalObjectId(), switchState);
+
+        InternalSetSwitchState(
+            electricalElementId.GetLocalObjectId(),
+            switchState,
+            points,
+            gameParameters);
     }
 
     void Destroy(ElementIndex electricalElementIndex);
@@ -289,7 +296,8 @@ public:
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateAutomaticConductivityToggles(
-        Points & points);
+        Points & points,
+        GameParameters const & gameParameters);
 
     void UpdateSourcesAndPropagation(
         SequenceNumber newConnectivityVisitSequenceNumber,
@@ -467,9 +475,11 @@ public:
 
 private:
 
-    void SetSwitchState(
+    void InternalSetSwitchState(
         ElementIndex elementIndex,
-        ElectricalState switchState);
+        ElectricalState switchState,
+        Points & points,
+        GameParameters const & gameParameters);
 
     void RunLampStateMachine(
         ElementIndex elementLampIndex,

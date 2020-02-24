@@ -85,5 +85,6 @@ GameParameters::GameParameters()
     , ScrubRadius(5.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
+    , DoShowElectricalNotifications(true)
 {
 }

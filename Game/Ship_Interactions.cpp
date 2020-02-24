@@ -1336,22 +1336,15 @@ void Ship::ApplyLightning(
 void Ship::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState,
-    bool doRenderVisualNotification)
+    GameParameters const & gameParameters)
 {
     assert(electricalElementId.GetShipId() == mId);
 
-    mElectricalElements.SetSwitchState(electricalElementId, switchState);
-
-    if (doRenderVisualNotification)
-    {
-        // Highlight point
-        rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
-        rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
-        mPoints.StartPointHighlight(
-            mElectricalElements.GetPointIndex(electricalElementId),
-            switchState == ElectricalState::On ? SwitchOnHighlightColor : SwitchOffHighlightColor,
-            GameWallClock::GetInstance().NowAsFloat());
-    }
+    mElectricalElements.SetSwitchState(
+        electricalElementId,
+        switchState,
+        mPoints,
+        gameParameters);
 }
 
 }

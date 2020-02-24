@@ -35,7 +35,6 @@ UIPreferencesManager::UIPreferencesManager(
     mShowShipDescriptionsAtShipLoad = true;
     mAutoShowSwitchboard = true;
     mSwitchboardBackgroundBitmapIndex = 0;
-    mShowElectricalNotifications = true;
 
     mZoomIncrement = 1.05f;
     mPanIncrement = 20.0f;
@@ -205,7 +204,7 @@ void UIPreferencesManager::LoadPreferences()
         if (showTsunamiNotificationsIt != preferencesRootObject.end()
             && showTsunamiNotificationsIt->second.is<bool>())
         {
-            mGameController->SetShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
+            mGameController->SetDoShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
         }
 
         //
@@ -238,7 +237,7 @@ void UIPreferencesManager::LoadPreferences()
         if (showElectricalNotificationsIt != preferencesRootObject.end()
             && showElectricalNotificationsIt->second.is<bool>())
         {
-            mShowElectricalNotifications = showElectricalNotificationsIt->second.get<bool>();
+            mGameController->SetDoShowElectricalNotifications(showElectricalNotificationsIt->second.get<bool>());
         }
 
         //
@@ -374,7 +373,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
 
     // Add show tsunami notification
-    preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetShowTsunamiNotifications());
+    preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
@@ -383,7 +382,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["switchboard_background_bitmap_index"] = picojson::value(static_cast<std::int64_t>(mSwitchboardBackgroundBitmapIndex));
 
     // Add show electrical notifications
-    preferencesRootObject["show_electrical_notifications"] = picojson::value(mShowElectricalNotifications);
+    preferencesRootObject["show_electrical_notifications"] = picojson::value(mGameController->GetDoShowElectricalNotifications());
 
     // Add zoom increment
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));

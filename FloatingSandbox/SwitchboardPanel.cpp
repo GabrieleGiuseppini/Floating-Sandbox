@@ -421,7 +421,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 label,
                 [this, electricalElementId](ElectricalState newState)
                 {
-                    mGameController->SetSwitchState(electricalElementId, newState, mUIPreferencesManager->GetShowElectricalNotifications());
+                    mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
 
@@ -439,7 +439,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 label,
                 [this, electricalElementId](ElectricalState newState)
                 {
-                    mGameController->SetSwitchState(electricalElementId, newState, mUIPreferencesManager->GetShowElectricalNotifications());
+                    mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
 
