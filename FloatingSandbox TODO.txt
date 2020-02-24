@@ -586,6 +586,8 @@ Render:
 
 		- Talk with Mike about LEGO mass
 
+		- Power probes (*)
+
 		- Propulsion (*)
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
@@ -1254,7 +1256,7 @@ Render:
 		- Fires when wet for the first time
 		- "Whatever color block its on it explodes that color" (AwesomeYorkie)
 
-	= Power probe:
+	= Power probes (*):
 		+ Rename: "Monitor"->"Probe" in current code
 		+ GameTypes:
 			+ First off, tag ObjectId
@@ -1263,36 +1265,43 @@ Render:
 				! ToggleSwitch
 				+ PushSwitch
 			- Add PowerProbe types: PowerMonitor and Generator
+				! Engine has own type, EngineMonitor, see at Propulsion (*)
 		- EventHandler:
+			! No enabled/disabled
 			= Add power monitor events
-				- Take float between -1.0 and +1.0
+				= Take ElectricalState
 		- New Instanced Generator electrical material
 			- Add to json, new generator altogether, other is !IsInstanced
 			- ElectricalElements::Add: add both to sources, treat both of them equally
 		- New PowerMonitor electrical material - and type
-			- Add to json
+			- Add to json - IsInstanced = true
 			- ElectricalElements::Add: add to sinks
 		- These ElectricalMaterial's announce themselves as power probes:
 			- PowerMonitor (announcement type 1)
+				- Uses arbitrarily initial state as current state
 			- (Instanced)Generator (announcement type 2)
 				- Uses own state's IsProducingCurrent as current state
-		- Destroy/Repair at ElectricalElements::Destroy/Repair:
-			! Make sure announcement follows when generator is restored and becomes powered
-			! Alignment of state::IsProducingCurrent with announced state: it's the same
-			- At Destroy:
-				- Generator: if IsProducingCurrent:
-					- Toggle to false and announce
-				- PowerMonitor: TODO
-			- At Restore:
-				! Generator: nothing to do: at the next UpdateSources() the generator will start 
-				  producing current again and it will announce it
-				- PowerMonitor: TODO
 		- Simulation of PowerMonitor:
 			- Make it a sink
 			- Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
 		- Simulation of Generator:
 			! IsProducingCurrent is same as announced state
 			- At ElectricalElements::UpdateSources(): fire toggle events upon state toggle
+		- Destroy/Repair at ElectricalElements::Destroy/Repair:
+			! Make sure announcement follows when generator is restored and becomes powered
+			! Alignment of state::IsProducingCurrent with announced state: it's the same
+			- At Destroy:
+				- Generator: if IsProducingCurrent:
+					- Toggle to false and announce
+				- PowerMonitor: if State says it's on:
+					- Toggle to false and announce
+			- At Restore:
+				= Generator: nothing to do: at the next UpdateSources() that makes it work the generator will start 
+				  producing current again and it will announce it
+					- assert(IsProducingCurrent is off) // iff guaranteed to be called when destroyed
+				= PowerMonitor: nothing to do: at the next UpdateSinks() that makes it work there will be a state change
+				  and it will announce it
+					- assert(State says it's off) // iff guaranteed to be called when destroyed
 		+ UI:
 			+ ElectricalElementControl
 				+ InteractiveToggleSwitchElectricalElementControl
@@ -1305,8 +1314,9 @@ Render:
 				+ Current non-interactive becomes power monitor
 				+ Also rename pngs
 			= Add power probes to switchboard
-				- Type 1 (PowerMonitor): red/green/grey above
-				- Type 2 (Generator): Volt gauge (on abs of value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
+				- Type 1 (PowerMonitor): red/green
+				- Type 2 (Generator): Volt gauge (on continuous value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
+					- Map ElectricalState to min/max values at SwitchboardPanel
 		- Refresh electrical elements' materials template				
 
 	- Pumps (*)
@@ -1371,12 +1381,12 @@ Render:
 			- Need a new engine-specific electrical material property: engine_direction
 		- 1 new ElectricalElementType: EngineController
 		- 1 electrical material
-		- EngineController (telegraph) controls all connected, value={-1.0, ..., +1.0}
-			- Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
+		! EngineController (telegraph) controls all connected engines, value={-1.0, ..., +1.0}
+			! Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
 			  material
-		- EngineController announces self as EngineController, and API's to set value (-1,...,+1)
+		- EngineController announces self as EngineController, and API's to set value {-1.0, ..., +1.0}
 		- Engine announces self as EngineMonitor 
-			- And updates use (0,...,+1) values
+			- And updates use {0.0, ..., +1.0} values
 		- Dynamics:
 			- ElectricalElements: next to connected electrical elements, also has:
 				- If spring provides easy access to octant (given an endpoint): SpringIndex
@@ -1402,6 +1412,7 @@ Render:
 					- If Engine::State::CurrentPowerValue != State::LastPublishedPowerValue:
 						- Publish EngineMonitor -> Sound+Panel
 						- State::LastPublishedPowerValue = Engine::State::CurrentPowerValue
+						- Do visual notification if enabled
 					- Reset State::CurrentPowerForceVector
 					- Reset State::CurrentPowerValue
 		- Gfx:
@@ -1415,6 +1426,7 @@ Render:
 			- React to EngineMonitor, track object ID and set object's sound pitch
 		- Finalization:
 			- Add engine_direction to materials' guide
+			- Refresh electrical elements' materials template				
 
 	- Logic Gates
 		- New ElectricalMaterial type
