@@ -167,6 +167,16 @@ public:
         mAutoShowSwitchboard = value;
     }
 
+    bool GetShowElectricalNotifications() const
+    {
+        return mShowElectricalNotifications;
+    }
+
+    void SetShowElectricalNotifications(bool value)
+    {
+        mShowElectricalNotifications = value;
+    }
+
     float GetZoomIncrement() const
     {
         return mZoomIncrement;
@@ -289,6 +299,7 @@ private:
     bool mSaveSettingsOnExit;
     bool mShowShipDescriptionsAtShipLoad;
     bool mAutoShowSwitchboard;
+    bool mShowElectricalNotifications;
 
     float mZoomIncrement;
     float mPanIncrement;

@@ -34,6 +34,7 @@ UIPreferencesManager::UIPreferencesManager(
     mSaveSettingsOnExit = true;
     mShowShipDescriptionsAtShipLoad = true;
     mAutoShowSwitchboard = true;
+    mShowElectricalNotifications = true;
 
     mZoomIncrement = 1.05f;
     mPanIncrement = 20.0f;
@@ -218,6 +219,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Show electrical notifications
+        //
+
+        auto showElectricalNotificationsIt = preferencesRootObject.find("show_electrical_notifications");
+        if (showElectricalNotificationsIt != preferencesRootObject.end()
+            && showElectricalNotificationsIt->second.is<bool>())
+        {
+            mShowElectricalNotifications = showElectricalNotificationsIt->second.get<bool>();
+        }
+
+        //
         // Zoom increment
         //
 
@@ -354,6 +366,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
+
+    // Add show electrical notifications
+    preferencesRootObject["show_electrical_notifications"] = picojson::value(mShowElectricalNotifications);
 
     // Add zoom increment
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));

@@ -242,7 +242,8 @@ public:
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState);
+        ElectricalState switchState,
+        bool doRenderVisualNotification);
 
     void SetSilence(float silenceAmount);
 

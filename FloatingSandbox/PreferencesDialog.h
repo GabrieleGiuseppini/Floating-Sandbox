@@ -37,6 +37,7 @@ private:
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
+    void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
@@ -73,6 +74,7 @@ private:
     wxCheckBox * mSaveSettingsOnExitCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
+    wxCheckBox * mShowElectricalNotificationsCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;

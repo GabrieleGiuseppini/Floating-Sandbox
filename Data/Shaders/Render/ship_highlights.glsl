@@ -55,7 +55,7 @@ void main()
     t2 *= step(progress - HalfBandWidth / NBands - 0.5 - .05, d2); // truncate if d2 < innermost
     
     // Fade out outside quad 
-    t2 *= 1.0 - smoothstep(0.85, 1.0, d);
+    t2 *= 1.0 - smoothstep(0.75, 1.0, d);
         
     gl_FragColor = vec4(color, t2);
 }

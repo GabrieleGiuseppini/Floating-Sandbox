@@ -201,7 +201,8 @@ public:
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
-        ElectricalState switchState);
+        ElectricalState switchState,
+        bool doRenderVisualNotification);
 
 private:
 

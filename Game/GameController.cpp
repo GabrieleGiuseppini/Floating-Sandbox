@@ -1037,10 +1037,11 @@ void GameController::TriggerLightning()
 
 void GameController::SetSwitchState(
     ElectricalElementId electricalElementId,
-    ElectricalState switchState)
+    ElectricalState switchState,
+    bool doRenderVisualNotification)
 {
     assert(!!mWorld);
-    mWorld->SetSwitchState(electricalElementId, switchState);
+    mWorld->SetSwitchState(electricalElementId, switchState, doRenderVisualNotification);
 }
 
 //
