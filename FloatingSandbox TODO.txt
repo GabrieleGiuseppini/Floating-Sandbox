@@ -570,8 +570,8 @@ Render:
 				+ Also set thermal expansion so that it flies when hot
 			- Check Mike's changes		
 			- Redo templates
-		= Hull should decay less
-		= Also GoodYear should be full of hydrogen		
+		+ Hull should decay less
+		+ Also GoodYear should be full of hydrogen		
 		- Selector for panel background
 			- Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
 				- ...or a floating context window?
