@@ -34,6 +34,7 @@ UIPreferencesManager::UIPreferencesManager(
     mSaveSettingsOnExit = true;
     mShowShipDescriptionsAtShipLoad = true;
     mAutoShowSwitchboard = true;
+    mSwitchboardBackgroundBitmapIndex = 0;
     mShowElectricalNotifications = true;
 
     mZoomIncrement = 1.05f;
@@ -219,6 +220,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Switchboard background bitmap index
+        //
+
+        auto switchboardBackgroundBitmapIndexIt = preferencesRootObject.find("switchboard_background_bitmap_index");
+        if (switchboardBackgroundBitmapIndexIt != preferencesRootObject.end()
+            && switchboardBackgroundBitmapIndexIt->second.is<std::int64_t>())
+        {
+            mSwitchboardBackgroundBitmapIndex = static_cast<int>(switchboardBackgroundBitmapIndexIt->second.get<std::int64_t>());
+        }
+
+        //
         // Show electrical notifications
         //
 
@@ -366,6 +378,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
+
+    // Add switchboard background bitmap index
+    preferencesRootObject["switchboard_background_bitmap_index"] = picojson::value(static_cast<std::int64_t>(mSwitchboardBackgroundBitmapIndex));
 
     // Add show electrical notifications
     preferencesRootObject["show_electrical_notifications"] = picojson::value(mShowElectricalNotifications);

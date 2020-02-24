@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iterator>
 #include <optional>
+#include <regex>
 #include <sstream>
 #include <string>
 
@@ -372,6 +373,28 @@ namespace Utils
 
         *outValue = static_cast<uint8_t>(value);
         return true;
+    }
+
+    inline std::string FindAndReplaceAll(std::string const & str, std::string const & search, std::string const & replace)
+    {
+        std::string res = str;
+
+        auto pos = res.find(search);
+        while (pos != std::string::npos)
+        {
+            res.replace(pos, search.size(), replace);
+            pos = res.find(search, pos + replace.size());
+        }
+
+        return res;
+    }
+
+    inline std::regex MakeFilenameMatchRegex(std::string const & pattern)
+    {
+        std::string regexPattern = FindAndReplaceAll(pattern, ".", "\\.");
+        regexPattern = FindAndReplaceAll(regexPattern, "*", ".*");
+
+        return std::regex(regexPattern, std::regex::flag_type::icase);
     }
 
     ////////////////////////////////////////////////////////

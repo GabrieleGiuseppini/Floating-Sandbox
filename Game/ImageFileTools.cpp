@@ -134,48 +134,20 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
     std::filesystem::path const & filepath,
     ImageSize const & maxSize)
 {
-    return InternalLoadImage<rgbaColor>(
+    return InternalLoadImageLowerLeftAndResize<rgbaColor>(
         filepath,
         IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT,
-        ResizeInfo(
-            [maxSize](ImageSize const & originalImageSize)
-            {
-                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
-                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
-                float shrinkFactor = std::min(
-                    std::min(wShrinkFactor, hShrinkFactor),
-                    1.0f);
-
-                return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
-            },
-            ILU_BILINEAR));
+        maxSize);
 }
 
 RgbImageData ImageFileTools::LoadImageRgbLowerLeftAndResize(
     std::filesystem::path const & filepath,
     ImageSize const & maxSize)
 {
-    return InternalLoadImage<rgbColor>(
+    return InternalLoadImageLowerLeftAndResize<rgbColor>(
         filepath,
         IL_RGB,
-        IL_ORIGIN_LOWER_LEFT,
-        ResizeInfo(
-            [maxSize](ImageSize const & originalImageSize)
-            {
-                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
-                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
-                float shrinkFactor = std::min(
-                    std::min(wShrinkFactor, hShrinkFactor),
-                    1.0f);
-
-                return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
-            },
-            ILU_BILINEAR));
+        maxSize);
 }
 
 RgbImageData ImageFileTools::LoadImageRgbUpperLeft(std::filesystem::path const & filepath)
@@ -225,6 +197,32 @@ void ImageFileTools::CheckInitialized()
 
         mIsInitialized = true;
     }
+}
+
+template <typename TColor>
+ImageData<TColor> ImageFileTools::InternalLoadImageLowerLeftAndResize(
+    std::filesystem::path const & filepath,
+    int targetFormat,
+    ImageSize const & maxSize)
+{
+    return InternalLoadImage<TColor>(
+        filepath,
+        targetFormat,
+        IL_ORIGIN_LOWER_LEFT,
+        ResizeInfo(
+            [maxSize](ImageSize const & originalImageSize)
+            {
+                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
+                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
+                float shrinkFactor = std::min(
+                    std::min(wShrinkFactor, hShrinkFactor),
+                    1.0f);
+
+                return ImageSize(
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
+            },
+            ILU_BILINEAR));
 }
 
 template <typename TColor>

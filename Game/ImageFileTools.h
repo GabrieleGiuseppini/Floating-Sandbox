@@ -52,6 +52,12 @@ private:
     };
 
     template <typename TColor>
+    static ImageData<TColor> InternalLoadImageLowerLeftAndResize(
+        std::filesystem::path const & filepath,
+        int targetFormat,
+        ImageSize const & maxSize);
+
+    template <typename TColor>
     static ImageData<TColor> InternalLoadImage(
         std::filesystem::path const & filepath,
         int targetFormat,

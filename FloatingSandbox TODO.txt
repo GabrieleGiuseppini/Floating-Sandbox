@@ -572,16 +572,16 @@ Render:
 			+ Redo templates
 		+ Hull should decay less
 		+ Also GoodYear should be full of hydrogen		
-		- Selector for panel background
-			- Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
-				- ...or a floating context window?
+		+ Selector for panel background
+			+ Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
+				+ ...or a floating context window?
 					- https://docs.wxwidgets.org/trunk/classwx_popup_window.html
 					- https://forums.wxwidgets.org/viewtopic.php?t=15025
-				- ShowModal() plus getter for opt filename
-				- Dialog uses ResourceLoader::GetIconFilePaths(pattern) -> vector
-					- Now that you're at it, rename ResourceLoader::"Icon" to "Image" where appropriate
-				- Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
-			- New Preferences property: electrical panel background filename
+				+ Dialog uses ResourceLoader::GetIconFilePaths(pattern) -> vector
+					+ Now that you're at it, rename ResourceLoader::"Icon" to "Image" where appropriate
+				+ Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
+			+ New Preferences property: electrical panel background filename
+		- Do highlight also for water detector
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 		- See if should take Mike's Titanic electricals

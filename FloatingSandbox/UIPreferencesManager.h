@@ -167,6 +167,16 @@ public:
         mAutoShowSwitchboard = value;
     }
 
+    int GetSwitchboardBackgroundBitmapIndex() const
+    {
+        return mSwitchboardBackgroundBitmapIndex;
+    }
+
+    void SetSwitchboardBackgroundBitmapIndex(int value)
+    {
+        mSwitchboardBackgroundBitmapIndex = value;
+    }
+
     bool GetShowElectricalNotifications() const
     {
         return mShowElectricalNotifications;
@@ -299,6 +309,7 @@ private:
     bool mSaveSettingsOnExit;
     bool mShowShipDescriptionsAtShipLoad;
     bool mAutoShowSwitchboard;
+    int mSwitchboardBackgroundBitmapIndex;
     bool mShowElectricalNotifications;
 
     float mZoomIncrement;

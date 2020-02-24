@@ -796,6 +796,14 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create Electrical Panel
     //
 
+    {
+        splash->UpdateProgress(0.86f, "Loading electrical panel...");
+
+        this->mMainApp->Yield();
+        this->mMainApp->Yield();
+        this->mMainApp->Yield();
+    }
+
     mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
         mMainPanel,

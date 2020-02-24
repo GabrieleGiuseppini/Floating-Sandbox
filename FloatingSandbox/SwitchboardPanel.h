@@ -16,8 +16,10 @@
 #include <Game/ResourceLoader.h>
 
 #include <wx/bitmap.h>
+#include <wx/bmpcbox.h>
 #include <wx/custombgwin.h>
 #include <wx/gbsizer.h>
+#include <wx/popupwin.h>
 #include <wx/scrolwin.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
@@ -26,6 +28,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class SwitchboardPanel
     : public wxCustomBackgroundWindow<wxPanel>
@@ -127,6 +130,10 @@ private:
 
     void LayoutParent();
 
+    void SetBackgroundBitmapFromCombo(int selection);
+
+private:
+
     void OnLeaveWindowTimer(wxTimerEvent & event);
 
     void OnDockCheckbox(wxCommandEvent & event);
@@ -134,6 +141,10 @@ private:
     void OnEnterWindow(wxMouseEvent & event);
 
     void OnLeaveWindow();
+
+    void OnRightDown(wxMouseEvent & event);
+
+    void OnBackgroundSelectionChanged(wxCommandEvent & event);
 
 private:
 
@@ -160,6 +171,9 @@ private:
     BitmappedCheckbox * mDockCheckbox;
 
     std::unique_ptr<wxTimer> mLeaveWindowTimer;
+
+    wxBitmapComboBox * mBackgroundBitmapComboBox;
+    std::unique_ptr<wxPopupTransientWindow> mBackgroundSelectorPopup;
 
 private:
 

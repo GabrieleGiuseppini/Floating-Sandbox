@@ -5,6 +5,10 @@
 ***************************************************************************************/
 #include "ResourceLoader.h"
 
+#include <GameCore/Utils.h>
+
+#include <regex>
+
 ResourceLoader::ResourceLoader()
 {
     // Nothing special, for now.
@@ -143,6 +147,26 @@ std::filesystem::path ResourceLoader::GetBitmapFilepath(std::string const & bitm
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (bitmapName + ".png");
     return std::filesystem::absolute(localPath);
+}
+
+std::vector<std::filesystem::path> ResourceLoader::GetBitmapFilepaths(std::string const & bitmapNamePattern) const
+{
+    std::filesystem::path const directoryPath = std::filesystem::path("Data") / "Resources";
+
+    std::regex const searchRe = Utils::MakeFilenameMatchRegex(bitmapNamePattern);
+
+    std::vector<std::filesystem::path> filepaths;
+    for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path())
+            && entryIt.path().extension().string() == ".png"
+            && std::regex_match(entryIt.path().stem().string(), searchRe))
+        {
+            filepaths.push_back(entryIt.path());
+        }
+    }
+
+    return filepaths;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

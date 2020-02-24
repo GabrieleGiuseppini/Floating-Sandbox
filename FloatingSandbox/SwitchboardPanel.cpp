@@ -7,10 +7,13 @@
 
 #include "WxHelpers.h"
 
+#include <Game/ImageFileTools.h>
+
 #include <UIControls/LayoutHelper.h>
 
 #include <wx/cursor.h>
 
+#include <algorithm>
 #include <cassert>
 #include <utility>
 
@@ -47,6 +50,8 @@ SwitchboardPanel::SwitchboardPanel(
     ResourceLoader & resourceLoader)
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
+    , mBackgroundBitmapComboBox(nullptr)
+    , mBackgroundSelectorPopup()
     //
     , mElementMap()
     , mKeyboardShortcutToElementId()
@@ -57,6 +62,7 @@ SwitchboardPanel::SwitchboardPanel(
     , mUIPreferencesManager(std::move(uiPreferencesManager))
     , mParentLayoutWindow(parentLayoutWindow)
     , mParentLayoutSizer(parentLayoutSizer)
+    //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
     wxPanel::Create(
@@ -66,10 +72,67 @@ SwitchboardPanel::SwitchboardPanel(
         wxDefaultSize,
         wxBORDER_SIMPLE);
 
+    //
+    // Setup background selector popup
+    //
+
+    auto backgroundBitmapFilepaths = resourceLoader.GetBitmapFilepaths("switchboard_background_*");
+    if (backgroundBitmapFilepaths.empty())
+    {
+        throw GameException("There are no switchboard background bitmaps available");
+    }
+
+    std::sort(
+        backgroundBitmapFilepaths.begin(),
+        backgroundBitmapFilepaths.end(),
+        [](auto const & fp1, auto const & fp2)
+        {
+            return fp1.string() < fp2.string();
+        });
+
+
+    mBackgroundSelectorPopup = std::make_unique<wxPopupTransientWindow>(this, wxBORDER_SIMPLE);
+    {
+        auto sizer = new wxBoxSizer(wxVERTICAL);
+        {
+            mBackgroundBitmapComboBox = new wxBitmapComboBox(mBackgroundSelectorPopup.get(), wxID_ANY, wxEmptyString,
+                wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_READONLY);
+
+            for (auto const & backgroundBitmapFilepath : backgroundBitmapFilepaths)
+            {
+                auto backgroundBitmapThumb = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+                    backgroundBitmapFilepath,
+                    128);
+
+                mBackgroundBitmapComboBox->Append(
+                    backgroundBitmapFilepath.string(),
+                    WxHelpers::MakeBitmap(backgroundBitmapThumb));
+            }
+
+            mBackgroundBitmapComboBox->Bind(wxEVT_COMBOBOX, &SwitchboardPanel::OnBackgroundSelectionChanged, this);
+
+            sizer->Add(mBackgroundBitmapComboBox, 1, wxALL | wxEXPAND, 0);
+        }
+
+        mBackgroundSelectorPopup->SetSizerAndFit(sizer);
+    }
+
+    //
     // Set background bitmap
-    wxBitmap backgroundBitmap;
-    backgroundBitmap.LoadFile(resourceLoader.GetIconFilepath("switchboard_background").string(), wxBITMAP_TYPE_PNG);
-    SetBackgroundBitmap(backgroundBitmap);
+    //
+
+    // Select background from preferences
+    int backgroundBitmap = std::min(
+        mUIPreferencesManager->GetSwitchboardBackgroundBitmapIndex(),
+        static_cast<int>(mBackgroundBitmapComboBox->GetCount()) - 1);
+    mBackgroundBitmapComboBox->Select(backgroundBitmap);
+
+    // Set bitmap
+    SetBackgroundBitmapFromCombo(mBackgroundBitmapComboBox->GetSelection());
+
+    //
+    // Setup cursor
+    //
 
     // Load cursor
     auto upCursor = WxHelpers::LoadCursor(
@@ -81,35 +144,34 @@ SwitchboardPanel::SwitchboardPanel(
     // Set cursor
     SetCursor(upCursor);
 
-
     //
     // Load bitmaps
     //
 
-    mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
-    mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
-    mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-    mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetIconFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
-    mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
-    mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetIconFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
+    mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
+    mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
-    wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetIconFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
-    wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetIconFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
 
     //
     // Setup panel
@@ -178,13 +240,15 @@ SwitchboardPanel::SwitchboardPanel(
     SetSizer(mMainHSizer1);
 
     //
-    // Setup enter/leave mouse events
+    // Setup mouse events
     //
 
     Bind(wxEVT_ENTER_WINDOW, &SwitchboardPanel::OnEnterWindow, this);
 
     mLeaveWindowTimer = std::make_unique<wxTimer>(this, wxID_ANY);
     Connect(mLeaveWindowTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&SwitchboardPanel::OnLeaveWindowTimer);
+
+    Bind(wxEVT_RIGHT_DOWN, &SwitchboardPanel::OnRightDown, this);
 }
 
 SwitchboardPanel::~SwitchboardPanel()
@@ -402,6 +466,8 @@ void SwitchboardPanel::OnSwitchCreated(
             return;
         }
     }
+
+    assert(ctrl != nullptr);
 
     //
     // Add switch to map
@@ -679,6 +745,7 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanel->SetScrollRate(5, 0);
     mSwitchPanel->FitInside();
     mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
+    mSwitchPanel->Bind(wxEVT_RIGHT_DOWN, &SwitchboardPanel::OnRightDown, this);
 
     // Add switch panel to v-sizer
     assert(mMainVSizer2->GetItemCount() == 1);
@@ -789,6 +856,17 @@ void SwitchboardPanel::LayoutParent()
     mParentLayoutWindow->Layout();
 }
 
+void SwitchboardPanel::SetBackgroundBitmapFromCombo(int selection)
+{
+    assert(selection < mBackgroundBitmapComboBox->GetCount());
+
+    wxBitmap backgroundBitmap;
+    backgroundBitmap.LoadFile(mBackgroundBitmapComboBox->GetString(selection), wxBITMAP_TYPE_PNG);
+    SetBackgroundBitmap(backgroundBitmap);
+
+    Refresh();
+}
+
 void SwitchboardPanel::OnLeaveWindowTimer(wxTimerEvent & /*event*/)
 {
     wxPoint const clientCoords = ScreenToClient(wxGetMousePosition());
@@ -864,4 +942,27 @@ void SwitchboardPanel::OnLeaveWindow()
         // Play sound
         mSoundController->PlayElectricalPanelOpenSound(true);
     }
+}
+
+void SwitchboardPanel::OnRightDown(wxMouseEvent & event)
+{
+    assert(!!mBackgroundSelectorPopup);
+
+    wxWindow * window = dynamic_cast<wxWindow *>(event.GetEventObject());
+    if (nullptr == window)
+        return;
+
+    mBackgroundSelectorPopup->SetPosition(window->ClientToScreen(event.GetPosition()));
+    mBackgroundSelectorPopup->Popup();
+}
+
+void SwitchboardPanel::OnBackgroundSelectionChanged(wxCommandEvent & /*event*/)
+{
+    int selection = mBackgroundBitmapComboBox->GetSelection();
+
+    // Set bitmap
+    SetBackgroundBitmapFromCombo(selection);
+
+    // Remember preferences
+    mUIPreferencesManager->SetSwitchboardBackgroundBitmapIndex(selection);
 }
