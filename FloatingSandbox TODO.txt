@@ -564,12 +564,12 @@ Render:
 			+ And add new render param for shaders
 		+ Reduce sea's little waves from gusts
 
-		= Materials changes:
+		+ Materials changes:
 			+ Lower gunpowder strength
 			+ Cardboard floats in air
 				+ Also set thermal expansion so that it flies when hot
-			- Check Mike's changes		
-			- Redo templates
+			+ Check Mike's changes		
+			+ Redo templates
 		+ Hull should decay less
 		+ Also GoodYear should be full of hydrogen		
 		- Selector for panel background
@@ -585,6 +585,8 @@ Render:
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 		- See if should take Mike's Titanic electricals
+
+		- Talk with Mike about LEGO mass
 
 		- Propulsion (*)
 

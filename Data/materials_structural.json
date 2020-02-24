@@ -3719,7 +3719,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3746,7 +3746,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3773,7 +3773,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3800,7 +3800,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3827,7 +3827,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3854,7 +3854,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 1.0, 
+            "density": 0.6633,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
