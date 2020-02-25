@@ -584,6 +584,10 @@ Render:
 		+ Do highlight also for water detector
 		- See if should take Mike's Titanic electricals
 
+		- Swtichboard panel:
+			+ Use custom data (see wxString->wxObject)
+			- Add random (selection 0, default)
+
 		- Talk with Mike about LEGO mass
 
 		- Power probes (*)

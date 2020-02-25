@@ -7,10 +7,13 @@
 
 #include "WxHelpers.h"
 
+#include <GameCore/ImageTools.h>
+
 #include <Game/ImageFileTools.h>
 
 #include <UIControls/LayoutHelper.h>
 
+#include <wx/clntdata.h>
 #include <wx/cursor.h>
 
 #include <algorithm>
@@ -100,13 +103,16 @@ SwitchboardPanel::SwitchboardPanel(
 
             for (auto const & backgroundBitmapFilepath : backgroundBitmapFilepaths)
             {
-                auto backgroundBitmapThumb = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+                auto backgroundBitmapThumb1 = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
                     backgroundBitmapFilepath,
                     128);
 
+                auto backgroundBitmapThumb2 = ImageTools::Truncate(std::move(backgroundBitmapThumb1), ImageSize(64, 32));
+
                 mBackgroundBitmapComboBox->Append(
-                    backgroundBitmapFilepath.string(),
-                    WxHelpers::MakeBitmap(backgroundBitmapThumb));
+                    _(""),
+                    WxHelpers::MakeBitmap(backgroundBitmapThumb2),
+                    new wxStringClientData(backgroundBitmapFilepath.string()));
             }
 
             mBackgroundBitmapComboBox->Bind(wxEVT_COMBOBOX, &SwitchboardPanel::OnBackgroundSelectionChanged, this);
@@ -122,10 +128,10 @@ SwitchboardPanel::SwitchboardPanel(
     //
 
     // Select background from preferences
-    int backgroundBitmap = std::min(
+    int backgroundBitmapIndex = std::min(
         mUIPreferencesManager->GetSwitchboardBackgroundBitmapIndex(),
         static_cast<int>(mBackgroundBitmapComboBox->GetCount()) - 1);
-    mBackgroundBitmapComboBox->Select(backgroundBitmap);
+    mBackgroundBitmapComboBox->Select(backgroundBitmapIndex);
 
     // Set bitmap
     SetBackgroundBitmapFromCombo(mBackgroundBitmapComboBox->GetSelection());
@@ -858,10 +864,13 @@ void SwitchboardPanel::LayoutParent()
 
 void SwitchboardPanel::SetBackgroundBitmapFromCombo(int selection)
 {
-    assert(selection < mBackgroundBitmapComboBox->GetCount());
+    assert(static_cast<unsigned int>(selection) < mBackgroundBitmapComboBox->GetCount());
+
+    wxStringClientData * bitmapFilePath = dynamic_cast<wxStringClientData *>(mBackgroundBitmapComboBox->GetClientObject(selection));
+    assert(nullptr != bitmapFilePath);
 
     wxBitmap backgroundBitmap;
-    backgroundBitmap.LoadFile(mBackgroundBitmapComboBox->GetString(selection), wxBITMAP_TYPE_PNG);
+    backgroundBitmap.LoadFile(bitmapFilePath->GetData(), wxBITMAP_TYPE_PNG);
     SetBackgroundBitmap(backgroundBitmap);
 
     Refresh();

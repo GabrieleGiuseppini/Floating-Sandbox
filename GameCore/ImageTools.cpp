@@ -26,13 +26,34 @@ void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
     }
 }
 
+RgbaImageData ImageTools::Truncate(
+    RgbaImageData imageData,
+    ImageSize imageSize)
+{
+    ImageSize const finalImageSize = imageSize.Intersection(imageData.Size);
+
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.Height * finalImageSize.Width);
+
+    for (int r = 0; r < finalImageSize.Height; ++r)
+    {
+        auto const readRowStartIndex = r * imageData.Size.Width;
+        auto const writeRowStartIndex = r * finalImageSize.Width;
+        for (int c = 0; c < finalImageSize.Width; ++c)
+        {
+            newImageData[writeRowStartIndex + c] = imageData.Data[readRowStartIndex + c];
+        }
+    }
+
+    return RgbaImageData(finalImageSize, std::move(newImageData));
+}
+
 RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 {
     std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.Height * imageData.Size.Width);
 
     for (int r = 0; r < imageData.Size.Height; ++r)
     {
-        auto const rowStartIndex = r * imageData.Size.Height;
+        auto const rowStartIndex = r * imageData.Size.Width;
         for (int c = 0; c < imageData.Size.Width; ++c)
         {
             newImageData[rowStartIndex + c] = imageData.Data[rowStartIndex + c].toRgbColor();
@@ -48,7 +69,7 @@ RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
 
     for (int r = 0; r < imageData.Size.Height; ++r)
     {
-        auto const rowStartIndex = r * imageData.Size.Height;
+        auto const rowStartIndex = r * imageData.Size.Width;
         for (int c = 0; c < imageData.Size.Width; ++c)
         {
             auto const a = imageData.Data[rowStartIndex + c].a;

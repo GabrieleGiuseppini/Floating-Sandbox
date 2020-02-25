@@ -82,6 +82,10 @@ public:
             });
     }
 
+    static RgbaImageData Truncate(
+        RgbaImageData imageData,
+        ImageSize imageSize);
+
     static RgbImageData ToRgb(RgbaImageData const & imageData);
 
     static RgbImageData ToAlpha(RgbaImageData const & imageData);
