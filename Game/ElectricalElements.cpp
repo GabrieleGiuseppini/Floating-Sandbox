@@ -300,48 +300,52 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
     GameParameters const & gameParameters)
 {
     //
-    // Visit all elements that change their conductivity automatically,
+    // Visit all non-deleted elements that change their conductivity automatically,
     // and eventually change their conductivity
     //
 
     for (auto elementIndex : mAutomaticConductivityTogglingElements)
     {
-        switch (GetMaterialType(elementIndex))
+        // Do not visit deleted elements
+        if (!IsDeleted(elementIndex))
         {
-            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            switch (GetMaterialType(elementIndex))
             {
-                // When higher than watermark: conductivity state toggles to opposite than material's
-                // When lower than watermark: conductivity state toggles to same as material's
-
-                float constexpr WaterLowWatermark = 0.15f;
-                float constexpr WaterHighWatermark = 0.45f;
-
-                if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                    && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
                 {
-                    InternalSetSwitchState(
-                        elementIndex,
-                        static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                        points,
-                        gameParameters);
+                    // When higher than watermark: conductivity state toggles to opposite than material's
+                    // When lower than watermark: conductivity state toggles to same as material's
+
+                    float constexpr WaterLowWatermark = 0.15f;
+                    float constexpr WaterHighWatermark = 0.45f;
+
+                    if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                        && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                    {
+                        InternalSetSwitchState(
+                            elementIndex,
+                            static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                            points,
+                            gameParameters);
+                    }
+                    else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                        && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+                    {
+                        InternalSetSwitchState(
+                            elementIndex,
+                            static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                            points,
+                            gameParameters);
+                    }
+
+                    break;
                 }
-                else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                    && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+
+                default:
                 {
-                    InternalSetSwitchState(
-                        elementIndex,
-                        static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                        points,
-                        gameParameters);
+                    // Shouldn't be here - all automatically-toggling elements should have been handled
+                    assert(false);
                 }
-
-                break;
-            }
-
-            default:
-            {
-                // Shouldn't be here - all automatically-toggling elements should have been handled
-                assert(false);
             }
         }
     }

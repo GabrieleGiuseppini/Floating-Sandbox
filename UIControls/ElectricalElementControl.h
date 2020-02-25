@@ -30,6 +30,7 @@ protected:
 
     ElectricalElementControl(
         wxWindow * parent,
+        wxSize imageSize,
         std::string const & label)
         : wxPanel(
             parent,
@@ -40,7 +41,8 @@ protected:
     {
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
-        mImagePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+        mImagePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, imageSize, wxBORDER_NONE);
+        mImagePanel->SetMinSize(imageSize);
         vSizer->Add(mImagePanel, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         vSizer->AddSpacer(4);
@@ -141,11 +143,12 @@ protected:
         ElectricalState currentState)
         : ElectricalElementControl(
             parent,
+            onEnabledImage.GetSize(), // Arbitrarily the first one
             label)
         , mCurrentState(currentState)
         , mIsEnabled(true)
-        //
         , mImageBitmap(nullptr)
+        //
         , mOnEnabledImage(onEnabledImage)
         , mOffEnabledImage(offEnabledImage)
         , mOnDisabledImage(onDisabledImage)
@@ -199,12 +202,11 @@ private:
 protected:
 
     ElectricalState mCurrentState;
-
     bool mIsEnabled;
 
-private:
-
     wxStaticBitmap * mImageBitmap;
+
+private:
 
     wxBitmap const & mOnEnabledImage;
     wxBitmap const & mOffEnabledImage;
@@ -223,7 +225,7 @@ public:
 
     virtual void SetKeyboardShortcutLabel(std::string const & label) override
     {
-        mImagePanel->SetToolTip(label);
+        mImageBitmap->SetToolTip(label);
     }
 
 protected:
@@ -277,7 +279,7 @@ public:
             std::move(onSwitchToggled),
             currentState)
     {
-        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
     }
 
     void OnKeyboardShortcutDown() override
@@ -338,9 +340,9 @@ public:
             currentState)
         , mIsPushed(false)
     {
-        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
-        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
-        mImagePanel->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
+        mImageBitmap->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+        mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
     }
 
     void OnKeyboardShortcutDown() override
@@ -447,6 +449,7 @@ public:
         ElectricalState currentState)
         : ElectricalElementControl(
             parent,
+            onImage.GetSize(), // Arbitrarily the first one
             label)
         , mCurrentState(currentState)
         , mImageBitmap(nullptr)

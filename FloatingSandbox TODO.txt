@@ -582,11 +582,14 @@ Render:
 				+ Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
 			+ New Preferences property: electrical panel background filename
 		+ Do highlight also for water detector
-		- See if should take Mike's Titanic electricals
+		+ Broken water-sensing switch should not trip anymore
 
 		- Talk with Mike about LEGO mass
 
-		- Power probes (*)
+		= Power probes (*)
+
+		- See if should take Mike's Titanic electricals
+			- Add instanced generator(s)
 
 		- Propulsion (*)
 
