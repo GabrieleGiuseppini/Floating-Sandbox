@@ -1302,12 +1302,13 @@ Render:
 				= PowerMonitor: nothing to do: at the next UpdateSinks() that makes it work there will be a state change
 				  and it will announce it
 					- assert(State says it's off) // iff guaranteed to be called when destroyed
-		+ UI:
-			+ ElectricalElementControl
+		= UI:
+			= ElectricalElementControl
 				+ InteractiveToggleSwitchElectricalElementControl
 				+ InteractivePushSwitchElectricalElementControl
 				+ AutomaticSwitchElectricalElementControl
 				+ PowerMonitorElectricalElementControl
+				- Redo hierarchy
 		- Switchboard:
 			+ Register for power probe events
 			+ Swap bitmaps: 

@@ -176,6 +176,10 @@ SwitchboardPanel::SwitchboardPanel(
     mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
+    mGaugeRpmBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
+    mGaugeVoltsBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
+
     wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
     wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
 

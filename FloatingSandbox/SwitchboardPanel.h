@@ -234,5 +234,8 @@ private:
     wxBitmap mPowerMonitorOnBitmap;
     wxBitmap mPowerMonitorOffBitmap;
 
+    wxBitmap mGaugeRpmBitmap;
+    wxBitmap mGaugeVoltsBitmap;
+
     wxSize mMinBitmapSize;
 };
