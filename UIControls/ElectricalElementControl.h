@@ -26,66 +26,22 @@ public:
     virtual ~ElectricalElementControl()
     {}
 
-    bool IsInteractive() const
-    {
-        return mIsInteractive;
-    }
-
-    void SetKeyboardShortcutLabel(std::string const & label)
-    {
-        mImageBitmap->SetToolTip(label);
-    }
-
-    ElectricalState GetState() const
-    {
-        return mCurrentState;
-    }
-
-    void SetState(ElectricalState state)
-    {
-        mCurrentState = state;
-
-        SetImageForCurrentState();
-    }
-
-    void SetEnabled(bool isEnabled)
-    {
-        mIsEnabled = isEnabled;
-
-        SetImageForCurrentState();
-    }
-
 protected:
 
     ElectricalElementControl(
         wxWindow * parent,
-        bool isInteractive,
-        wxBitmap const & onEnabledImage,
-        wxBitmap const & offEnabledImage,
-        wxBitmap const & onDisabledImage,
-        wxBitmap const & offDisabledImage,
-        std::string const & label,
-        ElectricalState currentState)
+        std::string const & label)
         : wxPanel(
             parent,
             wxID_ANY,
             wxDefaultPosition,
             wxDefaultSize,
             wxBORDER_NONE)
-        , mIsInteractive(isInteractive)
-        , mCurrentState(currentState)
-        , mIsEnabled(true)
-        , mImageBitmap(nullptr)
-        ///////////
-        , mOnEnabledImage(onEnabledImage)
-        , mOffEnabledImage(offEnabledImage)
-        , mOnDisabledImage(onDisabledImage)
-        , mOffDisabledImage(offDisabledImage)
     {
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
-        mImageBitmap = new wxStaticBitmap(this, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
-        vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
+        mImagePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+        vSizer->Add(mImagePanel, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         vSizer->AddSpacer(4);
 
@@ -107,6 +63,107 @@ protected:
         vSizer->Add(labelPanel, 0, wxEXPAND);
 
         this->SetSizerAndFit(vSizer);
+    }
+
+protected:
+
+    wxPanel * mImagePanel;
+};
+
+class IDisablableElectricalElementControl
+{
+public:
+
+    virtual ~IDisablableElectricalElementControl()
+    {}
+
+    virtual bool IsEnabled() const = 0;
+
+    virtual void SetEnabled(bool isEnabled) = 0;
+};
+
+class IInteractiveElectricalElementControl
+{
+public:
+
+    virtual ~IInteractiveElectricalElementControl()
+    {}
+
+    virtual void SetKeyboardShortcutLabel(std::string const & label) = 0;
+
+    virtual void OnKeyboardShortcutDown() = 0;
+
+    virtual void OnKeyboardShortcutUp() = 0;
+};
+
+class SwitchElectricalElementControl
+    : public ElectricalElementControl
+    , public IDisablableElectricalElementControl
+{
+public:
+
+    virtual ~SwitchElectricalElementControl()
+    {}
+
+    ElectricalState GetState() const
+    {
+        return mCurrentState;
+    }
+
+    void SetState(ElectricalState state)
+    {
+        mCurrentState = state;
+
+        SetImageForCurrentState();
+    }
+
+    virtual bool IsEnabled() const override
+    {
+        return mIsEnabled;
+    }
+
+    virtual void SetEnabled(bool isEnabled) override
+    {
+        mIsEnabled = isEnabled;
+
+        SetImageForCurrentState();
+    }
+
+protected:
+
+    SwitchElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & onEnabledImage,
+        wxBitmap const & offEnabledImage,
+        wxBitmap const & onDisabledImage,
+        wxBitmap const & offDisabledImage,
+        std::string const & label,
+        ElectricalState currentState)
+        : ElectricalElementControl(
+            parent,
+            label)
+        , mCurrentState(currentState)
+        , mIsEnabled(true)
+        //
+        , mImageBitmap(nullptr)
+        , mOnEnabledImage(onEnabledImage)
+        , mOffEnabledImage(offEnabledImage)
+        , mOnDisabledImage(onDisabledImage)
+        , mOffDisabledImage(offDisabledImage)
+    {
+        wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
+
+        mImageBitmap = new wxStaticBitmap(mImagePanel, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+        vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
+
+        mImagePanel->SetSizerAndFit(vSizer);
+    }
+
+    void SetImageForCurrentState()
+    {
+        mImageBitmap->SetBitmap(GetImageForCurrentState());
+
+        Refresh();
     }
 
 private:
@@ -139,23 +196,15 @@ private:
         }
     }
 
-    void SetImageForCurrentState()
-    {
-        mImageBitmap->SetBitmap(GetImageForCurrentState());
-
-        Refresh();
-    }
-
 protected:
 
-    bool const mIsInteractive;
-
     ElectricalState mCurrentState;
+
     bool mIsEnabled;
 
-    wxStaticBitmap * mImageBitmap;
-
 private:
+
+    wxStaticBitmap * mImageBitmap;
 
     wxBitmap const & mOnEnabledImage;
     wxBitmap const & mOffEnabledImage;
@@ -163,13 +212,19 @@ private:
     wxBitmap const & mOffDisabledImage;
 };
 
-class InteractiveSwitchElectricalElementControl : public ElectricalElementControl
+class InteractiveSwitchElectricalElementControl
+    : public SwitchElectricalElementControl
+    , public IInteractiveElectricalElementControl
 {
 public:
 
-    virtual void OnKeyboardShortcutDown() = 0;
+    virtual ~InteractiveSwitchElectricalElementControl()
+    {}
 
-    virtual void OnKeyboardShortcutUp() = 0;
+    virtual void SetKeyboardShortcutLabel(std::string const & label) override
+    {
+        mImagePanel->SetToolTip(label);
+    }
 
 protected:
 
@@ -182,9 +237,8 @@ protected:
         std::string const & label,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
-        : ElectricalElementControl(
+        : SwitchElectricalElementControl(
             parent,
-            true,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
@@ -223,7 +277,7 @@ public:
             std::move(onSwitchToggled),
             currentState)
     {
-        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
+        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
     }
 
     void OnKeyboardShortcutDown() override
@@ -284,9 +338,9 @@ public:
             currentState)
         , mIsPushed(false)
     {
-        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
-        mImageBitmap->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
-        mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftDown, this);
+        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
+        mImagePanel->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
     }
 
     void OnKeyboardShortcutDown() override
@@ -357,7 +411,7 @@ private:
     bool mIsPushed;
 };
 
-class AutomaticSwitchElectricalElementControl : public ElectricalElementControl
+class AutomaticSwitchElectricalElementControl : public SwitchElectricalElementControl
 {
 public:
 
@@ -369,9 +423,8 @@ public:
         wxBitmap const & offDisabledImage,
         std::string const & label,
         ElectricalState currentState)
-        : ElectricalElementControl(
+        : SwitchElectricalElementControl(
             parent,
-            false,
             onEnabledImage,
             offEnabledImage,
             onDisabledImage,
@@ -394,13 +447,62 @@ public:
         ElectricalState currentState)
         : ElectricalElementControl(
             parent,
-            false,
-            onImage,
-            offImage,
-            onImage,
-            offImage,
-            label,
-            currentState)
+            label)
+        , mCurrentState(currentState)
+        , mImageBitmap(nullptr)
+        , mOnImage(onImage)
+        , mOffImage(offImage)
     {
+        wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
+
+        mImageBitmap = new wxStaticBitmap(mImagePanel, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+        vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
+
+        mImagePanel->SetSizerAndFit(vSizer);
     }
+
+    ElectricalState GetState() const
+    {
+        return mCurrentState;
+    }
+
+    void SetState(ElectricalState state)
+    {
+        mCurrentState = state;
+
+        SetImageForCurrentState();
+    }
+
+private:
+
+    wxBitmap const & GetImageForCurrentState() const
+    {
+        if (mCurrentState == ElectricalState::On)
+        {
+            return mOnImage;
+        }
+        else
+        {
+            assert(mCurrentState == ElectricalState::Off);
+            return mOffImage;
+        }
+    }
+
+    void SetImageForCurrentState()
+    {
+        mImageBitmap->SetBitmap(GetImageForCurrentState());
+
+        Refresh();
+    }
+
+private:
+
+    ElectricalState mCurrentState;
+
+    wxStaticBitmap * mImageBitmap;
+
+    wxBitmap const & mOnImage;
+    wxBitmap const & mOffImage;
 };
+
+// TODO: gauge

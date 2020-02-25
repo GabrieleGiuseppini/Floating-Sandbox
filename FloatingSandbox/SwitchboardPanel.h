@@ -180,19 +180,27 @@ private:
     struct ElectricalElementInfo
     {
         ElectricalElementControl * Control;
+        IDisablableElectricalElementControl * DisablableControl;
+        IInteractiveElectricalElementControl * InteractiveControl;
         std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
-        bool IsEnabled;
 
         ElectricalElementInfo(
             ElectricalElementControl * control,
+            IDisablableElectricalElementControl * disablableControl,
+            IInteractiveElectricalElementControl * interactiveControl,
             std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
             : Control(control)
+            , DisablableControl(disablableControl)
+            , InteractiveControl(interactiveControl)
             , PanelElementMetadata(panelElementMetadata)
-            , IsEnabled(true)
         {}
     };
 
     std::unordered_map<ElectricalElementId, ElectricalElementInfo> mElementMap;
+
+    // Type-specific maps
+    std::unordered_map<ElectricalElementId, SwitchElectricalElementControl *> mSwitchMap;
+    std::unordered_map<ElectricalElementId, PowerMonitorElectricalElementControl *> mPowerMonitorMap;
 
     // Keyboard shortcuts - indexed by key (Ctrl/Alt 1,...,0,-)
     std::vector<ElectricalElementId> mKeyboardShortcutToElementId;
@@ -201,7 +209,7 @@ private:
     // so that we know whom to deliver KeyUp.
     // Note that we care only about the first key down in a sequence of key downs,
     // and only about the first key up in a sequence of key ups
-    std::optional<ElectricalElementId> mCurrentKeyDownElectricalElementId;
+    std::optional<ElectricalElementId> mCurrentKeyDownElementId;
 
 private:
 

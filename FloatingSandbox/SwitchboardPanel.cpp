@@ -57,8 +57,10 @@ SwitchboardPanel::SwitchboardPanel(
     , mBackgroundSelectorPopup()
     //
     , mElementMap()
+    , mSwitchMap()
+    , mPowerMonitorMap()
     , mKeyboardShortcutToElementId()
-    , mCurrentKeyDownElectricalElementId()
+    , mCurrentKeyDownElementId()
     //
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
@@ -269,7 +271,7 @@ bool SwitchboardPanel::ProcessKeyDown(
     int keyCode,
     int keyModifiers)
 {
-    if (!!mCurrentKeyDownElectricalElementId)
+    if (!!mCurrentKeyDownElementId)
     {
         // This is the subsequent in a sequence of key downs...
         // ...ignore it
@@ -309,21 +311,17 @@ bool SwitchboardPanel::ProcessKeyDown(
 
     if (keyIndex < mKeyboardShortcutToElementId.size())
     {
-        auto const elementId = mKeyboardShortcutToElementId[keyIndex];
-        auto & elementInfo = mElementMap.at(elementId);
-
-        if (elementInfo.IsEnabled)
+        ElectricalElementId const elementId = mKeyboardShortcutToElementId[keyIndex];
+        ElectricalElementInfo & elementInfo = mElementMap.at(elementId);
+        if (nullptr == elementInfo.DisablableControl
+            || elementInfo.DisablableControl->IsEnabled())
         {
-            assert(elementInfo.Control->IsInteractive());
-
-            auto switchControl = dynamic_cast<InteractiveSwitchElectricalElementControl *>(elementInfo.Control);
-            assert(nullptr != switchControl);
-
             // Deliver event
-            switchControl->OnKeyboardShortcutDown();
+            assert(nullptr != elementInfo.InteractiveControl);
+            elementInfo.InteractiveControl->OnKeyboardShortcutDown();
 
             // Remember this is the first keydown
-            mCurrentKeyDownElectricalElementId = elementId;
+            mCurrentKeyDownElementId = elementId;
 
             // Processed
             return true;
@@ -338,7 +336,7 @@ bool SwitchboardPanel::ProcessKeyUp(
     int keyCode,
     int /*keyModifiers*/)
 {
-    if (!mCurrentKeyDownElectricalElementId)
+    if (!mCurrentKeyDownElementId)
         return false; // This is the subsequent in a sequence of key ups...
 
     // Check if it's a panel key
@@ -349,18 +347,17 @@ bool SwitchboardPanel::ProcessKeyUp(
     // Map and toggle
     //
 
-    auto & elementInfo = mElementMap.at(*mCurrentKeyDownElectricalElementId);
-
-    assert(elementInfo.Control->IsInteractive());
-
-    auto switchControl = dynamic_cast<InteractiveSwitchElectricalElementControl *>(elementInfo.Control);
-    assert(nullptr != switchControl);
-
-    // Deliver event
-    switchControl->OnKeyboardShortcutUp();
+    ElectricalElementInfo & elementInfo = mElementMap.at(*mCurrentKeyDownElementId);
+    if (nullptr == elementInfo.DisablableControl
+        || elementInfo.DisablableControl->IsEnabled())
+    {
+        // Deliver event
+        assert(nullptr != elementInfo.InteractiveControl);
+        elementInfo.InteractiveControl->OnKeyboardShortcutUp();
+    }
 
     // Remember this is the first keyup
-    mCurrentKeyDownElectricalElementId.reset();
+    mCurrentKeyDownElementId.reset();
 
     // Processed
     return true;
@@ -379,11 +376,14 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
     mSwitchPanelSizer = nullptr;
     MakeSwitchPanel();
 
-    // Clear map
+    // Clear maps
     mElementMap.clear();
+    mSwitchMap.clear();
+    mPowerMonitorMap.clear();
 
     // Clear keyboard shortcuts map
     mKeyboardShortcutToElementId.clear();
+    mCurrentKeyDownElementId.reset();
 }
 
 void SwitchboardPanel::OnSwitchCreated(
@@ -413,16 +413,17 @@ void SwitchboardPanel::OnSwitchCreated(
     }
 
     //
-    // Make control
+    // Make switch control
     //
 
-    ElectricalElementControl * ctrl;
+    SwitchElectricalElementControl * swCtrl;
+    IInteractiveElectricalElementControl * intCtrl;
 
     switch (type)
     {
         case SwitchType::InteractivePushSwitch:
         {
-            ctrl = new InteractivePushSwitchElectricalElementControl(
+            auto ctrl = new InteractivePushSwitchElectricalElementControl(
                 mSwitchPanel,
                 mInteractivePushSwitchOnEnabledBitmap,
                 mInteractivePushSwitchOffEnabledBitmap,
@@ -435,12 +436,15 @@ void SwitchboardPanel::OnSwitchCreated(
                 },
                 state);
 
+            swCtrl = ctrl;
+            intCtrl = ctrl;
+
             break;
         }
 
         case SwitchType::InteractiveToggleSwitch:
         {
-            ctrl = new InteractiveToggleSwitchElectricalElementControl(
+            auto ctrl = new InteractiveToggleSwitchElectricalElementControl(
                 mSwitchPanel,
                 mInteractiveToggleSwitchOnEnabledBitmap,
                 mInteractiveToggleSwitchOffEnabledBitmap,
@@ -453,12 +457,15 @@ void SwitchboardPanel::OnSwitchCreated(
                 },
                 state);
 
+            swCtrl = ctrl;
+            intCtrl = ctrl;
+
             break;
         }
 
         case SwitchType::AutomaticSwitch:
         {
-            ctrl = new AutomaticSwitchElectricalElementControl(
+            auto ctrl = new AutomaticSwitchElectricalElementControl(
                 mSwitchPanel,
                 mAutomaticSwitchOnEnabledBitmap,
                 mAutomaticSwitchOffEnabledBitmap,
@@ -466,6 +473,9 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOffDisabledBitmap,
                 label,
                 state);
+
+            swCtrl = ctrl;
+            intCtrl = nullptr;
 
             break;
         }
@@ -477,17 +487,20 @@ void SwitchboardPanel::OnSwitchCreated(
         }
     }
 
-    assert(ctrl != nullptr);
+    assert(swCtrl != nullptr);
 
     //
-    // Add switch to map
+    // Add switch to maps
     //
 
     assert(mElementMap.find(electricalElementId) == mElementMap.end());
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata));
+        std::forward_as_tuple(swCtrl, swCtrl, intCtrl, panelElementMetadata));
+
+    assert(mSwitchMap.find(electricalElementId) == mSwitchMap.end());
+    mSwitchMap.emplace(electricalElementId, swCtrl);
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
@@ -500,11 +513,11 @@ void SwitchboardPanel::OnPowerProbeCreated(
     LogMessage("SwitchboardPanel::OnPowerProbeCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
 
     //
-    // Create control
+    // Create power monitor control
     //
 
     std::string label;
-    ElectricalElementControl * ctrl;
+    PowerMonitorElectricalElementControl * pmCtrl;
 
     if (!!panelElementMetadata)
     {
@@ -516,7 +529,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
         case PowerProbeType::Engine:
         {
             // TODO: use new gauge control w/RPM bitmaps
-            ctrl = new PowerMonitorElectricalElementControl(
+            pmCtrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
@@ -537,7 +550,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
         case PowerProbeType::Generator:
         {
             // TODO: use new gauge control w/Voltage bitmaps
-            ctrl = new PowerMonitorElectricalElementControl(
+            pmCtrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
@@ -557,7 +570,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
         case PowerProbeType::PowerMonitor:
         {
-            ctrl = new PowerMonitorElectricalElementControl(
+            pmCtrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
@@ -582,17 +595,20 @@ void SwitchboardPanel::OnPowerProbeCreated(
         }
     }
 
-    assert(ctrl != nullptr);
+    assert(pmCtrl != nullptr);
 
     //
-    // Add monitor to map
+    // Add monitor to maps
     //
 
     assert(mElementMap.find(electricalElementId) == mElementMap.end());
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, panelElementMetadata));
+        std::forward_as_tuple(pmCtrl, nullptr, nullptr, panelElementMetadata));
+
+    assert(mPowerMonitorMap.find(electricalElementId) == mPowerMonitorMap.end());
+    mPowerMonitorMap.emplace(electricalElementId, pmCtrl);
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
@@ -623,12 +639,12 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
             mSwitchPanelSizer->SetCols(width);
             mSwitchPanelSizer->SetRows(height);
         },
-        [this](std::optional<ElectricalElementId> element, int x, int y)
+        [this](std::optional<ElectricalElementId> elementId, int x, int y)
         {
-            if (!!element)
+            if (!!elementId)
             {
                 // Get this element
-                auto it = mElementMap.find(*element);
+                auto it = mElementMap.find(*elementId);
                 assert(it != mElementMap.end());
 
                 // Add control to sizer
@@ -640,13 +656,13 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                     8);
 
                 // If interactive, make keyboard shortcut
-                if (it->second.Control->IsInteractive()
+                if (nullptr != it->second.InteractiveControl
                     && mKeyboardShortcutToElementId.size() < MaxKeyboardShortcuts)
                 {
                     int keyIndex = static_cast<int>(mKeyboardShortcutToElementId.size());
 
                     // Store key mapping
-                    mKeyboardShortcutToElementId.emplace_back(*element);
+                    mKeyboardShortcutToElementId.emplace_back(*elementId);
 
                     // Create shortcut label
 
@@ -669,7 +685,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                         ss << char('1' + keyIndex);
 
                     // Assign label
-                    it->second.Control->SetKeyboardShortcutLabel(ss.str());
+                    it->second.InteractiveControl->SetKeyboardShortcutLabel(ss.str());
                 }
             }
         });
@@ -713,23 +729,26 @@ void SwitchboardPanel::OnSwitchEnabled(
     ElectricalElementId electricalElementId,
     bool isEnabled)
 {
-    // Enable/disable control
-    auto it = mElementMap.find(electricalElementId);
-    assert(it != mElementMap.end());
-    it->second.Control->SetEnabled(isEnabled);
+    //
+    // Enable/disable switch
+    //
 
-    // Remember enable state
-    it->second.IsEnabled = isEnabled;
+    auto it = mSwitchMap.find(electricalElementId);
+    assert(it != mSwitchMap.end());
+    it->second->SetEnabled(isEnabled);
 }
 
 void SwitchboardPanel::OnSwitchToggled(
     ElectricalElementId electricalElementId,
     ElectricalState newState)
 {
-    // Toggle control
-    auto it = mElementMap.find(electricalElementId);
-    assert(it != mElementMap.end());
-    it->second.Control->SetState(newState);
+    //
+    // Toggle switch
+    //
+
+    auto it = mSwitchMap.find(electricalElementId);
+    assert(it != mSwitchMap.end());
+    it->second->SetState(newState);
 }
 
 void SwitchboardPanel::OnPowerProbeToggled(
@@ -737,9 +756,9 @@ void SwitchboardPanel::OnPowerProbeToggled(
     ElectricalState newState)
 {
     // Toggle power monitor control
-    auto it = mElementMap.find(electricalElementId);
-    assert(it != mElementMap.end());
-    it->second.Control->SetState(newState);
+    auto it = mPowerMonitorMap.find(electricalElementId);
+    assert(it != mPowerMonitorMap.end());
+    it->second->SetState(newState);
 }
 
 ///////////////////////////////////////////////////////////////////
