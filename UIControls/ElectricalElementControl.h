@@ -574,6 +574,17 @@ private:
         return minAngle + (maxAngle - minAngle) * currentValue;
     }
 
+    static inline wxPoint CalculateHandEndpoint(
+        wxPoint const & centerPoint,
+        float handLength,
+        float angle)
+    {
+        return centerPoint
+            + wxPoint(
+                handLength * std::cos(angle),
+                -handLength * std::sin(angle));
+    }
+
     void OnPaint(wxPaintEvent & event);
 
     void Render(wxDC & dc);

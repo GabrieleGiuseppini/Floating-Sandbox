@@ -33,6 +33,7 @@ GaugeElectricalElementControl::GaugeElectricalElementControl(
     , mCurrentVelocity(0.0f)
     , mTargetAngle(CalculateAngle(currentValue, minAngle, maxAngle))
     //
+    , mHandEndpoint(CalculateHandEndpoint(mCenterPoint, mHandLength, mCurrentAngle))
     , mImageBitmap(nullptr)
     , mHandPen1(wxColor(0xdb, 0x04, 0x04), 3, wxPENSTYLE_SOLID)
     , mHandPen2(wxColor(0xd8, 0xd8, 0xd8), 1, wxPENSTYLE_SOLID)
@@ -54,8 +55,8 @@ void GaugeElectricalElementControl::Update()
     //
 
     float constexpr Stiffness = 0.4f;
-    float constexpr Dt = 0.1f;
-    float constexpr InvDamping = 0.925f;
+    float constexpr Dt = 0.11f;
+    float constexpr InvDamping = 0.930f;
 
     float const acceleration = Stiffness * (mTargetAngle - mCurrentAngle);
     float const deltaAngle = mCurrentVelocity * Dt + acceleration * Dt * Dt;
@@ -66,11 +67,7 @@ void GaugeElectricalElementControl::Update()
     // Update hand endpoint
     //
 
-    mHandEndpoint =
-        mCenterPoint
-        + wxPoint(
-            mHandLength * std::cos(mCurrentAngle),
-            -mHandLength * std::sin(mCurrentAngle));
+    mHandEndpoint = CalculateHandEndpoint(mCenterPoint, mHandLength, mCurrentAngle);
 
     //
     // Redraw

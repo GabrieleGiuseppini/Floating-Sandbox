@@ -1324,7 +1324,7 @@ Render:
 		- Finalization:
 			- Complete Gauge
 				- IUpdateableElectricalControl
-			- Decide whether generator's initial state should really be "off" rather than "on"
+			- Decide whether powermonitor's initial state should really be "off" rather than "on"
 			- Refresh electrical elements' materials template
 
 	- Pumps (*)
