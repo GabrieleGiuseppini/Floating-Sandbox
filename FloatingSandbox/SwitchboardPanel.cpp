@@ -57,8 +57,7 @@ SwitchboardPanel::SwitchboardPanel(
     , mBackgroundSelectorPopup()
     //
     , mElementMap()
-    , mSwitchMap()
-    , mPowerMonitorMap()
+    , mUpdateableElements()
     , mKeyboardShortcutToElementId()
     , mCurrentKeyDownElementId()
     //
@@ -267,6 +266,14 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
+void SwitchboardPanel::Update()
+{
+    for (auto ctrl : mUpdateableElements)
+    {
+        ctrl->Update();
+    }
+}
+
 bool SwitchboardPanel::ProcessKeyDown(
     int keyCode,
     int keyModifiers)
@@ -378,8 +385,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 
     // Clear maps
     mElementMap.clear();
-    mSwitchMap.clear();
-    mPowerMonitorMap.clear();
+    mUpdateableElements.clear();
 
     // Clear keyboard shortcuts map
     mKeyboardShortcutToElementId.clear();
@@ -498,9 +504,6 @@ void SwitchboardPanel::OnSwitchCreated(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
         std::forward_as_tuple(swCtrl, swCtrl, intCtrl, panelElementMetadata));
-
-    assert(mSwitchMap.find(electricalElementId) == mSwitchMap.end());
-    mSwitchMap.emplace(electricalElementId, swCtrl);
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
@@ -517,7 +520,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     //
 
     std::string label;
-    PowerMonitorElectricalElementControl * pmCtrl;
+    ElectricalElementControl * ctrl;
 
     if (!!panelElementMetadata)
     {
@@ -526,36 +529,23 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
     switch (type)
     {
-        case PowerProbeType::Engine:
-        {
-            // TODO: use new gauge control w/RPM bitmaps
-            pmCtrl = new PowerMonitorElectricalElementControl(
-                mSwitchPanel,
-                mPowerMonitorOnBitmap,
-                mPowerMonitorOffBitmap,
-                label,
-                state);
-
-            if (!panelElementMetadata)
-            {
-                // Make label
-                std::stringstream ss;
-                ss << "Engine #" << static_cast<int>(instanceIndex);
-                label = ss.str();
-            }
-
-            break;
-        }
-
         case PowerProbeType::Generator:
         {
-            // TODO: use new gauge control w/Voltage bitmaps
-            pmCtrl = new PowerMonitorElectricalElementControl(
+            // Voltage Gauge
+            auto ggCtrl = new GaugeElectricalElementControl(
                 mSwitchPanel,
-                mPowerMonitorOnBitmap,
-                mPowerMonitorOffBitmap,
+                mGaugeVoltsBitmap,
+                wxPoint(47, 47),
+                36.0f,
+                -0.79f,
+                3.93f,
                 label,
-                state);
+                state == ElectricalState::On ? 0.0f : 1.0f);
+
+            ctrl = ggCtrl;
+
+            // Store as updateable element
+            mUpdateableElements.emplace_back(ggCtrl);
 
             if (!panelElementMetadata)
             {
@@ -570,7 +560,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
         case PowerProbeType::PowerMonitor:
         {
-            pmCtrl = new PowerMonitorElectricalElementControl(
+            ctrl = new PowerMonitorElectricalElementControl(
                 mSwitchPanel,
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
@@ -595,7 +585,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
         }
     }
 
-    assert(pmCtrl != nullptr);
+    assert(ctrl != nullptr);
 
     //
     // Add monitor to maps
@@ -605,10 +595,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(pmCtrl, nullptr, nullptr, panelElementMetadata));
-
-    assert(mPowerMonitorMap.find(electricalElementId) == mPowerMonitorMap.end());
-    mPowerMonitorMap.emplace(electricalElementId, pmCtrl);
+        std::forward_as_tuple(ctrl, nullptr, nullptr, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
@@ -733,9 +720,13 @@ void SwitchboardPanel::OnSwitchEnabled(
     // Enable/disable switch
     //
 
-    auto it = mSwitchMap.find(electricalElementId);
-    assert(it != mSwitchMap.end());
-    it->second->SetEnabled(isEnabled);
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+
+    SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
+    assert(swCtrl != nullptr);
+
+    swCtrl->SetEnabled(isEnabled);
 }
 
 void SwitchboardPanel::OnSwitchToggled(
@@ -746,19 +737,40 @@ void SwitchboardPanel::OnSwitchToggled(
     // Toggle switch
     //
 
-    auto it = mSwitchMap.find(electricalElementId);
-    assert(it != mSwitchMap.end());
-    it->second->SetState(newState);
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+
+    SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
+    assert(swCtrl != nullptr);
+
+    swCtrl->SetState(newState);
 }
 
 void SwitchboardPanel::OnPowerProbeToggled(
     ElectricalElementId electricalElementId,
     ElectricalState newState)
 {
-    // Toggle power monitor control
-    auto it = mPowerMonitorMap.find(electricalElementId);
-    assert(it != mPowerMonitorMap.end());
-    it->second->SetState(newState);
+    //
+    // Toggle control
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    if (elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::PowerMonitor)
+    {
+        PowerMonitorElectricalElementControl * pmCtrl = dynamic_cast<PowerMonitorElectricalElementControl *>(elementInfo.Control);
+        assert(pmCtrl != nullptr);
+
+        pmCtrl->SetState(newState);
+    }
+    else
+    {
+        assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
+
+        GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
+        assert(ggCtrl != nullptr);
+
+        ggCtrl->SetValue(newState == ElectricalState::On ? 0.0f : 1.0f);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////

@@ -245,7 +245,6 @@ enum class SwitchType
 enum class PowerProbeType
 {
     PowerMonitor,
-    Engine,
     Generator
 };
 

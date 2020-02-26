@@ -48,6 +48,8 @@ public:
 
     virtual ~SwitchboardPanel();
 
+    void Update();
+
     bool ProcessKeyDown(
         int keyCode,
         int keyModifiers);
@@ -198,9 +200,8 @@ private:
 
     std::unordered_map<ElectricalElementId, ElectricalElementInfo> mElementMap;
 
-    // Type-specific maps
-    std::unordered_map<ElectricalElementId, SwitchElectricalElementControl *> mSwitchMap;
-    std::unordered_map<ElectricalElementId, PowerMonitorElectricalElementControl *> mPowerMonitorMap;
+    // The electrical elements that need to be updated
+    std::vector<IUpdateableElectricalElementControl *> mUpdateableElements;
 
     // Keyboard shortcuts - indexed by key (Ctrl/Alt 1,...,0,-)
     std::vector<ElectricalElementId> mKeyboardShortcutToElementId;

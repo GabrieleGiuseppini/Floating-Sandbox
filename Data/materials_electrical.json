@@ -220,6 +220,7 @@
 	"conducts_electricity": true,
         "electrical_type": "Generator",
         "heat_generated": 900.0, 
+	"is_instanced": false,
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Generator", 
@@ -229,15 +230,30 @@
         }
     }, 
     {
+        "color_key": "#FC1800",
+	"conducts_electricity": true,
+        "electrical_type": "Generator",
+        "heat_generated": 900.0, 
+	"is_instanced": true,
+        "maximum_operating_temperature": 398.15, 
+        "minimum_operating_temperature": 233.15, 
+        "name": "Generator (Instanced)", 
+        "template": {
+            "column": "1|I Generator", 
+            "row": "5|Generators"
+        }
+    }, 
+    {
         "color_key": "#FC1010",
 	"conducts_electricity": true,
         "electrical_type": "Generator", 
         "heat_generated": 2400.0, 
+	"is_instanced": false,
         "maximum_operating_temperature": 698.15, 
         "minimum_operating_temperature": 173.15, 
         "name": "Heat-Resistant Generator", 
         "template": {
-            "column": "1|HR Generator", 
+            "column": "2|HR Generator", 
             "row": "5|Generators"
         }
     }, 
@@ -400,6 +416,22 @@
 	"particle_emission_rate": 0.05,
         "template": {
             "column": "1|Smoke Emitter", 
+            "row": "9|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30A000",
+	"conducts_electricity": true,
+        "electrical_type": "PowerMonitor", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Power Monitor", 
+        "template": {
+            "column": "2|Power Monitor", 
             "row": "9|Misc"
         }
     }

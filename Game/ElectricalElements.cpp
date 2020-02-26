@@ -11,7 +11,10 @@
 
 namespace Physics {
 
-constexpr float LampWetFailureWaterThreshold = 0.1f;
+float constexpr LampWetFailureWaterThreshold = 0.1f;
+
+rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
+rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
 
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
@@ -93,7 +96,18 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::OtherSinkState());
+            mElementStateBuffer.emplace_back(ElementState::OtherSinkState(false));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::PowerMonitorState(false));
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -104,7 +118,7 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate));
+            mElementStateBuffer.emplace_back(ElementState::SmokeEmitterState(electricalMaterial.ParticleEmissionRate, false));
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -148,6 +162,22 @@ void ElectricalElements::AnnounceInstancedElements()
 
         switch (GetMaterialType(elementIndex))
         {
+            case ElectricalMaterial::ElectricalElementType::Generator:
+            {
+                // Announce instanced generators as power probes
+                if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                {
+                    mGameEventHandler->OnPowerProbeCreated(
+                        ElectricalElementId(mShipId, elementIndex),
+                        mInstanceInfos[elementIndex].InstanceIndex,
+                        PowerProbeType::Generator,
+                        static_cast<ElectricalState>(mElementStateBuffer[elementIndex].Generator.IsProducingCurrent),
+                        mInstanceInfos[elementIndex].PanelElementMetadata);
+                }
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
             {
                 mGameEventHandler->OnSwitchCreated(
@@ -178,7 +208,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     PowerProbeType::PowerMonitor,
-                    ElectricalState::Off, // We start with off; we'll figure out actual state at the next update
+                    static_cast<ElectricalState>(mElementStateBuffer[elementIndex].PowerMonitor.IsPowered),
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -363,26 +393,26 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
     std::queue<ElementIndex> electricalElementsToVisit;
 
-    for (auto sourceIndex : mSources)
+    for (auto sourceElementIndex : mSources)
     {
         // Do not visit deleted sources
-        if (!IsDeleted(sourceIndex))
+        if (!IsDeleted(sourceElementIndex))
         {
             // Make sure we haven't visited it already
-            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceIndex])
+            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex])
             {
                 // Mark it as visited
-                mCurrentConnectivityVisitSequenceNumberBuffer[sourceIndex] = newConnectivityVisitSequenceNumber;
+                mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex] = newConnectivityVisitSequenceNumber;
 
                 //
                 // Check pre-conditions that need to be satisfied before visiting the connectivity graph
                 //
 
-                auto const sourcePointIndex = GetPointIndex(sourceIndex);
+                auto const sourcePointIndex = GetPointIndex(sourceElementIndex);
 
                 bool preconditionsSatisfied = false;
 
-                switch (GetMaterialType(sourceIndex))
+                switch (GetMaterialType(sourceElementIndex))
                 {
                     case ElectricalMaterial::ElectricalElementType::Generator:
                     {
@@ -392,24 +422,62 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         // - Temperature within operating temperature
                         //
 
-                        if (mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent)
+                        bool isProducingCurrent;
+                        if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent)
                         {
                             if (points.IsWet(sourcePointIndex, 0.3f)
-                                || !mMaterialOperatingTemperaturesBuffer[sourceIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
+                                || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
                             {
-                                mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = false;
+                                isProducingCurrent = false;
+                            }
+                            else
+                            {
+                                isProducingCurrent = true;
                             }
                         }
                         else
                         {
                             if (!points.IsWet(sourcePointIndex, 0.3f)
-                                && mMaterialOperatingTemperaturesBuffer[sourceIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
+                                && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
                             {
-                                mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent = true;
+                                isProducingCurrent = true;
+                            }
+                            else
+                            {
+                                isProducingCurrent = false;
                             }
                         }
 
-                        preconditionsSatisfied = mElementStateBuffer[sourceIndex].Generator.IsProducingCurrent;
+                        preconditionsSatisfied = isProducingCurrent;
+
+                        //
+                        // Check if it's a state change
+                        //
+
+                        if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent != isProducingCurrent)
+                        {
+                            // Change state
+                            mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent = isProducingCurrent;
+
+                            // See whether we need to publish a power probe change
+                            if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                            {
+                                // Notify
+                                mGameEventHandler->OnPowerProbeToggled(
+                                    ElectricalElementId(mShipId, sourceElementIndex),
+                                    static_cast<ElectricalState>(isProducingCurrent));
+
+                                // Show notifications
+                                if (gameParameters.DoShowElectricalNotifications)
+                                {
+                                    // Highlight point
+                                    points.StartPointHighlight(
+                                        GetPointIndex(sourceElementIndex),
+                                        isProducingCurrent ? PowerOnHighlightColor :PowerOffHighlightColor,
+                                        GameWallClock::GetInstance().NowAsFloat());
+                                }
+                            }
+                        }
 
                         break;
                     }
@@ -429,7 +497,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
                     // Add source to queue
                     assert(electricalElementsToVisit.empty());
-                    electricalElementsToVisit.push(sourceIndex);
+                    electricalElementsToVisit.push(sourceElementIndex);
 
                     // Visit all electrical elements electrically reachable from this source
                     while (!electricalElementsToVisit.empty())
@@ -462,7 +530,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     //
 
                     points.AddHeat(sourcePointIndex,
-                        mMaterialHeatGeneratedBuffer[sourceIndex]
+                        mMaterialHeatGeneratedBuffer[sourceElementIndex]
                         * gameParameters.ElectricalElementHeatProducedAdjustment
                         * GameParameters::SimulationStepTimeDuration<float>);
                 }
@@ -482,29 +550,29 @@ void ElectricalElements::UpdateSinks(
     // Visit all sinks and run their state machine
     //
 
-    for (auto sinkIndex : mSinks)
+    for (auto sinkElementIndex : mSinks)
     {
-        if (!IsDeleted(sinkIndex))
+        if (!IsDeleted(sinkElementIndex))
         {
             //
             // Update state machine
             //
 
-            bool isOperating = false;
+            bool isProducingHeat = false;
 
-            switch (GetMaterialType(sinkIndex))
+            switch (GetMaterialType(sinkElementIndex))
             {
                 case ElectricalMaterial::ElectricalElementType::Lamp:
                 {
                     // Update state machine
                     RunLampStateMachine(
-                        sinkIndex,
+                        sinkElementIndex,
                         currentWallclockTime,
                         currentConnectivityVisitSequenceNumber,
                         points,
                         gameParameters);
 
-                    isOperating = (GetAvailableLight(sinkIndex) > 0.0f);
+                    isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
 
                     break;
                 }
@@ -512,24 +580,83 @@ void ElectricalElements::UpdateSinks(
                 case ElectricalMaterial::ElectricalElementType::OtherSink:
                 {
                     // Update state machine
-                    if (mElementStateBuffer[sinkIndex].OtherSink.IsPowered)
+                    if (mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered)
                     {
-                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            || !mMaterialOperatingTemperaturesBuffer[sinkIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
-                            mElementStateBuffer[sinkIndex].OtherSink.IsPowered = false;
+                            mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = false;
                         }
                     }
                     else
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            && mMaterialOperatingTemperaturesBuffer[sinkIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkIndex))))
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
-                            mElementStateBuffer[sinkIndex].OtherSink.IsPowered = true;
+                            mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = true;
                         }
                     }
 
-                    isOperating = mElementStateBuffer[sinkIndex].OtherSink.IsPowered;
+                    isProducingHeat = mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered;
+
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered)
+                    {
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        {
+                            //
+                            // Toggle state ON->OFF
+                            //
+
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                ElectricalState::Off);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                // Highlight point
+                                points.StartPointHighlight(
+                                    GetPointIndex(sinkElementIndex),
+                                    PowerOffHighlightColor,
+                                    GameWallClock::GetInstance().NowAsFloat());
+                            }
+
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
+                        }
+                    }
+                    else
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        {
+                            //
+                            // Toggle state OFF->ON
+                            //
+
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                ElectricalState::On);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                // Highlight point
+                                points.StartPointHighlight(
+                                    GetPointIndex(sinkElementIndex),
+                                    PowerOnHighlightColor,
+                                    GameWallClock::GetInstance().NowAsFloat());
+                            }
+
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
+                        }
+                    }
 
                     break;
                 }
@@ -537,48 +664,48 @@ void ElectricalElements::UpdateSinks(
                 case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
                 {
                     // Update state machine
-                    if (mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating)
+                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
                     {
-                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
                         {
                             // Stop operating
-                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating = false;
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
                         }
                     }
                     else
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkIndex]
-                            && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkIndex))))
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
                         {
                             // Start operating
-                            mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating = true;
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
 
                             // Make sure we calculate the next emission timestamp
-                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
                         }
                     }
 
-                    if (mElementStateBuffer[sinkIndex].SmokeEmitter.IsOperating)
+                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
                     {
                         // See if we need to calculate the next emission timestamp
-                        if (mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
+                        if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
                         {
-                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
                                 currentSimulationTime
                                 + GameRandomEngine::GetInstance().GenerateExponentialReal(
                                     gameParameters.SmokeEmissionDensityAdjustment
-                                    / mElementStateBuffer[sinkIndex].SmokeEmitter.EmissionRate);
+                                    / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
                         }
 
                         // See if it's time to emit smoke
-                        if (currentSimulationTime >= mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
+                        if (currentSimulationTime >= mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
                         {
                             //
                             // Emit smoke
                             //
 
-                            auto const emitterPointIndex = GetPointIndex(sinkIndex);
+                            auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
 
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const temperature = std::max(
@@ -594,7 +721,7 @@ void ElectricalElements::UpdateSinks(
                                 gameParameters);
 
                             // Make sure we re-calculate the next emission timestamp
-                            mElementStateBuffer[sinkIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
                         }
                     }
 
@@ -613,10 +740,10 @@ void ElectricalElements::UpdateSinks(
             // Generate heat if sink is working
             //
 
-            if (isOperating)
+            if (isProducingHeat)
             {
-                points.AddHeat(GetPointIndex(sinkIndex),
-                    mMaterialHeatGeneratedBuffer[sinkIndex]
+                points.AddHeat(GetPointIndex(sinkElementIndex),
+                    mMaterialHeatGeneratedBuffer[sinkElementIndex]
                     * gameParameters.ElectricalElementHeatProducedAdjustment
                     * GameParameters::SimulationStepTimeDuration<float>);
             }
@@ -695,11 +822,9 @@ void ElectricalElements::InternalSetSwitchState(
         if (gameParameters.DoShowElectricalNotifications)
         {
             // Highlight point
-            rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
-            rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
-                switchState == ElectricalState::On ? SwitchOnHighlightColor : SwitchOffHighlightColor,
+                switchState == ElectricalState::On ? PowerOnHighlightColor : PowerOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
         }
 

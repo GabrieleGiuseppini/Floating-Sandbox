@@ -143,8 +143,17 @@ private:
         {
             bool IsPowered;
 
-            OtherSinkState()
-                : IsPowered(false)
+            OtherSinkState(bool isPowered)
+                : IsPowered(isPowered)
+            {}
+        };
+
+        struct PowerMonitorState
+        {
+            bool IsPowered;
+
+            PowerMonitorState(bool isPowered)
+                : IsPowered(isPowered)
             {}
         };
 
@@ -154,9 +163,11 @@ private:
             bool IsOperating;
             float NextEmissionSimulationTimestamp; // When zero, it will be calculated
 
-            SmokeEmitterState(float emissionRate)
+            SmokeEmitterState(
+                float emissionRate,
+                bool isOperating)
                 : EmissionRate(emissionRate)
-                , IsOperating(false)
+                , IsOperating(isOperating)
                 , NextEmissionSimulationTimestamp(0.0f)
             {}
         };
@@ -168,6 +179,7 @@ private:
         GeneratorState Generator;
         LampState Lamp;
         OtherSinkState OtherSink;
+        PowerMonitorState PowerMonitor;
         SmokeEmitterState SmokeEmitter;
         DummyState Dummy;
 
@@ -185,6 +197,10 @@ private:
 
         ElementState(OtherSinkState otherSink)
             : OtherSink(otherSink)
+        {}
+
+        ElementState(PowerMonitorState powerMonitor)
+            : PowerMonitor(powerMonitor)
         {}
 
         ElementState(SmokeEmitterState smokeEmitter)

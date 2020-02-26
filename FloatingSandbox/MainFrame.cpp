@@ -1038,6 +1038,10 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mEventTickerPanel);
         mEventTickerPanel->Update();
 
+        // Update electrical panel
+        assert(!!mElectricalPanel);
+        mElectricalPanel->Update();
+
         // Update sound controller
         assert(!!mSoundController);
         mSoundController->Update();

@@ -2,13 +2,16 @@
 	"structure_image":"circuit_test_structural.png.dat",
 	"electrical_image":"circuit_test_electrical.png.dat",
 	"electrical_panel":{
+		"7": {"panel_x":-6, "panel_y":0, "label":"L Generator" },
 		"0": {"panel_x":-5, "panel_y":0, "label":"Main L Switch" },
-		"1": {"panel_x":-4, "panel_y":0, "label":"Main R Switch" },
-		"4": {"panel_x":-3, "panel_y":0, "label":"Smoke" },
-
-		"2": {"panel_x":0, "panel_y":0, "label":"Lamp 1" },
-		"3": {"panel_x":1, "panel_y":0, "label":"Lamp 2" },
-		"5": {"panel_x":2, "panel_y":0, "label":"Water Detector" }
+		"6": {"panel_x":-4, "panel_y":0, "label":"Main L Power" },
+		"8": {"panel_x":-2, "panel_y":0, "label":"R Generator" },
+		"1": {"panel_x":-1, "panel_y":0, "label":"Main R Switch" },
+		"4": {"panel_x":1, "panel_y":0, "label":"Smoke" },
+		
+		"2": {"panel_x":3, "panel_y":0, "label":"Lamp 1 Aft" },
+		"3": {"panel_x":4, "panel_y":0, "label":"Lamp 2 Aft" },
+		"5": {"panel_x":5, "panel_y":0, "label":"Water Detector" }
 	},
 	"ship_name":"Circuit Test",
 	"offset":{"x":0.0, "y":0.0},

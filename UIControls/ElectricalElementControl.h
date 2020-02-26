@@ -14,6 +14,7 @@
 #include <wx/wx.h>
 
 #include <cassert>
+#include <cmath>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -23,12 +24,27 @@ class ElectricalElementControl : public wxPanel
 {
 public:
 
+    enum class ControlType
+    {
+        Switch,
+        PowerMonitor,
+        Gauge
+    };
+
+public:
+
     virtual ~ElectricalElementControl()
     {}
+
+    ControlType GetControlType() const
+    {
+        return mControlType;
+    }
 
 protected:
 
     ElectricalElementControl(
+        ControlType controlType,
         wxWindow * parent,
         wxSize imageSize,
         std::string const & label)
@@ -38,6 +54,7 @@ protected:
             wxDefaultPosition,
             wxDefaultSize,
             wxBORDER_NONE)
+        , mControlType(controlType)
     {
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -70,6 +87,10 @@ protected:
 protected:
 
     wxPanel * mImagePanel;
+
+private:
+
+    ControlType const mControlType;
 };
 
 class IDisablableElectricalElementControl
@@ -96,6 +117,16 @@ public:
     virtual void OnKeyboardShortcutDown() = 0;
 
     virtual void OnKeyboardShortcutUp() = 0;
+};
+
+class IUpdateableElectricalElementControl
+{
+public:
+
+    virtual ~IUpdateableElectricalElementControl()
+    {}
+
+    virtual void Update() = 0;
 };
 
 class SwitchElectricalElementControl
@@ -142,6 +173,7 @@ protected:
         std::string const & label,
         ElectricalState currentState)
         : ElectricalElementControl(
+            ControlType::Switch,
             parent,
             onEnabledImage.GetSize(), // Arbitrarily the first one
             label)
@@ -208,10 +240,10 @@ protected:
 
 private:
 
-    wxBitmap const & mOnEnabledImage;
-    wxBitmap const & mOffEnabledImage;
-    wxBitmap const & mOnDisabledImage;
-    wxBitmap const & mOffDisabledImage;
+    wxBitmap const mOnEnabledImage;
+    wxBitmap const mOffEnabledImage;
+    wxBitmap const mOnDisabledImage;
+    wxBitmap const mOffDisabledImage;
 };
 
 class InteractiveSwitchElectricalElementControl
@@ -448,6 +480,7 @@ public:
         std::string const & label,
         ElectricalState currentState)
         : ElectricalElementControl(
+            ControlType::PowerMonitor,
             parent,
             onImage.GetSize(), // Arbitrarily the first one
             label)
@@ -504,8 +537,62 @@ private:
 
     wxStaticBitmap * mImageBitmap;
 
-    wxBitmap const & mOnImage;
-    wxBitmap const & mOffImage;
+    wxBitmap const mOnImage;
+    wxBitmap const mOffImage;
 };
 
-// TODO: gauge
+class GaugeElectricalElementControl
+    : public ElectricalElementControl
+    , public IUpdateableElectricalElementControl
+{
+public:
+
+    GaugeElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & backgroundImage,
+        wxPoint const & centerPoint,
+        float handLength,
+        float minAngle,
+        float maxAngle,
+        std::string const & label,
+        float currentValue);
+
+    void SetValue(float value)
+    {
+        mTargetAngle = CalculateAngle(value, mMinAngle, mMaxAngle);
+    }
+
+    virtual void Update() override;
+
+private:
+
+    static inline float CalculateAngle(
+        float currentValue,
+        float minAngle,
+        float maxAngle)
+    {
+        return minAngle + (maxAngle - minAngle) * currentValue;
+    }
+
+    void OnPaint(wxPaintEvent & event);
+
+    void Render(wxDC & dc);
+
+private:
+
+    wxBitmap const mBackgroundImage;
+    wxPoint const mCenterPoint;
+    float const mHandLength;
+    float const mMinAngle;
+    float const mMaxAngle;
+
+    // Current state
+    float mCurrentAngle; // In radiants, 0 at (1,0)
+    float mCurrentVelocity;
+    float mTargetAngle;
+
+    wxPoint mHandEndpoint;
+    wxStaticBitmap * mImageBitmap;
+    wxPen const mHandPen1;
+    wxPen const mHandPen2;
+};
