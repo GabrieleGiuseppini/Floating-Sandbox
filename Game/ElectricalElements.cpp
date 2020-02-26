@@ -240,13 +240,53 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     // Zero out our light
     mAvailableLightBuffer[electricalElementIndex] = 0.0f;
 
-    // Notify switch disabling
-    auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
-    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
-        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
-        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
+    // Switch state as appropriate
+    switch (GetMaterialType(electricalElementIndex))
     {
-        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+        case ElectricalMaterial::ElectricalElementType::Generator:
+        {
+            if (mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent)
+            {
+                mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent = false;
+
+                // See whether we need to publish a power probe change
+                if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                {
+                    mGameEventHandler->OnPowerProbeToggled(
+                        ElectricalElementId(mShipId, electricalElementIndex),
+                        ElectricalState::Off);
+                }
+            }
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+        {
+            if (mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered)
+            {
+                mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered = false;
+
+                mGameEventHandler->OnPowerProbeToggled(
+                    ElectricalElementId(mShipId, electricalElementIndex),
+                    ElectricalState::Off);
+            }
+
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
     }
 
     // Invoke destroy handler

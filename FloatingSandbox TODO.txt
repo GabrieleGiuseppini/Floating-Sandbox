@@ -1290,14 +1290,14 @@ Render:
 		+ Simulation of Generator:
 			! IsProducingCurrent is same as announced state
 			+ At ElectricalElements::UpdateSources(): fire toggle events upon state toggle
-		- Destroy/Repair at ElectricalElements::Destroy/Repair:
+		= Destroy/Repair at ElectricalElements::Destroy/Repair:
 			! Make sure announcement follows when generator is restored and becomes powered
 			! Alignment of state::IsProducingCurrent with announced state: it's the same
-			- At Destroy:
-				- Generator: if IsProducingCurrent:
-					- Toggle to false and announce
-				- PowerMonitor: if State says it's on:
-					- Toggle to false and announce
+			+ At Destroy:
+				+ Generator: if IsProducingCurrent:
+					+ Toggle to false and announce
+				+ PowerMonitor: if State says it's on:
+					+ Toggle to false and announce
 			- At Restore:
 				= Generator: nothing to do: at the next UpdateSources() that makes it work the generator will start 
 				  producing current again and it will announce it
@@ -1312,7 +1312,7 @@ Render:
 				+ AutomaticSwitchElectricalElementControl
 				+ PowerMonitorElectricalElementControl
 				+ Redo hierarchy
-		= Switchboard:
+		+ Switchboard:
 			+ Register for power probe events
 			+ Swap bitmaps: 
 				+ Current non-interactive becomes power monitor
@@ -1322,9 +1322,8 @@ Render:
 				+ Type 2 (Generator): Volt gauge (on continuous value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
 					+ Map ElectricalState to min/max values at SwitchboardPanel
 		- Finalization:
-			- Complete Gauge
-				- IUpdateableElectricalControl
-			- Decide whether powermonitor's initial state should really be "off" rather than "on"
+			+ Complete Gauge
+				+ IUpdateableElectricalControl
 			- Refresh electrical elements' materials template
 
 	- Pumps (*)
