@@ -1321,10 +1321,11 @@ Render:
 				+ Type 1 (PowerMonitor): red/green
 				+ Type 2 (Generator): Volt gauge (on continuous value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
 					+ Map ElectricalState to min/max values at SwitchboardPanel
-		- Finalization:
+		= Finalization:
 			+ Complete Gauge
 				+ IUpdateableElectricalControl
-			- Refresh electrical elements' materials template
+			+ Refresh electrical elements' materials template
+			- changes.txt
 
 	- Pumps (*)
 		- Spec:
