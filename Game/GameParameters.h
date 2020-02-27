@@ -437,6 +437,11 @@ struct GameParameters
 
     bool DoShowElectricalNotifications;
 
+    float EngineThrust; // N
+    static float constexpr MinEngineThrust = 1000.0f;
+    static float constexpr MaxEngineThrust = 100000.0f;
+
+
     //
     // Limits
     //

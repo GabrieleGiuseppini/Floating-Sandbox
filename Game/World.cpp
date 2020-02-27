@@ -596,6 +596,20 @@ void World::SetSwitchState(
         gameParameters);
 }
 
+void World::SetEngineControllerState(
+    ElectricalElementId electricalElementId,
+    float value,
+    GameParameters const & gameParameters)
+{
+    auto const shipId = electricalElementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->SetEngineControllerState(
+        electricalElementId,
+        value,
+        gameParameters);
+}
+
 void World::SetSilence(float silenceAmount)
 {
     mWind.SetSilence(silenceAmount);

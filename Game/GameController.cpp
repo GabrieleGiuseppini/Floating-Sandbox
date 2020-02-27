@@ -1046,6 +1046,17 @@ void GameController::SetSwitchState(
         mGameParameters);
 }
 
+void GameController::SetEngineControllerState(
+    ElectricalElementId electricalElementId,
+    float value)
+{
+    assert(!!mWorld);
+    mWorld->SetEngineControllerState(
+        electricalElementId,
+        value,
+        mGameParameters);
+}
+
 //
 // Render controls
 //

@@ -9,6 +9,7 @@
 
 #include <GameCore/Buffer.h>
 #include <GameCore/ElementContainer.h>
+#include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameWallClock.h>
 
 #include <cassert>
@@ -85,6 +86,40 @@ private:
     {
         struct CableState
         {
+        };
+
+        struct EngineState
+        {
+            vec2f CurrentPowerVector; // Unary
+            float CurrentPowerMagnitude;
+            float LastPublishedPowerMagnitude;
+
+            EngineState()
+                : CurrentPowerVector(vec2f::zero())
+                , CurrentPowerMagnitude(0.0f)
+                , LastPublishedPowerMagnitude(0.0f)
+            {}
+        };
+
+        struct EngineControllerState
+        {
+            struct ConnectedEngine
+            {
+                ElementIndex EngineElectricalElementIndex;
+                float SinControllerAngle;
+                float CosControllerAngle;
+            };
+
+            FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
+
+            float ControlValue;
+            bool IsPowered;
+
+            EngineControllerState(bool isPowered)
+                : ConnectedEngines()
+                , ControlValue(0.0f)
+                , IsPowered(isPowered)
+            {}
         };
 
         struct GeneratorState
@@ -176,6 +211,8 @@ private:
         {};
 
         CableState Cable;
+        EngineState Engine;
+        EngineControllerState EngineController;
         GeneratorState Generator;
         LampState Lamp;
         OtherSinkState OtherSink;
@@ -185,6 +222,14 @@ private:
 
         ElementState(CableState cable)
             : Cable(cable)
+        {}
+
+        ElementState(EngineState engine)
+            : Engine(engine)
+        {}
+
+        ElementState(EngineControllerState engineController)
+            : EngineController(engineController)
         {}
 
         ElementState(GeneratorState generator)
@@ -260,6 +305,7 @@ public:
         , mSources()
         , mSinks()
         , mLamps()
+        , mEngineSinks()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
         , mHasSwitchBeenToggledInStep(false)
@@ -294,16 +340,12 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState switchState,
         Points & points,
-        GameParameters const & gameParameters)
-    {
-        assert(electricalElementId.GetShipId() == mShipId);
+        GameParameters const & gameParameters);
 
-        InternalSetSwitchState(
-            electricalElementId.GetLocalObjectId(),
-            switchState,
-            points,
-            gameParameters);
-    }
+    void SetEngineControllerState(
+        ElectricalElementId electricalElementId,
+        float value,
+        GameParameters const & gameParameters);
 
     void Destroy(ElementIndex electricalElementIndex);
 
@@ -410,6 +452,10 @@ public:
 
         (void)found;
     }
+
+    void AddFactoryConnectedElectricalElement(
+        ElementIndex electricalElementIndex,
+        ElementIndex connectedElectricalElementIndex);
 
     //
     // Available Light
@@ -599,6 +645,7 @@ private:
     std::vector<ElementIndex> mSources;
     std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
+    std::vector<ElementIndex> mEngineSinks;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation

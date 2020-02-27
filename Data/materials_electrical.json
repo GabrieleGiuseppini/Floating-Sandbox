@@ -434,5 +434,55 @@
             "column": "2|Power Monitor", 
             "row": "9|Misc"
         }
+    },
+
+    {
+        "color_key": "#30D000",
+	"conducts_electricity": true,
+        "electrical_type": "EngineController", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Engine Controller", 
+        "template": {
+            "column": "3|Engine Controller", 
+            "row": "9|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30E000",
+	"conducts_electricity": true,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+        "heat_generated": 400.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Engine L/R", 
+        "template": {
+            "column": "4|Engine L/R",
+            "row": "9|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30F000",
+	"conducts_electricity": true,
+        "electrical_type": "Engine", 
+	"engine_direction": 1.570796327,
+        "heat_generated": 400.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Engine U/D", 
+        "template": {
+            "column": "5|Engine U/D",
+            "row": "9|Misc"
+        }
     }
 ]

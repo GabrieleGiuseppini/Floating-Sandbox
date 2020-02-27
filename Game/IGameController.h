@@ -108,6 +108,10 @@ struct IGameController
         ElectricalElementId electricalElementId,
         ElectricalState switchState) = 0;
 
+    virtual void SetEngineControllerState(
+        ElectricalElementId electricalElementId,
+        float value) = 0;
+
     //
     // Rendering controls
     //

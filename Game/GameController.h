@@ -191,6 +191,10 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState switchState) override;
 
+    void SetEngineControllerState(
+        ElectricalElementId electricalElementId,
+        float value) override;
+
     //
     // Render controls
     //

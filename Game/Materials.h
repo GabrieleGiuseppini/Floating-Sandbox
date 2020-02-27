@@ -162,12 +162,12 @@ struct ElectricalMaterial
 {
 public:
 
-    std::string Name;
-
     enum class ElectricalElementType
     {
         Lamp,
         Cable,
+        Engine,
+        EngineController,
         Generator,
         InteractiveToggleSwitch,
         InteractivePushSwitch,
@@ -176,6 +176,10 @@ public:
         SmokeEmitter,
         WaterSensingSwitch
     };
+
+public:
+
+    std::string Name;
 
     ElectricalElementType ElectricalType;
 
@@ -195,6 +199,9 @@ public:
 
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
+
+    // Engine
+    float EngineDirection; // Radiants when positive power
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
@@ -218,6 +225,7 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
+        float engineDirection,
         bool isInstanced)
         : Name(name)
         , ElectricalType(electricalType)
@@ -231,6 +239,7 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , EngineDirection(engineDirection)
         , IsInstanced(isInstanced)
     {
     }

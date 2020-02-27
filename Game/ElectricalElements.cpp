@@ -13,6 +13,7 @@ namespace Physics {
 
 float constexpr LampWetFailureWaterThreshold = 0.1f;
 
+rgbColor constexpr EngineHighlightColor = rgbColor(0xf5, 0xdd, 0x42);
 rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
 rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
 
@@ -49,6 +50,28 @@ void ElectricalElements::Add(
         {
             // State
             mElementStateBuffer.emplace_back(ElementState::CableState());
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::EngineState());
+
+            // Indices
+            mEngineSinks.emplace_back(elementIndex);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::EngineController:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::EngineControllerState(false));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
 
             break;
         }
@@ -162,6 +185,27 @@ void ElectricalElements::AnnounceInstancedElements()
 
         switch (GetMaterialType(elementIndex))
         {
+            case ElectricalMaterial::ElectricalElementType::Engine:
+            {
+                // Announce engine as EngineMonitor
+                mGameEventHandler->OnEngineMonitorCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::EngineController:
+            {
+                mGameEventHandler->OnEngineControllerCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::Generator:
             {
                 // Announce instanced generators as power probes
@@ -231,6 +275,45 @@ void ElectricalElements::AnnounceInstancedElements()
     mGameEventHandler->OnElectricalElementAnnouncementsEnd();
 }
 
+void ElectricalElements::SetSwitchState(
+    ElectricalElementId electricalElementId,
+    ElectricalState switchState,
+    Points & points,
+    GameParameters const & gameParameters)
+{
+    assert(electricalElementId.GetShipId() == mShipId);
+
+    InternalSetSwitchState(
+        electricalElementId.GetLocalObjectId(),
+        switchState,
+        points,
+        gameParameters);
+}
+
+void ElectricalElements::SetEngineControllerState(
+    ElectricalElementId electricalElementId,
+    float value,
+    GameParameters const & /*gameParameters*/)
+{
+    assert(electricalElementId.GetShipId() == mShipId);
+    auto const elementIndex = electricalElementId.GetLocalObjectId();
+
+    assert(mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::EngineController);
+    auto & state = mElementStateBuffer[elementIndex].EngineController;
+
+    // Make sure it's a state change
+    if (value != state.ControlValue)
+    {
+        // Change current value
+        state.ControlValue = value;
+
+        // Notify
+        mGameEventHandler->OnEngineControllerUpdated(
+            electricalElementId,
+            value);
+    }
+}
+
 void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 {
     // Connectivity is taken care by ship destroy handler, as usual
@@ -243,6 +326,31 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     // Switch state as appropriate
     switch (GetMaterialType(electricalElementIndex))
     {
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            // TODO
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::EngineController:
+        {
+            // Publish state change, if necessary
+            if (mElementStateBuffer[electricalElementIndex].EngineController.ControlValue != 0.0f)
+            {
+                mElementStateBuffer[electricalElementIndex].EngineController.ControlValue = 0.0f;
+
+                mGameEventHandler->OnEngineControllerUpdated(
+                    ElectricalElementId(mShipId, electricalElementIndex),
+                    0.0f);
+            }
+
+            // Publish disable
+            mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
             if (mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent)
@@ -266,6 +374,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+
             break;
         }
 
@@ -306,12 +415,29 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     // Clear the deleted flag
     mIsDeletedBuffer[electricalElementIndex] = false;
 
-    // Reset our state machine
+    // Switch state as appropriate
     switch (GetMaterialType(electricalElementIndex))
     {
+        case ElectricalMaterial::ElectricalElementType::EngineController:
+        {
+            mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mElementStateBuffer[electricalElementIndex].Lamp.Reset();
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+
             break;
         }
 
@@ -325,15 +451,6 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     // Invoke restore handler
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandleElectricalElementRestore(electricalElementIndex);
-
-    // Notify switch enabling
-    auto const electricalMaterialType = GetMaterialType(electricalElementIndex);
-    if (electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractivePushSwitch
-        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch
-        || electricalMaterialType == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch)
-    {
-        mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
-    }
 }
 
 void ElectricalElements::UpdateForGameParameters(GameParameters const & gameParameters)
@@ -602,6 +719,76 @@ void ElectricalElements::UpdateSinks(
 
             switch (GetMaterialType(sinkElementIndex))
             {
+                case ElectricalMaterial::ElectricalElementType::EngineController:
+                {
+                    auto & controllerState = mElementStateBuffer[sinkElementIndex].EngineController;
+
+                    // Check whether it's powered
+                    bool isPowered = false;
+                    if (controllerState.IsPowered)
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
+                        {
+                            isPowered = true;
+                        }
+                    }
+                    else
+                    {
+                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
+                        {
+                            isPowered = true;
+                        }
+                    }
+
+                    if (isPowered)
+                    {
+                        //
+                        // Visit all (non-deleted) connected engines and add force to each
+                        //
+
+                        vec2f const & controllerPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
+
+                        for (auto const & connectedEngine : controllerState.ConnectedEngines)
+                        {
+                            auto const engineElectricalElementIndex = connectedEngine.EngineElectricalElementIndex;
+                            if (!IsDeleted(engineElectricalElementIndex))
+                            {
+                                //
+                                // Calculate power force vector
+                                //  - Dir = f(controller->engine angle)
+                                //  - Magnitude = f(EngineControllerState::ControlValue)
+                                //
+
+                                auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
+
+                                vec2f const controllerToEngineVector = points.GetPosition(enginePointIndex) - controllerPosition;
+
+                                vec2f const enginePowerVector = vec2f(
+                                    connectedEngine.CosControllerAngle * controllerToEngineVector.x - connectedEngine.SinControllerAngle * controllerToEngineVector.y,
+                                    connectedEngine.SinControllerAngle * controllerToEngineVector.x + connectedEngine.CosControllerAngle * controllerToEngineVector.y)
+                                    * controllerState.ControlValue;
+
+                                //
+                                // Add power force vector to engine
+                                //  - Engine's power has been reset at end of previous iteration
+                                //
+
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerVector += enginePowerVector;
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerMagnitude = std::max(
+                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerMagnitude,
+                                    enginePowerVector.length());
+                            }
+                        }
+                    }
+
+                    // Remember state
+                    mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = isPowered;
+
+                    break;
+                }
+
                 case ElectricalMaterial::ElectricalElementType::Lamp:
                 {
                     // Update state machine
@@ -791,10 +978,65 @@ void ElectricalElements::UpdateSinks(
     }
 
     //
+    // Visit all engines and run their state machine
+    //
+
+    for (auto engineSinkElementIndex : mEngineSinks)
+    {
+        if (!IsDeleted(engineSinkElementIndex))
+        {
+            assert(mMaterialTypeBuffer[engineSinkElementIndex] == ElectricalMaterial::ElectricalElementType::Engine);
+            auto & state = mElementStateBuffer[engineSinkElementIndex].Engine;
+
+            // Calculate force
+            vec2f const thrustForce = state.CurrentPowerVector * gameParameters.EngineThrust;
+
+            // Apply force to point
+            points.GetNonSpringForce(GetPointIndex(engineSinkElementIndex)) += thrustForce;
+
+            // Eventually publish power change notification
+            if (state.CurrentPowerMagnitude != state.LastPublishedPowerMagnitude)
+            {
+                // Notify
+                mGameEventHandler->OnEngineMonitorUpdated(
+                    ElectricalElementId(mShipId, engineSinkElementIndex),
+                    state.CurrentPowerMagnitude);
+
+                // Remember last-published value
+                state.LastPublishedPowerMagnitude = state.CurrentPowerMagnitude;
+
+                // Show notifications
+                if (gameParameters.DoShowElectricalNotifications)
+                {
+                    // Highlight point
+                    points.StartPointHighlight(
+                        GetPointIndex(engineSinkElementIndex),
+                        EngineHighlightColor,
+                        GameWallClock::GetInstance().NowAsFloat());
+                }
+            }
+
+            // Reset this engine's power, we'll re-update it at the next iteration
+            state.CurrentPowerVector = vec2f::zero();
+            state.CurrentPowerMagnitude = 0.0f;
+        }
+    }
+
+    //
     // Clear switch toggle dirtyness
     //
 
     mHasSwitchBeenToggledInStep = false;
+}
+
+void ElectricalElements::AddFactoryConnectedElectricalElement(
+    ElementIndex electricalElementIndex,
+    ElementIndex connectedElectricalElementIndex)
+{
+    // Add element
+    AddConnectedElectricalElement(
+        electricalElementIndex,
+        connectedElectricalElementIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -887,6 +1129,7 @@ void ElectricalElements::RunLampStateMachine(
 
     auto const pointIndex = GetPointIndex(elementLampIndex);
 
+    assert(mMaterialTypeBuffer[elementLampIndex] == ElectricalMaterial::ElectricalElementType::Lamp);
     auto & lamp = mElementStateBuffer[elementLampIndex].Lamp;
 
     switch (lamp.State)

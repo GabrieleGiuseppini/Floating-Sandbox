@@ -297,7 +297,7 @@ public:
         mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
-    virtual void OnElectricalElementAnnouncementsBegin()
+    virtual void OnElectricalElementAnnouncementsBegin() override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
@@ -334,7 +334,31 @@ public:
         }
     }
 
-    virtual void OnElectricalElementAnnouncementsEnd()
+    virtual void OnEngineControllerCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnEngineControllerCreated(electricalElementId, instanceIndex, panelElementMetadata);
+        }
+    }
+
+    virtual void OnEngineMonitorCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, panelElementMetadata);
+        }
+    }
+
+    virtual void OnElectricalElementAnnouncementsEnd() override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
@@ -345,7 +369,7 @@ public:
 
     virtual void OnSwitchEnabled(
         ElectricalElementId electricalElementId,
-        bool isEnabled)
+        bool isEnabled) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
@@ -356,7 +380,7 @@ public:
 
     virtual void OnSwitchToggled(
         ElectricalElementId electricalElementId,
-        ElectricalState newState)
+        ElectricalState newState) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
@@ -373,6 +397,39 @@ public:
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnPowerProbeToggled(electricalElementId, newState);
+        }
+    }
+
+    virtual void OnEngineControllerEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnEngineControllerEnabled(electricalElementId, isEnabled);
+        }
+    }
+
+    virtual void OnEngineControllerUpdated(
+        ElectricalElementId electricalElementId,
+        float newControlValue) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnEngineControllerUpdated(electricalElementId, newControlValue);
+        }
+    }
+
+    virtual void OnEngineMonitorUpdated(
+        ElectricalElementId electricalElementId,
+        float newPower) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnEngineMonitorUpdated(electricalElementId, newPower);
         }
     }
 

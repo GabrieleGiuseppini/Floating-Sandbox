@@ -364,6 +364,8 @@ void Ship::Update(
     //
     // 3. Update sinks
     //
+    // - Applies NonSpring force, will be integrated at next loop
+    //
 
     mElectricalElements.UpdateSinks(
         currentWallClockTime,

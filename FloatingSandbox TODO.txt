@@ -1384,56 +1384,68 @@ Render:
 
 	- Propulsion (*)
 		! Requires "Forces Rearc" or "Position-based Springs"
-		- 1 new ElectricalElementType: Engine
-		- 2 electrical materials: engine x {LR/UD}
-			- Need a new engine-specific electrical material property: engine_direction
-		- 1 new ElectricalElementType: EngineController
-		- 1 electrical material
+		+ 1 new ElectricalElementType: Engine
+		+ 2 electrical materials: engine x {LR/UD}
+			+ Need a new engine-specific electrical material property: engine_direction, radiants 
+		+ 1 new ElectricalElementType: EngineController
+		+ 1 electrical material
 		! EngineController (telegraph) controls all connected engines, value={-1.0, ..., +1.0}
 			! Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
 			  material
-		- EngineController announces self as EngineController, and API's to set value {-1.0, ..., +1.0}
-		- Engine announces self as EngineMonitor 
-			- And updates use {0.0, ..., +1.0} values
-		- Dynamics:
-			- ElectricalElements: next to connected electrical elements, also has:
-				- If spring provides easy access to octant (given an endpoint): SpringIndex
-					- In this case, consider having SpringIndex as a member of ConnectedElectricalElement struct
-				- Else:
-					- Octant (& Factory Octant for repair)
-				- Make sure this new info is also restored at repair
-			- EngineController is Sink
-			- Engine is *not* sink, but Engine (new type)
-			- UpdateSinks: 
-				- For each EngineController sink that is powered:
-					- For each connected electrical element that is Engine:
-						- Calculate power force vector:
-							- Dir = f(octant, points, MaterialEngineAxis)
-							- Magnitude = f(controller's current val)
-						- Add power force vector to Engine::State::CurrentPowerForceVector
-						- Engine::State::CurrentPowerValue = max(
+		+ EngineController announces self as EngineController
+			+ And updates use {-1.0, ..., +1.0} values
+		+ Engine announces self as EngineMonitor 
+			+ And updates use {0.0, ..., +1.0} values
+		= Dynamics:
+			+ EngineController: API to set value {-1.0, ..., +1.0}
+				+ Updates value in state
+			+ EngineController state has array of ConnectedEngine={EngineElectricalElementIndex, sin+cos}
+				+ Never modified, usage must check for deletion
+			= ElectricalElements::Add*Factory*ConnectedElectricalElement(..., octant)
+				- Invoked only by ShipBuilder
+				- First, if this is EngineController and other is Engine: populates EngineController state
+				+ Then invokes AddConnectedElectricalElement(...)
+			+ EngineController is Sink
+			+ Engine is *not* sink, but Engine (new indices type)
+			+ UpdateSinks: 
+				+ For each EngineController sink that is powered:
+					+ For each connected electrical element that is Engine:
+						+ Calculate power force vector:
+							+ Dir = f(octant, points, MaterialEngineDirection)
+							+ Magnitude = f(EngineControllerState::ControlValue)
+						+ Add power force vector to Engine::State::CurrentPowerForceVector
+						+ Engine::State::CurrentPowerValue = max(
 							Engine::State::CurrentPowerValue,
 							abs(controller's current val));
-				- Then, for each Engine: 
-					- Calculate force=f(State::CurrentPowerForceVector, adjustment)
-					- Apply force to point (NonSpringForce)
-					- If Engine::State::CurrentPowerValue != State::LastPublishedPowerValue:
-						- Publish EngineMonitor -> Sound+Panel
-						- State::LastPublishedPowerValue = Engine::State::CurrentPowerValue
-						- Do visual notification if enabled
-					- Reset State::CurrentPowerForceVector
-					- Reset State::CurrentPowerValue
+				+ Then, for each Engine: 
+					+ Calculate force=f(State::CurrentPowerForceVector, GameParameters::EngineThrust)
+					+ Apply force to point (NonSpringForce)
+					+ If Engine::State::CurrentPowerValue != State::LastPublishedPowerValue:
+						+ Publish EngineMonitor -> Sound+Panel
+						+ State::LastPublishedPowerValue = Engine::State::CurrentPowerValue
+						+ Do visual notification if enabled
+					+ Reset State::CurrentPowerForceVector
+					+ Reset State::CurrentPowerValue
+			+ Enable/Disable engine controller upon destroy/create
+			- Publish zero value at engine destruction (iff currently not zero)
 		- Gfx:
 			- EngineControl: Telegraph with hand
 				- N already-rotated hand bitmaps
 				- Research credits
 			- EngineMonitor: RPM Gauge (GaugeControl w/other bg)
+		- SwitchboardPanel:
+			- Handle creations of EngineController and EngineMonitor
+			- Handle enabling/disabling of EngineController
+			- Subscribe to updates of EngineController and EngineMonitor
 		- Sound:
+			- Register for EngineMonitor event
 			- Simple continuous sound, keyed by object ID
 			- Add pitch controls to Sound
 			- React to EngineMonitor, track object ID and set object's sound pitch
-		- Finalization:
+		- Finalization:			
+			- SettingsDialog: EngineThrust
 			- Add engine_direction to materials' guide
+			- Add all new types to materials' guide
 			- Refresh electrical elements' materials template				
 
 	- Logic Gates

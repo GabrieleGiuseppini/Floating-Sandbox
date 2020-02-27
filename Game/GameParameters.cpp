@@ -86,5 +86,6 @@ GameParameters::GameParameters()
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
     , DoShowElectricalNotifications(true)
+    , EngineThrust(14000.0f)
 {
 }

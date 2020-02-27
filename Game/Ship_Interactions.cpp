@@ -1347,4 +1347,17 @@ void Ship::SetSwitchState(
         gameParameters);
 }
 
+void Ship::SetEngineControllerState(
+    ElectricalElementId electricalElementId,
+    float value,
+    GameParameters const & gameParameters)
+{
+    assert(electricalElementId.GetShipId() == mId);
+
+    mElectricalElements.SetEngineControllerState(
+        electricalElementId,
+        value,
+        gameParameters);
+}
+
 }

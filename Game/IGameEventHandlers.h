@@ -213,6 +213,22 @@ struct IElectricalElementGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnEngineControllerCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnEngineMonitorCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnElectricalElementAnnouncementsEnd()
     {
         // Default-implemented
@@ -239,6 +255,27 @@ struct IElectricalElementGameEventHandler
     virtual void OnPowerProbeToggled(
         ElectricalElementId /*electricalElementId*/,
         ElectricalState /*newState*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnEngineControllerEnabled(
+        ElectricalElementId /*electricalElementId*/,
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnEngineControllerUpdated(
+        ElectricalElementId /*electricalElementId*/,
+        float /*newControlValue*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnEngineMonitorUpdated(
+        ElectricalElementId /*electricalElementId*/,
+        float /*newPower*/)
     {
         // Default-implemented
     }

@@ -204,6 +204,11 @@ public:
         ElectricalState switchState,
         GameParameters const & gameParameters);
 
+    void SetEngineControllerState(
+        ElectricalElementId electricalElementId,
+        float value,
+        GameParameters const & gameParameters);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////

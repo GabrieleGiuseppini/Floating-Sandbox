@@ -1304,7 +1304,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             auto otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
             if (NoneElementIndex != otherEndpointElectricalElementIndex)
             {
-                electricalElements.AddConnectedElectricalElement(
+                electricalElements.AddFactoryConnectedElectricalElement(
                     electricalElementIndex,
                     otherEndpointElectricalElementIndex);
             }

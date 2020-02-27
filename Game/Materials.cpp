@@ -94,23 +94,21 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
 
 StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType(std::string const & str)
 {
-    std::string lstr = Utils::ToLower(str);
-
-    if (lstr == "airbubble")
+    if (Utils::CaseInsensitiveEquals(str, "AirBubble"))
         return MaterialSoundType::AirBubble;
-    else if (lstr == "cable")
+    else if (Utils::CaseInsensitiveEquals(str, "Cable"))
         return MaterialSoundType::Cable;
-    else if (lstr == "cloth")
+    else if (Utils::CaseInsensitiveEquals(str, "Cloth"))
         return MaterialSoundType::Cloth;
-    else if (lstr == "glass")
+    else if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialSoundType::Glass;
-    else if (lstr == "metal")
+    else if (Utils::CaseInsensitiveEquals(str, "Metal"))
         return MaterialSoundType::Metal;
-    else if (lstr == "plastic")
+    else if (Utils::CaseInsensitiveEquals(str, "Plastic"))
         return MaterialSoundType::Plastic;
-    else if (lstr == "rubber")
+    else if (Utils::CaseInsensitiveEquals(str, "Rubber"))
         return MaterialSoundType::Rubber;
-    else if (lstr == "wood")
+    else if (Utils::CaseInsensitiveEquals(str, "Wood"))
         return MaterialSoundType::Wood;
     else
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
@@ -118,11 +116,9 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
 
 StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
 {
-    std::string lstr = Utils::ToLower(str);
-
-    if (lstr == "combustion")
+    if (Utils::CaseInsensitiveEquals(str, "Combustion"))
         return MaterialCombustionType::Combustion;
-    else if (lstr == "explosion")
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
         return MaterialCombustionType::Explosion;
     else
         throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
@@ -181,6 +177,13 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
         }
 
+        // Engine direction
+        float engineDirection = 0.0f;
+        if (ElectricalElementType::Engine == electricalType)
+        {
+            engineDirection = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_direction");
+        }
+
         // Instancing
         bool isInstanced = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_instanced", false);
 
@@ -197,6 +200,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             minimumOperatingTemperature,
             maximumOperatingTemperature,
             particleEmissionRate,
+            engineDirection,
             isInstanced);
     }
     catch (GameException const & ex)
@@ -207,25 +211,27 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
 
 ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalElementType(std::string const & str)
 {
-    std::string lstr = Utils::ToLower(str);
-
-    if (lstr == "lamp")
-        return ElectricalElementType::Lamp;
-    else if (lstr == "cable")
+    if (Utils::CaseInsensitiveEquals(str, "Cable"))
         return ElectricalElementType::Cable;
-    else if (lstr == "generator")
+    else if (Utils::CaseInsensitiveEquals(str, "Engine"))
+        return ElectricalElementType::Engine;
+    else if (Utils::CaseInsensitiveEquals(str, "EngineController"))
+        return ElectricalElementType::EngineController;
+    else if (Utils::CaseInsensitiveEquals(str, "Generator"))
         return ElectricalElementType::Generator;
-    else if (lstr == "interactivepushswitch")
+    else if (Utils::CaseInsensitiveEquals(str, "InteractivePushSwitch"))
         return ElectricalElementType::InteractivePushSwitch;
-    else if (lstr == "interactivetoggleswitch")
+    else if (Utils::CaseInsensitiveEquals(str, "InteractiveToggleSwitch"))
         return ElectricalElementType::InteractiveToggleSwitch;
-    else if (lstr == "othersink")
+    else if (Utils::CaseInsensitiveEquals(str, "Lamp"))
+            return ElectricalElementType::Lamp;
+    else if (Utils::CaseInsensitiveEquals(str, "OtherSink"))
         return ElectricalElementType::OtherSink;
-    else if (lstr == "powermonitor")
+    else if (Utils::CaseInsensitiveEquals(str, "PowerMonitor"))
         return ElectricalElementType::PowerMonitor;
-    else if (lstr == "smokeemitter")
+    else if (Utils::CaseInsensitiveEquals(str, "SmokeEmitter"))
         return ElectricalElementType::SmokeEmitter;
-    else if (lstr == "watersensingswitch")
+    else if (Utils::CaseInsensitiveEquals(str, "WaterSensingSwitch"))
         return ElectricalElementType::WaterSensingSwitch;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
