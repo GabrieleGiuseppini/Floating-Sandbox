@@ -462,9 +462,9 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Engine L/R", 
+        "name": "Engine R/L", 
         "template": {
-            "column": "4|Engine L/R",
+            "column": "4|Engine R/L",
             "row": "9|Misc"
         }
     },
