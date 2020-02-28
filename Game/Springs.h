@@ -85,12 +85,12 @@ private:
      */
     struct EndpointOctants
     {
-        int32_t PointAOctant;
-        int32_t PointBOctant;
+        Octant PointAOctant;
+        Octant PointBOctant;
 
         EndpointOctants(
-            int32_t pointAOctant,
-            int32_t pointBOctant)
+            Octant pointAOctant,
+            Octant pointBOctant)
             : PointAOctant(pointAOctant)
             , PointBOctant(pointBOctant)
         {}
@@ -164,8 +164,8 @@ public:
     void Add(
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
-        int32_t factoryPointAOctant,
-        int32_t factoryPointBOctant,
+        Octant factoryPointAOctant,
+        Octant factoryPointBOctant,
         SuperTrianglesVector const & superTriangles,
         Characteristics characteristics,
         Points const & points);
@@ -330,17 +330,17 @@ public:
     // Factory endpoint octants
     //
 
-    int32_t GetFactoryEndpointAOctant(ElementIndex springElementIndex) const
+    Octant GetFactoryEndpointAOctant(ElementIndex springElementIndex) const
     {
         return mFactoryEndpointOctantsBuffer[springElementIndex].PointAOctant;
     }
 
-    int32_t GetFactoryEndpointBOctant(ElementIndex springElementIndex) const
+    Octant GetFactoryEndpointBOctant(ElementIndex springElementIndex) const
     {
         return mFactoryEndpointOctantsBuffer[springElementIndex].PointBOctant;
     }
 
-    int32_t GetFactoryEndpointOctant(
+    Octant GetFactoryEndpointOctant(
         ElementIndex springElementIndex,
         ElementIndex pointElementIndex) const
     {
@@ -353,7 +353,7 @@ public:
         }
     }
 
-    int32_t GetFactoryOtherEndpointOctant(
+    Octant GetFactoryOtherEndpointOctant(
         ElementIndex springElementIndex,
         ElementIndex pointElementIndex) const
     {

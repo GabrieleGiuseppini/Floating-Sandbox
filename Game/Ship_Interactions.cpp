@@ -7,11 +7,11 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/GameDebug.h>
+#include <GameCore/GameGeometry.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
-#include <GameCore/Segment.h>
 
 #include <algorithm>
 #include <cassert>
@@ -371,7 +371,7 @@ void Ship::RepairAt(
 
                         // The angle of the spring wrt this point
                         // 0 = E, 1 = SE, ..., 7 = NE
-                        int32_t const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
+                        Octant const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
                             fcs.SpringIndex,
                             pointIndex);
 
@@ -695,7 +695,7 @@ void Ship::SawThrough(
     {
         if (!mSprings.IsDeleted(springIndex))
         {
-            if (Geometry::Segment::ProperIntersectionTest(
+            if (Segment::ProperIntersectionTest(
                 startPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),

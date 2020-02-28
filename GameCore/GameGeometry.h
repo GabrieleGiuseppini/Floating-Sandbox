@@ -5,11 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
+#include "GameTypes.h"
 #include "Vectors.h"
 
+#include <cassert>
 #include <cmath>
-
-namespace Geometry {
 
 class Segment
 {
@@ -53,4 +54,40 @@ public:
     }
 };
 
+/*
+ * Returns the octant opposite to the specified octant.
+ */
+inline Octant OppositeOctant(Octant octant)
+{
+    assert(octant >= 0 && octant <= 7);
+
+    Octant oppositeOctant = octant + 4;
+
+    if (oppositeOctant >= 8)
+        oppositeOctant -= 8;
+
+    return oppositeOctant;
+}
+
+/*
+ * Returns the angle, in CW radiants starting from E, for the specified octant.
+ */
+inline float OctantToCWAngle(Octant octant)
+{
+    assert(octant >= 0 && octant <= 7);
+
+    return 2.0f * Pi<float> * static_cast<float>(octant) / 8.0f;
+}
+
+/*
+ * Returns the angle, in CCW radiants starting from E, for the specified octant.
+ */
+inline float OctantToCCWAngle(Octant octant)
+{
+    assert(octant >= 0 && octant <= 7);
+
+    if (octant == 0)
+        return 0.0f;
+    else
+        return 2.0f * Pi<float> * (1.0f - static_cast<float>(octant) / 8.0f);
 }

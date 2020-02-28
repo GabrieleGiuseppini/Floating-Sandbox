@@ -304,6 +304,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
+        springs,
         electricalElementInstanceIndices,
         shipDefinition.Metadata.ElectricalPanelMetadata,
         shipId,
@@ -1191,6 +1192,7 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
 ElectricalElements ShipBuilder::CreateElectricalElements(
     Physics::Points const & points,
+    Physics::Springs const & springs,
     std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
     std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
     ShipId shipId,
@@ -1304,9 +1306,16 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             auto otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
             if (NoneElementIndex != otherEndpointElectricalElementIndex)
             {
+                // Get octant between this element and the other element
+                Octant octant = springs.GetFactoryEndpointOctant(
+                    cs.SpringIndex,
+                    pointIndex);
+
+                // Add element
                 electricalElements.AddFactoryConnectedElectricalElement(
                     electricalElementIndex,
-                    otherEndpointElectricalElementIndex);
+                    otherEndpointElectricalElementIndex,
+                    octant);
             }
         }
     }

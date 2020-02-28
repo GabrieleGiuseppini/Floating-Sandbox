@@ -12,8 +12,8 @@ namespace Physics {
 void Springs::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
-    int32_t factoryPointAOctant,
-    int32_t factoryPointBOctant,
+    Octant factoryPointAOctant,
+    Octant factoryPointBOctant,
     SuperTrianglesVector const & superTriangles,
     Characteristics characteristics,
     Points const & points)

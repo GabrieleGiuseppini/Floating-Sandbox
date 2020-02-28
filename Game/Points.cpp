@@ -844,6 +844,9 @@ void Points::UpdateCombustionHighFrequency(
         * dt
         * gameParameters.CombustionHeatAdjustment;
 
+    // Points that are not burning anymore after this step
+    assert(mStoppedBurningPoints.empty());
+
     for (auto const pointIndex : mBurningPoints)
     {
         CombustionState & pointCombustionState = mCombustionStateBuffer[pointIndex];
@@ -1055,12 +1058,7 @@ void Points::UpdateCombustionHighFrequency(
                     pointCombustionState.State = CombustionState::StateType::NotBurning;
 
                     // Remove point from set of burning points
-                    auto pointIt = std::find(
-                        mBurningPoints.cbegin(),
-                        mBurningPoints.cend(),
-                        pointIndex);
-                    assert(pointIt != mBurningPoints.cend());
-                    mBurningPoints.erase(pointIt);
+                    mStoppedBurningPoints.emplace_back(pointIndex);
                 }
 
                 break;
@@ -1117,6 +1115,25 @@ void Points::UpdateCombustionHighFrequency(
         pointCombustionState.FlameVector =
             Q * convergenceRate
             + pointCombustionState.FlameVector * (1.0f - convergenceRate);
+    }
+
+    //
+    // Remove points that have stopped burning
+    //
+
+    if (!mStoppedBurningPoints.empty())
+    {
+        for (auto stoppedBurningPoint : mStoppedBurningPoints)
+        {
+            auto burningPointIt = std::find(
+                mBurningPoints.cbegin(),
+                mBurningPoints.cend(),
+                stoppedBurningPoint);
+            assert(burningPointIt != mBurningPoints.cend());
+            mBurningPoints.erase(burningPointIt);
+        }
+
+        mStoppedBurningPoints.clear();
     }
 }
 

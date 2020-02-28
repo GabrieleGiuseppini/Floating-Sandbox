@@ -1401,9 +1401,9 @@ Render:
 				+ Updates value in state
 			+ EngineController state has array of ConnectedEngine={EngineElectricalElementIndex, sin+cos}
 				+ Never modified, usage must check for deletion
-			= ElectricalElements::Add*Factory*ConnectedElectricalElement(..., octant)
-				- Invoked only by ShipBuilder
-				- First, if this is EngineController and other is Engine: populates EngineController state
+			+ ElectricalElements::Add*Factory*ConnectedElectricalElement(..., octant)
+				+ Invoked only by ShipBuilder
+				+ First, if this is EngineController and other is Engine: populates EngineController state
 				+ Then invokes AddConnectedElectricalElement(...)
 			+ EngineController is Sink
 			+ Engine is *not* sink, but Engine (new indices type)
@@ -1427,11 +1427,15 @@ Render:
 					+ Reset State::CurrentPowerForceVector
 					+ Reset State::CurrentPowerValue
 			+ Enable/Disable engine controller upon destroy/create
+			- Engine power should only raise after +/-1, but sound should come at +/-1
+				- unsigned int GameParameters::EngineTelegraphDegreesOfFreedom = 11
+					- static_assert it's odd
+				- Events carry int telegraphValue
+				- Engine power does math to calculate power={0.0, 1.0}
 			- Publish zero value at engine destruction (iff currently not zero)
 		- Gfx:
 			- EngineControl: Telegraph with hand
 				- N already-rotated hand bitmaps
-				- Research credits
 			- EngineMonitor: RPM Gauge (GaugeControl w/other bg)
 		- SwitchboardPanel:
 			- Handle creations of EngineController and EngineMonitor
@@ -1442,8 +1446,18 @@ Render:
 			- Simple continuous sound, keyed by object ID
 			- Add pitch controls to Sound
 			- React to EngineMonitor, track object ID and set object's sound pitch
-		- Finalization:			
-			- SettingsDialog: EngineThrust
+		- Do engines with different power
+			- Different json materials
+			- New engine_power property
+				- Store power in EngineState at ElectricalElements::Add
+			- GameParameters::EngineThrust becomes Adjustment
+		- Finalization:
+			- Use PI-based constants for gauge angles
+			- Do engine highlight only on 0->nonzero transition
+			- Make engines lose power progressively when wet
+			- Do not propagate Engine, EngineController, PowerMonitor materials
+				- Actually, *only* propagate those that we want to propagate
+			- SettingsDialog: EngineThrust or Adjust
 			- Add engine_direction to materials' guide
 			- Add all new types to materials' guide
 			- Refresh electrical elements' materials template				

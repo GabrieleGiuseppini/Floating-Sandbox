@@ -293,6 +293,7 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
+        Physics::Springs const & springs,
         std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
         std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
         ShipId shipId,

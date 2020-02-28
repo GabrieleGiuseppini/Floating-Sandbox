@@ -548,6 +548,7 @@ public:
         , mCombustionIgnitionCandidates(mRawShipPointCount)
         , mCombustionExplosionCandidates(mRawShipPointCount)
         , mBurningPoints()
+        , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
     {
@@ -1808,6 +1809,10 @@ private:
 
     // The indices of the points that are currently burning
     std::vector<ElementIndex> mBurningPoints;
+
+    // The indices of the points that have stopped burning;
+    // member only to save allocations at use time
+    std::vector<ElementIndex> mStoppedBurningPoints;
 
     // The index at which to start searching for free ephemeral particles
     // (just an optimization over restarting from zero each time)

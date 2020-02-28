@@ -14,6 +14,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -106,8 +107,22 @@ private:
             struct ConnectedEngine
             {
                 ElementIndex EngineElectricalElementIndex;
-                float SinControllerAngle;
-                float CosControllerAngle;
+                float SinEngineCWAngle;
+                float CosEngineCWAngle;
+
+                ConnectedEngine()
+                    : EngineElectricalElementIndex(NoneElementIndex)
+                    , SinEngineCWAngle(0.0f)
+                    , CosEngineCWAngle(0.0f)
+                {}
+
+                ConnectedEngine(
+                    ElementIndex engineElectricalElementIndex,
+                    float engineCWAngle) // CW angle between engine direction and engine->controller vector
+                    : EngineElectricalElementIndex(engineElectricalElementIndex)
+                    , SinEngineCWAngle(std::sin(engineCWAngle))
+                    , CosEngineCWAngle(std::cos(engineCWAngle))
+                {}
             };
 
             FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
@@ -272,6 +287,7 @@ public:
         //////////////////////////////////
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         , mPointIndexBuffer(mBufferElementCount, mElementCount, NoneElementIndex)
+        , mMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mMaterialTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
         , mConductivityBuffer(mBufferElementCount, mElementCount, Conductivity(false))
         , mMaterialHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -455,7 +471,8 @@ public:
 
     void AddFactoryConnectedElectricalElement(
         ElementIndex electricalElementIndex,
-        ElementIndex connectedElectricalElementIndex);
+        ElementIndex connectedElectricalElementIndex,
+        Octant octant);
 
     //
     // Available Light
@@ -586,7 +603,8 @@ private:
     // Point
     Buffer<ElementIndex> mPointIndexBuffer;
 
-    // Type
+    // Material
+    Buffer<ElectricalMaterial const *> mMaterialBuffer;
     Buffer<ElectricalMaterial::ElectricalElementType> mMaterialTypeBuffer;
 
     // Conductivity

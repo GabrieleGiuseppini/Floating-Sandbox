@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameGeometry.h>
 #include <GameCore/GameRandomEngine.h>
 
 #include <queue>
@@ -27,6 +28,7 @@ void ElectricalElements::Add(
 
     mIsDeletedBuffer.emplace_back(false);
     mPointIndexBuffer.emplace_back(pointElementIndex);
+    mMaterialBuffer.emplace_back(&electricalMaterial);
     mMaterialTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
     mConductivityBuffer.emplace_back(electricalMaterial.ConductsElectricity);
     mMaterialHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
@@ -298,7 +300,7 @@ void ElectricalElements::SetEngineControllerState(
     assert(electricalElementId.GetShipId() == mShipId);
     auto const elementIndex = electricalElementId.GetLocalObjectId();
 
-    assert(mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::EngineController);
+    assert(GetMaterialType(elementIndex) == ElectricalMaterial::ElectricalElementType::EngineController);
     auto & state = mElementStateBuffer[elementIndex].EngineController;
 
     // Make sure it's a state change
@@ -763,11 +765,17 @@ void ElectricalElements::UpdateSinks(
 
                                 auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
 
-                                vec2f const controllerToEngineVector = points.GetPosition(enginePointIndex) - controllerPosition;
+                                vec2f const engineToControllerNormalizedVector =
+                                    (controllerPosition - points.GetPosition(enginePointIndex))
+                                    .normalise();
 
                                 vec2f const enginePowerVector = vec2f(
-                                    connectedEngine.CosControllerAngle * controllerToEngineVector.x - connectedEngine.SinControllerAngle * controllerToEngineVector.y,
-                                    connectedEngine.SinControllerAngle * controllerToEngineVector.x + connectedEngine.CosControllerAngle * controllerToEngineVector.y)
+                                    connectedEngine.CosEngineCWAngle * engineToControllerNormalizedVector.x
+                                    + connectedEngine.SinEngineCWAngle * engineToControllerNormalizedVector.y
+                                    ,
+                                    -connectedEngine.SinEngineCWAngle * engineToControllerNormalizedVector.x
+                                    + connectedEngine.CosEngineCWAngle * engineToControllerNormalizedVector.y
+                                    )
                                     * controllerState.ControlValue;
 
                                 //
@@ -985,7 +993,7 @@ void ElectricalElements::UpdateSinks(
     {
         if (!IsDeleted(engineSinkElementIndex))
         {
-            assert(mMaterialTypeBuffer[engineSinkElementIndex] == ElectricalMaterial::ElectricalElementType::Engine);
+            assert(GetMaterialType(engineSinkElementIndex) == ElectricalMaterial::ElectricalElementType::Engine);
             auto & state = mElementStateBuffer[engineSinkElementIndex].Engine;
 
             // Calculate force
@@ -1031,12 +1039,28 @@ void ElectricalElements::UpdateSinks(
 
 void ElectricalElements::AddFactoryConnectedElectricalElement(
     ElementIndex electricalElementIndex,
-    ElementIndex connectedElectricalElementIndex)
+    ElementIndex connectedElectricalElementIndex,
+    Octant octant)
 {
     // Add element
     AddConnectedElectricalElement(
         electricalElementIndex,
         connectedElectricalElementIndex);
+
+    // Store connected engine if this is an EngineController->Engine connection
+    if (GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::EngineController
+        && GetMaterialType(connectedElectricalElementIndex) == ElectricalMaterial::ElectricalElementType::Engine)
+    {
+        float engineCWAngle = mMaterialBuffer[connectedElectricalElementIndex]->EngineDirection - OctantToCWAngle(OppositeOctant(octant));
+
+        // Normalize
+        if (engineCWAngle < 0.0f)
+            engineCWAngle += 2.0f * Pi<float>;
+
+        mElementStateBuffer[electricalElementIndex].EngineController.ConnectedEngines.emplace_back(
+            connectedElectricalElementIndex,
+            engineCWAngle);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1129,7 +1153,7 @@ void ElectricalElements::RunLampStateMachine(
 
     auto const pointIndex = GetPointIndex(elementLampIndex);
 
-    assert(mMaterialTypeBuffer[elementLampIndex] == ElectricalMaterial::ElectricalElementType::Lamp);
+    assert(GetMaterialType(elementLampIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
     auto & lamp = mElementStateBuffer[elementLampIndex].Lamp;
 
     switch (lamp.State)

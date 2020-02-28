@@ -201,7 +201,7 @@ public:
     float ParticleEmissionRate; // Number of particles per second
 
     // Engine
-    float EngineDirection; // Radiants when positive power
+    float EngineDirection; // CW radiants at positive power
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
