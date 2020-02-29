@@ -101,10 +101,10 @@ private:
                 : LastPublishedRpm(0.0f)
                 , LastPublishedThrustMagnitude(0.0f)
             {
-                Reset();
+                ResetCurrent();
             }
 
-            void Reset()
+            void ResetCurrent()
             {
                 CurrentRpm = 0.0f;
                 CurrentThrustVector = vec2f::zero();

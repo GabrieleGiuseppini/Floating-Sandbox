@@ -14,7 +14,8 @@ namespace Physics {
 
 float constexpr LampWetFailureWaterThreshold = 0.1f;
 
-rgbColor constexpr EngineHighlightColor = rgbColor(0xf5, 0xdd, 0x42);
+rgbColor constexpr EngineOnHighlightColor = rgbColor(0xfc, 0xff, 0xa6);
+rgbColor constexpr EngineOffHighlightColor = rgbColor(0xd1, 0xbc, 0x00);
 rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
 rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
 
@@ -336,22 +337,25 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
-            // TODO
+            // Publish state change, if necessary
+            if (mElementStateBuffer[electricalElementIndex].Engine.LastPublishedRpm != 0.0f
+                || mElementStateBuffer[electricalElementIndex].Engine.LastPublishedThrustMagnitude != 0.0f)
+            {
+                mGameEventHandler->OnEngineMonitorUpdated(
+                    ElectricalElementId(mShipId, electricalElementIndex),
+                    0.0f,
+                    0.0f);
+
+                mElementStateBuffer[electricalElementIndex].Engine.LastPublishedRpm = 0.0f;
+                mElementStateBuffer[electricalElementIndex].Engine.LastPublishedThrustMagnitude = 0.0f;
+            }
 
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
-            // Publish state change, if necessary
-            if (mElementStateBuffer[electricalElementIndex].EngineController.CurrentTelegraphValue != 0)
-            {
-                mElementStateBuffer[electricalElementIndex].EngineController.CurrentTelegraphValue = 0;
-
-                mGameEventHandler->OnEngineControllerUpdated(
-                    ElectricalElementId(mShipId, electricalElementIndex),
-                    0);
-            }
+            mElementStateBuffer[electricalElementIndex].EngineController.IsPowered = false;
 
             // Publish disable
             mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
@@ -433,6 +437,16 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::Generator:
+        {
+            // Nothing to do: at the next UpdateSources() that makes this generator work, the generator will start
+            // producing current again and it will announce it
+
+            assert(!mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mElementStateBuffer[electricalElementIndex].Lamp.Reset();
@@ -445,6 +459,16 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+        {
+            // Nothing to do: at the next UpdateSources() that makes this monitor work, there will be a state change
+            // and the monitor will announce it
+
+            assert(!mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered);
 
             break;
         }
@@ -779,7 +803,7 @@ void ElectricalElements::UpdateSinks(
                                     1.0f
                                     / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
 
-                                // RPM
+                                // RPM: 0, 1/N, 1/N->1
                                 int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
                                 float controllerEngineRpm;
                                 if (absTelegraphValue == 0)
@@ -789,7 +813,7 @@ void ElectricalElements::UpdateSinks(
                                 else
                                     controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
 
-                                // Thrust
+                                // Thrust: 0, 0, 1/N->1
                                 float controllerEngineThrust;
                                 if (controllerState.CurrentTelegraphValue >= 0)
                                 {
@@ -1036,41 +1060,65 @@ void ElectricalElements::UpdateSinks(
         if (!IsDeleted(engineSinkElementIndex))
         {
             assert(GetMaterialType(engineSinkElementIndex) == ElectricalMaterial::ElectricalElementType::Engine);
-            auto & state = mElementStateBuffer[engineSinkElementIndex].Engine;
+            auto & engineState = mElementStateBuffer[engineSinkElementIndex].Engine;
+
+            auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
 
             // Calculate force
-            vec2f const thrustForce = state.CurrentThrustVector * gameParameters.EngineThrust;
+            vec2f const thrustForce = engineState.CurrentThrustVector * gameParameters.EngineThrust;
 
             // Apply force to point
-            points.GetNonSpringForce(GetPointIndex(engineSinkElementIndex)) += thrustForce;
+            points.GetNonSpringForce(enginePointIndex) += thrustForce;
+
+            // Generate heat if running
+            if (engineState.CurrentRpm != 0.0f)
+            {
+                points.AddHeat(enginePointIndex,
+                    mMaterialHeatGeneratedBuffer[engineSinkElementIndex]
+                    * engineState.CurrentRpm
+                    * gameParameters.ElectricalElementHeatProducedAdjustment
+                    * GameParameters::SimulationStepTimeDuration<float>);
+            }
 
             // Eventually publish power change notification
-            if (state.CurrentThrustMagnitude != state.LastPublishedThrustMagnitude
-                || state.CurrentRpm != state.LastPublishedRpm)
+            if (engineState.CurrentThrustMagnitude != engineState.LastPublishedThrustMagnitude
+                || engineState.CurrentRpm != engineState.LastPublishedRpm)
             {
                 // Notify
                 mGameEventHandler->OnEngineMonitorUpdated(
                     ElectricalElementId(mShipId, engineSinkElementIndex),
-                    state.CurrentThrustMagnitude,
-                    state.CurrentRpm);
-
-                // Remember last-published value
-                state.LastPublishedThrustMagnitude = state.CurrentThrustMagnitude;
-                state.LastPublishedRpm = state.CurrentRpm;
+                    engineState.CurrentThrustMagnitude,
+                    engineState.CurrentRpm);
 
                 // Show notifications
                 if (gameParameters.DoShowElectricalNotifications)
                 {
-                    // Highlight point
-                    points.StartPointHighlight(
-                        GetPointIndex(engineSinkElementIndex),
-                        EngineHighlightColor,
-                        GameWallClock::GetInstance().NowAsFloat());
+                    // Highlight point - only if moving between zero and non-zero RPM
+                    if (engineState.CurrentRpm == 0.0f)
+                    {
+                        // non-zero->zero
+                        points.StartPointHighlight(
+                            GetPointIndex(engineSinkElementIndex),
+                            EngineOffHighlightColor,
+                            GameWallClock::GetInstance().NowAsFloat());
+                    }
+                    else if (engineState.LastPublishedRpm == 0.0f)
+                    {
+                        // zero->non-zero
+                        points.StartPointHighlight(
+                            GetPointIndex(engineSinkElementIndex),
+                            EngineOnHighlightColor,
+                            GameWallClock::GetInstance().NowAsFloat());
+                    }
                 }
+
+                // Remember last-published value
+                engineState.LastPublishedThrustMagnitude = engineState.CurrentThrustMagnitude;
+                engineState.LastPublishedRpm = engineState.CurrentRpm;
             }
 
             // Reset this engine's power, we'll re-update it at the next iteration
-            state.Reset();
+            engineState.ResetCurrent();
         }
     }
 

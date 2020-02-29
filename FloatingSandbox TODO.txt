@@ -583,15 +583,14 @@ Render:
 			+ New Preferences property: electrical panel background filename
 		+ Do highlight also for water detector
 		+ Broken water-sensing switch should not trip anymore
+		+ Power probes (*)
 
 		- Talk with Mike about LEGO mass
-
-		= Power probes (*)
 
 		- See if should take Mike's Titanic electricals
 			- Add instanced generator(s)
 
-		- Propulsion (*)
+		= Propulsion (*)
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
@@ -1255,77 +1254,11 @@ Render:
 	- Breaking waves (Muller's paper)
 
 	- Fireworks
-		- New emitter material, much like smoke emitter (*)
+		- New emitter material, much like smoke emitter
+			- Really?
 		- Fires when wet for the first time
-		- "Whatever color block its on it explodes that color" (AwesomeYorkie)
-
-	= Power probes (*):
-		+ Rename: "Monitor"->"Probe" in current code
-		+ GameTypes:
-			+ First off, tag ObjectId
-			+ Add PowerMonitorId
-			+ Add Switch types:
-				! ToggleSwitch
-				+ PushSwitch
-			+ Add PowerProbe types: PowerMonitor and Generator
-				! Engine has own type, EngineMonitor, see at Propulsion (*)
-		+ EventHandler:
-			! No enabled/disabled
-			+ Add power monitor events
-				+ Take ElectricalState
-		+ New Instanced Generator electrical material
-			+ Add to json, new generator altogether, other is !IsInstanced
-			+ ElectricalElements::Add: add both generators to sources, treat both of them equally
-		+ New PowerMonitor electrical material - and type
-			+ Add to json - IsInstanced = true
-			+ ElectricalElements::Add: add to sinks
-		+ These ElectricalMaterial's announce themselves as power probes:
-			+ PowerMonitor (announcement type 1)
-				+ Uses arbitrarily initial state as current state
-			+ (Instanced)Generator (announcement type 2)
-				+ Uses own state's IsProducingCurrent as current state
-		+ Simulation of PowerMonitor:
-			+ Make it a sink
-			+ Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
-		+ Simulation of Generator:
-			! IsProducingCurrent is same as announced state
-			+ At ElectricalElements::UpdateSources(): fire toggle events upon state toggle
-		= Destroy/Repair at ElectricalElements::Destroy/Repair:
-			! Make sure announcement follows when generator is restored and becomes powered
-			! Alignment of state::IsProducingCurrent with announced state: it's the same
-			+ At Destroy:
-				+ Generator: if IsProducingCurrent:
-					+ Toggle to false and announce
-				+ PowerMonitor: if State says it's on:
-					+ Toggle to false and announce
-			- At Restore:
-				= Generator: nothing to do: at the next UpdateSources() that makes it work the generator will start 
-				  producing current again and it will announce it
-					- assert(IsProducingCurrent is off) // iff guaranteed to be called only when destroyed
-				= PowerMonitor: nothing to do: at the next UpdateSinks() that makes it work there will be a state change
-				  and it will announce it
-					- assert(State says it's off) // iff guaranteed to be called only when destroyed
-		+ UI:
-			+ ElectricalElementControl
-				+ InteractiveToggleSwitchElectricalElementControl
-				+ InteractivePushSwitchElectricalElementControl
-				+ AutomaticSwitchElectricalElementControl
-				+ PowerMonitorElectricalElementControl
-				+ Redo hierarchy
-		+ Switchboard:
-			+ Register for power probe events
-			+ Swap bitmaps: 
-				+ Current non-interactive becomes power monitor
-				+ Also rename pngs
-			+ Add power probes to switchboard
-				+ Type 1 (PowerMonitor): red/green
-				+ Type 2 (Generator): Volt gauge (on continuous value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
-					+ Map ElectricalState to min/max values at SwitchboardPanel
-		= Finalization:
-			+ Complete Gauge
-				+ IUpdateableElectricalControl
-			+ Refresh electrical elements' materials template
-			- changes.txt
+			- Really?
+		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
 	- Pumps (*)
 		- Spec:
@@ -1396,7 +1329,7 @@ Render:
 			+ And updates use {-1.0, ..., +1.0} values
 		+ Engine announces self as EngineMonitor 
 			+ And updates use {0.0, ..., +1.0} values
-		= Dynamics:
+		+ Dynamics:
 			+ EngineController: API to set value {-1.0, ..., +1.0}
 				+ Updates value in state
 			+ EngineController state has array of ConnectedEngine={EngineElectricalElementIndex, sin+cos}
@@ -1433,8 +1366,9 @@ Render:
 				+ Events carry int telegraphValue
 				+ Engine power does math to calculate power={0.0, 1.0}
 				+ Engine notifications: rpm and thrust
-			= Adjust thrust
-			- Publish zero value at engine destruction (iff currently not zero)
+			+ Publish zero value at engine destruction (iff currently not zero)
+		= Adjust thrust
+			- Change circuit test: one single engine now
 		- Switchboard panel: disable refresh during announcements?
 		+ Gfx:
 			+ EngineController: Telegraph with hand
@@ -1442,7 +1376,7 @@ Render:
 				+ Mouse events
 				+ Key events: back and forth, do not go around
 			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
-		= SwitchboardPanel:
+		+ SwitchboardPanel:
 			+ Handle creations of EngineController and EngineMonitor
 			+ Handle enabling/disabling of EngineController
 			+ Subscribe to updates of EngineController and EngineMonitor
@@ -1456,7 +1390,8 @@ Render:
 		- Do engines with different properties:
 			- Properties:
 				- Power (in HP)
-				- Inertia (attack & release, same property)
+				- "Inertia" (attack & release, same property)
+					- Find name
 				- Efficiency?
 			- Different json materials
 			- New engine_power property(-ies)
@@ -1465,12 +1400,19 @@ Render:
 			- GameParameters::EngineThrust becomes EngineThrustAdjustment
 		- Finalization:
 			+ Use PI-based constants for gauge angles
-			- Do engine highlight only on 0->nonzero transition
+			+ Do engine highlight only on 0<->nonzero transitions
+			+ Engine produces heat when running
+			+ Engine controller stops working at high temperatures
+			+ Restore of engine controller
+			+ Restore of engine
+			- EngineController: SHIFT for plus/minus?
 			- Make engines lose power progressively when wet
+				- At Engine update: quantity of water determines RPM damping
+					- e^(-x + 5)/(5+e^(-x + 5))
 			- Do not propagate Engine, EngineController, PowerMonitor materials
 				- Actually, *only* propagate those that we want to propagate
 			- SettingsDialog: EngineThrust or Adjust
-			- Add engine_direction to materials' guide
+			- Add engine_direction (and other properties?) to materials' guide
 			- Add all new types to materials' guide
 			- Refresh electrical elements' materials template				
 
@@ -6340,6 +6282,73 @@ IF WX:
 			+ Test panel across loading ships
 			+ Test electrical repair
 	+ Improve "friction" of sea floor: things don't slide down easily; may be add a slider
+	+ Power probes:
+		+ Rename: "Monitor"->"Probe" in current code
+		+ GameTypes:
+			+ First off, tag ObjectId
+			+ Add PowerMonitorId
+			+ Add Switch types:
+				! ToggleSwitch
+				+ PushSwitch
+			+ Add PowerProbe types: PowerMonitor and Generator
+				! Engine has own type, EngineMonitor, see at Propulsion (*)
+		+ EventHandler:
+			! No enabled/disabled
+			+ Add power monitor events
+				+ Take ElectricalState
+		+ New Instanced Generator electrical material
+			+ Add to json, new generator altogether, other is !IsInstanced
+			+ ElectricalElements::Add: add both generators to sources, treat both of them equally
+		+ New PowerMonitor electrical material - and type
+			+ Add to json - IsInstanced = true
+			+ ElectricalElements::Add: add to sinks
+		+ These ElectricalMaterial's announce themselves as power probes:
+			+ PowerMonitor (announcement type 1)
+				+ Uses arbitrarily initial state as current state
+			+ (Instanced)Generator (announcement type 2)
+				+ Uses own state's IsProducingCurrent as current state
+		+ Simulation of PowerMonitor:
+			+ Make it a sink
+			+ Keep cur state at PowerMonitor state machine at ElectricalElements::UpdateSinks() and fire toggle events upon state toggle
+		+ Simulation of Generator:
+			! IsProducingCurrent is same as announced state
+			+ At ElectricalElements::UpdateSources(): fire toggle events upon state toggle
+		+ Destroy/Repair at ElectricalElements::Destroy/Repair:
+			! Make sure announcement follows when generator is restored and becomes powered
+			! Alignment of state::IsProducingCurrent with announced state: it's the same
+			+ At Destroy:
+				+ Generator: if IsProducingCurrent:
+					+ Toggle to false and announce
+				+ PowerMonitor: if State says it's on:
+					+ Toggle to false and announce
+			+ At Restore:
+				+ Generator: nothing to do: at the next UpdateSources() that makes it work the generator will start 
+				  producing current again and it will announce it
+					+ assert(IsProducingCurrent is off) // iff guaranteed to be called only when destroyed
+				+ PowerMonitor: nothing to do: at the next UpdateSinks() that makes it work there will be a state change
+				  and it will announce it
+					+ assert(State says it's off) // iff guaranteed to be called only when destroyed
+		+ UI:
+			+ ElectricalElementControl
+				+ InteractiveToggleSwitchElectricalElementControl
+				+ InteractivePushSwitchElectricalElementControl
+				+ AutomaticSwitchElectricalElementControl
+				+ PowerMonitorElectricalElementControl
+				+ Redo hierarchy
+		+ Switchboard:
+			+ Register for power probe events
+			+ Swap bitmaps: 
+				+ Current non-interactive becomes power monitor
+				+ Also rename pngs
+			+ Add power probes to switchboard
+				+ Type 1 (PowerMonitor): red/green
+				+ Type 2 (Generator): Volt gauge (on continuous value) (new GaugeControl, cctor args are bitmaps, center, 3 angles)
+					+ Map ElectricalState to min/max values at SwitchboardPanel
+		+ Finalization:
+			+ Complete Gauge
+				+ IUpdateableElectricalControl
+			+ Refresh electrical elements' materials template
+			+ changes.txt
 
 + Water
 	+ Water

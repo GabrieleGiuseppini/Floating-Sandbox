@@ -1,8 +1,12 @@
 1.14.0.TODO
 - Added new electrical materials:
 	- Switches - interactive and water-sensing
-	- Smoke Emitter - emits smoke particles when powered
-		- Changed "R.M.S. Titanic (With Lights)" into "R.M.S. Titanic (With Lights and Smoke)", and changed "Cruise Vessel"'s funnel into a smoking funnel
+	- Smoke Emitters - emit smoke particles when powered
+	- Power Monitors - provide feedback on state of a power line
+	- "Instanced" Generators - provide feedback on the power produced
+	- ...and added these materials to some pre-existing ships, among which:
+		- R.M.S. Titanic (With Lights and Smoke)
+		- Cruise Vessel
 - Added electrical panel to control switches and other interactive electrical materials
 - Added air buoyancy: materials lighter than air now float in the air
 	- Added new "Hydrogen" material and used it with the Hindenburg and Goodyear blimps to make them lighter than air
