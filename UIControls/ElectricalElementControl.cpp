@@ -198,22 +198,25 @@ void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
                     * static_cast<float>(mCurrentValue)
                     / static_cast<float>(mMaxValue);
 
-            if (clickCCWAngle <= handCCWAngle)
+            if (abs(clickCCWAngle - handCCWAngle) > halfSectorAngle)
             {
-                // Increase
-                if (mCurrentValue < mMaxValue)
+                if (clickCCWAngle <= handCCWAngle)
                 {
-                    ++mCurrentValue;
-                    mOnControllerUpdated(mCurrentValue);
+                    // Increase
+                    if (mCurrentValue < mMaxValue)
+                    {
+                        ++mCurrentValue;
+                        mOnControllerUpdated(mCurrentValue);
+                    }
                 }
-            }
-            else
-            {
-                // Decrease
-                if (mCurrentValue > 0)
+                else
                 {
-                    --mCurrentValue;
-                    mOnControllerUpdated(mCurrentValue);
+                    // Decrease
+                    if (mCurrentValue > 0)
+                    {
+                        --mCurrentValue;
+                        mOnControllerUpdated(mCurrentValue);
+                    }
                 }
             }
         }
