@@ -193,6 +193,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineMonitorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
+                    mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
+                    mElementStateBuffer[elementIndex].Engine.CurrentRpm,
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -762,7 +764,7 @@ void ElectricalElements::UpdateSinks(
                             if (!IsDeleted(engineElectricalElementIndex))
                             {
                                 //
-                                // Calculate rpm and thrust force vector
+                                // Calculate rpm and thrust force vector exherted by this controller
                                 //  - ThrustDir = f(controller->engine angle)
                                 //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
                                 //
@@ -777,62 +779,54 @@ void ElectricalElements::UpdateSinks(
                                     1.0f
                                     / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
 
-                                float engineRpm;
-                                float engineThrust;
+                                // RPM
+                                int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
+                                float controllerEngineRpm;
+                                if (absTelegraphValue == 0)
+                                    controllerEngineRpm = 0.0f;
+                                else if (absTelegraphValue == 1)
+                                    controllerEngineRpm = TelegraphCoeff;
+                                else
+                                    controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
+
+                                // Thrust
+                                float controllerEngineThrust;
                                 if (controllerState.CurrentTelegraphValue >= 0)
                                 {
                                     if (controllerState.CurrentTelegraphValue <= 1)
-                                    {
-                                        engineRpm = TelegraphCoeff;
-                                        engineThrust = 0.0f;
-                                    }
+                                        controllerEngineThrust = 0.0f;
                                     else
-                                    {
-                                        float const t =
-                                            static_cast<float>(controllerState.CurrentTelegraphValue - 1)
-                                            * TelegraphCoeff;
-
-                                        engineRpm = t;
-                                        engineThrust = t;
-                                    }
+                                        controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
                                 }
                                 else
                                 {
                                     if (controllerState.CurrentTelegraphValue >= -1)
-                                    {
-                                        engineRpm = TelegraphCoeff;
-                                        engineThrust = 0.0f;
-                                    }
+                                        controllerEngineThrust = 0.0f;
                                     else
-                                    {
-                                        float const t =
-                                            static_cast<float>(controllerState.CurrentTelegraphValue + 1)
-                                            * TelegraphCoeff;
-
-                                        engineRpm = t;
-                                        engineThrust = t;
-                                    }
+                                        controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
                                 }
 
-                                vec2f const engineThrustVector = vec2f(
+                                vec2f const controllerEngineThrustVector = vec2f(
                                     connectedEngine.CosEngineCWAngle * engineToControllerDir.x
                                     + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
                                     ,
                                     -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
                                     + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
                                     )
-                                    * engineThrust;
+                                    * controllerEngineThrust;
 
                                 //
-                                // Add thrust to engine
+                                // Add to engine
                                 //  - Engine has been reset at end of previous iteration
                                 //
 
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm += engineRpm;
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector += engineThrustVector;
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm = std::max(
+                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm,
+                                    controllerEngineRpm);
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector += controllerEngineThrustVector;
                                 mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude = std::max(
                                     mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude,
-                                    engineThrust);
+                                    controllerEngineThrust);
                             }
                         }
                     }

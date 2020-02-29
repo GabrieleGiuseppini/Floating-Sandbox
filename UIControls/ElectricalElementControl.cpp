@@ -101,6 +101,18 @@ void GaugeElectricalElementControl::Render(wxDC & dc)
 // EngineControllerElectricalElementControl
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void EngineControllerElectricalElementControl::OnKeyboardShortcutDown()
+{
+    if (mIsEnabled)
+    {
+        ++mCurrentValue;
+        if (mCurrentValue > mMaxValue)
+            mCurrentValue = 0;
+
+        mOnControllerUpdated(mCurrentValue);
+    }
+}
+
 void EngineControllerElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
 {
     wxPaintDC dc(mImagePanel);
@@ -130,21 +142,46 @@ void EngineControllerElectricalElementControl::Render(wxDC & dc)
         true);
 }
 
-void EngineControllerElectricalElementControl::OnDown()
+void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
 {
     if (mIsEnabled)
     {
         //
-        // Just invoke the callback, we'll end up being toggled when the event travels back
+        // Calculate direction of hand movement
         //
 
-        // TODOHERE
-        /*
-        ElectricalState const newState = (mCurrentState == ElectricalState::On)
-            ? ElectricalState::Off
-            : ElectricalState::On;
+        // Center->Click (positive y down)
+        vec2f const clickVector =
+            vec2f(static_cast<float>(event.GetPosition().x), static_cast<float>(event.GetPosition().y))
+            - mCenterPoint;
 
-        mOnSwitchToggled(newState);
-        */
+        // Center->CurrentHand (positive y down)
+        float constexpr Hand0CCWAngle = 3.68915488f;
+        float constexpr HandMaxCCWAngle = -0.5475622359f;
+        float const handCCWAngle =
+            Hand0CCWAngle
+            + (HandMaxCCWAngle - Hand0CCWAngle) * static_cast<float>(mCurrentValue) / static_cast<float>(mMaxValue);
+        vec2f const handVector = vec2f(std::cos(handCCWAngle), -std::sin(handCCWAngle));
+
+        // See if click is CW or CCW wrt Center->CurrentHand
+        if (handVector.angleCw(clickVector) >= 0.0f)
+        {
+            // Click is CW wrt Center->CurrentHand, but positive y is down, hence
+            // click is CCW: increase
+            if (mCurrentValue < mMaxValue)
+            {
+                ++mCurrentValue;
+                mOnControllerUpdated(mCurrentValue);
+            }
+        }
+        else
+        {
+            // Decrease
+            if (mCurrentValue > 0)
+            {
+                --mCurrentValue;
+                mOnControllerUpdated(mCurrentValue);
+            }
+        }
     }
 }

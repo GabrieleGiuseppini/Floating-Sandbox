@@ -137,7 +137,7 @@ private:
 
             FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
 
-            int CurrentTelegraphValue;
+            int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
             bool IsPowered;
 
             EngineControllerState(bool isPowered)

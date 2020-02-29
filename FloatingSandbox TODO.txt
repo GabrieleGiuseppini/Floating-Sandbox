@@ -1434,19 +1434,18 @@ Render:
 				+ Engine power does math to calculate power={0.0, 1.0}
 				+ Engine notifications: rpm and thrust
 			- Publish zero value at engine destruction (iff currently not zero)
-			- See why engine monitors fire at beginning
 		= Gfx:
 			= EngineController: Telegraph with hand
 				+ N already-rotated hand bitmaps
-				- Mouse events
+				= Mouse events
+				- Key events: back and forth, do not go around
 			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
 		= SwitchboardPanel:
 			+ Handle creations of EngineController and EngineMonitor
 			+ Handle enabling/disabling of EngineController
 			+ Subscribe to updates of EngineController and EngineMonitor
-		- Sound:
-			- EngineController (telegraph) sound:
-				- TODO
+		= Sound:
+			+ EngineController (telegraph) sound
 			- Engine sound:
 				- Register for EngineMonitor event, only RPM
 				- Simple continuous sound, keyed by object ID

@@ -414,7 +414,7 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnSwitchCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
+    LogMessage("SwitchboardPanel::OnSwitchCreated(", int(instanceIndex), "): State=", static_cast<bool>(state));
 
     //
     // Make label, if needed
@@ -528,7 +528,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnPowerProbeCreated: ", int(instanceIndex), " state=", static_cast<bool>(state));
+    LogMessage("SwitchboardPanel::OnPowerProbeCreated(", int(instanceIndex), "): State=", static_cast<bool>(state));
 
     //
     // Create power monitor control
@@ -618,7 +618,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
     ElectricalElementInstanceIndex instanceIndex,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineControllerCreated: ", int(instanceIndex));
+    LogMessage("SwitchboardPanel::OnEngineControllerCreated(", int(instanceIndex), ")");
 
     //
     // Create label
@@ -646,7 +646,14 @@ void SwitchboardPanel::OnEngineControllerCreated(
         mEngineControllerBackgroundEnabledBitmap,
         mEngineControllerBackgroundDisabledBitmap,
         mEngineControllerHandBitmaps,
+        wxPoint(47, 48),
         label,
+        [this, electricalElementId](unsigned int controllerValue)
+        {
+            mGameController->SetEngineControllerState(
+                electricalElementId,
+                controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
+        },
         mEngineControllerHandBitmaps.size() / 2); // Starting value = center
 
     //
@@ -663,9 +670,11 @@ void SwitchboardPanel::OnEngineControllerCreated(
 void SwitchboardPanel::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
+    float thrustMagnitude,
+    float rpm,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineMonitorCreated: ", int(instanceIndex));
+    LogMessage("SwitchboardPanel::OnEngineMonitorCreated(", int(instanceIndex), "): Thrust=", thrustMagnitude, ", RPM=", rpm);
 
     //
     // Create label
@@ -696,7 +705,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         Pi<float> / 4.0f,
         2.0f * Pi<float> - Pi<float> / 4.0f,
         label,
-        0.5f);
+        1.0f - rpm);
 
     // Store as updateable element
     mUpdateableElements.emplace_back(ggCtrl);
@@ -927,7 +936,7 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     float rpm)
 {
     //TODOTEST
-    LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): ", rpm);
+    LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): RPM=", rpm);
 
     //
     // Toggle control

@@ -245,6 +245,10 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
+    virtual void OnEngineControllerUpdated(
+        ElectricalElementId electricalElementId,
+        int telegraphValue) override;
+
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,

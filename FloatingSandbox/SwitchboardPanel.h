@@ -94,6 +94,8 @@ public:
     virtual void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        float thrustMagnitude,
+        float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnElectricalElementAnnouncementsEnd() override;

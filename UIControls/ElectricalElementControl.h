@@ -7,6 +7,7 @@
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
+#include <GameCore/Vectors.h>
 
 #include <wx/bitmap.h>
 #include <wx/stattext.h>
@@ -621,8 +622,10 @@ public:
         wxBitmap const & enabledBackgroundImage,
         wxBitmap const & disabledBackgroundImage,
         std::vector<wxBitmap> const & handImages,
+        wxPoint const & centerPoint,
         std::string const & label,
-        int currentValue) // Between 0 and handImages.length
+        std::function<void(unsigned int)> onControllerUpdated,
+        unsigned int currentValue) // Between 0 and handImages.length
         : ElectricalElementControl(
             ControlType::EngineController,
             parent,
@@ -631,6 +634,9 @@ public:
         , mEnabledBackgroundImage(enabledBackgroundImage)
         , mDisabledBackgroundImage(disabledBackgroundImage)
         , mHandImages(handImages)
+        , mCenterPoint(static_cast<float>(centerPoint.x), static_cast<float>(centerPoint.y))
+        , mOnControllerUpdated(std::move(onControllerUpdated))
+        , mMaxValue(static_cast<unsigned int>(mHandImages.size() - 1))
         //
         , mCurrentValue(currentValue)
         , mIsEnabled(true)
@@ -665,10 +671,7 @@ public:
         mImagePanel->SetToolTip(label);
     }
 
-    void OnKeyboardShortcutDown() override
-    {
-        OnDown();
-    }
+    void OnKeyboardShortcutDown() override;
 
     void OnKeyboardShortcutUp() override
     {
@@ -681,20 +684,19 @@ private:
 
     void Render(wxDC & dc);
 
-    void OnLeftDown(wxMouseEvent & /*event*/)
-    {
-        OnDown();
-    }
-
-    void OnDown();
+    void OnLeftDown(wxMouseEvent & event);
 
 private:
 
     wxBitmap const mEnabledBackgroundImage;
     wxBitmap const mDisabledBackgroundImage;
     std::vector<wxBitmap> const mHandImages;
+    vec2f const mCenterPoint;
+    std::function<void(unsigned int)> mOnControllerUpdated;
+
+    unsigned int const mMaxValue;
 
     // Current state
-    int mCurrentValue;
+    unsigned int mCurrentValue;
     bool mIsEnabled;
 };

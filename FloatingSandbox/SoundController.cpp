@@ -423,7 +423,8 @@ SoundController::SoundController(
                 || soundType == SoundType::ElectricalPanelClose
                 || soundType == SoundType::ElectricalPanelOpen
                 || soundType == SoundType::ElectricalPanelDock
-                || soundType == SoundType::ElectricalPanelUndock)
+                || soundType == SoundType::ElectricalPanelUndock
+                || soundType == SoundType::EngineTelegraph)
         {
             //
             // - one-shot sound
@@ -1305,6 +1306,16 @@ void SoundController::OnSwitchToggled(
 {
     PlayOneShotMultipleChoiceSound(
         newState == ElectricalState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+        100.0f,
+        false);
+}
+
+void SoundController::OnEngineControllerUpdated(
+    ElectricalElementId /*electricalElementId*/,
+    int /*telegraphValue*/)
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::EngineTelegraph,
         100.0f,
         false);
 }

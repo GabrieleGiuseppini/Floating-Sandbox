@@ -224,6 +224,8 @@ struct IElectricalElementGameEventHandler
     virtual void OnEngineMonitorCreated(
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
+        float /*thrustMagnitude*/,
+        float /*rpm*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
