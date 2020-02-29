@@ -623,6 +623,8 @@ public:
         wxBitmap const & disabledBackgroundImage,
         std::vector<wxBitmap> const & handImages,
         wxPoint const & centerPoint,
+        float hand0CCWAngle,
+        float handMaxCCWAngle,
         std::string const & label,
         std::function<void(unsigned int)> onControllerUpdated,
         unsigned int currentValue) // Between 0 and handImages.length
@@ -635,11 +637,14 @@ public:
         , mDisabledBackgroundImage(disabledBackgroundImage)
         , mHandImages(handImages)
         , mCenterPoint(static_cast<float>(centerPoint.x), static_cast<float>(centerPoint.y))
+        , mHand0CCWAngle(hand0CCWAngle)
+        , mHandMaxCCWAngle(handMaxCCWAngle)
         , mOnControllerUpdated(std::move(onControllerUpdated))
         , mMaxValue(static_cast<unsigned int>(mHandImages.size() - 1))
         //
         , mCurrentValue(currentValue)
         , mIsEnabled(true)
+        , mIsKeyShortcutIncreasing(true)
     {
         mImagePanel->SetDoubleBuffered(true);
         mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnPaint, this);
@@ -692,6 +697,8 @@ private:
     wxBitmap const mDisabledBackgroundImage;
     std::vector<wxBitmap> const mHandImages;
     vec2f const mCenterPoint;
+    float const mHand0CCWAngle;
+    float const mHandMaxCCWAngle;
     std::function<void(unsigned int)> mOnControllerUpdated;
 
     unsigned int const mMaxValue;
@@ -699,4 +706,5 @@ private:
     // Current state
     unsigned int mCurrentValue;
     bool mIsEnabled;
+    bool mIsKeyShortcutIncreasing;
 };

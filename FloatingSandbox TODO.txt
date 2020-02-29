@@ -1433,12 +1433,15 @@ Render:
 				+ Events carry int telegraphValue
 				+ Engine power does math to calculate power={0.0, 1.0}
 				+ Engine notifications: rpm and thrust
+			- See why some engines don't work
+			- See why engine direction is not its direction
+			- Adjust thrust
 			- Publish zero value at engine destruction (iff currently not zero)
-		= Gfx:
-			= EngineController: Telegraph with hand
+		+ Gfx:
+			+ EngineController: Telegraph with hand
 				+ N already-rotated hand bitmaps
-				= Mouse events
-				- Key events: back and forth, do not go around
+				+ Mouse events
+				+ Key events: back and forth, do not go around
 			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
 		= SwitchboardPanel:
 			+ Handle creations of EngineController and EngineMonitor

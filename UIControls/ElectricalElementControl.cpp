@@ -105,9 +105,32 @@ void EngineControllerElectricalElementControl::OnKeyboardShortcutDown()
 {
     if (mIsEnabled)
     {
-        ++mCurrentValue;
-        if (mCurrentValue > mMaxValue)
-            mCurrentValue = 0;
+        if (mIsKeyShortcutIncreasing)
+        {
+            if (mCurrentValue == mMaxValue)
+            {
+                // Start decreasing
+                mIsKeyShortcutIncreasing = false;
+                --mCurrentValue;
+            }
+            else
+            {
+                ++mCurrentValue;
+            }
+        }
+        else
+        {
+            if (mCurrentValue == 0)
+            {
+                // Start increasing
+                mIsKeyShortcutIncreasing = true;
+                ++mCurrentValue;
+            }
+            else
+            {
+                --mCurrentValue;
+            }
+        }
 
         mOnControllerUpdated(mCurrentValue);
     }
@@ -155,32 +178,43 @@ void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
             vec2f(static_cast<float>(event.GetPosition().x), static_cast<float>(event.GetPosition().y))
             - mCenterPoint;
 
-        // Center->CurrentHand (positive y down)
-        float constexpr Hand0CCWAngle = 3.68915488f;
-        float constexpr HandMaxCCWAngle = -0.5475622359f;
-        float const handCCWAngle =
-            Hand0CCWAngle
-            + (HandMaxCCWAngle - Hand0CCWAngle) * static_cast<float>(mCurrentValue) / static_cast<float>(mMaxValue);
-        vec2f const handVector = vec2f(std::cos(handCCWAngle), -std::sin(handCCWAngle));
+        // Click CCW angle (CW angle becomes CCW due to inverted y)
+        float clickCCWAngle = clickVector.angleCw();
+        if (clickCCWAngle < -Pi<float> / 2.0f) // Wrap around on the left side
+            clickCCWAngle += 2.0f * Pi<float>;
 
-        // See if click is CW or CCW wrt Center->CurrentHand
-        if (handVector.angleCw(clickVector) >= 0.0f)
+        // Continue only if the click is in the telegraph range
+        if (clickCCWAngle >= mHandMaxCCWAngle && clickCCWAngle <= mHand0CCWAngle)
         {
-            // Click is CW wrt Center->CurrentHand, but positive y is down, hence
-            // click is CCW: increase
-            if (mCurrentValue < mMaxValue)
+            float const halfSectorAngle =
+                std::abs(mHandMaxCCWAngle - mHand0CCWAngle)
+                / static_cast<float>(mMaxValue)
+                / 2.0f;
+
+            // Current hand CCW angle (CW angle becomes CCW due to inverted y)
+            float const handCCWAngle =
+                (mHand0CCWAngle - halfSectorAngle)
+                + (mHandMaxCCWAngle - mHand0CCWAngle + 2.0f * halfSectorAngle)
+                    * static_cast<float>(mCurrentValue)
+                    / static_cast<float>(mMaxValue);
+
+            if (clickCCWAngle <= handCCWAngle)
             {
-                ++mCurrentValue;
-                mOnControllerUpdated(mCurrentValue);
+                // Increase
+                if (mCurrentValue < mMaxValue)
+                {
+                    ++mCurrentValue;
+                    mOnControllerUpdated(mCurrentValue);
+                }
             }
-        }
-        else
-        {
-            // Decrease
-            if (mCurrentValue > 0)
+            else
             {
-                --mCurrentValue;
-                mOnControllerUpdated(mCurrentValue);
+                // Decrease
+                if (mCurrentValue > 0)
+                {
+                    --mCurrentValue;
+                    mOnControllerUpdated(mCurrentValue);
+                }
             }
         }
     }

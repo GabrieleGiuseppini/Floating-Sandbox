@@ -647,6 +647,8 @@ void SwitchboardPanel::OnEngineControllerCreated(
         mEngineControllerBackgroundDisabledBitmap,
         mEngineControllerHandBitmaps,
         wxPoint(47, 48),
+        3.85f,
+        -0.70f,
         label,
         [this, electricalElementId](unsigned int controllerValue)
         {
