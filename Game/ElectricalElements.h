@@ -91,15 +91,25 @@ private:
 
         struct EngineState
         {
-            vec2f CurrentPowerVector; // Unary
-            float CurrentPowerMagnitude;
-            float LastPublishedPowerMagnitude;
+            float CurrentRpm;
+            vec2f CurrentThrustVector; // Normalized
+            float CurrentThrustMagnitude;
+            float LastPublishedRpm;
+            float LastPublishedThrustMagnitude;
 
             EngineState()
-                : CurrentPowerVector(vec2f::zero())
-                , CurrentPowerMagnitude(0.0f)
-                , LastPublishedPowerMagnitude(0.0f)
-            {}
+                : LastPublishedRpm(0.0f)
+                , LastPublishedThrustMagnitude(0.0f)
+            {
+                Reset();
+            }
+
+            void Reset()
+            {
+                CurrentRpm = 0.0f;
+                CurrentThrustVector = vec2f::zero();
+                CurrentThrustMagnitude = 0.0f;
+            }
         };
 
         struct EngineControllerState
@@ -127,12 +137,12 @@ private:
 
             FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
 
-            float ControlValue;
+            int CurrentTelegraphValue;
             bool IsPowered;
 
             EngineControllerState(bool isPowered)
                 : ConnectedEngines()
-                , ControlValue(0.0f)
+                , CurrentTelegraphValue(0)
                 , IsPowered(isPowered)
             {}
         };
@@ -360,7 +370,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        float value,
+        int telegraphValue,
         GameParameters const & gameParameters);
 
     void Destroy(ElementIndex electricalElementIndex);

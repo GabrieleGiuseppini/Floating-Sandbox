@@ -9,6 +9,7 @@
 
 #include <GameCore/ImageTools.h>
 
+#include <Game/GameParameters.h>
 #include <Game/ImageFileTools.h>
 
 #include <UIControls/LayoutHelper.h>
@@ -180,6 +181,20 @@ SwitchboardPanel::SwitchboardPanel(
     mGaugeRpmBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
     mGaugeVoltsBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
+
+    mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
+    mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
     wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
     wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
@@ -537,8 +552,8 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 mGaugeVoltsBitmap,
                 wxPoint(47, 47),
                 36.0f,
-                -0.79f,
-                3.93f,
+                -Pi<float> / 4.0f,
+                Pi<float> * 5.0f / 4.0f,
                 label,
                 state == ElectricalState::On ? 0.0f : 1.0f);
 
@@ -596,6 +611,105 @@ void SwitchboardPanel::OnPowerProbeCreated(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
         std::forward_as_tuple(ctrl, nullptr, nullptr, panelElementMetadata));
+}
+
+void SwitchboardPanel::OnEngineControllerCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+{
+    LogMessage("SwitchboardPanel::OnEngineControllerCreated: ", int(instanceIndex));
+
+    //
+    // Create label
+    //
+
+    std::string label;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "EngineControl #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+    }
+
+    //
+    // Create control
+    //
+
+    auto ecCtrl = new EngineControllerElectricalElementControl(
+        mSwitchPanel,
+        mEngineControllerBackgroundEnabledBitmap,
+        mEngineControllerBackgroundDisabledBitmap,
+        mEngineControllerHandBitmaps,
+        label,
+        mEngineControllerHandBitmaps.size() / 2); // Starting value = center
+
+    //
+    // Add to maps
+    //
+
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(electricalElementId),
+        std::forward_as_tuple(ecCtrl, ecCtrl, ecCtrl, panelElementMetadata));
+}
+
+void SwitchboardPanel::OnEngineMonitorCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex instanceIndex,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+{
+    LogMessage("SwitchboardPanel::OnEngineMonitorCreated: ", int(instanceIndex));
+
+    //
+    // Create label
+    //
+
+    std::string label;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "Engine #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+    }
+
+    //
+    // Create control
+    //
+
+    auto ggCtrl = new GaugeElectricalElementControl(
+        mSwitchPanel,
+        mGaugeRpmBitmap,
+        wxPoint(47, 47),
+        36.0f,
+        Pi<float> / 4.0f,
+        2.0f * Pi<float> - Pi<float> / 4.0f,
+        label,
+        0.5f);
+
+    // Store as updateable element
+    mUpdateableElements.emplace_back(ggCtrl);
+
+    //
+    // Add monitor to maps
+    //
+
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(electricalElementId),
+        std::forward_as_tuple(ggCtrl, nullptr, nullptr, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
@@ -771,6 +885,61 @@ void SwitchboardPanel::OnPowerProbeToggled(
 
         ggCtrl->SetValue(newState == ElectricalState::On ? 0.0f : 1.0f);
     }
+}
+
+void SwitchboardPanel::OnEngineControllerEnabled(
+    ElectricalElementId electricalElementId,
+    bool isEnabled)
+{
+    //
+    // Enable/disable controller
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
+
+    EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
+    assert(ecCtrl != nullptr);
+
+    ecCtrl->SetEnabled(isEnabled);
+}
+
+void SwitchboardPanel::OnEngineControllerUpdated(
+    ElectricalElementId electricalElementId,
+    int telegraphValue)
+{
+    //
+    // Toggle switch
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
+
+    EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
+    assert(ecCtrl != nullptr);
+
+    ecCtrl->SetValue(telegraphValue + GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+}
+
+void SwitchboardPanel::OnEngineMonitorUpdated(
+    ElectricalElementId electricalElementId,
+    float /*thrustMagnitude*/,
+    float rpm)
+{
+    //TODOTEST
+    LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): ", rpm);
+
+    //
+    // Toggle control
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
+
+    GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
+    assert(ggCtrl != nullptr);
+
+    ggCtrl->SetValue(1.0f - rpm);
 }
 
 ///////////////////////////////////////////////////////////////////

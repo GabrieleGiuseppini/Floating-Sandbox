@@ -86,6 +86,16 @@ public:
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
+    virtual void OnEngineControllerCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
+    virtual void OnEngineMonitorCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
@@ -99,6 +109,19 @@ public:
     virtual void OnPowerProbeToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;
+
+    virtual void OnEngineControllerEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override;
+
+    virtual void OnEngineControllerUpdated(
+        ElectricalElementId electricalElementId,
+        int telegraphValue) override;
+
+    virtual void OnEngineMonitorUpdated(
+        ElectricalElementId electricalElementId,
+        float thrustMagnitude,
+        float rpm) override;
 
 private:
 
@@ -245,6 +268,10 @@ private:
 
     wxBitmap mGaugeRpmBitmap;
     wxBitmap mGaugeVoltsBitmap;
+
+    wxBitmap mEngineControllerBackgroundEnabledBitmap;
+    wxBitmap mEngineControllerBackgroundDisabledBitmap;
+    std::vector<wxBitmap> mEngineControllerHandBitmaps;
 
     wxSize mMinBitmapSize;
 };

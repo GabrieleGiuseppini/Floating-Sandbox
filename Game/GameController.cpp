@@ -1048,12 +1048,12 @@ void GameController::SetSwitchState(
 
 void GameController::SetEngineControllerState(
     ElectricalElementId electricalElementId,
-    float value)
+    int telegraphValue)
 {
     assert(!!mWorld);
     mWorld->SetEngineControllerState(
         electricalElementId,
-        value,
+        telegraphValue,
         mGameParameters);
 }
 

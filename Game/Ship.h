@@ -206,7 +206,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        float value,
+        int telegraphValue,
         GameParameters const & gameParameters);
 
 private:

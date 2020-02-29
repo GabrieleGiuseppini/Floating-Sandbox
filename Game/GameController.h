@@ -193,7 +193,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        float value) override;
+        int telegraphValue) override;
 
     //
     // Render controls

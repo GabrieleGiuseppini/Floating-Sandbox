@@ -268,14 +268,15 @@ struct IElectricalElementGameEventHandler
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId /*electricalElementId*/,
-        float /*newControlValue*/)
+        int /*telegraphValue*/)
     {
         // Default-implemented
     }
 
     virtual void OnEngineMonitorUpdated(
         ElectricalElementId /*electricalElementId*/,
-        float /*newPower*/)
+        float /*thrustMagnitude*/,
+        float /*rpm*/)
     {
         // Default-implemented
     }

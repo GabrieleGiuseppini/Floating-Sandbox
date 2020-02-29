@@ -1382,7 +1382,7 @@ Render:
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
 
-	- Propulsion (*)
+	= Propulsion (*)
 		! Requires "Forces Rearc" or "Position-based Springs"
 		+ 1 new ElectricalElementType: Engine
 		+ 2 electrical materials: engine x {LR/UD}
@@ -1427,32 +1427,38 @@ Render:
 					+ Reset State::CurrentPowerForceVector
 					+ Reset State::CurrentPowerValue
 			+ Enable/Disable engine controller upon destroy/create
-			- Engine power should only raise after +/-1, but sound should come at +/-1
-				- unsigned int GameParameters::EngineTelegraphDegreesOfFreedom = 11
-					- static_assert it's odd
-				- Events carry int telegraphValue
-				- Engine power does math to calculate power={0.0, 1.0}
+			+ Engine power should only raise after +/-1, but sound should come at +/-1
+				+ unsigned int GameParameters::EngineTelegraphDegreesOfFreedom = 11
+					+ static_assert it's odd
+				+ Events carry int telegraphValue
+				+ Engine power does math to calculate power={0.0, 1.0}
+				+ Engine notifications: rpm and thrust
 			- Publish zero value at engine destruction (iff currently not zero)
-		- Gfx:
-			- EngineControl: Telegraph with hand
-				- N already-rotated hand bitmaps
-			- EngineMonitor: RPM Gauge (GaugeControl w/other bg)
-		- SwitchboardPanel:
-			- Handle creations of EngineController and EngineMonitor
-			- Handle enabling/disabling of EngineController
-			- Subscribe to updates of EngineController and EngineMonitor
+			- See why engine monitors fire at beginning
+		= Gfx:
+			= EngineController: Telegraph with hand
+				+ N already-rotated hand bitmaps
+				- Mouse events
+			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
+		= SwitchboardPanel:
+			+ Handle creations of EngineController and EngineMonitor
+			+ Handle enabling/disabling of EngineController
+			+ Subscribe to updates of EngineController and EngineMonitor
 		- Sound:
-			- Register for EngineMonitor event
-			- Simple continuous sound, keyed by object ID
-			- Add pitch controls to Sound
-			- React to EngineMonitor, track object ID and set object's sound pitch
+			- EngineController (telegraph) sound:
+				- TODO
+			- Engine sound:
+				- Register for EngineMonitor event, only RPM
+				- Simple continuous sound, keyed by object ID
+				- Add pitch controls to Sound
+				- React to EngineMonitor, track object ID and set object's sound pitch
 		- Do engines with different power
 			- Different json materials
 			- New engine_power property
 				- Store power in EngineState at ElectricalElements::Add
 			- GameParameters::EngineThrust becomes Adjustment
 		- Finalization:
-			- Use PI-based constants for gauge angles
+			+ Use PI-based constants for gauge angles
 			- Do engine highlight only on 0->nonzero transition
 			- Make engines lose power progressively when wet
 			- Do not propagate Engine, EngineController, PowerMonitor materials

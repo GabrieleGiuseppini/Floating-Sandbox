@@ -110,7 +110,7 @@ struct IGameController
 
     virtual void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        float value) = 0;
+        int telegraphValue) = 0;
 
     //
     // Rendering controls

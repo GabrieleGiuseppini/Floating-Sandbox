@@ -19,6 +19,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 class ElectricalElementControl : public wxPanel
 {
@@ -28,7 +29,8 @@ public:
     {
         Switch,
         PowerMonitor,
-        Gauge
+        Gauge,
+        EngineController
     };
 
 public:
@@ -552,8 +554,8 @@ public:
         wxBitmap const & backgroundImage,
         wxPoint const & centerPoint,
         float handLength,
-        float minAngle,
-        float maxAngle,
+        float minAngle, // radians, CCW
+        float maxAngle, // radians, CCW
         std::string const & label,
         float currentValue);
 
@@ -598,12 +600,101 @@ private:
     float const mMaxAngle;
 
     // Current state
-    float mCurrentAngle; // In radiants, 0 at (1,0)
+    float mCurrentAngle; // In radians, 0 at (1,0)
     float mCurrentVelocity;
     float mTargetAngle;
 
     wxPoint mHandEndpoint;
-    wxStaticBitmap * mImageBitmap;
     wxPen const mHandPen1;
     wxPen const mHandPen2;
+};
+
+class EngineControllerElectricalElementControl
+    : public ElectricalElementControl
+    , public IDisablableElectricalElementControl
+    , public IInteractiveElectricalElementControl
+{
+public:
+
+    EngineControllerElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & enabledBackgroundImage,
+        wxBitmap const & disabledBackgroundImage,
+        std::vector<wxBitmap> const & handImages,
+        std::string const & label,
+        int currentValue) // Between 0 and handImages.length
+        : ElectricalElementControl(
+            ControlType::EngineController,
+            parent,
+            enabledBackgroundImage.GetSize(),
+            label)
+        , mEnabledBackgroundImage(enabledBackgroundImage)
+        , mDisabledBackgroundImage(disabledBackgroundImage)
+        , mHandImages(handImages)
+        //
+        , mCurrentValue(currentValue)
+        , mIsEnabled(true)
+    {
+        mImagePanel->SetDoubleBuffered(true);
+        mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnPaint, this);
+
+        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftDown, this);
+    }
+
+    void SetValue(int value) // Between 0 and handImages.length
+    {
+        mCurrentValue = value;
+
+        Refresh();
+    }
+
+    virtual bool IsEnabled() const override
+    {
+        return mIsEnabled;
+    }
+
+    virtual void SetEnabled(bool isEnabled) override
+    {
+        mIsEnabled = isEnabled;
+
+        Refresh();
+    }
+
+    virtual void SetKeyboardShortcutLabel(std::string const & label) override
+    {
+        mImagePanel->SetToolTip(label);
+    }
+
+    void OnKeyboardShortcutDown() override
+    {
+        OnDown();
+    }
+
+    void OnKeyboardShortcutUp() override
+    {
+        // Ignore
+    }
+
+private:
+
+    void OnPaint(wxPaintEvent & event);
+
+    void Render(wxDC & dc);
+
+    void OnLeftDown(wxMouseEvent & /*event*/)
+    {
+        OnDown();
+    }
+
+    void OnDown();
+
+private:
+
+    wxBitmap const mEnabledBackgroundImage;
+    wxBitmap const mDisabledBackgroundImage;
+    std::vector<wxBitmap> const mHandImages;
+
+    // Current state
+    int mCurrentValue;
+    bool mIsEnabled;
 };

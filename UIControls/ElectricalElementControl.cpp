@@ -34,7 +34,6 @@ GaugeElectricalElementControl::GaugeElectricalElementControl(
     , mTargetAngle(CalculateAngle(currentValue, minAngle, maxAngle))
     //
     , mHandEndpoint(CalculateHandEndpoint(mCenterPoint, mHandLength, mCurrentAngle))
-    , mImageBitmap(nullptr)
     , mHandPen1(wxColor(0xdb, 0x04, 0x04), 3, wxPENSTYLE_SOLID)
     , mHandPen2(wxColor(0xd8, 0xd8, 0xd8), 1, wxPENSTYLE_SOLID)
 {
@@ -96,4 +95,56 @@ void GaugeElectricalElementControl::Render(wxDC & dc)
     dc.DrawLine(mCenterPoint, mHandEndpoint);
     dc.SetPen(mHandPen2);
     dc.DrawLine(mCenterPoint, mHandEndpoint);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// EngineControllerElectricalElementControl
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void EngineControllerElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
+{
+    wxPaintDC dc(mImagePanel);
+    Render(dc);
+}
+
+void EngineControllerElectricalElementControl::Render(wxDC & dc)
+{
+    //
+    // Draw background image
+    //
+
+    dc.DrawBitmap(
+        mIsEnabled ? mEnabledBackgroundImage : mDisabledBackgroundImage,
+        0,
+        0,
+        true);
+
+    //
+    // Draw hand
+    //
+
+    dc.DrawBitmap(
+        mHandImages[mCurrentValue],
+        0,
+        0,
+        true);
+}
+
+void EngineControllerElectricalElementControl::OnDown()
+{
+    if (mIsEnabled)
+    {
+        //
+        // Just invoke the callback, we'll end up being toggled when the event travels back
+        //
+
+        // TODOHERE
+        /*
+        ElectricalState const newState = (mCurrentState == ElectricalState::On)
+            ? ElectricalState::Off
+            : ElectricalState::On;
+
+        mOnSwitchToggled(newState);
+        */
+    }
 }

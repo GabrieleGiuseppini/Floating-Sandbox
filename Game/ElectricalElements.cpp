@@ -294,7 +294,7 @@ void ElectricalElements::SetSwitchState(
 
 void ElectricalElements::SetEngineControllerState(
     ElectricalElementId electricalElementId,
-    float value,
+    int telegraphValue,
     GameParameters const & /*gameParameters*/)
 {
     assert(electricalElementId.GetShipId() == mShipId);
@@ -303,16 +303,20 @@ void ElectricalElements::SetEngineControllerState(
     assert(GetMaterialType(elementIndex) == ElectricalMaterial::ElectricalElementType::EngineController);
     auto & state = mElementStateBuffer[elementIndex].EngineController;
 
+    assert(telegraphValue >= -GameParameters::EngineTelegraphDegreesOfFreedom / 2
+        && telegraphValue <= GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+
+
     // Make sure it's a state change
-    if (value != state.ControlValue)
+    if (telegraphValue != state.CurrentTelegraphValue)
     {
         // Change current value
-        state.ControlValue = value;
+        state.CurrentTelegraphValue = telegraphValue;
 
         // Notify
         mGameEventHandler->OnEngineControllerUpdated(
             electricalElementId,
-            value);
+            telegraphValue);
     }
 }
 
@@ -338,13 +342,13 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
             // Publish state change, if necessary
-            if (mElementStateBuffer[electricalElementIndex].EngineController.ControlValue != 0.0f)
+            if (mElementStateBuffer[electricalElementIndex].EngineController.CurrentTelegraphValue != 0)
             {
-                mElementStateBuffer[electricalElementIndex].EngineController.ControlValue = 0.0f;
+                mElementStateBuffer[electricalElementIndex].EngineController.CurrentTelegraphValue = 0;
 
                 mGameEventHandler->OnEngineControllerUpdated(
                     ElectricalElementId(mShipId, electricalElementIndex),
-                    0.0f);
+                    0);
             }
 
             // Publish disable
@@ -758,35 +762,77 @@ void ElectricalElements::UpdateSinks(
                             if (!IsDeleted(engineElectricalElementIndex))
                             {
                                 //
-                                // Calculate power force vector
-                                //  - Dir = f(controller->engine angle)
-                                //  - Magnitude = f(EngineControllerState::ControlValue)
+                                // Calculate rpm and thrust force vector
+                                //  - ThrustDir = f(controller->engine angle)
+                                //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
                                 //
 
                                 auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
 
-                                vec2f const engineToControllerNormalizedVector =
+                                vec2f const engineToControllerDir =
                                     (controllerPosition - points.GetPosition(enginePointIndex))
                                     .normalise();
 
-                                vec2f const enginePowerVector = vec2f(
-                                    connectedEngine.CosEngineCWAngle * engineToControllerNormalizedVector.x
-                                    + connectedEngine.SinEngineCWAngle * engineToControllerNormalizedVector.y
+                                float constexpr TelegraphCoeff =
+                                    1.0f
+                                    / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
+
+                                float engineRpm;
+                                float engineThrust;
+                                if (controllerState.CurrentTelegraphValue >= 0)
+                                {
+                                    if (controllerState.CurrentTelegraphValue <= 1)
+                                    {
+                                        engineRpm = TelegraphCoeff;
+                                        engineThrust = 0.0f;
+                                    }
+                                    else
+                                    {
+                                        float const t =
+                                            static_cast<float>(controllerState.CurrentTelegraphValue - 1)
+                                            * TelegraphCoeff;
+
+                                        engineRpm = t;
+                                        engineThrust = t;
+                                    }
+                                }
+                                else
+                                {
+                                    if (controllerState.CurrentTelegraphValue >= -1)
+                                    {
+                                        engineRpm = TelegraphCoeff;
+                                        engineThrust = 0.0f;
+                                    }
+                                    else
+                                    {
+                                        float const t =
+                                            static_cast<float>(controllerState.CurrentTelegraphValue + 1)
+                                            * TelegraphCoeff;
+
+                                        engineRpm = t;
+                                        engineThrust = t;
+                                    }
+                                }
+
+                                vec2f const engineThrustVector = vec2f(
+                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
                                     ,
-                                    -connectedEngine.SinEngineCWAngle * engineToControllerNormalizedVector.x
-                                    + connectedEngine.CosEngineCWAngle * engineToControllerNormalizedVector.y
+                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
                                     )
-                                    * controllerState.ControlValue;
+                                    * engineThrust;
 
                                 //
-                                // Add power force vector to engine
-                                //  - Engine's power has been reset at end of previous iteration
+                                // Add thrust to engine
+                                //  - Engine has been reset at end of previous iteration
                                 //
 
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerVector += enginePowerVector;
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerMagnitude = std::max(
-                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentPowerMagnitude,
-                                    enginePowerVector.length());
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm += engineRpm;
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector += engineThrustVector;
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude = std::max(
+                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude,
+                                    engineThrust);
                             }
                         }
                     }
@@ -997,21 +1043,24 @@ void ElectricalElements::UpdateSinks(
             auto & state = mElementStateBuffer[engineSinkElementIndex].Engine;
 
             // Calculate force
-            vec2f const thrustForce = state.CurrentPowerVector * gameParameters.EngineThrust;
+            vec2f const thrustForce = state.CurrentThrustVector * gameParameters.EngineThrust;
 
             // Apply force to point
             points.GetNonSpringForce(GetPointIndex(engineSinkElementIndex)) += thrustForce;
 
             // Eventually publish power change notification
-            if (state.CurrentPowerMagnitude != state.LastPublishedPowerMagnitude)
+            if (state.CurrentThrustMagnitude != state.LastPublishedThrustMagnitude
+                || state.CurrentRpm != state.LastPublishedRpm)
             {
                 // Notify
                 mGameEventHandler->OnEngineMonitorUpdated(
                     ElectricalElementId(mShipId, engineSinkElementIndex),
-                    state.CurrentPowerMagnitude);
+                    state.CurrentThrustMagnitude,
+                    state.CurrentRpm);
 
                 // Remember last-published value
-                state.LastPublishedPowerMagnitude = state.CurrentPowerMagnitude;
+                state.LastPublishedThrustMagnitude = state.CurrentThrustMagnitude;
+                state.LastPublishedRpm = state.CurrentRpm;
 
                 // Show notifications
                 if (gameParameters.DoShowElectricalNotifications)
@@ -1025,8 +1074,7 @@ void ElectricalElements::UpdateSinks(
             }
 
             // Reset this engine's power, we'll re-update it at the next iteration
-            state.CurrentPowerVector = vec2f::zero();
-            state.CurrentPowerMagnitude = 0.0f;
+            state.Reset();
         }
     }
 

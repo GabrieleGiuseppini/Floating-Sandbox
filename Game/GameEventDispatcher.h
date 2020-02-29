@@ -413,23 +413,24 @@ public:
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        float newControlValue) override
+        int telegraphValue) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineControllerUpdated(electricalElementId, newControlValue);
+            sink->OnEngineControllerUpdated(electricalElementId, telegraphValue);
         }
     }
 
     virtual void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,
-        float newPower) override
+        float thrustMagnitude,
+        float rpm) override
     {
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineMonitorUpdated(electricalElementId, newPower);
+            sink->OnEngineMonitorUpdated(electricalElementId, thrustMagnitude, rpm);
         }
     }
 
