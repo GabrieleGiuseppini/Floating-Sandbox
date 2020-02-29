@@ -70,7 +70,7 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::EngineControllerState(false));
+            mElementStateBuffer.emplace_back(ElementState::EngineControllerState(0, false));
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -305,8 +305,8 @@ void ElectricalElements::SetEngineControllerState(
     assert(GetMaterialType(elementIndex) == ElectricalMaterial::ElectricalElementType::EngineController);
     auto & state = mElementStateBuffer[elementIndex].EngineController;
 
-    assert(telegraphValue >= -GameParameters::EngineTelegraphDegreesOfFreedom / 2
-        && telegraphValue <= GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+    assert(telegraphValue >= -static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2)
+        && telegraphValue <= static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2));
 
 
     // Make sure it's a state change
@@ -806,14 +806,16 @@ void ElectricalElements::UpdateSinks(
                                         controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
                                 }
 
-                                vec2f const controllerEngineThrustVector = vec2f(
-                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
-                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
+                                vec2f const controllerEngineThrustDir = vec2f(
+                                        connectedEngine.CosEngineCWAngle * engineToControllerDir.x
+                                        + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
                                     ,
-                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
-                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
-                                    )
-                                    * controllerEngineThrust;
+                                        -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
+                                        + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
+                                    );
+
+                                vec2f const controllerEngineThrustVector =
+                                    controllerEngineThrustDir * controllerEngineThrust;
 
                                 //
                                 // Add to engine
@@ -832,7 +834,7 @@ void ElectricalElements::UpdateSinks(
                     }
 
                     // Remember state
-                    mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = isPowered;
+                    mElementStateBuffer[sinkElementIndex].EngineController.IsPowered = isPowered;
 
                     break;
                 }
@@ -1093,7 +1095,9 @@ void ElectricalElements::AddFactoryConnectedElectricalElement(
     if (GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::EngineController
         && GetMaterialType(connectedElectricalElementIndex) == ElectricalMaterial::ElectricalElementType::Engine)
     {
-        float engineCWAngle = mMaterialBuffer[connectedElectricalElementIndex]->EngineDirection - OctantToCWAngle(OppositeOctant(octant));
+        float engineCWAngle =
+            (2.0f * Pi<float> - mMaterialBuffer[connectedElectricalElementIndex]->EngineCCWDirection)
+            - OctantToCWAngle(OppositeOctant(octant));
 
         // Normalize
         if (engineCWAngle < 0.0f)

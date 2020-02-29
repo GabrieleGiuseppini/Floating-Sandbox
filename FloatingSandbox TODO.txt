@@ -1433,10 +1433,9 @@ Render:
 				+ Events carry int telegraphValue
 				+ Engine power does math to calculate power={0.0, 1.0}
 				+ Engine notifications: rpm and thrust
-			- See why some engines don't work
-			- See why engine direction is not its direction
-			- Adjust thrust
+			= Adjust thrust
 			- Publish zero value at engine destruction (iff currently not zero)
+		- Switchboard panel: disable refresh during announcements?
 		+ Gfx:
 			+ EngineController: Telegraph with hand
 				+ N already-rotated hand bitmaps
@@ -1454,11 +1453,16 @@ Render:
 				- Simple continuous sound, keyed by object ID
 				- Add pitch controls to Sound
 				- React to EngineMonitor, track object ID and set object's sound pitch
-		- Do engines with different power
+		- Do engines with different properties:
+			- Properties:
+				- Power (in HP)
+				- Inertia (attack & release, same property)
+				- Efficiency?
 			- Different json materials
-			- New engine_power property
-				- Store power in EngineState at ElectricalElements::Add
-			- GameParameters::EngineThrust becomes Adjustment
+			- New engine_power property(-ies)
+				- Store them in EngineState at ElectricalElements::Add
+					- Pre-convert as needed (e.g. HP -> Newton)
+			- GameParameters::EngineThrust becomes EngineThrustAdjustment
 		- Finalization:
 			+ Use PI-based constants for gauge angles
 			- Do engine highlight only on 0->nonzero transition

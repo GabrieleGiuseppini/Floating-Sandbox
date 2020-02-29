@@ -414,7 +414,7 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnSwitchCreated(", int(instanceIndex), "): State=", static_cast<bool>(state));
+    LogMessage("SwitchboardPanel::OnSwitchCreated(", electricalElementId, " ", int(instanceIndex), "): State=", static_cast<bool>(state));
 
     //
     // Make label, if needed
@@ -528,7 +528,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnPowerProbeCreated(", int(instanceIndex), "): State=", static_cast<bool>(state));
+    LogMessage("SwitchboardPanel::OnPowerProbeCreated(", electricalElementId, " ", int(instanceIndex), "): State=", static_cast<bool>(state));
 
     //
     // Create power monitor control
@@ -618,7 +618,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
     ElectricalElementInstanceIndex instanceIndex,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineControllerCreated(", int(instanceIndex), ")");
+    LogMessage("SwitchboardPanel::OnEngineControllerCreated(", electricalElementId, " ", int(instanceIndex), ")");
 
     //
     // Create label
@@ -676,7 +676,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     float rpm,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineMonitorCreated(", int(instanceIndex), "): Thrust=", thrustMagnitude, ", RPM=", rpm);
+    LogMessage("SwitchboardPanel::OnEngineMonitorCreated(", electricalElementId, " ", int(instanceIndex), "): Thrust=", thrustMagnitude, ", RPM=", rpm);
 
     //
     // Create label
@@ -704,7 +704,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         mGaugeRpmBitmap,
         wxPoint(47, 47),
         36.0f,
-        Pi<float> / 4.0f,
+        Pi<float> / 4.0f - 0.06f,
         2.0f * Pi<float> - Pi<float> / 4.0f,
         label,
         1.0f - rpm);
@@ -937,7 +937,6 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     float /*thrustMagnitude*/,
     float rpm)
 {
-    //TODOTEST
     LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): RPM=", rpm);
 
     //
@@ -1035,8 +1034,6 @@ void SwitchboardPanel::ShowFullyDocked()
 
 void SwitchboardPanel::ShowDockCheckbox(bool doShow)
 {
-    LogMessage("SwitchboardPanel::ShowDockCheckbox: ", doShow);
-
     assert(!!mMainHSizer1);
     assert(mMainHSizer1->GetItemCount() == 3);
 
@@ -1058,8 +1055,6 @@ void SwitchboardPanel::ShowDockCheckbox(bool doShow)
 
 void SwitchboardPanel::InstallMouseTracking(bool isActive)
 {
-    LogMessage("SwitchboardPanel::InstallMouseTracking: ", isActive);
-
     assert(!!mLeaveWindowTimer);
 
     if (isActive && !mLeaveWindowTimer->IsRunning())

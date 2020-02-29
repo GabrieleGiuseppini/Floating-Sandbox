@@ -201,7 +201,7 @@ public:
     float ParticleEmissionRate; // Number of particles per second
 
     // Engine
-    float EngineDirection; // CW radiants at positive power
+    float EngineCCWDirection; // CCW radiants at positive power
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
@@ -225,7 +225,7 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
-        float engineDirection,
+        float engineCCWDirection,
         bool isInstanced)
         : Name(name)
         , ElectricalType(electricalType)
@@ -239,7 +239,7 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
-        , EngineDirection(engineDirection)
+        , EngineCCWDirection(engineCCWDirection)
         , IsInstanced(isInstanced)
     {
     }

@@ -140,9 +140,9 @@ private:
             int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
             bool IsPowered;
 
-            EngineControllerState(bool isPowered)
+            EngineControllerState(int telegraphValue, bool isPowered)
                 : ConnectedEngines()
-                , CurrentTelegraphValue(0)
+                , CurrentTelegraphValue(telegraphValue)
                 , IsPowered(isPowered)
             {}
         };
