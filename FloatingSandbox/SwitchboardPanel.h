@@ -15,6 +15,8 @@
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLoader.h>
 
+#include <GameCore/ProgressCallback.h>
+
 #include <wx/bitmap.h>
 #include <wx/bmpcbox.h>
 #include <wx/custombgwin.h>
@@ -44,7 +46,8 @@ public:
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLoader & resourceLoader);
+        ResourceLoader & resourceLoader,
+        ProgressCallback const & progressCallback);
 
     virtual ~SwitchboardPanel();
 
@@ -134,7 +137,8 @@ private:
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLoader & resourceLoader);
+        ResourceLoader & resourceLoader,
+        ProgressCallback const & progressCallback);
 
     void MakeSwitchPanel();
 

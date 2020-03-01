@@ -31,7 +31,8 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLoader & resourceLoader)
+    ResourceLoader & resourceLoader,
+    ProgressCallback const & progressCallback)
 {
     return std::unique_ptr<SwitchboardPanel>(
         new SwitchboardPanel(
@@ -41,7 +42,8 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
             std::move(gameController),
             std::move(soundController),
             std::move(uiPreferencesManager),
-            resourceLoader));
+            resourceLoader,
+            progressCallback));
 }
 
 SwitchboardPanel::SwitchboardPanel(
@@ -51,7 +53,8 @@ SwitchboardPanel::SwitchboardPanel(
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLoader & resourceLoader)
+    ResourceLoader & resourceLoader,
+    ProgressCallback const & progressCallback)
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
     , mBackgroundBitmapComboBox(nullptr)
@@ -70,6 +73,9 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
+    float constexpr TotalProgressSteps = 7.0f;
+    float ProgressSteps = 0.0;
+
     wxPanel::Create(
         parent,
         wxID_ANY,
@@ -80,6 +86,8 @@ SwitchboardPanel::SwitchboardPanel(
     //
     // Setup background selector popup
     //
+
+    progressCallback(ProgressSteps/TotalProgressSteps, "Loading electrical panel...");
 
     auto backgroundBitmapFilepaths = resourceLoader.GetBitmapFilepaths("switchboard_background_*");
     if (backgroundBitmapFilepaths.empty())
@@ -156,11 +164,17 @@ SwitchboardPanel::SwitchboardPanel(
     // Load bitmaps
     //
 
+    ProgressSteps += 1.0f; // 1.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
     mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
+
+    ProgressSteps += 1.0f; // 2.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -168,19 +182,31 @@ SwitchboardPanel::SwitchboardPanel(
     mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
+    ProgressSteps += 1.0f; // 3.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
     mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
     mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
+    ProgressSteps += 1.0f; // 4.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
     mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
     mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
+    ProgressSteps += 1.0f; // 5.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
     mGaugeRpmBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
     mGaugeVoltsBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
+
+    ProgressSteps += 1.0f; // 6.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
     mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
@@ -195,6 +221,9 @@ SwitchboardPanel::SwitchboardPanel(
     mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
     mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
     mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
+
+    ProgressSteps += 1.0f; // 7.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
     wxBitmap dockCheckboxUncheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);

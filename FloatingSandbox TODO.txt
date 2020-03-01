@@ -1383,6 +1383,7 @@ Render:
 		= Sound:
 			+ EngineController (telegraph) sound
 			= Engine sound:
+				- Hook volume, pause, reset, etc.
 				- Add engine_type as new electrical material property
 					- TODO: how communicated to sound controller? Via announcement or at each publish? And via whole material in that call?
 				+ Register for EngineMonitor event, only RPM
@@ -1409,7 +1410,7 @@ Render:
 			+ Engine controller stops working at high temperatures
 			+ Restore of engine controller
 			+ Restore of engine
-			- Do progress at Switchboard constructor
+			+ Do progress at Switchboard constructor
 			- EngineController: SHIFT for plus/minus?
 			- Make engines lose power progressively when wet
 				- At Engine update: quantity of water determines RPM damping
@@ -1417,9 +1418,11 @@ Render:
 			- Do not propagate Engine, EngineController, PowerMonitor materials
 				- Actually, *only* propagate those that we want to propagate
 			+ SettingsDialog: EngineThrust or Adjust
+			- Change "Titanic (with Lights)" into "Titanic (with Electricals)"
 			- Add engine_direction (and other properties?) to materials' guide
 			- Add all new types to materials' guide
-			- Refresh electrical elements' materials template				
+			- Refresh electrical elements' materials template
+			- changes.txt
 
 	- Logic Gates
 		- New ElectricalMaterial type

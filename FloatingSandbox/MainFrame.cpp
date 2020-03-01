@@ -796,14 +796,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create Electrical Panel
     //
 
-    {
-        splash->UpdateProgress(0.86f, "Loading electrical panel...");
-
-        this->mMainApp->Yield();
-        this->mMainApp->Yield();
-        this->mMainApp->Yield();
-    }
-
     mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
         mMainPanel,
@@ -811,7 +803,15 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController,
         mSoundController,
         mUIPreferencesManager,
-        *mResourceLoader);
+        *mResourceLoader,
+        [&splash, this](float progress, std::string const & message)
+        {
+            // 0.83 -> 1.0
+            splash->UpdateProgress(0.83f + progress / 6.0f, message);
+            this->mMainApp->Yield();
+            this->mMainApp->Yield();
+            this->mMainApp->Yield();
+        });
 
     mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
 
