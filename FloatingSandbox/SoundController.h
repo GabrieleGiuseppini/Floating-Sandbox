@@ -249,6 +249,11 @@ public:
         ElectricalElementId electricalElementId,
         int telegraphValue) override;
 
+    virtual void OnEngineMonitorUpdated(
+        ElectricalElementId electricalElementId,
+        float thrustMagnitude,
+        float rpm) override;
+
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,
@@ -470,4 +475,6 @@ private:
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
     ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
+
+    MultiInstanceContinuousSound<ElectricalElementId> mSteamEngineSounds;
 };

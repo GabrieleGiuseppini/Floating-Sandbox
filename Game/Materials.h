@@ -177,6 +177,11 @@ public:
         WaterSensingSwitch
     };
 
+    enum class EngineElementType
+    {
+        SteamEngine
+    };
+
 public:
 
     std::string Name;
@@ -201,7 +206,9 @@ public:
     float ParticleEmissionRate; // Number of particles per second
 
     // Engine
-    float EngineCCWDirection; // CCW radiants at positive power
+    EngineElementType EngineType;
+    float EngineCCWDirection; // CCW radians at positive power
+    float EngineResponsiveness; // Coefficient for RPM recursive function
 
     // Instancing
     bool IsInstanced; // When true, only one particle may exist with a given (full) color key
@@ -211,6 +218,8 @@ public:
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
+
+    static EngineElementType StrToEngineElementType(std::string const & str);
 
     ElectricalMaterial(
         std::string name,
@@ -225,7 +234,9 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
+        EngineElementType engineType,
         float engineCCWDirection,
+        float engineResponsiveness,
         bool isInstanced)
         : Name(name)
         , ElectricalType(electricalType)
@@ -239,7 +250,9 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , EngineType(engineType)
         , EngineCCWDirection(engineCCWDirection)
+        , EngineResponsiveness(engineResponsiveness)
         , IsInstanced(isInstanced)
     {
     }

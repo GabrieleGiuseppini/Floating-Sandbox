@@ -177,11 +177,21 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
         }
 
-        // Engine direction
+        // Engine properties
+        EngineElementType engineType = EngineElementType::SteamEngine;
         float engineDirection = 0.0f;
+        float engineResponsiveness = 1.0f;
         if (ElectricalElementType::Engine == electricalType)
         {
+            std::string engineTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "engine_type");
+            engineType = StrToEngineElementType(engineTypeStr);
+
             engineDirection = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_direction");
+
+            engineResponsiveness = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_responsiveness");
+
+            if (engineResponsiveness <= 0.0f || engineResponsiveness > 1.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"engine_responsiveness\" parameter must be greater than 0.0 and lower than or equal 1.0");
         }
 
         // Instancing
@@ -200,7 +210,9 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             minimumOperatingTemperature,
             maximumOperatingTemperature,
             particleEmissionRate,
+            engineType,
             engineDirection,
+            engineResponsiveness,
             isInstanced);
     }
     catch (GameException const & ex)
@@ -235,4 +247,12 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::WaterSensingSwitch;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
+}
+
+ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "SteamEngine"))
+        return EngineElementType::SteamEngine;
+    else
+        throw GameException("Unrecognized EngineElementType \"" + str + "\"");
 }

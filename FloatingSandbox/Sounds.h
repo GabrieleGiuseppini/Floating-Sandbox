@@ -463,6 +463,14 @@ struct ContinuousSound
         }
     }
 
+    void SetPitch(float pitch)
+    {
+        if (!!mSound)
+        {
+            mSound->setPitch(pitch);
+        }
+    }
+
     enum class StartMode
     {
         Immediate,
@@ -649,6 +657,183 @@ private:
 
     std::chrono::milliseconds const mInertiaDuration;
     std::optional<GameWallClock::time_point> mHearableLastTime;
+};
+
+/*
+ * A collection of multiple instances of the same sound, which plays continuously until stopped.
+ *
+ * Remembers playing state across pauses, and supports fade-in and fade-out.
+ */
+template<typename TInstanceId>
+struct MultiInstanceContinuousSound
+{
+    MultiInstanceContinuousSound(
+        float volume,
+        float masterVolume,
+        bool isMuted,
+        std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
+        std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
+        : mVolume(volume)
+        , mMasterVolume(masterVolume)
+        , mIsMuted(isMuted)
+        , mTimeToFadeIn(timeToFadeIn)
+        , mTimeToFadeOut(timeToFadeOut)
+        , mIsPaused(false)
+        //
+        , mSoundBuffer()
+        , mSounds()
+    {
+    }
+
+    void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+    {
+        assert(!mSoundBuffer);
+        assert(mSounds.empty());
+
+        mSoundBuffer = std::move(soundBuffer);
+    }
+
+    void SetMasterVolume(float masterVolume)
+    {
+        mMasterVolume = masterVolume;
+
+        for (auto it : mSounds)
+        {
+            it->second->setMasterVolume(masterVolume);
+        }
+    }
+
+    void SetMuted(bool isMuted)
+    {
+        mIsMuted = isMuted;
+
+        for (auto it : mSounds)
+        {
+            it->second->setMuted(isMuted);
+        }
+    }
+
+    void SetPitch(
+        TInstanceId instanceId,
+        float pitch)
+    {
+        auto it = mSounds.find(instanceId);
+        if (it != mSounds.end())
+        {
+            it->second->setPitch(pitch);
+        }
+    }
+
+    enum class StartMode
+    {
+        Immediate,
+        WithFadeIn
+    };
+
+    void Start(
+        TInstanceId instanceId,
+        StartMode startMode = StartMode::Immediate)
+    {
+        auto it = mSounds.find(instanceId);
+        if (it == mSounds.end())
+        {
+            //
+            // Create sound altogether
+            //
+
+            auto newSound = std::make_unique<GameSound>(
+                *mSoundBuffer,
+                mVolume,
+                mMasterVolume,
+                mIsMuted,
+                mTimeToFadeIn,
+                mTimeToFadeOut);
+
+            newSound->setLoop(true);
+
+            if (mIsPaused)
+                newSound->pause();
+
+            it = mSounds.emplace(
+                instanceId,
+                std::move(newSound)).first;
+        }
+
+        GameSound * sound = it->second.get();
+
+        if (StartMode::WithFadeIn == startMode)
+        {
+            sound->fadeToPlay();
+        }
+        else if(sf::Sound::Status::Playing != sound->getStatus())
+        {
+            sound->play();
+        }
+    }
+
+    void SetPaused(bool isPaused)
+    {
+        mIsPaused = isPaused;
+
+        for (auto it : mSounds)
+        {
+            if (isPaused)
+            {
+                // Pausing
+                it->second->pause();
+            }
+            else
+            {
+                // Resuming
+                it->second->resume();
+            }
+        }
+    }
+
+    enum class StopMode
+    {
+        Immediate,
+        WithFadeOut
+    };
+
+    void Stop(
+        TInstanceId instanceId,
+        StopMode stopMode = StopMode::Immediate)
+    {
+        auto it = mSounds.find(instanceId);
+        if (it != mSounds.end())
+        {
+            // We stop regardless of the pause state, even if we're paused
+            if (sf::Sound::Status::Stopped != it->second->getStatus())
+            {
+                if (StopMode::WithFadeOut == stopMode)
+                    it->second->fadeToStop();
+                else
+                    it->second->stop();
+            }
+        }
+    }
+
+    void Update()
+    {
+        for (auto it : mSounds)
+        {
+            it->second->update();
+        }
+    }
+
+private:
+
+    float mVolume;
+    float mMasterVolume;
+    bool mIsMuted;
+    std::chrono::milliseconds const mTimeToFadeIn;
+    std::chrono::milliseconds const mTimeToFadeOut;
+    bool mIsPaused;
+
+    std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
+
+    std::unordered_map<TInstanceId, std::unique_ptr<GameSound>> mSounds;
 };
 
 struct OneShotMultipleChoiceSound
@@ -886,6 +1071,11 @@ struct ContinuousSingleChoiceSound
     void SetMuted(bool muted)
     {
         mSound.SetMuted(muted);
+    }
+
+    void SetPtich(float pitch)
+    {
+        mSound.SetPitch(pitch);
     }
 
     void Start()

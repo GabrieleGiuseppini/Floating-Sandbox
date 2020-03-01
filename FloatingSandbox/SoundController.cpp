@@ -8,6 +8,7 @@
 #include <Game/Materials.h>
 
 #include <GameCore/GameException.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -69,6 +70,10 @@ SoundController::SoundController(
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
+    , mSteamEngineSounds(
+        100.0,
+        mMasterEffectsVolume,
+        mMasterEffectsMuted)
 {
     //
     // Initialize Sounds
@@ -296,6 +301,10 @@ SoundController::SoundController(
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
+        }
+        else if (soundType == SoundType::EngineSteam)
+        {
+            mSteamEngineSounds.Initialize(std::move(soundBuffer));
         }
         else if (soundType == SoundType::Break
 				|| soundType == SoundType::Destroy
@@ -1318,6 +1327,27 @@ void SoundController::OnEngineControllerUpdated(
         SoundType::EngineTelegraph,
         100.0f,
         false);
+}
+
+void SoundController::OnEngineMonitorUpdated(
+    ElectricalElementId electricalElementId,
+    float /*thrustMagnitude*/,
+    float rpm)
+{
+    if (rpm != 0.0f)
+    {
+        // Make sure sound is running
+        mSteamEngineSounds.Start(electricalElementId);
+
+        // Set pitch
+        float const pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=5.0
+        mSteamEngineSounds.SetPitch(electricalElementId, pitch);
+    }
+    else
+    {
+        // Make sure sound is not running
+        mSteamEngineSounds.Stop(electricalElementId);
+    }
 }
 
 void SoundController::OnBombPlaced(
