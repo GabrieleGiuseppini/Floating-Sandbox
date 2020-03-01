@@ -189,6 +189,7 @@ private:
 
     ShowingMode mShowingMode;
 
+    //
 
     wxBoxSizer * mMainHSizer1;
     wxBoxSizer * mMainVSizer2;
@@ -205,6 +206,8 @@ private:
 
     wxBitmapComboBox * mBackgroundBitmapComboBox;
     std::unique_ptr<wxPopupTransientWindow> mBackgroundSelectorPopup;
+
+    wxCursor mInteractiveCursor;
 
 private:
 

@@ -151,14 +151,11 @@ SwitchboardPanel::SwitchboardPanel(
     //
 
     // Load cursor
-    auto upCursor = WxHelpers::LoadCursor(
+    mInteractiveCursor = WxHelpers::LoadCursor(
         "switch_cursor_up",
         8,
         9,
         resourceLoader);
-
-    // Set cursor
-    SetCursor(upCursor);
 
     //
     // Load bitmaps
@@ -244,6 +241,7 @@ SwitchboardPanel::SwitchboardPanel(
         // DockCheckbox
         {
             mDockCheckbox = new BitmappedCheckbox(this, wxID_ANY, dockCheckboxUncheckedBitmap, dockCheckboxCheckedBitmap, "Docks/Undocks the electrical panel.");
+            mDockCheckbox->SetCursor(mInteractiveCursor);
             mDockCheckbox->Bind(wxEVT_CHECKBOX, &SwitchboardPanel::OnDockCheckbox, this);
 
             mMainHSizer1->Add(mDockCheckbox, 0, wxALIGN_TOP, 0);
@@ -486,6 +484,8 @@ void SwitchboardPanel::OnSwitchCreated(
                 },
                 state);
 
+            ctrl->SetCursor(mInteractiveCursor);
+
             swCtrl = ctrl;
             intCtrl = ctrl;
 
@@ -506,6 +506,8 @@ void SwitchboardPanel::OnSwitchCreated(
                     mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
+
+            ctrl->SetCursor(mInteractiveCursor);
 
             swCtrl = ctrl;
             intCtrl = ctrl;
@@ -686,6 +688,8 @@ void SwitchboardPanel::OnEngineControllerCreated(
                 controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
         },
         mEngineControllerHandBitmaps.size() / 2); // Starting value = center
+
+    ecCtrl->SetCursor(mInteractiveCursor);
 
     //
     // Add to maps
