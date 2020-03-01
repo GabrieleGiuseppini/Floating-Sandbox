@@ -51,6 +51,7 @@ enum class SoundType
     ElectricalPanelClose,
     ElectricalPanelDock,
     ElectricalPanelUndock,
+    EngineSteam,
     EngineTelegraph,
     WaterRush,
     WaterSplash,
@@ -169,6 +170,11 @@ public:
         mMasterVolume = masterVolume;
         mIsMuted = isMuted;
         InternalSetVolume();
+    }
+
+    void setPitch(float pitch)
+    {
+        sf::Sound::setPitch(pitch);
     }
 
     void play() override

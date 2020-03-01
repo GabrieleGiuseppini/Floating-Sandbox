@@ -2870,11 +2870,62 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         gridSizer->Add(
             sideEffectsBox,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
     }
 
+    //
+    // Electrical
+    //
+
+    {
+        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, _("Electrical"));
+
+        wxBoxSizer * electricalBoxSizer = new wxBoxSizer(wxVERTICAL);
+        electricalBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * electricalSizer = new wxGridBagSizer(0, 0);
+
+            // Engine Thrust Adjust
+            {
+                mEngineThrustAdjustmentSlider = new SliderControl<float>(
+                    electricalBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Engine Thrust Adjust",
+                    "Adjusts the thrust exherted by engines.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinEngineThrustAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxEngineThrustAdjustment()));
+
+                electricalSizer->Add(
+                    mEngineThrustAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            electricalBoxSizer->Add(electricalSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        electricalBox->SetSizerAndFit(electricalBoxSizer);
+
+        gridSizer->Add(
+            electricalBox,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -4107,6 +4158,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
 
     // Render
 

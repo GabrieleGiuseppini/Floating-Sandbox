@@ -1367,9 +1367,9 @@ Render:
 				+ Engine power does math to calculate power={0.0, 1.0}
 				+ Engine notifications: rpm and thrust
 			+ Publish zero value at engine destruction (iff currently not zero)
-		= Adjust thrust
-			- Change circuit test: one single engine now
-		- Switchboard panel: disable refresh during announcements?
+		+ Adjust thrust
+			+ Change circuit test: one single engine now
+			+ Add EngineThrustAdjustment
 		+ Gfx:
 			+ EngineController: Telegraph with hand
 				+ N already-rotated hand bitmaps
@@ -1383,6 +1383,8 @@ Render:
 		= Sound:
 			+ EngineController (telegraph) sound
 			- Engine sound:
+				- Add engine_type as new electrical material property
+					- TODO: how communicated to sound controller? Via announcement or at each publish?
 				- Register for EngineMonitor event, only RPM
 				- Simple continuous sound, keyed by object ID
 				- Add pitch controls to Sound
@@ -1405,6 +1407,7 @@ Render:
 			+ Engine controller stops working at high temperatures
 			+ Restore of engine controller
 			+ Restore of engine
+			- Do progress at constructor
 			- EngineController: SHIFT for plus/minus?
 			- Make engines lose power progressively when wet
 				- At Engine update: quantity of water determines RPM damping
@@ -1437,14 +1440,18 @@ Render:
 					  frontier would still be drawn on top of it
 				- Might get away with drawing frontiers - *enlarged* - before all of the rest? What is left of the enlarged part 
 				  would be the rendered frontier, as it would be visible only around external frontiers (and through holes)
+				- TODO: isn't this taken care of by Z work?
 		- Plan:
-			- Structures
-			- Initial frontier at ShipBuilder
-			- Render frontier: 
-				- New render setting 
+			- Data structures
+			- Initial frontiers at ShipBuilder
+			- Render frontiers: 
+				- New render setting
 				- New ship upload 
-				- New shader (red with 0.5 alpha, thick line width)
+				- New shader (red/green/etc. with 0.5 alpha, thick line width)
+			- Maintain at destroy
+			- Maintain at repair
 		- Impl:
+			- Data structures
 			- Jumpstart algo:
 				-	5	6	7
 					4	*	0
@@ -1462,10 +1469,15 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
+			- Maintenance at destroy:
+				- TODO
+			- Maintenance at repair:
+				- TODO
 		- Cleanups:
-			- Revisit need to have SuperTriangles and SubSprings, as we might now use edges
-				- We would now only upload springs that have 0 or 1 edges
-		- Follow-ups:
+			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
+			  now use edges - as long as springs remember their edges
+				- If so, we could now only upload springs that have 0 or 1 edges
+		- Enabled features:
 			- Waves: 
 				- Generate wave (change height) when frontier (points) touch water for the first time
 			- Water drag 

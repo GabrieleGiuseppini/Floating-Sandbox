@@ -530,6 +530,11 @@ public:
     unsigned int GetMinNumberOfClouds() const override { return GameParameters::MinNumberOfClouds; }
     unsigned int GetMaxNumberOfClouds() const override { return GameParameters::MaxNumberOfClouds; }
 
+    float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
+    void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
+    float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
+    float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
+
     //
     // Render parameters
     //

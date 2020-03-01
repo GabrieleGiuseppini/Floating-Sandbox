@@ -219,6 +219,9 @@ struct IGameControllerSettings
     virtual unsigned int GetNumberOfClouds() const = 0;
     virtual void SetNumberOfClouds(unsigned int value) = 0;
 
+    virtual float GetEngineThrustAdjustment() const = 0;
+    virtual void SetEngineThrustAdjustment(float value) = 0;
+
     //
     // Render parameters
     //

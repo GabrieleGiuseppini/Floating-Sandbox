@@ -195,6 +195,9 @@ struct IGameControllerSettingsOptions
 	virtual unsigned int GetMinNumberOfClouds() const = 0;
 	virtual unsigned int GetMaxNumberOfClouds() const = 0;
 
+    virtual float GetMinEngineThrustAdjustment() const = 0;
+    virtual float GetMaxEngineThrustAdjustment() const = 0;
+
 	//
 	// Render parameters
 	//

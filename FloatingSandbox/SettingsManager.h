@@ -81,6 +81,7 @@ enum class GameSettings : size_t
     AirBubblesDensity,
     NumberOfStars,
     NumberOfClouds,
+    EngineThrustAdjustment,
 
     // Render
     FlatSkyColor,

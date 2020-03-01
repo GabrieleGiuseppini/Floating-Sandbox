@@ -168,6 +168,7 @@ private:
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
     SliderControl<float> * mAirBubbleDensitySlider;
+    SliderControl<float> * mEngineThrustAdjustmentSlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;

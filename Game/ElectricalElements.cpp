@@ -1065,7 +1065,10 @@ void ElectricalElements::UpdateSinks(
             auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
 
             // Calculate force
-            vec2f const thrustForce = engineState.CurrentThrustVector * gameParameters.EngineThrust;
+            vec2f const thrustForce =
+                engineState.CurrentThrustVector
+                * gameParameters.EngineThrust
+                * gameParameters.EngineThrustAdjustment;
 
             // Apply force to point
             points.GetNonSpringForce(enginePointIndex) += thrustForce;
