@@ -953,7 +953,7 @@ void SwitchboardPanel::OnEngineControllerUpdated(
     int telegraphValue)
 {
     //
-    // Toggle switch
+    // Toggle controller
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
@@ -973,7 +973,7 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): RPM=", rpm);
 
     //
-    // Toggle control
+    // Change RPM
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);

@@ -73,7 +73,9 @@ SoundController::SoundController(
     , mSteamEngineSounds(
         100.0,
         mMasterEffectsVolume,
-        mMasterEffectsMuted)
+        mMasterEffectsMuted,
+        500ms,
+        500ms)
 {
     //
     // Initialize Sounds
@@ -552,6 +554,7 @@ void SoundController::SetPaused(bool isPaused)
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
+    mSteamEngineSounds.SetPaused(isPaused);
 }
 
 // Master effects
@@ -586,6 +589,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
+    mSteamEngineSounds.SetMasterVolume(mMasterEffectsVolume);
 }
 
 void SoundController::SetMasterEffectsMuted(bool isMuted)
@@ -618,6 +622,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
     mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
     mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
+    mSteamEngineSounds.SetMuted(mMasterEffectsMuted);
 }
 
 // Master tools
@@ -939,6 +944,7 @@ void SoundController::Update()
 {
     mFireBurningSound.Update();
     mWaveMakerSound.Update();
+    mSteamEngineSounds.Update();
 
     // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
@@ -992,6 +998,7 @@ void SoundController::Reset()
     mTimerBombSlowFuseSound.Reset();
     mTimerBombFastFuseSound.Reset();
     mAntiMatterBombContainedSounds.Reset();
+    mSteamEngineSounds.Reset();
 
     //
     // Reset state
@@ -1337,7 +1344,7 @@ void SoundController::OnEngineMonitorUpdated(
     if (rpm != 0.0f)
     {
         // Make sure sound is running
-        mSteamEngineSounds.Start(electricalElementId);
+        mSteamEngineSounds.Start(electricalElementId, SoundStartMode::WithFadeIn);
 
         // Set pitch
         float const pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=5.0

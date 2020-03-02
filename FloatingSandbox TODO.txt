@@ -1383,18 +1383,27 @@ Render:
 		= Sound:
 			+ EngineController (telegraph) sound
 			= Engine sound:
-				- Hook volume, pause, reset, etc.
+				+ Hook volume, pause, reset, etc.; test:
+					+ Global mute
+					+ Effects volume
+					+ Pause
+					+ Reset
+				= Fade-in
 				- Add engine_type as new electrical material property
 					- TODO: how communicated to sound controller? Via announcement or at each publish? And via whole material in that call?
 				+ Register for EngineMonitor event, only RPM
 				+ Simple continuous sound, keyed by object ID
 				+ Add pitch controls to Sound
 				+ React to EngineMonitor, track object ID and set object's sound pitch
+		- Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
+			- SwitchboardPanel::cctor: takes SoundController
+			- ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
+			- Bind lambda from outside
 		- Do engines with different properties:
 			- Properties:
 				- Power (in HP)
 				- "Inertia" (attack & release, same property)
-					- Find name
+					- Find name: responsiveness
 				- Engine Type:
 					+ Steam
 					- TODO
@@ -1403,6 +1412,9 @@ Render:
 				- Store them in EngineState at ElectricalElements::Add
 					- Pre-convert as needed (e.g. HP -> Newton)
 			- Nuke GameParameters::EngineThrust
+		+ Switchboard panel: display finger mouse pointer only at interactive controls
+			+ Set into ctrl from panel
+			+ Dockable checkbox too
 		- Finalization:
 			+ Use PI-based constants for gauge angles
 			+ Do engine highlight only on 0<->nonzero transitions

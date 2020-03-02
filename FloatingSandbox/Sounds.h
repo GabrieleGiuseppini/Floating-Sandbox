@@ -99,6 +99,12 @@ enum class SizeType : int
 
 SizeType StrToSizeType(std::string const & str);
 
+enum class SoundStartMode
+{
+    Immediate,
+    WithFadeIn
+};
+
 
 /*
  * Our wrapper for sf::Sound.
@@ -471,17 +477,11 @@ struct ContinuousSound
         }
     }
 
-    enum class StartMode
-    {
-        Immediate,
-        WithFadeIn
-    };
-
-    void Start(StartMode startMode = StartMode::Immediate)
+    void Start(SoundStartMode startMode = SoundStartMode::Immediate)
     {
         if (!!mSound)
         {
-            if (StartMode::WithFadeIn == startMode)
+            if (SoundStartMode::WithFadeIn == startMode)
             {
                 mSound->fadeToPlay();
             }
@@ -697,9 +697,9 @@ struct MultiInstanceContinuousSound
     {
         mMasterVolume = masterVolume;
 
-        for (auto it : mSounds)
+        for (auto & p : mSounds)
         {
-            it->second->setMasterVolume(masterVolume);
+            p.second->setMasterVolume(masterVolume);
         }
     }
 
@@ -707,9 +707,9 @@ struct MultiInstanceContinuousSound
     {
         mIsMuted = isMuted;
 
-        for (auto it : mSounds)
+        for (auto & p : mSounds)
         {
-            it->second->setMuted(isMuted);
+            p.second->setMuted(isMuted);
         }
     }
 
@@ -724,15 +724,9 @@ struct MultiInstanceContinuousSound
         }
     }
 
-    enum class StartMode
-    {
-        Immediate,
-        WithFadeIn
-    };
-
     void Start(
         TInstanceId instanceId,
-        StartMode startMode = StartMode::Immediate)
+        SoundStartMode startMode = SoundStartMode::Immediate)
     {
         auto it = mSounds.find(instanceId);
         if (it == mSounds.end())
@@ -761,7 +755,7 @@ struct MultiInstanceContinuousSound
 
         GameSound * sound = it->second.get();
 
-        if (StartMode::WithFadeIn == startMode)
+        if (SoundStartMode::WithFadeIn == startMode)
         {
             sound->fadeToPlay();
         }
@@ -775,17 +769,17 @@ struct MultiInstanceContinuousSound
     {
         mIsPaused = isPaused;
 
-        for (auto it : mSounds)
+        for (auto & p : mSounds)
         {
             if (isPaused)
             {
                 // Pausing
-                it->second->pause();
+                p.second->pause();
             }
             else
             {
                 // Resuming
-                it->second->resume();
+                p.second->resume();
             }
         }
     }
@@ -816,10 +810,15 @@ struct MultiInstanceContinuousSound
 
     void Update()
     {
-        for (auto it : mSounds)
+        for (auto & p : mSounds)
         {
-            it->second->update();
+            p.second->update();
         }
+    }
+
+    void Reset()
+    {
+        mSounds.clear();
     }
 
 private:
@@ -1073,7 +1072,7 @@ struct ContinuousSingleChoiceSound
         mSound.SetMuted(muted);
     }
 
-    void SetPtich(float pitch)
+    void SetPitch(float pitch)
     {
         mSound.SetPitch(pitch);
     }
@@ -1085,7 +1084,7 @@ struct ContinuousSingleChoiceSound
 
     void FadeIn()
     {
-        mSound.Start(ContinuousSound::StartMode::WithFadeIn);
+        mSound.Start(SoundStartMode::WithFadeIn);
     }
 
     void SetPaused(bool isPaused)
