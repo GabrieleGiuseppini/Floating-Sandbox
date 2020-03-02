@@ -147,14 +147,19 @@ SwitchboardPanel::SwitchboardPanel(
     SetBackgroundBitmapFromCombo(mBackgroundBitmapComboBox->GetSelection());
 
     //
-    // Setup cursor
+    // Load cursors
     //
 
-    // Load cursor
     mInteractiveCursor = WxHelpers::LoadCursor(
         "switch_cursor_up",
         8,
         9,
+        resourceLoader);
+
+    mPassiveCursor = WxHelpers::LoadCursor(
+        "question_mark_cursor_up",
+        16,
+        16,
         resourceLoader);
 
     //
@@ -522,7 +527,7 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOnDisabledBitmap,
                 mAutomaticSwitchOffDisabledBitmap,
                 label,
-                mInteractiveCursor, // TODO: change cursor
+                mPassiveCursor,
                 [this, electricalElementId]()
                 {
                     this->OnTick(electricalElementId);
@@ -589,7 +594,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 -Pi<float> / 4.0f,
                 Pi<float> * 5.0f / 4.0f,
                 label,
-                mInteractiveCursor, // TODO: change cursor
+                mPassiveCursor,
                 [this, electricalElementId]()
                 {
                     this->OnTick(electricalElementId);
@@ -619,7 +624,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
                 label,
-                mInteractiveCursor, // TODO: change cursor
+                mPassiveCursor,
                 [this, electricalElementId]()
                 {
                     this->OnTick(electricalElementId);
@@ -752,7 +757,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         Pi<float> / 4.0f - 0.06f,
         2.0f * Pi<float> - Pi<float> / 4.0f,
         label,
-        mInteractiveCursor, // TODO: change cursor
+        mPassiveCursor,
         [this, electricalElementId]()
         {
             this->OnTick(electricalElementId);

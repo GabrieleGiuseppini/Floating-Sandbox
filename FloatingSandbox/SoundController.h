@@ -422,6 +422,15 @@ private:
             case SoundType::TerrainAdjust:
             case SoundType::Snapshot:
                 return std::chrono::milliseconds(700);
+            case SoundType::GlassTick:
+            case SoundType::InteractiveSwitchOn:
+            case SoundType::InteractiveSwitchOff:
+            case SoundType::ElectricalPanelOpen:
+            case SoundType::ElectricalPanelClose:
+            case SoundType::ElectricalPanelDock:
+            case SoundType::ElectricalPanelUndock:
+            case SoundType::EngineTelegraph:
+                return std::chrono::milliseconds(0);
             default:
                 return std::chrono::milliseconds(75);
         }

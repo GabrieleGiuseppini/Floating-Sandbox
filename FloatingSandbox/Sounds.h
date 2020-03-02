@@ -51,6 +51,7 @@ enum class SoundType
     ElectricalPanelClose,
     ElectricalPanelDock,
     ElectricalPanelUndock,
+    GlassTick,
     EngineSteam,
     EngineTelegraph,
     WaterRush,

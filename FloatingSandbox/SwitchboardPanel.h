@@ -210,6 +210,7 @@ private:
     std::unique_ptr<wxPopupTransientWindow> mBackgroundSelectorPopup;
 
     wxCursor mInteractiveCursor;
+    wxCursor mPassiveCursor;
 
 private:
 

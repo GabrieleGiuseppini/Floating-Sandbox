@@ -1390,16 +1390,24 @@ Render:
 					+ Reset
 				+ Fade-in
 				- Add engine_type as new electrical material property
-					- TODO: how communicated to sound controller? Via announcement or at each publish? And via whole material in that call?
+					- Communicated at announcement
+						- Stores in unord_map<instance ID, sound type>
+					- MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
+						- Stores in unord_map<TSoundTypeEnum, sound buffer>
+					- Start: takes sound type
 				+ Register for EngineMonitor event, only RPM
 				+ Simple continuous sound, keyed by object ID
 				+ Add pitch controls to Sound
 				+ React to EngineMonitor, track object ID and set object's sound pitch
-		= Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
+		+ Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
 			+ ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
 			+ Highlight
-			- Sound
-			- Cursor
+			+ Sound
+			+ Cursor ('?')
+		- Make engines conduct electricity
+			- Json: does not conduct
+			- At engine update: conudct_electricity=(rpm > threshold)
+			- Change circuit_test
 		= Do engines with different properties:
 			+ ElectricalMaterial Properties:
 				+ Power (in HP)

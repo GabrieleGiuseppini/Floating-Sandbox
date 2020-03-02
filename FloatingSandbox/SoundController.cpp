@@ -435,6 +435,7 @@ SoundController::SoundController(
                 || soundType == SoundType::ElectricalPanelOpen
                 || soundType == SoundType::ElectricalPanelDock
                 || soundType == SoundType::ElectricalPanelUndock
+                || soundType == SoundType::GlassTick
                 || soundType == SoundType::EngineTelegraph)
         {
             //
@@ -942,7 +943,10 @@ void SoundController::PlayElectricalPanelDockSound(bool isUndock)
 
 void SoundController::PlayTickSound()
 {
-    // TODOHERE
+    PlayOneShotMultipleChoiceSound(
+        SoundType::GlassTick,
+        100.0f,
+        true);
 }
 
 void SoundController::Update()
