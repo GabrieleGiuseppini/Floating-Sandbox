@@ -99,10 +99,17 @@ enum class SizeType : int
 
 SizeType StrToSizeType(std::string const & str);
 
+
 enum class SoundStartMode
 {
     Immediate,
     WithFadeIn
+};
+
+enum class SoundStopMode
+{
+    Immediate,
+    WithFadeOut
 };
 
 
@@ -512,20 +519,14 @@ struct ContinuousSound
         }
     }
 
-    enum class StopMode
-    {
-        Immediate,
-        WithFadeOut
-    };
-
-    void Stop(StopMode stopMode = StopMode::Immediate)
+    void Stop(SoundStopMode stopMode = SoundStopMode::Immediate)
     {
         if (!!mSound)
         {
             // We stop regardless of the pause state, even if we're paused
             if (sf::Sound::Status::Stopped != mSound->getStatus())
             {
-                if (StopMode::WithFadeOut == stopMode)
+                if (SoundStopMode::WithFadeOut == stopMode)
                     mSound->fadeToStop();
                 else
                     mSound->stop();
@@ -784,15 +785,9 @@ struct MultiInstanceContinuousSound
         }
     }
 
-    enum class StopMode
-    {
-        Immediate,
-        WithFadeOut
-    };
-
     void Stop(
         TInstanceId instanceId,
-        StopMode stopMode = StopMode::Immediate)
+        SoundStopMode stopMode = SoundStopMode::Immediate)
     {
         auto it = mSounds.find(instanceId);
         if (it != mSounds.end())
@@ -800,7 +795,7 @@ struct MultiInstanceContinuousSound
             // We stop regardless of the pause state, even if we're paused
             if (sf::Sound::Status::Stopped != it->second->getStatus())
             {
-                if (StopMode::WithFadeOut == stopMode)
+                if (SoundStopMode::WithFadeOut == stopMode)
                     it->second->fadeToStop();
                 else
                     it->second->stop();
@@ -1099,7 +1094,7 @@ struct ContinuousSingleChoiceSound
 
     void FadeOut()
     {
-        mSound.Stop(ContinuousSound::StopMode::WithFadeOut);
+        mSound.Stop(SoundStopMode::WithFadeOut);
     }
 
     void Update()

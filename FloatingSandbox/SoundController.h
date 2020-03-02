@@ -145,6 +145,8 @@ public:
 
     void PlayElectricalPanelDockSound(bool isUndock);
 
+    void PlayTickSound();
+
     //
     // Updating
     //

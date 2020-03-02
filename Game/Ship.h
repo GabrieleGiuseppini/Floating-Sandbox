@@ -199,6 +199,8 @@ public:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
+    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+
     void SetSwitchState(
         ElectricalElementId electricalElementId,
         ElectricalState switchState,

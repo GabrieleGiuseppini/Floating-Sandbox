@@ -187,6 +187,8 @@ public:
     void TriggerStorm() override;
 	void TriggerLightning() override;
 
+    void HighlightElectricalElement(ElectricalElementId electricalElementId) override;
+
     void SetSwitchState(
         ElectricalElementId electricalElementId,
         ElectricalState switchState) override;

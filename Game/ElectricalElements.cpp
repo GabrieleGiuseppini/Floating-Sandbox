@@ -14,11 +14,6 @@ namespace Physics {
 
 float constexpr LampWetFailureWaterThreshold = 0.1f;
 
-rgbColor constexpr EngineOnHighlightColor = rgbColor(0xfc, 0xff, 0xa6);
-rgbColor constexpr EngineOffHighlightColor = rgbColor(0xd1, 0xbc, 0x00);
-rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
-rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
-
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
@@ -60,7 +55,11 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::EngineState());
+            mElementStateBuffer.emplace_back(
+                ElementState::EngineState(
+                    // TODO: convert from HP into Newton
+                    electricalMaterial.EnginePower,
+                    electricalMaterial.EngineResponsiveness));
 
             // Indices
             mEngineSinks.emplace_back(elementIndex);
@@ -280,6 +279,68 @@ void ElectricalElements::AnnounceInstancedElements()
     mGameEventHandler->OnElectricalElementAnnouncementsEnd();
 }
 
+void ElectricalElements::HighlightElectricalElement(
+    ElementIndex elementIndex,
+    Points & points)
+{
+    rgbColor constexpr EngineOnHighlightColor = rgbColor(0xfc, 0xff, 0xa6);
+    rgbColor constexpr EngineOffHighlightColor = rgbColor(0xc4, 0xb7, 0x02);
+    rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
+    rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
+
+    // Switch state as appropriate
+    switch (GetMaterialType(elementIndex))
+    {
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].Engine.CurrentRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Generator:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].Generator.IsProducingCurrent ? PowerOnHighlightColor : PowerOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mConductivityBuffer[elementIndex].ConductsElectricity ? PowerOnHighlightColor : PowerOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].PowerMonitor.IsPowered ? PowerOnHighlightColor : PowerOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
+        default:
+        {
+            // Shouldn't be invoked for non-highlightable elements
+            assert(false);
+        }
+    }
+}
+
 void ElectricalElements::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState,
@@ -308,7 +369,6 @@ void ElectricalElements::SetEngineControllerState(
 
     assert(telegraphValue >= -static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2)
         && telegraphValue <= static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2));
-
 
     // Make sure it's a state change
     if (telegraphValue != state.CurrentTelegraphValue)
@@ -659,11 +719,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                                 // Show notifications
                                 if (gameParameters.DoShowElectricalNotifications)
                                 {
-                                    // Highlight point
-                                    points.StartPointHighlight(
-                                        GetPointIndex(sourceElementIndex),
-                                        isProducingCurrent ? PowerOnHighlightColor :PowerOffHighlightColor,
-                                        GameWallClock::GetInstance().NowAsFloat());
+                                    HighlightElectricalElement(sourceElementIndex, points);
                                 }
                             }
                         }
@@ -914,6 +970,8 @@ void ElectricalElements::UpdateSinks(
                             // Toggle state ON->OFF
                             //
 
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
+
                             // Notify
                             mGameEventHandler->OnPowerProbeToggled(
                                 ElectricalElementId(mShipId, sinkElementIndex),
@@ -922,14 +980,8 @@ void ElectricalElements::UpdateSinks(
                             // Show notifications
                             if (gameParameters.DoShowElectricalNotifications)
                             {
-                                // Highlight point
-                                points.StartPointHighlight(
-                                    GetPointIndex(sinkElementIndex),
-                                    PowerOffHighlightColor,
-                                    GameWallClock::GetInstance().NowAsFloat());
+                                HighlightElectricalElement(sinkElementIndex, points);
                             }
-
-                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
                         }
                     }
                     else
@@ -940,6 +992,8 @@ void ElectricalElements::UpdateSinks(
                             // Toggle state OFF->ON
                             //
 
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
+
                             // Notify
                             mGameEventHandler->OnPowerProbeToggled(
                                 ElectricalElementId(mShipId, sinkElementIndex),
@@ -948,14 +1002,8 @@ void ElectricalElements::UpdateSinks(
                             // Show notifications
                             if (gameParameters.DoShowElectricalNotifications)
                             {
-                                // Highlight point
-                                points.StartPointHighlight(
-                                    GetPointIndex(sinkElementIndex),
-                                    PowerOnHighlightColor,
-                                    GameWallClock::GetInstance().NowAsFloat());
+                                HighlightElectricalElement(sinkElementIndex, points);
                             }
-
-                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
                         }
                     }
 
@@ -1067,7 +1115,7 @@ void ElectricalElements::UpdateSinks(
             // Calculate force
             vec2f const thrustForce =
                 engineState.CurrentThrustVector
-                * gameParameters.EngineThrust
+                * engineState.ThrustCapacity
                 * gameParameters.EngineThrustAdjustment;
 
             // Apply force to point
@@ -1093,26 +1141,11 @@ void ElectricalElements::UpdateSinks(
                     engineState.CurrentThrustMagnitude,
                     engineState.CurrentRpm);
 
-                // Show notifications
-                if (gameParameters.DoShowElectricalNotifications)
+                // Show notifications - only if moving between zero and non-zero RPM
+                if (gameParameters.DoShowElectricalNotifications
+                    && (engineState.CurrentRpm == 0.0f || engineState.LastPublishedRpm == 0.0f))
                 {
-                    // Highlight point - only if moving between zero and non-zero RPM
-                    if (engineState.CurrentRpm == 0.0f)
-                    {
-                        // non-zero->zero
-                        points.StartPointHighlight(
-                            GetPointIndex(engineSinkElementIndex),
-                            EngineOffHighlightColor,
-                            GameWallClock::GetInstance().NowAsFloat());
-                    }
-                    else if (engineState.LastPublishedRpm == 0.0f)
-                    {
-                        // zero->non-zero
-                        points.StartPointHighlight(
-                            GetPointIndex(engineSinkElementIndex),
-                            EngineOnHighlightColor,
-                            GameWallClock::GetInstance().NowAsFloat());
-                    }
+                    HighlightElectricalElement(engineSinkElementIndex, points);
                 }
 
                 // Remember last-published value
@@ -1224,11 +1257,7 @@ void ElectricalElements::InternalSetSwitchState(
         // Show notifications
         if (gameParameters.DoShowElectricalNotifications)
         {
-            // Highlight point
-            points.StartPointHighlight(
-                GetPointIndex(elementIndex),
-                switchState == ElectricalState::On ? PowerOnHighlightColor : PowerOffHighlightColor,
-                GameWallClock::GetInstance().NowAsFloat());
+            HighlightElectricalElement(elementIndex, points);
         }
 
         // Remember that a switch has been toggled

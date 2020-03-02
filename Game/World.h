@@ -240,6 +240,8 @@ public:
 
 	void TriggerLightning();
 
+    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+
     void SetSwitchState(
         ElectricalElementId electricalElementId,
         ElectricalState switchState,

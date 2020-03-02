@@ -940,6 +940,11 @@ void SoundController::PlayElectricalPanelDockSound(bool isUndock)
         true);
 }
 
+void SoundController::PlayTickSound()
+{
+    // TODOHERE
+}
+
 void SoundController::Update()
 {
     mFireBurningSound.Update();
@@ -1353,7 +1358,7 @@ void SoundController::OnEngineMonitorUpdated(
     else
     {
         // Make sure sound is not running
-        mSteamEngineSounds.Stop(electricalElementId);
+        mSteamEngineSounds.Stop(electricalElementId, SoundStopMode::WithFadeOut);
     }
 }
 

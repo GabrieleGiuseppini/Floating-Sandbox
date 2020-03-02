@@ -177,6 +177,8 @@ private:
 
     void OnBackgroundSelectionChanged(wxCommandEvent & event);
 
+    void OnTick(ElectricalElementId electricalElementId);
+
 private:
 
     enum class ShowingMode

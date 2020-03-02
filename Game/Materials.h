@@ -208,6 +208,7 @@ public:
     // Engine
     EngineElementType EngineType;
     float EngineCCWDirection; // CCW radians at positive power
+    float EnginePower; // Thrust at max RPM, HP
     float EngineResponsiveness; // Coefficient for RPM recursive function
 
     // Instancing
@@ -236,6 +237,7 @@ public:
         float particleEmissionRate,
         EngineElementType engineType,
         float engineCCWDirection,
+        float enginePower,
         float engineResponsiveness,
         bool isInstanced)
         : Name(name)
@@ -252,6 +254,7 @@ public:
         , ParticleEmissionRate(particleEmissionRate)
         , EngineType(engineType)
         , EngineCCWDirection(engineCCWDirection)
+        , EnginePower(enginePower)
         , EngineResponsiveness(engineResponsiveness)
         , IsInstanced(isInstanced)
     {

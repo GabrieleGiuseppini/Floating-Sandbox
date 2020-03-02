@@ -180,6 +180,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         // Engine properties
         EngineElementType engineType = EngineElementType::SteamEngine;
         float engineDirection = 0.0f;
+        float enginePower = 0.0f;
         float engineResponsiveness = 1.0f;
         if (ElectricalElementType::Engine == electricalType)
         {
@@ -187,6 +188,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             engineType = StrToEngineElementType(engineTypeStr);
 
             engineDirection = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_direction");
+
+            enginePower = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_power");
 
             engineResponsiveness = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "engine_responsiveness");
 
@@ -212,6 +215,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             particleEmissionRate,
             engineType,
             engineDirection,
+            enginePower,
             engineResponsiveness,
             isInstanced);
     }

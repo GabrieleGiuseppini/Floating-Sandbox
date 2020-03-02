@@ -1388,30 +1388,30 @@ Render:
 					+ Effects volume
 					+ Pause
 					+ Reset
-				= Fade-in
+				+ Fade-in
 				- Add engine_type as new electrical material property
 					- TODO: how communicated to sound controller? Via announcement or at each publish? And via whole material in that call?
 				+ Register for EngineMonitor event, only RPM
 				+ Simple continuous sound, keyed by object ID
 				+ Add pitch controls to Sound
 				+ React to EngineMonitor, track object ID and set object's sound pitch
-		- Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
-			- SwitchboardPanel::cctor: takes SoundController
-			- ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
-			- Bind lambda from outside
-		- Do engines with different properties:
-			- Properties:
-				- Power (in HP)
-				- "Inertia" (attack & release, same property)
-					- Find name: responsiveness
-				- Engine Type:
+		= Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
+			+ ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
+			+ Highlight
+			- Sound
+			- Cursor
+		= Do engines with different properties:
+			+ ElectricalMaterial Properties:
+				+ Power (in HP)
+				+ Responsiveness
+				+ Engine Type:
 					+ Steam
-					- TODO
 			- Different json materials
-			- New engine_power property(-ies)
-				- Store them in EngineState at ElectricalElements::Add
-					- Pre-convert as needed (e.g. HP -> Newton)
-			- Nuke GameParameters::EngineThrust
+				- Use actual HP, not newtons
+			- Store responsiveness and power in EngineState at ElectricalElements::Add
+					- Pre-convert HP -> Newton
+			- Do responsiveness state machine: TODO
+			+ Nuke GameParameters::EngineThrust
 		+ Switchboard panel: display finger mouse pointer only at interactive controls
 			+ Set into ctrl from panel
 			+ Dockable checkbox too
@@ -1431,7 +1431,7 @@ Render:
 				- Actually, *only* propagate those that we want to propagate
 			+ SettingsDialog: EngineThrust or Adjust
 			- Change "Titanic (with Lights)" into "Titanic (with Electricals)"
-			- Add engine_direction (and other properties?) to materials' guide
+			- Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
 			- Add all new types to materials' guide
 			- Refresh electrical elements' materials template
 			- changes.txt

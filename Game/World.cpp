@@ -582,6 +582,14 @@ void World::TriggerRogueWave()
         mWind);
 }
 
+void World::HighlightElectricalElement(ElectricalElementId electricalElementId)
+{
+    auto const shipId = electricalElementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->HighlightElectricalElement(electricalElementId);
+}
+
 void World::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState,

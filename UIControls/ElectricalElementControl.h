@@ -10,6 +10,7 @@
 #include <GameCore/Vectors.h>
 
 #include <wx/bitmap.h>
+#include <wx/cursor.h>
 #include <wx/stattext.h>
 #include <wx/tooltip.h>
 #include <wx/wx.h>
@@ -272,6 +273,7 @@ protected:
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
         std::string const & label,
+        wxCursor const & cursor,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
         : SwitchElectricalElementControl(
@@ -284,6 +286,7 @@ protected:
             currentState)
         , mOnSwitchToggled(std::move(onSwitchToggled))
     {
+        mImageBitmap->SetCursor(cursor);
     }
 
 protected:
@@ -302,6 +305,7 @@ public:
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
         std::string const & label,
+        wxCursor const & cursor,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
         : InteractiveSwitchElectricalElementControl(
@@ -311,6 +315,7 @@ public:
             onDisabledImage,
             offDisabledImage,
             label,
+            cursor,
             std::move(onSwitchToggled),
             currentState)
     {
@@ -362,6 +367,7 @@ public:
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
         std::string const & label,
+        wxCursor const & cursor,
         std::function<void(ElectricalState)> onSwitchToggled,
         ElectricalState currentState)
         : InteractiveSwitchElectricalElementControl(
@@ -371,6 +377,7 @@ public:
             onDisabledImage,
             offDisabledImage,
             label,
+            cursor,
             std::move(onSwitchToggled),
             currentState)
         , mIsPushed(false)
@@ -459,6 +466,8 @@ public:
         wxBitmap const & onDisabledImage,
         wxBitmap const & offDisabledImage,
         std::string const & label,
+        wxCursor const & cursor,
+        std::function<void()> onTick,
         ElectricalState currentState)
         : SwitchElectricalElementControl(
             parent,
@@ -469,6 +478,14 @@ public:
             label,
             currentState)
     {
+        mImageBitmap->SetCursor(cursor);
+
+        mImageBitmap->Bind(
+            wxEVT_LEFT_DOWN,
+            [onTick](wxMouseEvent &)
+            {
+                onTick();
+            });
     }
 };
 
@@ -481,6 +498,8 @@ public:
         wxBitmap const & onImage,
         wxBitmap const & offImage,
         std::string const & label,
+        wxCursor const & cursor,
+        std::function<void()> onTick,
         ElectricalState currentState)
         : ElectricalElementControl(
             ControlType::PowerMonitor,
@@ -495,6 +514,16 @@ public:
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
         mImageBitmap = new wxStaticBitmap(mImagePanel, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+
+        mImageBitmap->SetCursor(cursor);
+
+        mImageBitmap->Bind(
+            wxEVT_LEFT_DOWN,
+            [onTick](wxMouseEvent &)
+            {
+                onTick();
+            });
+
         vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
 
         mImagePanel->SetSizerAndFit(vSizer);
@@ -558,6 +587,8 @@ public:
         float minAngle, // radians, CCW
         float maxAngle, // radians, CCW
         std::string const & label,
+        wxCursor const & cursor,
+        std::function<void()> onTick,
         float currentValue);
 
     void SetValue(float value)
@@ -626,6 +657,7 @@ public:
         float hand0CCWAngle,
         float handMaxCCWAngle,
         std::string const & label,
+        wxCursor const & cursor,
         std::function<void(unsigned int)> onControllerUpdated,
         unsigned int currentValue) // Between 0 and handImages.length
         : ElectricalElementControl(
@@ -646,7 +678,10 @@ public:
         , mIsEnabled(true)
         , mIsKeyShortcutIncreasing(true)
     {
+        mImagePanel->SetCursor(cursor);
+
         mImagePanel->SetDoubleBuffered(true);
+
         mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnPaint, this);
 
         mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftDown, this);

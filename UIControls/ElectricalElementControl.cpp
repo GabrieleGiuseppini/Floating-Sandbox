@@ -17,6 +17,8 @@ GaugeElectricalElementControl::GaugeElectricalElementControl(
     float minAngle,
     float maxAngle,
     std::string const & label,
+    wxCursor const & cursor,
+    std::function<void()> onTick,
     float currentValue)
     : ElectricalElementControl(
         ControlType::Gauge,
@@ -37,8 +39,18 @@ GaugeElectricalElementControl::GaugeElectricalElementControl(
     , mHandPen1(wxColor(0xdb, 0x04, 0x04), 3, wxPENSTYLE_SOLID)
     , mHandPen2(wxColor(0xd8, 0xd8, 0xd8), 1, wxPENSTYLE_SOLID)
 {
+    mImagePanel->SetCursor(cursor);
+
     mImagePanel->SetDoubleBuffered(true);
+
     mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&GaugeElectricalElementControl::OnPaint, this);
+
+    mImagePanel->Bind(
+        wxEVT_LEFT_DOWN,
+        [onTick](wxMouseEvent &)
+        {
+            onTick();
+        });
 }
 
 void GaugeElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)

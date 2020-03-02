@@ -1333,6 +1333,15 @@ void Ship::ApplyLightning(
 	}
 }
 
+void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)
+{
+    assert(electricalElementId.GetShipId() == mId);
+
+    mElectricalElements.HighlightElectricalElement(
+        electricalElementId,
+        mPoints);
+}
+
 void Ship::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState,

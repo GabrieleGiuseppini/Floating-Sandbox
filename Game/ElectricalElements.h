@@ -91,14 +91,21 @@ private:
 
         struct EngineState
         {
+            float ThrustCapacity;
+            float Responsiveness;
+
             float CurrentRpm;
             vec2f CurrentThrustVector; // Normalized
             float CurrentThrustMagnitude;
             float LastPublishedRpm;
             float LastPublishedThrustMagnitude;
 
-            EngineState()
-                : LastPublishedRpm(0.0f)
+            EngineState(
+                float thrustCapacity,
+                float responsiveness)
+                : ThrustCapacity(thrustCapacity)
+                , Responsiveness(responsiveness)
+                , LastPublishedRpm(0.0f)
                 , LastPublishedThrustMagnitude(0.0f)
             {
                 ResetCurrent();
@@ -361,6 +368,21 @@ public:
         ElectricalMaterial const & electricalMaterial);
 
     void AnnounceInstancedElements();
+
+    void HighlightElectricalElement(
+        ElectricalElementId electricalElementId,
+        Points & points)
+    {
+        assert(electricalElementId.GetShipId() == mShipId);
+
+        HighlightElectricalElement(
+            electricalElementId.GetLocalObjectId(),
+            points);
+    }
+
+    void HighlightElectricalElement(
+        ElementIndex elementIndex,
+        Points & points);
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,

@@ -1035,6 +1035,12 @@ void GameController::TriggerLightning()
 	mWorld->TriggerLightning();
 }
 
+void GameController::HighlightElectricalElement(ElectricalElementId electricalElementId)
+{
+    assert(!!mWorld);
+    mWorld->HighlightElectricalElement(electricalElementId);
+}
+
 void GameController::SetSwitchState(
     ElectricalElementId electricalElementId,
     ElectricalState switchState)

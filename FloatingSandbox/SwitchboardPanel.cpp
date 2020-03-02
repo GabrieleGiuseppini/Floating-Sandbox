@@ -478,13 +478,12 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractivePushSwitchOnDisabledBitmap,
                 mInteractivePushSwitchOffDisabledBitmap,
                 label,
+                mInteractiveCursor,
                 [this, electricalElementId](ElectricalState newState)
                 {
                     mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
-
-            ctrl->SetCursor(mInteractiveCursor);
 
             swCtrl = ctrl;
             intCtrl = ctrl;
@@ -501,13 +500,12 @@ void SwitchboardPanel::OnSwitchCreated(
                 mInteractiveToggleSwitchOnDisabledBitmap,
                 mInteractiveToggleSwitchOffDisabledBitmap,
                 label,
+                mInteractiveCursor,
                 [this, electricalElementId](ElectricalState newState)
                 {
                     mGameController->SetSwitchState(electricalElementId, newState);
                 },
                 state);
-
-            ctrl->SetCursor(mInteractiveCursor);
 
             swCtrl = ctrl;
             intCtrl = ctrl;
@@ -524,6 +522,11 @@ void SwitchboardPanel::OnSwitchCreated(
                 mAutomaticSwitchOnDisabledBitmap,
                 mAutomaticSwitchOffDisabledBitmap,
                 label,
+                mInteractiveCursor, // TODO: change cursor
+                [this, electricalElementId]()
+                {
+                    this->OnTick(electricalElementId);
+                },
                 state);
 
             swCtrl = ctrl;
@@ -586,6 +589,11 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 -Pi<float> / 4.0f,
                 Pi<float> * 5.0f / 4.0f,
                 label,
+                mInteractiveCursor, // TODO: change cursor
+                [this, electricalElementId]()
+                {
+                    this->OnTick(electricalElementId);
+                },
                 state == ElectricalState::On ? 0.0f : 1.0f);
 
             ctrl = ggCtrl;
@@ -611,6 +619,11 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 mPowerMonitorOnBitmap,
                 mPowerMonitorOffBitmap,
                 label,
+                mInteractiveCursor, // TODO: change cursor
+                [this, electricalElementId]()
+                {
+                    this->OnTick(electricalElementId);
+                },
                 state);
 
             if (!panelElementMetadata)
@@ -681,6 +694,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
         3.85f,
         -0.70f,
         label,
+        mInteractiveCursor,
         [this, electricalElementId](unsigned int controllerValue)
         {
             mGameController->SetEngineControllerState(
@@ -688,8 +702,6 @@ void SwitchboardPanel::OnEngineControllerCreated(
                 controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
         },
         mEngineControllerHandBitmaps.size() / 2); // Starting value = center
-
-    ecCtrl->SetCursor(mInteractiveCursor);
 
     //
     // Add to maps
@@ -740,6 +752,11 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         Pi<float> / 4.0f - 0.06f,
         2.0f * Pi<float> - Pi<float> / 4.0f,
         label,
+        mInteractiveCursor, // TODO: change cursor
+        [this, electricalElementId]()
+        {
+            this->OnTick(electricalElementId);
+        },
         1.0f - rpm);
 
     // Store as updateable element
@@ -1217,4 +1234,10 @@ void SwitchboardPanel::OnBackgroundSelectionChanged(wxCommandEvent & /*event*/)
 
     // Remember preferences
     mUIPreferencesManager->SetSwitchboardBackgroundBitmapIndex(selection);
+}
+
+void SwitchboardPanel::OnTick(ElectricalElementId electricalElementId)
+{
+    this->mGameController->HighlightElectricalElement(electricalElementId);
+    this->mSoundController->PlayTickSound();
 }
