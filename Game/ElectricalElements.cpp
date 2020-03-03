@@ -57,8 +57,7 @@ void ElectricalElements::Add(
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::EngineState(
-                    // TODO: convert from HP into Newton
-                    electricalMaterial.EnginePower,
+                    electricalMaterial.EnginePower * 746.0f, // HP => N*m/s (which we use as N)
                     electricalMaterial.EngineResponsiveness));
 
             // Indices
@@ -295,7 +294,7 @@ void ElectricalElements::HighlightElectricalElement(
         {
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
-                mElementStateBuffer[elementIndex].Engine.CurrentRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
+                mElementStateBuffer[elementIndex].Engine.TargetRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
 
             break;
@@ -405,9 +404,6 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
                     ElectricalElementId(mShipId, electricalElementIndex),
                     0.0f,
                     0.0f);
-
-                mElementStateBuffer[electricalElementIndex].Engine.LastPublishedRpm = 0.0f;
-                mElementStateBuffer[electricalElementIndex].Engine.LastPublishedThrustMagnitude = 0.0f;
             }
 
             break;
@@ -490,6 +486,13 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     // Switch state as appropriate
     switch (GetMaterialType(electricalElementIndex))
     {
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            mElementStateBuffer[electricalElementIndex].Engine.Reset();
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
             mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
@@ -747,7 +750,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     // Visit all electrical elements electrically reachable from this source
                     while (!electricalElementsToVisit.empty())
                     {
-                        auto e = electricalElementsToVisit.front();
+                        auto const e = electricalElementsToVisit.front();
                         electricalElementsToVisit.pop();
 
                         // Already marked as visited
@@ -844,22 +847,34 @@ void ElectricalElements::UpdateSinks(
                             if (!IsDeleted(engineElectricalElementIndex))
                             {
                                 //
-                                // Calculate rpm and thrust force vector exherted by this controller
+                                // Calculate thrust dir, rpm, and thrust magnitude exherted by this controller
                                 //  - ThrustDir = f(controller->engine angle)
+                                //  - RPM = f(EngineControllerState::CurrentTelegraphValue)
                                 //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
                                 //
 
                                 auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
 
+                                // Thrust direction (normalized vector)
+
                                 vec2f const engineToControllerDir =
                                     (controllerPosition - points.GetPosition(enginePointIndex))
                                     .normalise();
+
+                                vec2f const controllerEngineThrustDir = vec2f(
+                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
+                                    ,
+                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
+                                );
+
+                                // RPM: 0, 1/N, 1/N->1
 
                                 float constexpr TelegraphCoeff =
                                     1.0f
                                     / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
 
-                                // RPM: 0, 1/N, 1/N->1
                                 int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
                                 float controllerEngineRpm;
                                 if (absTelegraphValue == 0)
@@ -869,30 +884,22 @@ void ElectricalElements::UpdateSinks(
                                 else
                                     controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
 
-                                // Thrust direction (normalized vector)
-                                vec2f const controllerEngineThrustDir = vec2f(
-                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
-                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
-                                    ,
-                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
-                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
-                                );
+                                // Thrust magnitude: 0, 0, 1/N->1
 
-                                // Thrust: 0, 0, 1/N->1
-                                float controllerEngineThrust;
+                                float controllerEngineThrustMagnitude;
                                 if (controllerState.CurrentTelegraphValue >= 0)
                                 {
                                     if (controllerState.CurrentTelegraphValue <= 1)
-                                        controllerEngineThrust = 0.0f;
+                                        controllerEngineThrustMagnitude = 0.0f;
                                     else
-                                        controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
+                                        controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
                                 }
                                 else
                                 {
                                     if (controllerState.CurrentTelegraphValue >= -1)
-                                        controllerEngineThrust = 0.0f;
+                                        controllerEngineThrustMagnitude = 0.0f;
                                     else
-                                        controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
+                                        controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
                                 }
 
                                 //
@@ -900,17 +907,15 @@ void ElectricalElements::UpdateSinks(
                                 //  - Engine has been reset at end of previous iteration
                                 //
 
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector +=
-                                    controllerEngineThrustDir
-                                    * controllerEngineThrust;
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustDir +=
+                                    controllerEngineThrustDir;
 
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm = std::max(
-                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm,
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm = std::max(
+                                    mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm,
                                     controllerEngineRpm);
 
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude = std::max(
-                                    mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude,
-                                    controllerEngineThrust);
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustMagnitude +=
+                                    controllerEngineThrustMagnitude;
                             }
                         }
                     }
@@ -1114,24 +1119,33 @@ void ElectricalElements::UpdateSinks(
 
             auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
 
-            // Calculate force
+            //
+            // Apply engine thrust
+            //
+
+            // Update current values to match targets (via responsiveness)
+
+            engineState.CurrentRpm =
+                engineState.CurrentRpm
+                + (engineState.TargetRpm - engineState.CurrentRpm) * engineState.Responsiveness;
+
+            engineState.CurrentThrustMagnitude =
+                engineState.CurrentThrustMagnitude
+                + (engineState.TargetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
+
+            // Calculate force vector
             vec2f const thrustForce =
-                engineState.CurrentThrustVector
+                engineState.TargetThrustDir
+                * engineState.CurrentThrustMagnitude
                 * engineState.ThrustCapacity
                 * gameParameters.EngineThrustAdjustment;
 
             // Apply force to point
             points.GetNonSpringForce(enginePointIndex) += thrustForce;
 
-            // Generate heat if running
-            if (engineState.CurrentRpm != 0.0f)
-            {
-                points.AddHeat(enginePointIndex,
-                    mMaterialHeatGeneratedBuffer[engineSinkElementIndex]
-                    * engineState.CurrentRpm
-                    * gameParameters.ElectricalElementHeatProducedAdjustment
-                    * GameParameters::SimulationStepTimeDuration<float>);
-            }
+            //
+            // Publish
+            //
 
             // Eventually publish power change notification
             if (engineState.CurrentThrustMagnitude != engineState.LastPublishedThrustMagnitude
@@ -1143,20 +1157,48 @@ void ElectricalElements::UpdateSinks(
                     engineState.CurrentThrustMagnitude,
                     engineState.CurrentRpm);
 
-                // Show notifications - only if moving between zero and non-zero RPM
-                if (gameParameters.DoShowElectricalNotifications
-                    && (engineState.CurrentRpm == 0.0f || engineState.LastPublishedRpm == 0.0f))
-                {
-                    HighlightElectricalElement(engineSinkElementIndex, points);
-                }
-
-                // Remember last-published value
+                // Remember last-published values
                 engineState.LastPublishedThrustMagnitude = engineState.CurrentThrustMagnitude;
                 engineState.LastPublishedRpm = engineState.CurrentRpm;
             }
 
-            // Reset this engine's power, we'll re-update it at the next iteration
-            engineState.ResetCurrent();
+            // Eventually show notifications - only if moving between zero and non-zero RPM
+            if (gameParameters.DoShowElectricalNotifications)
+            {
+                if ((engineState.TargetRpm != 0.0f && engineState.LastHighlightedRpm == 0.0)
+                    || (engineState.TargetRpm == 0.0f && engineState.LastHighlightedRpm != 0.0))
+                {
+                    HighlightElectricalElement(engineSinkElementIndex, points);
+
+                    engineState.LastHighlightedRpm = engineState.TargetRpm;
+                }
+            }
+
+
+            //
+            // Generate heat if running
+            //
+
+            points.AddHeat(enginePointIndex,
+                mMaterialHeatGeneratedBuffer[engineSinkElementIndex]
+                * engineState.CurrentRpm
+                * gameParameters.ElectricalElementHeatProducedAdjustment
+                * GameParameters::SimulationStepTimeDuration<float>);
+
+
+            //
+            // Update engine conductivity
+            //
+
+            InternalChangeConductivity(
+                engineSinkElementIndex,
+                (engineState.CurrentRpm > 0.20f)); // Magic number
+
+            //
+            // Reset this engine's targets, we'll re-update them at the next iteration
+            //
+
+            engineState.ClearTargets();
         }
     }
 
@@ -1206,50 +1248,7 @@ void ElectricalElements::InternalSetSwitchState(
     // Make sure it's a state change
     if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
     {
-        // Change current value
-        mConductivityBuffer[elementIndex].ConductsElectricity = static_cast<bool>(switchState);
-
-        // Update conductive connectivity
-        if (static_cast<bool>(switchState) == true)
-        {
-            // OFF->ON
-
-            // For each electrical element connected to this one: if both elements conduct electricity,
-            // conduct-connect elements to each other
-            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
-            {
-                assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
-                assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
-                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
-                {
-                    mConductingConnectedElectricalElementsBuffer[elementIndex].push_back(otherElementIndex);
-                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].push_back(elementIndex);
-                }
-            }
-        }
-        else
-        {
-            // ON->OFF
-
-            // For each electrical element connected to this one: if the other element conducts electricity,
-            // sever conduct-connection to each other
-            for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
-            {
-                if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
-                {
-                    assert(mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
-                    assert(mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
-
-                    mConductingConnectedElectricalElementsBuffer[elementIndex].erase_first(otherElementIndex);
-                    mConductingConnectedElectricalElementsBuffer[otherElementIndex].erase_first(elementIndex);
-                }
-                else
-                {
-                    assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
-                    assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
-                }
-            }
-        }
+        InternalChangeConductivity(elementIndex, static_cast<bool>(switchState));
 
         // Notify
         mGameEventHandler->OnSwitchToggled(
@@ -1265,6 +1264,56 @@ void ElectricalElements::InternalSetSwitchState(
         // Remember that a switch has been toggled
         mHasSwitchBeenToggledInStep = true;
     }
+}
+
+void ElectricalElements::InternalChangeConductivity(
+    ElementIndex elementIndex,
+    bool value)
+{
+    // Update conductive connectivity
+    if (mConductivityBuffer[elementIndex].ConductsElectricity == false && value == true)
+    {
+        // OFF->ON
+
+        // For each electrical element connected to this one: if both elements conduct electricity,
+        // conduct-connect elements to each other
+        for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+        {
+            assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+            assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+            if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+            {
+                mConductingConnectedElectricalElementsBuffer[elementIndex].push_back(otherElementIndex);
+                mConductingConnectedElectricalElementsBuffer[otherElementIndex].push_back(elementIndex);
+            }
+        }
+    }
+    else if (mConductivityBuffer[elementIndex].ConductsElectricity == true && value == false)
+    {
+        // ON->OFF
+
+        // For each electrical element connected to this one: if the other element conducts electricity,
+        // sever conduct-connection to each other
+        for (auto const & otherElementIndex : mConnectedElectricalElementsBuffer[elementIndex])
+        {
+            if (mConductivityBuffer[otherElementIndex].ConductsElectricity)
+            {
+                assert(mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                assert(mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+
+                mConductingConnectedElectricalElementsBuffer[elementIndex].erase_first(otherElementIndex);
+                mConductingConnectedElectricalElementsBuffer[otherElementIndex].erase_first(elementIndex);
+            }
+            else
+            {
+                assert(!mConductingConnectedElectricalElementsBuffer[elementIndex].contains(otherElementIndex));
+                assert(!mConductingConnectedElectricalElementsBuffer[otherElementIndex].contains(elementIndex));
+            }
+        }
+    }
+
+    // Change current value
+    mConductivityBuffer[elementIndex].ConductsElectricity = value;
 }
 
 void ElectricalElements::RunLampStateMachine(

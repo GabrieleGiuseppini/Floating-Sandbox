@@ -454,40 +454,40 @@
 
     {
         "color_key": "#30E000",
-	"conducts_electricity": true,
+	"conducts_electricity": false,
         "electrical_type": "Engine", 
 	"engine_direction": 0.0,
-	"engine_power": 1000000.0,
-	"engine_responsiveness": 0.5,
+	"engine_power": 1300.0,
+	"engine_responsiveness": 0.02,
 	"engine_type": "SteamEngine",
         "heat_generated": 800.0, 
 	"is_instanced": true,
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Engine R/L", 
+        "name": "1300HP Engine R/L", 
         "template": {
-            "column": "4|Engine R/L",
+            "column": "4|1300HP Engine R/L",
             "row": "9|Misc"
         }
     },
 
     {
         "color_key": "#30F000",
-	"conducts_electricity": true,
+	"conducts_electricity": false,
         "electrical_type": "Engine", 
 	"engine_direction": 1.570796327,
-	"engine_power": 1000000.0,
-	"engine_responsiveness": 0.5,
+	"engine_power": 1300.0,
+	"engine_responsiveness": 0.02,
 	"engine_type": "SteamEngine",
         "heat_generated": 800.0, 
 	"is_instanced": true,
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Engine U/D", 
+        "name": "1300HP Engine U/D", 
         "template": {
-            "column": "5|Engine U/D",
+            "column": "5|1300HP Engine U/D",
             "row": "9|Misc"
         }
     }

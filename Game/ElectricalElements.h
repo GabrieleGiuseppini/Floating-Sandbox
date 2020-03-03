@@ -94,11 +94,15 @@ private:
             float ThrustCapacity;
             float Responsiveness;
 
-            vec2f CurrentThrustVector; // Normalized
+            vec2f TargetThrustDir; // Normalized, sum of normalized vectors
             float CurrentRpm;
+            float TargetRpm;
             float CurrentThrustMagnitude;
+            float TargetThrustMagnitude;
+
             float LastPublishedRpm;
             float LastPublishedThrustMagnitude;
+            float LastHighlightedRpm;
 
             EngineState(
                 float thrustCapacity,
@@ -107,15 +111,29 @@ private:
                 , Responsiveness(responsiveness)
                 , LastPublishedRpm(0.0f)
                 , LastPublishedThrustMagnitude(0.0f)
+                , LastHighlightedRpm(0.0f)
             {
-                ResetCurrent();
+                Reset();
             }
 
-            void ResetCurrent()
+            void Reset()
             {
-                CurrentThrustVector = vec2f::zero();
+                ClearTargets();
+
                 CurrentRpm = 0.0f;
                 CurrentThrustMagnitude = 0.0f;
+
+                LastPublishedRpm = 0.0f;
+                LastPublishedThrustMagnitude = 0.0f;
+                LastHighlightedRpm = 0.0f;
+            }
+
+            void ClearTargets()
+            {
+                // Reset targets, we'll re-calc at next iteration
+                TargetThrustDir = vec2f::zero();
+                TargetRpm = 0.0f;
+                TargetThrustMagnitude = 0.0f;
             }
         };
 
@@ -591,6 +609,10 @@ private:
         ElectricalState switchState,
         Points & points,
         GameParameters const & gameParameters);
+
+    void InternalChangeConductivity(
+        ElementIndex elementIndex,
+        bool value);
 
     void RunLampStateMachine(
         ElementIndex elementLampIndex,

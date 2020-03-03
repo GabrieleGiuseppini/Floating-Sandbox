@@ -1391,10 +1391,13 @@ Render:
 				+ Fade-in
 				- Add engine_type as new electrical material property
 					- Communicated at announcement
-						- Stores in unord_map<instance ID, sound type>
+						- Stores in unord_map<instance ID, sound type> 
+							- ...in MultiInstancedSound, mInstanceIdToSoundType
 					- MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
 						- Stores in unord_map<TSoundTypeEnum, sound buffer>
 					- Start: takes sound type
+						- And another override that takes instance ID, in which case does forced lookup
+						  in mInstanceIdToSoundType
 				+ Register for EngineMonitor event, only RPM
 				+ Simple continuous sound, keyed by object ID
 				+ Add pitch controls to Sound
@@ -1404,10 +1407,11 @@ Render:
 			+ Highlight
 			+ Sound
 			+ Cursor ('?')
-		- Make engines conduct electricity
-			- Json: does not conduct
-			- At engine update: conudct_electricity=(rpm > threshold)
-			- Change circuit_test
+		= Make engines conduct electricity
+			+ Json: does not conduct
+			= At engine update: conduct_electricity=(rpm > threshold)
+			+ Change circuit_test
+		= Fix highlight/last highlighted
 		= Do engines with different properties:
 			+ ElectricalMaterial Properties:
 				+ Power (in HP)
@@ -1415,10 +1419,10 @@ Render:
 				+ Engine Type:
 					+ Steam
 			- Different json materials
-				- Use actual HP, not newtons
-			- Store responsiveness and power in EngineState at ElectricalElements::Add
-					- Pre-convert HP -> Newton
-			- Do responsiveness state machine: TODO
+				+ Use actual HP, not newtons
+			+ Store responsiveness and power in EngineState at ElectricalElements::Add
+					+ Pre-convert HP -> Newton
+			= Do responsiveness state machine
 			+ Nuke GameParameters::EngineThrust
 		+ Switchboard panel: display finger mouse pointer only at interactive controls
 			+ Set into ctrl from panel
@@ -1431,6 +1435,7 @@ Render:
 			+ Restore of engine controller
 			+ Restore of engine
 			+ Do progress at Switchboard constructor
+			- Switchboard: when scroll bar present, must be taller
 			- EngineController: SHIFT for plus/minus?
 			- Make engines lose power progressively when wet
 				- At Engine update: quantity of water determines RPM damping
