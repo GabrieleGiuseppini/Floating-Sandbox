@@ -869,6 +869,15 @@ void ElectricalElements::UpdateSinks(
                                 else
                                     controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
 
+                                // Thrust direction (normalized vector)
+                                vec2f const controllerEngineThrustDir = vec2f(
+                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
+                                    ,
+                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
+                                );
+
                                 // Thrust: 0, 0, 1/N->1
                                 float controllerEngineThrust;
                                 if (controllerState.CurrentTelegraphValue >= 0)
@@ -886,26 +895,19 @@ void ElectricalElements::UpdateSinks(
                                         controllerEngineThrust = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
                                 }
 
-                                vec2f const controllerEngineThrustDir = vec2f(
-                                        connectedEngine.CosEngineCWAngle * engineToControllerDir.x
-                                        + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
-                                    ,
-                                        -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
-                                        + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
-                                    );
-
-                                vec2f const controllerEngineThrustVector =
-                                    controllerEngineThrustDir * controllerEngineThrust;
-
                                 //
                                 // Add to engine
                                 //  - Engine has been reset at end of previous iteration
                                 //
 
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector +=
+                                    controllerEngineThrustDir
+                                    * controllerEngineThrust;
+
                                 mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm = std::max(
                                     mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentRpm,
                                     controllerEngineRpm);
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustVector += controllerEngineThrustVector;
+
                                 mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude = std::max(
                                     mElementStateBuffer[engineElectricalElementIndex].Engine.CurrentThrustMagnitude,
                                     controllerEngineThrust);

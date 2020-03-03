@@ -94,8 +94,8 @@ private:
             float ThrustCapacity;
             float Responsiveness;
 
-            float CurrentRpm;
             vec2f CurrentThrustVector; // Normalized
+            float CurrentRpm;
             float CurrentThrustMagnitude;
             float LastPublishedRpm;
             float LastPublishedThrustMagnitude;
@@ -113,8 +113,8 @@ private:
 
             void ResetCurrent()
             {
-                CurrentRpm = 0.0f;
                 CurrentThrustVector = vec2f::zero();
+                CurrentRpm = 0.0f;
                 CurrentThrustMagnitude = 0.0f;
             }
         };
