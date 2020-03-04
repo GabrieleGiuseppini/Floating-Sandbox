@@ -243,6 +243,14 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    virtual void OnEngineMonitorCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        float thrustMagnitude,
+        float rpm,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
     virtual void OnSwitchToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;

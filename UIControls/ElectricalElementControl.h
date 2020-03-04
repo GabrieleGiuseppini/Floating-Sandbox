@@ -118,7 +118,7 @@ public:
 
     virtual void SetKeyboardShortcutLabel(std::string const & label) = 0;
 
-    virtual void OnKeyboardShortcutDown() = 0;
+    virtual void OnKeyboardShortcutDown(bool isShift) = 0;
 
     virtual void OnKeyboardShortcutUp() = 0;
 };
@@ -322,7 +322,7 @@ public:
         mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&InteractiveToggleSwitchElectricalElementControl::OnLeftDown, this);
     }
 
-    void OnKeyboardShortcutDown() override
+    void OnKeyboardShortcutDown(bool /*isShift*/) override
     {
         OnDown();
     }
@@ -387,7 +387,7 @@ public:
         mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&InteractivePushSwitchElectricalElementControl::OnLeftUp, this);
     }
 
-    void OnKeyboardShortcutDown() override
+    void OnKeyboardShortcutDown(bool /*isShift*/) override
     {
         OnDown();
     }
@@ -676,7 +676,6 @@ public:
         //
         , mCurrentValue(currentValue)
         , mIsEnabled(true)
-        , mIsKeyShortcutIncreasing(true)
     {
         mImagePanel->SetCursor(cursor);
 
@@ -711,7 +710,7 @@ public:
         mImagePanel->SetToolTip(label);
     }
 
-    void OnKeyboardShortcutDown() override;
+    void OnKeyboardShortcutDown(bool isShift) override;
 
     void OnKeyboardShortcutUp() override
     {
@@ -741,5 +740,4 @@ private:
     // Current state
     unsigned int mCurrentValue;
     bool mIsEnabled;
-    bool mIsKeyShortcutIncreasing;
 };

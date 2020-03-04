@@ -113,35 +113,21 @@ void GaugeElectricalElementControl::Render(wxDC & dc)
 // EngineControllerElectricalElementControl
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void EngineControllerElectricalElementControl::OnKeyboardShortcutDown()
+void EngineControllerElectricalElementControl::OnKeyboardShortcutDown(bool isShift)
 {
     if (mIsEnabled)
     {
-        if (mIsKeyShortcutIncreasing)
+        if (!isShift)
         {
-            if (mCurrentValue == mMaxValue)
-            {
-                // Start decreasing
-                mIsKeyShortcutIncreasing = false;
-                --mCurrentValue;
-            }
-            else
-            {
+            // Plus
+            if (mCurrentValue < mMaxValue)
                 ++mCurrentValue;
-            }
         }
         else
         {
-            if (mCurrentValue == 0)
-            {
-                // Start increasing
-                mIsKeyShortcutIncreasing = true;
-                ++mCurrentValue;
-            }
-            else
-            {
+            // Minus
+            if (mCurrentValue > 0)
                 --mCurrentValue;
-            }
         }
 
         mOnControllerUpdated(mCurrentValue);

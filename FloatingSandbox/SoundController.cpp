@@ -306,7 +306,9 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::EngineSteam)
         {
-            mSteamEngineSounds.Initialize(std::move(soundBuffer));
+            mSteamEngineSounds.AddSoundType(
+                SoundType::EngineSteam,
+                std::move(soundBuffer));
         }
         else if (soundType == SoundType::Break
 				|| soundType == SoundType::Destroy
@@ -1323,6 +1325,21 @@ void SoundController::OnLightFlicker(
             100.0f,
             30.0f * size),
         true);
+}
+
+void SoundController::OnEngineMonitorCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex /*instanceIndex*/,
+    ElectricalMaterial const & electricalMaterial,
+    float /*thrustMagnitude*/,
+    float /*rpm*/,
+    std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+{
+    // Associate sound type with this element
+    if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::SteamEngine)
+    {
+        mSteamEngineSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam);
+    }
 }
 
 void SoundController::OnSwitchToggled(

@@ -344,11 +344,11 @@ bool SwitchboardPanel::ProcessKeyDown(
     else
         return false; // Not for us
 
-    if (keyModifiers == wxMOD_CONTROL)
+    if ((keyModifiers & wxMOD_CONTROL) != 0)
     {
         // 0-9
     }
-    else if (keyModifiers == wxMOD_ALT)
+    else if ((keyModifiers & wxMOD_ALT) != 0)
     {
         // 10-19
         keyIndex += 10;
@@ -372,7 +372,7 @@ bool SwitchboardPanel::ProcessKeyDown(
         {
             // Deliver event
             assert(nullptr != elementInfo.InteractiveControl);
-            elementInfo.InteractiveControl->OnKeyboardShortcutDown();
+            elementInfo.InteractiveControl->OnKeyboardShortcutDown((keyModifiers & wxMOD_SHIFT) != 0);
 
             // Remember this is the first keydown
             mCurrentKeyDownElementId = elementId;
@@ -427,7 +427,10 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
     // Reset all switch controls
     mSwitchPanel->Destroy();
     mSwitchPanel = nullptr;
-    mSwitchPanelSizer = nullptr;
+    mSwitchPanelVSizer = nullptr;
+    mSwitchPanelElementSizer = nullptr;
+    if (mMainVSizer2->GetItemCount() > 1)
+        mMainVSizer2->Remove(1);
     MakeSwitchPanel();
 
     // Clear maps
@@ -722,6 +725,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
 void SwitchboardPanel::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
+    ElectricalMaterial const & /*electricalMaterial*/,
     float thrustMagnitude,
     float rpm,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
@@ -798,13 +802,14 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                 std::nullopt);
     }
 
+    // Layout
     LayoutHelper::Layout<ElectricalElementId>(
         layoutElements,
         MaxElementsPerRow,
         [this](int width, int height)
         {
-            mSwitchPanelSizer->SetCols(width);
-            mSwitchPanelSizer->SetRows(height);
+            mSwitchPanelElementSizer->SetCols(width);
+            mSwitchPanelElementSizer->SetRows(height);
         },
         [this](std::optional<ElectricalElementId> elementId, int x, int y)
         {
@@ -815,9 +820,9 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                 assert(it != mElementMap.end());
 
                 // Add control to sizer
-                mSwitchPanelSizer->Add(
+                mSwitchPanelElementSizer->Add(
                     it->second.Control,
-                    wxGBPosition(y, x + (mSwitchPanelSizer->GetCols() / 2)),
+                    wxGBPosition(y, x + (mSwitchPanelElementSizer->GetCols() / 2)),
                     wxGBSpan(1, 1),
                     wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_BOTTOM,
                     8);
@@ -858,7 +863,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         });
 
     // Ask sizer to resize panel accordingly
-    mSwitchPanelSizer->SetSizeHints(mSwitchPanel);
+    mSwitchPanelVSizer->SetSizeHints(mSwitchPanel);
 
     //
     // Decide panel visibility
@@ -890,6 +895,14 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 
     // Re-layout from parent
     LayoutParent();
+
+    // If scrollbar appears, add spacing
+    if (mSwitchPanel->HasScrollbar(wxHORIZONTAL))
+    {
+        mSwitchPanelVSizer->AddSpacer(10);
+        mSwitchPanelVSizer->SetSizeHints(mSwitchPanel);
+        LayoutParent();
+    }
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
@@ -992,8 +1005,6 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     float /*thrustMagnitude*/,
     float rpm)
 {
-    LogMessage("SwitchboardPanel::OnEngineMonitorUpdated(", electricalElementId, "): RPM=", rpm);
-
     //
     // Change RPM
     //
@@ -1011,15 +1022,21 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
 
 void SwitchboardPanel::MakeSwitchPanel()
 {
-    // Create grid sizer for switch panel
-    mSwitchPanelSizer = new wxGridBagSizer(0, 15);
-    mSwitchPanelSizer->SetEmptyCellSize(mMinBitmapSize);
+    // Create grid sizer for elements
+    mSwitchPanelElementSizer = new wxGridBagSizer(0, 15);
+    mSwitchPanelElementSizer->SetEmptyCellSize(mMinBitmapSize);
+
+    // Create V sizer for switch panel
+    mSwitchPanelVSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Add grid sizer to V sizer
+    mSwitchPanelVSizer->Add(mSwitchPanelElementSizer, 0, wxALIGN_TOP, 0);
 
     // Create (scrollable) panel for switches
     mSwitchPanel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL);
     mSwitchPanel->SetScrollRate(5, 0);
     mSwitchPanel->FitInside();
-    mSwitchPanel->SetSizerAndFit(mSwitchPanelSizer);
+    mSwitchPanel->SetSizerAndFit(mSwitchPanelVSizer);
     mSwitchPanel->Bind(wxEVT_RIGHT_DOWN, &SwitchboardPanel::OnRightDown, this);
 
     // Add switch panel to v-sizer

@@ -682,17 +682,27 @@ struct MultiInstanceContinuousSound
         , mTimeToFadeOut(timeToFadeOut)
         , mIsPaused(false)
         //
-        , mSoundBuffer()
+        , mSoundTypeToSoundBuffer()
+        , mInstanceIdToSoundType()
         , mSounds()
     {
     }
 
-    void Initialize(std::unique_ptr<sf::SoundBuffer> soundBuffer)
+    void AddSoundType(SoundType soundType, std::unique_ptr<sf::SoundBuffer> soundBuffer)
     {
-        assert(!mSoundBuffer);
-        assert(mSounds.empty());
+        assert(0 == mSoundTypeToSoundBuffer.count(soundType));
 
-        mSoundBuffer = std::move(soundBuffer);
+        mSoundTypeToSoundBuffer.emplace(soundType, std::move(soundBuffer));
+    }
+
+    /*
+     * Must be called first if we want to use the Start(.) overload that does not take a sound type.
+     */
+    void AddSoundTypeForInstanceId(TInstanceId instanceId, SoundType soundType)
+    {
+        assert(0 == mInstanceIdToSoundType.count(instanceId));
+
+        mInstanceIdToSoundType.emplace(instanceId, soundType);
     }
 
     void SetMasterVolume(float masterVolume)
@@ -728,6 +738,7 @@ struct MultiInstanceContinuousSound
 
     void Start(
         TInstanceId instanceId,
+        SoundType soundType,
         SoundStartMode startMode = SoundStartMode::Immediate)
     {
         auto it = mSounds.find(instanceId);
@@ -737,8 +748,14 @@ struct MultiInstanceContinuousSound
             // Create sound altogether
             //
 
+            auto const srchIt = mSoundTypeToSoundBuffer.find(soundType);
+            if (srchIt == mSoundTypeToSoundBuffer.cend())
+            {
+                throw GameException("No sound buffer associated with sound type \"" + std::to_string(int(soundType)) + "\"");
+            }
+
             auto newSound = std::make_unique<GameSound>(
-                *mSoundBuffer,
+                *(srchIt->second),
                 mVolume,
                 mMasterVolume,
                 mIsMuted,
@@ -761,9 +778,26 @@ struct MultiInstanceContinuousSound
         {
             sound->fadeToPlay();
         }
-        else if(sf::Sound::Status::Playing != sound->getStatus())
+        else if (sf::Sound::Status::Playing != sound->getStatus())
         {
             sound->play();
+        }
+    }
+
+    /*
+     * Must have been told already which sound type is associated with this instance ID.
+     */
+    void Start(
+        TInstanceId instanceId,
+        SoundStartMode startMode = SoundStartMode::Immediate)
+    {
+        auto const srchIt = mInstanceIdToSoundType.find(instanceId);
+        if (srchIt != mInstanceIdToSoundType.cend())
+        {
+            Start(
+                instanceId,
+                srchIt->second,
+                startMode);
         }
     }
 
@@ -814,6 +848,7 @@ struct MultiInstanceContinuousSound
 
     void Reset()
     {
+        mInstanceIdToSoundType.clear();
         mSounds.clear();
     }
 
@@ -826,8 +861,13 @@ private:
     std::chrono::milliseconds const mTimeToFadeOut;
     bool mIsPaused;
 
-    std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
+    // SoundType<->SoundBuffer
+    std::unordered_map<SoundType, std::unique_ptr<sf::SoundBuffer>> mSoundTypeToSoundBuffer;
 
+    // InstanceId<->SoundType (optional)
+    std::unordered_map<TInstanceId, SoundType> mInstanceIdToSoundType;
+
+    // InstanceId<->Sound
     std::unordered_map<TInstanceId, std::unique_ptr<GameSound>> mSounds;
 };
 

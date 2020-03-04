@@ -349,6 +349,7 @@ public:
     virtual void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
@@ -356,7 +357,7 @@ public:
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, thrustMagnitude, rpm, panelElementMetadata);
+            sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, electricalMaterial, thrustMagnitude, rpm, panelElementMetadata);
         }
     }
 

@@ -1380,23 +1380,23 @@ Render:
 			+ Handle creations of EngineController and EngineMonitor
 			+ Handle enabling/disabling of EngineController
 			+ Subscribe to updates of EngineController and EngineMonitor
-		= Sound:
+		+ Sound:
 			+ EngineController (telegraph) sound
-			= Engine sound:
+			+ Engine sound:
 				+ Hook volume, pause, reset, etc.; test:
 					+ Global mute
 					+ Effects volume
 					+ Pause
 					+ Reset
 				+ Fade-in
-				- Add engine_type as new electrical material property
-					- Communicated at announcement
-						- Stores in unord_map<instance ID, sound type> 
-							- ...in MultiInstancedSound, mInstanceIdToSoundType
-					- MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
-						- Stores in unord_map<TSoundTypeEnum, sound buffer>
-					- Start: takes sound type
-						- And another override that takes instance ID, in which case does forced lookup
+				+ Add engine_type as new electrical material property
+					+ MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
+						+ Stores in unord_map<TSoundTypeEnum, sound buffer>
+					+ Communicated at announcement (via ElectricalMaterial)
+						+ Stores in unord_map<instance ID, sound type> 
+							+ ...in MultiInstancedSound, mInstanceIdToSoundType
+					+ Start: takes sound type
+						+ And another override that takes instance ID, in which case does forced lookup
 						  in mInstanceIdToSoundType
 				+ Register for EngineMonitor event, only RPM
 				+ Simple continuous sound, keyed by object ID
@@ -1407,11 +1407,11 @@ Render:
 			+ Highlight
 			+ Sound
 			+ Cursor ('?')
-		= Make engines conduct electricity
+		+ Make engines conduct electricity
 			+ Json: does not conduct
-			= At engine update: conduct_electricity=(rpm > threshold)
+			+ At engine update: conduct_electricity=(rpm > threshold)
 			+ Change circuit_test
-		= Fix highlight/last highlighted
+		+ Fix highlight/last highlighted
 		= Do engines with different properties:
 			+ ElectricalMaterial Properties:
 				+ Power (in HP)
@@ -1420,13 +1420,17 @@ Render:
 					+ Steam
 			- Different json materials
 				+ Use actual HP, not newtons
+				- Evinrude (mount on small fast boat)
 			+ Store responsiveness and power in EngineState at ElectricalElements::Add
 					+ Pre-convert HP -> Newton
-			= Do responsiveness state machine
+			+ Do responsiveness state machine
 			+ Nuke GameParameters::EngineThrust
 		+ Switchboard panel: display finger mouse pointer only at interactive controls
 			+ Set into ctrl from panel
 			+ Dockable checkbox too
+		- Make engines lose power progressively when wet
+			- At Engine update: quantity of water determines target RPM damping
+				- e^(-x + 5)/(5+e^(-x + 5))
 		- Finalization:
 			+ Use PI-based constants for gauge angles
 			+ Do engine highlight only on 0<->nonzero transitions
@@ -1435,11 +1439,9 @@ Render:
 			+ Restore of engine controller
 			+ Restore of engine
 			+ Do progress at Switchboard constructor
-			- Switchboard: when scroll bar present, must be taller
-			- EngineController: SHIFT for plus/minus?
-			- Make engines lose power progressively when wet
-				- At Engine update: quantity of water determines RPM damping
-					- e^(-x + 5)/(5+e^(-x + 5))
+			+ Switchboard: when scroll bar present, must be taller
+				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
+			+ EngineController: SHIFT for plus/minus
 			- Do not propagate Engine, EngineController, PowerMonitor materials
 				- Actually, *only* propagate those that we want to propagate
 			+ SettingsDialog: EngineThrust or Adjust

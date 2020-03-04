@@ -97,6 +97,7 @@ public:
     virtual void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
@@ -200,7 +201,8 @@ private:
     wxBoxSizer * mHintPanelSizer;
 
     wxScrolled<wxPanel> * mSwitchPanel;
-    wxGridBagSizer * mSwitchPanelSizer;
+    wxBoxSizer * mSwitchPanelVSizer;
+    wxGridBagSizer * mSwitchPanelElementSizer;
 
     BitmappedCheckbox * mDockCheckbox;
 

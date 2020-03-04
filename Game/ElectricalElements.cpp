@@ -192,6 +192,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineMonitorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
+                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
                     mElementStateBuffer[elementIndex].Engine.CurrentRpm,
                     mInstanceInfos[elementIndex].PanelElementMetadata);
