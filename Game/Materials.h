@@ -179,7 +179,8 @@ public:
 
     enum class EngineElementType
     {
-        SteamEngine
+        Outboard,
+        Steam
     };
 
 public:

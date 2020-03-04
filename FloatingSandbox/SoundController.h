@@ -495,5 +495,5 @@ private:
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
     ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
 
-    MultiInstanceContinuousSound<ElectricalElementId> mSteamEngineSounds;
+    MultiInstanceContinuousSound<ElectricalElementId> mEngineSounds;
 };

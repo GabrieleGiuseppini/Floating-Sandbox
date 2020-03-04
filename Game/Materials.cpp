@@ -178,7 +178,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         }
 
         // Engine properties
-        EngineElementType engineType = EngineElementType::SteamEngine;
+        EngineElementType engineType = EngineElementType::Steam; // Arbitrary
         float engineDirection = 0.0f;
         float enginePower = 0.0f;
         float engineResponsiveness = 1.0f;
@@ -255,8 +255,10 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
 
 ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "SteamEngine"))
-        return EngineElementType::SteamEngine;
+    if (Utils::CaseInsensitiveEquals(str, "Outboard"))
+        return EngineElementType::Outboard;
+    else if (Utils::CaseInsensitiveEquals(str, "Steam"))
+        return EngineElementType::Steam;
     else
         throw GameException("Unrecognized EngineElementType \"" + str + "\"");
 }

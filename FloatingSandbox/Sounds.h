@@ -52,6 +52,7 @@ enum class SoundType
     ElectricalPanelDock,
     ElectricalPanelUndock,
     GlassTick,
+    EngineOutboard,
     EngineSteam,
     EngineTelegraph,
     WaterRush,
@@ -703,6 +704,13 @@ struct MultiInstanceContinuousSound
         assert(0 == mInstanceIdToSoundType.count(instanceId));
 
         mInstanceIdToSoundType.emplace(instanceId, soundType);
+    }
+
+    SoundType GetSoundTypeForInstanceId(TInstanceId instanceId) const
+    {
+        auto const it = mInstanceIdToSoundType.find(instanceId);
+        assert(it != mInstanceIdToSoundType.cend());
+        return it->second;
     }
 
     void SetMasterVolume(float masterVolume)

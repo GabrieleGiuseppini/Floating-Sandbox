@@ -1418,9 +1418,11 @@ Render:
 				+ Responsiveness
 				+ Engine Type:
 					+ Steam
-			- Different json materials
+			= Different json materials
 				+ Use actual HP, not newtons
-				- Evinrude (mount on small fast boat)
+				+ Outboard
+					+ Sound type
+					+ Mount on LifeBoat
 			+ Store responsiveness and power in EngineState at ElectricalElements::Add
 					+ Pre-convert HP -> Newton
 			+ Do responsiveness state machine
@@ -1428,9 +1430,12 @@ Render:
 		+ Switchboard panel: display finger mouse pointer only at interactive controls
 			+ Set into ctrl from panel
 			+ Dockable checkbox too
-		- Make engines lose power progressively when wet
-			- At Engine update: quantity of water determines target RPM damping
-				- e^(-x + 5)/(5+e^(-x + 5))
+		= Make engines lose power progressively when wet
+			= At Engine update: quantity of water determines target RPM damping
+				+ e^(-x + 5)/(5+e^(-x + 5))
+		- Do wake with very short-lived ephemeral particles
+			- Only if underwater
+			- At EngineUpdate
 		- Finalization:
 			+ Use PI-based constants for gauge angles
 			+ Do engine highlight only on 0<->nonzero transitions

@@ -1124,15 +1124,30 @@ void ElectricalElements::UpdateSinks(
             // Apply engine thrust
             //
 
+            // Adjust targets based off point's water
+            //  e^(-x + 5)/(5+e^(-x + 5))
+            float targetDamping;
+            auto const engineWater = points.GetWater(enginePointIndex);
+            if (engineWater != 0.0f)
+            {
+                float const expCoeff = std::exp(-engineWater + 5.0f);
+                targetDamping = expCoeff / (5.0f + expCoeff);
+            }
+            else
+            {
+                targetDamping = 1.0f;
+            }
+
+
             // Update current values to match targets (via responsiveness)
 
             engineState.CurrentRpm =
                 engineState.CurrentRpm
-                + (engineState.TargetRpm - engineState.CurrentRpm) * engineState.Responsiveness;
+                + (engineState.TargetRpm * targetDamping - engineState.CurrentRpm) * engineState.Responsiveness;
 
             engineState.CurrentThrustMagnitude =
                 engineState.CurrentThrustMagnitude
-                + (engineState.TargetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
+                + (engineState.TargetThrustMagnitude * targetDamping - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
 
             // Calculate force vector
             vec2f const thrustForce =

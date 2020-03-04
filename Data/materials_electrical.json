@@ -452,42 +452,83 @@
         }
     },
 
+
     {
         "color_key": "#30E000",
 	"conducts_electricity": false,
         "electrical_type": "Engine", 
 	"engine_direction": 0.0,
-	"engine_power": 1300.0,
-	"engine_responsiveness": 0.02,
-	"engine_type": "SteamEngine",
-        "heat_generated": 800.0, 
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.4,
+	"engine_type": "Outboard",
+        "heat_generated": 200.0, 
 	"is_instanced": true,
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "1300HP Engine R/L", 
+        "name": "50HP Outboard Engine R/L", 
         "template": {
-            "column": "4|1300HP Engine R/L",
+            "column": "4|50HP Outboard R/L",
             "row": "9|Misc"
         }
     },
 
     {
-        "color_key": "#30F000",
+        "color_key": "#30E100",
 	"conducts_electricity": false,
         "electrical_type": "Engine", 
-	"engine_direction": 1.570796327,
+	"engine_direction": 0.0,
+	"engine_power": 130.0,
+	"engine_responsiveness": 0.4,
+	"engine_type": "Outboard",
+        "heat_generated": 200.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "130HP Outboard Engine R/L", 
+        "template": {
+            "column": "5|130HP Outboard R/L",
+            "row": "9|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30E200",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
 	"engine_power": 1300.0,
 	"engine_responsiveness": 0.02,
-	"engine_type": "SteamEngine",
+	"engine_type": "Steam",
         "heat_generated": 800.0, 
 	"is_instanced": true,
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "1300HP Engine U/D", 
+        "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "5|1300HP Engine U/D",
+            "column": "6|1300HP Steam R/L",
+            "row": "9|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30E300",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 1.570796327,
+	"engine_power": 1300.0,
+	"engine_responsiveness": 0.02,
+	"engine_type": "Steam",
+        "heat_generated": 800.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "1300HP Steam Engine U/D", 
+        "template": {
+            "column": "7|1300HP Steam U/D",
             "row": "9|Misc"
         }
     }
