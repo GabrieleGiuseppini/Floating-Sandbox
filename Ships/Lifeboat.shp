@@ -1,5 +1,6 @@
 {
 	"structure_image":"lifeboat_structure.png.dat",
+	"electrical_image":"lifeboat_electrical.png.dat",
 	"texture_image":"lifeboat_texture.png.dat",
 	"offset":{"x":25.0, "y":0.0},
 	"ship_name":"Lifeboat",
