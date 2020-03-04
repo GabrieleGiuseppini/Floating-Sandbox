@@ -1412,17 +1412,18 @@ Render:
 			+ At engine update: conduct_electricity=(rpm > threshold)
 			+ Change circuit_test
 		+ Fix highlight/last highlighted
-		= Do engines with different properties:
+		+ Do engines with different properties:
 			+ ElectricalMaterial Properties:
 				+ Power (in HP)
 				+ Responsiveness
 				+ Engine Type:
 					+ Steam
-			= Different json materials
+			+ Different json materials
 				+ Use actual HP, not newtons
 				+ Outboard
 					+ Sound type
 					+ Mount on LifeBoat
+				+ One more powerful LR steam engine
 			+ Store responsiveness and power in EngineState at ElectricalElements::Add
 					+ Pre-convert HP -> Newton
 			+ Do responsiveness state machine
@@ -1430,9 +1431,10 @@ Render:
 		+ Switchboard panel: display finger mouse pointer only at interactive controls
 			+ Set into ctrl from panel
 			+ Dockable checkbox too
-		= Make engines lose power progressively when wet
-			= At Engine update: quantity of water determines target RPM damping
+		+ Make engines lose power progressively when wet
+			+ At Engine update: quantity of water determines target RPM damping
 				+ e^(-x + 5)/(5+e^(-x + 5))
+			+ Mount engine on a new ship for testing
 		- Do wake with very short-lived ephemeral particles
 			- Only if underwater
 			- At EngineUpdate
@@ -1447,6 +1449,9 @@ Render:
 			+ Switchboard: when scroll bar present, must be taller
 				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
 			+ EngineController: SHIFT for plus/minus
+			- Double-check strength (Titanic break test)
+			- Draw highlights at right plane ID
+				- Squat on one of the final layers
 			- Do not propagate Engine, EngineController, PowerMonitor materials
 				- Actually, *only* propagate those that we want to propagate
 			+ SettingsDialog: EngineThrust or Adjust

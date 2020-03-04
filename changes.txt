@@ -4,8 +4,9 @@
 	- Smoke Emitters - emit smoke particles when powered
 	- Power Monitors - provide feedback on state of a power line
 	- "Instanced" Generators - provide feedback on the power produced
-	- ...and added these materials to some pre-existing ships, among which:
+	- ...and retrofitted some pre-existing ships, among which:
 		- R.M.S. Titanic (With Lights and Smoke)
+		- Carnival Dream
 		- Cruise Vessel
 		- Lifeboat
 - Added electrical panel to control switches and other interactive electrical materials

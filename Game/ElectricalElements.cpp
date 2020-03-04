@@ -1125,12 +1125,12 @@ void ElectricalElements::UpdateSinks(
             //
 
             // Adjust targets based off point's water
-            //  e^(-x + 5)/(5+e^(-x + 5))
+            //  e^(-0.5*x + 5)/(5 + e^(-0.5*x + 5))
             float targetDamping;
             auto const engineWater = points.GetWater(enginePointIndex);
             if (engineWater != 0.0f)
             {
-                float const expCoeff = std::exp(-engineWater + 5.0f);
+                float const expCoeff = std::exp(-engineWater * 0.5f + 5.0f);
                 targetDamping = expCoeff / (5.0f + expCoeff);
             }
             else
