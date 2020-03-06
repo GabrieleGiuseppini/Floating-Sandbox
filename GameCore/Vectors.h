@@ -214,6 +214,19 @@ public:
         return vec2f(-y, x);
     }
 
+    /*
+     * Rotates the vector by the specified angle (radians, CCW, starting at E).
+     */
+    inline vec2f rotate(float angle) const noexcept
+    {
+        float const cosAngle = std::cos(angle);
+        float const sinAngle = std::sin(angle);
+
+        return vec2f(
+            x * cosAngle - y * sinAngle,
+            x * sinAngle + y * cosAngle);
+    }
+
     std::string toString() const;
 };
 

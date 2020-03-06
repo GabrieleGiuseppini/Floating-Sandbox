@@ -1455,7 +1455,7 @@ Render:
 			  and use it only for announcements
 			+ SettingsDialog: EngineThrust or Adjust
 			- Ship preview: add electrical icon
-			- Change "Titanic (with Lights)" into "Titanic (with Electricals)"
+			+ Change "Titanic (with Lights)" into "Titanic (with Electricals)"
 			- Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
 			- Add all new types to materials' guide
 			- Refresh electrical elements' materials template

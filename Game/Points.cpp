@@ -1408,6 +1408,8 @@ void Points::UpdateEphemeralParticles(
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble.Progress =
                             elapsedSimulationLifetime / maxSimulationLifetime;
 
+                        // TODOTEST
+                        /*
                         // Inject random walk in direction orthogonal to current velocity
                         float const randomWalkMagnitude =
                             4.0f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
@@ -1416,6 +1418,7 @@ void Points::UpdateEphemeralParticles(
                         mNonSpringForceBuffer[pointIndex] +=
                             deviationDirection * randomWalkMagnitude
                             * randomWalkVelocityImpulseToForceCoefficient;
+                        */
                     }
 
                     break;
@@ -1776,7 +1779,9 @@ void Points::UploadEphemeralParticles(
                     shipId,
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
-                    0.22f, // Scale, magic number
+                    // TODOTEST
+                    //0.22f, // Scale, magic number
+                    0.10f + 0.22f * state.Progress,
                     // TODOTEST
                     //1.0f - SmoothStep(0.0f, 1.0f, state.Progress)); // Alpha
                     1.0f - state.Progress); // Alpha

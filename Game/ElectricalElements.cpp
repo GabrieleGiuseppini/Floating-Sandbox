@@ -1209,8 +1209,14 @@ void ElectricalElements::UpdateSinks(
                 engineState.CurrentThrustMagnitude > 0.1f // Magic number
                 && mParentWorld.IsUnderwater(enginePosition))
             {
-                // TODO
-                vec2f const wakeVelocity = -engineState.TargetThrustDir * 17.0f;
+                float const angle = Clamp(
+                    0.5f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
+                    -Pi<float> / 12.0f,
+                    Pi<float> / 12.0f);
+
+                vec2f const wakeVelocity =
+                    -engineState.TargetThrustDir.rotate(angle)
+                    * 20.0f;
 
                 points.CreateEphemeralParticleWakeBubble(
                     enginePosition,
@@ -1226,7 +1232,7 @@ void ElectricalElements::UpdateSinks(
 
             InternalChangeConductivity(
                 engineSinkElementIndex,
-                (engineState.CurrentRpm > 0.20f)); // Magic number
+                (engineState.CurrentRpm > 0.15f)); // Magic number
 
             //
             // Reset this engine's targets, we'll re-update them at the next iteration
