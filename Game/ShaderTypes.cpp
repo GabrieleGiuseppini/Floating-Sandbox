@@ -405,6 +405,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Highlight1;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight2"))
         return VertexAttributeType::Highlight2;
+    else if (Utils::CaseInsensitiveEquals(str, "Highlight3"))
+        return VertexAttributeType::Highlight3;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
     // Text

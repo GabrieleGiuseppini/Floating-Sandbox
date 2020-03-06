@@ -170,6 +170,7 @@ enum class VertexAttributeType : GLuint
 
     Highlight1 = 0,
     Highlight2 = 1,
+    Highlight3 = 2,
 
     VectorArrow = 0,
 

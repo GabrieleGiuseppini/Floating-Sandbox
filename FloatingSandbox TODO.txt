@@ -1435,9 +1435,9 @@ Render:
 			+ At Engine update: quantity of water determines target RPM damping
 				+ e^(-x + 5)/(5+e^(-x + 5))
 			+ Mount engine on a new ship for testing
-		- Do wake with very short-lived ephemeral particles
-			- Only if underwater
-			- At EngineUpdate
+		= Do wake with very short-lived ephemeral particles
+			+ Only if underwater
+			+ At EngineUpdate
 		- Finalization:
 			+ Use PI-based constants for gauge angles
 			+ Do engine highlight only on 0<->nonzero transitions
@@ -1450,11 +1450,11 @@ Render:
 				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
 			+ EngineController: SHIFT for plus/minus
 			- Double-check strength (Titanic break test)
-			- Draw highlights at right plane ID
-				- Squat on one of the final layers
-			- Do not propagate Engine, EngineController, PowerMonitor materials
-				- Actually, *only* propagate those that we want to propagate
+			+ Draw highlights at right plane ID
+			+ If the two switch types are physically identical, move switch type as new electrical property
+			  and use it only for announcements
 			+ SettingsDialog: EngineThrust or Adjust
+			- Ship preview: add electrical icon
 			- Change "Titanic (with Lights)" into "Titanic (with Electricals)"
 			- Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
 			- Add all new types to materials' guide

@@ -8,6 +8,7 @@
 // Inputs
 in vec4 inHighlight1; // Position, VertexSpacePosition
 in vec4 inHighlight2; // Color, Progress
+in float inHighlight3; // PlaneId
 
 // Outputs
 out vec2 vertexSpacePosition;
@@ -23,7 +24,7 @@ void main()
     color = inHighlight2.xyz;
     progress = inHighlight2.w;
 
-    gl_Position = paramOrthoMatrix * vec4(inHighlight1.xy, 0.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inHighlight1.xy, inHighlight3, 1.0);
 }
 
 ###FRAGMENT

@@ -407,6 +407,79 @@ void Points::CreateEphemeralParticleSparkle(
     mIsPlaneIdBufferEphemeralDirty = true;
 }
 
+void Points::CreateEphemeralParticleWakeBubble(
+    vec2f const & position,
+    vec2f const & velocity,
+    float currentSimulationTime,
+    PlaneId planeId,
+    GameParameters const & gameParameters)
+{
+    // Get a free slot (but don't steal one)
+    auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
+    if (NoneElementIndex == pointIndex)
+        return; // No luck
+
+    //
+    // Store attributes
+    //
+
+    StructuralMaterial const & waterStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
+
+    assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mPositionBuffer[pointIndex] = position;
+    mVelocityBuffer[pointIndex] = velocity;
+    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
+    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
+    mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = waterStructuralMaterial.BuoyancyVolumeFill;
+    assert(mDecayBuffer[pointIndex] == 1.0f);
+    //mDecayBuffer[pointIndex] = 1.0f;
+    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        waterStructuralMaterial.BuoyancyVolumeFill,
+        waterStructuralMaterial.ThermalExpansionCoefficient);
+    mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
+
+    //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
+    //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
+    //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
+    assert(mWaterBuffer[pointIndex] == 0.0f);
+    //mWaterBuffer[pointIndex] = 0.0f;
+    assert(false == mIsLeakingBuffer[pointIndex]);
+    //mIsLeakingBuffer[pointIndex] = false;
+
+    mTemperatureBuffer[pointIndex] = gameParameters.WaterTemperature;
+    assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterStructuralMaterial.GetHeatCapacity();
+    mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterStructuralMaterial.ThermalExpansionCoefficient;
+    //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterStructuralMaterial.IgnitionTemperature;
+    //mMaterialCombustionTypeBuffer[pointIndex] = waterStructuralMaterial.CombustionType;
+    //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    assert(mLightBuffer[pointIndex] == 0.0f);
+    //mLightBuffer[pointIndex] = 0.0f;
+
+    mMaterialWindReceptivityBuffer[pointIndex] = 0.0f; // Wake bubbles (underwater) do not care about wind
+
+    assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
+    //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
+
+    mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::WakeBubble;
+    mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
+    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = 0.6f; // Magic number
+    mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WakeBubbleState();
+
+    assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
+    //mConnectedComponentIdBuffer[pointIndex] = NoneConnectedComponentId;
+    mPlaneIdBuffer[pointIndex] = planeId;
+    mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
+    mIsPlaneIdBufferEphemeralDirty = true;
+
+    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor;
+}
+
 void Points::Detach(
     ElementIndex pointElementIndex,
     vec2f const & velocity,
@@ -1153,7 +1226,7 @@ void Points::UpdateEphemeralParticles(
     GameParameters const & gameParameters)
 {
     // Transformation from desired velocity impulse to force
-    float const smokeRandomWalkVelocityImpulseToForceCoefficient =
+    float const randomWalkVelocityImpulseToForceCoefficient =
         GameParameters::AirMass
         / gameParameters.SimulationStepTimeDuration<float>;
 
@@ -1291,7 +1364,7 @@ void Points::UpdateEphemeralParticles(
                             GetVelocity(pointIndex).normalise().to_perpendicular();
                         mNonSpringForceBuffer[pointIndex] +=
                             deviationDirection * randomWalkMagnitude
-                            * smokeRandomWalkVelocityImpulseToForceCoefficient;
+                            * randomWalkVelocityImpulseToForceCoefficient;
                     }
 
                     break;
@@ -1313,6 +1386,36 @@ void Points::UpdateEphemeralParticles(
                         assert(maxSimulationLifetime > 0.0f);
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.Sparkle.Progress =
                             elapsedSimulationLifetime / maxSimulationLifetime;
+                    }
+
+                    break;
+                }
+
+                case EphemeralType::WakeBubble:
+                {
+                    // Check if expired
+                    auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+                    auto const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
+                    if (elapsedSimulationLifetime >= maxSimulationLifetime
+                        || !mParentWorld.IsUnderwater(GetPosition(pointIndex)))
+                    {
+                        ExpireEphemeralParticle(pointIndex);
+                    }
+                    else
+                    {
+                        // Update progress based off remaining time
+                        assert(maxSimulationLifetime > 0.0f);
+                        mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble.Progress =
+                            elapsedSimulationLifetime / maxSimulationLifetime;
+
+                        // Inject random walk in direction orthogonal to current velocity
+                        float const randomWalkMagnitude =
+                            4.0f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
+                        vec2f const deviationDirection =
+                            GetVelocity(pointIndex).normalise().to_perpendicular();
+                        mNonSpringForceBuffer[pointIndex] +=
+                            deviationDirection * randomWalkMagnitude
+                            * randomWalkVelocityImpulseToForceCoefficient;
                     }
 
                     break;
@@ -1665,6 +1768,22 @@ void Points::UploadEphemeralParticles(
                 break;
             }
 
+            case EphemeralType::WakeBubble:
+            {
+                auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble;
+
+                renderContext.UploadShipAirBubble(
+                    shipId,
+                    GetPlaneId(pointIndex),
+                    GetPosition(pointIndex),
+                    0.22f, // Scale, magic number
+                    // TODOTEST
+                    //1.0f - SmoothStep(0.0f, 1.0f, state.Progress)); // Alpha
+                    1.0f - state.Progress); // Alpha
+
+                break;
+            }
+
             case EphemeralType::None:
             default:
             {
@@ -1693,8 +1812,9 @@ void Points::UploadHighlights(
     {
         renderContext.UploadShipHighlight(
             shipId,
+            GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
-            5.0f, // Magic number
+            5.0f, // HalfQuadSize, magic number
             h.HighlightColor,
             h.Progress);
     }

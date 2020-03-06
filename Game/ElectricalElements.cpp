@@ -226,24 +226,28 @@ void ElectricalElements::AnnounceInstancedElements()
                 break;
             }
 
-            case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
+            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
             {
+                SwitchType switchType = SwitchType::AutomaticSwitch; // Arbitrary, for MSVC
+                switch (mMaterialBuffer[elementIndex]->InteractiveSwitchType)
+                {
+                    case ElectricalMaterial::InteractiveSwitchElementType::Push:
+                    {
+                        switchType = SwitchType::InteractivePushSwitch;
+                        break;
+                    }
+
+                    case ElectricalMaterial::InteractiveSwitchElementType::Toggle:
+                    {
+                        switchType = SwitchType::InteractiveToggleSwitch;
+                        break;
+                    }
+                }
+
                 mGameEventHandler->OnSwitchCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    SwitchType::InteractivePushSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
-                    mInstanceInfos[elementIndex].PanelElementMetadata);
-
-                break;
-            }
-
-            case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
-            {
-                mGameEventHandler->OnSwitchCreated(
-                    ElectricalElementId(mShipId, elementIndex),
-                    mInstanceInfos[elementIndex].InstanceIndex,
-                    SwitchType::InteractiveToggleSwitch,
+                    switchType,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
@@ -311,8 +315,7 @@ void ElectricalElements::HighlightElectricalElement(
             break;
         }
 
-        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
-        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             points.StartPointHighlight(
@@ -438,8 +441,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
             break;
         }
 
-        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
-        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
@@ -518,8 +520,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             break;
         }
 
-        case ElectricalMaterial::ElectricalElementType::InteractivePushSwitch:
-        case ElectricalMaterial::ElectricalElementType::InteractiveToggleSwitch:
+        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
@@ -1190,7 +1191,6 @@ void ElectricalElements::UpdateSinks(
                 }
             }
 
-
             //
             // Generate heat if running
             //
@@ -1201,6 +1201,24 @@ void ElectricalElements::UpdateSinks(
                 * gameParameters.ElectricalElementHeatProducedAdjustment
                 * GameParameters::SimulationStepTimeDuration<float>);
 
+            //
+            // Generate wake if running and underwater
+            //
+
+            if (vec2f const enginePosition = points.GetPosition(enginePointIndex);
+                engineState.CurrentThrustMagnitude > 0.1f // Magic number
+                && mParentWorld.IsUnderwater(enginePosition))
+            {
+                // TODO
+                vec2f const wakeVelocity = -engineState.TargetThrustDir * 17.0f;
+
+                points.CreateEphemeralParticleWakeBubble(
+                    enginePosition,
+                    wakeVelocity,
+                    currentSimulationTime,
+                    points.GetPlaneId(enginePointIndex),
+                    gameParameters);
+            }
 
             //
             // Update engine conductivity

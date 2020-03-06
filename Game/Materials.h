@@ -28,8 +28,9 @@ public:
     {
         Air = 0,
         Rope = 1,
+        Water = 2,
 
-        _Last = Rope
+        _Last = Water
     };
 
     enum class MaterialSoundType
@@ -169,8 +170,7 @@ public:
         Engine,
         EngineController,
         Generator,
-        InteractiveToggleSwitch,
-        InteractivePushSwitch,
+        InteractiveSwitch,
         OtherSink,
         PowerMonitor,
         SmokeEmitter,
@@ -181,6 +181,12 @@ public:
     {
         Outboard,
         Steam
+    };
+
+    enum class InteractiveSwitchElementType
+    {
+        Push,
+        Toggle
     };
 
 public:
@@ -206,6 +212,9 @@ public:
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
 
+    // Interactive switch
+    InteractiveSwitchElementType InteractiveSwitchType;
+
     // Engine
     EngineElementType EngineType;
     float EngineCCWDirection; // CCW radians at positive power
@@ -220,6 +229,8 @@ public:
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
+
+    static InteractiveSwitchElementType StrToInteractiveSwitchElementType(std::string const & str);
 
     static EngineElementType StrToEngineElementType(std::string const & str);
 
@@ -236,6 +247,7 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
+        InteractiveSwitchElementType interactiveSwitchType,
         EngineElementType engineType,
         float engineCCWDirection,
         float enginePower,
@@ -253,6 +265,7 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
+        , InteractiveSwitchType(interactiveSwitchType)
         , EngineType(engineType)
         , EngineCCWDirection(engineCCWDirection)
         , EnginePower(enginePower)

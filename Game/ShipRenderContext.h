@@ -754,12 +754,14 @@ public:
     //
 
     inline void UploadHighlight(
+        PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
         rgbColor color,
         float progress)
     {
         vec3f const vColor = color.toVec3f();
+        float const fPlaneId = static_cast<float>(planeId);
 
         // Append vertices - two triangles
 
@@ -775,21 +777,24 @@ public:
             vec2f(leftX, topY),
             vec2f(-1.0f, 1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
 
         // Top-Right
         mHighlightVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(1.0f, 1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
 
         // Bottom-left
         mHighlightVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(-1.0f, -1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
 
         // Triangle 2
 
@@ -798,21 +803,24 @@ public:
             vec2f(rightX, topY),
             vec2f(1.0f, 1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
 
         // Bottom-left
         mHighlightVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(-1.0f, -1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
 
         // Bottom-right
         mHighlightVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             vec2f(1.0f, -1.0f),
             vColor,
-            progress);
+            progress,
+            fPlaneId);
     }
 
     //
@@ -1107,18 +1115,20 @@ private:
         vec2f vertexPosition;
         vec2f vertexSpacePosition;
         vec3f color;
-
         float progress;
+        float planeId;
 
         HighlightVertex(
             vec2f _vertexPosition,
             vec2f _vertexSpacePosition,
             vec3f _color,
-            float _progress)
+            float _progress,
+            float _planeId)
             : vertexPosition(_vertexPosition)
             , vertexSpacePosition(_vertexSpacePosition)
             , color(_color)
             , progress(_progress)
+            , planeId(_planeId)
         {}
     };
 

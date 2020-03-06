@@ -50,11 +50,12 @@ public:
      */
     enum class EphemeralType
     {
-        None,   // Not an ephemeral particle (or not an active ephemeral particle)
+        None,   // Not an ephemeral particle (or not an _active_ ephemeral particle)
         AirBubble,
         Debris,
         Smoke,
-        Sparkle
+        Sparkle,
+        WakeBubble
     };
 
     /*
@@ -296,10 +297,20 @@ private:
             {}
         };
 
+        struct WakeBubbleState
+        {
+            float Progress;
+
+            WakeBubbleState()
+                : Progress(0.0f)
+            {}
+        };
+
         AirBubbleState AirBubble;
         DebrisState Debris;
         SmokeState Smoke;
         SparkleState Sparkle;
+        WakeBubbleState WakeBubble;
 
         EphemeralState(AirBubbleState airBubble)
             : AirBubble(airBubble)
@@ -315,6 +326,10 @@ private:
 
         EphemeralState(SparkleState sparkle)
             : Sparkle(sparkle)
+        {}
+
+        EphemeralState(WakeBubbleState wakeBubble)
+            : WakeBubble(wakeBubble)
         {}
     };
 
@@ -688,6 +703,13 @@ public:
         float currentSimulationTime,
         float maxSimulationLifetime,
         PlaneId planeId);
+
+    void CreateEphemeralParticleWakeBubble(
+        vec2f const & position,
+        vec2f const & velocity,
+        float currentSimulationTime,
+        PlaneId planeId,
+        GameParameters const & gameParameters);
 
     void DestroyEphemeralParticle(
         ElementIndex pointElementIndex);

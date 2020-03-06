@@ -374,11 +374,13 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
-        static_assert(sizeof(HighlightVertex) == (2 + 2 + 3 + 1) * sizeof(float));
+        static_assert(sizeof(HighlightVertex) == (2 + 2 + 3 + 1 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)0);
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((0) * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight2), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight3), 1, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);

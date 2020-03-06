@@ -551,7 +551,8 @@ void ShipBuilder::AppendRopes(
             nullptr != pointAElectricalMaterial
             && (pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
                 || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
-                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+                || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp)
+            && !pointAElectricalMaterial->IsInstanced)
             startElectricalMaterial = pointAElectricalMaterial;
 
         ElectricalMaterial const * endElectricalMaterial = nullptr;
@@ -559,7 +560,8 @@ void ShipBuilder::AppendRopes(
             nullptr != pointBElectricalMaterial
             && (pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
                 || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
-                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp))
+                || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Lamp)
+            && !pointBElectricalMaterial->IsInstanced)
             endElectricalMaterial = pointBElectricalMaterial;
 
         //
@@ -677,10 +679,9 @@ void ShipBuilder::AppendRopes(
                 true); // IsRope
 
             // Set electrical material
-            pointInfos1.back().ElectricalMtl =
-                (fabs(curW - startW) <= halfW)
-                ? startElectricalMaterial
-                : endElectricalMaterial;
+            pointInfos1.back().ElectricalMtl = (fabs(curW - startW) <= halfW)
+                ? startElectricalMaterial // First half
+                : endElectricalMaterial; // Second half
 
             // Connect points to spring
             pointInfos1[curStartPointIndex].AddConnectedSpring(springIndex);

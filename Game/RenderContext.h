@@ -1466,6 +1466,7 @@ public:
 
     inline void UploadShipHighlight(
         ShipId shipId,
+        PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
         rgbColor color,
@@ -1474,6 +1475,7 @@ public:
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadHighlight(
+            planeId,
             centerPosition,
             halfQuadSize,
             color,

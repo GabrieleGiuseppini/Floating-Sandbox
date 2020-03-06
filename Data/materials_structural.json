@@ -4039,6 +4039,34 @@
     }, 
 
     {
+        "color_key": "#0101C0", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 1000000.0, 
+        "is_hull": true,
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 1000
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Water", 
+        "render_color": "#0000C0", 
+        "sound_type": "AirBubble", 
+        "specific_heat": 4182.0, 
+        "stiffness": 1.0, 
+        "strength": 1.0, 
+        "template": {
+            "column": 0, 
+            "row": "80|Water"
+        }, 
+        "thermal_conductivity": 0.6, 
+	"thermal_expansion_coefficient": 0.00021,
+        "water_diffusion_speed": 0.0, 
+        "water_intake": 0.0, 
+        "water_retention": 0.0, 
+        "buoyancy_volume_fill": 1.0
+    }, 
+
+    {
         "color_key": "#F0F0F0", 
         "combustion_type": "Combustion", 
         "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
@@ -4056,7 +4084,7 @@
         "stiffness": 1.0, 
         "strength": 1.0, 
         "template": {
-            "column": 0, 
+            "column": 1, 
             "row": "80|Air"
         }, 
         "thermal_conductivity": 0.0262, 
@@ -4083,7 +4111,7 @@
         "stiffness": 1.0,
         "strength": 1.0,
         "template": {
-            "column": 1,
+            "column": 2,
             "row": "80|Hydrogen"
         }, 
         "thermal_conductivity": 0.182, 
