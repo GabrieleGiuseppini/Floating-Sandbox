@@ -22,6 +22,12 @@ public:
         rgbColor const & color,
         float alpha);
 
+    static void Overlay(
+        RgbaImageData & baseImageData,
+        RgbaImageData const & overlayImageData,
+        int x,
+        int y);
+
     /*
      * Multiplies the r, g, and b channels by the alpha channel.
      */

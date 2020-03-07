@@ -25,6 +25,8 @@ public:
     RgbaImageData PreviewImage;
     ImageSize OriginalSize;
     ShipMetadata Metadata;
+    bool IsHD;
+    bool HasElectricals;
 
     static std::unique_ptr<ShipPreview> Load(
         std::filesystem::path const & filepath,
@@ -35,10 +37,14 @@ private:
     ShipPreview(
         RgbaImageData previewImage,
         ImageSize originalSize,
-        ShipMetadata metadata)
+        ShipMetadata metadata,
+        bool isHD,
+        bool hasElectricals)
         : PreviewImage(std::move(previewImage))
         , OriginalSize(std::move(originalSize))
         , Metadata(std::move(metadata))
+        , IsHD(isHD)
+        , HasElectricals(hasElectricals)
     {
     }
 };

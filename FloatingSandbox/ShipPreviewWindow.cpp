@@ -11,6 +11,7 @@
 #include <Game/ShipDefinitionFile.h>
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
@@ -33,6 +34,9 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mExpandedHorizontalMargin(0)
     , mWaitBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait"))))
     , mErrorBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error"))))
+    , mPreviewRibbonBatteryBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_battery"))))
+    , mPreviewRibbonHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_hd"))))
+    , mPreviewRibbonBatteryAndHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_battery_and_hd"))))
     //
     , mPollQueueTimer()
     , mInfoTiles()
@@ -285,6 +289,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 {
                     mInfoTiles.emplace_back(
                         mWaitBitmap,
+                        false,
+                        false,
                         "",
                         "",
                         message->GetScannedShipFilepaths()[s]);
@@ -321,6 +327,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 auto & infoTile = mInfoTiles[message->GetShipIndex()];
 
                 infoTile.Bitmap = MakeBitmap(message->GetShipPreview());
+                infoTile.IsHD = message->GetShipPreview().IsHD;
+                infoTile.HasElectricals = message->GetShipPreview().HasElectricals;
 
                 std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
                 if (!!message->GetShipPreview().Metadata.YearBuilt)
@@ -575,6 +583,44 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         + PreviewImageHeight - infoTile.Bitmap.GetHeight()
                         - originVirtual.y,
                     true);
+
+                //
+                // Ribbons
+                //
+
+                if (infoTile.IsHD)
+                {
+                    if (infoTile.HasElectricals)
+                    {
+                        dc.DrawBitmap(
+                            mPreviewRibbonBatteryAndHDBitmap,
+                            infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                            - originVirtual.x,
+                            infoTile.RectVirtual.GetTop() + InfoTileInset
+                            - originVirtual.y,
+                            true);
+                    }
+                    else
+                    {
+                        dc.DrawBitmap(
+                            mPreviewRibbonHDBitmap,
+                            infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                            - originVirtual.x,
+                            infoTile.RectVirtual.GetTop() + InfoTileInset
+                            - originVirtual.y,
+                            true);
+                    }
+                }
+                else if (infoTile.HasElectricals)
+                {
+                    dc.DrawBitmap(
+                        mPreviewRibbonBatteryBitmap,
+                        infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        - originVirtual.x,
+                        infoTile.RectVirtual.GetTop() + InfoTileInset
+                        - originVirtual.y,
+                        true);
+                }
 
                 //
                 // Description 1

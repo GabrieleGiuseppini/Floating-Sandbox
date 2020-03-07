@@ -188,6 +188,21 @@ public:
         b = static_cast<uint8_t>(round(b * alpha));
     }
 
+    inline rgbaColor blend(rgbaColor const & otherColor) const noexcept
+    {
+        float const thisAlpha = static_cast<float>(this->a) / 255.0f;
+        float const otherAlpha = static_cast<float>(otherColor.a) / 255.0f;
+
+        vec3f const result = Mix(
+            this->toVec3f(),
+            otherColor.toVec3f(),
+            otherAlpha);
+
+        float const finalAlpha = thisAlpha + otherAlpha * (1.0f - thisAlpha);
+
+        return rgbaColor(result, static_cast<uint8_t>(round(finalAlpha * 255.0f)));
+    }
+
     inline rgbaColor mix(
         rgbColor const & otherColor,
         float alpha) const noexcept

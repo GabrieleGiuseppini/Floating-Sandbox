@@ -468,7 +468,7 @@ void Points::CreateEphemeralParticleWakeBubble(
 
     mEphemeralParticleAttributes1Buffer[pointIndex].Type = EphemeralType::WakeBubble;
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
-    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = 0.6f; // Magic number
+    mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = 0.4f; // Magic number
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::WakeBubbleState();
 
     assert(mConnectedComponentIdBuffer[pointIndex] == NoneConnectedComponentId);
@@ -1407,18 +1407,6 @@ void Points::UpdateEphemeralParticles(
                         assert(maxSimulationLifetime > 0.0f);
                         mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble.Progress =
                             elapsedSimulationLifetime / maxSimulationLifetime;
-
-                        // TODOTEST
-                        /*
-                        // Inject random walk in direction orthogonal to current velocity
-                        float const randomWalkMagnitude =
-                            4.0f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
-                        vec2f const deviationDirection =
-                            GetVelocity(pointIndex).normalise().to_perpendicular();
-                        mNonSpringForceBuffer[pointIndex] +=
-                            deviationDirection * randomWalkMagnitude
-                            * randomWalkVelocityImpulseToForceCoefficient;
-                        */
                     }
 
                     break;

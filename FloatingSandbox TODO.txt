@@ -586,9 +586,10 @@ Render:
 		+ Power probes (*)
 
 		- Talk with Mike about LEGO mass
+		- Double-check strength (Titanic break test)
 
-		- See if should take Mike's Titanic electricals
-			- Add instanced generator(s)
+		+ See if should take Mike's Titanic electricals
+			+ Add instanced generator(s)
 
 		= Propulsion (*)
 
@@ -1449,16 +1450,21 @@ Render:
 			+ Switchboard: when scroll bar present, must be taller
 				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
 			+ EngineController: SHIFT for plus/minus
-			- Double-check strength (Titanic break test)
 			+ Draw highlights at right plane ID
 			+ If the two switch types are physically identical, move switch type as new electrical property
 			  and use it only for announcements
 			+ SettingsDialog: EngineThrust or Adjust
-			- Ship preview: add electrical icon
+			= Ship preview: add electrical icon
+			= Ship preview: add HD icon
 			+ Change "Titanic (with Lights)" into "Titanic (with Electricals)"
+			- Test: points of Water are filled with water, and mass is set to that of air
+				- At Points::Add
+				+ Test with "Ball of Water and Air"
+				- Water cannot be hull
+				- Redo "Ball of Water and Air"
 			- Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
 			- Add all new types to materials' guide
-			- Refresh electrical elements' materials template
+			- Refresh both elements' materials templates
 			- changes.txt
 
 	- Logic Gates

@@ -19,6 +19,8 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
     std::filesystem::path previewImageFilePath;
     std::optional<ImageSize> originalSize;
     std::optional<ShipMetadata> shipMetadata;
+    bool isHD = false;
+    bool hasElectricals = false;
 
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
     {
@@ -34,6 +36,9 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
         {
             // Use texture for preview
             previewImageFilePath = basePath  / *sdf.TextureLayerImageFilePath;
+
+            // Categorize as HD
+            isHD = true;
         }
         else
         {
@@ -45,6 +50,9 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
         originalSize = ImageFileTools::GetImageSize(basePath / sdf.StructuralLayerImageFilePath);
 
         shipMetadata.emplace(sdf.Metadata);
+
+        // Check whether it has electricals
+        hasElectricals = sdf.ElectricalLayerImageFilePath.has_value();
     }
     else
     {
@@ -76,5 +84,7 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
         new ShipPreview(
             std::move(trimmedPreviewImage),
             std::move(*originalSize),
-            *shipMetadata));
+            *shipMetadata,
+            isHD,
+            hasElectricals));
 }

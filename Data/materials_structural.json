@@ -4069,7 +4069,7 @@
     {
         "color_key": "#F0F0F0", 
         "combustion_type": "Combustion", 
-        "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes the air particle boost up too quickly", 
+        "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly", 
         "ignition_temperature": 1000000.0, 
         "is_hull": true, 
         "mass": {

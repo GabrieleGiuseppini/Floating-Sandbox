@@ -17,6 +17,31 @@ void ImageTools::BlendWithColor(
     }
 }
 
+void ImageTools::Overlay(
+    RgbaImageData & baseImageData,
+    RgbaImageData const & overlayImageData,
+    int x,
+    int y)
+{
+    auto const baseSize = baseImageData.Size;
+    auto const overlaySize = overlayImageData.Size;
+
+    rgbaColor * const restrict baseBuffer = baseImageData.Data.get();
+    rgbaColor const * const restrict overlayBuffer = overlayImageData.Data.get();
+
+    for (int baseR = y, overlayR = 0; baseR < baseSize.Height && overlayR < overlaySize.Width; ++baseR, ++overlayR)
+    {
+        auto const baseRowStartIndex = baseR * baseSize.Width;
+        auto const overlayRowStartIndex = overlayR * overlaySize.Width;
+
+        for (int baseC = x, overlayC = 0; baseC < baseSize.Width && overlayC < overlaySize.Width; ++baseC, ++overlayC)
+        {
+            baseBuffer[baseRowStartIndex + baseC] =
+                baseBuffer[baseRowStartIndex + baseC].blend(overlayBuffer[overlayRowStartIndex + overlayC]);
+        }
+    }
+}
+
 void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
 {
     size_t const Size = imageData.Size.Width * imageData.Size.Height;

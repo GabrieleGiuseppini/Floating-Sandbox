@@ -246,8 +246,11 @@ private:
     wxFont mDescriptionFont;
     wxFont mFilenameFont;
 
-    wxBitmap mWaitBitmap;
-    wxBitmap mErrorBitmap;
+    wxBitmap const mWaitBitmap;
+    wxBitmap const mErrorBitmap;
+    wxBitmap const mPreviewRibbonBatteryBitmap;
+    wxBitmap const mPreviewRibbonHDBitmap;
+    wxBitmap const mPreviewRibbonBatteryAndHDBitmap;
 
 private:
 
@@ -258,6 +261,8 @@ private:
     struct InfoTile
     {
         wxBitmap Bitmap;
+        bool IsHD;
+        bool HasElectricals;
         std::string OriginalDescription1;
         std::string OriginalDescription2;
         std::filesystem::path ShipFilepath;
@@ -279,10 +284,14 @@ private:
 
         InfoTile(
             wxBitmap bitmap,
+            bool isHD,
+            bool hasElectricals,
             std::string const & description1,
             std::string const & description2,
             std::filesystem::path const & shipFilepath)
             : Bitmap(bitmap)
+            , IsHD(isHD)
+            , HasElectricals(hasElectricals)
             , OriginalDescription1(description1)
             , OriginalDescription2(description2)
             , ShipFilepath(shipFilepath)
