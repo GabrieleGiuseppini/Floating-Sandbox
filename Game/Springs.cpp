@@ -500,6 +500,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     mBreakingElongationBuffer[springIndex] =
         GetMaterialStrength(springIndex)
         * strengthAdjustment
+        * 0.839501f // Magic number: from 1.14, after #iterations increased from 24 to 30
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length

@@ -587,10 +587,9 @@ Render:
 		+ See if should take Mike's Titanic electricals
 			+ Add instanced generator(s)
 		+ Propulsion (*)
-
-		- Double-check strength (Titanic break test)
-
+		+ Double-check strength (Titanic break test)
 		- Send for testing
+		- Bump up version
 
 		- Talk with Mike about LEGO mass
 

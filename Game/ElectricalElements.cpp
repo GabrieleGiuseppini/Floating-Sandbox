@@ -299,7 +299,7 @@ void ElectricalElements::HighlightElectricalElement(
         {
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
-                mElementStateBuffer[elementIndex].Engine.TargetRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
+                mElementStateBuffer[elementIndex].Engine.LastHighlightedRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
 
             break;
@@ -1185,9 +1185,9 @@ void ElectricalElements::UpdateSinks(
                 if ((engineState.TargetRpm != 0.0f && engineState.LastHighlightedRpm == 0.0)
                     || (engineState.TargetRpm == 0.0f && engineState.LastHighlightedRpm != 0.0))
                 {
-                    HighlightElectricalElement(engineSinkElementIndex, points);
-
                     engineState.LastHighlightedRpm = engineState.TargetRpm;
+
+                    HighlightElectricalElement(engineSinkElementIndex, points);
                 }
             }
 

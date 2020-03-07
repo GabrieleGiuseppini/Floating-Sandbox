@@ -738,7 +738,7 @@ void OceanSurface::GenerateSamples(
     // Wind gust ripples
     //
 
-    float constexpr WindRippleWaveNumber = 2.5f;
+    float constexpr WindRippleWaveNumber = 5.0f; // # waves per unit of length
     float constexpr WindRippleWaveHeight = 0.25f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
