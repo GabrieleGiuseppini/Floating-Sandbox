@@ -395,52 +395,6 @@
     },
 
     {
-        "color_key": "#FC2020",
-	"conducts_electricity": true,
-        "electrical_type": "OtherSink", 
-        "heat_generated": 50000.0, 
-        "maximum_operating_temperature": 1783.15, 
-        "minimum_operating_temperature": 173.15, 
-        "name": "Heating Element", 
-        "template": {
-            "column": "0|Heating Element", 
-            "row": "9|Misc"
-        }
-    }, 
-
-    {
-        "color_key": "#209010",
-	"conducts_electricity": true,
-        "electrical_type": "SmokeEmitter", 
-        "heat_generated": 200.0, 
-        "is_self_powered": false, 
-        "maximum_operating_temperature": 1000000.0,
-        "minimum_operating_temperature": 0.0, 
-        "name": "Smoke Emitter", 
-	"particle_emission_rate": 0.05,
-        "template": {
-            "column": "1|Smoke Emitter", 
-            "row": "9|Misc"
-        }
-    },
-
-    {
-        "color_key": "#30A000",
-	"conducts_electricity": true,
-        "electrical_type": "PowerMonitor", 
-        "heat_generated": 0.0, 
-	"is_instanced": true,
-        "is_self_powered": false, 
-        "maximum_operating_temperature": 1000000.0,
-        "minimum_operating_temperature": 0.0, 
-        "name": "Power Monitor", 
-        "template": {
-            "column": "2|Power Monitor", 
-            "row": "9|Misc"
-        }
-    },
-
-    {
         "color_key": "#30D000",
 	"conducts_electricity": true,
         "electrical_type": "EngineController", 
@@ -451,11 +405,10 @@
         "minimum_operating_temperature": 173.15,
         "name": "Engine Controller", 
         "template": {
-            "column": "3|Engine Controller", 
-            "row": "9|Misc"
+            "column": "0|Engine Controller", 
+            "row": "10|Engines"
         }
     },
-
 
     {
         "color_key": "#30E000",
@@ -472,8 +425,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "50HP Outboard Engine R/L", 
         "template": {
-            "column": "4|50HP Outboard R/L",
-            "row": "9|Misc"
+            "column": "1|50HP Outboard R/L",
+            "row": "10|Engines"
         }
     },
 
@@ -492,8 +445,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "130HP Outboard Engine R/L", 
         "template": {
-            "column": "5|130HP Outboard R/L",
-            "row": "9|Misc"
+            "column": "2|130HP Outboard R/L",
+            "row": "10|Engines"
         }
     },
 
@@ -512,8 +465,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "6|1300HP Steam R/L",
-            "row": "9|Misc"
+            "column": "3|1300HP Steam R/L",
+            "row": "10|Engines"
         }
     },
 
@@ -532,8 +485,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "template": {
-            "column": "7|1300HP Steam U/D",
-            "row": "9|Misc"
+            "column": "4|1300HP Steam U/D",
+            "row": "10|Engines"
         }
     },
 
@@ -552,8 +505,54 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "template": {
-            "column": "8|4000HP Steam R/L",
-            "row": "9|Misc"
+            "column": "5|4000HP Steam R/L",
+            "row": "10|Engines"
+        }
+    },
+
+    {
+        "color_key": "#FC2020",
+	"conducts_electricity": true,
+        "electrical_type": "OtherSink", 
+        "heat_generated": 50000.0, 
+        "maximum_operating_temperature": 1783.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heating Element", 
+        "template": {
+            "column": "0|Heating Element", 
+            "row": "20|Misc"
+        }
+    }, 
+
+    {
+        "color_key": "#209010",
+	"conducts_electricity": true,
+        "electrical_type": "SmokeEmitter", 
+        "heat_generated": 200.0, 
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Smoke Emitter", 
+	"particle_emission_rate": 0.05,
+        "template": {
+            "column": "1|Smoke Emitter", 
+            "row": "20|Misc"
+        }
+    },
+
+    {
+        "color_key": "#30A000",
+	"conducts_electricity": true,
+        "electrical_type": "PowerMonitor", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Power Monitor", 
+        "template": {
+            "column": "2|Power Monitor", 
+            "row": "20|Misc"
         }
     }
 ]

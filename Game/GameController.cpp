@@ -672,7 +672,8 @@ void GameController::RotateBy(
     float const angle =
         2.0f * Pi<float>
         / static_cast<float>(mRenderContext->GetCanvasHeight())
-        * screenDeltaY;
+        * screenDeltaY
+        * 1.5f; // More responsive
 
     vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
 

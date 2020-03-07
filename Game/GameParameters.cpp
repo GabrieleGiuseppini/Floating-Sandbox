@@ -26,6 +26,7 @@ GameParameters::GameParameters()
     , DoGenerateSparklesForCuts(true)
     , DoGenerateAirBubbles(true)
     , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
+    , DoGenerateEngineWakeParticles(true)
     // Wind
     , DoModulateWind(true)
     , WindSpeedBase(-20.0f)

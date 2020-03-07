@@ -92,6 +92,7 @@ enum class GenericMipMappedTextureGroups : uint16_t
     AntiMatterBombArmor,
     AntiMatterBombSphere,
     AntiMatterBombSphereCloud,
+    EngineWake,
     ImpactBomb,
     PinnedPoint,
     RcBomb,
@@ -120,6 +121,8 @@ struct GenericMipMappedTextureTextureDatabaseTraits
             return TextureGroups::AntiMatterBombSphereCloud;
         else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombSphere"))
             return TextureGroups::AntiMatterBombSphere;
+        else if (Utils::CaseInsensitiveEquals(str, "EngineWake"))
+            return TextureGroups::EngineWake;
         else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
             return TextureGroups::ImpactBomb;
         else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))

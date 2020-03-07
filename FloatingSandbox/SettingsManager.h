@@ -79,6 +79,7 @@ enum class GameSettings : size_t
     DoGenerateSparklesForCuts,
     DoGenerateAirBubbles,
     AirBubblesDensity,
+    DoGenerateEngineWakeParticles,
     NumberOfStars,
     NumberOfClouds,
     EngineThrustAdjustment,

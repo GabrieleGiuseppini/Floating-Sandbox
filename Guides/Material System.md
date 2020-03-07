@@ -107,7 +107,8 @@ Each material is as follows:
         "luminiscence": 2.0,
         "light_spread": 9.0,
 	"minimum_operating_temperature": 233.15,
-	"maximum_operating_temperature": 398.15
+	"maximum_operating_temperature": 398.15, 
+        "wet_failure_rate": 0.0
     },
 ``` 
 Here's an explanation of the elements:
@@ -119,20 +120,30 @@ Here's an explanation of the elements:
 - _electrical type_: the type of electrical behaviour of points and springs of this material. Valid values are:
    - "Generator": injects an electrical current into all connected cables.
    - "Cable": propagates an electrical current through its endpoints.
-   - "InteractivePushSwitch": a switch that may be controlled via the electrical panel. The switch returns to its rest position when released.
-   - "InteractiveToggleSwitch": a switch that may be controlled via the electrical panel. The switch can be toggled on and off.
+   - "Engine": exherts thrust when enabled via an immediately nearby EngineController element.
+   - "EngineController": controls the power and direction of all nearby Engine elements.
+   - "InteractiveSwitch": a switch that may be controlled via the electrical panel.
    - "Lamp": emits light.
    - "OtherSink": just heats while operating.
    - "PowerMonitor": displays a light on the electrical panel when current flows through it.
    - "SmokeEmitter": emits smoke - ideal for funnels and engine exhaust pipes.
    - "WaterSensingSwitch": a switch that toggles automatically when wet.
+- _engine direction_: when the element is of the Engine type, describes the main axis of the engine thrust, in radians.
+- _engine power_: when the element is of the Engine type, describes the maximum engine power, in HP.
+- _engine responsiveness_: when the element is of the Engine type, describes how quickly the engine responds to throttle changes; between 0.0 (totally unresponsive) and 1.0 (immediate response).
+- _engine type_: when the element is of the Engine type, describes the type of engine. Valid values are:
+   - "Outboard": an outboard engine, suitable for boats and small ships.
+   - "Steam": a steam engine, suitable for large ships.
 - _heat generated_: the amount of heat generated when functioning, in KJ/s.
+- _interactive switch type_: when the element is of the InteractiveSwitch type, describes the type of switch. Valid values are:
+   - "Push": the switch returns to its rest position when released.
+   - "Toggle": the switch can be toggled on and off.
 - _is self powered_: whether a lamp emits light on its own (when *true*) or only when it's powered by an electrical current (when *false*).
 - _luminiscence_: the amount of light emitted by a lamp; between 0.0 and 1.0.
 - _light spread_: the distance from a lamp, in metres, beyond which that lamp's light is zero.
 - _minimum operating temperature_: the minimum temperature, in Kelvin, below which the material/device will stop working.
 - _maximum operating temperature_: the maximum temperature, in Kelvin, above which the material/device will stop working.
-- _particle emission rate_: only valid for SmokeEmitter materials, dictates the average interval - in simulation time seconds - between two particle emissions.
+- _particle emission rate_: when the element is of the SmokeEmitter type, dictates the average interval - in simulation time seconds - between two particle emissions.
    - For example, 0.5 means that on average two particles will be emitted each second.
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.

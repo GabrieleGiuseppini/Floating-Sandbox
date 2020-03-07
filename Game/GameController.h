@@ -522,6 +522,9 @@ public:
     float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
     float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
+    bool GetDoGenerateEngineWakeParticles() const override { return mGameParameters.DoGenerateEngineWakeParticles; }
+    void SetDoGenerateEngineWakeParticles(bool value) override { mGameParameters.DoGenerateEngineWakeParticles = value; }
+
     unsigned int GetNumberOfStars() const override { return mGameParameters.NumberOfStars; }
     void SetNumberOfStars(unsigned int value) override { mGameParameters.NumberOfStars = value; }
     unsigned int GetMinNumberOfStars() const override { return GameParameters::MinNumberOfStars; }

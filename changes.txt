@@ -1,30 +1,31 @@
 1.14.0.TODO
 - Added new electrical materials:
+	- Engines - exhert thrust on the structure
+	- Engine Controllers - for controlling engines
 	- Switches - interactive and water-sensing
 	- Smoke Emitters - emit smoke particles when powered
-	- Power Monitors - provide feedback on state of a power line
-	- "Instanced" Generators - provide feedback on the power produced
+	- Power Monitors - provide feedback on the state of a power line
+	- "Instanced" Generators - provide feedback on the power they produce
 	- ...and retrofitted some pre-existing ships, among which:
-		- R.M.S. Titanic (With Lights and Smoke)
+		- R.M.S. Titanic (With Electricals)
 		- Carnival Dream
 		- Cruise Vessel
 		- Lifeboat
-- Added electrical panel to control switches and other interactive electrical materials
+- Added in-game electrical panel to display and control switches and other electrical materials
 - Added air buoyancy: materials lighter than air now float in the air
 	- Added new "Hydrogen" material and used it with the Hindenburg and Goodyear blimps to make them lighter than air
 - Added thermal expansion - the hotter the material, the lesser its density
-	- Noticeable with very light materials, such as Air and Hydrogen
+	- ...and so heat now affects buoyancy!
 - Added new "Explosive" material combustion type, and added three explosive materials: "Diesel", "Gunpowder", and "Hydrogen"
 	- Added new test ship, "Imminent Disaster", showing the explosive materials in action
 - Re-worked collisions with terrain
 	- Impacts with ocean floor, land, and mountains are now more realistic than ever
 	- Added new friction and elasticity settings for terrain
-- Re-worked flame physics and graphics
+- Re-worked flames' and explosions' physics and graphics
 	- Flames are now directional, adapting to the velocity of the particles that are burning
-- Re-worked explosion physics and graphics
 - Rain now floods exposed areas of a ship
 - Slightly improved rigidity of structures
-	- ...but more improvements are yet to come!
+	- ...but more improvement in this area are yet to come!
 - Repairing a ship's structure now also repairs its electricals
 - Added ability to change color of lamp lights
 - Adjusted physical properties of ropes, which were too light and too strong

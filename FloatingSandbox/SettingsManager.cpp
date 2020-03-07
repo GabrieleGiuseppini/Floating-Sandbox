@@ -106,6 +106,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoGenerateSparklesForCuts);
     ADD_GC_SETTING(bool, DoGenerateAirBubbles);
     ADD_GC_SETTING(float, AirBubblesDensity);
+    ADD_GC_SETTING(bool, DoGenerateEngineWakeParticles);
     ADD_GC_SETTING(unsigned int, NumberOfStars);
     ADD_GC_SETTING(unsigned int, NumberOfClouds);
     ADD_GC_SETTING(float, EngineThrustAdjustment);

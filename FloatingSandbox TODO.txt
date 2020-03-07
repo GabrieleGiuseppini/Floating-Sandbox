@@ -584,14 +584,21 @@ Render:
 		+ Do highlight also for water detector
 		+ Broken water-sensing switch should not trip anymore
 		+ Power probes (*)
-
-		- Talk with Mike about LEGO mass
-		- Double-check strength (Titanic break test)
-
 		+ See if should take Mike's Titanic electricals
 			+ Add instanced generator(s)
+		+ Propulsion (*)
 
-		= Propulsion (*)
+		- Double-check strength (Titanic break test)
+
+		- Send for testing
+
+		- Talk with Mike about LEGO mass
+
+		- Test: points of Water are filled with water, and mass is set to that of air
+			- At Points::Add
+			+ Test with "Ball of Water and Air"
+			- Water cannot be hull
+			- Redo "Ball of Water and Air"
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
@@ -600,9 +607,6 @@ Render:
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
-
-		- Baked sounds
-			- Or not: people like the ability to change sounds
 
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
@@ -1315,157 +1319,6 @@ Render:
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
-
-	= Propulsion (*)
-		! Requires "Forces Rearc" or "Position-based Springs"
-		+ 1 new ElectricalElementType: Engine
-		+ 2 electrical materials: engine x {LR/UD}
-			+ Need a new engine-specific electrical material property: engine_direction, radiants 
-		+ 1 new ElectricalElementType: EngineController
-		+ 1 electrical material
-		! EngineController (telegraph) controls all connected engines, value={-1.0, ..., +1.0}
-			! Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
-			  material
-		+ EngineController announces self as EngineController
-			+ And updates use {-1.0, ..., +1.0} values
-		+ Engine announces self as EngineMonitor 
-			+ And updates use {0.0, ..., +1.0} values
-		+ Dynamics:
-			+ EngineController: API to set value {-1.0, ..., +1.0}
-				+ Updates value in state
-			+ EngineController state has array of ConnectedEngine={EngineElectricalElementIndex, sin+cos}
-				+ Never modified, usage must check for deletion
-			+ ElectricalElements::Add*Factory*ConnectedElectricalElement(..., octant)
-				+ Invoked only by ShipBuilder
-				+ First, if this is EngineController and other is Engine: populates EngineController state
-				+ Then invokes AddConnectedElectricalElement(...)
-			+ EngineController is Sink
-			+ Engine is *not* sink, but Engine (new indices type)
-			+ UpdateSinks: 
-				+ For each EngineController sink that is powered:
-					+ For each connected electrical element that is Engine:
-						+ Calculate power force vector:
-							+ Dir = f(octant, points, MaterialEngineDirection)
-							+ Magnitude = f(EngineControllerState::ControlValue)
-						+ Add power force vector to Engine::State::CurrentPowerForceVector
-						+ Engine::State::CurrentPowerValue = max(
-							Engine::State::CurrentPowerValue,
-							abs(controller's current val));
-				+ Then, for each Engine: 
-					+ Calculate force=f(State::CurrentPowerForceVector, GameParameters::EngineThrust)
-					+ Apply force to point (NonSpringForce)
-					+ If Engine::State::CurrentPowerValue != State::LastPublishedPowerValue:
-						+ Publish EngineMonitor -> Sound+Panel
-						+ State::LastPublishedPowerValue = Engine::State::CurrentPowerValue
-						+ Do visual notification if enabled
-					+ Reset State::CurrentPowerForceVector
-					+ Reset State::CurrentPowerValue
-			+ Enable/Disable engine controller upon destroy/create
-			+ Engine power should only raise after +/-1, but sound should come at +/-1
-				+ unsigned int GameParameters::EngineTelegraphDegreesOfFreedom = 11
-					+ static_assert it's odd
-				+ Events carry int telegraphValue
-				+ Engine power does math to calculate power={0.0, 1.0}
-				+ Engine notifications: rpm and thrust
-			+ Publish zero value at engine destruction (iff currently not zero)
-		+ Adjust thrust
-			+ Change circuit test: one single engine now
-			+ Add EngineThrustAdjustment
-		+ Gfx:
-			+ EngineController: Telegraph with hand
-				+ N already-rotated hand bitmaps
-				+ Mouse events
-				+ Key events: back and forth, do not go around
-			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
-		+ SwitchboardPanel:
-			+ Handle creations of EngineController and EngineMonitor
-			+ Handle enabling/disabling of EngineController
-			+ Subscribe to updates of EngineController and EngineMonitor
-		+ Sound:
-			+ EngineController (telegraph) sound
-			+ Engine sound:
-				+ Hook volume, pause, reset, etc.; test:
-					+ Global mute
-					+ Effects volume
-					+ Pause
-					+ Reset
-				+ Fade-in
-				+ Add engine_type as new electrical material property
-					+ MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
-						+ Stores in unord_map<TSoundTypeEnum, sound buffer>
-					+ Communicated at announcement (via ElectricalMaterial)
-						+ Stores in unord_map<instance ID, sound type> 
-							+ ...in MultiInstancedSound, mInstanceIdToSoundType
-					+ Start: takes sound type
-						+ And another override that takes instance ID, in which case does forced lookup
-						  in mInstanceIdToSoundType
-				+ Register for EngineMonitor event, only RPM
-				+ Simple continuous sound, keyed by object ID
-				+ Add pitch controls to Sound
-				+ React to EngineMonitor, track object ID and set object's sound pitch
-		+ Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
-			+ ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
-			+ Highlight
-			+ Sound
-			+ Cursor ('?')
-		+ Make engines conduct electricity
-			+ Json: does not conduct
-			+ At engine update: conduct_electricity=(rpm > threshold)
-			+ Change circuit_test
-		+ Fix highlight/last highlighted
-		+ Do engines with different properties:
-			+ ElectricalMaterial Properties:
-				+ Power (in HP)
-				+ Responsiveness
-				+ Engine Type:
-					+ Steam
-			+ Different json materials
-				+ Use actual HP, not newtons
-				+ Outboard
-					+ Sound type
-					+ Mount on LifeBoat
-				+ One more powerful LR steam engine
-			+ Store responsiveness and power in EngineState at ElectricalElements::Add
-					+ Pre-convert HP -> Newton
-			+ Do responsiveness state machine
-			+ Nuke GameParameters::EngineThrust
-		+ Switchboard panel: display finger mouse pointer only at interactive controls
-			+ Set into ctrl from panel
-			+ Dockable checkbox too
-		+ Make engines lose power progressively when wet
-			+ At Engine update: quantity of water determines target RPM damping
-				+ e^(-x + 5)/(5+e^(-x + 5))
-			+ Mount engine on a new ship for testing
-		= Do wake with very short-lived ephemeral particles
-			+ Only if underwater
-			+ At EngineUpdate
-		- Finalization:
-			+ Use PI-based constants for gauge angles
-			+ Do engine highlight only on 0<->nonzero transitions
-			+ Engine produces heat when running
-			+ Engine controller stops working at high temperatures
-			+ Restore of engine controller
-			+ Restore of engine
-			+ Do progress at Switchboard constructor
-			+ Switchboard: when scroll bar present, must be taller
-				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
-			+ EngineController: SHIFT for plus/minus
-			+ Draw highlights at right plane ID
-			+ If the two switch types are physically identical, move switch type as new electrical property
-			  and use it only for announcements
-			+ SettingsDialog: EngineThrust or Adjust
-			+ Ship preview: add electrical icon
-			+ Ship preview: add HD icon
-			+ Change "Titanic (with Lights)" into "Titanic (with Electricals)"
-			- Test: points of Water are filled with water, and mass is set to that of air
-				- At Points::Add
-				+ Test with "Ball of Water and Air"
-				- Water cannot be hull
-				- Redo "Ball of Water and Air"
-			- Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
-			- Add all new types to materials' guide
-			- Refresh both elements' materials templates
-			- changes.txt
 
 	- Logic Gates
 		- New ElectricalMaterial type
@@ -6409,6 +6262,161 @@ IF WX:
 				+ IUpdateableElectricalControl
 			+ Refresh electrical elements' materials template
 			+ changes.txt
+	+ Propulsion
+		! Requires "Forces Rearc" or "Position-based Springs"
+		+ 1 new ElectricalElementType: Engine
+		+ 2 electrical materials: engine x {LR/UD}
+			+ Need a new engine-specific electrical material property: engine_direction, radiants 
+		+ 1 new ElectricalElementType: EngineController
+		+ 1 electrical material
+		! EngineController (telegraph) controls all connected engines, value={-1.0, ..., +1.0}
+			! Force that will be imparted is directed along an axis that depend on the control-engine axis and on the direction of the engine
+			  material
+		+ EngineController announces self as EngineController
+			+ And updates use {-1.0, ..., +1.0} values
+		+ Engine announces self as EngineMonitor 
+			+ And updates use {0.0, ..., +1.0} values
+		+ Dynamics:
+			+ EngineController: API to set value {-1.0, ..., +1.0}
+				+ Updates value in state
+			+ EngineController state has array of ConnectedEngine={EngineElectricalElementIndex, sin+cos}
+				+ Never modified, usage must check for deletion
+			+ ElectricalElements::Add*Factory*ConnectedElectricalElement(..., octant)
+				+ Invoked only by ShipBuilder
+				+ First, if this is EngineController and other is Engine: populates EngineController state
+				+ Then invokes AddConnectedElectricalElement(...)
+			+ EngineController is Sink
+			+ Engine is *not* sink, but Engine (new indices type)
+			+ UpdateSinks: 
+				+ For each EngineController sink that is powered:
+					+ For each connected electrical element that is Engine:
+						+ Calculate power force vector:
+							+ Dir = f(octant, points, MaterialEngineDirection)
+							+ Magnitude = f(EngineControllerState::ControlValue)
+						+ Add power force vector to Engine::State::CurrentPowerForceVector
+						+ Engine::State::CurrentPowerValue = max(
+							Engine::State::CurrentPowerValue,
+							abs(controller's current val));
+				+ Then, for each Engine: 
+					+ Calculate force=f(State::CurrentPowerForceVector, GameParameters::EngineThrust)
+					+ Apply force to point (NonSpringForce)
+					+ If Engine::State::CurrentPowerValue != State::LastPublishedPowerValue:
+						+ Publish EngineMonitor -> Sound+Panel
+						+ State::LastPublishedPowerValue = Engine::State::CurrentPowerValue
+						+ Do visual notification if enabled
+					+ Reset State::CurrentPowerForceVector
+					+ Reset State::CurrentPowerValue
+			+ Enable/Disable engine controller upon destroy/create
+			+ Engine power should only raise after +/-1, but sound should come at +/-1
+				+ unsigned int GameParameters::EngineTelegraphDegreesOfFreedom = 11
+					+ static_assert it's odd
+				+ Events carry int telegraphValue
+				+ Engine power does math to calculate power={0.0, 1.0}
+				+ Engine notifications: rpm and thrust
+			+ Publish zero value at engine destruction (iff currently not zero)
+		+ Adjust thrust
+			+ Change circuit test: one single engine now
+			+ Add EngineThrustAdjustment
+		+ Gfx:
+			+ EngineController: Telegraph with hand
+				+ N already-rotated hand bitmaps
+				+ Mouse events
+				+ Key events: back and forth, do not go around
+			+ EngineMonitor: RPM Gauge (GaugeControl w/other bg)
+		+ SwitchboardPanel:
+			+ Handle creations of EngineController and EngineMonitor
+			+ Handle enabling/disabling of EngineController
+			+ Subscribe to updates of EngineController and EngineMonitor
+		+ Sound:
+			+ EngineController (telegraph) sound
+			+ Engine sound:
+				+ Hook volume, pause, reset, etc.; test:
+					+ Global mute
+					+ Effects volume
+					+ Pause
+					+ Reset
+				+ Fade-in
+				+ Add engine_type as new electrical material property
+					+ MultiInstancedSound: replace Initialize() with AddSoundType(TSoundTypeEnum, sound buffer)
+						+ Stores in unord_map<TSoundTypeEnum, sound buffer>
+					+ Communicated at announcement (via ElectricalMaterial)
+						+ Stores in unord_map<instance ID, sound type> 
+							+ ...in MultiInstancedSound, mInstanceIdToSoundType
+					+ Start: takes sound type
+						+ And another override that takes instance ID, in which case does forced lookup
+						  in mInstanceIdToSoundType
+				+ Register for EngineMonitor event, only RPM
+				+ Simple continuous sound, keyed by object ID
+				+ Add pitch controls to Sound
+				+ React to EngineMonitor, track object ID and set object's sound pitch
+		+ Click on glass of non-interactive elements => IGameController::HighlightElectricalElement
+			+ ElectricalElements: concentrate all highlighting @ HighlightElectricalElement(idx)
+			+ Highlight
+			+ Sound
+			+ Cursor ('?')
+		+ Make engines conduct electricity
+			+ Json: does not conduct
+			+ At engine update: conduct_electricity=(rpm > threshold)
+			+ Change circuit_test
+		+ Fix highlight/last highlighted
+		+ Do engines with different properties:
+			+ ElectricalMaterial Properties:
+				+ Power (in HP)
+				+ Responsiveness
+				+ Engine Type:
+					+ Steam
+			+ Different json materials
+				+ Use actual HP, not newtons
+				+ Outboard
+					+ Sound type
+					+ Mount on LifeBoat
+				+ One more powerful LR steam engine
+			+ Store responsiveness and power in EngineState at ElectricalElements::Add
+					+ Pre-convert HP -> Newton
+			+ Do responsiveness state machine
+			+ Nuke GameParameters::EngineThrust
+		+ Switchboard panel: display finger mouse pointer only at interactive controls
+			+ Set into ctrl from panel
+			+ Dockable checkbox too
+		+ Make engines lose power progressively when wet
+			+ At Engine update: quantity of water determines target RPM damping
+				+ e^(-x + 5)/(5+e^(-x + 5))
+			+ Mount engine on a new ship for testing
+		+ Do wake with very short-lived ephemeral particles
+			+ Only if underwater
+			+ At EngineUpdate
+			+ SettingsDialog:
+				+ checkbox for engine wake
+		+ Finalization:
+			+ Use PI-based constants for gauge angles
+			+ Do engine highlight only on 0<->nonzero transitions
+			+ Engine produces heat when running
+			+ Engine controller stops working at high temperatures
+			+ Restore of engine controller
+			+ Restore of engine
+			+ Do progress at Switchboard constructor
+			+ Switchboard: when scroll bar present, must be taller
+				+ Add gridbag sizer to a new vSizer member, and add spacer when needed
+			+ EngineController: SHIFT for plus/minus
+			+ Draw highlights at right plane ID
+			+ If the two switch types are physically identical, move switch type as new electrical property
+			  and use it only for announcements
+			+ SettingsDialog: EngineThrust or Adjust
+			+ Ship preview: add electrical icon
+			+ Ship preview: add HD icon
+			+ Change "Titanic (with Lights)" into "Titanic (with Electricals)"
+			+ Add engine_direction, engine_power, engine_responsiveness (and other properties?) to materials' guide
+			+ Add all new types to materials' guide
+			+ Refresh both elements' materials templates
+			+ changes.txt
+
+
+
+
+
+
+
+
 
 + Water
 	+ Water

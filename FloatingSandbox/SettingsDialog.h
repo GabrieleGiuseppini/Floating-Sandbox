@@ -46,6 +46,7 @@ private:
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event);
     void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
+    void OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
 
@@ -167,6 +168,7 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
+    wxCheckBox * mGenerateEngineWakeCheckBox;
     SliderControl<float> * mAirBubbleDensitySlider;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
 

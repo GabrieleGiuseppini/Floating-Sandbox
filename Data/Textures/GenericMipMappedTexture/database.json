@@ -51,6 +51,18 @@
 },
 
 {
+	"groupName": "EngineWake",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 2.0,
+			"worldHeight": 2.0,
+			"filename": "engine_wake_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "ImpactBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[

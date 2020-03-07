@@ -163,7 +163,6 @@ struct GameParameters
     float SmokeEmissionDensityAdjustment;
     static float constexpr MinSmokeEmissionDensityAdjustment = 0.1f;
     static float constexpr MaxSmokeEmissionDensityAdjustment = 10.0f;
-
     static constexpr float MinSmokeParticlesLifetime = 3.5f;
     static constexpr float MaxSmokeParticlesLifetime = 6.0f;
     float SmokeParticleLifetimeAdjustment;
@@ -193,6 +192,8 @@ struct GameParameters
     static float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
     static float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds
     static float constexpr MaxAirBubblesVortexPeriod = 7.5f; // seconds
+
+    bool DoGenerateEngineWakeParticles;
 
     // Wind
 

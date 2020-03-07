@@ -213,6 +213,9 @@ struct IGameControllerSettings
     virtual float GetAirBubblesDensity() const = 0;
     virtual void SetAirBubblesDensity(float value) = 0;
 
+    virtual bool GetDoGenerateEngineWakeParticles() const = 0;
+    virtual void SetDoGenerateEngineWakeParticles(bool value) = 0;
+
     virtual unsigned int GetNumberOfStars() const = 0;
     virtual void SetNumberOfStars(unsigned int value) = 0;
 

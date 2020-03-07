@@ -1763,15 +1763,13 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble;
 
-                renderContext.UploadShipAirBubble(
+                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
                     shipId,
                     GetPlaneId(pointIndex),
+                    TextureFrameId(Render::GenericMipMappedTextureGroups::EngineWake, 0),
                     GetPosition(pointIndex),
-                    // TODOTEST
-                    //0.22f, // Scale, magic number
-                    0.10f + 0.22f * state.Progress,
-                    // TODOTEST
-                    //1.0f - SmoothStep(0.0f, 1.0f, state.Progress)); // Alpha
+                    0.10f + 1.22f * state.Progress, // Scale, magic formula
+                    mRandomNormalizedUniformFloatBuffer[pointIndex] * 2.0f * Pi<float>, // Angle
                     1.0f - state.Progress); // Alpha
 
                 break;

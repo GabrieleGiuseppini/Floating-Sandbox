@@ -336,6 +336,12 @@ void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event)
     mAirBubbleDensitySlider->Enable(event.IsChecked());
 }
 
+void SettingsDialog::OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event)
+{
+    mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
 {
     mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());
@@ -2851,6 +2857,14 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                     checkboxesSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
 
+                    checkboxesSizer->AddSpacer(5);
+
+                    mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
+                    mGenerateEngineWakeCheckBox->SetToolTip("Enables or disables generation of wakes when engines are running underwater.");
+                    mGenerateEngineWakeCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateEngineWakeCheckBoxClick, this);
+
+                    checkboxesSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALIGN_LEFT, 0);
+
                     checkboxesSizer->AddStretchSpacer(1);
                 }
 
@@ -4158,6 +4172,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
 
     mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
 

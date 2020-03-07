@@ -1205,29 +1205,37 @@ void ElectricalElements::UpdateSinks(
             // Generate wake if running and underwater
             //
 
-            if (vec2f const enginePosition = points.GetPosition(enginePointIndex);
-                engineState.CurrentThrustMagnitude > 0.1f // Magic number
-                && mParentWorld.IsUnderwater(enginePosition))
+            if (gameParameters.DoGenerateEngineWakeParticles)
             {
-                auto const planeId = points.GetPlaneId(enginePointIndex);
+                vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
-                for (int i = 0; i < 3; ++i)
+                if (float const absThrustMagnitude = std::abs(engineState.CurrentThrustMagnitude);
+                    absThrustMagnitude > 0.1f // Magic number
+                    && mParentWorld.IsUnderwater(enginePosition))
                 {
-                    float const angle = Clamp(
-                        0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
-                        -Pi<float> / 12.0f,
-                        Pi<float> / 12.0f);
+                    auto const planeId = points.GetPlaneId(enginePointIndex);
 
-                    vec2f const wakeVelocity =
-                        -engineState.TargetThrustDir.rotate(angle)
-                        * 20.0f;
+                    for (int i = 0; i < std::round(absThrustMagnitude * 4.0f); ++i)
+                    {
+                        float constexpr HalfFanOutAngle = Pi<float> / 14.0f; // Magic number
 
-                    points.CreateEphemeralParticleWakeBubble(
-                        enginePosition,
-                        wakeVelocity,
-                        currentSimulationTime,
-                        planeId,
-                        gameParameters);
+                        float const angle = Clamp(
+                            0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
+                            -HalfFanOutAngle,
+                            HalfFanOutAngle);
+
+                        vec2f const wakeVelocity =
+                            -engineState.TargetThrustDir.rotate(angle)
+                            * (engineState.CurrentThrustMagnitude < 0.0f ? -1.0f : 1.0f)
+                            * 20.0f; // Magic number
+
+                        points.CreateEphemeralParticleWakeBubble(
+                            enginePosition,
+                            wakeVelocity,
+                            currentSimulationTime,
+                            planeId,
+                            gameParameters);
+                    }
                 }
             }
 
