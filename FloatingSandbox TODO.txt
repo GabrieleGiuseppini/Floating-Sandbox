@@ -1454,8 +1454,8 @@ Render:
 			+ If the two switch types are physically identical, move switch type as new electrical property
 			  and use it only for announcements
 			+ SettingsDialog: EngineThrust or Adjust
-			= Ship preview: add electrical icon
-			= Ship preview: add HD icon
+			+ Ship preview: add electrical icon
+			+ Ship preview: add HD icon
 			+ Change "Titanic (with Lights)" into "Titanic (with Electricals)"
 			- Test: points of Water are filled with water, and mass is set to that of air
 				- At Points::Add
