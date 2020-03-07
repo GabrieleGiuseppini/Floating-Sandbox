@@ -5,5 +5,11 @@
 	"offset":{"x":25.0, "y":0.0},
 	"ship_name":"Lifeboat",
 	"created_by":"Michael Bozarth",
-	"year_built":"2001"
+	"year_built":"2001",
+
+	"electrical_panel":{
+
+		"1": {"panel_x":-1, "panel_y":0, "label":"Engine" },
+		"0": {"panel_x":0, "panel_y":0, "label":"Engine RPM" }
+	}
 }
