@@ -73,7 +73,7 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
-    float constexpr TotalProgressSteps = 7.0f;
+    float constexpr TotalProgressSteps = 8.0f;
     float ProgressSteps = 0.0;
 
     wxPanel::Create(
@@ -196,18 +196,27 @@ SwitchboardPanel::SwitchboardPanel(
     ProgressSteps += 1.0f; // 4.0f
     progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
+    mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+    mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+    mShipSoundSwitchOnDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("ship_sound_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+    mShipSoundSwitchOffDisabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+    mMinBitmapSize.DecTo(mShipSoundSwitchOnEnabledBitmap.GetSize());
+
+    ProgressSteps += 1.0f; // 5.0f
+    progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
     mPowerMonitorOnBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
     mPowerMonitorOffBitmap.LoadFile(resourceLoader.GetBitmapFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
-    ProgressSteps += 1.0f; // 5.0f
+    ProgressSteps += 1.0f; // 6.0f
     progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     mGaugeRpmBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
     mGaugeVoltsBitmap.LoadFile(resourceLoader.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
-    ProgressSteps += 1.0f; // 6.0f
+    ProgressSteps += 1.0f; // 7.0f
     progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLoader.GetBitmapFilepath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -224,7 +233,7 @@ SwitchboardPanel::SwitchboardPanel(
     mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
     mEngineControllerHandBitmaps.emplace_back(resourceLoader.GetBitmapFilepath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
-    ProgressSteps += 1.0f; // 7.0f
+    ProgressSteps += 1.0f; // 8.0f
     progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
     wxBitmap dockCheckboxCheckedBitmap(resourceLoader.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
@@ -472,8 +481,8 @@ void SwitchboardPanel::OnSwitchCreated(
     // Make switch control
     //
 
-    SwitchElectricalElementControl * swCtrl;
-    IInteractiveElectricalElementControl * intCtrl;
+    SwitchElectricalElementControl * swCtrl = nullptr;
+    IInteractiveElectricalElementControl * intCtrl = nullptr;
 
     switch (type)
     {
@@ -543,10 +552,26 @@ void SwitchboardPanel::OnSwitchCreated(
             break;
         }
 
-        default:
+        case SwitchType::ShipSoundSwitch:
         {
-            assert(false);
-            return;
+            auto ctrl = new InteractivePushSwitchElectricalElementControl(
+                mSwitchPanel,
+                mShipSoundSwitchOnEnabledBitmap,
+                mShipSoundSwitchOffEnabledBitmap,
+                mShipSoundSwitchOnDisabledBitmap,
+                mShipSoundSwitchOffDisabledBitmap,
+                label,
+                mInteractiveCursor,
+                [this, electricalElementId](ElectricalState newState)
+                {
+                    mGameController->SetSwitchState(electricalElementId, newState);
+                },
+                state);
+
+            swCtrl = ctrl;
+            intCtrl = ctrl;
+
+            break;
         }
     }
 

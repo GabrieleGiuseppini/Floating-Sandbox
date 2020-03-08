@@ -437,6 +437,19 @@ public:
         }
     }
 
+    virtual void OnShipSoundUpdated(
+        ElectricalElementId electricalElementId,
+        ElectricalMaterial const & electricalMaterial,
+        bool isPlaying,
+        bool isUnderwater) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnShipSoundUpdated(electricalElementId, electricalMaterial, isPlaying, isUnderwater);
+        }
+    }
+
     //
     // Generic
     //

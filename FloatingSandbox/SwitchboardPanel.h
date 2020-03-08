@@ -277,6 +277,11 @@ private:
     wxBitmap mInteractiveToggleSwitchOnDisabledBitmap;
     wxBitmap mInteractiveToggleSwitchOffDisabledBitmap;
 
+    wxBitmap mShipSoundSwitchOnEnabledBitmap;
+    wxBitmap mShipSoundSwitchOffEnabledBitmap;
+    wxBitmap mShipSoundSwitchOnDisabledBitmap;
+    wxBitmap mShipSoundSwitchOffDisabledBitmap;
+
     wxBitmap mPowerMonitorOnBitmap;
     wxBitmap mPowerMonitorOffBitmap;
 

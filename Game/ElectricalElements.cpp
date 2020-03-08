@@ -139,6 +139,17 @@ void ElectricalElements::Add(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::ShipSoundState(electricalMaterial.IsSelfPowered, false));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
             // State
@@ -266,6 +277,19 @@ void ElectricalElements::AnnounceInstancedElements()
                 break;
             }
 
+            case ElectricalMaterial::ElectricalElementType::ShipSound:
+            {
+                // Ships sounds announce themselves as switches
+                mGameEventHandler->OnSwitchCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    SwitchType::ShipSoundSwitch,
+                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
                 mGameEventHandler->OnSwitchCreated(
@@ -316,6 +340,7 @@ void ElectricalElements::HighlightElectricalElement(
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             points.StartPointHighlight(
@@ -418,7 +443,11 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
             mElementStateBuffer[electricalElementIndex].EngineController.IsPowered = false;
 
             // Publish disable
-            mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+            mGameEventHandler->OnEngineControllerEnabled(
+                ElectricalElementId(
+                    mShipId,
+                    electricalElementIndex),
+                false);
 
             break;
         }
@@ -444,7 +473,12 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
-            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+            // Publish disable
+            mGameEventHandler->OnSwitchEnabled(
+                ElectricalElementId(
+                    mShipId,
+                    electricalElementIndex),
+                false);
 
             break;
         }
@@ -459,6 +493,27 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
                     ElectricalElementId(mShipId, electricalElementIndex),
                     ElectricalState::Off);
             }
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
+        {
+            // Publish state change, if necessary
+            if (mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying)
+            {
+                mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying = false;
+
+                // Publish state change
+                mGameEventHandler->OnShipSoundUpdated(
+                    ElectricalElementId(mShipId, electricalElementIndex),
+                    *mMaterialBuffer[electricalElementIndex],
+                    false,
+                    false); // Irrelevant
+            }
+
+            // Publish disable
+            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
 
             break;
         }
@@ -498,6 +553,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
+            // Notify enabling
             mGameEventHandler->OnEngineControllerEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
 
             break;
@@ -523,6 +579,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
+            // Notify enabling
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
 
             break;
@@ -534,6 +591,19 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             // and the monitor will announce it
 
             assert(!mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
+        {
+            // Notify enabling
+            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+
+            // Nothing to do: at the next UpdateSinks() that makes this sound work, there will be a state change
+            // and the sound will announce it
+
+            assert(!mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying);
 
             break;
         }
@@ -1013,6 +1083,53 @@ void ElectricalElements::UpdateSinks(
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
+                        }
+                    }
+
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::ShipSound:
+                {
+                    auto & state = mElementStateBuffer[sinkElementIndex].ShipSound;
+
+                    // Update state machine
+                    if (state.IsPlaying)
+                    {
+                        if ((!state.IsSelfPowered && currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                            || !mConductivityBuffer[sinkElementIndex].ConductsElectricity)
+                        {
+                            //
+                            // Toggle state ON->OFF
+                            //
+
+                            state.IsPlaying = false;
+
+                            // Notify
+                            mGameEventHandler->OnShipSoundUpdated(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                *(mMaterialBuffer[sinkElementIndex]),
+                                false,
+                                false); // Irrelevant
+                        }
+                    }
+                    else
+                    {
+                        if ((state.IsSelfPowered || currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                            && mConductivityBuffer[sinkElementIndex].ConductsElectricity)
+                        {
+                            //
+                            // Toggle state OFF->ON
+                            //
+
+                            state.IsPlaying = true;
+
+                            // Notify
+                            mGameEventHandler->OnShipSoundUpdated(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                *(mMaterialBuffer[sinkElementIndex]),
+                                true,
+                                mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))));
                         }
                     }
 

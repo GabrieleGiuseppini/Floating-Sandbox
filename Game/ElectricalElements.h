@@ -242,6 +242,21 @@ private:
             {}
         };
 
+        struct ShipSoundState
+        {
+            bool IsSelfPowered;
+            bool IsPlaying; // Current announced playing state
+
+            // The toggle status is encoded in the conductivity buffer
+
+            ShipSoundState(
+                bool isSelfPowered,
+                bool isPlaying)
+                : IsSelfPowered(isSelfPowered)
+                , IsPlaying(isPlaying)
+            {}
+        };
+
         struct SmokeEmitterState
         {
             float EmissionRate;
@@ -267,6 +282,7 @@ private:
         LampState Lamp;
         OtherSinkState OtherSink;
         PowerMonitorState PowerMonitor;
+        ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
         DummyState Dummy;
 
@@ -296,6 +312,10 @@ private:
 
         ElementState(PowerMonitorState powerMonitor)
             : PowerMonitor(powerMonitor)
+        {}
+
+        ElementState(ShipSoundState shipSound)
+            : ShipSound(shipSound)
         {}
 
         ElementState(SmokeEmitterState smokeEmitter)

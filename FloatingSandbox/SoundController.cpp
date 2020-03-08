@@ -1396,6 +1396,16 @@ void SoundController::OnEngineMonitorUpdated(
     }
 }
 
+void SoundController::OnShipSoundUpdated(
+    ElectricalElementId electricalElementId,
+    ElectricalMaterial const & electricalMaterial,
+    bool isPlaying,
+    bool isUnderwater)
+{
+    // TODOHERE
+    LogMessage("EngineSound: play=", isPlaying, " underWater=", isUnderwater);
+}
+
 void SoundController::OnBombPlaced(
     BombId /*bombId*/,
     BombType /*bombType*/,

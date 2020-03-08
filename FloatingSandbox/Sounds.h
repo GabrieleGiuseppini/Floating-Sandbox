@@ -55,6 +55,7 @@ enum class SoundType
     EngineOutboard,
     EngineSteam,
     EngineTelegraph,
+    ShipHorn,
     WaterRush,
     WaterSplash,
     Wave,

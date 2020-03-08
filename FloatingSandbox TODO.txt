@@ -588,10 +588,41 @@ Render:
 			+ Add instanced generator(s)
 		+ Propulsion (*)
 		+ Double-check strength (Titanic break test)
-		- Send for testing
-		- Bump up version
+		+ Send for testing
+		+ Bump up version
 
-		- Talk with Mike about LEGO mass
+		= Discord intake:
+			- Bug of that guy
+			+ SetDoubleBuffered on MAC
+
+		- Test/check spring stiffness based off endpoints
+
+		= Horns and bells
+			+ ElectricalMaterial
+			+ GameEvents
+			+ Dynamics
+				+ Add
+				+ Announce
+				+ Destroy
+				+ Repair
+				+ SetSwitch
+				+ Update: 
+					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
+					+ Fire ShipSound event w/material and underwater
+			= SwitchboardPanel
+				+ Create switch on announcement
+				+ New gfx, to be used w/push switch control
+				- Test Disable/Enable on destroy/repair
+			- Why first switch doesn't work?
+			- Sound
+				= Horn
+				- Bell
+			- SoundController
+				- TODO
+			+ Materials json
+			+ Add to circuit test
+			- Add to Titanic
+			- Materials guide and template
 
 		- Test: points of Water are filled with water, and mass is set to that of air
 			- At Points::Add

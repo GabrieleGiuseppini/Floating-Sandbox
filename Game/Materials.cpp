@@ -179,13 +179,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"particle_emission_rate\" parameter must be greater than or equal 0.0");
         }
 
-        // Interactive Switch properties
-        InteractiveSwitchElementType interactiveSwitchType = InteractiveSwitchElementType::Push; // Arbitrary
-        if (ElectricalElementType::InteractiveSwitch == electricalType)
-        {
-            std::string interactiveSwitchTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "interactive_switch_type");
-            interactiveSwitchType = StrToInteractiveSwitchElementType(interactiveSwitchTypeStr);
-        }
+        // Instancing
+        bool isInstanced = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_instanced", false);
 
         // Engine properties
         EngineElementType engineType = EngineElementType::Steam; // Arbitrary
@@ -207,8 +202,21 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"engine_responsiveness\" parameter must be greater than 0.0 and lower than or equal 1.0");
         }
 
-        // Instancing
-        bool isInstanced = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_instanced", false);
+        // Interactive Switch properties
+        InteractiveSwitchElementType interactiveSwitchType = InteractiveSwitchElementType::Push; // Arbitrary
+        if (ElectricalElementType::InteractiveSwitch == electricalType)
+        {
+            std::string interactiveSwitchTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "interactive_switch_type");
+            interactiveSwitchType = StrToInteractiveSwitchElementType(interactiveSwitchTypeStr);
+        }
+
+        // Ship Sound properties
+        ShipSoundElementType shipSoundType = ShipSoundElementType::Bell; // Arbitrary
+        if (ElectricalElementType::ShipSound == electricalType)
+        {
+            std::string shipSoundTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "ship_sound_type");
+            shipSoundType = StrToShipSoundElementType(shipSoundTypeStr);
+        }
 
         return ElectricalMaterial(
             name,
@@ -223,12 +231,13 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             minimumOperatingTemperature,
             maximumOperatingTemperature,
             particleEmissionRate,
-            interactiveSwitchType,
+            isInstanced,
             engineType,
             engineDirection,
             enginePower,
             engineResponsiveness,
-            isInstanced);
+            interactiveSwitchType,
+            shipSoundType);
     }
     catch (GameException const & ex)
     {
@@ -254,6 +263,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::OtherSink;
     else if (Utils::CaseInsensitiveEquals(str, "PowerMonitor"))
         return ElectricalElementType::PowerMonitor;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipSound"))
+        return ElectricalElementType::ShipSound;
     else if (Utils::CaseInsensitiveEquals(str, "SmokeEmitter"))
         return ElectricalElementType::SmokeEmitter;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSensingSwitch"))
@@ -280,4 +291,14 @@ ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType
         return EngineElementType::Steam;
     else
         throw GameException("Unrecognized EngineElementType \"" + str + "\"");
+}
+
+ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundElementType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Bell"))
+        return ShipSoundElementType::Bell;
+    else if (Utils::CaseInsensitiveEquals(str, "Horn"))
+        return ShipSoundElementType::Horn;
+    else
+        throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
 }

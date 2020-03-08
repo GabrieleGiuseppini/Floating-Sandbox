@@ -173,6 +173,7 @@ public:
         InteractiveSwitch,
         OtherSink,
         PowerMonitor,
+        ShipSound,
         SmokeEmitter,
         WaterSensingSwitch
     };
@@ -187,6 +188,12 @@ public:
     {
         Push,
         Toggle
+    };
+
+    enum class ShipSoundElementType
+    {
+        Bell,
+        Horn
     };
 
 public:
@@ -212,8 +219,8 @@ public:
     // Particle Emission
     float ParticleEmissionRate; // Number of particles per second
 
-    // Interactive switch
-    InteractiveSwitchElementType InteractiveSwitchType;
+    // Instancing
+    bool IsInstanced; // When true, only one particle may exist with a given (full) color key
 
     // Engine
     EngineElementType EngineType;
@@ -221,8 +228,11 @@ public:
     float EnginePower; // Thrust at max RPM, HP
     float EngineResponsiveness; // Coefficient for RPM recursive function
 
-    // Instancing
-    bool IsInstanced; // When true, only one particle may exist with a given (full) color key
+    // Interactive switch
+    InteractiveSwitchElementType InteractiveSwitchType;
+
+    // Ship sound
+    ShipSoundElementType ShipSoundType;
 
 public:
 
@@ -233,6 +243,8 @@ public:
     static InteractiveSwitchElementType StrToInteractiveSwitchElementType(std::string const & str);
 
     static EngineElementType StrToEngineElementType(std::string const & str);
+
+    static ShipSoundElementType StrToShipSoundElementType(std::string const & str);
 
     ElectricalMaterial(
         std::string name,
@@ -247,12 +259,13 @@ public:
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
         float particleEmissionRate,
-        InteractiveSwitchElementType interactiveSwitchType,
+        bool isInstanced,
         EngineElementType engineType,
         float engineCCWDirection,
         float enginePower,
         float engineResponsiveness,
-        bool isInstanced)
+        InteractiveSwitchElementType interactiveSwitchType,
+        ShipSoundElementType shipSoundType)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
@@ -265,12 +278,14 @@ public:
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
         , ParticleEmissionRate(particleEmissionRate)
-        , InteractiveSwitchType(interactiveSwitchType)
+        //
+        , IsInstanced(isInstanced)
         , EngineType(engineType)
         , EngineCCWDirection(engineCCWDirection)
         , EnginePower(enginePower)
         , EngineResponsiveness(engineResponsiveness)
-        , IsInstanced(isInstanced)
+        , InteractiveSwitchType(interactiveSwitchType)
+        , ShipSoundType(shipSoundType)
     {
     }
 };

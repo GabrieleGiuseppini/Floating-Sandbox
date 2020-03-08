@@ -236,7 +236,8 @@ enum class SwitchType
 {
     InteractiveToggleSwitch,
     InteractivePushSwitch,
-    AutomaticSwitch
+    AutomaticSwitch,
+    ShipSoundSwitch
 };
 
 /*

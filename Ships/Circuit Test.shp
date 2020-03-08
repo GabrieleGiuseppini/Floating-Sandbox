@@ -15,7 +15,10 @@
 		"4": {"panel_x":2, "panel_y":0, "label":"Smoke" },		
 		"2": {"panel_x":3, "panel_y":0, "label":"Lamp 1 Aft" },
 		"3": {"panel_x":4, "panel_y":0, "label":"Lamp 2 Aft" },
-		"5": {"panel_x":5, "panel_y":0, "label":"Water Detector" }
+		"5": {"panel_x":5, "panel_y":0, "label":"Water Detector" },
+
+		"11": {"panel_x":7, "panel_y":0, "label":"Horn" },
+		"12": {"panel_x":8, "panel_y":0, "label":"Bell" }
 	},
 	"ship_name":"Circuit Test",
 	"offset":{"x":0.0, "y":0.0},

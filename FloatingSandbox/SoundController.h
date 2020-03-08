@@ -264,6 +264,12 @@ public:
         float thrustMagnitude,
         float rpm) override;
 
+    virtual void OnShipSoundUpdated(
+        ElectricalElementId electricalElementId,
+        ElectricalMaterial const & electricalMaterial,
+        bool isPlaying,
+        bool isUnderwater) override;
+
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,

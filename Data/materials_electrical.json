@@ -554,5 +554,39 @@
             "column": "2|Power Monitor", 
             "row": "20|Misc"
         }
+    },
+
+    {
+        "color_key": "#409000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Ship Horn", 
+	"ship_sound_type": "Horn",
+        "template": {
+            "column": "3|Ship Horn", 
+            "row": "20|Misc"
+        }
+    },
+
+    {
+        "color_key": "#40A000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Ship Bell", 
+	"ship_sound_type": "Bell",
+        "template": {
+            "column": "4|Ship Bell", 
+            "row": "20|Misc"
+        }
     }
 ]
