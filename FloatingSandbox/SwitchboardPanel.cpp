@@ -745,7 +745,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     ElectricalMaterial const & /*electricalMaterial*/,
-    float thrustMagnitude,
+    float /*thrustMagnitude*/,
     float rpm,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {

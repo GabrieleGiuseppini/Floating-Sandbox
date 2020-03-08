@@ -76,6 +76,9 @@ SoundController::SoundController(
         mMasterEffectsMuted,
         500ms,
         500ms)
+    , mLoopedSounds(
+        mMasterEffectsVolume,
+        mMasterEffectsMuted)
 {
     //
     // Initialize Sounds
@@ -491,6 +494,67 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
+        else if (soundType == SoundType::ShipBell
+                || soundType == SoundType::ShipHorn)
+        {
+            //
+            // Looped U sound
+            //
+
+            std::regex uRegex(R"(([^_]+)_(?:(underwater)_)?\d+)");
+            std::smatch uMatch;
+            if (!std::regex_match(soundName, uMatch, uRegex))
+            {
+                throw GameException("U sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            assert(uMatch.size() == 1 + 2);
+
+            // 1. Parse Underwater
+            bool isUnderwater;
+            if (uMatch[2].matched)
+            {
+                assert(uMatch[2].str() == "underwater");
+                isUnderwater = true;
+            }
+            else
+            {
+                isUnderwater = false;
+            }
+
+
+            //
+            // Store sound
+            //
+
+            float loopStartSample;
+            float loopEndSample;
+            if (soundType == SoundType::ShipBell)
+            {
+                // TODO
+            }
+            else
+            {
+                assert(soundType == SoundType::ShipHorn);
+                if (!isUnderwater)
+                {
+                    loopStartSample = 0.678503f;
+                    loopEndSample = 2.01508f;
+                }
+                else
+                {
+                    loopStartSample = 0.507846f;
+                    loopEndSample = 1.76757f;
+                }
+            }
+
+            mLoopedSounds.AddAlternativeForSoundType(
+                soundType,
+                isUnderwater,
+                resourceLoader.GetSoundFilepath(soundName),
+                loopStartSample,
+                loopEndSample);
+        }
         else
         {
             //
@@ -564,6 +628,7 @@ void SoundController::SetPaused(bool isPaused)
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
     mEngineSounds.SetPaused(isPaused);
+    mLoopedSounds.SetPaused(isPaused);
 }
 
 // Master effects
@@ -599,6 +664,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
     mEngineSounds.SetMasterVolume(mMasterEffectsVolume);
+    mLoopedSounds.SetMasterVolume(mMasterEffectsVolume);
 }
 
 void SoundController::SetMasterEffectsMuted(bool isMuted)
@@ -632,6 +698,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
     mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
     mEngineSounds.SetMuted(mMasterEffectsMuted);
+    mLoopedSounds.SetMuted(mMasterEffectsMuted);
 }
 
 // Master tools
@@ -1016,6 +1083,7 @@ void SoundController::Reset()
     mTimerBombFastFuseSound.Reset();
     mAntiMatterBombContainedSounds.Reset();
     mEngineSounds.Reset();
+    mLoopedSounds.Reset();
 
     //
     // Reset state
@@ -1402,8 +1470,34 @@ void SoundController::OnShipSoundUpdated(
     bool isPlaying,
     bool isUnderwater)
 {
-    // TODOHERE
-    LogMessage("EngineSound: play=", isPlaying, " underWater=", isUnderwater);
+    if (isPlaying)
+    {
+        SoundType soundType = SoundType::ShipBell; // Arbitrary
+        switch (electricalMaterial.ShipSoundType)
+        {
+            case ElectricalMaterial::ShipSoundElementType::Bell:
+            {
+                soundType = SoundType::ShipBell;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::Horn:
+            {
+                soundType = SoundType::ShipHorn;
+                break;
+            }
+        }
+
+        mLoopedSounds.Start(
+            electricalElementId,
+            soundType,
+            isUnderwater,
+            100.0f);
+    }
+    else
+    {
+        mLoopedSounds.Stop(electricalElementId);
+    }
 }
 
 void SoundController::OnBombPlaced(

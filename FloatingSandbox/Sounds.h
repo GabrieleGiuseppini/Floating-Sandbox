@@ -10,6 +10,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
+#include <GameCore/TupleKeys.h>
 
 #include <SFML/Audio.hpp>
 
@@ -55,6 +56,7 @@ enum class SoundType
     EngineOutboard,
     EngineSteam,
     EngineTelegraph,
+    ShipBell,
     ShipHorn,
     WaterRush,
     WaterSplash,
@@ -669,9 +671,9 @@ private:
  * Remembers playing state across pauses, and supports fade-in and fade-out.
  */
 template<typename TInstanceId>
-struct MultiInstanceContinuousSound
+struct MultiInstanceContinuousSounds
 {
-    MultiInstanceContinuousSound(
+    MultiInstanceContinuousSounds(
         float volume,
         float masterVolume,
         bool isMuted,
@@ -1200,4 +1202,207 @@ struct ContinuousSingleChoiceAggregateSound : public ContinuousSingleChoiceSound
 private:
 
     std::set<TObjectId> mObjectsPlayingSound;
+};
+
+template<typename TInstanceId>
+class MultiInstanceLoopedSounds
+{
+public:
+
+    MultiInstanceLoopedSounds(
+        float masterVolume,
+        bool isMuted)
+        : mIsPaused(false)
+        , mMasterVolume(masterVolume)
+        , mIsMuted(isMuted)
+    {
+    }
+
+    void AddAlternativeForSoundType(
+        SoundType soundType,
+        bool isUnderwater,
+        std::filesystem::path soundFilePath,
+        float loopStartSample,
+        float loopEndSample)
+    {
+        mSoundFileInfos.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(soundType, isUnderwater),
+            std::forward_as_tuple(soundFilePath, loopStartSample, loopEndSample));
+    }
+
+    void SetMasterVolume(float masterVolume)
+    {
+        mMasterVolume = masterVolume;
+        UpdateAllVolumes();
+    }
+
+    void SetMuted(bool isMuted)
+    {
+        mIsMuted = isMuted;
+        UpdateAllVolumes();
+    }
+
+    void Start(
+        TInstanceId instanceId,
+        SoundType soundType,
+        bool isUnderwater,
+        float volume)
+    {
+        ScavengeSounds();
+
+        // Find sound file info
+        auto soundFileInfoIt = mSoundFileInfos.find(std::make_tuple(soundType, isUnderwater));
+        if (soundFileInfoIt == mSoundFileInfos.end())
+        {
+            soundFileInfoIt = mSoundFileInfos.find(std::make_tuple(soundType, false));
+            if (soundFileInfoIt == mSoundFileInfos.end())
+                return;
+        }
+
+        // See whether we're already playing this instance
+        auto instanceSoundIt = mPlayingSounds.find(instanceId);
+        if (instanceSoundIt == mPlayingSounds.end())
+        {
+            // Create new sound altogether
+
+            auto sound = std::make_unique<sf::Music>();
+            sound->openFromFile(soundFileInfoIt->second.FilePath.string());
+            InternalSetVolume(*sound, volume);
+
+            instanceSoundIt = mPlayingSounds.emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(instanceId),
+                std::forward_as_tuple(std::move(sound), volume))
+                .first;
+        }
+        else
+        {
+            // Reuse existing sound
+
+            instanceSoundIt->second.Sound->stop();
+        }
+
+        auto & sound = *(instanceSoundIt->second.Sound);
+
+        sound.setLoop(true);
+        sound.setLoopPoints(
+            sf::Music::TimeSpan(
+                sf::seconds(soundFileInfoIt->second.LoopStartSample),
+                sf::seconds(soundFileInfoIt->second.LoopEndSample - soundFileInfoIt->second.LoopStartSample)));
+        sound.play();
+
+        if (mIsPaused)
+            sound.pause();
+    }
+
+    void Stop(TInstanceId instanceId)
+    {
+        auto it = mPlayingSounds.find(instanceId);
+        if (it != mPlayingSounds.end())
+        {
+            // Let it finish now
+            it->second.Sound->setLoop(false);
+        }
+    }
+
+    void SetPaused(bool isPaused)
+    {
+        for (auto & it : mPlayingSounds)
+        {
+            if (isPaused)
+                it.second.Sound->pause();
+            else
+                it.second.Sound->play();
+        }
+
+        mIsPaused = isPaused;
+    }
+
+    void Reset()
+    {
+        mPlayingSounds.clear();
+    }
+
+private:
+
+    void ScavengeSounds()
+    {
+        for (auto it = mPlayingSounds.begin(); it != mPlayingSounds.end(); /*incremented in loop*/)
+        {
+            if (it->second.Sound->getStatus() == sf::SoundSource::Status::Stopped)
+            {
+                it = mPlayingSounds.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    void UpdateAllVolumes()
+    {
+        for (auto it = mPlayingSounds.begin(); it != mPlayingSounds.end(); ++it)
+        {
+            InternalSetVolume(
+                *(it->second.Sound),
+                it->second.Volume);
+        }
+    }
+
+    void InternalSetVolume(
+        sf::Music & sound,
+        float volume)
+    {
+        if (!mIsMuted)
+        {
+            // 100*(1 - e^(-0.01*x))
+            float localVolume = 1.0f - exp(-0.01f * volume);
+            sound.setVolume(100.0f * localVolume * (mMasterVolume / 100.0f));
+        }
+        else
+        {
+            sound.setVolume(0.0f);
+        }
+    }
+
+private:
+
+    bool mIsPaused;
+    float mMasterVolume;
+    bool mIsMuted;
+
+    struct SoundFileInfo
+    {
+        std::filesystem::path FilePath;
+        float LoopStartSample;
+        float LoopEndSample;
+
+        SoundFileInfo(
+            std::filesystem::path filePath,
+            float loopStartSample,
+            float loopEndSample)
+            : FilePath(filePath)
+            , LoopStartSample(loopStartSample)
+            , LoopEndSample(loopEndSample)
+        {}
+    };
+
+    unordered_tuple_map<std::tuple<SoundType, bool>, SoundFileInfo> mSoundFileInfos;
+
+    struct PlayingSoundInfo
+    {
+        std::unique_ptr<sf::Music> Sound;
+        float Volume;
+
+        PlayingSoundInfo(
+            std::unique_ptr<sf::Music> sound,
+            float volume)
+            : Sound(std::move(sound))
+            , Volume(volume)
+        {}
+    };
+
+    std::unordered_map<TInstanceId, PlayingSoundInfo> mPlayingSounds;
 };

@@ -614,14 +614,21 @@ Render:
 				+ New gfx, to be used w/push switch control
 				+ Test Disable/Enable on destroy/repair
 			- Sound
-				= Horn
+				+ Horn
 				- Bell
 			- SoundController
-				- TODO
+				+ Start: Hijack instance ID
+				- Hookup:
+					+ Reset
+					= Mute
+					= MasterEffectsVolume
+					+ Pause
 			+ Materials json
 			+ Add to circuit test
 			- Add to Titanic
 			- Materials guide and template
+			- See if can add loop points to GameSound
+			- See if can merge engine sounds into MultiInstanceLoopedSounds
 
 		- Test: points of Water are filled with water, and mass is set to that of air
 			- At Points::Add
