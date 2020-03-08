@@ -458,8 +458,6 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnSwitchCreated(", electricalElementId, " ", int(instanceIndex), "): State=", static_cast<bool>(state));
-
     //
     // Make label, if needed
     //
@@ -595,8 +593,6 @@ void SwitchboardPanel::OnPowerProbeCreated(
     ElectricalState state,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnPowerProbeCreated(", electricalElementId, " ", int(instanceIndex), "): State=", static_cast<bool>(state));
-
     //
     // Create power monitor control
     //
@@ -695,8 +691,6 @@ void SwitchboardPanel::OnEngineControllerCreated(
     ElectricalElementInstanceIndex instanceIndex,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineControllerCreated(", electricalElementId, " ", int(instanceIndex), ")");
-
     //
     // Create label
     //
@@ -755,8 +749,6 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     float rpm,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
-    LogMessage("SwitchboardPanel::OnEngineMonitorCreated(", electricalElementId, " ", int(instanceIndex), "): Thrust=", thrustMagnitude, ", RPM=", rpm);
-
     //
     // Create label
     //

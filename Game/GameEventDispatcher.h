@@ -7,6 +7,7 @@
 
 #include "IGameEventHandlers.h"
 
+#include <GameCore/Log.h>
 #include <GameCore/TupleKeys.h>
 
 #include <algorithm>
@@ -313,6 +314,8 @@ public:
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
+        LogMessage("OnSwitchCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
+
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
@@ -327,6 +330,8 @@ public:
         ElectricalState state,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
+        LogMessage("OnPowerProbeCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
+
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
@@ -339,6 +344,8 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
+        LogMessage("OnEngineControllerCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
+
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
@@ -354,6 +361,8 @@ public:
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
+        LogMessage("OnEngineMonitorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): Thrust=", thrustMagnitude, " RPM=", rpm);
+
         // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {

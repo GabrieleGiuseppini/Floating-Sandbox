@@ -609,11 +609,10 @@ Render:
 				+ Update: 
 					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
 					+ Fire ShipSound event w/material and underwater
-			= SwitchboardPanel
+			+ SwitchboardPanel
 				+ Create switch on announcement
 				+ New gfx, to be used w/push switch control
-				- Test Disable/Enable on destroy/repair
-			- Why first switch doesn't work?
+				+ Test Disable/Enable on destroy/repair
 			- Sound
 				= Horn
 				- Bell
