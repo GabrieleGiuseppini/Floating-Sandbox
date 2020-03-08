@@ -33,7 +33,9 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     SetMinSize(wxSize(width, Height));
     SetMaxSize(wxSize(width, Height));
 
+#ifdef __WXMSW__
     SetDoubleBuffered(true);
+#endif
 
     SetBackgroundColour(wxColour("WHITE"));
 

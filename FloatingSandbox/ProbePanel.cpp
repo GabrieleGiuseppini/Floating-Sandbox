@@ -20,7 +20,9 @@ ProbePanel::ProbePanel(wxWindow* parent)
         wxDefaultSize,
         wxBORDER_SIMPLE | wxCLIP_CHILDREN)
 {
+#ifdef __WXMSW__
     SetDoubleBuffered(true);
+#endif
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 

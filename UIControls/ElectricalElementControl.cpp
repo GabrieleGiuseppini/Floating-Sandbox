@@ -41,7 +41,9 @@ GaugeElectricalElementControl::GaugeElectricalElementControl(
 {
     mImagePanel->SetCursor(cursor);
 
+#ifdef __WXMSW__
     mImagePanel->SetDoubleBuffered(true);
+#endif
 
     mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&GaugeElectricalElementControl::OnPaint, this);
 

@@ -54,7 +54,9 @@ ShipPreviewWindow::ShipPreviewWindow(
     SetScrollRate(0, 20);
 
     // Initialize rendering
+#ifdef __WXMSW__
     SetDoubleBuffered(true);
+#endif
     SetBackgroundColour(wxColour("WHITE"));
     mSelectionPen = wxPen(wxColor(0x10, 0x10, 0x10), 1, wxPENSTYLE_SOLID);
     mDescriptionFont = wxFont(wxFontInfo(7));

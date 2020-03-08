@@ -27,7 +27,9 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 
+#ifdef __WXMSW__
     SetDoubleBuffered(true);
+#endif
 
     Connect(this->GetId(), wxEVT_PAINT, (wxObjectEventFunction)&EventTickerPanel::OnPaint);
     Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&EventTickerPanel::OnEraseBackground);
