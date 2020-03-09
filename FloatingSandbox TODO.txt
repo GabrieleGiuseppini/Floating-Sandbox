@@ -592,8 +592,13 @@ Render:
 		+ Bump up version
 
 		= Discord intake:
-			- Bug of that guy
+			= Bug of that guy
+				- Tell him it's wood stiff
 			+ SetDoubleBuffered on MAC
+			+ Wood background for panel (mahogany)
+			- Sam's errors
+			- Lever dragging?
+				- PointToValue(.) -> value
 
 		- Test/check spring stiffness based off endpoints
 
@@ -615,7 +620,14 @@ Render:
 				+ Test Disable/Enable on destroy/repair
 			- Sound
 				+ Horn
-				- Bell
+				- Other sounds:
+					- Rename existing sound file
+					- Do new sounds
+						- https://retired.sounddogs.com/previews/104/mp3/702268_SOUNDDOGS__be.mp3
+					- Elec material: new "ship_sound_type" types
+					- SoundController:
+						- New sound types
+						- New naming convention for filenames
 			- SoundController
 				+ Start: Hijack instance ID
 				- Hookup:
@@ -627,7 +639,6 @@ Render:
 			+ Add to circuit test
 			- Add to Titanic
 			- Materials guide and template
-			- See if can add loop points to GameSound
 			- See if can merge engine sounds into MultiInstanceLoopedSounds
 
 		- Test: points of Water are filled with water, and mass is set to that of air
