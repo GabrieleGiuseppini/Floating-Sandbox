@@ -54,6 +54,6 @@ ImageSize GPUCalculator::CalculateRequiredTextureSize(size_t pixels)
     else
     {
         bool hasExtraPixels = static_cast<int>(pixels) % GameOpenGL::MaxTextureSize != 0;
-        return ImageSize(GameOpenGL::MaxTextureSize, numberOfRows + hasExtraPixels ? 1 : 0);
+        return ImageSize(GameOpenGL::MaxTextureSize, numberOfRows + (hasExtraPixels ? 1 : 0));
     }
 }

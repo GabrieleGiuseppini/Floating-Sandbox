@@ -30,6 +30,9 @@ class Bomb
 {
 public:
 
+    virtual ~Bomb()
+    {}
+
     /*
      * Updates the bomb's state machine.
      *

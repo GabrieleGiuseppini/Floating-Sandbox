@@ -311,7 +311,7 @@ public:
         size_t startByteCount,
         size_t size)
         : BaseBuffer<TElement>(
-            reinterpret_cast<TElement *>(allocatedBuffer.get() + startByteCount),
+            reinterpret_cast<TElement *>(&(allocatedBuffer.get()[0]) + startByteCount),
             size)
         , mAllocatedBuffer(std::move(allocatedBuffer))
     {
@@ -324,7 +324,7 @@ public:
         size_t fillStart,
         TElement fillValue)
         : BaseBuffer<TElement>(
-            reinterpret_cast<TElement *>(allocatedBuffer.get() + startByteCount),
+            reinterpret_cast<TElement *>(&(allocatedBuffer.get()[0]) + startByteCount),
             size,
             fillStart,
             fillValue)

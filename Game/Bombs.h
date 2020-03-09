@@ -201,7 +201,7 @@ private:
 
             // Add new bomb to set of bombs, removing eventual bombs that might get purged
             mCurrentBombs.emplace(
-                [this, &gameParameters](std::unique_ptr<Bomb> const & purgedBomb)
+                [](std::unique_ptr<Bomb> const & purgedBomb)
                 {
                     // Tell it we're removing it
                     purgedBomb->OnBombRemoved();

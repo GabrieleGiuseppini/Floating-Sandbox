@@ -34,10 +34,10 @@ public:
         , mBreakEvents()
         , mCombustionExplosionEvents()
         , mLightningHitEvents()
-        , mLightFlickerEvents()
         , mBombExplosionEvents()
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
+        , mLightFlickerEvents()
         // Sinks
         , mRenderSinks()
         , mLifecycleSinks()
@@ -613,7 +613,7 @@ public:
 
     virtual void OnTimerBombFuse(
         BombId bombId,
-        std::optional<bool> isFast)
+        std::optional<bool> isFast) override
     {
         // No need to aggregate this one
         for (auto sink : mGenericSinks)
@@ -633,7 +633,7 @@ public:
 
     virtual void OnAntiMatterBombContained(
         BombId bombId,
-        bool isContained)
+        bool isContained) override
     {
         // No need to aggregate this one
         for (auto sink : mGenericSinks)
@@ -644,7 +644,7 @@ public:
         }
     }
 
-    virtual void OnAntiMatterBombPreImploding()
+    virtual void OnAntiMatterBombPreImploding() override
     {
         // No need to aggregate this one
         for (auto sink : mGenericSinks)
@@ -653,7 +653,7 @@ public:
         }
     }
 
-    virtual void OnAntiMatterBombImploding()
+    virtual void OnAntiMatterBombImploding() override
     {
         // No need to aggregate this one
         for (auto sink : mGenericSinks)

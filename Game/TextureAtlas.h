@@ -210,7 +210,7 @@ public:
         AtlasOptions options,
         ProgressCallback const & progressCallback)
     {
-        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+        static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
 
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
@@ -242,7 +242,7 @@ public:
         AtlasOptions options,
         ProgressCallback const & progressCallback)
     {
-        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+        static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
 
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
@@ -275,7 +275,7 @@ public:
         AtlasOptions options,
         ProgressCallback const & progressCallback)
     {
-        static_assert(std::is_same<TextureGroups, TextureDatabaseTraits::TextureGroups>::value);
+        static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
 
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;

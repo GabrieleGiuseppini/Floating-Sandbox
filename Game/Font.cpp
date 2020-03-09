@@ -72,9 +72,7 @@ std::vector<Render::Font> Font::LoadAll(
 
     for (auto const & filepath : filepaths)
     {
-        fonts.emplace_back(
-            std::move(
-                Render::Font::Load(filepath)));
+        fonts.emplace_back(Render::Font::Load(filepath));
 
         progressCallback(
             static_cast<float>(fonts.size()) / static_cast<float>(filepaths.size()),
