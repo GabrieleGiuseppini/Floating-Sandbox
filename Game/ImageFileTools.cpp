@@ -92,8 +92,6 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
     std::filesystem::path const & filepath,
     int magnificationFactor)
 {
-    auto imageSize = GetImageSize(filepath);
-
     return InternalLoadImage<rgbaColor>(
         filepath,
         IL_RGBA,
