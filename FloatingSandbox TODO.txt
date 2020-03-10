@@ -600,8 +600,8 @@ Render:
 			- Lever dragging
 				- "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
 				- PointToValue(.) -> value
-			+ Paper material
-			- Lego's a bit less heavy
+			= Paper material
+			= Lego's a bit less heavy
 			- Redo structural material templates
 
 		- Test/check spring stiffness based off endpoints
@@ -609,7 +609,7 @@ Render:
 		= Horns and bells
 			+ ElectricalMaterial
 			+ GameEvents
-			= Dynamics
+			+ Dynamics
 				+ Add
 				+ Announce
 				+ Destroy
@@ -618,7 +618,9 @@ Render:
 				+ Update: 
 					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
 					+ Fire ShipSound event w/material and underwater
-				- Highlight: tie it to operation (i.e. powered + switch state), not to switch state alone
+				+ Highlight: tie it to operation (i.e. powered + switch state), not to switch state alone
+					+ Avoid at SetSwitch
+					+ Do at UpdateSinks()
 			+ SwitchboardPanel
 				+ Create switch on announcement
 				+ New gfx, to be used w/push switch control
@@ -645,7 +647,7 @@ Render:
 					+ Pause
 			+ Materials json
 			+ Add to circuit test
-			- Add to Titanic
+			- Add bell to Titanic
 			- Materials guide and template
 			- See if can merge engine sounds into MultiInstanceLoopedSounds
 
@@ -658,13 +660,19 @@ Render:
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 
+		- Release
+			- Website: add FAQ for electrical panel -> Gabe's blog
+
+		- Pumps (*)
+
+		- Batisphere with pumps
+			- Batisphere ship
+			- Electrical layer view (*)
+
 		- Flood doors (*)		
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
-
-		- Release
-			- Website: add FAQ for electrical panel -> Gabe's blog
 
 		= Ocean floor deforming upon impact (*)		
 
@@ -717,11 +725,6 @@ Render:
 		- Underwater currents (*)		
 		
 		- Continuous Auto-focus (*)
-
-		- Batisphere with pumps
-			- Pumps (*)			
-			- Batisphere ship
-			- Electrical layer view (*)
 
 	- 1.15.0		
 
@@ -1341,12 +1344,12 @@ Render:
 				- For each pump:
 					- smoothing state machine, w/operating temperatures
 					- eventually sets Points::LeakingComposite::PumpForce
-					- @ power state changes: emit event, for continuous sound - much like TimerBomb's fuse
+					- @ power state changes: emit event, for continuous sound - exactly like ShipSound
 						- Need object ID
 			- Ship::UpdateWaterIntake()
 				- NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
-				             + max(
-							max(PumpForce(ext.w - p.w), 0)
+				             + (TODO:REVISIT...) max(
+							max(PumpForce * (ext.w - p.w), 0)
 							max(-PumpForce * p.w, 0)
 					     )
 			- Update materials template

@@ -314,7 +314,11 @@ void ElectricalElements::HighlightElectricalElement(
     rgbColor constexpr EngineOnHighlightColor = rgbColor(0xfc, 0xff, 0xa6);
     rgbColor constexpr EngineOffHighlightColor = rgbColor(0xc4, 0xb7, 0x02);
     rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
-    rgbColor constexpr PowerOffHighlightColor = rgbColor(0xb5, 0x00, 0x00);
+    rgbColor constexpr PowerOffHighlightColor = rgbColor(0x91, 0x00, 0x00);
+    rgbColor constexpr SoundOnHighlightColor = rgbColor(0xe0, 0xe0, 0xe0);
+    rgbColor constexpr SoundOffHighlightColor = rgbColor(0x75, 0x75, 0x75);
+    rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x00, 0xab, 0x00);
+    rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xde, 0x00, 0x00);
 
     // Switch state as appropriate
     switch (GetMaterialType(elementIndex))
@@ -340,12 +344,11 @@ void ElectricalElements::HighlightElectricalElement(
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
-        case ElectricalMaterial::ElectricalElementType::ShipSound:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
-                mConductivityBuffer[elementIndex].ConductsElectricity ? PowerOnHighlightColor : PowerOffHighlightColor,
+                mConductivityBuffer[elementIndex].ConductsElectricity ? SwitchOnHighlightColor : SwitchOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
 
             break;
@@ -361,6 +364,15 @@ void ElectricalElements::HighlightElectricalElement(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ShipSound:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].ShipSound.IsPlaying  ? SoundOnHighlightColor : SoundOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
         default:
         {
             // Shouldn't be invoked for non-highlightable elements
@@ -1105,12 +1117,18 @@ void ElectricalElements::UpdateSinks(
 
                             state.IsPlaying = false;
 
-                            // Notify
+                            // Notify sound
                             mGameEventHandler->OnShipSoundUpdated(
                                 ElectricalElementId(mShipId, sinkElementIndex),
                                 *(mMaterialBuffer[sinkElementIndex]),
                                 false,
                                 false); // Irrelevant
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
                         }
                     }
                     else
@@ -1124,12 +1142,18 @@ void ElectricalElements::UpdateSinks(
 
                             state.IsPlaying = true;
 
-                            // Notify
+                            // Notify sound
                             mGameEventHandler->OnShipSoundUpdated(
                                 ElectricalElementId(mShipId, sinkElementIndex),
                                 *(mMaterialBuffer[sinkElementIndex]),
                                 true,
                                 mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))));
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
                         }
                     }
 
@@ -1418,15 +1442,18 @@ void ElectricalElements::InternalSetSwitchState(
     // Make sure it's a state change
     if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
     {
+        // Update conductivity graph (circuit)
         InternalChangeConductivity(elementIndex, static_cast<bool>(switchState));
 
-        // Notify
+        // Notify switch toggled
         mGameEventHandler->OnSwitchToggled(
             ElectricalElementId(mShipId, elementIndex),
             switchState);
 
-        // Show notifications
-        if (gameParameters.DoShowElectricalNotifications)
+        // Show notifications - for switches only
+        assert(mMaterialTypeBuffer[elementIndex] != ElectricalMaterial::ElectricalElementType::WaterSensingSwitch);
+        if (gameParameters.DoShowElectricalNotifications
+            && mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch)
         {
             HighlightElectricalElement(elementIndex, points);
         }
