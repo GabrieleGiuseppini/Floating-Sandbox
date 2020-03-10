@@ -494,14 +494,17 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::ShipBell
-                || soundType == SoundType::ShipHorn)
+        else if (soundType == SoundType::ShipBell1
+                || soundType == SoundType::ShipBell2
+                || soundType == SoundType::ShipHorn1
+                || soundType == SoundType::ShipHorn2
+                || soundType == SoundType::ShipHorn3)
         {
             //
             // Looped U sound
             //
 
-            std::regex uRegex(R"(([^_]+)_(?:(underwater)_)?\d+)");
+            std::regex uRegex(R"(([^_]+)(?:_(underwater))?)");
             std::smatch uMatch;
             if (!std::regex_match(soundName, uMatch, uRegex))
             {
@@ -527,24 +530,83 @@ SoundController::SoundController(
             // Store sound
             //
 
-            float loopStartSample;
-            float loopEndSample;
-            if (soundType == SoundType::ShipBell)
+            float loopStartSample = 0.0f;
+            float loopEndSample = 0.0f;
+            switch (soundType)
             {
-                // TODO
-            }
-            else
-            {
-                assert(soundType == SoundType::ShipHorn);
-                if (!isUnderwater)
+                case SoundType::ShipBell1:
                 {
-                    loopStartSample = 0.678503f;
-                    loopEndSample = 2.01508f;
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.881723f;
+                        loopEndSample = 1.84444f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.88127f;
+                        loopEndSample = 1.77351f;
+                    }
+                    break;
                 }
-                else
+
+                case SoundType::ShipBell2:
                 {
-                    loopStartSample = 0.507846f;
-                    loopEndSample = 1.76757f;
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.485896f;
+                        loopEndSample = 0.936599f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.485986f;
+                        loopEndSample = 0.936961f;
+                    }
+                    break;
+                }
+
+                case SoundType::ShipHorn1:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.678503f;
+                        loopEndSample = 2.01508f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.507846f;
+                        loopEndSample = 1.76757f;
+                    }
+                    break;
+                }
+
+                case SoundType::ShipHorn2:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.79079f;
+                        loopEndSample = 1.79079f + 1.41587f;
+                    }
+                    else
+                    {
+                        loopStartSample = 1.79161f;
+                        loopEndSample = 1.79161f + 1.41698f;
+                    }
+                    break;
+                }
+
+                case SoundType::ShipHorn3:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.73426f;
+                        loopEndSample = 1.73426f + 1.09522f;
+                    }
+                    else
+                    {
+                        loopStartSample = 1.7388f;
+                        loopEndSample = 1.7388f + 1.09977f;
+                    }
+                    break;
                 }
             }
 
@@ -1472,18 +1534,36 @@ void SoundController::OnShipSoundUpdated(
 {
     if (isPlaying)
     {
-        SoundType soundType = SoundType::ShipBell; // Arbitrary
+        SoundType soundType = SoundType::ShipBell1; // Arbitrary
         switch (electricalMaterial.ShipSoundType)
         {
-            case ElectricalMaterial::ShipSoundElementType::Bell:
+            case ElectricalMaterial::ShipSoundElementType::Bell1:
             {
-                soundType = SoundType::ShipBell;
+                soundType = SoundType::ShipBell1;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn:
+            case ElectricalMaterial::ShipSoundElementType::Bell2:
             {
-                soundType = SoundType::ShipHorn;
+                soundType = SoundType::ShipBell2;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::Horn1:
+            {
+                soundType = SoundType::ShipHorn1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::Horn2:
+            {
+                soundType = SoundType::ShipHorn2;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::Horn3:
+            {
+                soundType = SoundType::ShipHorn3;
                 break;
             }
         }

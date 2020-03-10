@@ -26,9 +26,9 @@
 #include <unordered_map>
 #include <vector>
 
-enum class SoundType
+enum class SoundType : uint32_t
 {
-    Break,
+    Break = 0,
     Destroy,
 	LightningHit,
     RepairSpring,
@@ -56,8 +56,11 @@ enum class SoundType
     EngineOutboard,
     EngineSteam,
     EngineTelegraph,
-    ShipBell,
-    ShipHorn,
+    ShipBell1,
+    ShipBell2,
+    ShipHorn1,
+    ShipHorn2,
+    ShipHorn3,
     WaterRush,
     WaterSplash,
     Wave,
@@ -1261,39 +1264,34 @@ public:
         }
 
         // See whether we're already playing this instance
-        auto instanceSoundIt = mPlayingSounds.find(instanceId);
-        if (instanceSoundIt == mPlayingSounds.end())
+        if (auto instanceSoundIt = mPlayingSounds.find(instanceId); instanceSoundIt != mPlayingSounds.end())
         {
-            // Create new sound altogether
-
-            auto sound = std::make_unique<sf::Music>();
-            sound->openFromFile(soundFileInfoIt->second.FilePath.string());
-            InternalSetVolume(*sound, volume);
-
-            instanceSoundIt = mPlayingSounds.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(instanceId),
-                std::forward_as_tuple(std::move(sound), volume))
-                .first;
-        }
-        else
-        {
-            // Reuse existing sound
-
+            // Nuke existing sound
             instanceSoundIt->second.Sound->stop();
+            mPlayingSounds.erase(instanceSoundIt);
         }
 
-        auto & sound = *(instanceSoundIt->second.Sound);
+        // Create new sound
+        auto sound = std::make_unique<sf::Music>();
+        sound->openFromFile(soundFileInfoIt->second.FilePath.string());
 
-        sound.setLoop(true);
-        sound.setLoopPoints(
+        // Setup sound
+        InternalSetVolume(*sound, volume);
+        sound->setLoop(true);
+        sound->setLoopPoints(
             sf::Music::TimeSpan(
                 sf::seconds(soundFileInfoIt->second.LoopStartSample),
                 sf::seconds(soundFileInfoIt->second.LoopEndSample - soundFileInfoIt->second.LoopStartSample)));
-        sound.play();
+        sound->play();
 
+        // Pause immediately if we're currently paused
         if (mIsPaused)
-            sound.pause();
+            sound->pause();
+
+        mPlayingSounds.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(instanceId),
+            std::forward_as_tuple(std::move(sound), volume));
     }
 
     void Stop(TInstanceId instanceId)

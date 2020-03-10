@@ -211,7 +211,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         }
 
         // Ship Sound properties
-        ShipSoundElementType shipSoundType = ShipSoundElementType::Bell; // Arbitrary
+        ShipSoundElementType shipSoundType = ShipSoundElementType::Bell1; // Arbitrary
         if (ElectricalElementType::ShipSound == electricalType)
         {
             std::string shipSoundTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "ship_sound_type");
@@ -295,10 +295,16 @@ ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType
 
 ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundElementType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "Bell"))
-        return ShipSoundElementType::Bell;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn"))
-        return ShipSoundElementType::Horn;
+    if (Utils::CaseInsensitiveEquals(str, "Bell1"))
+        return ShipSoundElementType::Bell1;
+    else if (Utils::CaseInsensitiveEquals(str, "Bell2"))
+        return ShipSoundElementType::Bell2;
+    else if (Utils::CaseInsensitiveEquals(str, "Horn1"))
+        return ShipSoundElementType::Horn1;
+    else if (Utils::CaseInsensitiveEquals(str, "Horn2"))
+        return ShipSoundElementType::Horn2;
+    else if (Utils::CaseInsensitiveEquals(str, "Horn3"))
+        return ShipSoundElementType::Horn3;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
 }

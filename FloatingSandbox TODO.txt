@@ -596,16 +596,20 @@ Render:
 				- Tell him it's wood stiff
 			+ SetDoubleBuffered on MAC
 			+ Wood background for panel (mahogany)
-			- Sam's errors
-			- Lever dragging?
+			+ Sam's errors
+			- Lever dragging
+				- "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
 				- PointToValue(.) -> value
+			+ Paper material
+			- Lego's a bit less heavy
+			- Redo structural material templates
 
 		- Test/check spring stiffness based off endpoints
 
 		= Horns and bells
 			+ ElectricalMaterial
 			+ GameEvents
-			+ Dynamics
+			= Dynamics
 				+ Add
 				+ Announce
 				+ Destroy
@@ -614,20 +618,24 @@ Render:
 				+ Update: 
 					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
 					+ Fire ShipSound event w/material and underwater
+				- Highlight: tie it to operation (i.e. powered + switch state), not to switch state alone
 			+ SwitchboardPanel
 				+ Create switch on announcement
 				+ New gfx, to be used w/push switch control
 				+ Test Disable/Enable on destroy/repair
-			- Sound
+			+ Sound
 				+ Horn
-				- Other sounds:
-					- Rename existing sound file
-					- Do new sounds
-						- https://retired.sounddogs.com/previews/104/mp3/702268_SOUNDDOGS__be.mp3
-					- Elec material: new "ship_sound_type" types
-					- SoundController:
-						- New sound types
-						- New naming convention for filenames
+				+ Fix MultiInstanceLoopedSounds::Start: new SoundFileInfo might be different than current
+				+ Other sounds:
+					+ Rename existing sound file
+					+ Nuke horn2
+					+ Do new sounds
+					+ Elec material: new "ship_sound_type" types
+					+ json
+					+ test ship
+					+ SoundController:
+						+ New sound types
+						+ New naming convention for filenames						
 			- SoundController
 				+ Start: Hijack instance ID
 				- Hookup:

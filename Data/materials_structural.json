@@ -1095,6 +1095,38 @@
         "water_retention": 0.75,
         "buoyancy_volume_fill": 0.9
     }, 
+
+
+    {
+        "color_key": "#FCFAFA", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 450.15, 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.022935,
+            "nominal_mass": 20
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Paper", 
+        "render_color": "#FCFAFA",
+	"rust_receptivity": 10.0,
+        "sound_type": "Wood", 
+        "specific_heat": 1400.0, 
+        "stiffness": 1.0, 
+        "strength": 0.5,
+        "template": {
+            "column": 2, 
+            "row": "70|Paper"
+        }, 
+        "thermal_conductivity": 0.05,
+	"thermal_expansion_coefficient": 0.00434,
+        "water_diffusion_speed": 0.65,
+        "water_retention": 0.85,
+        "buoyancy_volume_fill": 0.9
+    }, 
+
+
+
     {
         "color_key": "#A71000", 
         "combustion_type": "Combustion", 
@@ -3173,7 +3205,7 @@
         "stiffness": 1.0, 
         "strength": 0.08, 
         "template": {
-            "column": 2, 
+            "column": 3, 
             "row": "70|Nails"
         }, 
         "thermal_conductivity": 66.8, 

@@ -65,10 +65,16 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::EngineSteam;
     else if (Utils::CaseInsensitiveEquals(str, "EngineTelegraph"))
         return SoundType::EngineTelegraph;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipBell"))
-        return SoundType::ShipBell;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn"))
-        return SoundType::ShipHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipBell1"))
+        return SoundType::ShipBell1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipBell2"))
+        return SoundType::ShipBell2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn1"))
+        return SoundType::ShipHorn1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn2"))
+        return SoundType::ShipHorn2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn3"))
+        return SoundType::ShipHorn3;
     else if (Utils::CaseInsensitiveEquals(str, "WaterRush"))
         return SoundType::WaterRush;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))

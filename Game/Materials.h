@@ -192,8 +192,11 @@ public:
 
     enum class ShipSoundElementType
     {
-        Bell,
-        Horn
+        Bell1,
+        Bell2,
+        Horn1,
+        Horn2,
+        Horn3
     };
 
 public:

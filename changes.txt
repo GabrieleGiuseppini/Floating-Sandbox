@@ -29,6 +29,7 @@
 - Repairing a ship's structure now also repairs its electricals
 - Added ability to change color of lamp lights
 - Adjusted physical properties of ropes, which were too light and too strong
+- Added Paper material, fixed Cardboard material (was lighter than air by mistake!)
 - ...and a few more small improvements here and there
 
 1.13.0.7

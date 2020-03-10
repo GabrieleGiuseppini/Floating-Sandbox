@@ -510,6 +510,95 @@
         }
     },
 
+
+
+    {
+        "color_key": "#409000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Horn 1", 
+	"ship_sound_type": "Horn1",
+        "template": {
+            "column": 0, 
+            "row": "15|Horns"
+        }
+    },
+
+    {
+        "color_key": "#409100",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Horn 2", 
+	"ship_sound_type": "Horn2",
+        "template": {
+            "column": 1, 
+            "row": "15|Horns"
+        }
+    },
+
+    {
+        "color_key": "#409200",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Horn 3", 
+	"ship_sound_type": "Horn3",
+        "template": {
+            "column": 2, 
+            "row": "15|Horns"
+        }
+    },
+
+    {
+        "color_key": "#40A000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Bell 1", 
+	"ship_sound_type": "Bell1",
+        "template": {
+            "column": 3, 
+            "row": "15|Bells"
+        }
+    },
+
+    {
+        "color_key": "#40A100",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Bell 2", 
+	"ship_sound_type": "Bell2",
+        "template": {
+            "column": 4, 
+            "row": "15|Bells"
+        }
+    },
+
+
+
     {
         "color_key": "#FC2020",
 	"conducts_electricity": true,
@@ -554,39 +643,6 @@
             "column": "2|Power Monitor", 
             "row": "20|Misc"
         }
-    },
-
-    {
-        "color_key": "#409000",
-	"conducts_electricity": false,
-        "electrical_type": "ShipSound", 
-        "heat_generated": 0.0, 
-	"is_instanced": true,
-        "is_self_powered": false, 
-        "maximum_operating_temperature": 1000000.0,
-        "minimum_operating_temperature": 0.0, 
-        "name": "Ship Horn", 
-	"ship_sound_type": "Horn",
-        "template": {
-            "column": "3|Ship Horn", 
-            "row": "20|Misc"
-        }
-    },
-
-    {
-        "color_key": "#40A000",
-	"conducts_electricity": false,
-        "electrical_type": "ShipSound", 
-        "heat_generated": 0.0, 
-	"is_instanced": true,
-        "is_self_powered": false, 
-        "maximum_operating_temperature": 1000000.0,
-        "minimum_operating_temperature": 0.0, 
-        "name": "Ship Bell", 
-	"ship_sound_type": "Bell",
-        "template": {
-            "column": "4|Ship Bell", 
-            "row": "20|Misc"
-        }
     }
+
 ]
