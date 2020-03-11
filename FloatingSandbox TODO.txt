@@ -657,6 +657,8 @@ Render:
 			- Water cannot be hull
 			- Redo "Ball of Water and Air"
 
+		- Pinch tool (*):
+
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 
@@ -673,10 +675,6 @@ Render:
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
-
-		= Ocean floor deforming upon impact (*)		
-
-		- Pinch tool (*):
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
@@ -1183,7 +1181,7 @@ Render:
 
 - Dynamics:	
 
-	- Ocean floor deforming upon impact (*)
+	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
 		+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
 		- @ Ocean floor collision: upon (non-orphaned) point entering floor:
@@ -1214,10 +1212,13 @@ Render:
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
 	- Pinch tool (*):
-		- Picks a point and keeps setting a force on it with a growing strength
-			- State machine (strength growth) done by tool
+		- TODO: redo with spring force: Picks a point and keeps setting a force on it with a growing strength
+			- State machine (strength growth, simple recursive function) done by tool
 		- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
-		- Cursor: pliers or tweezers
+		- Tool:
+			- Copy from Move tool
+			- Tool engaged only if a point has been picked (like Move tool)
+		- Cursor: pliers or tweezers, up and down
 		
 	- Lightning tool that summons lightning wherever it has been clicked
 		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
