@@ -21,6 +21,8 @@
 		"1": {"panel_x":-1, "panel_y":0, "label":"Funnel 4" },
 
 		"6": {"panel_x":1, "panel_y":0, "label":"Aft Decks" },
-		"5": {"panel_x":2, "panel_y":0, "label":"Fore Decks" }
+		"5": {"panel_x":2, "panel_y":0, "label":"Fore Decks" },
+
+		"9": {"panel_x":4, "panel_y":0, "label":"Bell" }
 	}
 }

@@ -638,17 +638,17 @@ Render:
 					+ SoundController:
 						+ New sound types
 						+ New naming convention for filenames						
-			- SoundController
+			+ SoundController
 				+ Start: Hijack instance ID
-				- Hookup:
+				+ Hookup:
 					+ Reset
-					= Mute
-					= MasterEffectsVolume
+					+ Mute
+					+ MasterEffectsVolume
 					+ Pause
 			+ Materials json
 			+ Add to circuit test
-			- Add bell to Titanic
-			- Materials guide and template
+			+ Add bell 2 to Titanic
+			+ Materials guide and template
 			- See if can merge engine sounds into MultiInstanceLoopedSounds
 
 		- Test: points of Water are filled with water, and mass is set to that of air

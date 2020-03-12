@@ -124,8 +124,9 @@ Here's an explanation of the elements:
    - "EngineController": controls the power and direction of all nearby Engine elements.
    - "InteractiveSwitch": a switch that may be controlled via the electrical panel.
    - "Lamp": emits light.
-   - "OtherSink": just heats while operating.
+   - "OtherSink": produces heat while operating.
    - "PowerMonitor": displays a light on the electrical panel when current flows through it.
+   - "ShipSound": emits a sound when turned on; see _ship sound type_ property below for a list of the sounds that are available.
    - "SmokeEmitter": emits smoke - ideal for funnels and engine exhaust pipes.
    - "WaterSensingSwitch": a switch that toggles automatically when wet.
 - _engine direction_: when the element is of the Engine type, describes the main axis of the engine thrust, in radians.
@@ -145,5 +146,8 @@ Here's an explanation of the elements:
 - _maximum operating temperature_: the maximum temperature, in Kelvin, above which the material/device will stop working.
 - _particle emission rate_: when the element is of the SmokeEmitter type, dictates the average interval - in simulation time seconds - between two particle emissions.
    - For example, 0.5 means that on average two particles will be emitted each second.
+- _ship sound type_: when the element is of the ShipSound type, describes the type of sound that is played when the element is activated. Valid values are:
+   - "Bell1", "Bell2": alarm bell sounds.
+   - "Horn1", "Horn2", "Horn3": steam horn sounds.
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.
