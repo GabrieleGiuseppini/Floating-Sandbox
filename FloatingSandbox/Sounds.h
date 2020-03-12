@@ -673,6 +673,7 @@ private:
  *
  * Remembers playing state across pauses, and supports fade-in and fade-out.
  */
+/*
 template<typename TInstanceId>
 struct MultiInstanceContinuousSounds
 {
@@ -702,9 +703,9 @@ struct MultiInstanceContinuousSounds
         mSoundTypeToSoundBuffer.emplace(soundType, std::move(soundBuffer));
     }
 
-    /*
-     * Must be called first if we want to use the Start(.) overload that does not take a sound type.
-     */
+    //
+    // Must be called first if we want to use the Start(.) overload that does not take a sound type.
+    //
     void AddSoundTypeForInstanceId(TInstanceId instanceId, SoundType soundType)
     {
         assert(0 == mInstanceIdToSoundType.count(instanceId));
@@ -798,9 +799,9 @@ struct MultiInstanceContinuousSounds
         }
     }
 
-    /*
-     * Must have been told already which sound type is associated with this instance ID.
-     */
+    //
+    // Must have been told already which sound type is associated with this instance ID.
+    //
     void Start(
         TInstanceId instanceId,
         SoundStartMode startMode = SoundStartMode::Immediate)
@@ -884,6 +885,7 @@ private:
     // InstanceId<->Sound
     std::unordered_map<TInstanceId, std::unique_ptr<GameSound>> mSounds;
 };
+*/
 
 struct OneShotMultipleChoiceSound
 {
@@ -1224,6 +1226,19 @@ public:
     void AddAlternativeForSoundType(
         SoundType soundType,
         bool isUnderwater,
+        std::filesystem::path soundFilePath)
+    {
+        AddAlternativeForSoundType(
+            soundType,
+            isUnderwater,
+            soundFilePath,
+            0.0f,
+            0.0f);
+    }
+
+    void AddAlternativeForSoundType(
+        SoundType soundType,
+        bool isUnderwater,
         std::filesystem::path soundFilePath,
         float loopStartSample,
         float loopEndSample)
@@ -1232,6 +1247,23 @@ public:
             std::piecewise_construct,
             std::forward_as_tuple(soundType, isUnderwater),
             std::forward_as_tuple(soundFilePath, loopStartSample, loopEndSample));
+    }
+
+    /*
+     * Must be called first if we want to use the Start(.) overload that does not take a sound type.
+     */
+    void AddSoundTypeForInstanceId(TInstanceId instanceId, SoundType soundType)
+    {
+        assert(0 == mInstanceIdToSoundType.count(instanceId));
+
+        mInstanceIdToSoundType.emplace(instanceId, soundType);
+    }
+
+    SoundType GetSoundTypeForInstanceId(TInstanceId instanceId) const
+    {
+        auto const it = mInstanceIdToSoundType.find(instanceId);
+        assert(it != mInstanceIdToSoundType.cend());
+        return it->second;
     }
 
     void SetMasterVolume(float masterVolume)
@@ -1244,6 +1276,17 @@ public:
     {
         mIsMuted = isMuted;
         UpdateAllVolumes();
+    }
+
+    void SetPitch(
+        TInstanceId instanceId,
+        float pitch)
+    {
+        auto it = mPlayingSounds.find(instanceId);
+        if (it != mPlayingSounds.end())
+        {
+            it->second.Sound->setPitch(pitch);
+        }
     }
 
     void Start(
@@ -1263,9 +1306,16 @@ public:
                 return;
         }
 
-        // See whether we're already playing this instance
+        // See whether we're already playing this instance with these same parameters
         if (auto instanceSoundIt = mPlayingSounds.find(instanceId); instanceSoundIt != mPlayingSounds.end())
         {
+            // If it was using the same parameters, then leave it
+            if (instanceSoundIt->second.IsUnderwater == isUnderwater)
+            {
+                // Nothing to do here
+                return;
+            }
+
             // Nuke existing sound
             instanceSoundIt->second.Sound->stop();
             mPlayingSounds.erase(instanceSoundIt);
@@ -1278,10 +1328,11 @@ public:
         // Setup sound
         InternalSetVolume(*sound, volume);
         sound->setLoop(true);
-        sound->setLoopPoints(
-            sf::Music::TimeSpan(
-                sf::seconds(soundFileInfoIt->second.LoopStartSample),
-                sf::seconds(soundFileInfoIt->second.LoopEndSample - soundFileInfoIt->second.LoopStartSample)));
+        if (soundFileInfoIt->second.LoopStartSample != 0.0f || soundFileInfoIt->second.LoopEndSample != 0.0f)
+            sound->setLoopPoints(
+                sf::Music::TimeSpan(
+                    sf::seconds(soundFileInfoIt->second.LoopStartSample),
+                    sf::seconds(soundFileInfoIt->second.LoopEndSample - soundFileInfoIt->second.LoopStartSample)));
         sound->play();
 
         // Pause immediately if we're currently paused
@@ -1291,7 +1342,26 @@ public:
         mPlayingSounds.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(instanceId),
-            std::forward_as_tuple(std::move(sound), volume));
+            std::forward_as_tuple(std::move(sound), volume, isUnderwater));
+    }
+
+    /*
+     * Must have been told already which sound type is associated with this instance ID.
+     */
+    void Start(
+        TInstanceId instanceId,
+        bool isUnderwater,
+        float volume)
+    {
+        auto const srchIt = mInstanceIdToSoundType.find(instanceId);
+        if (srchIt != mInstanceIdToSoundType.cend())
+        {
+            Start(
+                instanceId,
+                srchIt->second,
+                isUnderwater,
+                volume);
+        }
     }
 
     void Stop(TInstanceId instanceId)
@@ -1319,6 +1389,7 @@ public:
 
     void Reset()
     {
+        mInstanceIdToSoundType.clear();
         mPlayingSounds.clear();
     }
 
@@ -1389,16 +1460,22 @@ private:
 
     unordered_tuple_map<std::tuple<SoundType, bool>, SoundFileInfo> mSoundFileInfos;
 
+    // InstanceId<->SoundType (optional)
+    std::unordered_map<TInstanceId, SoundType> mInstanceIdToSoundType;
+
     struct PlayingSoundInfo
     {
         std::unique_ptr<sf::Music> Sound;
         float Volume;
+        bool IsUnderwater;
 
         PlayingSoundInfo(
             std::unique_ptr<sf::Music> sound,
-            float volume)
+            float volume,
+            bool isUnderwater)
             : Sound(std::move(sound))
             , Volume(volume)
+            , IsUnderwater(isUnderwater)
         {}
     };
 

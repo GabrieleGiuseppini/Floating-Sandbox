@@ -70,12 +70,6 @@ SoundController::SoundController(
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
     , mAntiMatterBombContainedSounds()
-    , mEngineSounds(
-        100.0,
-        mMasterEffectsVolume,
-        mMasterEffectsMuted,
-        500ms,
-        500ms)
     , mLoopedSounds(
         mMasterEffectsVolume,
         mMasterEffectsMuted)
@@ -309,15 +303,17 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::EngineOutboard)
         {
-            mEngineSounds.AddSoundType(
+            mLoopedSounds.AddAlternativeForSoundType(
                 SoundType::EngineOutboard,
-                std::move(soundBuffer));
+                false, // IsUnderwater
+                resourceLoader.GetSoundFilepath(soundName));
         }
         else if (soundType == SoundType::EngineSteam)
         {
-            mEngineSounds.AddSoundType(
+            mLoopedSounds.AddAlternativeForSoundType(
                 SoundType::EngineSteam,
-                std::move(soundBuffer));
+                false, // IsUnderwater
+                resourceLoader.GetSoundFilepath(soundName));
         }
         else if (soundType == SoundType::Break
 				|| soundType == SoundType::Destroy
@@ -689,7 +685,6 @@ void SoundController::SetPaused(bool isPaused)
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
     mAntiMatterBombContainedSounds.SetPaused(isPaused);
-    mEngineSounds.SetPaused(isPaused);
     mLoopedSounds.SetPaused(isPaused);
 }
 
@@ -725,7 +720,6 @@ void SoundController::SetMasterEffectsVolume(float volume)
     mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mAntiMatterBombContainedSounds.SetMasterVolume(mMasterEffectsVolume);
-    mEngineSounds.SetMasterVolume(mMasterEffectsVolume);
     mLoopedSounds.SetMasterVolume(mMasterEffectsVolume);
 }
 
@@ -759,7 +753,6 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
     mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
     mAntiMatterBombContainedSounds.SetMuted(mMasterEffectsMuted);
-    mEngineSounds.SetMuted(mMasterEffectsMuted);
     mLoopedSounds.SetMuted(mMasterEffectsMuted);
 }
 
@@ -1090,7 +1083,6 @@ void SoundController::Update()
 {
     mFireBurningSound.Update();
     mWaveMakerSound.Update();
-    mEngineSounds.Update();
 
     // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
@@ -1144,7 +1136,6 @@ void SoundController::Reset()
     mTimerBombSlowFuseSound.Reset();
     mTimerBombFastFuseSound.Reset();
     mAntiMatterBombContainedSounds.Reset();
-    mEngineSounds.Reset();
     mLoopedSounds.Reset();
 
     //
@@ -1474,11 +1465,11 @@ void SoundController::OnEngineMonitorCreated(
     // Associate sound type with this element
     if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Outboard)
     {
-        mEngineSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard);
+        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard);
     }
     else if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Steam)
     {
-        mEngineSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam);
+        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam);
     }
 }
 
@@ -1510,19 +1501,19 @@ void SoundController::OnEngineMonitorUpdated(
     if (rpm != 0.0f)
     {
         // Make sure sound is running
-        mEngineSounds.Start(electricalElementId, SoundStartMode::WithFadeIn);
+        mLoopedSounds.Start(electricalElementId, false, 100.0f);
 
         // Set pitch
         float const pitch =
-            SoundType::EngineOutboard == mEngineSounds.GetSoundTypeForInstanceId(electricalElementId)
+            SoundType::EngineOutboard == mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId)
             ? rpm
             : SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=5.0
-        mEngineSounds.SetPitch(electricalElementId, pitch);
+        mLoopedSounds.SetPitch(electricalElementId, pitch);
     }
     else
     {
         // Make sure sound is not running
-        mEngineSounds.Stop(electricalElementId, SoundStopMode::WithFadeOut);
+        mLoopedSounds.Stop(electricalElementId);
     }
 }
 

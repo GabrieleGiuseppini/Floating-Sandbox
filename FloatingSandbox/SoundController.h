@@ -501,7 +501,5 @@ private:
     ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
     ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
 
-    MultiInstanceContinuousSounds<ElectricalElementId> mEngineSounds;
-
     MultiInstanceLoopedSounds<ElectricalElementId> mLoopedSounds;
 };
