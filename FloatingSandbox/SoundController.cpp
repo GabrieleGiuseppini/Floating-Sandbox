@@ -1501,7 +1501,8 @@ void SoundController::OnEngineMonitorUpdated(
     if (rpm != 0.0f)
     {
         // Make sure sound is running
-        mLoopedSounds.Start(electricalElementId, false, 100.0f);
+        if (!mLoopedSounds.IsPlaying(electricalElementId))
+            mLoopedSounds.Start(electricalElementId, false, 100.0f);
 
         // Set pitch
         float const pitch =

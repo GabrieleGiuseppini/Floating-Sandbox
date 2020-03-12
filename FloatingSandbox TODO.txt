@@ -602,11 +602,11 @@ Render:
 				- PointToValue(.) -> value
 			= Paper material
 			= Lego's a bit less heavy
-			- Redo structural material templates
+			- Redo structural material template
 
 		- Test/check spring stiffness based off endpoints
 
-		= Horns and bells
+		+ Horns and bells
 			+ ElectricalMaterial
 			+ GameEvents
 			+ Dynamics
@@ -649,7 +649,7 @@ Render:
 			+ Add to circuit test
 			+ Add bell 2 to Titanic
 			+ Materials guide and template
-			= See if can merge engine sounds into MultiInstanceLoopedSounds
+			+ See if can merge engine sounds into MultiInstanceLoopedSounds
 
 		- Test: points of Water are filled with water, and mass is set to that of air
 			- At Points::Add

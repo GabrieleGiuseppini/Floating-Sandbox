@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <limits>
@@ -1246,7 +1247,7 @@ public:
         mSoundFileInfos.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(soundType, isUnderwater),
-            std::forward_as_tuple(soundFilePath, loopStartSample, loopEndSample));
+            std::forward_as_tuple(std::make_unique<SoundFileInfo>(soundFilePath, loopStartSample, loopEndSample)));
     }
 
     /*
@@ -1289,6 +1290,12 @@ public:
         }
     }
 
+    bool IsPlaying(TInstanceId instanceId)
+    {
+        auto instanceSoundIt = mPlayingSounds.find(instanceId);
+        return (instanceSoundIt != mPlayingSounds.end());
+    }
+
     void Start(
         TInstanceId instanceId,
         SoundType soundType,
@@ -1306,16 +1313,11 @@ public:
                 return;
         }
 
-        // See whether we're already playing this instance with these same parameters
+        assert(!!soundFileInfoIt->second);
+
+        // See whether we're already playing this instance
         if (auto instanceSoundIt = mPlayingSounds.find(instanceId); instanceSoundIt != mPlayingSounds.end())
         {
-            // If it was using the same parameters, then leave it
-            if (instanceSoundIt->second.IsUnderwater == isUnderwater)
-            {
-                // Nothing to do here
-                return;
-            }
-
             // Nuke existing sound
             instanceSoundIt->second.Sound->stop();
             mPlayingSounds.erase(instanceSoundIt);
@@ -1323,26 +1325,28 @@ public:
 
         // Create new sound
         auto sound = std::make_unique<sf::Music>();
-        sound->openFromFile(soundFileInfoIt->second.FilePath.string());
+        sound->openFromFile(soundFileInfoIt->second->FilePath.string());
 
         // Setup sound
         InternalSetVolume(*sound, volume);
         sound->setLoop(true);
-        if (soundFileInfoIt->second.LoopStartSample != 0.0f || soundFileInfoIt->second.LoopEndSample != 0.0f)
+        if (soundFileInfoIt->second->LoopStartSample != 0.0f || soundFileInfoIt->second->LoopEndSample != 0.0f)
             sound->setLoopPoints(
                 sf::Music::TimeSpan(
-                    sf::seconds(soundFileInfoIt->second.LoopStartSample),
-                    sf::seconds(soundFileInfoIt->second.LoopEndSample - soundFileInfoIt->second.LoopStartSample)));
+                    sf::seconds(soundFileInfoIt->second->LoopStartSample),
+                    sf::seconds(soundFileInfoIt->second->LoopEndSample - soundFileInfoIt->second->LoopStartSample)));
         sound->play();
 
         // Pause immediately if we're currently paused
         if (mIsPaused)
             sound->pause();
 
+        // Store playing sound
+        std::uintptr_t soundFileInfoId = reinterpret_cast<std::uintptr_t>(soundFileInfoIt->second.get());
         mPlayingSounds.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(instanceId),
-            std::forward_as_tuple(std::move(sound), volume, isUnderwater));
+            std::forward_as_tuple(std::move(sound), volume, soundFileInfoId));
     }
 
     /*
@@ -1458,7 +1462,7 @@ private:
         {}
     };
 
-    unordered_tuple_map<std::tuple<SoundType, bool>, SoundFileInfo> mSoundFileInfos;
+    unordered_tuple_map<std::tuple<SoundType, bool>, std::unique_ptr<SoundFileInfo>> mSoundFileInfos;
 
     // InstanceId<->SoundType (optional)
     std::unordered_map<TInstanceId, SoundType> mInstanceIdToSoundType;
@@ -1467,15 +1471,15 @@ private:
     {
         std::unique_ptr<sf::Music> Sound;
         float Volume;
-        bool IsUnderwater;
+        std::uintptr_t SoundFileInfoId;
 
         PlayingSoundInfo(
             std::unique_ptr<sf::Music> sound,
             float volume,
-            bool isUnderwater)
+            std::uintptr_t soundFileInfoId)
             : Sound(std::move(sound))
             , Volume(volume)
-            , IsUnderwater(isUnderwater)
+            , SoundFileInfoId(soundFileInfoId)
         {}
     };
 
