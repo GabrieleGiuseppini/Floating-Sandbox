@@ -597,9 +597,14 @@ Render:
 			+ SetDoubleBuffered on MAC
 			+ Wood background for panel (mahogany)
 			+ Sam's errors
-			- Lever dragging
-				- "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
-				- PointToValue(.) -> value
+			= Lever dragging
+				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
+				+ PointToValue(.) -> value
+				+ MoveToValue(.)
+				- Issue with LeftUp happening outside of control:
+					- Either:
+						- Register for leave doing exactly like up
+						- Or: capture mouse
 			= Paper material
 			= Lego's a bit less heavy
 			- Redo structural material template
@@ -656,6 +661,9 @@ Render:
 			+ Test with "Ball of Water and Air"
 			- Water cannot be hull
 			- Redo "Ball of Water and Air"
+
+		- Test re-try cache layout optimizations
+			- See impact first with NOP optimization
 
 		- Pinch tool (*):
 

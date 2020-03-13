@@ -648,6 +648,9 @@ class EngineControllerElectricalElementControl
 {
 public:
 
+    using ControllerValue = unsigned int;
+
+
     EngineControllerElectricalElementControl(
         wxWindow * parent,
         wxBitmap const & enabledBackgroundImage,
@@ -658,8 +661,8 @@ public:
         float handMaxCCWAngle,
         std::string const & label,
         wxCursor const & cursor,
-        std::function<void(unsigned int)> onControllerUpdated,
-        unsigned int currentValue) // Between 0 and handImages.length
+        std::function<void(ControllerValue)> onControllerUpdated,
+        ControllerValue currentValue) // Between 0 and handImages.length
         : ElectricalElementControl(
             ControlType::EngineController,
             parent,
@@ -669,13 +672,15 @@ public:
         , mDisabledBackgroundImage(disabledBackgroundImage)
         , mHandImages(handImages)
         , mCenterPoint(static_cast<float>(centerPoint.x), static_cast<float>(centerPoint.y))
+        , mMaxValue(static_cast<ControllerValue>(mHandImages.size() - 1))
         , mHand0CCWAngle(hand0CCWAngle)
         , mHandMaxCCWAngle(handMaxCCWAngle)
+        , mSectorAngle(std::abs(mHandMaxCCWAngle - mHand0CCWAngle) / static_cast<float>(mMaxValue + 1))
         , mOnControllerUpdated(std::move(onControllerUpdated))
-        , mMaxValue(static_cast<unsigned int>(mHandImages.size() - 1))
         //
         , mCurrentValue(currentValue)
         , mIsEnabled(true)
+        , mIsLeftMouseDown(false)
     {
         mImagePanel->SetCursor(cursor);
 
@@ -686,6 +691,7 @@ public:
         mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnPaint, this);
 
         mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftDown, this);
+        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftUp, this);
     }
 
     void SetValue(int value) // Between 0 and handImages.length
@@ -727,19 +733,30 @@ private:
 
     void OnLeftDown(wxMouseEvent & event);
 
+    void OnLeftUp(wxMouseEvent & event);
+
+    void OnMouseMove(wxMouseEvent & event);
+
+private:
+
+    std::optional<ControllerValue> PointToValue(wxPoint const & point) const;
+
+    void MoveToPoint(wxPoint const & point);
+
 private:
 
     wxBitmap const mEnabledBackgroundImage;
     wxBitmap const mDisabledBackgroundImage;
     std::vector<wxBitmap> const mHandImages;
     vec2f const mCenterPoint;
+    ControllerValue const mMaxValue;
     float const mHand0CCWAngle;
     float const mHandMaxCCWAngle;
-    std::function<void(unsigned int)> mOnControllerUpdated;
-
-    unsigned int const mMaxValue;
+    float const mSectorAngle;
+    std::function<void(ControllerValue)> mOnControllerUpdated;
 
     // Current state
-    unsigned int mCurrentValue;
+    ControllerValue mCurrentValue;
     bool mIsEnabled;
+    bool mIsLeftMouseDown;
 };

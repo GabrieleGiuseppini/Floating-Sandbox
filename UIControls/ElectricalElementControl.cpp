@@ -163,62 +163,93 @@ void EngineControllerElectricalElementControl::Render(wxDC & dc)
         0,
         0,
         true);
+
+    // TEST: to draw sectors
+    ////wxPen handPen(wxColor(0xd8, 0xd8, 0xd8), 1, wxPENSTYLE_SOLID);
+    ////dc.SetPen(handPen);
+    ////for (ControllerValue i = 0; i <= mMaxValue + 1; ++i)
+    ////{
+    ////    float angle = mHandMaxCCWAngle + mSectorAngle * static_cast<float>(i);
+    ////    vec2f p(37.0f, 0.0f);
+    ////    p = p.rotate(angle);
+    ////    dc.DrawLine(
+    ////        wxPoint(mCenterPoint.x, mCenterPoint.y),
+    ////        wxPoint(mCenterPoint.x, mCenterPoint.y) + wxPoint(p.x, -p.y));
+    ////}
 }
 
 void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
 {
     if (mIsEnabled)
     {
-        //
-        // Calculate direction of hand movement
-        //
+        // Register for mouse move events
+        mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
+        mImagePanel->Bind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
 
-        // Center->Click (positive y down)
-        vec2f const clickVector =
-            vec2f(static_cast<float>(event.GetPosition().x), static_cast<float>(event.GetPosition().y))
-            - mCenterPoint;
+        // Move to this point
+        MoveToPoint(event.GetPosition());
+    }
 
-        // Click CCW angle (CW angle becomes CCW due to inverted y)
-        float clickCCWAngle = clickVector.angleCw();
-        if (clickCCWAngle < -Pi<float> / 2.0f) // Wrap around on the left side
-            clickCCWAngle += 2.0f * Pi<float>;
+    // Remember state of left button
+    mIsLeftMouseDown = true;
+}
 
-        // Continue only if the click is in the telegraph range
-        if (clickCCWAngle >= mHandMaxCCWAngle && clickCCWAngle <= mHand0CCWAngle)
-        {
-            float const halfSectorAngle =
-                std::abs(mHandMaxCCWAngle - mHand0CCWAngle)
-                / static_cast<float>(mMaxValue)
-                / 2.0f;
+void EngineControllerElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/)
+{
+    // De-register for mouse move events
+    mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
 
-            // Current hand CCW angle (CW angle becomes CCW due to inverted y)
-            float const handCCWAngle =
-                (mHand0CCWAngle - halfSectorAngle)
-                + (mHandMaxCCWAngle - mHand0CCWAngle + 2.0f * halfSectorAngle)
-                    * static_cast<float>(mCurrentValue)
-                    / static_cast<float>(mMaxValue);
+    // Remember state of left button
+    mIsLeftMouseDown = false;
+}
 
-            if (abs(clickCCWAngle - handCCWAngle) > halfSectorAngle)
-            {
-                if (clickCCWAngle <= handCCWAngle)
-                {
-                    // Increase
-                    if (mCurrentValue < mMaxValue)
-                    {
-                        ++mCurrentValue;
-                        mOnControllerUpdated(mCurrentValue);
-                    }
-                }
-                else
-                {
-                    // Decrease
-                    if (mCurrentValue > 0)
-                    {
-                        --mCurrentValue;
-                        mOnControllerUpdated(mCurrentValue);
-                    }
-                }
-            }
-        }
+void EngineControllerElectricalElementControl::OnMouseMove(wxMouseEvent & event)
+{
+    if (mIsEnabled && mIsLeftMouseDown)
+    {
+        MoveToPoint(event.GetPosition());
+    }
+}
+
+std::optional<EngineControllerElectricalElementControl::ControllerValue> EngineControllerElectricalElementControl::PointToValue(wxPoint const & point) const
+{
+    // Center->Click (positive y down)
+    vec2f const clickVector =
+        vec2f(static_cast<float>(point.x), static_cast<float>(point.y))
+        - mCenterPoint;
+
+    // Click CCW angle (CW angle becomes CCW due to inverted y)
+    float clickCCWAngle = clickVector.angleCw();
+    if (clickCCWAngle < -Pi<float> / 2.0f) // Wrap around on the left side
+        clickCCWAngle += 2.0f * Pi<float>;
+
+    // Value
+    float const sector = (clickCCWAngle - mHandMaxCCWAngle) / mSectorAngle;
+    auto value = mMaxValue - static_cast<ControllerValue>(std::floor(sector));
+
+    // Continue only if the click is in the telegraph range
+    if (value >= 0 && value <= mMaxValue)
+    {
+        return value;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+void EngineControllerElectricalElementControl::MoveToPoint(wxPoint const & point)
+{
+    // Map to value
+    std::optional<ControllerValue> value = PointToValue(point);
+
+    // Move to value, if valid and different
+    if (!!value
+        && *value != mCurrentValue)
+    {
+        mCurrentValue = *value;
+
+        // Notify
+        mOnControllerUpdated(mCurrentValue);
     }
 }
