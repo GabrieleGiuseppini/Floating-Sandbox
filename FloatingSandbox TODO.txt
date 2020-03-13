@@ -673,6 +673,14 @@ Render:
 		- Release
 			- Website: add FAQ for electrical panel -> Gabe's blog
 
+		- Roadmap:
+			- Flood doors, pumps
+			- Frontier -> Hydrodynamics (gliding)
+			- In-game Ship Builder
+			- Spring loop optimizations -> Rigidity
+			- NPCs
+			- Collision detection -> Multiple Ships
+
 		- Pumps (*)
 
 		- Batisphere with pumps
