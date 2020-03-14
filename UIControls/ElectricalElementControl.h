@@ -681,6 +681,7 @@ public:
         , mCurrentValue(currentValue)
         , mIsEnabled(true)
         , mIsLeftMouseDown(false)
+        , mIsMouseCaptured(false)
     {
         mImagePanel->SetCursor(cursor);
 
@@ -759,4 +760,5 @@ private:
     ControllerValue mCurrentValue;
     bool mIsEnabled;
     bool mIsLeftMouseDown;
+    bool mIsMouseCaptured;
 };

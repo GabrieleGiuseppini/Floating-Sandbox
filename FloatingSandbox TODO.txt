@@ -597,14 +597,14 @@ Render:
 			+ SetDoubleBuffered on MAC
 			+ Wood background for panel (mahogany)
 			+ Sam's errors
-			= Lever dragging
+			+ Lever dragging
 				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
 				+ PointToValue(.) -> value
 				+ MoveToValue(.)
-				- Issue with LeftUp happening outside of control:
-					- Either:
-						- Register for leave doing exactly like up
-						- Or: capture mouse
+				+ Issue with LeftUp happening outside of control:
+					+ Either:
+						+ Register for leave doing exactly like up
+						+ Or: capture mouse
 			= Paper material
 			= Lego's a bit less heavy
 			- Redo structural material template
@@ -662,7 +662,7 @@ Render:
 			- Water cannot be hull
 			- Redo "Ball of Water and Air"
 
-		- Test re-try cache layout optimizations
+		- Test: re-try cache layout optimizations
 			- See impact first with NOP optimization
 
 		- Pinch tool (*):
@@ -670,10 +670,12 @@ Render:
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 
-		- Release
-			- Website: add FAQ for electrical panel -> Gabe's blog
+		- Website: add FAQ for electrical panel -> Gabe's blog
 
-		- Roadmap:
+		- Release
+			
+
+		- Publish roadmap:
 			- Flood doors, pumps
 			- Frontier -> Hydrodynamics (gliding)
 			- In-game Ship Builder

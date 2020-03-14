@@ -182,6 +182,13 @@ void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
 {
     if (mIsEnabled)
     {
+        // Capture mouse
+        if (!mIsMouseCaptured)
+        {
+            mImagePanel->CaptureMouse();
+            mIsMouseCaptured = true;
+        }
+
         // Register for mouse move events
         mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
         mImagePanel->Bind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
@@ -198,6 +205,11 @@ void EngineControllerElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/
 {
     // De-register for mouse move events
     mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
+
+    // Release mouse capture
+    assert(mIsMouseCaptured);
+    mImagePanel->ReleaseMouse();
+    mIsMouseCaptured = false;
 
     // Remember state of left button
     mIsLeftMouseDown = false;
