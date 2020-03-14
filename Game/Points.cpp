@@ -451,7 +451,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mIsLeakingBuffer[pointIndex] = false;
 
     mTemperatureBuffer[pointIndex] = gameParameters.WaterTemperature;
-    assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
+    assert(waterStructuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterStructuralMaterial.ThermalExpansionCoefficient;
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterStructuralMaterial.IgnitionTemperature;

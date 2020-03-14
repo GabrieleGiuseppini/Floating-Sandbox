@@ -124,8 +124,6 @@ public:
         if (surplusCells > 0
             && height == 1)
         {
-            assert(width == maxElementsPerRow); // If we're here, we've exhausted row 1
-
             // Grow by one row
             height = 2;
             surplusCells = std::max(0, surplusCells - width);

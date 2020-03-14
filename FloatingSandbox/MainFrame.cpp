@@ -120,6 +120,7 @@ MainFrame::MainFrame(
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
+    , mIsMouseCapturedByGLCanvas(false)
 {
     Create(
         nullptr,
@@ -1140,13 +1141,21 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
     mToolController->OnLeftMouseDown();
 
     // Hang on to the mouse for as long as the button is pressed
-    mMainGLCanvas->CaptureMouse();
+    if (!mIsMouseCapturedByGLCanvas)
+    {
+        mMainGLCanvas->CaptureMouse();
+        mIsMouseCapturedByGLCanvas = true;
+    }
 }
 
 void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
 {
     // We can now release the mouse
-    mMainGLCanvas->ReleaseMouse();
+    if (mIsMouseCapturedByGLCanvas)
+    {
+        mMainGLCanvas->ReleaseMouse();
+        mIsMouseCapturedByGLCanvas = false;
+    }
 
     assert(!!mToolController);
     mToolController->OnLeftMouseUp();
@@ -1158,25 +1167,33 @@ void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
     mToolController->OnRightMouseDown();
 
     // Hang on to the mouse for as long as the button is pressed
-    mMainGLCanvas->CaptureMouse();
+    if (!mIsMouseCapturedByGLCanvas)
+    {
+        mMainGLCanvas->CaptureMouse();
+        mIsMouseCapturedByGLCanvas = true;
+    }
 }
 
 void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
 {
     // We can now release the mouse
-    mMainGLCanvas->ReleaseMouse();
+    if (mIsMouseCapturedByGLCanvas)
+    {
+        mMainGLCanvas->ReleaseMouse();
+        mIsMouseCapturedByGLCanvas = false;
+    }
 
     assert(!!mToolController);
     mToolController->OnRightMouseUp();
 }
 
-void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent& event)
+void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
 {
     assert(!!mToolController);
     mToolController->OnMouseMove(event.GetX(), event.GetY());
 }
 
-void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent& event)
+void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent & event)
 {
     assert(!!mGameController);
     mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));

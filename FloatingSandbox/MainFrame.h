@@ -344,4 +344,5 @@ private:
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
     bool mIsShiftKeyDown;
+    bool mIsMouseCapturedByGLCanvas;
 };
