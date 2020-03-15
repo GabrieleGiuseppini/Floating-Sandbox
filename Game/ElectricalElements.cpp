@@ -301,6 +301,15 @@ void ElectricalElements::AnnounceInstancedElements()
 
                 break;
             }
+
+            case ElectricalMaterial::ElectricalElementType::Cable:
+            case ElectricalMaterial::ElectricalElementType::Lamp:
+            case ElectricalMaterial::ElectricalElementType::OtherSink:
+            case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            {
+                // Nothing to announce for these
+                break;
+            }
         }
     }
 

@@ -179,8 +179,8 @@ public:
     bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(vec2f const & screenCoordinates) override;
-    std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const;
-    void QueryNearestPointAt(vec2f const & screenCoordinates) const;
+    std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const override;
+    void QueryNearestPointAt(vec2f const & screenCoordinates) const override;
 
     void TriggerTsunami() override;
     void TriggerRogueWave() override;

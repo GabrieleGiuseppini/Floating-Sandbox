@@ -14,8 +14,6 @@ namespace Physics {
 
 float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = 1.5f;
-
-float constexpr CloudSpaceHeight = 1.0f;
 float constexpr MaxCloudSpaceY = 0.5f;
 
 void Clouds::Update(
@@ -80,9 +78,9 @@ void Clouds::Update(
     // and we don't want that. We do take storm wind into account though.
     // Also, higher winds should make clouds move over-linearly faster.
     //
-    // A linear factor of 1.0/8.0 worked fine at low wind speeds.    
-    float const cloudSpeed = 
-        -7.0f * baseAndStormSpeedMagnitude / 8.0f 
+    // A linear factor of 1.0/8.0 worked fine at low wind speeds.
+    float const cloudSpeed =
+        -7.0f * baseAndStormSpeedMagnitude / 8.0f
         + windSign * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.14f);
 
     for (auto & cloud : mClouds)

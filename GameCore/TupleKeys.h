@@ -29,11 +29,11 @@ namespace /* anonymous */ {
         return tupleHash(value, std::make_index_sequence<sizeof...(Args)>());
     }
 
-    // Special case for the empty tuple
-    std::size_t hashValue(std::tuple<> const & /*value*/)
-    {
-        return 1;
-    }
+    ////// Special case for the empty tuple
+    ////std::size_t hashValue(std::tuple<> const & /*value*/)
+    ////{
+    ////    return 1;
+    ////}
 
     template<typename Tuple, std::size_t... ids>
     std::size_t tupleHash(Tuple const & tuple, std::index_sequence<ids...> const &)
