@@ -606,8 +606,12 @@ Render:
 						+ Register for leave doing exactly like up
 						+ Or: capture mouse
 			= Paper material
-			= Lego's a bit less heavy
-			- Redo structural material template
+			- Legos:
+				= Make hull Lego as heavy as non-hull Lego (re-check literature)
+				- Increase "rigidity" (or strength?)
+				- Check Mike's Lego sounds
+			= New Concrete material, hull and non-hull
+			= Redo structural material template
 
 		- Test/check spring stiffness based off endpoints
 
@@ -666,6 +670,13 @@ Render:
 			- See impact first with NOP optimization
 
 		- Pinch tool (*):
+
+		- Wine crash: Wine stable version 5.0
+			Backtrace:
+			=>0 0x0000000000237742 EntryPoint+0xf96a() in sfml-system-2 (0x000000000f0bffd0)
+			  1 0x000000000022e526 EntryPoint+0x674d() in sfml-system-2 (0x000000000f0bffd0)
+			  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)
+			
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
@@ -768,6 +779,11 @@ Render:
 		+ Waallrus: have all
 		+ MasterGarfield: have all
 			+ Have also his PayPal email
+		= Alex02:
+			+ Have Part 1 and Part 2
+			+ Titles: "Le navi dalla storia" (vol. 1 e vol. 2)
+			- Description: I make it
+			+ Author: "Alex di Roma"
 		- Space ship pack: [free]
 			- JohnSmith: gave permission for his
 			- Ships in PM

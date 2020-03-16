@@ -1098,6 +1098,34 @@
 
 
     {
+        "color_key": "#F2F5F5",
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 450.15, 
+        "is_hull": true, 
+        "mass": {
+            "density": 0.045,
+            "nominal_mass": 20
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Paper Hull", 
+        "render_color": "#FCFAFA",
+	"rust_receptivity": 10.0,
+        "sound_type": "Wood", 
+        "specific_heat": 1400.0, 
+        "stiffness": 1.0, 
+        "strength": 0.5,
+        "template": {
+            "column": 2, 
+            "row": "70|Paper Hull"
+        }, 
+        "thermal_conductivity": 0.05,
+	"thermal_expansion_coefficient": 0.00434,
+        "water_diffusion_speed": 0.65,
+        "water_retention": 0.85,
+        "buoyancy_volume_fill": 0.9
+    }, 
+
+    {
         "color_key": "#FCFAFA", 
         "combustion_type": "Combustion", 
         "ignition_temperature": 450.15, 
@@ -1115,7 +1143,7 @@
         "stiffness": 1.0, 
         "strength": 0.5,
         "template": {
-            "column": 2, 
+            "column": 3, 
             "row": "70|Paper"
         }, 
         "thermal_conductivity": 0.05,
@@ -1124,7 +1152,6 @@
         "water_retention": 0.85,
         "buoyancy_volume_fill": 0.9
     }, 
-
 
 
     {
@@ -3205,7 +3232,7 @@
         "stiffness": 1.0, 
         "strength": 0.08, 
         "template": {
-            "column": 3, 
+            "column": 4, 
             "row": "70|Nails"
         }, 
         "thermal_conductivity": 66.8, 
@@ -3751,7 +3778,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3778,7 +3805,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3805,7 +3832,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3832,7 +3859,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3859,7 +3886,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3886,7 +3913,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": true, 
         "mass": {
-            "density": 0.6633,
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3913,7 +3940,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3940,7 +3967,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3967,7 +3994,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -3994,7 +4021,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -4021,7 +4048,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -4048,7 +4075,7 @@
         "ignition_temperature": 689.15, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2211, 
+            "density": 0.53,
             "nominal_mass": 1060
         }, 
         "melting_temperature": 393.15, 
@@ -4148,6 +4175,60 @@
         }, 
         "thermal_conductivity": 0.182, 
 	"thermal_expansion_coefficient": 0.0036,
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 1.0
+    }, 
+    
+    {
+        "color_key": "#909190", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 1000000.0, 
+        "is_hull": true, 
+        "mass": {
+            "density": 1.0, 
+            "nominal_mass": 2400.0
+        }, 
+        "melting_temperature": 1000000.0,
+        "name": "Concrete Hull", 
+        "render_color": "#909190",
+	"rust_receptivity": 0.2,
+        "specific_heat": 0.75,
+        "stiffness": 1.0,
+        "strength": 2.0,
+        "template": {
+            "column": 3,
+            "row": "80|Concrete Hull"
+        }, 
+        "thermal_conductivity": 1.7, 
+	"thermal_expansion_coefficient": 10.0,
+        "water_diffusion_speed": 0.0, 
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 1.0
+    }, 
+
+    {
+        "color_key": "#BDBEBD", 
+        "combustion_type": "Combustion", 
+        "ignition_temperature": 1000000.0, 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.2, 
+            "nominal_mass": 2400.0
+        }, 
+        "melting_temperature": 1000000.0,
+        "name": "Concrete", 
+        "render_color": "#BDBEBD",
+	"rust_receptivity": 0.3,
+        "specific_heat": 0.96,
+        "stiffness": 1.0,
+        "strength": 2.0,
+        "template": {
+            "column": 4,
+            "row": "80|Concrete"
+        }, 
+        "thermal_conductivity": 0.3, 
+	"thermal_expansion_coefficient": 10.0,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
