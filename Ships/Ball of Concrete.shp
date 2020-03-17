@@ -1,0 +1,6 @@
+{
+	"structure_image":"ball_of_concrete_structural.png.dat",
+	"ship_name":"Ball of Concrete",
+	"year_built":"2013",
+	"description":"A physical body for playing with the Concrete materials."
+}

@@ -611,7 +611,12 @@ Render:
 				- Increase "rigidity" (or strength?)
 				- Check Mike's Lego sounds
 			= New Concrete material, hull and non-hull
+				+ Make ball of concrete
+				+ Adjust thermal expansion coefficient
+			- Test w/air having buoyancy volumefill=0 instead of 0.003
 			= Redo structural material template
+			- "if the heat disspation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+			- changes.txt
 
 		- Test/check spring stiffness based off endpoints
 
@@ -661,6 +666,7 @@ Render:
 			+ See if can merge engine sounds into MultiInstanceLoopedSounds
 
 		- Test: points of Water are filled with water, and mass is set to that of air
+			- First off, water material: buoyancy_volume_fill?
 			- At Points::Add
 			+ Test with "Ball of Water and Air"
 			- Water cannot be hull

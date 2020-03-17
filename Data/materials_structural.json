@@ -1110,7 +1110,7 @@
         "name": "Paper Hull", 
         "render_color": "#FCFAFA",
 	"rust_receptivity": 10.0,
-        "sound_type": "Wood", 
+        "sound_type": "Cloth", 
         "specific_heat": 1400.0, 
         "stiffness": 1.0, 
         "strength": 0.5,
@@ -1122,7 +1122,8 @@
 	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
-        "buoyancy_volume_fill": 0.9
+        "buoyancy_volume_fill": 0.0,
+	"wind_receptivity": 0.1
     }, 
 
     {
@@ -1138,7 +1139,7 @@
         "name": "Paper", 
         "render_color": "#FCFAFA",
 	"rust_receptivity": 10.0,
-        "sound_type": "Wood", 
+        "sound_type": "Cloth", 
         "specific_heat": 1400.0, 
         "stiffness": 1.0, 
         "strength": 0.5,
@@ -1150,7 +1151,8 @@
 	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
-        "buoyancy_volume_fill": 0.9
+        "buoyancy_volume_fill": 0.3,
+	"wind_receptivity": 0.1
     }, 
 
 
@@ -4193,18 +4195,19 @@
         "name": "Concrete Hull", 
         "render_color": "#909190",
 	"rust_receptivity": 0.2,
+	"sound_type": "Wood",
         "specific_heat": 0.75,
         "stiffness": 1.0,
-        "strength": 2.0,
+        "strength": 0.05,
         "template": {
             "column": 3,
             "row": "80|Concrete Hull"
         }, 
         "thermal_conductivity": 1.7, 
-	"thermal_expansion_coefficient": 10.0,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.0, 
         "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
+        "buoyancy_volume_fill": 0.0
     }, 
 
     {
@@ -4213,22 +4216,23 @@
         "ignition_temperature": 1000000.0, 
         "is_hull": false, 
         "mass": {
-            "density": 0.2, 
+            "density": 0.6, 
             "nominal_mass": 2400.0
         }, 
         "melting_temperature": 1000000.0,
         "name": "Concrete", 
         "render_color": "#BDBEBD",
 	"rust_receptivity": 0.3,
+	"sound_type": "Wood",
         "specific_heat": 0.96,
         "stiffness": 1.0,
-        "strength": 2.0,
+        "strength": 0.06,
         "template": {
             "column": 4,
             "row": "80|Concrete"
         }, 
         "thermal_conductivity": 0.3, 
-	"thermal_expansion_coefficient": 10.0,
+	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
