@@ -613,10 +613,16 @@ Render:
 			= New Concrete material, hull and non-hull
 				+ Make ball of concrete
 				+ Adjust thermal expansion coefficient
-			- Test w/air having buoyancy volumefill=0 instead of 0.003
 			= Redo structural material template
-			- "if the heat disspation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+			= "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+				+ Could repro with Sailboat
+				- Check release perf impact
 			- changes.txt
+
+		- See better flame velocity vector: higher VelocityScale
+		- Repair:
+			- Same velocity
+			- Pinned points
 
 		- Test/check spring stiffness based off endpoints
 
@@ -909,6 +915,7 @@ Render:
 			- No fullscreen mode
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
+	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
 
 - Mac:
 	- See replacement for "intrin.h" @ SysSpecifics.h

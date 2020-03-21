@@ -3790,7 +3790,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 5, 
             "row": "70|LEGO Hull (ABS)"
@@ -3817,7 +3817,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 6,
             "row": "70|LEGO Hull (ABS)"
@@ -3844,7 +3844,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 7, 
             "row": "70|LEGO Hull (ABS)"
@@ -3871,7 +3871,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 8, 
             "row": "70|LEGO Hull (ABS)"
@@ -3898,7 +3898,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 9, 
             "row": "70|LEGO Hull (ABS)"
@@ -3925,7 +3925,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 10, 
             "row": "70|LEGO Hull (ABS)"
@@ -3952,7 +3952,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 5, 
             "row": "80|LEGO (ABS)"
@@ -3979,7 +3979,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 6, 
             "row": "80|LEGO (ABS)"
@@ -4006,7 +4006,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 7, 
             "row": "80|LEGO (ABS)"
@@ -4033,7 +4033,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 8, 
             "row": "80|LEGO (ABS)"
@@ -4060,7 +4060,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 9, 
             "row": "80|LEGO (ABS)"
@@ -4087,7 +4087,7 @@
         "sound_type": "Plastic", 
         "specific_heat": 1423.512, 
         "stiffness": 1.1, 
-        "strength": 0.05, 
+        "strength": 0.06, 
         "template": {
             "column": 10, 
             "row": "80|LEGO (ABS)"

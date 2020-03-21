@@ -85,9 +85,10 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
         RunTask(tasks.front());
     }
 
-    // Run the task loop for our own thread
+    // Run the remaining tasks on own thread, if needed
     RunRemainingTasksLoop();
 
+    // Only returns when there are no more tasks
     assert(mRemainingTasks.empty());
 
     // Wait until all tasks are completed
@@ -225,6 +226,8 @@ void TaskThreadPool::RunTask(Task const & task)
     }
     catch (std::exception const & e)
     {
+        assert(false); // Catch it in debug mode
+
         LogMessage("Error running task: " + std::string(e.what()));
 
         // Keep going...

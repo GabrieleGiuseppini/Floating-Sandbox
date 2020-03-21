@@ -1785,28 +1785,37 @@ void Ship::PropagateHeat(
     // and have a temperature
     for (auto pointIndex : mPoints)
     {
-        // Heat lost in this time quantum (positive when outgoing)
-        float heatLost;
+        float deltaT; // Temperature delta (particle - env)
+        float heatLost; // Heat lost in this time quantum (positive when outgoing)
+
         if (mParentWorld.IsUnderwater(mPoints.GetPosition(pointIndex))
             || mPoints.GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
-            heatLost =
-                effectiveWaterConvectiveHeatTransferCoefficient
-                * (newPointTemperatureBufferData[pointIndex] - waterTemperature);
+            deltaT = newPointTemperatureBufferData[pointIndex] - waterTemperature;
+            heatLost = effectiveWaterConvectiveHeatTransferCoefficient * deltaT;
         }
         else
         {
             // Dissipation in air
-            heatLost =
-                effectiveAirConvectiveHeatTransferCoefficient
-                * (newPointTemperatureBufferData[pointIndex] - airTemperature);
+            deltaT = newPointTemperatureBufferData[pointIndex] - airTemperature;
+            heatLost = effectiveAirConvectiveHeatTransferCoefficient * deltaT;
         }
 
-        // Remove this heat from the point
-        newPointTemperatureBufferData[pointIndex] -=
-            heatLost
-            * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+        // Temperature delta due to heat removal
+        float const dissipationDeltaT = heatLost * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+
+        // Remove this heat from the point, making sure we don't overshoot
+        if (deltaT >= 0)
+        {
+            newPointTemperatureBufferData[pointIndex] -=
+                std::min(dissipationDeltaT, deltaT);
+        }
+        else
+        {
+            newPointTemperatureBufferData[pointIndex] -=
+                std::max(dissipationDeltaT, deltaT);
+        }
     }
 }
 

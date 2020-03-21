@@ -54,7 +54,8 @@ public:
      */
     float GetHeightAt(float x) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -GameParameters::HalfMaxWorldWidth
+            && x <= GameParameters::HalfMaxWorldWidth + 0.01f); // Allow for derivative taking
 
         //
         // Find sample index and interpolate in-between that sample and the next
