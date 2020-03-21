@@ -591,6 +591,11 @@ Render:
 		+ Send for testing
 		+ Bump up version
 
+		+ Improve flame velocity vector: higher VelocityScale
+			+ Check overall feeling w/new number
+				+ Simplify number
+			+ Try with non-linear growth
+
 		= Discord intake:
 			= Bug of that guy
 				- Tell him it's wood stiff
@@ -614,12 +619,11 @@ Render:
 				+ Make ball of concrete
 				+ Adjust thermal expansion coefficient
 			= Redo structural material template
-			= "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
 				+ Could repro with Sailboat
-				- Check release perf impact
+				+ Check release perf impact
 			- changes.txt
 
-		- See better flame velocity vector: higher VelocityScale
 		- Repair:
 			- Same velocity
 			- Pinned points

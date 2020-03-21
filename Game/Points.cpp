@@ -809,8 +809,13 @@ void Points::UpdateCombustionLowFrequency(
                 0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
-            // Flame vector is based on current velocity
-            mCombustionStateBuffer[pointIndex].FlameVector = GetVelocity(pointIndex).normalise();
+            // Reset flame vector
+            // Technically, we should bootstrap the flame vector with the resultant
+            // of Q and the particle's current velocity, exactly like we do at
+            // the hi-freq state machine update; to do that we'd need to extract
+            // the calculation out of the hi-freq state machine update and into a
+            // helper function.
+            mCombustionStateBuffer[pointIndex].FlameVector = vec2f(0.0f, 1.0f);
 
             // Add point to vector of burning points, sorted by plane ID
             assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
@@ -1159,17 +1164,21 @@ void Points::UpdateCombustionHighFrequency(
         // vector (B) added to a scaled-down opposite of the particle's velocity:
         //  Q = B - velocityScale * V
 
-        float constexpr VelocityScale = 2.0f / (15.0f * 1.25f); // Magic number
+        vec2f const pointVelocity = GetVelocity(pointIndex);
+
+        // The velocity scale depends on the velocity magnitude, via
+        // a magic formula
+        float const velocityScale = SmoothStep(0.0f, 100.0f, pointVelocity.length());
 
         vec2f constexpr B = vec2f(0.0f, 1.0f);
-        vec2f Q = B - GetVelocity(pointIndex) * VelocityScale;
+        vec2f Q = B - pointVelocity * velocityScale;
         float Ql = Q.length();
 
         // Qn = normalized Q
         vec2f const Qn = Q.normalise(Ql);
 
         // Limit length of Q: no more than Qlmax
-        float constexpr Qlmax = 2.0f; // Magic number: twice the height at rest
+        float constexpr Qlmax = 1.8f; // Magic number
         Q = Qn * std::min(Ql, Qlmax);
 
         //
