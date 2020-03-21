@@ -597,8 +597,6 @@ Render:
 			+ Try with non-linear growth
 
 		= Discord intake:
-			= Bug of that guy
-				- Tell him it's wood stiff
 			+ SetDoubleBuffered on MAC
 			+ Wood background for panel (mahogany)
 			+ Sam's errors
@@ -610,25 +608,37 @@ Render:
 					+ Either:
 						+ Register for leave doing exactly like up
 						+ Or: capture mouse
-			= Paper material
+			+ Paper material
 			- Legos:
-				= Make hull Lego as heavy as non-hull Lego (re-check literature)
-				- Increase "rigidity" (or strength?)
-				- Check Mike's Lego sounds
+				- Make hull Lego as heavy as non-hull Lego (re-check literature)
+					- Test w/new ship from Mike
+				- Increase "stiffness": 1.2
+				- Lego sounds
+					- Check Mike's sounds
 			= New Concrete material, hull and non-hull
 				+ Make ball of concrete
 				+ Adjust thermal expansion coefficient
-			= Redo structural material template
+				- Mike's gonna test
 			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
 				+ Could repro with Sailboat
 				+ Check release perf impact
+			+ Fix Hindenburg: doesn't float anymore
+			- Add motors: 150 to 250hp outboard motor and 450 to 550hp steam powered motor
+			- captain noobinson
+			- Mike's fireship 
+			- SS Hesleden (John Smith)
+			= Redo structural material template
 			- changes.txt
+			= Bug of that guy
+				- Tell him it's wood stiff
 
 		- Repair:
 			- Same velocity
-			- Pinned points
 
 		- Test/check spring stiffness based off endpoints
+
+		- Musica Bazzico
+			- Think about playlist
 
 		+ Horns and bells
 			+ ElectricalMaterial
@@ -800,6 +810,7 @@ Render:
 			+ Titles: "Le navi dalla storia" (vol. 1 e vol. 2)
 			- Description: I make it
 			+ Author: "Alex di Roma"
+			- Add "Andrew Hensley" to credits of: Blue Regalness, 2xQueen Anne 
 		- Space ship pack: [free]
 			- JohnSmith: gave permission for his
 			- Ships in PM
