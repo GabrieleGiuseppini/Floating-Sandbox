@@ -980,7 +980,6 @@ OceanSurface::SWEAbnormalWaveStateMachine::SWEAbnormalWaveStateMachine(
     : mCenterIndex(centerIndex)
     , mLowHeight(lowHeight)
     , mHighHeight(highHeight)
-    , mRiseDelay(riseDelay)
     , mFallDelay(fallDelay)
     , mCurrentProgress(0.0f)
     , mCurrentPhaseStartSimulationTime(currentSimulationTime)

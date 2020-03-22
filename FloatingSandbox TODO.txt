@@ -609,8 +609,9 @@ Render:
 						+ Register for leave doing exactly like up
 						+ Or: capture mouse
 			+ Paper material
+			- GameJolt post for those two videos
 			- Legos:
-				- Make hull Lego as heavy as non-hull Lego (re-check literature)
+				= Make hull Lego as heavy as non-hull Lego (re-check literature)
 					- Test w/new ship from Mike
 				- Increase "stiffness": 1.2
 				- Lego sounds
@@ -626,6 +627,8 @@ Render:
 			- Add motors: 150 to 250hp outboard motor and 450 to 550hp steam powered motor
 			- captain noobinson
 			- Mike's fireship 
+				- Cleanup files
+				- Do panel
 			- SS Hesleden (John Smith)
 			= Redo structural material template
 			- changes.txt

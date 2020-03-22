@@ -319,7 +319,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     // Place tiles
     //
 
-    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
     texturePositions.reserve(inputTextureInfos.size());
 
     struct Position
@@ -451,7 +451,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     // Place tiles
     //
 
-    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
     texturePositions.reserve(inputTextureInfos.size());
 
     struct Position
@@ -581,7 +581,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     int const atlasWidth = numberOfFramesPerSide * frameWidth;
     int const atlasHeight = numberOfFramesPerSide * frameHeight;
 
-    std::vector<AtlasSpecification::TexturePosition> texturePositions;
+    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
     texturePositions.reserve(virtualNumberOfFrames);
 
     for (int i = 0; i < inputTextureInfos.size(); ++i)

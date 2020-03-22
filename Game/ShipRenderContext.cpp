@@ -28,11 +28,8 @@ ShipRenderContext::ShipRenderContext(
     RgbaImageData shipTexture,
     ShipDefinition::TextureOriginType /*textureOrigin*/,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GameOpenGLTexture & explosionTextureAtlasOpenGLHandle,
     TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-    GameOpenGLTexture & genericLinearTextureAtlasOpenGLHandle,
     TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-    GameOpenGLTexture & genericMipMappedTextureAtlasOpenGLHandle,
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
     RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
@@ -114,11 +111,8 @@ ShipRenderContext::ShipRenderContext(
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
-    , mExplosionTextureAtlasOpenGLHandle(explosionTextureAtlasOpenGLHandle)
     , mExplosionTextureAtlasMetadata(explosionTextureAtlasMetadata)
-    , mGenericLinearTextureAtlasOpenGLHandle(genericLinearTextureAtlasOpenGLHandle)
     , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
-    , mGenericMipMappedTextureAtlasOpenGLHandle(genericMipMappedTextureAtlasOpenGLHandle)
     , mGenericMipMappedTextureAtlasMetadata(genericMipMappedTextureAtlasMetadata)
     // Managers
     , mShaderManager(shaderManager)

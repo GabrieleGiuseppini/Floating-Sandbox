@@ -29,15 +29,11 @@ public:
 
     PinnedPoints(
         World & parentWorld,
-        ShipId shipId,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        Points & shipPoints,
-        Springs & shipSprings)
+        Points & shipPoints)
         : mParentWorld(parentWorld)
-        , mShipId(shipId)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPoints(shipPoints)
-        , mShipSprings(shipSprings)
         , mCurrentPinnedPoints()
     {
     }
@@ -154,17 +150,11 @@ private:
     // Our parent world
     World & mParentWorld;
 
-    // The ID of the ship we belong to
-    ShipId const mShipId;
-
     // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;
-
-    // The container of all the ship's springs
-    Springs & mShipSprings;
 
     // The current set of pinned points
     CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;

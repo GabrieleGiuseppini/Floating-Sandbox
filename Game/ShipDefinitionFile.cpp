@@ -94,6 +94,9 @@ ShipDefinitionFile ShipDefinitionFile::Create(
                 std::piecewise_construct,
                 std::forward_as_tuple(instanceIndex),
                 std::forward_as_tuple(int(panelX), int(panelY), label));
+
+            if (!res.second)
+                throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");
         }
     }
 

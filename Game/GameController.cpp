@@ -55,17 +55,17 @@ GameController::GameController(
 	std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
     std::shared_ptr<ResourceLoader> resourceLoader)
+    // State machines
+    : mTsunamiNotificationStateMachine()
+    , mThanosSnapStateMachines()
     // State
-    : mGameParameters()
+    , mGameParameters()
     , mLastShipLoadedFilepath()
     , mIsPaused(false)
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     , mHeatBlasterFlameToRender()
     , mFireExtinguisherSprayToRender()
-    // State machines
-    , mTsunamiNotificationStateMachine()
-    , mThanosSnapStateMachines()
     // Parameters that we own
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
@@ -230,7 +230,7 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
 
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
-        std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
+        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
         mGameParameters);
@@ -303,7 +303,7 @@ void GameController::ReloadLastShip()
 
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
-        std::move(OceanFloorTerrain(mWorld->GetOceanFloorTerrain())),
+        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
         mGameParameters);

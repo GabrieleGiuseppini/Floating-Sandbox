@@ -269,7 +269,6 @@ private:
         int32_t const mCenterIndex;
         float const mLowHeight;
         float const mHighHeight;
-        float const mRiseDelay; // sec
         float const mFallDelay; // sec
         float mCurrentProgress; // Between 0 and 1, regardless of direction
         float mCurrentPhaseStartSimulationTime;

@@ -14,7 +14,7 @@
 #include <optional>
 #include <vector>
 
-class GameEventDispatcher
+class GameEventDispatcher final
     : public IRenderGameEventHandler
     , public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler

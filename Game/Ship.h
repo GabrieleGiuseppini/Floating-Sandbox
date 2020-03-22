@@ -25,7 +25,7 @@
 namespace Physics
 {
 
-class Ship : public IShipPhysicsHandler
+class Ship final : public IShipPhysicsHandler
 {
 public:
 

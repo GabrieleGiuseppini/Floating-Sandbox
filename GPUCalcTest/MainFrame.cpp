@@ -33,6 +33,8 @@ const long ID_MAIN_CANVAS = wxNewId();
 MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
 {
+    (void)mMainApp; // Keeping it around
+
     Create(
         nullptr,
         wxID_ANY,
@@ -223,7 +225,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     // Register OpenGL context factory
     GPUCalculatorFactory::GetInstance().Initialize(
-        [this]() -> std::unique_ptr<IOpenGLContext>
+        []() -> std::unique_ptr<IOpenGLContext>
         {
             return std::make_unique<OpenGLContext>();
         },

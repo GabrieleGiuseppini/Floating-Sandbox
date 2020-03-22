@@ -77,10 +77,8 @@ Ship::Ship(
     , mElectricalElements(std::move(electricalElements))
     , mPinnedPoints(
         mParentWorld,
-        mId,
         mGameEventHandler,
-        mPoints,
-        mSprings)
+        mPoints)
     , mBombs(
         mParentWorld,
         mId,
