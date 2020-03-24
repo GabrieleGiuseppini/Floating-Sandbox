@@ -59,15 +59,32 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
                     structuralMaterial->GetMass()
                     - (structuralMaterial->BuoyancyVolumeFill * GameParameters::AirMass);
 
-                waterBuoyantMass +=
+                float const particleWaterBuoyantMass =
                     structuralMaterial->GetMass()
                     - (structuralMaterial->BuoyancyVolumeFill * GameParameters::WaterMass);
 
-                // Update center of mass
+                waterBuoyantMass += particleWaterBuoyantMass;
+
+
+                // Update centers of mass
                 analysisInfo.BaricentricX += worldX * structuralMaterial->GetMass();
                 analysisInfo.BaricentricY += worldY * structuralMaterial->GetMass();
+                analysisInfo.WaterBuoyantBaricentricX += worldX * particleWaterBuoyantMass;
+                analysisInfo.WaterBuoyantBaricentricY += worldY * particleWaterBuoyantMass;
             }
         }
+    }
+
+    if (totalMass != 0.0f)
+    {
+        analysisInfo.BaricentricX /= totalMass;
+        analysisInfo.BaricentricY /= totalMass;
+    }
+
+    if (waterBuoyantMass != 0.0f)
+    {
+        analysisInfo.WaterBuoyantBaricentricX /= waterBuoyantMass;
+        analysisInfo.WaterBuoyantBaricentricY /= waterBuoyantMass;
     }
 
     analysisInfo.TotalMass = totalMass;
@@ -77,12 +94,6 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
         analysisInfo.MassPerPoint = totalMass / numPoints;
         analysisInfo.AirBuoyantMassPerPoint = airBuoyantMass / numPoints;
         analysisInfo.WaterBuoyantMassPerPoint = waterBuoyantMass / numPoints;
-    }
-
-    if (analysisInfo.TotalMass != 0.0f)
-    {
-        analysisInfo.BaricentricX /= analysisInfo.TotalMass;
-        analysisInfo.BaricentricY /= analysisInfo.TotalMass;
     }
 
     return analysisInfo;

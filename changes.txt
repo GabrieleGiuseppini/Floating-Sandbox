@@ -6,6 +6,7 @@
 	- Smoke Emitters - emit smoke particles when powered
 	- Power Monitors - provide feedback on the state of a power line
 	- "Instanced" Generators - provide feedback on the power they produce
+	- Horns and Bells - play sounds when activated
 	- ...and retrofitted some pre-existing ships, among which:
 		- R.M.S. Titanic (With Electricals)
 		- Carnival Dream
@@ -29,7 +30,9 @@
 - Repairing a ship's structure now also repairs its electricals
 - Added ability to change color of lamp lights
 - Adjusted physical properties of ropes, which were too light and too strong
-- Added Paper material, fixed Cardboard material (was lighter than air by mistake!)
+- Added Paper material, fixed Cardboard material (...which was lighter than air by mistake!)
+- Lego material has bee improved and given its own sounds
+- Added new ships: Fire Boat
 - ...and a few more small improvements here and there
 
 1.13.0.7

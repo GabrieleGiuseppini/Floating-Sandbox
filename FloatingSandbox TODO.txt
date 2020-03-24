@@ -609,13 +609,22 @@ Render:
 						+ Register for leave doing exactly like up
 						+ Or: capture mouse
 			+ Paper material
-			- GameJolt post for those two videos
-			- Legos:
-				= Make hull Lego as heavy as non-hull Lego (re-check literature)
-					- Test w/new ship from Mike
-				- Increase "stiffness": 1.2
-				- Lego sounds
-					- Check Mike's sounds
+			+ GameJolt post for those two videos
+			+ Add motors: 230hp outboard motor and 550hp steam powered motor
+			+ Legos:
+				+ Make hull Lego as heavy as non-hull Lego (re-check literature)
+					+ Test w/new ship from Mike
+					! Density should be 401kg/m3 or 0.55g/cm3 == 550kg/m3
+						! https://www.eurobricks.com/forum/index.php?/forums/topic/72114-lego-weight/
+						! https://bricks.stackexchange.com/questions/9012/how-can-i-distinguish-floating-versus-sinking-lego-pieces
+				+ Lego sounds
+					+ Break
+					+ Destroy
+					+ Stress
+					+ RepairSpring
+					+ RepairTriangle
+				+ Do one or two variations on plastic stress
+					
 			= New Concrete material, hull and non-hull
 				+ Make ball of concrete
 				+ Adjust thermal expansion coefficient
@@ -624,21 +633,17 @@ Render:
 				+ Could repro with Sailboat
 				+ Check release perf impact
 			+ Fix Hindenburg: doesn't float anymore
-			- Add motors: 150 to 250hp outboard motor and 450 to 550hp steam powered motor
 			- captain noobinson
-			- Mike's fireship 
-				- Cleanup files
-				- Do panel
-			- SS Hesleden (John Smith)
-			= Redo structural material template
-			- changes.txt
+			+ Take mike's fireship 
+			+ Redo structural material template
+			= changes.txt, including ships
 			= Bug of that guy
 				- Tell him it's wood stiff
 
 		- Repair:
 			- Same velocity
 
-		- Test/check spring stiffness based off endpoints
+		- Retrofit ships
 
 		- Musica Bazzico
 			- Think about playlist
@@ -704,8 +709,7 @@ Render:
 			Backtrace:
 			=>0 0x0000000000237742 EntryPoint+0xf96a() in sfml-system-2 (0x000000000f0bffd0)
 			  1 0x000000000022e526 EntryPoint+0x674d() in sfml-system-2 (0x000000000f0bffd0)
-			  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)
-			
+			  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"

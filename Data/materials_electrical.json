@@ -451,6 +451,46 @@
     },
 
     {
+        "color_key": "#30E500",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+	"engine_power": 230.0,
+	"engine_responsiveness": 0.4,
+	"engine_type": "Outboard",
+        "heat_generated": 200.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "230HP Outboard Engine R/L", 
+        "template": {
+            "column": "3|230HP Outboard R/L",
+            "row": "10|Engines"
+        }
+    },
+
+    {
+        "color_key": "#30E600",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+	"engine_power": 550.0,
+	"engine_responsiveness": 0.4,
+	"engine_type": "Steam",
+        "heat_generated": 800.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "550HP Steam Engine R/L", 
+        "template": {
+            "column": "4|550HP Steam R/L",
+            "row": "10|Engines"
+        }
+    },
+
+    {
         "color_key": "#30E200",
 	"conducts_electricity": false,
         "electrical_type": "Engine", 
@@ -465,7 +505,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "3|1300HP Steam R/L",
+            "column": "5|1300HP Steam R/L",
             "row": "10|Engines"
         }
     },
@@ -485,7 +525,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "template": {
-            "column": "4|1300HP Steam U/D",
+            "column": "6|1300HP Steam U/D",
             "row": "10|Engines"
         }
     },
@@ -505,12 +545,10 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "template": {
-            "column": "5|4000HP Steam R/L",
+            "column": "7|4000HP Steam R/L",
             "row": "10|Engines"
         }
     },
-
-
 
     {
         "color_key": "#409000",

@@ -39,6 +39,7 @@ public:
         Cable,
         Cloth,
         Glass,
+        Lego,
         Metal,
         Plastic,
         Rubber,

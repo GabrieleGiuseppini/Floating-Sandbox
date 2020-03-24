@@ -1,0 +1,8 @@
+{
+	"structure_image":"ss_hesleden_structure.png.dat",
+	"texture_image":"ss_hesleden_texture.png.dat",
+	"offset":{"x":0.0, "y":-9.0},
+	"ship_name":"S.S. Hesleden",
+	"created_by":"John Smith",
+	"year_built":"2022"
+}

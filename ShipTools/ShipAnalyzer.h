@@ -20,6 +20,8 @@ public:
 
         float BaricentricX;
         float BaricentricY;
+        float WaterBuoyantBaricentricX;
+        float WaterBuoyantBaricentricY;
 
         AnalysisInfo()
             : TotalMass(0.0f)
@@ -28,6 +30,8 @@ public:
             , WaterBuoyantMassPerPoint(0.0f)
             , BaricentricX(0.0f)
             , BaricentricY(0.0f)
+            , WaterBuoyantBaricentricX(0.0f)
+            , WaterBuoyantBaricentricY(0.0f)
         {}
     };
 

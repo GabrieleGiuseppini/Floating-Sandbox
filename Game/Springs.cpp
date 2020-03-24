@@ -38,14 +38,10 @@ void Springs::Add(
     // Breaking elongation recalculated later
     mBreakingElongationBuffer.emplace_back(0.0f);
 
-    // Stiffness is max
-    float const stiffness = std::max(
-        points.GetStructuralMaterial(pointAIndex).Stiffness,
-        points.GetStructuralMaterial(pointBIndex).Stiffness);
-    // Note: we shipped up to and included 1.13 with average, and from 1.14 we started with max
-    ////float const stiffness =
-    ////    (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
-    ////    / 2.0f;
+    // Stiffness is average
+    float const stiffness =
+        (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
+        / 2.0f;
 
     mMaterialStiffnessBuffer.emplace_back(stiffness);
 

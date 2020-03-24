@@ -1,0 +1,17 @@
+{
+	"structure_image":"fire_boat_structure.png.dat",
+	"texture_image":"fire_boat_texture.png.dat",
+	"electrical_image":"fire_boat_electrical.png.dat",
+	"offset":{"x":70.0, "y":-6.0},
+	"ship_name":"Fire Boat 1 Elite",
+	"created_by":"Michael Bozarth;Shipbucket Darth Panda",
+	"year_built":"2010",
+	"electrical_panel":{
+		"5": {"panel_x":-2, "panel_y":0, "label":"Engine" },
+		"4": {"panel_x":-1, "panel_y":0, "label":"Engine Control" },
+
+		"2": {"panel_x":1, "panel_y":0, "label":"Upper Deck Lights" },
+		"1": {"panel_x":2, "panel_y":0, "label":"Middle Deck Lights" },
+		"6": {"panel_x":3, "panel_y":0, "label":"Lower Deck Lights" }
+	}
+}
