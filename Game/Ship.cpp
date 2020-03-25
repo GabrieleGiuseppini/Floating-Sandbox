@@ -1056,8 +1056,8 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
             vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
 
-            // Calculate sea floor normal
-            // (optimized)
+            // Calculate sea floor anti-normal
+            // (optimized) (positive points down)
             ////////vec2f const seaFloorAntiNormal = -vec2f(
             ////////    floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
             ////////    0.01f).normalise(); // Points below
@@ -1065,23 +1065,38 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
                 mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f) - floorHeight,
                 -0.01f).normalise(); // Points below
 
-            // Decompose point velocity into normal and tangential
-            vec2f const normalVelocity = seaFloorAntiNormal * pointVelocity.dot(seaFloorAntiNormal);
-            vec2f const tangentialVelocity = pointVelocity - normalVelocity;
+            // Calculate the component of the point's velocity along the anti-normal,
+            // i.e. towards the interior of the floor...
+            float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
 
-            // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-            vec2f const normalResponse =
-                normalVelocity
-                * elasticityFactor; // Already negative
+            // ...if negative, it's already pointing outside the floor, hence we leave it as-is
+            if (pointVelocityAlongAntiNormal > 0.0f)
+            {
+                // Decompose point velocity into normal and tangential
+                vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
+                vec2f const tangentialVelocity = pointVelocity - normalVelocity;
 
-            // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-            vec2f const tangentialResponse =
-                tangentialVelocity
-                * inverseFriction;
+                // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+                vec2f const normalResponse =
+                    normalVelocity
+                    * elasticityFactor; // Already negative
 
-            // Impart final position and velocity
-            mPoints.GetPosition(pointIndex) -= pointVelocity * dt; // Move point back to where it was in the previous step
-            mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
+                // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+                vec2f const tangentialResponse =
+                    tangentialVelocity
+                    * inverseFriction;
+
+                //
+                // Impart final position and velocity
+                //
+
+                // Move point back to where it was in the previous step,
+                // which is guaranteed to be more towards the outside
+                mPoints.GetPosition(pointIndex) -= pointVelocity * dt;
+
+                // Set velocity to resultant collision velocity
+                mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
+            }
         }
     }
 }

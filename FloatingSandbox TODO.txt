@@ -595,6 +595,9 @@ Render:
 			+ Check overall feeling w/new number
 				+ Simplify number
 			+ Try with non-linear growth
+		+ Fix trapped bubbles
+			+ Test if some debris also made it to the other side before the fix
+			+ Test perf impact
 
 		= Discord intake:
 			+ SetDoubleBuffered on MAC
@@ -640,8 +643,9 @@ Render:
 			= Bug of that guy
 				- Tell him it's wood stiff
 
-		- Repair:
-			- Same velocity
+		= Repair:
+			= Same velocity
+			- If good, remove old code
 
 		- Retrofit ships
 
@@ -695,15 +699,13 @@ Render:
 
 		- Test: points of Water are filled with water, and mass is set to that of air
 			- First off, water material: buoyancy_volume_fill?
-			- At Points::Add
+			- At ShipBuilder::TransformMaterials(matrix, materialsDb) // in-place, w/PointInfo::Water
 			+ Test with "Ball of Water and Air"
 			- Water cannot be hull
 			- Redo "Ball of Water and Air"
 
 		- Test: re-try cache layout optimizations
 			- See impact first with NOP optimization
-
-		- Pinch tool (*):
 
 		- Wine crash: Wine stable version 5.0
 			Backtrace:
@@ -726,6 +728,9 @@ Render:
 			- Spring loop optimizations -> Rigidity
 			- NPCs
 			- Collision detection -> Multiple Ships
+
+
+		- Pinch tool (*):
 
 		- Pumps (*)
 
