@@ -270,7 +270,9 @@ void Ship::RepairAt(
     //
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
-    float constexpr DisplacementTolerance = 0.07f;
+    //
+    // - Shipped 1.13 with 0.07
+    float constexpr DisplacementTolerance = 0.06f;
 
     // Tolerance to rest length vs. factory rest length, before restoring to it factory
     float constexpr RestLengthDivergenceTolerance = 0.05f;
@@ -563,6 +565,8 @@ void Ship::RepairAt(
                             assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
                             // Brake the other endpoint
+                            // Note: imparting the same velocity of the attractor to the attracted
+                            // seems to make things worse
                             mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
 
                             // Halve the decay of both endpoints
@@ -647,9 +651,10 @@ void Ship::RepairAt(
             //
             // A triangle is eligible for being restored if all of its subsprings are not deleted.
             //
-            // We do this at tool time as there are triangles that have been deleted
-			// without their edge-springs having been deleted, so the resurrection of triangles
-			// wouldn't be complete if we resurrected triangles only when restoring a spring
+            // We do this at global tool time as opposed to per-restored point, because there might
+            // be triangles that have been deleted without their edge-springs having been deleted,
+            // so the resurrection of triangles wouldn't be complete if we resurrected triangles
+            // only when restoring a spring
             //
 
             // Visit all the triangles that were connected at factory time

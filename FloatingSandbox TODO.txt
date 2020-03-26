@@ -644,8 +644,13 @@ Render:
 				- Tell him it's wood stiff
 
 		= Repair:
-			= Same velocity
-			- If good, remove old code
+			X Same velocity
+			X If good, remove old code
+			= Try smaller distance tolerance
+				x 0.055
+				= 0.06
+				- Try dividing by spring stiffness
+					- Test with ropes
 
 		- Retrofit ships
 
@@ -729,6 +734,16 @@ Render:
 			- NPCs
 			- Collision detection -> Multiple Ships
 
+		- Repair improvement:
+			- A)
+				- Make triangle's vertices CW
+					! Have to do it anyway for frontier
+					- Add to invariant checks
+						- Debug.h => Triangles::RunInvariantChecks(.)
+				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
+					- Move the point to the other side (rendering the triangle CW)
+			- OR: B)
+				- An attractor with only one spring attached cannot attract and attracted that has >= 2 springs attached
 
 		- Pinch tool (*):
 
