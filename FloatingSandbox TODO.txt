@@ -639,9 +639,12 @@ Render:
 			- captain noobinson
 			+ Take mike's fireship 
 			+ Redo structural material template
+			- "Titanic with Power"
+				- Also take Mike's electricals
+				- Also @ changes.txt
 			= changes.txt, including ships
 			= Bug of that guy
-				- Tell him it's wood stiff
+				- Tell him it's wood stiff			
 
 		= Repair:
 			X Same velocity
@@ -649,8 +652,8 @@ Render:
 			= Try smaller distance tolerance
 				x 0.055
 				= 0.06
-				- Try dividing by spring stiffness
-					- Test with ropes
+				x Try dividing by spring stiffness
+					x Test with ropes
 
 		- Retrofit ships
 
@@ -743,7 +746,7 @@ Render:
 				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
 					- Move the point to the other side (rendering the triangle CW)
 			- OR: B)
-				- An attractor with only one spring attached cannot attract and attracted that has >= 2 springs attached
+				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
 		- Pinch tool (*):
 

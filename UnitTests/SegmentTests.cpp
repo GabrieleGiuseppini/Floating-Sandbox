@@ -1,4 +1,4 @@
-#include <GameCore/Segment.h>
+#include <GameCore/GameGeometry.h>
 
 #include "gtest/gtest.h"
 
@@ -60,7 +60,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 {
-    bool result = Geometry::Segment::ProperIntersectionTest(
+    bool result = Segment::ProperIntersectionTest(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<2>(GetParam()),
@@ -68,7 +68,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Geometry::Segment::ProperIntersectionTest(
+    result = Segment::ProperIntersectionTest(
         std::get<1>(GetParam()),
         std::get<0>(GetParam()),
         std::get<2>(GetParam()),
@@ -76,7 +76,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Geometry::Segment::ProperIntersectionTest(
+    result = Segment::ProperIntersectionTest(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<3>(GetParam()),
@@ -84,7 +84,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Geometry::Segment::ProperIntersectionTest(
+    result = Segment::ProperIntersectionTest(
         std::get<1>(GetParam()),
         std::get<0>(GetParam()),
         std::get<3>(GetParam()),

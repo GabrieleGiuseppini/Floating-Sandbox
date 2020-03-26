@@ -3,8 +3,6 @@
 * Created:              2018-09-26
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#pragma once
-
 #include "TextureDatabase.h"
 
 namespace Render {
@@ -125,8 +123,6 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
     //
     // Process JSON groups and build texture groups
     //
-
-    float const framesToLoad = static_cast<float>(allTextureFiles.size());
 
     std::vector<TextureGroup<TextureGroups>> textureGroups;
 

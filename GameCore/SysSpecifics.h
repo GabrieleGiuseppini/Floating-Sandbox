@@ -193,7 +193,7 @@ inline unique_aligned_buffer<TElement> make_unique_buffer_aligned_to_vectorizati
 }
 
 template<typename TElement>
-using shared_aligned_buffer = std::shared_ptr<TElement[]>;
+using shared_aligned_buffer = std::shared_ptr<TElement>;
 
 template<typename TElement>
 inline shared_aligned_buffer<TElement> make_shared_buffer_aligned_to_vectorization_word(size_t elementCount)

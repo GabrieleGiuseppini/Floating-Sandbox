@@ -18,7 +18,6 @@ public:
 
     memory_streambuf()
         : mStreamBuffer()
-        , mReadPos(0u)
     {
     }
 
@@ -68,7 +67,7 @@ private:
 
         this->setg(mStreamBuffer.data(), mStreamBuffer.data() + consumed, mStreamBuffer.data() + mStreamBuffer.size());
 
-        return ch;    
+        return ch;
     }
 
     virtual std::streambuf::int_type underflow() override
@@ -79,5 +78,4 @@ private:
 private:
 
     std::vector<char> mStreamBuffer;
-    size_t mReadPos;
 };
