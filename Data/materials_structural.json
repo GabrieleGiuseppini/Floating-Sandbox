@@ -4121,18 +4121,17 @@
         }, 
         "thermal_conductivity": 0.6, 
 	"thermal_expansion_coefficient": 0.00021,
-        "water_diffusion_speed": 0.0, 
+        "water_diffusion_speed": 0.5, 
         "water_intake": 0.0, 
         "water_retention": 0.0, 
-        "buoyancy_volume_fill": 1.0
+        "buoyancy_volume_fill": 0.0
     }, 
 
     {
         "color_key": "#F0F0F0", 
         "combustion_type": "Combustion", 
-        "comments": "buoyancy_volume_fill: we want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly", 
         "ignition_temperature": 1000000.0, 
-        "is_hull": true, 
+        "is_hull": false, 
         "mass": {
             "density": 1.0, 
             "nominal_mass": 1.2754
@@ -4150,10 +4149,10 @@
         }, 
         "thermal_conductivity": 0.0262, 
 	"thermal_expansion_coefficient": 0.0034,
-        "water_diffusion_speed": 0.0, 
-        "water_intake": 0.0, 
+        "water_diffusion_speed": 0.5, 
+        "water_intake": 1.0, 
         "water_retention": 0.0, 
-        "buoyancy_volume_fill": 0.003
+        "buoyancy_volume_fill": 1.0
     }, 
 
     {

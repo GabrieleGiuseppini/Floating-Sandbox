@@ -49,6 +49,7 @@ private:
         StructuralMaterial const & StructuralMtl;
         bool IsRope;
         bool IsLeaking;
+        float Water;
 
         ElectricalMaterial const * ElectricalMtl;
         ElectricalElementInstanceIndex ElectricalElementInstanceIndex;
@@ -59,13 +60,15 @@ private:
             vec2f textureCoordinates,
             vec4f renderColor,
             StructuralMaterial const & structuralMtl,
-            bool isRope)
+            bool isRope,
+            float water)
             : Position(position)
             , TextureCoordinates(textureCoordinates)
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)
             , IsRope(isRope)
             , IsLeaking(isRope ? true : false) // Ropes leak by default
+            , Water(water)
             , ElectricalMtl(nullptr)
             , ElectricalElementInstanceIndex(NoneElectricalElementInstanceIndex)
             , ConnectedSprings1()

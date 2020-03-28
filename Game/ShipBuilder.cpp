@@ -68,10 +68,22 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         // From bottom to top
         for (int y = 0; y < structureHeight; ++y)
         {
-            MaterialDatabase::ColorKey colorKey = shipDefinition.StructuralLayerImage.Data[x + (structureHeight - y - 1) * structureWidth];
+            MaterialDatabase::ColorKey const colorKey = shipDefinition.StructuralLayerImage.Data[x + (structureHeight - y - 1) * structureWidth];
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
+                float water = 0.0f;
+
+                //
+                // Transform water point to air point+water
+                //
+
+                if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Water))
+                {
+                    structuralMaterial = &materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
+                    water = 1.0f;
+                }
+
                 //
                 // Make a point
                 //
@@ -83,12 +95,12 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                 pointInfos.emplace_back(
                     vec2f(
                         static_cast<float>(x) - halfWidth,
-                        static_cast<float>(y))
-                    + shipDefinition.Metadata.Offset,
+                        static_cast<float>(y)) + shipDefinition.Metadata.Offset,
                     MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
-                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope));
+                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
+                    water);
 
                 //
                 // Check if it's a (custom) rope endpoint
@@ -377,7 +389,8 @@ void ShipBuilder::AppendRopeEndpoints(
                         MakeTextureCoordinates(x, y, ropeLayerImage.Size),
                         colorKey.toVec4f(1.0f),
                         materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
-                        true);
+                        true, // IsRope
+                        0.0f); // Water
 
                     pointIndexMatrix[x + 1][y + 1] = pointIndex;
                 }
@@ -676,7 +689,8 @@ void ShipBuilder::AppendRopes(
                 MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
                 ropeSegment.RopeColorKey.toVec4f(1.0f),
                 ropeMaterial,
-                true); // IsRope
+                true, // IsRope
+                0.0f); // Water
 
             // Set electrical material
             pointInfos1.back().ElectricalMtl = (fabs(curW - startW) <= halfW)
@@ -909,6 +923,7 @@ Physics::Points ShipBuilder::CreatePoints(
 
         points.Add(
             pointInfo.Position,
+            pointInfo.Water,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,

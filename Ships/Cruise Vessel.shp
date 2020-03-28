@@ -6,6 +6,10 @@
 	"ship_name":"Cruise Vessel",
 	"year_built":"1998",
 	"created_by":"Gabriele Giuseppini",
+	"electrical_panel":{
+		"1": {"panel_x":0, "panel_y":0, "label":"Engine" },
+		"0": {"panel_x":1, "panel_y":0, "label":"Engine Control" }
+	},
 	"description":
 		"This 'Cruise Vessel' is just your ordinary private billion dollar ship that looks as if it was from 'Grand Theft Auto V' and owned by Gill Bates (Grand Theft Auto V version of Bill Gates)... Yeah, not too ordinary to be honest.<br/>This ship has a smoke emitter connected to a generator hidden deep down the funnel."
 }

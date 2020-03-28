@@ -2,5 +2,5 @@
 	"structure_image":"ball_of_water_and_air_structural.png.dat",
 	"ship_name":"Ball of Water and Air",
 	"year_built":"2013",
-	"description":"A physical body for playing with the Water and Air materials."
+	"description":"A physical body for playing with the Water and Air materials. The ball has a soft fiberglass shell, while its interior is made of air and water particles. Upon loading, water particles become particles of air filled with water. Heat the ball up, and with some patience air's high thermal expansion coefficient will slowly start lifting the ball up in the air!"
 }

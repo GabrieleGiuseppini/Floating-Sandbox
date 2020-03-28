@@ -16,6 +16,7 @@ namespace Physics {
 
 void Points::Add(
     vec2f const & position,
+    float water,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -53,7 +54,7 @@ void Points::Add(
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
     mMaterialWaterDiffusionSpeedBuffer.emplace_back(structuralMaterial.WaterDiffusionSpeed);
 
-    mWaterBuffer.emplace_back(0.0f);
+    mWaterBuffer.emplace_back(water);
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mCumulatedIntakenWater.emplace_back(0.0f);
@@ -127,6 +128,9 @@ void Points::CreateEphemeralParticleAirBubble(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
+    // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly
+    float constexpr BuoyancyVolumeFill = 0.003f;
+
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
@@ -134,13 +138,13 @@ void Points::CreateEphemeralParticleAirBubble(
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        airStructuralMaterial.BuoyancyVolumeFill,
+        BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
 
@@ -282,6 +286,8 @@ void Points::CreateEphemeralParticleSmoke(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
+    float constexpr BuoyancyVolumeFill = 1.0f;
+
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
@@ -289,13 +295,13 @@ void Points::CreateEphemeralParticleSmoke(
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        1.0f, // Need to counteract the artificially low buoyancy volume fill of air for air bubbles
+        BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
 
