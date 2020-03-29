@@ -28,12 +28,13 @@
 - Slightly improved rigidity of structures
 	- ...but more improvement in this area are yet to come!
 - Repairing a ship's structure now also repairs its electricals
-- Added ability to change color of lamp lights
+- Added ability to change color of lamp light
 - Adjusted physical properties of ropes, which were too light and too strong
-- Added Paper material, fixed Cardboard material (...which was lighter than air by mistake!)
-- Lego material has bee improved and given its own sounds
+- Added new Paper, Concrete, and Water materials; fixed Cardboard material (...which was lighter than air by mistake!)
+- Lego material has been improved and given its own sounds
 - Added new ships: Fire Boat
 - ...and a few more small improvements here and there
+- Musical theme for this release: Zeromancer
 
 1.13.0.7
 - Added ability to save settings - including ocean floor terrain - and to reload the last-modified settings

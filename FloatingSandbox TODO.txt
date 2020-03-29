@@ -598,6 +598,14 @@ Render:
 		+ Fix trapped bubbles
 			+ Test if some debris also made it to the other side before the fix
 			+ Test perf impact
+				
+		+ Test: points of Water are filled with water, and material is set to that of air
+			+ First off, water material: buoyancy_volume_fill?
+			+ At ShipBuilder
+			+ Test with "Ball of Water and Air"
+			+ Redo "Ball of Water and Air"
+			+ Use constant at AirBubble et al for BuoyancyVolumeFill
+			+ Instructions
 
 		= Discord intake:
 			+ SetDoubleBuffered on MAC
@@ -636,8 +644,10 @@ Render:
 				+ Could repro with Sailboat
 				+ Check release perf impact
 			+ Fix Hindenburg: doesn't float anymore
-			- captain noobinson
+			+ captain noobinson
 			+ Take mike's fireship 
+			- Test new SS Hesleden
+			- Gunpoweder, again?
 			+ Redo structural material template
 			- "Titanic with Power"
 				- Also take Mike's electricals
@@ -645,15 +655,7 @@ Render:
 				- Also @ changes.txt
 			= changes.txt, including ships
 			= Bug of that guy
-				- Tell him it's wood stiff			
-
-		+ Test: points of Water are filled with water, and material is set to that of air
-			+ First off, water material: buoyancy_volume_fill?
-			+ At ShipBuilder
-			+ Test with "Ball of Water and Air"
-			+ Redo "Ball of Water and Air"
-			+ Use constant at AirBubble et al for BuoyancyVolumeFill
-			+ Instructions
+				- Tell him it's wood stiff
 
 		= Retrofit ships
 			+ Cruise Vessel
@@ -661,8 +663,18 @@ Render:
 			- changes.txt
 		- Take Mike's Lego Titanic when ready
 
+		- "NoShow" in panel json to prevent elements from being shown
+			- e.g. for many water-sensing switches
+
 		- Musica Bazzico
-			- Think about playlist
+			- Title: "The short journey to the seabed"
+			- Author: Soul Heater
+			+ Make sure also in tags
+			- Add to license
+
+		- Take space ship
+		- Retire silly ships
+			- Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
 
 		+ Horns and bells
 			+ ElectricalMaterial
@@ -725,8 +737,17 @@ Render:
 			- NPCs
 			- Collision detection -> Multiple Ships
 
+
+		- Add more background music and do playlist:
+			- Music:
+				- Kevin MacLeod, check out Long Note 1,2,3,...
+			- Playlist:
+				- JSon with metadata
+
 		- Test: re-try cache layout optimizations
 			- See impact first with NOP optimization
+
+		- H and V electrical cables (*)
 
 		- Wine crash: Wine stable version 5.0
 			Backtrace:
@@ -837,9 +858,13 @@ Render:
 		= Alex02:
 			+ Have Part 1 and Part 2
 			+ Titles: "Le navi dalla storia" (vol. 1 e vol. 2)
-			- Description: I make it
+			+ Description: I make it
 			+ Author: "Alex di Roma"
-			- Add "Andrew Hensley" to credits of: Blue Regalness, 2xQueen Anne 
+			+ Add "Andrew Hensley" to credits of: Blue Regalness, 2xQueen Anne 
+			+ Test
+			- Release:
+				+ Vol. I
+				- Vol. II
 		- Space ship pack: [free]
 			- JohnSmith: gave permission for his
 			- Ships in PM
@@ -1162,6 +1187,11 @@ Render:
 
 
 - Gfx:
+
+	- Clouds: should relay perspective when moving camera up and down
+		- Assign Z depths and uniform speed
+		- Do perspective calculation at Clouds::Upload
+
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
@@ -1272,6 +1302,8 @@ Render:
 
 - Dynamics:	
 
+	- H and V electrical cables (*)
+
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
 		+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
@@ -1298,12 +1330,12 @@ Render:
 		- Jet engine: need a way to render flames/particles coming out 
 
 	- Air drag
-		- Thinner moving up, MaxWorldHeight is open space
+		- Thinner moving up, @ MaxWorldHeight it's open space
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
 	- Pinch tool (*):
-		- TODO: redo with spring force: Picks a point and keeps setting a force on it with a growing strength
+		- TODO: redo with spring-like force: Picks a point and keeps setting a force on it with a growing strength
 			- State machine (strength growth, simple recursive function) done by tool
 		- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
 		- Tool:
