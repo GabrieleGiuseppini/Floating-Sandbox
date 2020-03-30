@@ -89,11 +89,12 @@ ShipDefinitionFile ShipDefinitionFile::Create(
             auto const panelX = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_x");
             auto const panelY = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_y");
             auto const label = Utils::GetMandatoryJsonMember<std::string>(elementMetadataObject, "label");
+            auto const isHidden = Utils::GetOptionalJsonMember<bool>(elementMetadataObject, "is_hidden", false);
 
             auto const res = electricalPanelMetadata.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(instanceIndex),
-                std::forward_as_tuple(int(panelX), int(panelY), label));
+                std::forward_as_tuple(int(panelX), int(panelY), label, isHidden));
 
             if (!res.second)
                 throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");

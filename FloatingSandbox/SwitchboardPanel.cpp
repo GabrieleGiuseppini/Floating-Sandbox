@@ -463,9 +463,11 @@ void SwitchboardPanel::OnSwitchCreated(
     //
 
     std::string label;
+    bool isHidden;
     if (!!panelElementMetadata)
     {
         label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
     }
     else
     {
@@ -473,6 +475,9 @@ void SwitchboardPanel::OnSwitchCreated(
         std::stringstream ss;
         ss << "Switch " << " #" << static_cast<int>(instanceIndex);
         label = ss.str();
+
+        // Shown by default
+        isHidden = false;
     }
 
     //
@@ -482,98 +487,101 @@ void SwitchboardPanel::OnSwitchCreated(
     SwitchElectricalElementControl * swCtrl = nullptr;
     IInteractiveElectricalElementControl * intCtrl = nullptr;
 
-    switch (type)
+    if (!isHidden)
     {
-        case SwitchType::InteractivePushSwitch:
+        switch (type)
         {
-            auto ctrl = new InteractivePushSwitchElectricalElementControl(
-                mSwitchPanel,
-                mInteractivePushSwitchOnEnabledBitmap,
-                mInteractivePushSwitchOffEnabledBitmap,
-                mInteractivePushSwitchOnDisabledBitmap,
-                mInteractivePushSwitchOffDisabledBitmap,
-                label,
-                mInteractiveCursor,
-                [this, electricalElementId](ElectricalState newState)
-                {
-                    mGameController->SetSwitchState(electricalElementId, newState);
-                },
-                state);
+            case SwitchType::InteractivePushSwitch:
+            {
+                auto ctrl = new InteractivePushSwitchElectricalElementControl(
+                    mSwitchPanel,
+                    mInteractivePushSwitchOnEnabledBitmap,
+                    mInteractivePushSwitchOffEnabledBitmap,
+                    mInteractivePushSwitchOnDisabledBitmap,
+                    mInteractivePushSwitchOffDisabledBitmap,
+                    label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](ElectricalState newState)
+                    {
+                        mGameController->SetSwitchState(electricalElementId, newState);
+                    },
+                    state);
 
-            swCtrl = ctrl;
-            intCtrl = ctrl;
+                swCtrl = ctrl;
+                intCtrl = ctrl;
 
-            break;
+                break;
+            }
+
+            case SwitchType::InteractiveToggleSwitch:
+            {
+                auto ctrl = new InteractiveToggleSwitchElectricalElementControl(
+                    mSwitchPanel,
+                    mInteractiveToggleSwitchOnEnabledBitmap,
+                    mInteractiveToggleSwitchOffEnabledBitmap,
+                    mInteractiveToggleSwitchOnDisabledBitmap,
+                    mInteractiveToggleSwitchOffDisabledBitmap,
+                    label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](ElectricalState newState)
+                    {
+                        mGameController->SetSwitchState(electricalElementId, newState);
+                    },
+                    state);
+
+                swCtrl = ctrl;
+                intCtrl = ctrl;
+
+                break;
+            }
+
+            case SwitchType::AutomaticSwitch:
+            {
+                auto ctrl = new AutomaticSwitchElectricalElementControl(
+                    mSwitchPanel,
+                    mAutomaticSwitchOnEnabledBitmap,
+                    mAutomaticSwitchOffEnabledBitmap,
+                    mAutomaticSwitchOnDisabledBitmap,
+                    mAutomaticSwitchOffDisabledBitmap,
+                    label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    state);
+
+                swCtrl = ctrl;
+                intCtrl = nullptr;
+
+                break;
+            }
+
+            case SwitchType::ShipSoundSwitch:
+            {
+                auto ctrl = new InteractivePushSwitchElectricalElementControl(
+                    mSwitchPanel,
+                    mShipSoundSwitchOnEnabledBitmap,
+                    mShipSoundSwitchOffEnabledBitmap,
+                    mShipSoundSwitchOnDisabledBitmap,
+                    mShipSoundSwitchOffDisabledBitmap,
+                    label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](ElectricalState newState)
+                    {
+                        mGameController->SetSwitchState(electricalElementId, newState);
+                    },
+                    state);
+
+                swCtrl = ctrl;
+                intCtrl = ctrl;
+
+                break;
+            }
         }
 
-        case SwitchType::InteractiveToggleSwitch:
-        {
-            auto ctrl = new InteractiveToggleSwitchElectricalElementControl(
-                mSwitchPanel,
-                mInteractiveToggleSwitchOnEnabledBitmap,
-                mInteractiveToggleSwitchOffEnabledBitmap,
-                mInteractiveToggleSwitchOnDisabledBitmap,
-                mInteractiveToggleSwitchOffDisabledBitmap,
-                label,
-                mInteractiveCursor,
-                [this, electricalElementId](ElectricalState newState)
-                {
-                    mGameController->SetSwitchState(electricalElementId, newState);
-                },
-                state);
-
-            swCtrl = ctrl;
-            intCtrl = ctrl;
-
-            break;
-        }
-
-        case SwitchType::AutomaticSwitch:
-        {
-            auto ctrl = new AutomaticSwitchElectricalElementControl(
-                mSwitchPanel,
-                mAutomaticSwitchOnEnabledBitmap,
-                mAutomaticSwitchOffEnabledBitmap,
-                mAutomaticSwitchOnDisabledBitmap,
-                mAutomaticSwitchOffDisabledBitmap,
-                label,
-                mPassiveCursor,
-                [this, electricalElementId]()
-                {
-                    this->OnTick(electricalElementId);
-                },
-                state);
-
-            swCtrl = ctrl;
-            intCtrl = nullptr;
-
-            break;
-        }
-
-        case SwitchType::ShipSoundSwitch:
-        {
-            auto ctrl = new InteractivePushSwitchElectricalElementControl(
-                mSwitchPanel,
-                mShipSoundSwitchOnEnabledBitmap,
-                mShipSoundSwitchOffEnabledBitmap,
-                mShipSoundSwitchOnDisabledBitmap,
-                mShipSoundSwitchOffDisabledBitmap,
-                label,
-                mInteractiveCursor,
-                [this, electricalElementId](ElectricalState newState)
-                {
-                    mGameController->SetSwitchState(electricalElementId, newState);
-                },
-                state);
-
-            swCtrl = ctrl;
-            intCtrl = ctrl;
-
-            break;
-        }
+        assert(swCtrl != nullptr);
     }
-
-    assert(swCtrl != nullptr);
 
     //
     // Add switch to maps
@@ -598,82 +606,92 @@ void SwitchboardPanel::OnPowerProbeCreated(
     //
 
     std::string label;
-    ElectricalElementControl * ctrl;
+    bool isHidden;
 
     if (!!panelElementMetadata)
     {
         label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
     }
-
-    switch (type)
+    else
     {
-        case PowerProbeType::Generator:
-        {
-            // Voltage Gauge
-            auto ggCtrl = new GaugeElectricalElementControl(
-                mSwitchPanel,
-                mGaugeVoltsBitmap,
-                wxPoint(47, 47),
-                36.0f,
-                -Pi<float> / 4.0f,
-                Pi<float> * 5.0f / 4.0f,
-                label,
-                mPassiveCursor,
-                [this, electricalElementId]()
-                {
-                    this->OnTick(electricalElementId);
-                },
-                state == ElectricalState::On ? 0.0f : 1.0f);
-
-            ctrl = ggCtrl;
-
-            // Store as updateable element
-            mUpdateableElements.emplace_back(ggCtrl);
-
-            if (!panelElementMetadata)
-            {
-                // Make label
-                std::stringstream ss;
-                ss << "Generator #" << static_cast<int>(instanceIndex);
-                label = ss.str();
-            }
-
-            break;
-        }
-
-        case PowerProbeType::PowerMonitor:
-        {
-            ctrl = new PowerMonitorElectricalElementControl(
-                mSwitchPanel,
-                mPowerMonitorOnBitmap,
-                mPowerMonitorOffBitmap,
-                label,
-                mPassiveCursor,
-                [this, electricalElementId]()
-                {
-                    this->OnTick(electricalElementId);
-                },
-                state);
-
-            if (!panelElementMetadata)
-            {
-                // Make label
-                std::stringstream ss;
-                ss << "Monitor #" << static_cast<int>(instanceIndex);
-                label = ss.str();
-            }
-
-            break;
-        }
-
-        default:
-        {
-            assert(false);
-            return;
-        }
+        isHidden = false;
     }
 
-    assert(ctrl != nullptr);
+    ElectricalElementControl * ctrl = nullptr;
+
+    if (!isHidden)
+    {
+        switch (type)
+        {
+            case PowerProbeType::Generator:
+            {
+                // Voltage Gauge
+                auto ggCtrl = new GaugeElectricalElementControl(
+                    mSwitchPanel,
+                    mGaugeVoltsBitmap,
+                    wxPoint(47, 47),
+                    36.0f,
+                    -Pi<float> / 4.0f,
+                    Pi<float> * 5.0f / 4.0f,
+                    label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    state == ElectricalState::On ? 0.0f : 1.0f);
+
+                ctrl = ggCtrl;
+
+                // Store as updateable element
+                mUpdateableElements.emplace_back(ggCtrl);
+
+                if (!panelElementMetadata)
+                {
+                    // Make label
+                    std::stringstream ss;
+                    ss << "Generator #" << static_cast<int>(instanceIndex);
+                    label = ss.str();
+                }
+
+                break;
+            }
+
+            case PowerProbeType::PowerMonitor:
+            {
+                ctrl = new PowerMonitorElectricalElementControl(
+                    mSwitchPanel,
+                    mPowerMonitorOnBitmap,
+                    mPowerMonitorOffBitmap,
+                    label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    state);
+
+                if (!panelElementMetadata)
+                {
+                    // Make label
+                    std::stringstream ss;
+                    ss << "Monitor #" << static_cast<int>(instanceIndex);
+                    label = ss.str();
+                }
+
+                break;
+            }
+
+            default:
+            {
+                assert(false);
+                return;
+            }
+        }
+
+        assert(ctrl != nullptr);
+    }
 
     //
     // Add monitor to maps
@@ -696,9 +714,11 @@ void SwitchboardPanel::OnEngineControllerCreated(
     //
 
     std::string label;
+    bool isHidden;
     if (!!panelElementMetadata)
     {
         label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
     }
     else
     {
@@ -706,29 +726,37 @@ void SwitchboardPanel::OnEngineControllerCreated(
         std::stringstream ss;
         ss << "EngineControl #" << static_cast<int>(instanceIndex);
         label = ss.str();
+
+        // Not hidden
+        isHidden = false;
     }
 
     //
     // Create control
     //
 
-    auto ecCtrl = new EngineControllerElectricalElementControl(
-        mSwitchPanel,
-        mEngineControllerBackgroundEnabledBitmap,
-        mEngineControllerBackgroundDisabledBitmap,
-        mEngineControllerHandBitmaps,
-        wxPoint(47, 48),
-        3.90f,
-        -0.75f,
-        label,
-        mInteractiveCursor,
-        [this, electricalElementId](unsigned int controllerValue)
-        {
-            mGameController->SetEngineControllerState(
-                electricalElementId,
-                controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
-        },
-        mEngineControllerHandBitmaps.size() / 2); // Starting value = center
+    EngineControllerElectricalElementControl * ecCtrl = nullptr;
+
+    if (!isHidden)
+    {
+        ecCtrl = new EngineControllerElectricalElementControl(
+            mSwitchPanel,
+            mEngineControllerBackgroundEnabledBitmap,
+            mEngineControllerBackgroundDisabledBitmap,
+            mEngineControllerHandBitmaps,
+            wxPoint(47, 48),
+            3.90f,
+            -0.75f,
+            label,
+            mInteractiveCursor,
+            [this, electricalElementId](unsigned int controllerValue)
+            {
+                mGameController->SetEngineControllerState(
+                    electricalElementId,
+                    controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
+            },
+            mEngineControllerHandBitmaps.size() / 2); // Starting value = center
+    }
 
     //
     // Add to maps
@@ -754,9 +782,11 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     //
 
     std::string label;
+    bool isHidden;
     if (!!panelElementMetadata)
     {
         label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
     }
     else
     {
@@ -764,29 +794,37 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         std::stringstream ss;
         ss << "Engine #" << static_cast<int>(instanceIndex);
         label = ss.str();
+
+        // Not hidden
+        isHidden = false;
     }
 
     //
     // Create control
     //
 
-    auto ggCtrl = new GaugeElectricalElementControl(
-        mSwitchPanel,
-        mGaugeRpmBitmap,
-        wxPoint(47, 47),
-        36.0f,
-        Pi<float> / 4.0f - 0.06f,
-        2.0f * Pi<float> - Pi<float> / 4.0f,
-        label,
-        mPassiveCursor,
-        [this, electricalElementId]()
-        {
-            this->OnTick(electricalElementId);
-        },
-        1.0f - rpm);
+    GaugeElectricalElementControl * ggCtrl = nullptr;
 
-    // Store as updateable element
-    mUpdateableElements.emplace_back(ggCtrl);
+    if (!isHidden)
+    {
+        ggCtrl = new GaugeElectricalElementControl(
+            mSwitchPanel,
+            mGaugeRpmBitmap,
+            wxPoint(47, 47),
+            36.0f,
+            Pi<float> / 4.0f - 0.06f,
+            2.0f * Pi<float> -Pi<float> / 4.0f,
+            label,
+            mPassiveCursor,
+            [this, electricalElementId]()
+            {
+                this->OnTick(electricalElementId);
+            },
+            1.0f - rpm);
+
+        // Store as updateable element
+        mUpdateableElements.emplace_back(ggCtrl);
+    }
 
     //
     // Add monitor to maps
@@ -809,14 +847,18 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
     for (auto const it : mElementMap)
     {
-        if (!!(it.second.PanelElementMetadata))
-            layoutElements.emplace_back(
-                it.first,
-                std::make_pair(it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y));
-        else
-            layoutElements.emplace_back(
-                it.first,
-                std::nullopt);
+        // Ignore if hidden
+        if (nullptr != it.second.Control)
+        {
+            if (!!(it.second.PanelElementMetadata))
+                layoutElements.emplace_back(
+                    it.first,
+                    std::make_pair(it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y));
+            else
+                layoutElements.emplace_back(
+                    it.first,
+                    std::nullopt);
+        }
     }
 
     // Layout
@@ -886,7 +928,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Decide panel visibility
     //
 
-    if (mElementMap.empty())
+    if (layoutElements.empty())
     {
         // No elements
 
@@ -931,12 +973,13 @@ void SwitchboardPanel::OnSwitchEnabled(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
 
     SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
-    assert(swCtrl != nullptr);
-
-    swCtrl->SetEnabled(isEnabled);
+    if (swCtrl != nullptr)
+    {
+        swCtrl->SetEnabled(isEnabled);
+    }
 }
 
 void SwitchboardPanel::OnSwitchToggled(
@@ -948,12 +991,13 @@ void SwitchboardPanel::OnSwitchToggled(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
 
     SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
-    assert(swCtrl != nullptr);
-
-    swCtrl->SetState(newState);
+    if (swCtrl != nullptr)
+    {
+        swCtrl->SetState(newState);
+    }
 }
 
 void SwitchboardPanel::OnPowerProbeToggled(
@@ -965,21 +1009,24 @@ void SwitchboardPanel::OnPowerProbeToggled(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    if (elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::PowerMonitor)
+    if (elementInfo.Control != nullptr)
     {
-        PowerMonitorElectricalElementControl * pmCtrl = dynamic_cast<PowerMonitorElectricalElementControl *>(elementInfo.Control);
-        assert(pmCtrl != nullptr);
+        if (elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::PowerMonitor)
+        {
+            PowerMonitorElectricalElementControl * pmCtrl = dynamic_cast<PowerMonitorElectricalElementControl *>(elementInfo.Control);
+            assert(pmCtrl != nullptr);
 
-        pmCtrl->SetState(newState);
-    }
-    else
-    {
-        assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
+            pmCtrl->SetState(newState);
+        }
+        else
+        {
+            assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
 
-        GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
-        assert(ggCtrl != nullptr);
+            GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
+            assert(ggCtrl != nullptr);
 
-        ggCtrl->SetValue(newState == ElectricalState::On ? 0.0f : 1.0f);
+            ggCtrl->SetValue(newState == ElectricalState::On ? 0.0f : 1.0f);
+        }
     }
 }
 
@@ -992,12 +1039,13 @@ void SwitchboardPanel::OnEngineControllerEnabled(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
 
     EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
-    assert(ecCtrl != nullptr);
-
-    ecCtrl->SetEnabled(isEnabled);
+    if (ecCtrl != nullptr)
+    {
+        ecCtrl->SetEnabled(isEnabled);
+    }
 }
 
 void SwitchboardPanel::OnEngineControllerUpdated(
@@ -1009,12 +1057,13 @@ void SwitchboardPanel::OnEngineControllerUpdated(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::EngineController);
 
     EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
-    assert(ecCtrl != nullptr);
-
-    ecCtrl->SetValue(telegraphValue + GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+    if (ecCtrl != nullptr)
+    {
+        ecCtrl->SetValue(telegraphValue + GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+    }
 }
 
 void SwitchboardPanel::OnEngineMonitorUpdated(
@@ -1027,12 +1076,13 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     //
 
     auto & elementInfo = mElementMap.at(electricalElementId);
-    assert(elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
 
     GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
-    assert(ggCtrl != nullptr);
-
-    ggCtrl->SetValue(1.0f - rpm);
+    if (ggCtrl != nullptr)
+    {
+        ggCtrl->SetValue(1.0f - rpm);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////

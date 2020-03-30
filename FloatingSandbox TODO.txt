@@ -663,14 +663,23 @@ Render:
 			- changes.txt
 		- Take Mike's Lego Titanic when ready
 
-		- "NoShow" in panel json to prevent elements from being shown
-			- e.g. for many water-sensing switches
+		+ "is_hidden" in panel json to prevent elements from being shown
+			! e.g. for many water-sensing switches
+			+ Test w/circuit test
+				+ 1 element
+				+ all elements
+					+ Make sure panel hidden afterwards
+					+ Also in Debug
 
-		- Musica Bazzico
-			- Title: "The short journey to the seabed"
-			- Author: Soul Heater
+		= Musica Bazzico
+			+ Title: "The short journey to the seabed"
+			+ Author: Soul Heater
 			+ Make sure also in tags
-			- Add to license
+			+ Add to license
+			= Test
+
+		- Water-sensing switch: 
+			- TBD
 
 		- Take space ship
 		- Retire silly ships

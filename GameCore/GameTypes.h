@@ -292,14 +292,17 @@ struct ElectricalPanelElementMetadata
     int X;
     int Y;
     std::string Label;
+    bool IsHidden;
 
     ElectricalPanelElementMetadata(
         int x,
         int y,
-        std::string const & label)
+        std::string const & label,
+        bool isHidden)
         : X(x)
         , Y(y)
         , Label(label)
+        , IsHidden(isHidden)
     {}
 };
 
