@@ -597,8 +597,7 @@ Render:
 			+ Try with non-linear growth
 		+ Fix trapped bubbles
 			+ Test if some debris also made it to the other side before the fix
-			+ Test perf impact
-				
+			+ Test perf impact				
 		+ Test: points of Water are filled with water, and material is set to that of air
 			+ First off, water material: buoyancy_volume_fill?
 			+ At ShipBuilder
@@ -635,33 +634,27 @@ Render:
 					+ RepairSpring
 					+ RepairTriangle
 				+ Do one or two variations on plastic stress
-					
-			= New Concrete material, hull and non-hull
-				+ Make ball of concrete
-				+ Adjust thermal expansion coefficient
-				- Mike's gonna test
 			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
 				+ Could repro with Sailboat
 				+ Check release perf impact
 			+ Fix Hindenburg: doesn't float anymore
 			+ captain noobinson
 			+ Take mike's fireship 
-			- Test new SS Hesleden
-			- Gunpoweder, again?
 			+ Redo structural material template
 			+ "Titanic with Power"
 				+ Also take Mike's electricals
 				+ Description: 4th funnel
 				+ Also @ changes.txt
-			= changes.txt, including ships
+			+ Test new SS Hesleden
+
+			= New Concrete material, hull and non-hull
+				+ Make ball of concrete
+				+ Adjust thermal expansion coefficient
+				- Mike's gonna test
+			- Gunpowder, again?
+			= changes.txt
 			= Bug of that guy
 				- Tell him it's wood stiff
-
-		= Retrofit ships
-			+ Cruise Vessel
-			- ...			
-			- changes.txt
-		- Take Mike's Lego Titanic when ready
 
 		+ "is_hidden" in panel json to prevent elements from being shown
 			! e.g. for many water-sensing switches
@@ -671,17 +664,29 @@ Render:
 					+ Make sure panel hidden afterwards
 					+ Also in Debug
 
+		- Test bug: doesn't close with music
+
 		= Musica Bazzico
 			+ Title: "The short journey to the seabed"
 			+ Author: Soul Heater
 			+ Make sure also in tags
 			+ Add to license
 			= Test
+				- Volume fix
+			- changes.txt
 
-		- Water-sensing switch: 
+		- Water-sensing switch: Paco's issue
 			- TBD
 
+		= Retrofit ships
+			+ Cruise Vessel
+			- ...			
+			- changes.txt
 		- Take space ship
+			- Super_Combat_Assault-Carrier?		
+		- Take Mike's Lego Titanic when ready
+		- changes.txt
+
 		- Retire silly ships
 			- Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
 
