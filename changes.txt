@@ -8,7 +8,7 @@
 	- "Instanced" Generators - provide feedback on the power they produce
 	- Horns and Bells - play sounds when activated
 	- ...and retrofitted some pre-existing ships, among which:
-		- R.M.S. Titanic (With Electricals)
+		- R.M.S. Titanic (With Power)
 		- Carnival Dream
 		- Cruise Vessel
 		- Lifeboat

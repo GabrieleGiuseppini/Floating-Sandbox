@@ -649,10 +649,10 @@ Render:
 			- Test new SS Hesleden
 			- Gunpoweder, again?
 			+ Redo structural material template
-			- "Titanic with Power"
-				- Also take Mike's electricals
-				- Description: 4th funnel
-				- Also @ changes.txt
+			+ "Titanic with Power"
+				+ Also take Mike's electricals
+				+ Description: 4th funnel
+				+ Also @ changes.txt
 			= changes.txt, including ships
 			= Bug of that guy
 				- Tell him it's wood stiff
