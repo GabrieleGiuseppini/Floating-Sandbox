@@ -1,0 +1,8 @@
+{
+	"structure_image":"super_combat_assault_carrier_structure.png.dat",
+	"texture_image":"super_combat_assault_carrier_texture.png.dat",
+	"offset":{"x":0.0, "y":-9.0},
+	"ship_name":"Super Combat Assault-Carrier",
+	"created_by":"John Smith",
+	"year_built":"2063"
+}

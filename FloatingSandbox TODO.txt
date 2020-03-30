@@ -682,13 +682,11 @@ Render:
 			+ Cruise Vessel
 			- ...			
 			- changes.txt
-		- Take space ship
-			- Super_Combat_Assault-Carrier?		
 		- Take Mike's Lego Titanic when ready
 		- changes.txt
 
 		- Retire silly ships
-			- Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
+			- Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack, *free*
 
 		+ Horns and bells
 			+ ElectricalMaterial
@@ -740,8 +738,7 @@ Render:
 
 		- Website: add FAQ for electrical panel -> Gabe's blog
 
-		- Release
-			
+		- Release			
 
 		- Publish roadmap:
 			- Flood doors, pumps

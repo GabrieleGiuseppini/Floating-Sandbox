@@ -32,7 +32,7 @@
 - Adjusted physical properties of ropes, which were too light and too strong
 - Added new Paper, Concrete, and Water materials; fixed Cardboard material (...which was lighter than air by mistake!)
 - Lego material has been improved and given its own sounds
-- Added new ships: Fire Boat
+- Added new ships: Fire Boat, Super Combat Assault-Carrier
 - ...and a few more small improvements here and there
 - Musical theme for this release: Zeromancer
 
