@@ -26,15 +26,15 @@
 	- Flames are now directional, adapting to the velocity of the particles that are burning
 - Rain now floods exposed areas of a ship
 - Slightly improved rigidity of structures
-	- ...but more improvement in this area are yet to come!
+	- ...but more improvements in this area are yet to come!
 - Repairing a ship's structure now also repairs its electricals
 - Added ability to change color of lamp light
 - Adjusted physical properties of ropes, which were too light and too strong
-- Added new Paper, Concrete, and Water materials; fixed Cardboard material (...which was lighter than air by mistake!)
+- Added new Paper, Concrete, and Water materials; fixed Cardboard material (which was lighter than air by mistake!) and Air material (which was watertight also by mistake!)
 - Lego material has been improved and given its own sounds
 - Added new ships: Fire Boat, Super Combat Assault-Carrier
-- Removed some older ships that have been released with Floating Sandbox since version 1...
-	- ...but don't worry, they are still available in the "Legacy Floating Sandbox Ships Vol. I" free ship pack from www.floatingsandbox.com!
+- Removed some older ships that have been released with Floating Sandbox since version 1.0...
+	- ...but don't worry, they are still available in the "Legacy Floating Sandbox Ships, Vol. I" _free_ ship pack from www.floatingsandbox.com!
 - ...and a few more small improvements here and there
 - Musical theme for this release: Zeromancer
 

@@ -690,15 +690,14 @@ Render:
 		- Take Mike's Lego Titanic when ready
 		- changes.txt
 
-		= Retire older ships
+		+ Retire older ships
 			+ Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
 			+ Coalesce balls
 			+ changes.txt
 			+ Cleanup debug/release folders
-			- Publish pack
-				- Test
-				- 37 ships
-
+			+ Publish pack
+				+ Test
+				+ 37 ships
 		+ Horns and bells
 			+ ElectricalMaterial
 			+ GameEvents
