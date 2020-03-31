@@ -33,6 +33,8 @@
 - Added new Paper, Concrete, and Water materials; fixed Cardboard material (...which was lighter than air by mistake!)
 - Lego material has been improved and given its own sounds
 - Added new ships: Fire Boat, Super Combat Assault-Carrier
+- Removed some older ships that have been released with Floating Sandbox since version 1...
+	- ...but don't worry, they are still available in the "Legacy Floating Sandbox Ships Vol. I" free ship pack from www.floatingsandbox.com!
 - ...and a few more small improvements here and there
 - Musical theme for this release: Zeromancer
 

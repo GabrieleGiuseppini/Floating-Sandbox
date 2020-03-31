@@ -1,7 +1,7 @@
 {
 	"structure_image":"ijn_yamato_2_structure.png.dat",
 	"texture_image":"ijn_yamato_2_texture.png.dat",
-	"offset":{"x":7.0, "y":-8.0},
+	"offset":{"x":7.0, "y":-10.0},
 	"ship_name":"I.J.N. Yamato 2",
 	"created_by":"Michael Bozarth; Alyama (Shipbucket.com)",
 	"year_built":"1942"

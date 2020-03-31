@@ -655,6 +655,7 @@ Render:
 			= changes.txt
 			= Bug of that guy
 				- Tell him it's wood stiff
+			- Verify "circuit test" for release
 
 		+ "is_hidden" in panel json to prevent elements from being shown
 			! e.g. for many water-sensing switches
@@ -680,13 +681,21 @@ Render:
 
 		= Retrofit ships
 			+ Cruise Vessel
+			- Yacht (and x-center)
+			- R.M.S. Oceana
+			- Passenger Tender
+			- M.S. Costa Concordia
 			- ...			
 			- changes.txt
 		- Take Mike's Lego Titanic when ready
 		- changes.txt
 
-		- Retire silly ships
-			- Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack, *free*
+		= Retire older ships
+			+ Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
+			+ Coalesce balls
+			+ changes.txt
+			+ Cleanup debug/release folders
+			- Publish pack
 
 		+ Horns and bells
 			+ ElectricalMaterial
@@ -738,7 +747,10 @@ Render:
 
 		- Website: add FAQ for electrical panel -> Gabe's blog
 
-		- Release			
+		- Release "Legacy" ship pack (free!)
+		- Release	
+		
+
 
 		- Publish roadmap:
 			- Flood doors, pumps

@@ -17,11 +17,11 @@
 		"3": {"panel_x":4, "panel_y":0, "label":"Lamp 2 Aft" },
 		"5": {"panel_x":5, "panel_y":0, "label":"Water Detector" },
 
-		"11": {"panel_x":7, "panel_y":0, "label":"Bell 1" },
-		"12": {"panel_x":8, "panel_y":0, "label":"Bell 2" },
-		"15": {"panel_x":9, "panel_y":0, "label":"Horn 1" },
-		"16": {"panel_x":10, "panel_y":0, "label":"Horn 2" },
-		"17": {"panel_x":11, "panel_y":0, "label":"Horn 3" }
+		"11": {"panel_x":7, "panel_y":0, "label":"Bell 1", "is_hidden":true },
+		"12": {"panel_x":8, "panel_y":0, "label":"Bell 2", "is_hidden":true },
+		"15": {"panel_x":9, "panel_y":0, "label":"Horn 1", "is_hidden":true },
+		"16": {"panel_x":10, "panel_y":0, "label":"Horn 2", "is_hidden":true },
+		"17": {"panel_x":11, "panel_y":0, "label":"Horn 3", "is_hidden":true }
 	},
 	"ship_name":"Circuit Test",
 	"offset":{"x":0.0, "y":0.0},

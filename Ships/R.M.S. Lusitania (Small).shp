@@ -1,6 +1,6 @@
 {
 	"structure_image":"rms_lusitania_small_structural.png.dat",
-	"offset":{"x":0.0, "y":0.0},
+	"offset":{"x":0.0, "y":-6.0},
 	"ship_name":"R.M.S. Lusitania (Small)",
 	"created_by":"Albert Windsor",
 	"year_built":"1906",

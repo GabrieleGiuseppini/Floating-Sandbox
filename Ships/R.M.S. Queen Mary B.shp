@@ -1,6 +1,6 @@
 {
 	"structure_image":"rms_queen_mary_b_structural.png.dat",
-	"offset":{"x":0.0, "y":-6.0},
+	"offset":{"x":0.0, "y":-15.0},
 	"ship_name":"R.M.S. Queen Mary B",
 	"created_by":"KikoTheBoatBuilder",
 	"year_built":"1934",
