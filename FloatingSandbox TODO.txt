@@ -696,6 +696,8 @@ Render:
 			+ changes.txt
 			+ Cleanup debug/release folders
 			- Publish pack
+				- Test
+				- 37 ships
 
 		+ Horns and bells
 			+ ElectricalMaterial
