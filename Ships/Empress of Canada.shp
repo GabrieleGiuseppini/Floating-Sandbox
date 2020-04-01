@@ -1,0 +1,8 @@
+{
+	"structure_image":"empress_of_canada_structural.png.dat",
+	"texture_image":"empress_of_canada_texture.png.dat",
+	"ship_name":"Empress of Canada 0.1",
+	"offset":{"x":0.0, "y":-20.0},
+	"created_by":"Fox Assor",
+	"year_built":"2020"
+}

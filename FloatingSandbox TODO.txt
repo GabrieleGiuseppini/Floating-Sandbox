@@ -605,58 +605,6 @@ Render:
 			+ Redo "Ball of Water and Air"
 			+ Use constant at AirBubble et al for BuoyancyVolumeFill
 			+ Instructions
-
-		= Discord intake:
-			+ SetDoubleBuffered on MAC
-			+ Wood background for panel (mahogany)
-			+ Sam's errors
-			+ Lever dragging
-				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
-				+ PointToValue(.) -> value
-				+ MoveToValue(.)
-				+ Issue with LeftUp happening outside of control:
-					+ Either:
-						+ Register for leave doing exactly like up
-						+ Or: capture mouse
-			+ Paper material
-			+ GameJolt post for those two videos
-			+ Add motors: 230hp outboard motor and 550hp steam powered motor
-			+ Legos:
-				+ Make hull Lego as heavy as non-hull Lego (re-check literature)
-					+ Test w/new ship from Mike
-					! Density should be 401kg/m3 or 0.55g/cm3 == 550kg/m3
-						! https://www.eurobricks.com/forum/index.php?/forums/topic/72114-lego-weight/
-						! https://bricks.stackexchange.com/questions/9012/how-can-i-distinguish-floating-versus-sinking-lego-pieces
-				+ Lego sounds
-					+ Break
-					+ Destroy
-					+ Stress
-					+ RepairSpring
-					+ RepairTriangle
-				+ Do one or two variations on plastic stress
-			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
-				+ Could repro with Sailboat
-				+ Check release perf impact
-			+ Fix Hindenburg: doesn't float anymore
-			+ captain noobinson
-			+ Take mike's fireship 
-			+ Redo structural material template
-			+ "Titanic with Power"
-				+ Also take Mike's electricals
-				+ Description: 4th funnel
-				+ Also @ changes.txt
-			+ Test new SS Hesleden
-
-			= New Concrete material, hull and non-hull
-				+ Make ball of concrete
-				+ Adjust thermal expansion coefficient
-				- Mike's gonna test
-			- Gunpowder, again?
-			= changes.txt
-			= Bug of that guy
-				- Tell him it's wood stiff
-			- Verify "circuit test" for release
-
 		+ "is_hidden" in panel json to prevent elements from being shown
 			! e.g. for many water-sensing switches
 			+ Test w/circuit test
@@ -664,32 +612,6 @@ Render:
 				+ all elements
 					+ Make sure panel hidden afterwards
 					+ Also in Debug
-
-		- Test bug: doesn't close with music
-
-		= Musica Bazzico
-			+ Title: "The short journey to the seabed"
-			+ Author: Soul Heater
-			+ Make sure also in tags
-			+ Add to license
-			= Test
-				- Volume fix
-			- changes.txt
-
-		- Water-sensing switch: Paco's issue
-			- TBD
-
-		= Retrofit ships
-			+ Cruise Vessel
-			- Yacht (and x-center)
-			- R.M.S. Oceana
-			- Passenger Tender
-			- M.S. Costa Concordia
-			- ...			
-			- changes.txt
-		- Take Mike's Lego Titanic when ready
-		- changes.txt
-
 		+ Retire older ships
 			+ Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
 			+ Coalesce balls
@@ -743,12 +665,92 @@ Render:
 			+ Materials guide and template
 			+ See if can merge engine sounds into MultiInstanceLoopedSounds
 
+
+		= Discord intake:
+			+ SetDoubleBuffered on MAC
+			+ Wood background for panel (mahogany)
+			+ Sam's errors
+			+ Lever dragging
+				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
+				+ PointToValue(.) -> value
+				+ MoveToValue(.)
+				+ Issue with LeftUp happening outside of control:
+					+ Either:
+						+ Register for leave doing exactly like up
+						+ Or: capture mouse
+			+ Paper material
+			+ GameJolt post for those two videos
+			+ Add motors: 230hp outboard motor and 550hp steam powered motor
+			+ Legos:
+				+ Make hull Lego as heavy as non-hull Lego (re-check literature)
+					+ Test w/new ship from Mike
+					! Density should be 401kg/m3 or 0.55g/cm3 == 550kg/m3
+						! https://www.eurobricks.com/forum/index.php?/forums/topic/72114-lego-weight/
+						! https://bricks.stackexchange.com/questions/9012/how-can-i-distinguish-floating-versus-sinking-lego-pieces
+				+ Lego sounds
+					+ Break
+					+ Destroy
+					+ Stress
+					+ RepairSpring
+					+ RepairTriangle
+				+ Do one or two variations on plastic stress
+			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+				+ Could repro with Sailboat
+				+ Check release perf impact
+			+ Fix Hindenburg: doesn't float anymore
+			+ captain noobinson
+			+ Take mike's fireship 
+			+ Redo structural material template
+			+ "Titanic with Power"
+				+ Also take Mike's electricals
+				+ Description: 4th funnel
+				+ Also @ changes.txt
+			+ Test new SS Hesleden
+			+ Gunpowder: "Ok, for 2 ppl the explosion is a bit too strong, while for one it's fine - I'll lower it by half of a bit then!"
+			+ Bug of that guy
+				+ Tell him it's wood stiff
+			+ Verify "circuit test" for release
+
+			= New Concrete material, hull and non-hull
+				+ Make ball of concrete
+				+ Adjust thermal expansion coefficient
+				- Mike's gonna test
+			- changes.txt
+
+		- Test bug: doesn't close with music
+
+		= Musica Bazzico
+			+ Title: "The short journey to the seabed"
+			+ Author: Soul Heater
+			+ Make sure also in tags
+			+ Add to license
+			= Test
+				- Volume fix
+			- changes.txt
+
+		= Retrofit ships
+			+ Cruise Vessel
+			- Yacht (and x-center)
+			- R.M.S. Oceana
+			- Passenger Tender
+			- M.S. Costa Concordia
+			- ...			
+			- changes.txt
+		- Take Mike's Lego Titanic when ready
+		= Take DioxCode's ship if it's ok
+			+ Asked author
+			- Asked URL
+			- Add to About box
+			- Transatlantic too ?
+		- Mike's horn?
+		- changes.txt
+
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"
 
 		- Website: add FAQ for electrical panel -> Gabe's blog
 
-		- Release "Legacy" ship pack (free!)
+		+ Release "Legacy" ship pack (free!)
 		- Release	
 		
 

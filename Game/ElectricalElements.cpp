@@ -1459,8 +1459,7 @@ void ElectricalElements::InternalSetSwitchState(
             ElectricalElementId(mShipId, elementIndex),
             switchState);
 
-        // Show notifications - for switches only
-        assert(mMaterialTypeBuffer[elementIndex] != ElectricalMaterial::ElectricalElementType::WaterSensingSwitch);
+        // Show notifications - for interactive switches only
         if (gameParameters.DoShowElectricalNotifications
             && mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch)
         {

@@ -882,7 +882,7 @@ void Points::UpdateCombustionLowFrequency(
 
             // Blast radius, arbitrarily dependent on material's ignition temperature
             float constexpr MinBlastRadius = 2.0f;
-            float constexpr MaxBlastRadius = 8.0f;
+            float constexpr MaxBlastRadius = 7.5f;
             float const power = SmoothStep(480.0f, 700.0f, mMaterialIgnitionTemperatureBuffer[pointIndex]);
             float const blastRadius = !gameParameters.IsUltraViolentMode
                 ? (MinBlastRadius + (MaxBlastRadius - MinBlastRadius) * power)
@@ -894,7 +894,7 @@ void Points::UpdateCombustionLowFrequency(
                 GetPlaneId(pointIndex),
                 pointPosition,
                 blastRadius,
-                100.0f, // Magic number
+                95.0f, // Magic number
                 blastHeat,
                 ExplosionType::Combustion,
                 gameParameters);
