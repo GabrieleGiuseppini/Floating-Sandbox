@@ -664,7 +664,8 @@ Render:
 			+ Add bell 2 to Titanic
 			+ Materials guide and template
 			+ See if can merge engine sounds into MultiInstanceLoopedSounds
-
+		- Send for testing
+		- Bump up version
 
 		= Discord intake:
 			+ SetDoubleBuffered on MAC
@@ -710,14 +711,12 @@ Render:
 			+ Bug of that guy
 				+ Tell him it's wood stiff
 			+ Verify "circuit test" for release
+			+ changes.txt
 
-			= New Concrete material, hull and non-hull
-				+ Make ball of concrete
-				+ Adjust thermal expansion coefficient
-				- Mike's gonna test
-			- changes.txt
-
-		- Test bug: doesn't close with music
+		= New Concrete material, hull and non-hull
+			+ Make ball of concrete
+			+ Adjust thermal expansion coefficient
+			- Mike's gonna test
 
 		= Musica Bazzico
 			+ Title: "The short journey to the seabed"
@@ -737,29 +736,32 @@ Render:
 			- ...			
 			- changes.txt
 		- Take Mike's Lego Titanic when ready
+			- changes.txt
 		= Take DioxCode's ship if it's ok
 			+ Asked author
 			- Asked URL
 			- Add to About box
 			- Transatlantic too ?
+				- changes.txt
+
 		- Mike's horn?
-		- changes.txt
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
-		  leaving it completely white"
+		  leaving it completely white"		
+		- Test bug: doesn't close with music
 
 		- Website: add FAQ for electrical panel -> Gabe's blog
 
 		+ Release "Legacy" ship pack (free!)
 		- Release	
 		
-
+		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
 		- Publish roadmap:
 			- Flood doors, pumps
 			- Frontier -> Hydrodynamics (gliding)
 			- In-game Ship Builder
-			- Spring loop optimizations -> Rigidity
+			- Spring relaxation optimization -> Rigidity
 			- NPCs
 			- Collision detection -> Multiple Ships
 
@@ -782,7 +784,10 @@ Render:
 			  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 
 		- Repair improvement:
-			- X) Try with force-based adjusting
+			- AAA) Debug test case (w/default_ship)
+				- Need ability to highlight point by its index
+					- Do state-machine typing in MainFrame, "<control sequence>DEBUG" -> DebugWindow						
+			- AA) Try with force-based adjusting
 				- Gives a chance to springs to prevent flips
 			- A)
 				- Make triangle's vertices CW
