@@ -1,0 +1,21 @@
+{
+	"structure_image":"ms_costa_concordia_structure.png.dat",
+	"electrical_image":"ms_costa_concordia_electrical.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"M.S. Costa Concordia",
+	"electrical_panel":{
+
+		"0": {"panel_x":-5, "panel_y":0, "label":"Engine #1" },
+		"1": {"panel_x":-4, "panel_y":0, "label":"Engine #1 Controller" },
+
+		"3": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"2": {"panel_x":-1, "panel_y":0, "label":"Engine #2 Controller" },
+
+		"4": {"panel_x":1, "panel_y":0, "label":"Main Power" },
+		"5": {"panel_x":2, "panel_y":0, "label":"Water Fuse" },
+
+		"6": {"panel_x":4, "panel_y":0, "label":"Horn #1" },
+		"7": {"panel_x":5, "panel_y":0, "label":"Horn #2" },
+		"8": {"panel_x":6, "panel_y":0, "label":"Horn #3" }
+	}
+}

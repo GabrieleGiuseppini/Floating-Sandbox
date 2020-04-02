@@ -732,7 +732,9 @@ Render:
 			+ Yacht (and x-center)
 			+ R.M.S. Oceana
 			+ Passenger Tender
-			- M.S. Costa Concordia
+			= M.S. Costa Concordia
+				- Set "SwitchHasBeenToggled" also for engine losing conductivity
+					- Should do opposite flag instead, "PowerHasBeenSevered"?
 			- ...	
 			- Redo electrical template
 			- changes.txt
@@ -741,6 +743,8 @@ Render:
 		- See ships under Dev Server
 		- Take Mike's Lego Titanic when ready
 			- changes.txt
+		- Make ship with all sounds
+		- Bell @ Titanic
 		= Take DioxCode's ship if it's ok
 			+ Asked author
 			- Asked URL
