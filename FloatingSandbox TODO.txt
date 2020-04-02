@@ -731,9 +731,10 @@ Render:
 			+ Cruise Vessel
 			+ Yacht (and x-center)
 			+ R.M.S. Oceana
-			- Passenger Tender
+			+ Passenger Tender
 			- M.S. Costa Concordia
-			- ...			
+			- ...	
+			- Redo electrical template
 			- changes.txt
 		- Take spaceship
 			- From contest

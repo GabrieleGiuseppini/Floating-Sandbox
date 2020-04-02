@@ -1,0 +1,17 @@
+{
+	"structure_image":"passenger_tender_structure.png.dat",
+	"electrical_image":"passenger_tender_electrical.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Passenger Tender",
+	"electrical_panel":{
+
+		"3": {"panel_x":-2, "panel_y":0, "label":"Main Power" },
+		"0": {"panel_x":0, "panel_y":0, "label":"Engine #1" },
+		"4": {"panel_x":1, "panel_y":0, "label":"Engine #2" },
+		"5": {"panel_x":2, "panel_y":0, "label":"Engine #3" },
+		"1": {"panel_x":3, "panel_y":0, "label":"Engine Controller" },
+
+		"2": {"panel_x":5, "panel_y":0, "label":"Lamp" }
+
+	}
+}
