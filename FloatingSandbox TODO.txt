@@ -590,7 +590,6 @@ Render:
 		+ Double-check strength (Titanic break test)
 		+ Send for testing
 		+ Bump up version
-
 		+ Improve flame velocity vector: higher VelocityScale
 			+ Check overall feeling w/new number
 				+ Simplify number
@@ -664,8 +663,16 @@ Render:
 			+ Add bell 2 to Titanic
 			+ Materials guide and template
 			+ See if can merge engine sounds into MultiInstanceLoopedSounds
-		- Send for testing
-		- Bump up version
+		+ Send for testing
+
+		+ Bump up version
+		+ Musica Bazzico
+			+ Title: "The short journey to the seabed"
+			+ Author: Soul Heater
+			+ Make sure also in tags
+			+ Add to license
+			+ Test
+			+ changes.txt
 
 		= Discord intake:
 			+ SetDoubleBuffered on MAC
@@ -713,28 +720,24 @@ Render:
 			+ Verify "circuit test" for release
 			+ changes.txt
 
+		- John Smith's steam engine sound
+
 		= New Concrete material, hull and non-hull
 			+ Make ball of concrete
 			+ Adjust thermal expansion coefficient
 			- Mike's gonna test
 
-		= Musica Bazzico
-			+ Title: "The short journey to the seabed"
-			+ Author: Soul Heater
-			+ Make sure also in tags
-			+ Add to license
-			= Test
-				- Volume fix
-			- changes.txt
-
 		= Retrofit ships
 			+ Cruise Vessel
-			- Yacht (and x-center)
-			- R.M.S. Oceana
+			+ Yacht (and x-center)
+			+ R.M.S. Oceana
 			- Passenger Tender
 			- M.S. Costa Concordia
 			- ...			
 			- changes.txt
+		- Take spaceship
+			- From contest
+		- See ships under Dev Server
 		- Take Mike's Lego Titanic when ready
 			- changes.txt
 		= Take DioxCode's ship if it's ok
@@ -754,8 +757,16 @@ Render:
 
 		+ Release "Legacy" ship pack (free!)
 		- Release	
+
+
 		
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
+
+		- Bump up version
+
+		- New screenshots @
+			- GameJolt
+			- fs.com
 
 		- Publish roadmap:
 			- Flood doors, pumps
@@ -765,6 +776,8 @@ Render:
 			- NPCs
 			- Collision detection -> Multiple Ships
 
+		- "Donate" link
+			- To www.floatingsandbox.com
 
 		- Add more background music and do playlist:
 			- Music:
@@ -879,10 +892,8 @@ Render:
 		- Kiko's pack
 			- Screenshots and description in PM
 			+ I keep donations
-
-		- HummeL: asked for deliverables
-		- Mr. Woldemar: waiting for deliverables
-			+ I keep donations
+		- HummeL: 
+			- Meta: <asked>
 		+ Waallrus: have all
 		+ MasterGarfield: have all
 			+ Have also his PayPal email
@@ -900,6 +911,9 @@ Render:
 			- JohnSmith: gave permission for his
 			- Ships in PM
 		- nomadavid's pack
+		- Captain Nobinson
+			- Test
+			- Meta: <asked>
 	- New ships:
 		- To test:
 			- mrpasta444_ship_pack

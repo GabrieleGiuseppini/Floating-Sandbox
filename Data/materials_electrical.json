@@ -476,7 +476,7 @@
         "electrical_type": "Engine", 
 	"engine_direction": 0.0,
 	"engine_power": 550.0,
-	"engine_responsiveness": 0.4,
+	"engine_responsiveness": 0.024,
 	"engine_type": "Steam",
         "heat_generated": 800.0, 
 	"is_instanced": true,

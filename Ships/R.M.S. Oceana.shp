@@ -1,0 +1,16 @@
+{
+	"structure_image":"rms_oceana_structure.png.dat",
+	"electrical_image":"rms_oceana_electrical.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"R.M.S. Oceana",
+	"electrical_panel":{
+
+		"0": {"panel_x":-2, "panel_y":0, "label":"Engine" },
+		"1": {"panel_x":-1, "panel_y":0, "label":"Engine Controller" },
+
+		"3": {"panel_x":1, "panel_y":0, "label":"Generator" },
+
+		"2": {"panel_x":3, "panel_y":0, "label":"Upper Deck Lights" }
+
+	}
+}

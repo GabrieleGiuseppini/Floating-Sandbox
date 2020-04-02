@@ -39,6 +39,7 @@
 - Removed some older ships that have been released with Floating Sandbox since version 1.0...
 	- ...but don't worry, they are still available in the "Legacy Floating Sandbox Ships, Vol. I" _free_ ship pack from www.floatingsandbox.com!
 - ...and a few more small improvements here and there
+- Added new background music track, "The Short Journey to the Seabed" by Soul Heater (https://soundcloud.com/soul-heater)
 - Musical theme for this release: Zeromancer
 
 1.13.0.7

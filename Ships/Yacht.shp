@@ -1,8 +1,18 @@
 {
 	"structure_image":"yacht_structure.png.dat",
+	"electrical_image":"yacht_electrical.png.dat",
 	"texture_image":"yacht_texture.png.dat",
-	"offset":{"x":0.0, "y":-8.0},
+	"offset":{"x":40.0, "y":-8.0},
 	"ship_name":"Yacht",
 	"created_by":"Michael Bozarth",
-	"year_built":"1993"
+	"year_built":"1993",
+	"electrical_panel":{
+
+		"2": {"panel_x":-2, "panel_y":0, "label":"Main Power" },
+		"0": {"panel_x":0, "panel_y":0, "label":"Engine # 1" },
+		"4": {"panel_x":1, "panel_y":0, "label":"Engine # 2" },
+		"1": {"panel_x":2, "panel_y":0, "label":"Engine Controller" },
+		"3": {"panel_x":3, "panel_y":0, "label":"Front Light Switch" }
+
+	}
 }
