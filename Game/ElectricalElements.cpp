@@ -549,6 +549,9 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandleElectricalElementDestroy(electricalElementIndex);
 
+    // Remember that power has been severed during this step
+    mHasPowerBeenSeveredInCurrentStep = true;
+
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
 }
@@ -817,6 +820,12 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                                 {
                                     HighlightElectricalElement(sourceElementIndex, points);
                                 }
+                            }
+
+                            // Remember that power has been severed, in case we're turning off
+                            if (!isProducingCurrent)
+                            {
+                                mHasPowerBeenSeveredInCurrentStep = true;
                             }
                         }
 
@@ -1406,10 +1415,10 @@ void ElectricalElements::UpdateSinks(
     }
 
     //
-    // Clear switch toggle dirtyness
+    // Clear "power severed" dirtyness
     //
 
-    mHasSwitchBeenToggledInStep = false;
+    mHasPowerBeenSeveredInCurrentStep = false;
 }
 
 void ElectricalElements::AddFactoryConnectedElectricalElement(
@@ -1465,9 +1474,6 @@ void ElectricalElements::InternalSetSwitchState(
         {
             HighlightElectricalElement(elementIndex, points);
         }
-
-        // Remember that a switch has been toggled
-        mHasSwitchBeenToggledInStep = true;
     }
 }
 
@@ -1583,15 +1589,7 @@ void ElectricalElements::RunLampStateMachine(
                 mAvailableLightBuffer[elementLampIndex] = 0.f;
 
                 // Check whether we need to flicker or just turn off gracefully
-                if (mHasSwitchBeenToggledInStep)
-                {
-                    //
-                    // Turn off gracefully
-                    //
-
-                    lamp.State = ElementState::LampState::StateType::LightOff;
-                }
-                else
+                if (mHasPowerBeenSeveredInCurrentStep)
                 {
                     //
                     // Start flicker state machine
@@ -1604,6 +1602,14 @@ void ElectricalElements::RunLampStateMachine(
                         lamp.State = ElementState::LampState::StateType::FlickerA;
                     else
                         lamp.State = ElementState::LampState::StateType::FlickerB;
+                }
+                else
+                {
+                    //
+                    // Turn off gracefully
+                    //
+
+                    lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
 

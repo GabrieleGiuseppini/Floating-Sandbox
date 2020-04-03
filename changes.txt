@@ -12,6 +12,9 @@
 		- Carnival Dream
 		- Cruise Vessel
 		- Lifeboat
+		- M.S. Costa Concordia
+		- Passenger Tender
+		- R.M.S. Oceana					
 - Added in-game electrical panel to display and control switches and other electrical materials
 - Added air buoyancy: materials lighter than air now float in the air
 	- Added new "Hydrogen" material and used it with the Hindenburg and Goodyear blimps to make them lighter than air

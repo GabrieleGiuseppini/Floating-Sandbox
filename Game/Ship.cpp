@@ -2481,11 +2481,13 @@ void Ship::HandleSpringDestroy(
         {
             mElectricalElements.RemoveConnectedElectricalElement(
                 electricalElementAIndex,
-                electricalElementBIndex);
+                electricalElementBIndex,
+                true /*severed*/);
 
             mElectricalElements.RemoveConnectedElectricalElement(
                 electricalElementBIndex,
-                electricalElementAIndex);
+                electricalElementAIndex,
+                true /*severed*/);
         }
     }
 
@@ -2667,8 +2669,15 @@ void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
         auto const connectedElectricalElementIndex =
             *(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).begin());
 
-        mElectricalElements.RemoveConnectedElectricalElement(electricalElementIndex, connectedElectricalElementIndex);
-        mElectricalElements.RemoveConnectedElectricalElement(connectedElectricalElementIndex, electricalElementIndex);
+        mElectricalElements.RemoveConnectedElectricalElement(
+            electricalElementIndex,
+            connectedElectricalElementIndex,
+            true /*severed*/);
+
+        mElectricalElements.RemoveConnectedElectricalElement(
+            connectedElectricalElementIndex,
+            electricalElementIndex,
+            true /*severed*/);
     }
 }
 

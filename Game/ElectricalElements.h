@@ -379,7 +379,7 @@ public:
         , mEngineSinks()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
-        , mHasSwitchBeenToggledInStep(false)
+        , mHasPowerBeenSeveredInCurrentStep(false)
     {
         mInstanceInfos.reserve(mElementCount);
     }
@@ -522,7 +522,8 @@ public:
 
     inline void RemoveConnectedElectricalElement(
         ElementIndex electricalElementIndex,
-        ElementIndex connectedElectricalElementIndex)
+        ElementIndex connectedElectricalElementIndex,
+        bool hasBeenSevered)
     {
         bool found = mConnectedElectricalElementsBuffer[electricalElementIndex].erase_first(connectedElectricalElementIndex);
         assert(found);
@@ -535,6 +536,12 @@ public:
             || found);
 
         // Other connection will be severed when RemoveConnectedElectricalElement is invoked on the other
+
+        if (hasBeenSevered)
+        {
+            // Remember that power has been severed during this step
+            mHasPowerBeenSeveredInCurrentStep = true;
+        }
 
         (void)found;
     }
@@ -745,15 +752,14 @@ private:
     float mCurrentLightSpreadAdjustment;
     float mCurrentLuminiscenceAdjustment;
 
-    // Flag indicating whether or not a switch has been toggled
-    // during the current simulation step; cleared at the end
-    // of sinks' update.
+    // Flag indicating whether or not power has been 'violently' severed
+    // during the current simulation step; cleared at the end of sinks' update.
     // Used to distinguish malfunctions from explicit actions.
     // A bit of a hack, as the sink that gets a power state toggle
     // won't know for sure if that's because of a switch toggle,
     // but the real problem is in practice also ambiguous, and
     // this is good enough.
-    bool mHasSwitchBeenToggledInStep;
+    bool mHasPowerBeenSeveredInCurrentStep;
 };
 
 }
