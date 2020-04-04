@@ -1,0 +1,8 @@
+{
+	"structure_image":"scs_titanic_structure.png.dat",
+	"texture_image":"scs_titanic_texture.png.dat",
+	"offset":{"x":0.0, "y":-9.0},
+	"ship_name":"S.C.S. Titanic",
+	"created_by":"John Smith",
+	"year_built":"2212"
+}
