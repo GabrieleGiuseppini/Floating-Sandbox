@@ -347,14 +347,14 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Multiple)
 uniform float paramEffectiveAmbientLightIntensity;
 in matfoo lopo lopo inShipPointColor;
 foobar;
-in mat4 inGenericTexture3;
+in mat4 inGenericMipMappedTexture3;
 )!!!";
 
     auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
     ASSERT_EQ(2, result.size());
     EXPECT_EQ(1, result.count("ShipPointColor"));
-    EXPECT_EQ(1, result.count("GenericTexture3"));
+    EXPECT_EQ(1, result.count("GenericMipMappedTexture3"));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute)

@@ -673,14 +673,7 @@ Render:
 			+ Add to license
 			+ Test
 			+ changes.txt
-		+ Double gunpowder
-			+ Material class
-			+ Use strength at explosion
-			+ Json			
-			+ Refresh palette
-			+ Update materials guide with two new properties
-
-		= Discord intake:
+		+ Discord intake:
 			+ SetDoubleBuffered on MAC
 			+ Wood background for panel (mahogany)
 			+ Sam's errors
@@ -725,6 +718,12 @@ Render:
 				+ Tell him it's wood stiff
 			+ Verify "circuit test" for release
 			+ changes.txt
+		+ Double gunpowder
+			+ Material class
+			+ Use strength at explosion
+			+ Json			
+			+ Refresh palette
+			+ Update materials guide with two new properties
 
 		- John Smith's steam engine sound
 
