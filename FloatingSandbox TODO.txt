@@ -724,8 +724,11 @@ Render:
 			+ Json			
 			+ Refresh palette
 			+ Update materials guide with two new properties
+		+ "Donate" link
+			+ To new page @ www.floatingsandbox.com
 
-		- John Smith's steam engine sound
+		= John Smith's steam engine sound
+		- Mike's horn?
 
 		= New Concrete material, hull and non-hull
 			+ Make ball of concrete
@@ -748,27 +751,18 @@ Render:
 			- From contest
 		- Take Mike's Lego Titanic when ready
 			- changes.txt
-		= Take DioxCode's ships
+		+ Take DioxCode's ships
 			+ Asked author
 			+ Asked URL
 			+ Add to About box
-			- Transatlantic too
-				- changes.txt
+			+ Transatlantic too
+				+ changes.txt
 
-		- Mike's horn?
-
-		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
-		  leaving it completely white"		
-		- Test bug: doesn't close with music
-
-		- Website: add FAQ for electrical panel -> Gabe's blog
+		= Website: add FAQ for electrical panel -> Gabe's blog
 
 		+ Release "Legacy" ship pack (free!)
 		- Release	
 
-
-		
-		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
 		- Bump up version
 
@@ -784,8 +778,12 @@ Render:
 			- NPCs
 			- Collision detection -> Multiple Ships
 
-		- "Donate" link
-			- To www.floatingsandbox.com
+
+		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
+
+		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
+		  leaving it completely white"		
+		- Test bug: doesn't close with music
 
 		- Add more background music and do playlist:
 			- Music:

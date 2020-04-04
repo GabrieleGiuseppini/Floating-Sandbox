@@ -94,6 +94,7 @@ long const ID_MUTE_MENUITEM = wxNewId();
 long const ID_HELP_MENUITEM = wxNewId();
 long const ID_ABOUT_MENUITEM = wxNewId();
 long const ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
+long const ID_DONATE_MENUITEM = wxNewId();
 long const ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
 long const ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
 
@@ -483,15 +484,19 @@ MainFrame::MainFrame(
     helpMenu->Append(checkForUpdatesMenuItem);
     Connect(ID_CHECK_FOR_UPDATES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnCheckForUpdatesMenuItemSelected);
 
+    wxMenuItem * donateMenuItem = new wxMenuItem(helpMenu, ID_DONATE_MENUITEM, _("Donate..."));
+    helpMenu->Append(donateMenuItem);
+    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
+
     helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
 
     wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
     helpMenu->Append(openHomePageMenuItem);
-    Connect(ID_OPEN_HOME_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenHomePageMenuItemSelected);
+    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com"); }, ID_OPEN_HOME_PAGE_MENUITEM);
 
     wxMenuItem * openDownloadPageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_DOWNLOAD_PAGE_MENUITEM, _("Open Download Page"));
     helpMenu->Append(openDownloadPageMenuItem);
-    Connect(ID_OPEN_DOWNLOAD_PAGE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenDownloadPageMenuItemSelected);
+    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572"); }, ID_OPEN_DOWNLOAD_PAGE_MENUITEM);
 
     mainMenuBar->Append(helpMenu, _("Help"));
 
@@ -1735,16 +1740,6 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
 
         newVersionDlg.ShowModal();
     }
-}
-
-void MainFrame::OnOpenHomePageMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    wxLaunchDefaultBrowser("https://www.floatingsandbox.com");
-}
-
-void MainFrame::OnOpenDownloadPageMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

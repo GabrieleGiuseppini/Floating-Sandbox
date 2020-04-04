@@ -131,6 +131,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "HummeL", "https://www.youtube.com/c/HummeL_Prog" },
         {"\t\t\t\t", "Alex di Roma", "https://discordapp.com/" },
         {"\t\t\t\t", "Fox Assor", "https://vk.com/id448121270" },
+        {"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
 
         {"Ship art:\t\t", "OceanLinerOrca", "https://www.deviantart.com/oceanlinerorca" },
 

@@ -1,0 +1,8 @@
+{
+	"structure_image":"transatlantic_structure.png.dat",
+	"texture_image":"transatlantic_texture.png.dat",
+	"ship_name":"Transatlantic 1956 version 1.1",
+	"offset":{"x":0.0, "y":0.0},
+	"created_by":"Fox Assor",
+	"year_built":"2020"
+}
