@@ -1,0 +1,20 @@
+{
+	"structure_image":"aegir_mark_iii_structure.png.dat",
+	"texture_image":"aegir_mark_iii_texture.png.dat",
+        "electrical_image":"aegir_mark_iii_electrical.png.dat",
+	"offset":{"x":0.0, "y":-10.0},
+	"ship_name":"Aegir Mark III",
+	"created_by":"Regalis",
+	"year_built":"2105",
+	"electrical_panel":{
+
+		"6": {"panel_x":-4, "panel_y":0, "label":"Rear" },
+
+		"0": {"panel_x":-2, "panel_y":0, "label":"Bottom Floor" },
+		"1": {"panel_x":-1, "panel_y":0, "label":"First Floor" },
+		"2": {"panel_x":0, "panel_y":0, "label":"Second Floor" },
+		"3": {"panel_x":1, "panel_y":0, "label":"Third Floor" },
+		"4": {"panel_x":2, "panel_y":0, "label":"Fourth Floor" },
+		"5": {"panel_x":3, "panel_y":0, "label":"Fifth Floor" }
+	}
+}

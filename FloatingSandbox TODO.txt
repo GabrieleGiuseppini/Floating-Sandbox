@@ -728,6 +728,7 @@ Render:
 			+ To new page @ www.floatingsandbox.com
 
 		= John Smith's steam engine sound
+		- Bazzico's playlist suggestion x 2
 		- Mike's horn?
 
 		= New Concrete material, hull and non-hull
@@ -746,9 +747,13 @@ Render:
 			+ Redo electrical template
 			+ changes.txt
 		+ Bell @ Titanic
-		- See ships under Dev Server
-		- Take spaceship
-			- From contest
+		+ See ships under Dev Server
+		- See new ships just downloaded
+		= Take spaceship
+			+ Asked Wreno
+			+ Got it
+		- Take Paco's Base3
+			+ Asked		
 		- Take Mike's Lego Titanic when ready
 			- changes.txt
 		+ Take DioxCode's ships
@@ -929,12 +934,6 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
-			- Hummel: 
-				- Mini Bismarck rar is empty
-			- SCS and Space Titanic - permission from John Smith to include in ship pack
-				You can find both versions on #architect-creations in the FS server
-			- Fuhrer from Kiko
-			- HMS_Mark_Hamil.png from TopHatLemons
 		- To take:
 			- All the ones under "Ready"		
 				

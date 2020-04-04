@@ -1,0 +1,18 @@
+{
+	"structure_image":"nehalennia_structure.png.dat",
+	"texture_image":"nehalennia_texture.png.dat",
+        "electrical_image":"nehalennia_electrical.png.dat",
+	"offset":{"x":0.0, "y":-35.0},
+	"ship_name":"Nehalennia",
+	"created_by":"Regalis",
+	"year_built":"2165",
+	"electrical_panel":{
+
+		"0": {"panel_x":-2, "panel_y":0, "label":"Bottom Floor" },
+
+		"1": {"panel_x":0, "panel_y":0, "label":"First Floor" },
+		"2": {"panel_x":1, "panel_y":0, "label":"Second Floor" },
+		"3": {"panel_x":2, "panel_y":0, "label":"Third Floor" },
+		"4": {"panel_x":3, "panel_y":0, "label":"Fourth Floor" }
+	}
+}

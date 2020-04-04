@@ -7,14 +7,7 @@
 	- Power Monitors - provide feedback on the state of a power line
 	- "Instanced" Generators - provide feedback on the power they produce
 	- Horns and Bells - play sounds when activated
-	- ...and retrofitted some pre-existing ships, among which:
-		- R.M.S. Titanic (With Power)
-		- Carnival Dream
-		- Cruise Vessel
-		- Lifeboat
-		- M.S. Costa Concordia
-		- Passenger Tender
-		- R.M.S. Oceana					
+	- ...and retrofitted some pre-existing ships, among which: R.M.S. Titanic (With Power), Carnival Dream, Cruise Vessel, Lifeboat, M.S. Costa Concordia, Passenger Tender
 - Added in-game electrical panel to display and control switches and other electrical materials
 - Added air buoyancy: materials lighter than air now float in the air
 	- Added new "Hydrogen" material and used it with the Hindenburg and Goodyear blimps to make them lighter than air
@@ -35,7 +28,7 @@
 - Adjusted physical properties of ropes, which were too light and too strong
 - Added new Paper, Concrete, and Water materials; fixed Cardboard material (which was lighter than air by mistake!) and Air material (which was watertight also by mistake!)
 - Lego material has been improved and given its own sounds
-- Added 4 new ships
+- Added 11 new ships
 - Removed some older ships that have been released with Floating Sandbox since version 1.0...
 	- ...but don't worry, they are still available in the "Legacy Floating Sandbox Ships, Vol. I" _free_ ship pack from www.floatingsandbox.com!
 - ...and a few more small improvements here and there
