@@ -38,9 +38,9 @@ public:
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn,
         std::chrono::milliseconds timeToFadeOut)
-        : mTimeToFadeIn(timeToFadeIn)
+        : mMusic()
+        , mTimeToFadeIn(timeToFadeIn)
         , mTimeToFadeOut(timeToFadeOut)
-        , mMusic()
         , mVolume(volume)
         , mMasterVolume(masterVolume)
         , mFadeLevel(1.0f)

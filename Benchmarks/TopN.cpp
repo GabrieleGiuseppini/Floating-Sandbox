@@ -186,9 +186,9 @@ static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
         {
             results.add_or_update(static_cast<ElementIndex>(i), vals[v % Size]);
         }
-
-        benchmark::DoNotOptimize(results);
     }
+
+    benchmark::DoNotOptimize(results);
 }
 BENCHMARK(TopN_TemporallyCoherentPriorityQueue_Add)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);
 
@@ -231,8 +231,8 @@ static void TopN_10TruncatedPriorityQueue_Emplace(benchmark::State& state)
         {
             results.emplace(static_cast<ElementIndex>(i), vals[v % Size]);
         }
-
-        benchmark::DoNotOptimize(results);
     }
+
+    benchmark::DoNotOptimize(results);
 }
 BENCHMARK(TopN_10TruncatedPriorityQueue_Emplace)->Arg(20)->Arg(100)->Arg(1000)->Arg(5000);

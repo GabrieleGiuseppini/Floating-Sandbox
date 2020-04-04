@@ -8,7 +8,7 @@
 TEST(MemoryStreamsTests, BackingOutputStream_write)
 {
     memory_streambuf ms;
-    
+
     std::ostream os(&ms);
 
     unsigned char testData[] = { 0x05, 0x00, 0x7f, 0x80, 0x81, 0xff };
@@ -151,7 +151,7 @@ TEST(MemoryStreamsTests, BackingInputStream_rewind)
 
 TEST(MemoryStreamsTests, BackingInputStream_get)
 {
-    unsigned char initData[] = { unsigned char(0x00), unsigned char(0x7f), unsigned char(0x80), unsigned char(0x81), unsigned char(0xff) };
+    unsigned char initData[] = { 0x00, 0x7f, 0x80, 0x81, 0xff };
     memory_streambuf ms(reinterpret_cast<char *>(initData), 5);
 
     std::istream is(&ms);
@@ -212,7 +212,7 @@ TEST(MemoryStreamsTests, BackingOutputAndInputStream_10K_streaming)
     std::ostream os(&ms);
     for (size_t i = 0; i < 1024; ++i)
         os << "aaaaaaaaaa";
-       
+
 
     std::istream is(&ms);
 
