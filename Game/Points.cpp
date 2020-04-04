@@ -880,13 +880,11 @@ void Points::UpdateCombustionLowFrequency(
             // Explode!
             //
 
-            // Blast radius, arbitrarily dependent on material's ignition temperature
-            float constexpr MinBlastRadius = 2.0f;
-            float constexpr MaxBlastRadius = 7.5f;
-            float const power = SmoothStep(480.0f, 700.0f, mMaterialIgnitionTemperatureBuffer[pointIndex]);
-            float const blastRadius = !gameParameters.IsUltraViolentMode
-                ? (MinBlastRadius + (MaxBlastRadius - MinBlastRadius) * power)
-                : MinBlastRadius * 10.0f;
+            float const blastRadius =
+                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionRadius
+                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+            float const blastStrength = mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionStrength;
 
             // Start explosion
             mShipPhysicsHandler->StartExplosion(
@@ -894,7 +892,7 @@ void Points::UpdateCombustionLowFrequency(
                 GetPlaneId(pointIndex),
                 pointPosition,
                 blastRadius,
-                95.0f, // Magic number
+                blastStrength,
                 blastHeat,
                 ExplosionType::Combustion,
                 gameParameters);

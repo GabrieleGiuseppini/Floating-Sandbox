@@ -74,6 +74,8 @@ public:
     float ThermalExpansionCoefficient; // 1/K
     float SpecificHeat; // J/(Kg*K)
     MaterialCombustionType CombustionType;
+    float ExplosiveCombustionRadius; // m
+    float ExplosiveCombustionStrength; // adimensional
 
     // Misc
     float WindReceptivity;
@@ -132,6 +134,8 @@ public:
         float thermalExpansionCoefficient,
         float specificHeat,
         MaterialCombustionType combustionType,
+        float explosiveCombustionRadius,
+        float explosiveCombustionStrength,
         // Misc
         float windReceptivity,
         bool isLegacyElectrical)
@@ -155,6 +159,8 @@ public:
         , ThermalExpansionCoefficient(thermalExpansionCoefficient)
         , SpecificHeat(specificHeat)
         , CombustionType(combustionType)
+        , ExplosiveCombustionRadius(explosiveCombustionRadius)
+        , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
         , IsLegacyElectrical(isLegacyElectrical)
     {}

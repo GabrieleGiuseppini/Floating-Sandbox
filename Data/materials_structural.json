@@ -939,6 +939,8 @@
     {
         "color_key": "#1E1E1E", 
         "combustion_type": "Explosion", 
+	"explosive_combustion_radius": 1.15,
+	"explosive_combustion_strength": 50.0,
         "ignition_temperature": 483.15, 
         "is_hull": true, 
         "mass": {
@@ -965,7 +967,9 @@
 
     {
         "color_key": "#2E1E1E", 
-        "combustion_type": "Explosion", 
+        "combustion_type": "Explosion",
+	"explosive_combustion_radius": 7.0,
+	"explosive_combustion_strength": 95.0,
         "ignition_temperature": 693.15, 
         "is_hull": false, 
         "mass": {
@@ -973,7 +977,7 @@
             "nominal_mass": 801.0
         }, 
         "melting_temperature": 1000000.0,
-        "name": "Gunpowder", 
+        "name": "Gunpowder Light", 
         "render_color": "#2E1E1E", 
         "sound_type": "Rubber", 
         "specific_heat": 21.0,
@@ -981,7 +985,35 @@
         "strength": 0.42,
         "template": {
             "column": 3, 
-            "row": "55|Gunpowder"
+            "row": "55|Gunpowder L"
+        }, 
+        "thermal_conductivity": 0.25,
+        "water_diffusion_speed": 0.5,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 1.0
+    }, 
+
+    {
+        "color_key": "#2F1F1F", 
+        "combustion_type": "Explosion",
+	"explosive_combustion_radius": 8.0,
+	"explosive_combustion_strength": 100.0,
+        "ignition_temperature": 693.15, 
+        "is_hull": false, 
+        "mass": {
+            "density": 0.8, 
+            "nominal_mass": 801.0
+        }, 
+        "melting_temperature": 1000000.0,
+        "name": "Gunpowder Strong", 
+        "render_color": "#2F1F1F", 
+        "sound_type": "Rubber", 
+        "specific_heat": 21.0,
+        "stiffness": 1.0, 
+        "strength": 0.42,
+        "template": {
+            "column": 4, 
+            "row": "55|Gunpowder S"
         }, 
         "thermal_conductivity": 0.25,
         "water_diffusion_speed": 0.5,
@@ -3636,7 +3668,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 7, 
+            "column": 6, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3662,7 +3694,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 8, 
+            "column": 7, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -3688,7 +3720,7 @@
         "stiffness": 1.1, 
         "strength": 0.05, 
         "template": {
-            "column": 9, 
+            "column": 8, 
             "row": "55|Fiberglass Hull"
         }, 
         "thermal_conductivity": 0.04, 
@@ -4158,6 +4190,8 @@
     {
         "color_key": "#CECECE", 
         "combustion_type": "Explosion", 
+	"explosive_combustion_radius": 1.0,
+	"explosive_combustion_strength": 100.0,
         "ignition_temperature": 773.15, 
         "is_hull": false, 
         "mass": {

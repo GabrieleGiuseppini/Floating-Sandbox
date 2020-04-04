@@ -68,7 +68,9 @@ Here's an explanation of the elements:
 - _color key_: the RGB color to use in the structural layer image to tell the game which material to use for a particle.
 - _buoyancy volume fill_: the fraction of 1m3 of this material that may be occupied by air or water, and at the same time, the fraction of 1m3 of air or water that this particle displaces. This parameter basically controls buoyancy.
    - For example, 0.5 means that this particle may take in up to half a cubic meter of air or water, and that this particle also displaces half a cubic meter of air or water.
-- _combustion type_: the type of combustion. At this moment only "Combustion" is supported.
+- _combustion type_: the type of combustion; one of "Combustion" and "Explosion".
+- _explosive combustion radius_: the radius of explosions, when the material is characterized by explosive combustion.
+- _explosive combustion strength_: the strength of explosions, when the material is characterized by explosive combustion.
 - _ignition temperature_: the temperature, in Kelvin, at which the material starts burning.
 - _is hull_: whether or not a point or a spring of this material is permeable to water.
 - _mass_: the mass of the material, in Kg. The mass is really the product of its nominal mass (the real physical mass of the material) with its density (how much of that material is a in a cubic meter). 

@@ -56,6 +56,8 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float const thermalExpansionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_expansion_coefficient", 0.0);
         float const specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
         MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
+        float const explosiveCombustionRadius = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_radius", 0.0);
+        float const explosiveCombustionStrength = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_strength", 1.0);
 
         // Misc
 
@@ -84,6 +86,8 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             thermalExpansionCoefficient,
             specificHeat,
             combustionType,
+            explosiveCombustionRadius,
+            explosiveCombustionStrength,
             // Misc
             windReceptivity,
             isLegacyElectrical);

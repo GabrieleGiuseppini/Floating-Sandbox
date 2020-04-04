@@ -673,6 +673,12 @@ Render:
 			+ Add to license
 			+ Test
 			+ changes.txt
+		+ Double gunpowder
+			+ Material class
+			+ Use strength at explosion
+			+ Json			
+			+ Refresh palette
+			+ Update materials guide with two new properties
 
 		= Discord intake:
 			+ SetDoubleBuffered on MAC
@@ -737,18 +743,17 @@ Render:
 					+ Should do opposite flag instead, "PowerHasBeenSevered"?
 			+ Redo electrical template
 			+ changes.txt
+		+ Bell @ Titanic
+		- See ships under Dev Server
 		- Take spaceship
 			- From contest
-		- See ships under Dev Server
 		- Take Mike's Lego Titanic when ready
 			- changes.txt
-		- Make ship with all sounds
-		- Bell @ Titanic
-		= Take DioxCode's ship if it's ok
+		= Take DioxCode's ships
 			+ Asked author
-			- Asked URL
-			- Add to About box
-			- Transatlantic too ?
+			+ Asked URL
+			+ Add to About box
+			- Transatlantic too
 				- changes.txt
 
 		- Mike's horn?
@@ -1007,6 +1012,7 @@ Render:
 		+ Use for ship color and texture
 	+ Sound controller: complain if find extraneous files (had issue with ".flc"
 	+ Ship: replace handler registrations with points, springs, etc. with IShipPhysicsHandler, declared in own .h
+	- Change splash screen to wxSplashScreen
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
 	- Try 32-bit build
 	- Translations:
