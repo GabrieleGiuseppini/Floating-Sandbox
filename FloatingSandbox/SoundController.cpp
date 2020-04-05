@@ -1502,33 +1502,45 @@ void SoundController::OnEngineMonitorUpdated(
 {
     if (rpm != 0.0f)
     {
-        // Make sure sound is running
-        if (!mLoopedSounds.IsPlaying(electricalElementId))
-            mLoopedSounds.Start(electricalElementId, false, 100.0f);
-
-        // Set pitch
+        // Calculate pitch and volume
+        float volume;
         float pitch;
         switch (mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId))
         {
             case SoundType::EngineOutboard1:
             {
+                volume = 100.0f;
                 pitch = rpm;
                 break;
             }
 
             case SoundType::EngineSteam1:
             {
+                volume = 100.0f;
                 pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=6.4
                 break;
             }
 
             case SoundType::EngineSteam2:
             {
+                volume = 60.0f;
                 pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.334f;  // rpm=0.25 => pitch=0.47; rpm=1.0 => pitch=3.3
                 break;
             }
+
+            default:
+            {
+                assert(false);
+                volume = 100.0f;
+                pitch = 1.0;
+            }
         }
 
+        // Make sure sound is running
+        if (!mLoopedSounds.IsPlaying(electricalElementId))
+            mLoopedSounds.Start(electricalElementId, false, volume);
+
+        // Set pitch
         mLoopedSounds.SetPitch(electricalElementId, pitch);
     }
     else
