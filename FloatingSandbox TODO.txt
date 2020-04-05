@@ -745,7 +745,7 @@ Render:
 		+ See ships under Dev Server
 		+ See new ships just downloaded
 		+ Take Paco's Base3
-		- Try floating crane
+		+ Test floating crane
 		+ Take DioxCode's ships
 			+ Asked author
 			+ Asked URL
@@ -941,7 +941,10 @@ Render:
 			- Death stars (Nomadavid)
 				- He'll fix
 		- To take:
-			- All the ones under "Ready"		
+			- S.S. Ariara
+				- Asked CPM if he's ok; if so, need URL for About box
+			- S.S. Triatic
+				- Do ropes however
 				
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
