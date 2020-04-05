@@ -301,17 +301,12 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::EngineOutboard)
+        else if (soundType == SoundType::EngineOutboard1
+                || soundType == SoundType::EngineSteam1
+                || soundType == SoundType::EngineSteam2)
         {
             mLoopedSounds.AddAlternativeForSoundType(
-                SoundType::EngineOutboard,
-                false, // IsUnderwater
-                resourceLoader.GetSoundFilepath(soundName));
-        }
-        else if (soundType == SoundType::EngineSteam)
-        {
-            mLoopedSounds.AddAlternativeForSoundType(
-                SoundType::EngineSteam,
+                soundType,
                 false, // IsUnderwater
                 resourceLoader.GetSoundFilepath(soundName));
         }
@@ -1465,11 +1460,18 @@ void SoundController::OnEngineMonitorCreated(
     // Associate sound type with this element
     if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Outboard)
     {
-        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard);
+        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard1);
     }
     else if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Steam)
     {
-        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam);
+        if (electricalMaterial.EnginePower < 2000.0f)
+        {
+            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam1);
+        }
+        else
+        {
+            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam2);
+        }
     }
 }
 
@@ -1505,10 +1507,28 @@ void SoundController::OnEngineMonitorUpdated(
             mLoopedSounds.Start(electricalElementId, false, 100.0f);
 
         // Set pitch
-        float const pitch =
-            SoundType::EngineOutboard == mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId)
-            ? rpm
-            : SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=5.0
+        float pitch;
+        switch (mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId))
+        {
+            case SoundType::EngineOutboard1:
+            {
+                pitch = rpm;
+                break;
+            }
+
+            case SoundType::EngineSteam1:
+            {
+                pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=6.4
+                break;
+            }
+
+            case SoundType::EngineSteam2:
+            {
+                pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.334f;  // rpm=0.25 => pitch=0.47; rpm=1.0 => pitch=3.3
+                break;
+            }
+        }
+
         mLoopedSounds.SetPitch(electricalElementId, pitch);
     }
     else
