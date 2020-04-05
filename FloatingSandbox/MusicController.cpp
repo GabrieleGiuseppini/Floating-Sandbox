@@ -89,7 +89,8 @@ MusicController::MusicController(
 
 MusicController::~MusicController()
 {
-    Reset();
+    mBackgroundMusic.Stop();
+    mSinkingMusic.Stop();
 }
 
 void MusicController::SetPaused(bool isPaused)

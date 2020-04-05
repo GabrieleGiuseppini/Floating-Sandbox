@@ -664,7 +664,6 @@ Render:
 			+ Materials guide and template
 			+ See if can merge engine sounds into MultiInstanceLoopedSounds
 		+ Send for testing
-
 		+ Bump up version
 		+ Musica Bazzico
 			+ Title: "The short journey to the seabed"
@@ -731,6 +730,8 @@ Render:
 		- Bazzico's playlist suggestion x 2
 		- Mike's horn?
 
+		- Guy's URL for About box
+
 		= New Concrete material, hull and non-hull
 			+ Make ball of concrete
 			+ Adjust thermal expansion coefficient
@@ -749,9 +750,6 @@ Render:
 		+ Bell @ Titanic
 		+ See ships under Dev Server
 		= See new ships just downloaded
-		= Take spaceship
-			+ Asked Wreno
-			+ Got it
 		- Take Paco's Base3
 			+ Asked		
 		- Take Mike's Lego Titanic when ready
@@ -786,14 +784,26 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
+
+
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"		
 		- Test bug: doesn't close with music
+
+
+		- Drop air temperature with storm
+			- New storm parameter, with modulation
+
+		- Splash for bombs
+			- Ephemeral particle with own shader:
+				- Texture of splash
+				- Elongated with vertical velocity
 
 		- Add more background music and do playlist:
 			- Music:
 				- Kevin MacLeod, check out Long Note 1,2,3,...
 			- Playlist:
+				- TODO: really?
 				- JSon with metadata
 
 		- Test: re-try cache layout optimizations
