@@ -727,17 +727,10 @@ Render:
 			+ To new page @ www.floatingsandbox.com
 		+ Sticky background music item (Bazzico's idea)
 		+ John Smith's steam engine sound
-
-
-		- Mike's horn?
-
-		- Guy's URL for About box
-
-		= New Concrete material, hull and non-hull
+		+ Guy's URL for About box
+		+ New Concrete material, hull and non-hull
 			+ Make ball of concrete
 			+ Adjust thermal expansion coefficient
-			- Mike's gonna test
-
 		+ Retrofit ships
 			+ Cruise Vessel
 			+ Yacht (and x-center)
@@ -750,11 +743,9 @@ Render:
 			+ changes.txt
 		+ Bell @ Titanic
 		+ See ships under Dev Server
-		= See new ships just downloaded
-		- Take Paco's Base3
-			+ Asked		
-		- Take Mike's Lego Titanic when ready
-			- changes.txt
+		+ See new ships just downloaded
+		+ Take Paco's Base3
+		- Try floating crane
 		+ Take DioxCode's ships
 			+ Asked author
 			+ Asked URL
@@ -811,6 +802,8 @@ Render:
 			- See impact first with NOP optimization
 
 		- H and V electrical cables (*)
+
+		- Take Mike's Lego Titanic when ready
 
 		- Wine crash: Wine stable version 5.0
 			Backtrace:
