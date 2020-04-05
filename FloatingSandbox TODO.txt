@@ -752,18 +752,33 @@ Render:
 			+ Add to About box
 			+ Transatlantic too
 				+ changes.txt
+		+ Release "Legacy" ship pack (free!)
+
+		= Release:
+			= Make Release build
+			- Make installer
+			- Test installer
+			- Send installer for testing
+			- Create zip
+			- Wait for installer test
+			- Git tag, with zip
+			- Release on GameJolt
+				- Announce blog
+			- Upload and test changes.txt			
+			- Nuke Install under build
+
+		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
+
+		- PR:
+			- Update version @ floatingsandbox.com
+			- New screenshots @
+				- GameJolt
+				- floatingsandbox.com
+			- Re-read & update game intro @ GameJolt
 
 		= Website: add FAQ for electrical panel -> Gabe's blog
 
-		+ Release "Legacy" ship pack (free!)
-		- Release	
-
-
 		- Bump up version
-
-		- New screenshots @
-			- GameJolt
-			- fs.com
 
 		- Publish roadmap:
 			- Flood doors, pumps
