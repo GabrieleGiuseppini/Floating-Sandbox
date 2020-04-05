@@ -755,17 +755,19 @@ Render:
 		+ Release "Legacy" ship pack (free!)
 
 		= Release:
-			= Make Release build
-			- Make installer
-			- Test installer
-			- Send installer for testing
-			- Create zip
+			+ Make Release build
+			+ Test Release build
+			+ Make installer
+			+ Test installer
+			+ Test installer on Mattia's
+			+ Send installer for testing
+			+ Create zip
 			- Wait for installer test
 			- Git tag, with zip
 			- Release on GameJolt
-				- Announce blog
+				- Also link to blog
 			- Upload and test changes.txt			
-			- Nuke Install under build
+			- Nuke /Install under /build
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
@@ -791,7 +793,7 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
-
+		- Remove "Ship Art" from About box
 
 		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
 		  leaving it completely white"		
