@@ -173,6 +173,7 @@ void MusicController::Reset()
 
     if (mPlayBackgroundMusic)
     {
+        mBackgroundMusic.AdvanceNextPlaylistItem();
         mBackgroundMusic.Play();
     }
     else

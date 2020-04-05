@@ -21,6 +21,7 @@
 #include <chrono>
 #include <memory>
 #include <limits>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -65,6 +66,16 @@ public:
     }
 
     void SetPlayBackgroundMusic(bool playBackgroundMusic);
+
+    size_t GetLastPlayedBackgroundMusic() const
+    {
+        return mBackgroundMusic.GetCurrentTrackIndex();
+    }
+
+    void SetLastPlayedBackgroundMusic(size_t trackNumber)
+    {
+        mBackgroundMusic.SetTrackIndex(trackNumber + 1);
+    }
 
     // Game Music
 

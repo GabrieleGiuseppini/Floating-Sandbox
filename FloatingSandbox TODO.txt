@@ -725,9 +725,9 @@ Render:
 			+ Update materials guide with two new properties
 		+ "Donate" link
 			+ To new page @ www.floatingsandbox.com
+		+ Sticky background music item (Bazzico's idea)
 
 		= John Smith's steam engine sound
-		- Bazzico's playlist suggestion x 2
 		- Mike's horn?
 
 		- Guy's URL for About box

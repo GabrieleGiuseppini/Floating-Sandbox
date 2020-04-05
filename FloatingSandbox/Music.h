@@ -572,22 +572,31 @@ public:
         mPlaylist.push_back(filepath);
     }
 
+    size_t GetCurrentTrackIndex() const
+    {
+        return mCurrentPlaylistItem;
+    }
+
+    void SetTrackIndex(size_t trackIndex)
+    {
+        mCurrentPlaylistItem = trackIndex % mPlaylist.size();
+    }
+
+    void AdvanceNextPlaylistItem()
+    {
+        ++mCurrentPlaylistItem;
+        if (mCurrentPlaylistItem >= mPlaylist.size())
+            mCurrentPlaylistItem = 0;
+    }
+
 protected:
 
     std::optional<std::filesystem::path> GetNextMusicFileToPlay() override
     {
         if (!mPlaylist.empty())
         {
-            assert(mCurrentPlaylistItem < mPlaylist.size());
-
-            auto const musicFileToPlay = mPlaylist[mCurrentPlaylistItem];
-
-            // Advance playlist entry
-            ++mCurrentPlaylistItem;
-            if (mCurrentPlaylistItem >= mPlaylist.size())
-                mCurrentPlaylistItem = 0;
-
-            return musicFileToPlay;
+            assert(mCurrentPlaylistItem <= mPlaylist.size());
+            return mPlaylist[mCurrentPlaylistItem % mPlaylist.size()];
         }
         else
         {

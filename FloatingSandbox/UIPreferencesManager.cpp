@@ -285,7 +285,7 @@ void UIPreferencesManager::LoadPreferences()
 		}
 
         //
-        // Sound
+        // Sound and Music
         //
 
         {
@@ -311,6 +311,14 @@ void UIPreferencesManager::LoadPreferences()
                 && playBackgroundMusicIt->second.is<bool>())
             {
                 mMusicController->SetPlayBackgroundMusic(playBackgroundMusicIt->second.get<bool>());
+            }
+
+            // Last-played background music
+            auto lastPlayedBackgroundMusicIt = preferencesRootObject.find("last_played_background_music");
+            if (lastPlayedBackgroundMusicIt != preferencesRootObject.end()
+                && lastPlayedBackgroundMusicIt->second.is<int64_t>())
+            {
+                mMusicController->SetLastPlayedBackgroundMusic(lastPlayedBackgroundMusicIt->second.get<int64_t>());
             }
 
             // Game music volume
@@ -397,7 +405,7 @@ void UIPreferencesManager::SavePreferences() const
 	preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
 
     //
-    // Sounds
+    // Sounds and Music
     //
 
     {
@@ -406,6 +414,8 @@ void UIPreferencesManager::SavePreferences() const
         preferencesRootObject["background_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetBackgroundMusicVolume()));
 
         preferencesRootObject["play_background_music"] = picojson::value(mMusicController->GetPlayBackgroundMusic());
+
+        preferencesRootObject["last_played_background_music"] = picojson::value(static_cast<int64_t>(mMusicController->GetLastPlayedBackgroundMusic()));
 
         preferencesRootObject["game_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetGameMusicVolume()));
 
