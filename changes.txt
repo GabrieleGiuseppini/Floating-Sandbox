@@ -1,7 +1,7 @@
 1.14.0.6
 - Added new electrical materials:
 	- Switches - interactive and water-activated
-	- Engines - exhert thrust on the structure
+	- Engines - exert thrust on the structure
 	- Engine Controllers - for controlling engines
 	- Smoke Emitters - emit smoke particles when powered
 	- Power Monitors - provide feedback on the state of a power line

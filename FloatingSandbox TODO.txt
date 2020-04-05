@@ -252,535 +252,15 @@ Render:
 
 - Roadmap:
 
-	= 1.14.0
-		+ Branch
-		+ Bump up version
-		+ Ships:
-			+ Cyclops from Bluefox
-			+ Alex02
-				+ About box: "Alex di Roma", No URL
-		+ RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
-		+ Randomize flames' wind bend with personality seed
-		+ New explosions:
-			+ Shader:
-				+ Take frames out of 4K video
-				+ Make 16 textures
-					+ Resize frames (512x512)
-						+ See if should discard a lot of useless external padding
-					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background					
-				+ Cross-linear alpha between two textures
-				+ Shader
-			+ Atlas:
-				+ RegularAtlas builder method (no optim's, all same size (but not necessarily square))
-				+ Unit tests
-			+ RenderContext:
-				+ Make atlas and pass to ShipRenderContext
-			+ ShipRenderContext:
-				+ New VBO, VAO, etc.
-					+ Copy from generic textures
-					+ Same plane as fire, but will have deterministic deep sort: fire drawn first, explosion next
-				+ Revert to no start/end
-					+ Clear at RenderStart()
-					+ Upload at RenderExplosions()
-				+ New Explosion upload
-					+ Args:
-						+ vec2 centerPosition
-						+ float halfQuadSize // of quad side
-						+ float progress
-						+ float personalitySeed
-							+ Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
-				+ New render step
-			+ Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
-			+ Commit
-			+ Make infrastructure for multiple explosions:
-				+ Single shader, single atlas
-					+ Atlas name: "explosions"
-					+ Texture group name: "explosions"
-			+ Ship: needs own state machine for explosions
-				+ Does: rendering; creation of each frame's force field;
-					+ i.e. has Update() and Upload()
-					+ State is simulation-time based, as it's inherently physical
-						! And after all, the current bomb explosions do a fixed number of steps at 20ms intervals,
-						  hence they are basically frame-based
-				+ Replaces normal bombs' blast callback: DoBombExplosion -> StartBombExplosion
-					+ Start IShipStructureHandler while you're at it
-					+ Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
-				+ Mechanics update:
-					+ 1) go through state machines, insert force fields
-					+ 2) ...apply force fields...
-					! 3) update bombs& combustion -> trigger explosions
-						! Will come at next frame, like now
-				+ Expires when progress reaches max lifetime parameter (float seconds)
-				+ StateMachine update:
-					+ Nail down blast
-						+ See if need to force last blast (capped @ blastradius)
-					+ Make gfx explosion size match blast radius
-						+ Adjust gfx size at ShipRenderContext, if needed
-					+ Nail down duration
-			+ Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
-				+ No bomb does anymore Explosion state machine - they all expire at detonation,
-				  after sending Explosion to ship
-				+ Only explosions are in simulationTime, rest is still wallClockTime
-				+ Do at:
-					+ Impact Bomb
-					+ Timer
-				+ Remove DoBombExplosion from IShipStructureHandler
-			+ Explosion physics: smoother, points entering radius at last get too much force
-			+ Gfx improvements:
-				+ Test temporarily w/very slow progress and make sure all frames are shown
-				+ See if scaling should go or remain
-				+ Need mipmapped atlas? Test w/zoom
-				+ Fix two issues:
-					+ Frame -1 is visible:
-						+ Try with clamping to dead center
-					+ Dark rectangles
-				+ Frames
-					+ Test without curves at frames (i.e. making them darker)
-					+ Do other explosions
-						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
-						+ RegularAtlas: need to live with incomplete power of two
-							+ Fill-in with first frame
-						+ Explosion 2
-							+ [49, 60] (12), 62, 64, 66, 68
-						+ Explosion 3
-							+ Make psd
-						+ Explosion 4
-							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
-							+ Try without any mask boosting
-							+ Then, try with center alpha brushed towards 1.0
-							+ Reboost center
-							+ Double-check final fade out
-						+ Shader texture coords dead center: 
-							+ Make dead center at upload
-						+ Speedup alpha pre-multiply
-						+ Shader: take explosion index as input
-							+ ShipRenderContext::UploadExplosion:
-								+ For test, set index to one
-								+ Then, takes ExplosionType as arg
-									+ Deflagration: randomly choose between 0 and 2
-									+ Swap explosions 3 and 4
-							+ Struct, VAO
-							+ Shader
-			+ Cleanup:
-				+ Complete IShipPhysicsHandler
-					+ Move "structure handlers" into it
-					+ Register IShipPhysicsHandler with each container
-						+ Test all
-					+ See if may move "Ship repaired" from repair interaction into both spring/triangle
-					  restore handler
-				+ Nuke old explosion textures
-				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
-				+ Bake atlas:
-					+ Rearc textures:
-						! There's a json for each TextureDatabase
-						+ The json is 1:1 with an enum (and its traits for str<->enum):
-							+ Enums are in GameTypes
-							+ Traits are in Game/RenderCore
-							+ CloudTextureGroups
-								+ Cloud
-							+ Land,OceanTextureGroups
-								+ Land,Ocean,Border
-							+ GenericTextureGroups
-								+ RCBomb
-								+ RCBombPing
-								+ ...
-							+ ExplosionTextureGroups
-								+ Explosion
-						+ Split jsons
-						+ Refactor TextureDatabase
-							+ Split Textures folder per-DB
-							+ See if there's any "element-like" struct for which only the container
-							  should reference TextureGroups, element might not have to know about its coords
-						+ Refactor TextureAtlas
-							+ Templated on groups
-							+ TextureAtlasBuilder<Traits> has now also static builder method that takes an entire database - TextureDatabase<Traits>
-							+ See if there's any "element-like" struct for which only the container
-							  should reference TextureGroups, element might not have to know about its coords
-						+ UploadedTextureManager: also per-groups
-						+ RenderContext instantiates different TextureDatabase<Traits>'s
-						+ Unit tests
-						+ Commit
-						+ Move non-generic texture groups from GameTypes into RenderCore.h
-					+ AtlasBuilder: all methods take Options flags = None, AlphaPremultiply
-						+ Also store flags in AtlasMetadata
-					+ Test all texture groups					
-					+ Baker tool:
-						+ bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
-							+ Takes database name ("Explosion") as input
-						+ 2 Files, using TextureAtlas::De/Serialize(folder)
-							+ AtlasMetadata, json format
-							+ Atlas image, png
-							+ Deserialize
-							+ See if need to do binary serialization
-					+ RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
-					+ See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at 
-					  TextureDatabase/TextureAtlas.cpp
-						+ ...which include TextureTypes.h
-						+ Move back as many methods from .h to .cpp
-				+ Move all ultra-violent mode (x3) to bombs' invocations of StartExplosion
-					+ Move ultra-violent from blast strength to radius
-				+ BombExplosionBlastForceAdjustment: new parameter
-					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
-				+ Do explosion notification at Impact bomb
-				+ Merge back into 1.14
-		+ Rain wetting exposed parts
-			+ Every leaking point, that is overwater, gets water in from rain density
-				+ Just change externalWaterHeight so that it's max of ocean column height at that point, and rain density * constant
-			+ Rearc rain density:
-				+ Leave Storm::Parameters::RainDensity as-is
-				+ Add new Storm::Parameters::RainQuantity: m/h
-					+ Calculated as RainDensity * 50mm/h, not adjustable
-					+ Only used by Ship::UpdateWaterIntake
-						+ Uses GameParameters::RainFloodAdjustment: 0->1000->3,500,000
-							+ Parameter is specific to water intake
-						+ Ensure that at Xmax adjustment and 1.0 density, equivalent water height is 1m
-				+ SettingsDialog
-					+ Also conditionally enable new slider based off DoRainWithStorm
-					+ Fix modulate wind's checkbox+slider expansion
-			+ Test water bubbles
-		+ Menu's: try look'n'feel of "foo/bar"
-		+ Try to overlap bombs' disappearance with explosion
-			+ And try to draw explosions *over* generic textures
-		+ Explosive combustion
-		+ changes.txt		
-		+ Interleaving Update's with Render's
-		+ Smoke (*)
-		+ Ropes are too strong - they prevent ship parts from sinking
-		+ Send for testing
-		+ Bump up version
-		+ Switches (*)
-		+ Slicer sound is not controller by Tools Volume
-			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
-		+ Try transmogrifying all textures
-		+ See keyboard shortcut for push switch
-		+ Repair: better algo to restore points
-		+ Re-try world border, using right total texture space width and height (i.e. - 1/S)
-		+ Try flames with texture
-			+ Add a new "Flame" texture to GenericTextures atlas
-				+ Try to flange its bottom
-			+ Test shader, using hardcoded atlas coords for flame texture
-			+ Make it new flame mode, 1
-				+ Rename others as 2 and 3
-			+ Restrict two-stage rendering only to modes 2 and 3
-			+ Test putting back vertical time-changing offset
-				+ Texture has colors for all values of alpha mask
-				+ Shader samples twice
-				+ Do MipMapped and Linear Generic Textures
-					+ Code
-					+ Rename ship gen tex shader
-					+ Shaders' parameter names: GenericTexture -> GenericMipMappedTexture
-					+ Flame 1 shader parameter name: GenericTexture -> GenericLinearTexture
-					+ WorldBorder/End parameter name: -> GenericLinearTexture
-					+ WorldBorder: provide atlas coords for border texture into shader via param - once and for all at RenderContext initialization time
-						+ Cleanup:
-							+ RenderContext::RenderWorldEnd
-							+ RenderContext::cctor: 
-				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
-				+ See if alpha sampling is really necessary
-				+ Color texture: do better wrapping 				
-				+ Alpha texture: avoid vertically-separated parts 
-					+ Straighten up flames
-				+ Cleanup last shader items
-			+ Try to bend flame quad based on velocity
-				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
-				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
-					+ Use simple edge function
-				+ See how to impart inertia:
-					+ Points::CombustionState has (current) FlameVector, which converges to
-					  target vector
-					+ Convergence speed should depend on velocity magnitude
-						+ Try with linear step
-			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
-			+ Test with flame size slider
-			+ merge
-			+ changes.txt
-		+ Send for testing
-		+ Spring and NonSpring force separation optimization (*)		
-		+ Sea floor collision revisit (*)
-		+ Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
-		+ Bump up spring iterations		
-			+ 24 -> 30: 22.5ms/30.0fps
-		+ changes.txt
-		+ Multi-threading, phase I:
-			+ ThreadPool
-			+ Create at controller and pass as shared_ptr down the hierarchy
-			+ Pre-perf: 
-				+ Dell: 21.8 ms/30.5 fps
-				+ Samsung: 96 ms/9.15 fps; Szerszen: 312 ms/3.0 fps
-				+ HP: 47.32 ms/15.7 fps
-			+ BufferAllocator::Allocate() needs to become multi-thread friendly
-			+ Get timings of Ship::Update
-			+ Fork
-			+ Ship::Update: Run concurrently:
-				X 1) UpdateMechanicalDynamics: 
-					+ Nuke the old _ByPoints
-					X Do n+1 iterations:
-						+ First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
-						+ First iteration does not need to integrate+collisions
-						+ (n-1) iterations in parallel; at each step i, do in parallel:
-							+ ApplySpringForces(pi, vi) -> (fsi+1)
-							+ Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
-						+ Last iteration does not need to apply spring forces
-						+ Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
-						  mBuffer and argument buffer
-						X Doesn't work
-				+ 2) TODOHERE: identify other parallelizable tasks; candidates:
-					+ WaterDynamics, HeatDynamics, DiffuseLight
-			+ Samsung post-perf: 94.5 ms/9.1 fps | 49.5 ms/16.9 fps; Szerszen: 298 ms/3.2 fps
-			+ HP post-perf: 46.4 ms/16.0 fps
-			+ Verify multi-threading
-			+ Undo
-			+ Try DiffuseLight + Whole thermal
-				+ Pre-perf Titanic with Lights:
-					+ Samsung: 165 ms/5.6 fps
-				+ Post-perf Titanic with Lights:
-					+ Samsung: 162 ms/5.7 fps
-			+ Commit
-			+ Merge
-		+ Cursors at night
-			+ RenderContext fires OnEffectiveAmbientLightIntensity whenever this changes
-			+ ToolController is notified about effective ambient light changes
-				+ Registers
-				+ Changes mCurrentEffectiveAmbientLightIntensity
-				+ Calls InternalSetCurrentToolCursor()
-			+ Tools don't have mParentWindow anymore, but cctor gets IToolCursorManager &
-				+ virtual void IToolCursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f)
-			+ IToolCursorManager stored at base
-			+ Tools invoke mToolCursorManager.SetCursor(.)
-			+ ToolController::IToolCursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f) override
-				+ struct ToolController::ToolCursor{sh_ptr<Image>, float strength}
-				+ Store sh_ptr<Image> & strength at mCurrentToolCursor
-				+ Calls InternalSetCurrentToolCursor()
-			+ ToolController::InternalSetCurrentToolCursor():
-				+ Make tmp image from mCurrentCursorImage and lighted based off mCurrentEffectiveAmbientLightIntensity
-				+ Make power bar based off mCurrentCursorStrength
-				+ Make wxCursor (local) and set on mParentWindow			 
-			+ Power bar cursors: at power bar change, call mCursorManager.SetCursor(cur img, new strength)
-			+ Do same formula at TextRenderContext
-				+ New param: TextLighteningStrength
-				+ Redo math in shader
-		+ TrimForWorldBounds: clamp coords to zero after bounce
-		+ Change light colors to match Mike's
-			+ And add new render param for shaders
-		+ Reduce sea's little waves from gusts
-
-		+ Materials changes:
-			+ Lower gunpowder strength
-			+ Cardboard floats in air
-				+ Also set thermal expansion so that it flies when hot
-			+ Check Mike's changes		
-			+ Redo templates
-		+ Hull should decay less
-		+ Also GoodYear should be full of hydrogen		
-		+ Selector for panel background
-			+ Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
-				+ ...or a floating context window?
-					- https://docs.wxwidgets.org/trunk/classwx_popup_window.html
-					- https://forums.wxwidgets.org/viewtopic.php?t=15025
-				+ Dialog uses ResourceLoader::GetIconFilePaths(pattern) -> vector
-					+ Now that you're at it, rename ResourceLoader::"Icon" to "Image" where appropriate
-				+ Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
-			+ New Preferences property: electrical panel background filename
-		+ Do highlight also for water detector
-		+ Broken water-sensing switch should not trip anymore
-		+ Power probes (*)
-		+ See if should take Mike's Titanic electricals
-			+ Add instanced generator(s)
-		+ Propulsion (*)
-		+ Double-check strength (Titanic break test)
-		+ Send for testing
-		+ Bump up version
-		+ Improve flame velocity vector: higher VelocityScale
-			+ Check overall feeling w/new number
-				+ Simplify number
-			+ Try with non-linear growth
-		+ Fix trapped bubbles
-			+ Test if some debris also made it to the other side before the fix
-			+ Test perf impact				
-		+ Test: points of Water are filled with water, and material is set to that of air
-			+ First off, water material: buoyancy_volume_fill?
-			+ At ShipBuilder
-			+ Test with "Ball of Water and Air"
-			+ Redo "Ball of Water and Air"
-			+ Use constant at AirBubble et al for BuoyancyVolumeFill
-			+ Instructions
-		+ "is_hidden" in panel json to prevent elements from being shown
-			! e.g. for many water-sensing switches
-			+ Test w/circuit test
-				+ 1 element
-				+ all elements
-					+ Make sure panel hidden afterwards
-					+ Also in Debug
-		+ Retire older ships
-			+ Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
-			+ Coalesce balls
-			+ changes.txt
-			+ Cleanup debug/release folders
-			+ Publish pack
-				+ Test
-				+ 37 ships
-		+ Horns and bells
-			+ ElectricalMaterial
-			+ GameEvents
-			+ Dynamics
-				+ Add
-				+ Announce
-				+ Destroy
-				+ Repair
-				+ SetSwitch
-				+ Update: 
-					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
-					+ Fire ShipSound event w/material and underwater
-				+ Highlight: tie it to operation (i.e. powered + switch state), not to switch state alone
-					+ Avoid at SetSwitch
-					+ Do at UpdateSinks()
-			+ SwitchboardPanel
-				+ Create switch on announcement
-				+ New gfx, to be used w/push switch control
-				+ Test Disable/Enable on destroy/repair
-			+ Sound
-				+ Horn
-				+ Fix MultiInstanceLoopedSounds::Start: new SoundFileInfo might be different than current
-				+ Other sounds:
-					+ Rename existing sound file
-					+ Nuke horn2
-					+ Do new sounds
-					+ Elec material: new "ship_sound_type" types
-					+ json
-					+ test ship
-					+ SoundController:
-						+ New sound types
-						+ New naming convention for filenames						
-			+ SoundController
-				+ Start: Hijack instance ID
-				+ Hookup:
-					+ Reset
-					+ Mute
-					+ MasterEffectsVolume
-					+ Pause
-			+ Materials json
-			+ Add to circuit test
-			+ Add bell 2 to Titanic
-			+ Materials guide and template
-			+ See if can merge engine sounds into MultiInstanceLoopedSounds
-		+ Send for testing
-		+ Bump up version
-		+ Musica Bazzico
-			+ Title: "The short journey to the seabed"
-			+ Author: Soul Heater
-			+ Make sure also in tags
-			+ Add to license
-			+ Test
-			+ changes.txt
-		+ Discord intake:
-			+ SetDoubleBuffered on MAC
-			+ Wood background for panel (mahogany)
-			+ Sam's errors
-			+ Lever dragging
-				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
-				+ PointToValue(.) -> value
-				+ MoveToValue(.)
-				+ Issue with LeftUp happening outside of control:
-					+ Either:
-						+ Register for leave doing exactly like up
-						+ Or: capture mouse
-			+ Paper material
-			+ GameJolt post for those two videos
-			+ Add motors: 230hp outboard motor and 550hp steam powered motor
-			+ Legos:
-				+ Make hull Lego as heavy as non-hull Lego (re-check literature)
-					+ Test w/new ship from Mike
-					! Density should be 401kg/m3 or 0.55g/cm3 == 550kg/m3
-						! https://www.eurobricks.com/forum/index.php?/forums/topic/72114-lego-weight/
-						! https://bricks.stackexchange.com/questions/9012/how-can-i-distinguish-floating-versus-sinking-lego-pieces
-				+ Lego sounds
-					+ Break
-					+ Destroy
-					+ Stress
-					+ RepairSpring
-					+ RepairTriangle
-				+ Do one or two variations on plastic stress
-			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
-				+ Could repro with Sailboat
-				+ Check release perf impact
-			+ Fix Hindenburg: doesn't float anymore
-			+ captain noobinson
-			+ Take mike's fireship 
-			+ Redo structural material template
-			+ "Titanic with Power"
-				+ Also take Mike's electricals
-				+ Description: 4th funnel
-				+ Also @ changes.txt
-			+ Test new SS Hesleden
-			+ Gunpowder: "Ok, for 2 ppl the explosion is a bit too strong, while for one it's fine - I'll lower it by half of a bit then!"
-			+ Bug of that guy
-				+ Tell him it's wood stiff
-			+ Verify "circuit test" for release
-			+ changes.txt
-		+ Double gunpowder
-			+ Material class
-			+ Use strength at explosion
-			+ Json			
-			+ Refresh palette
-			+ Update materials guide with two new properties
-		+ "Donate" link
-			+ To new page @ www.floatingsandbox.com
-		+ Sticky background music item (Bazzico's idea)
-		+ John Smith's steam engine sound
-		+ Guy's URL for About box
-		+ New Concrete material, hull and non-hull
-			+ Make ball of concrete
-			+ Adjust thermal expansion coefficient
-		+ Retrofit ships
-			+ Cruise Vessel
-			+ Yacht (and x-center)
-			+ R.M.S. Oceana
-			+ Passenger Tender
-			+ M.S. Costa Concordia
-				+ Set "SwitchHasBeenToggled" also for engine losing conductivity
-					+ Should do opposite flag instead, "PowerHasBeenSevered"?
-			+ Redo electrical template
-			+ changes.txt
-		+ Bell @ Titanic
-		+ See ships under Dev Server
-		+ See new ships just downloaded
-		+ Take Paco's Base3
-		+ Test floating crane
-		+ Take DioxCode's ships
-			+ Asked author
-			+ Asked URL
-			+ Add to About box
-			+ Transatlantic too
-				+ changes.txt
-		+ Release "Legacy" ship pack (free!)
-
-		= Release:
-			+ Make Release build
-			+ Test Release build
-			+ Make installer
-			+ Test installer
-			+ Test installer on Mattia's
-			+ Send installer for testing
-			+ Create zip
-			- Wait for installer test
-			- Git tag, with zip
-			- Release on GameJolt
-				- Also link to blog
-			- Upload and test changes.txt			
-			- Nuke /Install under /build
-
-		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
-
 		- PR:
 			- Update version @ floatingsandbox.com
+			- Collect flame screenshots
 			- New screenshots @
 				- GameJolt
 				- floatingsandbox.com
-			- Re-read & update game intro @ GameJolt
+			+ Re-read & update game intro @ GameJolt
 
-		= Website: add FAQ for electrical panel -> Gabe's blog
-
-		- Bump up version
+		+ Website: add FAQ for electrical panel -> Gabe's blog
 
 		- Publish roadmap:
 			- Flood doors, pumps
@@ -792,6 +272,15 @@ Render:
 
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
+
+		- Branch
+
+		- Bump up version
+
+		- DKuz's issue:
+			- Reword error message when no default_ship exists on startup
+				- Or pick first ship
+			- Trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
 
 		- Remove "Ship Art" from About box
 
@@ -8571,5 +8060,522 @@ IF WX:
 			+ New icon for installer itself
 		+ Video (see Marketing above)
 		+ Release
+	+ 1.14.0
+		+ Branch
+		+ Bump up version
+		+ Ships:
+			+ Cyclops from Bluefox
+			+ Alex02
+				+ About box: "Alex di Roma", No URL
+		+ RenderContext: nuke current texture before loading new Ocean/Land texture, so to save memory
+		+ Randomize flames' wind bend with personality seed
+		+ New explosions:
+			+ Shader:
+				+ Take frames out of 4K video
+				+ Make 16 textures
+					+ Resize frames (512x512)
+						+ See if should discard a lot of useless external padding
+					+ Make frames transparent: https://graphicdesign.stackexchange.com/questions/4056/replace-black-background-with-a-transparent-background					
+				+ Cross-linear alpha between two textures
+				+ Shader
+			+ Atlas:
+				+ RegularAtlas builder method (no optim's, all same size (but not necessarily square))
+				+ Unit tests
+			+ RenderContext:
+				+ Make atlas and pass to ShipRenderContext
+			+ ShipRenderContext:
+				+ New VBO, VAO, etc.
+					+ Copy from generic textures
+					+ Same plane as fire, but will have deterministic deep sort: fire drawn first, explosion next
+				+ Revert to no start/end
+					+ Clear at RenderStart()
+					+ Upload at RenderExplosions()
+				+ New Explosion upload
+					+ Args:
+						+ vec2 centerPosition
+						+ float halfQuadSize // of quad side
+						+ float progress
+						+ float personalitySeed
+							+ Used for rotation, calc'd at ShipRenderContext::UploadXYZ(.)
+				+ New render step
+			+ Do initial testing by temporarily replacing Bomb's Upload() with new explosion upload
+			+ Commit
+			+ Make infrastructure for multiple explosions:
+				+ Single shader, single atlas
+					+ Atlas name: "explosions"
+					+ Texture group name: "explosions"
+			+ Ship: needs own state machine for explosions
+				+ Does: rendering; creation of each frame's force field;
+					+ i.e. has Update() and Upload()
+					+ State is simulation-time based, as it's inherently physical
+						! And after all, the current bomb explosions do a fixed number of steps at 20ms intervals,
+						  hence they are basically frame-based
+				+ Replaces normal bombs' blast callback: DoBombExplosion -> StartBombExplosion
+					+ Start IShipStructureHandler while you're at it
+					+ Fixed blast position (verify with the various bombs that it's fixed - should not move in fact)
+				+ Mechanics update:
+					+ 1) go through state machines, insert force fields
+					+ 2) ...apply force fields...
+					! 3) update bombs& combustion -> trigger explosions
+						! Will come at next frame, like now
+				+ Expires when progress reaches max lifetime parameter (float seconds)
+				+ StateMachine update:
+					+ Nail down blast
+						+ See if need to force last blast (capped @ blastradius)
+					+ Make gfx explosion size match blast radius
+						+ Adjust gfx size at ShipRenderContext, if needed
+					+ Nail down duration
+			+ Cleanup bombs: (verify all call the same Ship::DoBombExplosion(.))
+				+ No bomb does anymore Explosion state machine - they all expire at detonation,
+				  after sending Explosion to ship
+				+ Only explosions are in simulationTime, rest is still wallClockTime
+				+ Do at:
+					+ Impact Bomb
+					+ Timer
+				+ Remove DoBombExplosion from IShipStructureHandler
+			+ Explosion physics: smoother, points entering radius at last get too much force
+			+ Gfx improvements:
+				+ Test temporarily w/very slow progress and make sure all frames are shown
+				+ See if scaling should go or remain
+				+ Need mipmapped atlas? Test w/zoom
+				+ Fix two issues:
+					+ Frame -1 is visible:
+						+ Try with clamping to dead center
+					+ Dark rectangles
+				+ Frames
+					+ Test without curves at frames (i.e. making them darker)
+					+ Do other explosions
+						+ Make sure may call new texture files "explosion2_..." and have them still matched by TextureDatabase
+						+ RegularAtlas: need to live with incomplete power of two
+							+ Fill-in with first frame
+						+ Explosion 2
+							+ [49, 60] (12), 62, 64, 66, 68
+						+ Explosion 3
+							+ Make psd
+						+ Explosion 4
+							+ [121, 130] (10), 133, 137, 140, 144, 147, 151
+							+ Try without any mask boosting
+							+ Then, try with center alpha brushed towards 1.0
+							+ Reboost center
+							+ Double-check final fade out
+						+ Shader texture coords dead center: 
+							+ Make dead center at upload
+						+ Speedup alpha pre-multiply
+						+ Shader: take explosion index as input
+							+ ShipRenderContext::UploadExplosion:
+								+ For test, set index to one
+								+ Then, takes ExplosionType as arg
+									+ Deflagration: randomly choose between 0 and 2
+									+ Swap explosions 3 and 4
+							+ Struct, VAO
+							+ Shader
+			+ Cleanup:
+				+ Complete IShipPhysicsHandler
+					+ Move "structure handlers" into it
+					+ Register IShipPhysicsHandler with each container
+						+ Test all
+					+ See if may move "Ship repaired" from repair interaction into both spring/triangle
+					  restore handler
+				+ Nuke old explosion textures
+				+ Nuke GameTypes' texture groups for RC and Timer bomb explosions
+				+ Bake atlas:
+					+ Rearc textures:
+						! There's a json for each TextureDatabase
+						+ The json is 1:1 with an enum (and its traits for str<->enum):
+							+ Enums are in GameTypes
+							+ Traits are in Game/RenderCore
+							+ CloudTextureGroups
+								+ Cloud
+							+ Land,OceanTextureGroups
+								+ Land,Ocean,Border
+							+ GenericTextureGroups
+								+ RCBomb
+								+ RCBombPing
+								+ ...
+							+ ExplosionTextureGroups
+								+ Explosion
+						+ Split jsons
+						+ Refactor TextureDatabase
+							+ Split Textures folder per-DB
+							+ See if there's any "element-like" struct for which only the container
+							  should reference TextureGroups, element might not have to know about its coords
+						+ Refactor TextureAtlas
+							+ Templated on groups
+							+ TextureAtlasBuilder<Traits> has now also static builder method that takes an entire database - TextureDatabase<Traits>
+							+ See if there's any "element-like" struct for which only the container
+							  should reference TextureGroups, element might not have to know about its coords
+						+ UploadedTextureManager: also per-groups
+						+ RenderContext instantiates different TextureDatabase<Traits>'s
+						+ Unit tests
+						+ Commit
+						+ Move non-generic texture groups from GameTypes into RenderCore.h
+					+ AtlasBuilder: all methods take Options flags = None, AlphaPremultiply
+						+ Also store flags in AtlasMetadata
+					+ Test all texture groups					
+					+ Baker tool:
+						+ bake_regular_atlas <DB name> <input_folder_path> <output_folder_path>
+							+ Takes database name ("Explosion") as input
+						+ 2 Files, using TextureAtlas::De/Serialize(folder)
+							+ AtlasMetadata, json format
+							+ Atlas image, png
+							+ Deserialize
+							+ See if need to do binary serialization
+					+ RenderCore -> TextureTypes.h, ShaderTypes.h, RenderTypes.h (for Quad and Stats)
+					+ See if we want to do explicit instantiation of TextureDatabase and TextureAtlas templates at 
+					  TextureDatabase/TextureAtlas.cpp
+						+ ...which include TextureTypes.h
+						+ Move back as many methods from .h to .cpp
+				+ Move all ultra-violent mode (x3) to bombs' invocations of StartExplosion
+					+ Move ultra-violent from blast strength to radius
+				+ BombExplosionBlastForceAdjustment: new parameter
+					+ Each bomb then adjusts on it (75%, 100%, 125%), sending 500_adjusted * adjustment to Ship
+				+ Do explosion notification at Impact bomb
+				+ Merge back into 1.14
+		+ Rain wetting exposed parts
+			+ Every leaking point, that is overwater, gets water in from rain density
+				+ Just change externalWaterHeight so that it's max of ocean column height at that point, and rain density * constant
+			+ Rearc rain density:
+				+ Leave Storm::Parameters::RainDensity as-is
+				+ Add new Storm::Parameters::RainQuantity: m/h
+					+ Calculated as RainDensity * 50mm/h, not adjustable
+					+ Only used by Ship::UpdateWaterIntake
+						+ Uses GameParameters::RainFloodAdjustment: 0->1000->3,500,000
+							+ Parameter is specific to water intake
+						+ Ensure that at Xmax adjustment and 1.0 density, equivalent water height is 1m
+				+ SettingsDialog
+					+ Also conditionally enable new slider based off DoRainWithStorm
+					+ Fix modulate wind's checkbox+slider expansion
+			+ Test water bubbles
+		+ Menu's: try look'n'feel of "foo/bar"
+		+ Try to overlap bombs' disappearance with explosion
+			+ And try to draw explosions *over* generic textures
+		+ Explosive combustion
+		+ changes.txt		
+		+ Interleaving Update's with Render's
+		+ Smoke (*)
+		+ Ropes are too strong - they prevent ship parts from sinking
+		+ Send for testing
+		+ Bump up version
+		+ Switches (*)
+		+ Slicer sound is not controller by Tools Volume
+			+ Move SawedMetal and SawedWood sounds from MasterEffects to MasterTools
+		+ Try transmogrifying all textures
+		+ See keyboard shortcut for push switch
+		+ Repair: better algo to restore points
+		+ Re-try world border, using right total texture space width and height (i.e. - 1/S)
+		+ Try flames with texture
+			+ Add a new "Flame" texture to GenericTextures atlas
+				+ Try to flange its bottom
+			+ Test shader, using hardcoded atlas coords for flame texture
+			+ Make it new flame mode, 1
+				+ Rename others as 2 and 3
+			+ Restrict two-stage rendering only to modes 2 and 3
+			+ Test putting back vertical time-changing offset
+				+ Texture has colors for all values of alpha mask
+				+ Shader samples twice
+				+ Do MipMapped and Linear Generic Textures
+					+ Code
+					+ Rename ship gen tex shader
+					+ Shaders' parameter names: GenericTexture -> GenericMipMappedTexture
+					+ Flame 1 shader parameter name: GenericTexture -> GenericLinearTexture
+					+ WorldBorder/End parameter name: -> GenericLinearTexture
+					+ WorldBorder: provide atlas coords for border texture into shader via param - once and for all at RenderContext initialization time
+						+ Cleanup:
+							+ RenderContext::RenderWorldEnd
+							+ RenderContext::cctor: 
+				+ Change comment of flameSpacePosition (range) in shaders 2 and 3 as well
+				+ See if alpha sampling is really necessary
+				+ Color texture: do better wrapping 				
+				+ Alpha texture: avoid vertically-separated parts 
+					+ Straighten up flames
+				+ Cleanup last shader items
+			+ Try to bend flame quad based on velocity
+				+ Limit max length of Q (but not its direction!), being proportional to scale at the same time
+				  (i.e. max length is more with a bigger scale and smaller with a smaller scale)
+					+ Use simple edge function
+				+ See how to impart inertia:
+					+ Points::CombustionState has (current) FlameVector, which converges to
+					  target vector
+					+ Convergence speed should depend on velocity magnitude
+						+ Try with linear step
+			+ Provide atlas coords for flame texture into shader via param - once and for all at ShipRenderContext initialization time
+			+ Test with flame size slider
+			+ merge
+			+ changes.txt
+		+ Send for testing
+		+ Spring and NonSpring force separation optimization (*)		
+		+ Sea floor collision revisit (*)
+		+ Attempt to get rid of boundary checks at OceanFloor and OceanSurface sampling
+		+ Bump up spring iterations		
+			+ 24 -> 30: 22.5ms/30.0fps
+		+ changes.txt
+		+ Multi-threading, phase I:
+			+ ThreadPool
+			+ Create at controller and pass as shared_ptr down the hierarchy
+			+ Pre-perf: 
+				+ Dell: 21.8 ms/30.5 fps
+				+ Samsung: 96 ms/9.15 fps; Szerszen: 312 ms/3.0 fps
+				+ HP: 47.32 ms/15.7 fps
+			+ BufferAllocator::Allocate() needs to become multi-thread friendly
+			+ Get timings of Ship::Update
+			+ Fork
+			+ Ship::Update: Run concurrently:
+				X 1) UpdateMechanicalDynamics: 
+					+ Nuke the old _ByPoints
+					X Do n+1 iterations:
+						+ First of all, call Points::AllocateWorkBufferVec2f to alloc Position2 and Velocity2
+						+ First iteration does not need to integrate+collisions
+						+ (n-1) iterations in parallel; at each step i, do in parallel:
+							+ ApplySpringForces(pi, vi) -> (fsi+1)
+							+ Integrate+Collision(pi, vi, fsi) -> (pi+1, vi+1)
+						+ Last iteration does not need to apply spring forces
+						+ Finally, call points:: SetPositionBuffer(std::shared_ptr<Buffer>) & Velocity(...), which swap
+						  mBuffer and argument buffer
+						X Doesn't work
+				+ 2) TODOHERE: identify other parallelizable tasks; candidates:
+					+ WaterDynamics, HeatDynamics, DiffuseLight
+			+ Samsung post-perf: 94.5 ms/9.1 fps | 49.5 ms/16.9 fps; Szerszen: 298 ms/3.2 fps
+			+ HP post-perf: 46.4 ms/16.0 fps
+			+ Verify multi-threading
+			+ Undo
+			+ Try DiffuseLight + Whole thermal
+				+ Pre-perf Titanic with Lights:
+					+ Samsung: 165 ms/5.6 fps
+				+ Post-perf Titanic with Lights:
+					+ Samsung: 162 ms/5.7 fps
+			+ Commit
+			+ Merge
+		+ Cursors at night
+			+ RenderContext fires OnEffectiveAmbientLightIntensity whenever this changes
+			+ ToolController is notified about effective ambient light changes
+				+ Registers
+				+ Changes mCurrentEffectiveAmbientLightIntensity
+				+ Calls InternalSetCurrentToolCursor()
+			+ Tools don't have mParentWindow anymore, but cctor gets IToolCursorManager &
+				+ virtual void IToolCursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f)
+			+ IToolCursorManager stored at base
+			+ Tools invoke mToolCursorManager.SetCursor(.)
+			+ ToolController::IToolCursorManager::SetCursor(std::shared_ptr<wxImage const *>, float strength = 0.0f) override
+				+ struct ToolController::ToolCursor{sh_ptr<Image>, float strength}
+				+ Store sh_ptr<Image> & strength at mCurrentToolCursor
+				+ Calls InternalSetCurrentToolCursor()
+			+ ToolController::InternalSetCurrentToolCursor():
+				+ Make tmp image from mCurrentCursorImage and lighted based off mCurrentEffectiveAmbientLightIntensity
+				+ Make power bar based off mCurrentCursorStrength
+				+ Make wxCursor (local) and set on mParentWindow			 
+			+ Power bar cursors: at power bar change, call mCursorManager.SetCursor(cur img, new strength)
+			+ Do same formula at TextRenderContext
+				+ New param: TextLighteningStrength
+				+ Redo math in shader
+		+ TrimForWorldBounds: clamp coords to zero after bounce
+		+ Change light colors to match Mike's
+			+ And add new render param for shaders
+		+ Reduce sea's little waves from gusts
+
+		+ Materials changes:
+			+ Lower gunpowder strength
+			+ Cardboard floats in air
+				+ Also set thermal expansion so that it flies when hot
+			+ Check Mike's changes		
+			+ Redo templates
+		+ Hull should decay less
+		+ Also GoodYear should be full of hydrogen		
+		+ Selector for panel background
+			+ Right-click on panel -> new SwitchboardPanelBackgroundSelectorDialog:
+				+ ...or a floating context window?
+					- https://docs.wxwidgets.org/trunk/classwx_popup_window.html
+					- https://forums.wxwidgets.org/viewtopic.php?t=15025
+				+ Dialog uses ResourceLoader::GetIconFilePaths(pattern) -> vector
+					+ Now that you're at it, rename ResourceLoader::"Icon" to "Image" where appropriate
+				+ Then resizes imgs and populates combo box with thumbs + filenames (for internal use)
+			+ New Preferences property: electrical panel background filename
+		+ Do highlight also for water detector
+		+ Broken water-sensing switch should not trip anymore
+		+ Power probes (*)
+		+ See if should take Mike's Titanic electricals
+			+ Add instanced generator(s)
+		+ Propulsion (*)
+		+ Double-check strength (Titanic break test)
+		+ Send for testing
+		+ Bump up version
+		+ Improve flame velocity vector: higher VelocityScale
+			+ Check overall feeling w/new number
+				+ Simplify number
+			+ Try with non-linear growth
+		+ Fix trapped bubbles
+			+ Test if some debris also made it to the other side before the fix
+			+ Test perf impact				
+		+ Test: points of Water are filled with water, and material is set to that of air
+			+ First off, water material: buoyancy_volume_fill?
+			+ At ShipBuilder
+			+ Test with "Ball of Water and Air"
+			+ Redo "Ball of Water and Air"
+			+ Use constant at AirBubble et al for BuoyancyVolumeFill
+			+ Instructions
+		+ "is_hidden" in panel json to prevent elements from being shown
+			! e.g. for many water-sensing switches
+			+ Test w/circuit test
+				+ 1 element
+				+ all elements
+					+ Make sure panel hidden afterwards
+					+ Also in Debug
+		+ Retire older ships
+			+ Move them to "Legacy Floating Sandbox Ships Vol. I" Ship Pack
+			+ Coalesce balls
+			+ changes.txt
+			+ Cleanup debug/release folders
+			+ Publish pack
+				+ Test
+				+ 37 ships
+		+ Horns and bells
+			+ ElectricalMaterial
+			+ GameEvents
+			+ Dynamics
+				+ Add
+				+ Announce
+				+ Destroy
+				+ Repair
+				+ SetSwitch
+				+ Update: 
+					+ Transition conditions: power/isSelfPowered, conductivity, destroyness, mIsPlaying
+					+ Fire ShipSound event w/material and underwater
+				+ Highlight: tie it to operation (i.e. powered + switch state), not to switch state alone
+					+ Avoid at SetSwitch
+					+ Do at UpdateSinks()
+			+ SwitchboardPanel
+				+ Create switch on announcement
+				+ New gfx, to be used w/push switch control
+				+ Test Disable/Enable on destroy/repair
+			+ Sound
+				+ Horn
+				+ Fix MultiInstanceLoopedSounds::Start: new SoundFileInfo might be different than current
+				+ Other sounds:
+					+ Rename existing sound file
+					+ Nuke horn2
+					+ Do new sounds
+					+ Elec material: new "ship_sound_type" types
+					+ json
+					+ test ship
+					+ SoundController:
+						+ New sound types
+						+ New naming convention for filenames						
+			+ SoundController
+				+ Start: Hijack instance ID
+				+ Hookup:
+					+ Reset
+					+ Mute
+					+ MasterEffectsVolume
+					+ Pause
+			+ Materials json
+			+ Add to circuit test
+			+ Add bell 2 to Titanic
+			+ Materials guide and template
+			+ See if can merge engine sounds into MultiInstanceLoopedSounds
+		+ Send for testing
+		+ Bump up version
+		+ Musica Bazzico
+			+ Title: "The short journey to the seabed"
+			+ Author: Soul Heater
+			+ Make sure also in tags
+			+ Add to license
+			+ Test
+			+ changes.txt
+		+ Discord intake:
+			+ SetDoubleBuffered on MAC
+			+ Wood background for panel (mahogany)
+			+ Sam's errors
+			+ Lever dragging
+				+ "When they click directly on a speed, it goes to that speed and it would only be one bell sound"
+				+ PointToValue(.) -> value
+				+ MoveToValue(.)
+				+ Issue with LeftUp happening outside of control:
+					+ Either:
+						+ Register for leave doing exactly like up
+						+ Or: capture mouse
+			+ Paper material
+			+ GameJolt post for those two videos
+			+ Add motors: 230hp outboard motor and 550hp steam powered motor
+			+ Legos:
+				+ Make hull Lego as heavy as non-hull Lego (re-check literature)
+					+ Test w/new ship from Mike
+					! Density should be 401kg/m3 or 0.55g/cm3 == 550kg/m3
+						! https://www.eurobricks.com/forum/index.php?/forums/topic/72114-lego-weight/
+						! https://bricks.stackexchange.com/questions/9012/how-can-i-distinguish-floating-versus-sinking-lego-pieces
+				+ Lego sounds
+					+ Break
+					+ Destroy
+					+ Stress
+					+ RepairSpring
+					+ RepairTriangle
+				+ Do one or two variations on plastic stress
+			+ Bug: "if the heat dissipation is at 18.8 or higher it causes fabric to glitch out the whole ship"
+				+ Could repro with Sailboat
+				+ Check release perf impact
+			+ Fix Hindenburg: doesn't float anymore
+			+ captain noobinson
+			+ Take mike's fireship 
+			+ Redo structural material template
+			+ "Titanic with Power"
+				+ Also take Mike's electricals
+				+ Description: 4th funnel
+				+ Also @ changes.txt
+			+ Test new SS Hesleden
+			+ Gunpowder: "Ok, for 2 ppl the explosion is a bit too strong, while for one it's fine - I'll lower it by half of a bit then!"
+			+ Bug of that guy
+				+ Tell him it's wood stiff
+			+ Verify "circuit test" for release
+			+ changes.txt
+		+ Double gunpowder
+			+ Material class
+			+ Use strength at explosion
+			+ Json			
+			+ Refresh palette
+			+ Update materials guide with two new properties
+		+ "Donate" link
+			+ To new page @ www.floatingsandbox.com
+		+ Sticky background music item (Bazzico's idea)
+		+ John Smith's steam engine sound
+		+ Guy's URL for About box
+		+ New Concrete material, hull and non-hull
+			+ Make ball of concrete
+			+ Adjust thermal expansion coefficient
+		+ Retrofit ships
+			+ Cruise Vessel
+			+ Yacht (and x-center)
+			+ R.M.S. Oceana
+			+ Passenger Tender
+			+ M.S. Costa Concordia
+				+ Set "SwitchHasBeenToggled" also for engine losing conductivity
+					+ Should do opposite flag instead, "PowerHasBeenSevered"?
+			+ Redo electrical template
+			+ changes.txt
+		+ Bell @ Titanic
+		+ See ships under Dev Server
+		+ See new ships just downloaded
+		+ Take Paco's Base3
+		+ Test floating crane
+		+ Take DioxCode's ships
+			+ Asked author
+			+ Asked URL
+			+ Add to About box
+			+ Transatlantic too
+				+ changes.txt
+		+ Release "Legacy" ship pack (free!)
+		+ Release:
+			+ Make Release build
+			+ Test Release build
+			+ Make installer
+			+ Test installer
+			+ Send installer for testing
+			+ Create zip
+			+ Wait for installer test
+			+ Git tag, with zip
+			+ Release on GameJolt
+				+ Also link to blog
+			+ Upload and test changes.txt
+				+ Test 1.13
+				+ Test 1.14
+			+ Nuke /Install under /build
+			+ Commit & push
 
 
