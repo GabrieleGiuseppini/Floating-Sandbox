@@ -252,15 +252,14 @@ Render:
 
 - Roadmap:
 
-		- PR:
-			- Update version @ floatingsandbox.com
-			- Collect flame screenshots
-			- New screenshots @
-				- GameJolt
-				- floatingsandbox.com
+		+ PR:
+			+ Update version @ floatingsandbox.com
+			+ New screenshots @
+				+ GameJolt
+				+ floatingsandbox.com
 			+ Re-read & update game intro @ GameJolt
 
-		+ Website: add FAQ for electrical panel -> Gabe's blog
+		- Website: add FAQ for electrical panel -> Gabe's blog
 
 		- Publish roadmap:
 			- Flood doors, pumps
@@ -273,21 +272,18 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
-		- Branch
+		+ Branch
+		+ Bump up version
+		+ Remove "Ship Art" from About box
 
-		- Bump up version
+		- "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
+
+		- Electrical panel layout: sort by instance ID first
 
 		- DKuz's issue:
 			- Reword error message when no default_ship exists on startup
 				- Or pick first ship
 			- Trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
-
-		- Remove "Ship Art" from About box
-
-		- "I noticed that in the game, if given enough time, the clouds in the background will gradually cover and fill the whole sky, 
-		  leaving it completely white"		
-		- Test bug: doesn't close with music
-
 
 		- Drop air temperature with storm
 			- New storm parameter, with modulation

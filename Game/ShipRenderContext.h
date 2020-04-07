@@ -1231,6 +1231,7 @@ private:
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
 
     TextureAtlasMetadata<ExplosionTextureGroups> const & mExplosionTextureAtlasMetadata;
+    [[maybe_unused]]
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 

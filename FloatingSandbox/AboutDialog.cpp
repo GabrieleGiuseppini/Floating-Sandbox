@@ -133,18 +133,12 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Fox Assor", "https://vk.com/id448121270" },
         {"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
 
-        {"Ship art:\t\t", "OceanLinerOrca", "https://www.deviantart.com/oceanlinerorca" },
-
-        {"Chief ship literature officer:", "Maximord", "https://discordapp.com/" },
-
         {"Music:\t\t", "Dario Bazzichetto (Soul Heater)", "https://soundcloud.com/soul-heater" },
         {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World", "https://stuartspianoworld.com/" },
 		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
         {"\t\t\t\t", "Kevin MacLeod", "https://incompetech.com/" },
 
         {"Testing:\t\t", "Pac0master", "https://discordapp.com/" },
-        {"\t\t\t\t", "Maximord", "https://discordapp.com/" },
-        {"\t\t\t\t", "The_SamminAter", "https://discordapp.com/" },
         {"\t\t\t\t", "McShooter2018", "https://discordapp.com/" },
         {"\t\t\t\t", "Wreno", "https://discordapp.com/" },
         {"\t\t\t\t", "Dkuz", "https://discordapp.com/" },
@@ -155,7 +149,9 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "KikoTheBoatBuilder", "https://discordapp.com/" },
         {"\t\t\t\t", "DioxCode ", "https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ" },
 
-        {"Webmaster:\t\t", "Maximord", "https://discordapp.com/" },
+        {"Multi-platform building:\t", "The_SamminAter", "https://discordapp.com/" },
+
+        {"Chief ship literature officer:", "Maximord", "https://discordapp.com/" },
 
         {"", "", ""},
 
