@@ -281,10 +281,19 @@ Render:
 			- Tell guy
 		+ Electrical panel layout: sort by instance ID first
 			+ Test with Post's ship
-		= Ship json: flags to explicitly say whether it's HD and has power
+		+ Ship json: flags to explicitly say whether it's HD and has power
 			+ Test HD
 			+ Test Electrical
-			- Set to false for those ships that trick the user
+			+ Set to false for those ships that trick the user:
+				+ HMHS Britannic (Mini): no power
+				+ HMHS Ajax: no HD
+				+ HMHS Ficier: no HD
+				+ PM Goliath: no power
+				+ PM PacMaster: no HD
+				+ RMCV Siffiol: no both
+				+ SS Ariara: no both
+				+ SS Queen of Unova: no power
+				+ Tubon I: no hd
 		= Pinch tool (*)
 
 		- DKuz's issue:

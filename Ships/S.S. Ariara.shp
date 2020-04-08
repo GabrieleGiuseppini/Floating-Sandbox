@@ -1,0 +1,10 @@
+{
+	"structure_image":"ss_ariara_structure.png.dat",
+	"electrical_image":"ss_ariara_electrical.png.dat",
+	"do_hide_electricals_in_preview": true,
+	"texture_image":"ss_ariara_texture.png.dat",
+	"do_hide_hd_in_preview": true,
+	"ship_name":"S.S. Ariara",
+	"offset":{"x":0.0, "y":-5.0},
+	"created_by":"CPM"
+}

@@ -1,6 +1,7 @@
 {
 	"structure_image":"tubon_i_structural.png.dat",
 	"texture_image":"tubon_i_texture.png.dat",
+	"do_hide_hd_in_preview": true,
 	"offset":{"x":0.0, "y":0.0},
 	"ship_name":"Tubon I",
 	"created_by":"RetroGraczzPL",

@@ -2,6 +2,7 @@
 	"structure_image":"hms_ajax_structural.png.dat",
 	"ropes_image":"hms_ajax_ropes.png.dat",
 	"texture_image":"hms_ajax_texture.png.dat",
+	"do_hide_hd_in_preview": true,
 	"ship_name":"H.M.S. Ajax",
 	"year_built":"1933",
 	"created_by":"_ASTYuu_"
