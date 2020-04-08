@@ -1,3 +1,7 @@
+TODO
+- Added 1 new ship
+- ...and a few more small improvements here and there
+
 1.14.0.6
 - Added new electrical materials:
 	- Switches - interactive and water-activated

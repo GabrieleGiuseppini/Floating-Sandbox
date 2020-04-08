@@ -276,9 +276,9 @@ Render:
 		+ Bump up version
 
 		+ Remove "Ship Art" from About box
-		= "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
+		+ "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
 			+ No sound
-			- Tell guy
+			+ Tell guy
 		+ Electrical panel layout: sort by instance ID first
 			+ Test with Post's ship
 		+ Ship json: flags to explicitly say whether it's HD and has power
@@ -294,6 +294,7 @@ Render:
 				+ SS Ariara: no both
 				+ SS Queen of Unova: no power
 				+ Tubon I: no hd
+
 		= Pinch tool (*)
 
 		- DKuz's issue:
