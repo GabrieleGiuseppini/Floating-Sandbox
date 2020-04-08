@@ -274,11 +274,18 @@ Render:
 
 		+ Branch
 		+ Bump up version
+
 		+ Remove "Ship Art" from About box
-
-		- "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
-
-		- Electrical panel layout: sort by instance ID first
+		= "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
+			+ No sound
+			- Tell guy
+		+ Electrical panel layout: sort by instance ID first
+			+ Test with Post's ship
+		= Ship json: flags to explicitly say whether it's HD and has power
+			+ Test HD
+			+ Test Electrical
+			- Set to false for those ships that trick the user
+		= Pinch tool (*)
 
 		- DKuz's issue:
 			- Reword error message when no default_ship exists on startup
@@ -288,16 +295,11 @@ Render:
 		- Drop air temperature with storm
 			- New storm parameter, with modulation
 
-		- Splash for bombs
-			- Ephemeral particle with own shader:
-				- Texture of splash
-				- Elongated with vertical velocity
-
 		- Add more background music and do playlist:
 			- Music:
 				- Kevin MacLeod, check out Long Note 1,2,3,...
 			- Playlist:
-				- TODO: really?
+				- TODO: shall we really do it?
 				- JSon with metadata
 
 		- Test: re-try cache layout optimizations
@@ -328,9 +330,6 @@ Render:
 					- Move the point to the other side (rendering the triangle CW)
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
-
-		- Pinch tool (*):
-
 		- Pumps (*)
 
 		- Batisphere with pumps
@@ -338,6 +337,11 @@ Render:
 			- Electrical layer view (*)
 
 		- Flood doors (*)		
+
+		- Splash for bombs
+			- Ephemeral particle with own shader:
+				- Texture of splash
+				- Elongated with vertical velocity
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
@@ -365,6 +369,7 @@ Render:
 				- Do
 					- Pool: if run 1, run straight away on main thread
 					- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
+						- These are stored by Springs
 						- @ShipBuilder:
 							- Is given # of partitions
 								- ...caller uses mThreadPool->GetNumberOfThreads();
@@ -896,14 +901,19 @@ Render:
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
 
-	- Pinch tool (*):
-		- TODO: redo with spring-like force: Picks a point and keeps setting a force on it with a growing strength
-			- State machine (strength growth, simple recursive function) done by tool
-		- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
-		- Tool:
-			- Copy from Move tool
-			- Tool engaged only if a point has been picked (like Move tool)
-		- Cursor: pliers or tweezers, up and down
+	= Pinch tool (*):
+		+ "Pick-n-Pull"
+		- Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
+			- State machine (target position, simple recursive function) done by tool
+			- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
+		= Tool:
+			+ Copy from Move tool
+			+ Tool engaged only if a point has been picked (like Move tool)
+		= Cursor: pliers or tweezers, up and down
+		= Sound: just at pick time
+			+ Sounds
+			= Wiring (incl. underwater)
+		- changes.txt
 		
 	- Lightning tool that summons lightning wherever it has been clicked
 		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click

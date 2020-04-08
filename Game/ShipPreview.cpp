@@ -37,8 +37,9 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
             // Use texture for preview
             previewImageFilePath = basePath  / *sdf.TextureLayerImageFilePath;
 
-            // Categorize as HD
-            isHD = true;
+            // Categorize as HD, unless instructed not to do so
+            if (!sdf.DoHideHDInPreview)
+                isHD = true;
         }
         else
         {
@@ -51,8 +52,9 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
 
         shipMetadata.emplace(sdf.Metadata);
 
-        // Check whether it has electricals
-        hasElectricals = sdf.ElectricalLayerImageFilePath.has_value();
+        // Check whether it has electricals, unless instructed not to do so
+        if (!sdf.DoHideElectricalsInPreview)
+            hasElectricals = sdf.ElectricalLayerImageFilePath.has_value();
     }
     else
     {

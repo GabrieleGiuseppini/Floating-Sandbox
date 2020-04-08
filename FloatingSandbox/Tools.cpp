@@ -83,6 +83,25 @@ MoveAllTool::MoveAllTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Pick and Pull
+////////////////////////////////////////////////////////////////////////
+
+PickAndPullTool::PickAndPullTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLoader & resourceLoader)
+    : Tool(
+        ToolType::PickAndPull,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mUpCursorImage(WxHelpers::LoadCursorImage("pliers_cursor_up", 2, 2, resourceLoader))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("pliers_cursor_down", 2, 2, resourceLoader))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Smash
 ////////////////////////////////////////////////////////////////////////
 

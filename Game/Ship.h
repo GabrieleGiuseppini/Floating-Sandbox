@@ -52,6 +52,8 @@ public:
     auto const & GetPoints() const { return mPoints; }
     auto & GetPoints() { return mPoints; }
 
+    bool IsUnderwater(ElementIndex pointElementIndex) const;
+
     void Update(
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
@@ -94,6 +96,15 @@ public:
         float angle,
         vec2f const & center,
         float inertialAngle,
+        GameParameters const & gameParameters);
+
+    std::optional<ElementIndex> PickObjectForPickAndPull(
+        vec2f const & pickPosition,
+        GameParameters const & gameParameters);
+
+    void Pull(
+        ElementIndex pointElementIndex,
+        vec2f const & target,
         GameParameters const & gameParameters);
 
     void DestroyAt(

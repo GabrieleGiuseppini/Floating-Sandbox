@@ -21,12 +21,18 @@ public:
     template<typename TElement>
     struct LayoutElement
     {
+        struct IntegralPoint
+        {
+            int X;
+            int Y;
+        };
+
         TElement Element;
-        std::optional<std::pair<int, int>> Coordinates;
+        std::optional<IntegralPoint> Coordinates;
 
         LayoutElement(
             TElement const & element,
-            std::optional<std::pair<int, int>> const & coordinates)
+            std::optional<IntegralPoint> const & coordinates)
             : Element(element)
             , Coordinates(coordinates)
         {}
@@ -64,8 +70,8 @@ public:
         {
             if (!!(element.Coordinates))
             {
-                maxDecoratedX = std::max(maxDecoratedX, abs(element.Coordinates->first));
-                maxDecoratedY = std::max(maxDecoratedY, element.Coordinates->second);
+                maxDecoratedX = std::max(maxDecoratedX, abs(element.Coordinates->X));
+                maxDecoratedY = std::max(maxDecoratedY, element.Coordinates->Y);
                 decoratedElements.emplace_back(element);
             }
             else
@@ -166,8 +172,8 @@ public:
             [](auto const & lhs, auto const & rhs)
             {
                 assert(!!(lhs.Coordinates));
-                return lhs.Coordinates->second < rhs.Coordinates->second
-                    || (lhs.Coordinates->second == rhs.Coordinates->second && lhs.Coordinates->first < rhs.Coordinates->first);
+                return lhs.Coordinates->Y < rhs.Coordinates->Y
+                    || (lhs.Coordinates->Y == rhs.Coordinates->Y && lhs.Coordinates->X < rhs.Coordinates->X);
             });
 
         //
@@ -185,8 +191,8 @@ public:
 
                 std::optional<TElement> positionElement;
                 if (decoratedIt != decoratedElements.cend()
-                    && h == decoratedIt->Coordinates->second
-                    && col >= decoratedIt->Coordinates->first)
+                    && h == decoratedIt->Coordinates->Y
+                    && col >= decoratedIt->Coordinates->X)
                 {
                     // Position a decorated element
                     positionElement = decoratedIt->Element;

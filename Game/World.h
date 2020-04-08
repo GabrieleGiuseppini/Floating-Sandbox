@@ -62,6 +62,8 @@ public:
         return position.y < GetOceanSurfaceHeightAt(position.x);
     }
 
+    bool IsUnderwater(ElementId elementId) const;
+
     inline float GetOceanFloorHeightAt(float x) const
     {
         return mOceanFloor.GetHeightAt(x);
@@ -123,6 +125,15 @@ public:
         float angle,
         vec2f const & center,
         float inertialAngle,
+        GameParameters const & gameParameters);
+
+    std::optional<ElementId> PickObjectForPickAndPull(
+        vec2f const & pickPosition,
+        GameParameters const & gameParameters);
+
+    void Pull(
+        ElementId elementId,
+        vec2f const & target,
         GameParameters const & gameParameters);
 
     void DestroyAt(

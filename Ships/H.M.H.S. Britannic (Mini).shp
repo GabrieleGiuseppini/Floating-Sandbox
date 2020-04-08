@@ -2,6 +2,7 @@
     "structure_image":"hmhs_britannic_mini_structure.png.dat",
     "electrical_image":"hmhs_britannic_mini_electrical.png.dat",
     "texture_image":"hmhs_britannic_mini_texture.png.dat",
+    "do_hide_hd_in_preview": true,
     "ship_name":"H.M.H.S. Britannic (Mini)",
     "year_built":"1914",
     "offset":{"x":0.0, "y":-14.0},

@@ -28,6 +28,7 @@ enum class ToolType
 {
     Move = 0,
     MoveAll,
+    PickAndPull,
     Smash,
     Saw,
     HeatBlaster,
@@ -604,6 +605,133 @@ public:
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         ResourceLoader & resourceLoader);
+};
+
+class PickAndPullTool final : public Tool
+{
+public:
+
+    PickAndPullTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLoader & resourceLoader);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        mCurrentEngagementState.reset();
+
+        // Set cursor
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+    }
+
+    virtual void Update(InputState const & inputState) override
+    {
+        bool wasEngaged = !!mCurrentEngagementState;
+
+        if (inputState.IsLeftMouseDown)
+        {
+            if (!mCurrentEngagementState)
+            {
+                //
+                // Not engaged...
+                // ...see if we're able to pick a point and thus start engagement
+                //
+
+                auto elementId = mGameController->PickObjectForPickAndPull(inputState.MousePosition);
+                if (elementId.has_value())
+                {
+                    //
+                    // Engage!
+                    //
+
+                    mCurrentEngagementState.emplace(
+                        *elementId,
+                        inputState.MousePosition);
+
+                    // Play sound
+                    mSoundController->PlayPliersSound(mGameController->IsUnderwater(*elementId));
+                }
+            }
+            else
+            {
+                //
+                // Engaged
+                //
+
+                //
+                // 1. Converge towards target position
+                //
+
+                mCurrentEngagementState->CurrentScreenPosition +=
+                    (mCurrentEngagementState->TargetScreenPosition - mCurrentEngagementState->CurrentScreenPosition)
+                    * 0.1f; // Convergence speed, magic number
+
+                //
+                // 2. Apply force towards current position
+                //
+
+                mGameController->Pull(
+                    mCurrentEngagementState->PickedParticle,
+                    mCurrentEngagementState->CurrentScreenPosition);
+            }
+        }
+        else
+        {
+            // Disengage (in case we're engaged)
+            mCurrentEngagementState.reset();
+        }
+
+        if (!!mCurrentEngagementState != wasEngaged)
+        {
+            // State change
+
+            // Update cursor
+            SetCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(!!mCurrentEngagementState ? mDownCursorImage : mUpCursorImage);
+    }
+
+    // Our state
+
+    struct EngagementState
+    {
+        ElementId PickedParticle;
+        vec2f CurrentScreenPosition;
+        vec2f TargetScreenPosition;
+
+        EngagementState(
+            ElementId pickedParticle,
+            vec2f startScreenPosition)
+            : PickedParticle(pickedParticle)
+            , CurrentScreenPosition(startScreenPosition)
+            , TargetScreenPosition(startScreenPosition)
+        {}
+    };
+
+    std::optional<EngagementState> mCurrentEngagementState; // When set, indicates it's engaged
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class SmashTool final : public ContinuousTool

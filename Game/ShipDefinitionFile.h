@@ -32,6 +32,9 @@ public:
 
     std::optional<std::filesystem::path> const TextureLayerImageFilePath;
 
+    bool const DoHideElectricalsInPreview;
+    bool const DoHideHDInPreview;
+
     // The ship's metadata
     ShipMetadata const Metadata;
 
@@ -51,11 +54,15 @@ public:
         std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
         std::optional<std::filesystem::path> const & textureLayerImageFilePath,
+        bool doHideElectricalsInPreview,
+        bool doHideHDInPreview,
         ShipMetadata && shipMetadata)
         : StructuralLayerImageFilePath(structuralLayerImageFilePath)
         , RopesLayerImageFilePath(ropesLayerImageFilePath)
         , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
         , TextureLayerImageFilePath(std::move(textureLayerImageFilePath))
+        , DoHideElectricalsInPreview(doHideElectricalsInPreview)
+        , DoHideHDInPreview(doHideHDInPreview)
         , Metadata(std::move(shipMetadata))
     {
     }

@@ -218,17 +218,20 @@ private:
 
     struct ElectricalElementInfo
     {
+        ElectricalElementInstanceIndex InstanceIndex;
         ElectricalElementControl * Control;
         IDisablableElectricalElementControl * DisablableControl;
         IInteractiveElectricalElementControl * InteractiveControl;
         std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
 
         ElectricalElementInfo(
+            ElectricalElementInstanceIndex instanceIndex,
             ElectricalElementControl * control,
             IDisablableElectricalElementControl * disablableControl,
             IInteractiveElectricalElementControl * interactiveControl,
             std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
-            : Control(control)
+            : InstanceIndex(instanceIndex)
+            , Control(control)
             , DisablableControl(disablableControl)
             , InteractiveControl(interactiveControl)
             , PanelElementMetadata(panelElementMetadata)

@@ -132,6 +132,16 @@ bool OceanFloor::AdjustTo(
     float x2,
     float targetY2)
 {
+    if (mCurrentOceanFloorDetailAmplification == 0.0f)
+    {
+        // Nothing to do
+        return false;
+    }
+
+    //
+    //
+    //
+
     float leftX, leftTargetY;
     float rightX, rightTargetY;
     if (x1 <= x2)
@@ -173,15 +183,17 @@ bool OceanFloor::AdjustTo(
     for (int64_t s = sampleIndex; x <= rightX && s < SamplesCount; ++s, x += Dx)
     {
         // Calculate new sample value, i.e. trajectory's value
-        float newSampleValue = leftTargetY + slopeY * (x - leftX);
+        float const newSampleValue = leftTargetY + slopeY * (x - leftX);
 
         // Decide whether it's a significant change
         hasAdjusted |= abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
 
         // Translate sample value into terrain change
-        float newTerrainProfileSampleValue =
+        // (inverse of CalculateResultantSampleValue(.))
+        assert(mCurrentOceanFloorDetailAmplification != 0.0f);
+        float const newTerrainProfileSampleValue =
             (newSampleValue - mBumpProfile[s] + mCurrentSeaDepth)
-            / (mCurrentOceanFloorDetailAmplification != 0.0f ? mCurrentOceanFloorDetailAmplification : 1.0f);
+            / mCurrentOceanFloorDetailAmplification;
 
         // Update terrain and samples
         SetTerrainHeight(s, newTerrainProfileSampleValue);

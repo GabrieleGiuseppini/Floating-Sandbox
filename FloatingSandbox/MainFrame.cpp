@@ -54,6 +54,7 @@ long const ID_RESET_VIEW_MENUITEM = wxNewId();
 
 long const ID_MOVE_MENUITEM = wxNewId();
 long const ID_MOVE_ALL_MENUITEM = wxNewId();
+long const ID_PICK_AND_PULL_MENUITEM = wxNewId();
 long const ID_SMASH_MENUITEM = wxNewId();
 long const ID_SLICE_MENUITEM = wxNewId();
 long const ID_HEAT_BLASTER_MENUITEM = wxNewId();
@@ -297,6 +298,10 @@ MainFrame::MainFrame(
     wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All\tALT+M"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(moveAllMenuItem);
     Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
+
+    wxMenuItem * pickAndPullMenuItem = new wxMenuItem(mToolsMenu, ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull\tK"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(pickAndPullMenuItem);
+    Connect(ID_PICK_AND_PULL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPickAndPullMenuItemSelected);
 
     wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash\tS"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(smashMenuItem);
@@ -1432,6 +1437,12 @@ void MainFrame::OnMoveAllMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::MoveAll);
+}
+
+void MainFrame::OnPickAndPullMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::PickAndPull);
 }
 
 void MainFrame::OnSmashMenuItemSelected(wxCommandEvent & /*event*/)

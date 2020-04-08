@@ -75,6 +75,14 @@ size_t World::GetShipCount() const
     return mAllShips.size();
 }
 
+bool World::IsUnderwater(ElementId elementId) const
+{
+    auto const shipId = elementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->IsUnderwater(elementId.GetLocalObjectId());
+}
+
 size_t World::GetShipPointCount(ShipId shipId) const
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -168,6 +176,40 @@ void World::RotateBy(
         angle,
         center,
         inertialAngle,
+        gameParameters);
+}
+
+std::optional<ElementId> World::PickObjectForPickAndPull(
+    vec2f const & pickPosition,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        auto elementIndex = ship->PickObjectForPickAndPull(
+            pickPosition,
+            gameParameters);
+
+        if (elementIndex.has_value())
+        {
+            return ElementId(ship->GetId(), *elementIndex);
+        }
+    }
+
+    // No luck
+    return std::nullopt;
+}
+
+void World::Pull(
+    ElementId elementId,
+    vec2f const & target,
+    GameParameters const & gameParameters)
+{
+    auto const shipId = elementId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    mAllShips[shipId]->Pull(
+        elementId.GetLocalObjectId(),
+        target,
         gameParameters);
 }
 

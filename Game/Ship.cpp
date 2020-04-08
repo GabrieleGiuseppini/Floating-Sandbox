@@ -121,6 +121,11 @@ void Ship::Announce()
     mElectricalElements.AnnounceInstancedElements();
 }
 
+bool Ship::IsUnderwater(ElementIndex pointElementIndex) const
+{
+    return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+}
+
 void Ship::Update(
     float currentSimulationTime,
 	Storm::Parameters const & stormParameters,

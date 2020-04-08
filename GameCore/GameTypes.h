@@ -61,7 +61,6 @@ static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceInd
  */
 using LocalBombId = std::uint32_t;
 
-
 /*
  * Object ID's, identifying objects of ships across ships.
  *

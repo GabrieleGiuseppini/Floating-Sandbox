@@ -1042,6 +1042,15 @@ void SoundController::PlayScrubSound()
         true);
 }
 
+void SoundController::PlayPliersSound(bool isUnderwater)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::Pliers,
+        isUnderwater,
+        100.0f,
+        true);
+}
+
 void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(

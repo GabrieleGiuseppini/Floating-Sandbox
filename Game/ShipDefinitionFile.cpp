@@ -42,6 +42,16 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         definitionJson,
         "texture_image");
 
+    bool doHideElectricalsInPreview = Utils::GetOptionalJsonMember<bool>(
+        definitionJson,
+        "do_hide_electricals_in_preview",
+        false);
+
+    bool doHideHDInPreview = Utils::GetOptionalJsonMember<bool>(
+        definitionJson,
+        "do_hide_hd_in_preview",
+        false);
+
     //
     // Metadata
     //
@@ -107,6 +117,8 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         ropesLayerImageFilePath,
         electricalLayerImageFilePath,
         textureLayerImageFilePath,
+        doHideElectricalsInPreview,
+        doHideHDInPreview,
         ShipMetadata(
             shipName,
             author,

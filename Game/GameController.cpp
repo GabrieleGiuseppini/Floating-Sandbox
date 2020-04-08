@@ -588,6 +588,11 @@ bool GameController::IsUnderwater(vec2f const & screenCoordinates) const
     return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
 }
 
+bool GameController::IsUnderwater(ElementId elementId) const
+{
+    return mWorld->IsUnderwater(elementId);
+}
+
 void GameController::PickObjectToMove(
     vec2f const & screenCoordinates,
     std::optional<ElementId> & elementId)
@@ -599,6 +604,31 @@ void GameController::PickObjectToMove(
     mWorld->PickPointToMove(
         worldCoordinates,
         elementId,
+        mGameParameters);
+}
+
+std::optional<ElementId> GameController::PickObjectForPickAndPull(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->PickObjectForPickAndPull(
+        worldCoordinates,
+        mGameParameters);
+}
+
+void GameController::Pull(
+    ElementId elementId,
+    vec2f const & screenTarget)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenTarget);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->Pull(
+        elementId,
+        worldCoordinates,
         mGameParameters);
 }
 

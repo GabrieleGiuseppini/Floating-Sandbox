@@ -148,6 +148,7 @@ public:
 
     float GetCurrentSimulationTime() const override;
     bool IsUnderwater(vec2f const & screenCoordinates) const override;
+    bool IsUnderwater(ElementId elementId) const override;
 
     //
     // Interactions
@@ -159,6 +160,8 @@ public:
     void MoveBy(ShipId shipId, vec2f const & screenOffset, vec2f const & inertialScreenOffset) override;
     void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter, float inertialScreenDeltaY) override;
     void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) override;
+    std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) override;
+    void Pull(ElementId elementId, vec2f const & screenTarget) override;
     void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) override;
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;

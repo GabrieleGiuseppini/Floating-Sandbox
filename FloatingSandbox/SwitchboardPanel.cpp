@@ -591,7 +591,7 @@ void SwitchboardPanel::OnSwitchCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(swCtrl, swCtrl, intCtrl, panelElementMetadata));
+        std::forward_as_tuple(instanceIndex, swCtrl, swCtrl, intCtrl, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
@@ -701,7 +701,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ctrl, nullptr, nullptr, panelElementMetadata));
+        std::forward_as_tuple(instanceIndex, ctrl, nullptr, nullptr, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnEngineControllerCreated(
@@ -766,7 +766,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ecCtrl, ecCtrl, ecCtrl, panelElementMetadata));
+        std::forward_as_tuple(instanceIndex, ecCtrl, ecCtrl, ecCtrl, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnEngineMonitorCreated(
@@ -834,7 +834,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     mElementMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(electricalElementId),
-        std::forward_as_tuple(ggCtrl, nullptr, nullptr, panelElementMetadata));
+        std::forward_as_tuple(instanceIndex, ggCtrl, nullptr, nullptr, panelElementMetadata));
 }
 
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
@@ -853,13 +853,23 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
             if (!!(it.second.PanelElementMetadata))
                 layoutElements.emplace_back(
                     it.first,
-                    std::make_pair(it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y));
+                    LayoutHelper::LayoutElement<ElectricalElementId>::IntegralPoint{ it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y });
             else
                 layoutElements.emplace_back(
                     it.first,
                     std::nullopt);
         }
     }
+
+    // Sort elements by instance ID
+    std::sort(
+        layoutElements.begin(),
+        layoutElements.end(),
+        [this](auto const & lhs, auto const & rhs)
+        {
+            return mElementMap.at(lhs.Element).InstanceIndex < mElementMap.at(rhs.Element).InstanceIndex;
+        });
+
 
     // Layout
     LayoutHelper::Layout<ElectricalElementId>(

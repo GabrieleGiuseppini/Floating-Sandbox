@@ -139,6 +139,8 @@ public:
 
     void PlayScrubSound();
 
+    void PlayPliersSound(bool isUnderwater);
+
     void PlaySnapshotSound();
 
     void PlayElectricalPanelOpenSound(bool isClose);

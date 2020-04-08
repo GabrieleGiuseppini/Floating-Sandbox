@@ -185,6 +185,44 @@ void Ship::RotateBy(
     TrimForWorldBounds(gameParameters);
 }
 
+std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
+    vec2f const & pickPosition,
+    GameParameters const & gameParameters)
+{
+    //
+    // Find closest point - of any type - within the search radius
+    //
+
+    float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+
+    float bestSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex bestPoint = NoneElementIndex;
+
+    for (auto p : mPoints)
+    {
+        float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
+        if (squareDistance < squareSearchRadius
+            && squareDistance < bestSquareDistance)
+        {
+            bestSquareDistance = squareDistance;
+            bestPoint = p;
+        }
+    }
+
+    if (bestPoint != NoneElementIndex)
+        return bestPoint;
+    else
+        return std::nullopt;
+}
+
+void Ship::Pull(
+    ElementIndex pointElementIndex,
+    vec2f const & target,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE
+}
+
 void Ship::DestroyAt(
     vec2f const & targetPos,
     float radiusFraction,

@@ -65,6 +65,7 @@ struct IGameController
 
     virtual float GetCurrentSimulationTime() const = 0;
     virtual bool IsUnderwater(vec2f const & screenCoordinates) const = 0;
+    virtual bool IsUnderwater(ElementId elementId) const = 0;
 
     //
     // Interactions
@@ -76,6 +77,8 @@ struct IGameController
     virtual void MoveBy(ShipId shipId, vec2f const & screenOffset, vec2f const & inertialScreenOffset) = 0;
     virtual void RotateBy(ElementId elementId, float screenDeltaY, vec2f const & screenCenter, float inertialScreenDeltaY) = 0;
     virtual void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) = 0;
+    virtual std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) = 0;
+    virtual void Pull(ElementId elementId, vec2f const & screenTarget) = 0;
     virtual void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) = 0;
     virtual void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) = 0;
     virtual void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
