@@ -218,9 +218,23 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
 void Ship::Pull(
     ElementIndex pointElementIndex,
     vec2f const & target,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
-    // TODOHERE
+    //
+    // Exhert a pull on the specified particle, according to a Hookean force
+    //
+
+    float const forceStiffness =
+        300.0f // Magic number
+        * mPoints.GetMass(pointElementIndex);
+
+    vec2f const displacement = target - mPoints.GetPosition(pointElementIndex);
+    float const displacementLength = displacement.length();
+    vec2f const forceDir = displacement.normalise(displacementLength);
+
+    mPoints.GetNonSpringForce(pointElementIndex) +=
+        forceDir
+        * (displacementLength * forceStiffness);
 }
 
 void Ship::DestroyAt(

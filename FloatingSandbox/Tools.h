@@ -665,18 +665,15 @@ public:
                 // Engaged
                 //
 
-                //
-                // 1. Converge towards target position
-                //
+                // 1. Update target position
+                mCurrentEngagementState->TargetScreenPosition = inputState.MousePosition;
 
+                // 2. Converge towards target position
                 mCurrentEngagementState->CurrentScreenPosition +=
                     (mCurrentEngagementState->TargetScreenPosition - mCurrentEngagementState->CurrentScreenPosition)
-                    * 0.1f; // Convergence speed, magic number
+                    * 0.04f; // Convergence speed, magic number
 
-                //
-                // 2. Apply force towards current position
-                //
-
+                // 3. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
                     mCurrentEngagementState->CurrentScreenPosition);

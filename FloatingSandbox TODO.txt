@@ -916,13 +916,15 @@ Render:
 		- Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
 			- State machine (target position, simple recursive function) done by tool
 			- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
-		= Tool:
+			- Test w/double simulation steps and verify force doesn't change
+		+ Tool:
 			+ Copy from Move tool
 			+ Tool engaged only if a point has been picked (like Move tool)
-		= Cursor: pliers or tweezers, up and down
-		= Sound: just at pick time
+		+ Cursor: pliers or tweezers, up and down
+			+ Redo down: make them touch
+		+ Sound: just at pick time
 			+ Sounds
-			= Wiring (incl. underwater)
+			+ Wiring (incl. underwater)
 		- changes.txt
 		
 	- Lightning tool that summons lightning wherever it has been clicked
