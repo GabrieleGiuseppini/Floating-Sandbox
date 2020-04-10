@@ -1,6 +1,7 @@
 TODO
 - New "Pick-and-Pull" tool! Use it to pull individual particles around
 - Added 1 new ship
+- Retrofitted electrical elements to a few older ships (S.S. Californian)
 - ...and a few more small improvements here and there
 
 1.14.0.6
