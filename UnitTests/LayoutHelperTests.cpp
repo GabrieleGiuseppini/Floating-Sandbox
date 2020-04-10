@@ -138,7 +138,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_Zero)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(0, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{0, 0} }
     };
 
     // Setup expectations
@@ -169,7 +169,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusOne)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(-1, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{-1, 0} }
     };
 
     // Setup expectations
@@ -202,7 +202,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOne)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(1, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{1, 0} }
     };
 
     // Setup expectations
@@ -235,7 +235,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusTwo)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(-2, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{-2, 0} }
     };
 
     // Setup expectations
@@ -270,7 +270,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusTwo)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(2, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{2, 0} }
     };
 
     // Setup expectations
@@ -305,7 +305,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusThree)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(-3, 0) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{-3, 0} }
     };
 
     // Setup expectations
@@ -342,7 +342,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOnePlusOne)
     // Prepare data
 
     std::vector<LayoutHelper::LayoutElement<int>> elements{
-        { 45, std::make_pair<int, int>(1, 1) }
+        { 45, LayoutHelper::LayoutElement<int>::IntegralPoint{1, 1} }
     };
 
     // Setup expectations
@@ -590,7 +590,7 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
     {
         elements.emplace_back(
             std::get<0>(decoratedElement),
-            std::make_pair(std::get<1>(decoratedElement), std::get<2>(decoratedElement)));
+            LayoutHelper::LayoutElement<int>::IntegralPoint{ std::get<1>(decoratedElement), std::get<2>(decoratedElement) });
     }
 
     for (size_t i = 0; i < nUndecoratedElements; ++i)

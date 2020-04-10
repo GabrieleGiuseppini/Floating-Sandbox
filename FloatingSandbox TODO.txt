@@ -296,8 +296,6 @@ Render:
 				+ Tubon I: no hd
 		+ Pinch tool (*)
 
-		= VS Extension
-
 		= Retrofit ships:
 			+ SS Californian
 				+ Nuke one "w/lights"?
@@ -305,7 +303,7 @@ Render:
 
 		- DKuz's issue:
 			- Reword error message when no default_ship exists on startup
-				- Or pick first ship
+				- Then "make" ship algorithmically: TODO
 			- Trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
 
 		- Drop air temperature with storm
@@ -318,12 +316,20 @@ Render:
 				- TODO: shall we really do it?
 				- JSon with metadata
 
+		- Pumps (*)
+
+		- Batisphere with pumps
+			- Batisphere ship
+			- Electrical layer view (*)
+
+		- Flood doors (*)		
+
+		- Take Mike's Lego Titanic when ready
+
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
 
 		- H and V electrical cables (*)
-
-		- Take Mike's Lego Titanic when ready
 
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
@@ -340,13 +346,6 @@ Render:
 					- Move the point to the other side (rendering the triangle CW)
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
-		- Pumps (*)
-
-		- Batisphere with pumps
-			- Batisphere ship
-			- Electrical layer view (*)
-
-		- Flood doors (*)		
 
 		- Splash for bombs
 			- Ephemeral particle with own shader:

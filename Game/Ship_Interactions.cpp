@@ -249,7 +249,8 @@ void Ship::Pull(
     float const forceStiffness =
         mPoints.GetMass(pointElementIndex)
         / (gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>())
-        / triangularCoeff;
+        / triangularCoeff
+        * (gameParameters.IsUltraViolentMode ? 3.0f : 1.0f);
 
     //
     // Now calculate Hookean force
