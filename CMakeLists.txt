@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.6)
 
 if (POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
@@ -181,7 +181,13 @@ add_subdirectory(ShipTools)
 add_subdirectory(UIControls)
 add_subdirectory(UnitTests)
 
+####################################################
+# Misc
+####################################################
 
+if (MSVC)
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "FloatingSandbox")
+endif(MSVC)
 
 ####################################################
 # Install

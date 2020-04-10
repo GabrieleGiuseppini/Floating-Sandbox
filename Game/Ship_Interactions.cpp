@@ -250,7 +250,7 @@ void Ship::Pull(
         mPoints.GetMass(pointElementIndex)
         / (gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>())
         / triangularCoeff
-        * (gameParameters.IsUltraViolentMode ? 3.0f : 1.0f);
+        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
     //
     // Now calculate Hookean force
