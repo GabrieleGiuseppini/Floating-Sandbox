@@ -187,16 +187,14 @@ void Ship::RotateBy(
 
 std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     vec2f const & pickPosition,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     //
     // Find closest point - of any type - within the search radius
     //
 
-    // TODOTEST
-    //float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+    float constexpr SearchRadius = 0.75f; // Magic number
 
-    float constexpr SearchRadius = 0.65f;
     float const squareSearchRadius = SearchRadius * SearchRadius;
 
     float bestSquareDistance = std::numeric_limits<float>::max();

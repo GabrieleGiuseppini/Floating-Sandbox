@@ -294,8 +294,9 @@ Render:
 				+ SS Ariara: no both
 				+ SS Queen of Unova: no power
 				+ Tubon I: no hd
+		+ Pinch tool (*)
 
-		= Pinch tool (*)
+		- VS Extension
 
 		- DKuz's issue:
 			- Reword error message when no default_ship exists on startup
@@ -313,17 +314,11 @@ Render:
 				- JSon with metadata
 
 		- Test: re-try cache layout optimizations
-			- See impact first with NOP optimization
+			- See current optimization's impact first with NOP optimization
 
 		- H and V electrical cables (*)
 
 		- Take Mike's Lego Titanic when ready
-
-		- Wine crash: Wine stable version 5.0
-			Backtrace:
-			=>0 0x0000000000237742 EntryPoint+0xf96a() in sfml-system-2 (0x000000000f0bffd0)
-			  1 0x000000000022e526 EntryPoint+0x674d() in sfml-system-2 (0x000000000f0bffd0)
-			  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
@@ -559,12 +554,14 @@ Render:
 		+ Give SamminAter another RelWithDebInfo + pdb
 		- Other issues:
 			- No fullscreen mode
+			- Crash (with Wine stable version 5.0)
+				Backtrace:
+				=>0 0x0000000000237742 EntryPoint+0xf96a() in sfml-system-2 (0x000000000f0bffd0)
+				  1 0x000000000022e526 EntryPoint+0x674d() in sfml-system-2 (0x000000000f0bffd0)
+				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
-
-- Mac:
-	- See replacement for "intrin.h" @ SysSpecifics.h
 
 - Simulation Optimizations:
 
@@ -891,6 +888,7 @@ Render:
 		- See if worth separating into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
 
 	- H and V electrical cables (*)
+		- TBD: needs to be spec'd
 
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
@@ -921,22 +919,6 @@ Render:
 		- Thinner moving up, @ MaxWorldHeight it's open space
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
-
-	= Pinch tool (*):
-		+ "Pick-n-Pull"
-		+ Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
-			+ State machine (target position, simple recursive function) done by tool
-			X If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
-			+ Test w/double simulation steps and verify force doesn't change
-		+ Tool:
-			+ Copy from Move tool
-			+ Tool engaged only if a point has been picked (like Move tool)
-		+ Cursor: pliers or tweezers, up and down
-			+ Redo down: make them touch
-		+ Sound: just at pick time
-			+ Sounds
-			+ Wiring (incl. underwater)
-		- changes.txt
 		
 	- Lightning tool that summons lightning wherever it has been clicked
 		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
@@ -950,9 +932,6 @@ Render:
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
-	- "Physics" versions of move-and-rotate tool: act with forces on a (circle around a) point
-		- Smoothing towards the periphery
-		
 	- EMP tool
 		- Better after electrical "expansion"
 
@@ -986,9 +965,6 @@ Render:
 			- From PM: also, idk if you do it already, but it would be fun if the speed of decay was pseudorandomized not by much but just enough so it would cause uneven patterns of decay along the ships 
 		                   it would simulate defects in the hull or something
 				   the only way I have to help visualising what I mean is by adding some noise on top of an image of the ships and the darkness of the colour would represent the rate of decay
-
-	- Different materials have different rotting speed
-		- For instance, Cardboard would soften and break apart in water within a minute or so
 
 	- Underwater currents
 		- Implicit function of x defines trajectory 
@@ -6178,9 +6154,23 @@ IF WX:
 			+ Add all new types to materials' guide
 			+ Refresh both elements' materials templates
 			+ changes.txt
-
-
-
+	+ Different materials have different rotting speeds
+		+ For instance, Cardboard would soften and break apart in water within a minute or so
+	+ Pinch tool:
+		+ "Pick-n-Pull"
+		+ Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
+			+ State machine (target position, simple recursive function) done by tool
+			X If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
+			+ Test w/double simulation steps and verify force doesn't change
+		+ Tool:
+			+ Copy from Move tool
+			+ Tool engaged only if a point has been picked (like Move tool)
+		+ Cursor: pliers or tweezers, up and down
+			+ Redo down: make them touch
+		+ Sound: just at pick time
+			+ Sounds
+			+ Wiring (incl. underwater)
+		+ changes.txt
 
 
 

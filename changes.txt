@@ -1,4 +1,5 @@
 TODO
+- New "Pick-and-Pull" tool! Use it to pull individual particles around
 - Added 1 new ship
 - ...and a few more small improvements here and there
 
