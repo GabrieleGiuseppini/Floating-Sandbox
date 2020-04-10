@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-class MusicController
+class MusicController final
     : public ILifecycleGameEventHandler
     , public IGenericGameEventHandler
 {
@@ -36,7 +36,7 @@ public:
         ResourceLoader & resourceLoader,
         ProgressCallback const & progressCallback);
 
-	virtual ~MusicController();
+	~MusicController();
 
     //
     // Controlling

@@ -52,6 +52,11 @@ public:
         InternalSetVolume();
     }
 
+    virtual ~BaseGameMusic()
+    {
+        mMusic.stop();
+    }
+
     void SetVolume(float volume)
     {
         mVolume = volume;

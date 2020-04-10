@@ -726,7 +726,7 @@ Render:
 			- Multiple because of need to normalize outgoing for each point
 
 	- UpdatePointForces:
-		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (1.f/0.f)"
+		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (with values 1.f/0.f)"
 			- Force compiler into not branching - "?" operator won't work
 		- Precalculate things that do not depend on position nor velocity
 			- Stored in buffers
@@ -877,7 +877,18 @@ Render:
 
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
-- Dynamics:	
+- Dynamics:
+
+	- Directional water drag (*)
+		! After frontier work
+		- Calc force depending on projection of particle's velocity along normal
+			- Try to re-instate square velocity drag
+				- Goal: falling ship should break upon impact with water
+				- Need to clamp drag force 
+					- So better done after spring/nonspring forces rearc, so expense is minimized
+		- Increase the amount of drag adjustment users may do
+			- Goal: water should become lava with high drag
+		- See if worth separating into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
 
 	- H and V electrical cables (*)
 
@@ -994,14 +1005,6 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 	
-	- Try to re-instate square velocity drag
-		- Goal: falling ship should break upon impact with water
-		- Better done after frontier and thus directional drag
-		- Need to clamp drag force 
-			- So better done after spring/nonspring forces rearc
-		- Then, increase the amount of drag adjustment users may do
-			- Goal: water should become lava with high drag
-
 	- See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically
 	  at the end
 
