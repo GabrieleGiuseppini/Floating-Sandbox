@@ -228,15 +228,10 @@ void Ship::Pull(
     // Exhert a pull on the specified particle, according to a Hookean force
     //
 
-    // TODOTEST
-    ////float const forceStiffness =
-    ////    300.0f // Magic number
-    ////    * 1000.0f;
+    // TODOTEST: this is good
     float const forceStiffness =
-        //(2.0f / 3.0f) // Not all the way
         1.0f
         * mPoints.GetMass(pointElementIndex)
-        // / (gameParameters.NumMechanicalDynamicsIterations<float>() * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
         / (GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
 
     vec2f const displacement = target - mPoints.GetPosition(pointElementIndex);
@@ -248,36 +243,11 @@ void Ship::Pull(
         * (displacementLength * forceStiffness);
 
     //
-    // Damp velocity component along the direction
+    // Zero velocity: this it a bit unpolite, but it prevents the "classic"
+    // Hooken force/Euler instability; also, prevents orbit forming which would
+    // occur if we were to simply dump velocities along the point->target direction
     //
 
-    // Positive when velocity in the point->target direction
-    float const pointVelocityProjection = mPoints.GetVelocity(pointElementIndex).dot(dir);
-
-    // Drag force = -C * (|V|^2*Vn)
-    //
-    // But when V >= m / (C * dt) (and also when V = 0), the system diverges (on the other side)
-
-    //float constexpr DampCoefficient = 1.0f;
-    float constexpr DampCoefficient = 1000.0f;
-
-    float const cappedPointVelocityProjection = std::min(
-        pointVelocityProjection,
-        mPoints.GetMass(pointElementIndex) / (DampCoefficient * gameParameters.SimulationStepTimeDuration<float>));
-
-    // TODOTEST
-    ////float const dampingForceMagnitude =
-    ////    - DampCoefficient
-    ////    * (cappedPointVelocityProjection * cappedPointVelocityProjection);
-    float const dampingForceMagnitude =
-        -pointVelocityProjection * mPoints.GetMass(pointElementIndex) / gameParameters.SimulationStepTimeDuration<float>
-        * (2.0f / 3.0f) // Not all the way
-        ;
-
-    //TODOTEST
-    ////mPoints.GetNonSpringForce(pointElementIndex) +=
-    ////    dir
-    ////    * dampingForceMagnitude;
     mPoints.SetVelocity(pointElementIndex, vec2f::zero());
 }
 
