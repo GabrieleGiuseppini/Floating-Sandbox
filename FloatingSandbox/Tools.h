@@ -671,7 +671,7 @@ public:
                 // 2. Converge towards target position
                 mCurrentEngagementState->CurrentScreenPosition +=
                     (mCurrentEngagementState->TargetScreenPosition - mCurrentEngagementState->CurrentScreenPosition)
-                    * 0.02f; // Convergence speed, magic number
+                    * 0.03f; // Convergence speed, magic number
 
                 // 3. Apply force towards current position
                 mGameController->Pull(

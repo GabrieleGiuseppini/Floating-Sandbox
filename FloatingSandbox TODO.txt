@@ -924,10 +924,10 @@ Render:
 
 	= Pinch tool (*):
 		+ "Pick-n-Pull"
-		- Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
-			- State machine (target position, simple recursive function) done by tool
-			- If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
-			- Test w/double simulation steps and verify force doesn't change
+		+ Apply spring-like force: Picks a point and keeps setting a Hookeian force on it
+			+ State machine (target position, simple recursive function) done by tool
+			X If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
+			+ Test w/double simulation steps and verify force doesn't change
 		+ Tool:
 			+ Copy from Move tool
 			+ Tool engaged only if a point has been picked (like Move tool)

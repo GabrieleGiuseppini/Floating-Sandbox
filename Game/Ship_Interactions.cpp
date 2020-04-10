@@ -225,14 +225,37 @@ void Ship::Pull(
     GameParameters const & gameParameters)
 {
     //
+    //
     // Exhert a pull on the specified particle, according to a Hookean force
     //
+    //
 
-    // TODOTEST: this is good
+
+    //
+    // In order to ensure stability, we choose a stiffness equal to the maximum stiffness
+    // that keeps the system stable. This is the stiffness that generates a force such
+    // that its integration in a simulation step (DT) produces a delta position
+    // equal (and not greater) than the "spring"'s displacement itself.
+    // In a regime where the particle velocity is zeroed at every simulation,
+    // and thus it only exists during the N mechanical sub-iterations, the delta
+    // position after i mechanical sub-iterations of a force F is:
+    //      Dp(i) = T(i) * F/m * dt^2
+    // Where T(n) is the triangular coefficient, and dt is the sub-iteration delta-time
+    // (i.e. DT/N)
+    //
+
+    float const triangularCoeff =
+        (gameParameters.NumMechanicalDynamicsIterations<float>() * (gameParameters.NumMechanicalDynamicsIterations<float>() + 1.0f))
+        / 2.0f;
+
     float const forceStiffness =
-        1.0f
-        * mPoints.GetMass(pointElementIndex)
-        / (GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
+        mPoints.GetMass(pointElementIndex)
+        / (gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>())
+        / triangularCoeff;
+
+    //
+    // Now calculate Hookean force
+    //
 
     vec2f const displacement = target - mPoints.GetPosition(pointElementIndex);
     float const displacementLength = displacement.length();
@@ -245,7 +268,7 @@ void Ship::Pull(
     //
     // Zero velocity: this it a bit unpolite, but it prevents the "classic"
     // Hooken force/Euler instability; also, prevents orbit forming which would
-    // occur if we were to simply dump velocities along the point->target direction
+    // occur if we were to dump velocities along the point->target direction only
     //
 
     mPoints.SetVelocity(pointElementIndex, vec2f::zero());
