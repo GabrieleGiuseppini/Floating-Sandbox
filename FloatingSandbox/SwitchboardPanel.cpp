@@ -626,6 +626,14 @@ void SwitchboardPanel::OnPowerProbeCreated(
         {
             case PowerProbeType::Generator:
             {
+                if (!panelElementMetadata)
+                {
+                    // Make label
+                    std::stringstream ss;
+                    ss << "Generator #" << static_cast<int>(instanceIndex);
+                    label = ss.str();
+                }
+
                 // Voltage Gauge
                 auto ggCtrl = new GaugeElectricalElementControl(
                     mSwitchPanel,
@@ -647,19 +655,19 @@ void SwitchboardPanel::OnPowerProbeCreated(
                 // Store as updateable element
                 mUpdateableElements.emplace_back(ggCtrl);
 
-                if (!panelElementMetadata)
-                {
-                    // Make label
-                    std::stringstream ss;
-                    ss << "Generator #" << static_cast<int>(instanceIndex);
-                    label = ss.str();
-                }
-
                 break;
             }
 
             case PowerProbeType::PowerMonitor:
             {
+                if (!panelElementMetadata)
+                {
+                    // Make label
+                    std::stringstream ss;
+                    ss << "Monitor #" << static_cast<int>(instanceIndex);
+                    label = ss.str();
+                }
+
                 ctrl = new PowerMonitorElectricalElementControl(
                     mSwitchPanel,
                     mPowerMonitorOnBitmap,
@@ -671,14 +679,6 @@ void SwitchboardPanel::OnPowerProbeCreated(
                         this->OnTick(electricalElementId);
                     },
                     state);
-
-                if (!panelElementMetadata)
-                {
-                    // Make label
-                    std::stringstream ss;
-                    ss << "Monitor #" << static_cast<int>(instanceIndex);
-                    label = ss.str();
-                }
 
                 break;
             }

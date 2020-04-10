@@ -296,7 +296,12 @@ Render:
 				+ Tubon I: no hd
 		+ Pinch tool (*)
 
-		- VS Extension
+		= VS Extension
+
+		= Retrofit ships:
+			+ SS Californian
+				+ Nuke one "w/lights"?
+			- Titanic Interior
 
 		- DKuz's issue:
 			- Reword error message when no default_ship exists on startup
