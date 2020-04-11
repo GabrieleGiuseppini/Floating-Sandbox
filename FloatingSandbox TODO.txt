@@ -245,10 +245,6 @@ Render:
 - Marketing:
 	- www.floatingsandbox.com:
 		- Try to change white BG to another color
-	- After 1.14 is out: 
-		- Add new screenshots to:
-			- www.floatingsandbox.com 
-			- GameJolt
 
 - Roadmap:
 
@@ -258,12 +254,12 @@ Render:
 				+ GameJolt
 				+ floatingsandbox.com
 			+ Re-read & update game intro @ GameJolt
-
-		- Website: add FAQ for electrical panel -> Gabe's blog
+			+ Multi-part blog
+			+ fs.com: add FAQ for electrical panel -> Gabe's blog
 
 		- Publish roadmap:
 			- Flood doors, pumps
-			- Frontier -> Hydrodynamics (gliding)
+			- Frontier -> Hydrodynamics (underwater gliding)
 			- In-game Ship Builder
 			- Spring relaxation optimization -> Rigidity
 			- NPCs
@@ -294,27 +290,69 @@ Render:
 				+ SS Ariara: no both
 				+ SS Queen of Unova: no power
 				+ Tubon I: no hd
-		+ Pinch tool (*)
+		= Pinch tool (*)
+			- Converge speed depends on mouse move span (in world coords)
+				- Tool asks GameController: screenOffset->worldOffset
+				- Then, formula gives convergence speed
 
 		= Retrofit ships:
 			+ SS Californian
 				+ Nuke one "w/lights"?
 			- Titanic Interior
+			- Britannic
+				- Ask Mike
 
-		- DKuz's issue:
-			- Reword error message when no default_ship exists on startup
-				- Then "make" ship algorithmically: TODO
-			- Trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+		- Diesel engine
+			- With John Smith's sound
+
+		- "ResourceLoader" -> "ResourceLocator"
+
+		- Robustness:
+			- DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+				= Asked DKuz for help
+				- Flush log to disk on crash and exit
+					- Logger::FlushToFile(fs path)
+						- Path at SysPaths class
+			- Handle when error at default_ship on startup
+				- Test before:
+					- Broken json
+					- Not found json files
+					- Missing altogether
+				- Impl:
+					- GameController::AddDefaultShip() 
+						- Call from MainFrame
+						- Call AddFallbackShip() ship in all error cases: Data/Misc/fallback_ship.png
+							- ResourceLoader method
+							- Also use on April 1st
+				- Test after:
+					- Broken json
+					- Not found json files
+					- Missing altogether
+			- Catch corrupted settings jsons
+				- Main settings:
+					- Fuzzy-break them and see what happens at startup
+					- Reset main settings to defaults if broken (w/message)
+					- Test after
+				- Persisted settings (user only):
+					- Fuzzy-break them until SettingsWindows doesn't open
+					- Handle somehow
+					- Test after
+
+		- See if may put smoke emitters behind triangles and springs
+			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
+			  need to have a way to change layer, which would however require a different rendering batch (because
+			  or different orthomatrix)
 
 		- Drop air temperature with storm
+			- By 10 degrees (local constexpr)
 			- New storm parameter, with modulation
+			- Use everywhere we use GameParameters::AirTemperature
+				- ApplyWorldForces
+				- TBD: others
 
-		- Add more background music and do playlist:
+		- Add more background music:
 			- Music:
 				- Kevin MacLeod, check out Long Note 1,2,3,...
-			- Playlist:
-				- TODO: shall we really do it?
-				- JSon with metadata
 
 		- Pumps (*)
 
@@ -325,6 +363,13 @@ Render:
 		- Flood doors (*)		
 
 		- Take Mike's Lego Titanic when ready
+
+		- Auto-Texturizer
+			- ShipTexturizer class
+				- Textures/ShipTexturization folder contains textures
+					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
+				- Structural material has new mandatory "texture_name" string arg
+					- Material DB <-> actual textures check: done at TBD
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
@@ -443,6 +488,9 @@ Render:
 			- Ships in PM
 		- nomadavid's pack
 		- Captain Nobinson
+			- Test
+			- Meta: <asked>
+		- Liamo's pack
 			- Test
 			- Meta: <asked>
 	- New ships:
@@ -933,6 +981,7 @@ Render:
 		- Has precedence when looking for candidates
 
 	- Consider making world 1.5 times wider
+		- Or just round?
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
@@ -1029,12 +1078,12 @@ Render:
 			- Materials: new electrical element type
 				- Property: float pumpForce (< or > 0 for in/out), only de-serialized for pumps
 				- Add property to guide
-			- struct Points::LeakingComposite: float StructuralLeak (0.0 or 1.0), float PumpForce (-1.0,...,+1.0)
+			- struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpForce (-1.0,...,+1.0)
 				- union: int64_t, used for fast "if(is leaking)" check
 			- ElectricalElements::UpdateSinks():
 				- For each pump:
 					- smoothing state machine, w/operating temperatures
-					- eventually sets Points::LeakingComposite::PumpForce
+					- eventually sets Points::LeakComposite::PumpForce
 					- @ power state changes: emit event, for continuous sound - exactly like ShipSound
 						- Need object ID
 			- Ship::UpdateWaterIntake()
