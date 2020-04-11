@@ -786,7 +786,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController,
         mSoundController,
         mResourceLocator->GetThemeSettingsRootFilepath(),
-        StandardSystemPaths::GetInstance().GetUserGameSettingsRootFilepath());
+        StandardSystemPaths::GetInstance().GetUserGameSettingsRootFolderPath());
 
     // Enable "Reload Last Modified Settings" menu if we have last-modified settings
     mReloadLastModifiedSettingsMenuItem->Enable(mSettingsManager->HasLastModifiedSettingsPersisted());

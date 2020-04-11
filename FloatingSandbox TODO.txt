@@ -291,13 +291,7 @@ Render:
 				+ SS Queen of Unova: no power
 				+ Tubon I: no hd
 		+ "ResourceLoader" -> "ResourceLocator"
-
-		= Pinch tool (*)
-			- Converge speed depends on mouse move span (in world coords)
-				! The faster the mouse move, the faster the convergence
-				- Tool asks GameController: screenOffset->worldOffset
-					- Need to expose new ScreenOffsetToWorldOffset(.)
-				- Then, formula gives convergence speed
+		+ Pinch tool (*)
 
 		= Retrofit ships:
 			+ SS Californian
@@ -306,16 +300,13 @@ Render:
 			- Britannic
 				- Ask Mike
 
-		- Diesel engine
-			- With John Smith's sound
-
-
-		- Robustness:
-			- DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+		= Robustness:
+			= DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
 				= Asked DKuz for help
-				- Flush log to disk on crash and exit
-					- Logger::FlushToFile(fs path)
-						- Path at SysPaths class
+				= Flush log to disk on crash
+					+ Logger::FlushToFile(fs path)
+						+ Path at SysPaths class
+					- Test
 			- Handle when error at default_ship on startup
 				- Test before:
 					- Broken json
@@ -341,6 +332,9 @@ Render:
 					- Fuzzy-break them until SettingsWindows doesn't open
 					- Handle somehow
 					- Test after
+
+		- Diesel engine
+			- With John Smith's sound
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
@@ -6219,6 +6213,11 @@ IF WX:
 			+ State machine (target position, simple recursive function) done by tool
 			X If needed applies also a fraction of the force to direct neighbors, or to all points in a radius
 			+ Test w/double simulation steps and verify force doesn't change
+			+ Converge speed depends on mouse move span (in world coords)
+				! The faster the mouse move, the faster the convergence
+				+ Tool asks GameController: screenOffset->worldOffset
+					+ Need to expose new ScreenOffsetToWorldOffset(.)
+				+ Then, formula gives convergence speed
 		+ Tool:
 			+ Copy from Move tool
 			+ Tool engaged only if a point has been picked (like Move tool)

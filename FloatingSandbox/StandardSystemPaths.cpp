@@ -28,7 +28,12 @@ std::filesystem::path StandardSystemPaths::GetUserGameRootFolderPath() const
         / ApplicationName; // Without version - we want this to be sticky across upgrades
 }
 
-std::filesystem::path StandardSystemPaths::GetUserGameSettingsRootFilepath() const
+std::filesystem::path StandardSystemPaths::GetUserGameSettingsRootFolderPath() const
 {
     return GetUserGameRootFolderPath() / "Settings";
+}
+
+std::filesystem::path StandardSystemPaths::GetDiagnosticsFolderPath() const
+{
+    return GetUserGameRootFolderPath() / "Diagnostics";
 }

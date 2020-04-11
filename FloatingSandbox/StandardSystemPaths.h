@@ -15,7 +15,7 @@ public:
     {
         if (nullptr == mSingleInstance)
         {
-            // Note: we're not multi-threaded, hence no need to lock
+            // Note: no real need to lock
             mSingleInstance = new StandardSystemPaths();
         }
 
@@ -26,7 +26,9 @@ public:
 
     std::filesystem::path GetUserGameRootFolderPath() const;
 
-    std::filesystem::path GetUserGameSettingsRootFilepath() const;
+    std::filesystem::path GetUserGameSettingsRootFolderPath() const;
+
+    std::filesystem::path GetDiagnosticsFolderPath() const;
 
 private:
 

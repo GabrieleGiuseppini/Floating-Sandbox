@@ -669,31 +669,40 @@ public:
                 mCurrentEngagementState->TargetScreenPosition = inputState.MousePosition;
 
                 // 2. Calculate convergence speed based on speed of mouse move
+
                 vec2f const mouseMovementStride = inputState.MousePosition - mCurrentEngagementState->LastScreenPosition;
                 float const worldStride = mGameController->ScreenOffsetToWorldOffset(mouseMovementStride).length();
 
-                // Convergence rate:
+                // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
-                // - Stride > 20.0: 0.09 (25 steps to 0.9 of target)
-                float const convergenceRate =
-                    0.03f
-                    + (0.09f - 0.03f) * SmoothStep(2.0f, 20.0f, worldStride);
+                // - Stride > 20.0: 0.09 (<20 steps to 0.9 of target)
+                float constexpr MinConvRate = 0.03f;
+                float constexpr MaxConvRate = 0.1f;
+                float const newConvergenceSpeed =
+                    MinConvRate
+                    + (MaxConvRate - MinConvRate) * SmoothStep(2.0f, 20.0f, worldStride);
+
+                // Change current convergence rate depending on how much mouse has moved
+                // - Small mouse movement: old speed
+                // - Large mouse movement: new speed
+                float newSpeedAlpha = SmoothStep(0.0f, 3.0, mouseMovementStride.length());
+                mCurrentEngagementState->CurrentConvergenceSpeed = Mix(
+                    mCurrentEngagementState->CurrentConvergenceSpeed,
+                    newConvergenceSpeed,
+                    newSpeedAlpha);
+
+                // Update last mouse position
+                mCurrentEngagementState->LastScreenPosition = inputState.MousePosition;
 
                 // 3. Converge towards target position
                 mCurrentEngagementState->CurrentScreenPosition +=
                     (mCurrentEngagementState->TargetScreenPosition - mCurrentEngagementState->CurrentScreenPosition)
-                    * convergenceRate;
+                    * mCurrentEngagementState->CurrentConvergenceSpeed;
 
                 // 4. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
                     mCurrentEngagementState->CurrentScreenPosition);
-
-                //
-                // Update last mouse position
-                //
-
-                mCurrentEngagementState->LastScreenPosition = inputState.MousePosition;
             }
         }
         else
@@ -732,6 +741,7 @@ private:
         vec2f CurrentScreenPosition;
         vec2f TargetScreenPosition;
         vec2f LastScreenPosition;
+        float CurrentConvergenceSpeed;
 
         EngagementState(
             ElementId pickedParticle,
@@ -740,6 +750,7 @@ private:
             , CurrentScreenPosition(startScreenPosition)
             , TargetScreenPosition(startScreenPosition)
             , LastScreenPosition(startScreenPosition)
+            , CurrentConvergenceSpeed(0.03f)
         {}
     };
 

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <filesystem>
@@ -395,6 +396,17 @@ namespace Utils
         regexPattern = FindAndReplaceAll(regexPattern, "*", ".*");
 
         return std::regex(regexPattern, std::regex::flag_type::icase);
+    }
+
+    inline std::string MakeNowDateAndTimeString()
+    {
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&now_c), "%FT%T");
+
+        return ss.str();
     }
 
     ////////////////////////////////////////////////////////

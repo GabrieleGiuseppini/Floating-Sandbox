@@ -7,6 +7,8 @@
 
 #include "StandardSystemPaths.h"
 
+#include <GameCore/Log.h>
+#include <GameCore/Utils.h>
 #include <GameCore/Version.h>
 
 #include <filesystem>
@@ -18,7 +20,10 @@
 
 typedef BOOL(WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType, CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam, CONST PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam, CONST PMINIDUMP_CALLBACK_INFORMATION CallbackParam);
 
-void create_minidump(struct _EXCEPTION_POINTERS* apExceptionInfo)
+void create_minidump(
+    struct _EXCEPTION_POINTERS * apExceptionInfo,
+    std::filesystem::path const & diagnosticsFolderPath,
+    std::string const & dateTimeString)
 {
     HMODULE hDbgHelp = ::LoadLibraryA("dbghelp.dll");
     if (NULL != hDbgHelp)
@@ -27,24 +32,11 @@ void create_minidump(struct _EXCEPTION_POINTERS* apExceptionInfo)
         if (NULL != pWriteDump)
         {
             //
-            // Make filename
+            // Make crash filename
             //
 
-            std::filesystem::path folderPath = StandardSystemPaths::GetInstance().GetUserGameRootFolderPath()
-                / "CrashDumps";
-
-            if (!std::filesystem::exists(folderPath))
-            {
-                try
-                {
-                    std::filesystem::create_directories(folderPath);
-                }
-                catch (...)
-                { /* ignore*/ }
-            }
-
-            std::filesystem::path dumpPath = folderPath / APPLICATION_NAME_WITH_LONG_VERSION "_core.dmp";
-            std::string dumpPathStr = dumpPath.string();
+            std::filesystem::path const dumpPath = diagnosticsFolderPath / std::string(APPLICATION_NAME_WITH_LONG_VERSION "_" + dateTimeString + "_core.dmp");
+            std::string const dumpPathStr = dumpPath.string();
 
             //
             // Write dump
@@ -82,15 +74,34 @@ void create_minidump(struct _EXCEPTION_POINTERS* apExceptionInfo)
     }
 }
 
-LONG WINAPI unhandled_handler(struct _EXCEPTION_POINTERS* apExceptionInfo)
+LONG WINAPI unhandled_exception_handler(struct _EXCEPTION_POINTERS* apExceptionInfo)
 {
-    create_minidump(apExceptionInfo);
+    std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath();
+    if (!std::filesystem::exists(diagnosticsFolderPath))
+    {
+        try
+        {
+            std::filesystem::create_directories(diagnosticsFolderPath);
+        }
+        catch (...)
+        { /* ignore*/
+        }
+    }
+
+    std::string const dateTimeString = Utils::MakeNowDateAndTimeString();
+
+    // Create minidump
+    create_minidump(apExceptionInfo, diagnosticsFolderPath, dateTimeString);
+
+    // Flush log
+    Logger::Instance.FlushToFile(diagnosticsFolderPath / (dateTimeString + "_log.txt"));
+
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
 void InstallUnhandledExceptionHandler()
 {
-    SetUnhandledExceptionFilter(unhandled_handler);
+    SetUnhandledExceptionFilter(unhandled_exception_handler);
 }
 
 #else

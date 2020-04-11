@@ -9,6 +9,8 @@
 #include <chrono>
 #include <ctime>
 #include <deque>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -126,6 +128,19 @@ public:
     void LogToNothing(TArgs&&... args)
     {
         _LogToNothing(std::forward<TArgs>(args)...);
+    }
+
+    void FlushToFile(std::filesystem::path const & logFilePath)
+    {
+        std::ofstream outputFile(logFilePath, std::ios_base::out | std::ios_base::trunc);
+
+        for (auto const & s : mStoredMessages)
+        {
+            outputFile << s;
+        }
+
+        outputFile.flush();
+        outputFile.close();
     }
 
 public:
