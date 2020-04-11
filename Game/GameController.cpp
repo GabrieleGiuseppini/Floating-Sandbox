@@ -1158,6 +1158,11 @@ vec2f GameController::ScreenToWorld(vec2f const & screenCoordinates) const
     return mRenderContext->ScreenToWorld(screenCoordinates);
 }
 
+vec2f GameController::ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
+{
+    return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::OnTsunami(float x)

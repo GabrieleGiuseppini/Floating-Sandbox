@@ -211,6 +211,7 @@ public:
     void AdjustZoom(float amount) override;
     void ResetZoom() override;
     vec2f ScreenToWorld(vec2f const & screenCoordinates) const override;
+    vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const override;
 
 	//
 	// Interaction parameters

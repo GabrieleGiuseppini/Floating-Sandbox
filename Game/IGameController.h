@@ -24,6 +24,9 @@
  */
 struct IGameController
 {
+    virtual ~IGameController()
+    {}
+
     virtual void RegisterRenderEventHandler(IRenderGameEventHandler * handler) = 0;
     virtual void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) = 0;
     virtual void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) = 0;
@@ -128,6 +131,7 @@ struct IGameController
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetZoom() = 0;
     virtual vec2f ScreenToWorld(vec2f const & screenCoordinates) const = 0;
+    virtual vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const = 0;
 
     //
     // Interaction parameters

@@ -290,6 +290,8 @@ Render:
 				+ SS Ariara: no both
 				+ SS Queen of Unova: no power
 				+ Tubon I: no hd
+		+ "ResourceLoader" -> "ResourceLocator"
+
 		= Pinch tool (*)
 			- Converge speed depends on mouse move span (in world coords)
 				! The faster the mouse move, the faster the convergence
@@ -307,7 +309,6 @@ Render:
 		- Diesel engine
 			- With John Smith's sound
 
-		+ "ResourceLoader" -> "ResourceLocator"
 
 		- Robustness:
 			- DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)

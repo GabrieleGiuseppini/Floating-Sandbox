@@ -242,14 +242,14 @@ public:
 	/*
 	 * Equivalent of the transformation we usually perform in vertex shaders.
 	 */
-	inline vec2f WorldToNdc(vec2f const & worldCoordinates)
+	inline vec2f WorldToNdc(vec2f const & worldCoordinates) const
 	{
 		return vec2f(
 			worldCoordinates.x * mKernelOrthoMatrix[0][0] + mKernelOrthoMatrix[3][0],
 			worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
 	}
 
-    inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
+    inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
     {
         return vec2f(
             Clamp(
@@ -262,14 +262,14 @@ public:
                 GameParameters::HalfMaxWorldHeight));
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
+    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
     {
         return vec2f(
             screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
             -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
     }
 
-    inline float PixelWidthToWorldWidth(float pixelWidth)
+    inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
         // Width in NDC coordinates (between 0 and 2.0)
         float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasWidth);
@@ -278,7 +278,7 @@ public:
         return (ndcW / 2.0f) * mVisibleWorldWidth;
     }
 
-    inline float PixelHeightToWorldHeight(float pixelHeight)
+    inline float PixelHeightToWorldHeight(float pixelHeight) const
     {
         // Height in NDC coordinates (between 0 and 2.0)
         float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasHeight);

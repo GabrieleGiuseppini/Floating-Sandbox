@@ -668,15 +668,32 @@ public:
                 // 1. Update target position
                 mCurrentEngagementState->TargetScreenPosition = inputState.MousePosition;
 
-                // 2. Converge towards target position
+                // 2. Calculate convergence speed based on speed of mouse move
+                vec2f const mouseMovementStride = inputState.MousePosition - mCurrentEngagementState->LastScreenPosition;
+                float const worldStride = mGameController->ScreenOffsetToWorldOffset(mouseMovementStride).length();
+
+                // Convergence rate:
+                // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
+                // - Stride > 20.0: 0.09 (25 steps to 0.9 of target)
+                float const convergenceRate =
+                    0.03f
+                    + (0.09f - 0.03f) * SmoothStep(2.0f, 20.0f, worldStride);
+
+                // 3. Converge towards target position
                 mCurrentEngagementState->CurrentScreenPosition +=
                     (mCurrentEngagementState->TargetScreenPosition - mCurrentEngagementState->CurrentScreenPosition)
-                    * 0.03f; // Convergence speed, magic number
+                    * convergenceRate;
 
-                // 3. Apply force towards current position
+                // 4. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
                     mCurrentEngagementState->CurrentScreenPosition);
+
+                //
+                // Update last mouse position
+                //
+
+                mCurrentEngagementState->LastScreenPosition = inputState.MousePosition;
             }
         }
         else
@@ -714,6 +731,7 @@ private:
         ElementId PickedParticle;
         vec2f CurrentScreenPosition;
         vec2f TargetScreenPosition;
+        vec2f LastScreenPosition;
 
         EngagementState(
             ElementId pickedParticle,
@@ -721,6 +739,7 @@ private:
             : PickedParticle(pickedParticle)
             , CurrentScreenPosition(startScreenPosition)
             , TargetScreenPosition(startScreenPosition)
+            , LastScreenPosition(startScreenPosition)
         {}
     };
 

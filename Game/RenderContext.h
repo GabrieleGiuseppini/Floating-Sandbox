@@ -510,12 +510,12 @@ public:
     // Screen <-> World transformations
     //
 
-    inline vec2f ScreenToWorld(vec2f const & screenCoordinates)
+    inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
     {
         return mViewModel.ScreenToWorld(screenCoordinates);
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset)
+    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
     {
         return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
     }
