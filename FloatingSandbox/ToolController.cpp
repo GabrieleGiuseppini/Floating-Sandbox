@@ -18,7 +18,7 @@ ToolController::ToolController(
     wxWindow * parentWindow,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLoader & resourceLoader)
+    ResourceLocator & resourceLocator)
     : mInputState()
     , mCurrentTool(nullptr)
     , mAllTools()
@@ -39,150 +39,150 @@ ToolController::ToolController(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<MoveAllTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<PickAndPullTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<SmashTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<SawTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<HeatBlasterTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<FireExtinguisherTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<GrabTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<SwirlTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<PinTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<InjectAirBubblesTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<FloodHoseTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<AntiMatterBombTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<ImpactBombTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<RCBombTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<TimerBombTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<WaveMakerTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<TerrainAdjustTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<ScrubTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<RepairStructureTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     mAllTools.emplace_back(
         std::make_unique<ThanosSnapTool>(
             *this,
             gameController,
             soundController,
-            resourceLoader));
+            resourceLocator));
 
     // Prepare own cursor(s)
-    mPanCursor = WxHelpers::LoadCursor("pan_cursor", 15, 15, resourceLoader);
+    mPanCursor = WxHelpers::LoadCursor("pan_cursor", 15, 15, resourceLocator);
 
     // Set current tool
     this->SetTool(initialToolType);

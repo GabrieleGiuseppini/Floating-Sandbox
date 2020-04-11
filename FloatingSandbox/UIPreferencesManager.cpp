@@ -7,7 +7,7 @@
 
 #include "StandardSystemPaths.h"
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <GameCore/Utils.h>
 
@@ -15,8 +15,9 @@ const std::string Filename = "ui_preferences.json";
 
 UIPreferencesManager::UIPreferencesManager(
     std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<MusicController> musicController)
-    : mDefaultShipLoadDirectory(ResourceLoader::GetInstalledShipFolderPath())
+    std::shared_ptr<MusicController> musicController,
+    ResourceLocator const & resourceLocator)
+    : mDefaultShipLoadDirectory(resourceLocator.GetInstalledShipFolderPath())
     , mGameController(std::move(gameController))
     , mMusicController(std::move(musicController))
 {

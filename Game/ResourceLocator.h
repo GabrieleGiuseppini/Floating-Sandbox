@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-class ResourceLoader
+class ResourceLocator
 {
 public:
 
-    ResourceLoader();
+    ResourceLocator();
 
 public:
 
@@ -21,7 +21,7 @@ public:
     // Ships
     //
 
-    static std::filesystem::path GetInstalledShipFolderPath();
+    std::filesystem::path GetInstalledShipFolderPath() const;
 
     std::filesystem::path GetDefaultShipDefinitionFilePath() const;
 

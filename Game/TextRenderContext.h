@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Font.h"
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 #include "ShaderTypes.h"
 
 #include <GameOpenGL/ShaderManager.h>
@@ -36,7 +36,7 @@ class TextRenderContext
 public:
 
     TextRenderContext(
-        ResourceLoader & resourceLoader,
+        ResourceLocator & resourceLocator,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         int canvasWidth,
         int canvasHeight,

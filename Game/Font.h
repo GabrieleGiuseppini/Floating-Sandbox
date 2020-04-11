@@ -6,7 +6,7 @@
 #pragma once
 
 #include "RenderTypes.h"
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
@@ -161,7 +161,7 @@ struct Font
     RgbaImageData Texture;
 
     static std::vector<Render::Font> LoadAll(
-        ResourceLoader const & resourceLoader,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
 private:

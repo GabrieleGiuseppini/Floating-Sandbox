@@ -15,7 +15,7 @@
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 #include "ShipMetadata.h"
 #include "TextLayer.h"
 
@@ -52,7 +52,7 @@ public:
 
     static std::unique_ptr<GameController> Create(
         std::function<void()> swapRenderBuffersFunction,
-        std::shared_ptr<ResourceLoader> resourceLoader,
+        std::shared_ptr<ResourceLocator> resourceLocator,
         ProgressCallback const & progressCallback);
 
 public:
@@ -655,7 +655,7 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
 		std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
-        std::shared_ptr<ResourceLoader> resourceLoader);
+        std::shared_ptr<ResourceLocator> resourceLocator);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
@@ -724,7 +724,6 @@ private:
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-    std::shared_ptr<ResourceLoader> mResourceLoader;
 	std::shared_ptr<TextLayer> mTextLayer;
 
 

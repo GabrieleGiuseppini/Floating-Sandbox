@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 #include <Game/ShipPreview.h>
 
 #include <GameCore/ImageData.h>
@@ -193,7 +193,7 @@ public:
 
     ShipPreviewWindow(
         wxWindow* parent,
-        ResourceLoader const & resourceLoader);
+        ResourceLocator const & resourceLocator);
 
 	virtual ~ShipPreviewWindow();
 

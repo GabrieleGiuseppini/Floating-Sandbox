@@ -16,7 +16,7 @@
 using namespace std::chrono_literals;
 
 MusicController::MusicController(
-    ResourceLoader &  resourceLoader,
+    ResourceLocator &  resourceLocator,
     ProgressCallback const & progressCallback)
     : // State
       mIsMuted(false)
@@ -42,7 +42,7 @@ MusicController::MusicController(
     // Initialize Music
     //
 
-    auto musicNames = resourceLoader.GetMusicNames();
+    auto musicNames = resourceLocator.GetMusicNames();
 
     for (size_t i = 0; i < musicNames.size(); ++i)
     {
@@ -71,7 +71,7 @@ MusicController::MusicController(
             // Background music
             //
 
-            mBackgroundMusic.AddToPlaylist(resourceLoader.GetMusicFilepath(musicName));
+            mBackgroundMusic.AddToPlaylist(resourceLocator.GetMusicFilepath(musicName));
         }
         else if (musicNameMatch[1].str() == "sinkingship")
         {
@@ -82,7 +82,7 @@ MusicController::MusicController(
 		    // Parse frequency
             bool isRare = (musicNameMatch[2].str() == "rare");
 
-            mSinkingMusic.AddAlternative(resourceLoader.GetMusicFilepath(musicName), isRare);
+            mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilepath(musicName), isRare);
         }
     }
 }

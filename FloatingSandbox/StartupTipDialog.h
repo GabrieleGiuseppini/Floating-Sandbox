@@ -7,7 +7,7 @@
 
 #include "UIPreferencesManager.h"
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
 
@@ -20,7 +20,7 @@ public:
     StartupTipDialog(
         wxWindow* parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLoader const & resourceLoader);
+        ResourceLocator const & resourceLocator);
 
     virtual ~StartupTipDialog();
 

@@ -13,7 +13,7 @@
 StartupTipDialog::StartupTipDialog(
     wxWindow * parent,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLoader const & resourceLoader)
+    ResourceLocator const & resourceLocator)
     : wxDialog(parent, wxID_ANY, wxString(_("Welcome!")), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mUIPreferencesManager(std::move(uiPreferencesManager))
 {
@@ -28,7 +28,7 @@ StartupTipDialog::StartupTipDialog(
             wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
         html->SetBorders(0);
-        html->LoadPage(resourceLoader.GetStartupTipFilepath().string());
+        html->LoadPage(resourceLocator.GetStartupTipFilepath().string());
         html->SetSize(
             html->GetInternalRepresentation()->GetWidth(),
             html->GetInternalRepresentation()->GetHeight());

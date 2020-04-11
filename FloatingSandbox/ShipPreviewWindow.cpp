@@ -19,7 +19,7 @@ wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
 ShipPreviewWindow::ShipPreviewWindow(
     wxWindow* parent,
-    ResourceLoader const & resourceLoader)
+    ResourceLocator const & resourceLocator)
     : wxScrolled<wxWindow>(
         parent,
         wxID_ANY,
@@ -32,11 +32,11 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mRows(0)
     , mColumnWidth(0)
     , mExpandedHorizontalMargin(0)
-    , mWaitBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_wait"))))
-    , mErrorBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_error"))))
-    , mPreviewRibbonBatteryBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_battery"))))
-    , mPreviewRibbonHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_hd"))))
-    , mPreviewRibbonBatteryAndHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLoader.GetBitmapFilepath("ship_preview_ribbon_battery_and_hd"))))
+    , mWaitBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLocator.GetBitmapFilepath("ship_preview_wait"))))
+    , mErrorBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLocator.GetBitmapFilepath("ship_preview_error"))))
+    , mPreviewRibbonBatteryBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLocator.GetBitmapFilepath("ship_preview_ribbon_battery"))))
+    , mPreviewRibbonHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLocator.GetBitmapFilepath("ship_preview_ribbon_hd"))))
+    , mPreviewRibbonBatteryAndHDBitmap(WxHelpers::MakeBitmap(ImageFileTools::LoadImageRgbaLowerLeft(resourceLocator.GetBitmapFilepath("ship_preview_ribbon_battery_and_hd"))))
     //
     , mPollQueueTimer()
     , mInfoTiles()

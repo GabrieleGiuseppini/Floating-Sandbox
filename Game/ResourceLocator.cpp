@@ -3,13 +3,13 @@
 * Created:              2018-02-18
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 
 #include <GameCore/Utils.h>
 
 #include <regex>
 
-ResourceLoader::ResourceLoader()
+ResourceLocator::ResourceLocator()
 {
     // Nothing special, for now.
     // We'll be busy though when Resource Packs are implemented.
@@ -19,12 +19,12 @@ ResourceLoader::ResourceLoader()
 // Ships
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetInstalledShipFolderPath()
+std::filesystem::path ResourceLocator::GetInstalledShipFolderPath() const
 {
     return std::filesystem::canonical(std::filesystem::path("Ships"));
 }
 
-std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
+std::filesystem::path ResourceLocator::GetDefaultShipDefinitionFilePath() const
 {
     std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp";
     if (!std::filesystem::exists(defaultShipDefinitionFilePath))
@@ -39,7 +39,7 @@ std::filesystem::path ResourceLoader::GetDefaultShipDefinitionFilePath() const
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetTexturesRootFolderPath() const
+std::filesystem::path ResourceLocator::GetTexturesRootFolderPath() const
 {
     return std::filesystem::path("Data") / "Textures";
 }
@@ -48,7 +48,7 @@ std::filesystem::path ResourceLoader::GetTexturesRootFolderPath() const
 // Fonts
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<std::filesystem::path> ResourceLoader::GetFontPaths() const
+std::vector<std::filesystem::path> ResourceLocator::GetFontPaths() const
 {
     std::vector<std::filesystem::path> filepaths;
 
@@ -68,7 +68,7 @@ std::vector<std::filesystem::path> ResourceLoader::GetFontPaths() const
 // Materials
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetMaterialDatabaseRootFilepath() const
+std::filesystem::path ResourceLocator::GetMaterialDatabaseRootFilepath() const
 {
     return std::filesystem::path("Data");
 }
@@ -77,7 +77,7 @@ std::filesystem::path ResourceLoader::GetMaterialDatabaseRootFilepath() const
 // Music
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<std::string> ResourceLoader::GetMusicNames() const
+std::vector<std::string> ResourceLocator::GetMusicNames() const
 {
     std::vector<std::string> filenames;
     for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Music"))
@@ -91,7 +91,7 @@ std::vector<std::string> ResourceLoader::GetMusicNames() const
     return filenames;
 }
 
-std::filesystem::path ResourceLoader::GetMusicFilepath(std::string const & musicName) const
+std::filesystem::path ResourceLocator::GetMusicFilepath(std::string const & musicName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Music" / (musicName + ".ogg");
     return std::filesystem::absolute(localPath);
@@ -101,7 +101,7 @@ std::filesystem::path ResourceLoader::GetMusicFilepath(std::string const & music
 // Sounds
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<std::string> ResourceLoader::GetSoundNames() const
+std::vector<std::string> ResourceLocator::GetSoundNames() const
 {
     std::vector<std::string> filenames;
     for (auto const & entryIt : std::filesystem::directory_iterator(std::filesystem::path("Data") / "Sounds"))
@@ -115,7 +115,7 @@ std::vector<std::string> ResourceLoader::GetSoundNames() const
     return filenames;
 }
 
-std::filesystem::path ResourceLoader::GetSoundFilepath(std::string const & soundName) const
+std::filesystem::path ResourceLocator::GetSoundFilepath(std::string const & soundName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Sounds" / (soundName + ".flac");
     return std::filesystem::absolute(localPath);
@@ -125,31 +125,31 @@ std::filesystem::path ResourceLoader::GetSoundFilepath(std::string const & sound
 // Resources
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetCursorFilepath(std::string const & cursorName) const
+std::filesystem::path ResourceLocator::GetCursorFilepath(std::string const & cursorName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (cursorName + ".png");
     return std::filesystem::absolute(localPath);
 }
 
-std::filesystem::path ResourceLoader::GetIconFilepath(std::string const & iconName) const
+std::filesystem::path ResourceLocator::GetIconFilepath(std::string const & iconName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (iconName + ".png");
     return std::filesystem::absolute(localPath);
 }
 
-std::filesystem::path ResourceLoader::GetArtFilepath(std::string const & artName) const
+std::filesystem::path ResourceLocator::GetArtFilepath(std::string const & artName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (artName + ".png");
     return std::filesystem::absolute(localPath);
 }
 
-std::filesystem::path ResourceLoader::GetBitmapFilepath(std::string const & bitmapName) const
+std::filesystem::path ResourceLocator::GetBitmapFilepath(std::string const & bitmapName) const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Resources" / (bitmapName + ".png");
     return std::filesystem::absolute(localPath);
 }
 
-std::vector<std::filesystem::path> ResourceLoader::GetBitmapFilepaths(std::string const & bitmapNamePattern) const
+std::vector<std::filesystem::path> ResourceLocator::GetBitmapFilepaths(std::string const & bitmapNamePattern) const
 {
     std::filesystem::path const directoryPath = std::filesystem::path("Data") / "Resources";
 
@@ -173,7 +173,7 @@ std::vector<std::filesystem::path> ResourceLoader::GetBitmapFilepaths(std::strin
 // Theme Settings
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetThemeSettingsRootFilepath() const
+std::filesystem::path ResourceLocator::GetThemeSettingsRootFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Themes" / "Settings";
     return std::filesystem::absolute(localPath);
@@ -183,7 +183,7 @@ std::filesystem::path ResourceLoader::GetThemeSettingsRootFilepath() const
 // Misc
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetDefaultOceanFloorTerrainFilepath() const
+std::filesystem::path ResourceLocator::GetDefaultOceanFloorTerrainFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Misc" / "default_ocean_floor_terrain.png";
     return std::filesystem::absolute(localPath);
@@ -193,13 +193,13 @@ std::filesystem::path ResourceLoader::GetDefaultOceanFloorTerrainFilepath() cons
 // Help
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetStartupTipFilepath() const
+std::filesystem::path ResourceLocator::GetStartupTipFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "startup_tip.html";
     return std::filesystem::absolute(localPath);
 }
 
-std::filesystem::path ResourceLoader::GetHelpFilepath() const
+std::filesystem::path ResourceLocator::GetHelpFilepath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "index.html";
     return std::filesystem::absolute(localPath);
@@ -209,13 +209,13 @@ std::filesystem::path ResourceLoader::GetHelpFilepath() const
 // Shaders
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLoader::GetRenderShadersRootPath() const
+std::filesystem::path ResourceLocator::GetRenderShadersRootPath() const
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders" / "Render";
     return std::filesystem::absolute(localPath);
 }
 
-std::filesystem::path ResourceLoader::GetGPUCalcShadersRootPath()
+std::filesystem::path ResourceLocator::GetGPUCalcShadersRootPath()
 {
     std::filesystem::path localPath = std::filesystem::path("Data") / "Shaders" / "GPUCalc";
     return std::filesystem::absolute(localPath);

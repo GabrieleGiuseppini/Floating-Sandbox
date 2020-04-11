@@ -7,7 +7,7 @@
 
 #include "GameEventDispatcher.h"
 #include "RenderTypes.h"
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 #include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "ShipRenderContext.h"
@@ -45,7 +45,7 @@ class RenderContext
 public:
 
     RenderContext(
-        ResourceLoader & resourceLoader,
+        ResourceLocator & resourceLocator,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
 

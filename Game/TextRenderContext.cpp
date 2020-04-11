@@ -8,7 +8,7 @@
 namespace Render {
 
 TextRenderContext::TextRenderContext(
-    ResourceLoader & resourceLoader,
+    ResourceLocator & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
     int canvasHeight,
@@ -31,7 +31,7 @@ TextRenderContext::TextRenderContext(
     progressCallback(0.0f, "Loading fonts...");
 
     std::vector<Font> fonts = Font::LoadAll(
-        resourceLoader,
+        resourceLocator,
         [&progressCallback](float progress, std::string const & /*message*/)
         {
             progressCallback(progress, "Loading fonts...");

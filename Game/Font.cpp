@@ -41,14 +41,14 @@ FontMetadata::FontMetadata(
 }
 
 std::vector<Render::Font> Font::LoadAll(
-    ResourceLoader const & resourceLoader,
+    ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
     //
     // Get paths
     //
 
-    std::vector<std::filesystem::path> filepaths = resourceLoader.GetFontPaths();
+    std::vector<std::filesystem::path> filepaths = resourceLocator.GetFontPaths();
 
 
     //

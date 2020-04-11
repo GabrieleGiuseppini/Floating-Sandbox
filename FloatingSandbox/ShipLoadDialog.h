@@ -8,7 +8,7 @@
 #include "ShipPreviewWindow.h"
 #include "UIPreferencesManager.h"
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/combobox.h>
 #include <wx/dialog.h>
@@ -27,7 +27,7 @@ public:
     ShipLoadDialog(
         wxWindow* parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLoader const & resourceLoader);
+        ResourceLocator const & resourceLocator);
 
 	virtual ~ShipLoadDialog();
 

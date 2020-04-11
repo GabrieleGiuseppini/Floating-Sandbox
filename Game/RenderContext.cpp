@@ -19,7 +19,7 @@ namespace Render {
 ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
-    ResourceLoader & resourceLoader,
+    ResourceLocator & resourceLocator,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
     // Buffers
@@ -148,7 +148,7 @@ RenderContext::RenderContext(
 
     progressCallback(0.0f, "Loading shaders...");
 
-    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLoader.GetRenderShadersRootPath());
+    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
 
 
     //
@@ -164,7 +164,7 @@ RenderContext::RenderContext(
     //
 
     mTextRenderContext = std::make_shared<TextRenderContext>(
-        resourceLoader,
+        resourceLocator,
         *(mShaderManager.get()),
         mViewModel.GetCanvasWidth(),
         mViewModel.GetCanvasHeight(),
@@ -410,7 +410,7 @@ RenderContext::RenderContext(
 
     // Load texture database
     auto cloudTextureDatabase = TextureDatabase<Render::CloudTextureDatabaseTraits>::Load(
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     // Create atlas
     auto cloudTextureAtlas = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlas(
@@ -460,7 +460,7 @@ RenderContext::RenderContext(
 
     // Load texture database
     auto worldTextureDatabase = TextureDatabase<Render::WorldTextureDatabaseTraits>::Load(
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     // Ocean
 
@@ -515,7 +515,7 @@ RenderContext::RenderContext(
 
     // Load texture database
     auto genericLinearTextureDatabase = TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>::Load(
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     // Create atlas
     auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
@@ -604,7 +604,7 @@ RenderContext::RenderContext(
 
     // Load texture database
     auto genericMipMappedTextureDatabase = TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>::Load(
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     // Create atlas
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
@@ -662,7 +662,7 @@ RenderContext::RenderContext(
     // Load atlas
     TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
         ExplosionTextureDatabaseTraits::DatabaseName,
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     progressCallback(
         (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
@@ -709,7 +709,7 @@ RenderContext::RenderContext(
 
     // Load texture database
     auto noiseTextureDatabase = TextureDatabase<Render::NoiseTextureDatabaseTraits>::Load(
-        resourceLoader.GetTexturesRootFolderPath());
+        resourceLocator.GetTexturesRootFolderPath());
 
     // Noise 1
 

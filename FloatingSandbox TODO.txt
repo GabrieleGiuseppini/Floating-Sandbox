@@ -292,7 +292,9 @@ Render:
 				+ Tubon I: no hd
 		= Pinch tool (*)
 			- Converge speed depends on mouse move span (in world coords)
+				! The faster the mouse move, the faster the convergence
 				- Tool asks GameController: screenOffset->worldOffset
+					- Need to expose new ScreenOffsetToWorldOffset(.)
 				- Then, formula gives convergence speed
 
 		= Retrofit ships:
@@ -305,7 +307,7 @@ Render:
 		- Diesel engine
 			- With John Smith's sound
 
-		- "ResourceLoader" -> "ResourceLocator"
+		+ "ResourceLoader" -> "ResourceLocator"
 
 		- Robustness:
 			- DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
@@ -319,10 +321,11 @@ Render:
 					- Not found json files
 					- Missing altogether
 				- Impl:
+					- See UIPreferencesManager getting default ship load path
 					- GameController::AddDefaultShip() 
 						- Call from MainFrame
 						- Call AddFallbackShip() ship in all error cases: Data/Misc/fallback_ship.png
-							- ResourceLoader method
+							- ResourceLocator method
 							- Also use on April 1st
 				- Test after:
 					- Broken json
@@ -1338,14 +1341,14 @@ Render:
 				- author, description, name
 			- Misc\
 				- For ocean bumps
-		- ResourceLoader:
+		- ResourceLocator:
 			- Static methods only for default paths
 				- e.g.: GetDefaultTextureDatabaseFilepath()
 			- 1 static method to get list of non-default ResourcePackMetadata's 
 			- cctor takes optional pack name
 			- Instance methods for *optional* pack-override paths
 				- e.g.: GetOverrideTextureDatabaseFilepath()
-			- Each "DB"'s Create(...) takes a ResourceLoader const &
+			- Each "DB"'s Create(...) takes a ResourceLocator const &
 				- Own responsibility to check if override exists and, if so, to load override and reconciliate
 			- No more methods that load DB's
 		- Switching:

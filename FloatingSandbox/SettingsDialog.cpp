@@ -60,7 +60,7 @@ SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<SettingsManager> settingsManager,
 	std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
-    ResourceLoader const & resourceLoader)
+    ResourceLocator const & resourceLocator)
     : mParent(parent)
     , mSettingsManager(std::move(settingsManager))
 	, mGameControllerSettingsOptions(std::move(gameControllerSettingsOptions))
@@ -103,7 +103,7 @@ SettingsDialog::SettingsDialog(
     //
 
     mWarningIcon = std::make_unique<wxBitmap>(
-        resourceLoader.GetIconFilepath("warning_icon").string(),
+        resourceLocator.GetIconFilepath("warning_icon").string(),
         wxBITMAP_TYPE_PNG);
 
 

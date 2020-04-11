@@ -108,7 +108,7 @@ MainFrame::MainFrame(
     wxApp * mainApp,
     wxIcon const & icon)
     : mMainApp(mainApp)
-    , mResourceLoader(new ResourceLoader())
+    , mResourceLocator(new ResourceLocator())
     , mGameController()
     , mSoundController()
     , mMusicController()
@@ -682,7 +682,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create splash screen
     //
 
-    std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLoader);
+    std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
 
 #ifdef _DEBUG
     // The guy is pesky while debugging
@@ -704,7 +704,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 assert(!!mMainGLCanvas);
                 mMainGLCanvas->SwapBuffers();
             },
-            mResourceLoader,
+            mResourceLocator,
             [&splash, this](float progress, std::string const & message)
             {
                 // 0.0 -> 0.5
@@ -731,7 +731,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mSoundController = std::make_shared<SoundController>(
-            *mResourceLoader,
+            *mResourceLocator,
             [&splash, this](float progress, std::string const & message)
             {
                 // 0.5 -> 0.66
@@ -758,7 +758,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mMusicController = std::make_shared<MusicController>(
-            *mResourceLoader,
+            *mResourceLocator,
             [&splash, this](float progress, std::string const & message)
             {
                 // 0.66 -> 0.83
@@ -785,7 +785,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mSettingsManager = std::make_shared<SettingsManager>(
         mGameController,
         mSoundController,
-        mResourceLoader->GetThemeSettingsRootFilepath(),
+        mResourceLocator->GetThemeSettingsRootFilepath(),
         StandardSystemPaths::GetInstance().GetUserGameSettingsRootFilepath());
 
     // Enable "Reload Last Modified Settings" menu if we have last-modified settings
@@ -798,7 +798,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
         mGameController,
-        mMusicController);
+        mMusicController,
+        *mResourceLocator);
 
 	ReconcileWithUIPreferences();
 
@@ -814,7 +815,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController,
         mSoundController,
         mUIPreferencesManager,
-        *mResourceLoader,
+        *mResourceLocator,
         [&splash, this](float progress, std::string const & message)
         {
             // 0.83 -> 1.0
@@ -843,7 +844,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainGLCanvas.get(),
             mGameController,
             mSoundController,
-            *mResourceLoader);
+            *mResourceLocator);
     }
     catch (std::exception const & e)
     {
@@ -872,7 +873,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Load initial ship
     //
 
-    auto defaultShipFilePath = mResourceLoader->GetDefaultShipDefinitionFilePath();
+    auto defaultShipFilePath = mResourceLocator->GetDefaultShipDefinitionFilePath();
 
     try
     {
@@ -1079,7 +1080,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
             StartupTipDialog startupTipDialog(
                 this,
                 mUIPreferencesManager,
-                *mResourceLoader);
+                *mResourceLocator);
 
             startupTipDialog.ShowModal();
         }
@@ -1229,7 +1230,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
             mUIPreferencesManager,
-            *mResourceLoader);
+            *mResourceLocator);
     }
 
     // Open dialog
@@ -1599,7 +1600,7 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             mSettingsManager,
             mGameController,
-            *mResourceLoader);
+            *mResourceLocator);
     }
 
     mSettingsDialog->Open();
@@ -1713,7 +1714,7 @@ void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mHelpDialog = std::make_unique<HelpDialog>(
             this,
-            *mResourceLoader);
+            *mResourceLocator);
     }
 
     mHelpDialog->ShowModal();
@@ -1725,7 +1726,7 @@ void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mAboutDialog = std::make_unique<AboutDialog>(
             this,
-            *mResourceLoader);
+            *mResourceLocator);
     }
 
     mAboutDialog->Open();

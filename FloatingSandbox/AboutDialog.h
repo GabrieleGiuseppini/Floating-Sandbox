@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
 #include <wx/scrolwin.h>
@@ -16,7 +16,7 @@ public:
 
     AboutDialog(
         wxWindow* parent,
-        ResourceLoader const & resourceLoader);
+        ResourceLocator const & resourceLocator);
 
 	virtual ~AboutDialog();
 

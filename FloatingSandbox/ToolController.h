@@ -10,7 +10,7 @@
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/frame.h>
 #include <wx/image.h>
@@ -30,7 +30,7 @@ public:
         wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
     void SetTool(ToolType toolType)
     {

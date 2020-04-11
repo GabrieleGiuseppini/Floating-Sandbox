@@ -19,7 +19,7 @@ wxEND_EVENT_TABLE()
 
 AboutDialog::AboutDialog(
     wxWindow * parent,
-    ResourceLoader const & resourceLoader)
+    ResourceLocator const & resourceLocator)
     : mParent(parent)
 {
     Create(
@@ -60,7 +60,7 @@ AboutDialog::AboutDialog(
     // Image
     //
 
-    wxBitmap bmp(resourceLoader.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap bmp(resourceLocator.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
 
     wxStaticBitmap * stBmp = new wxStaticBitmap(this, wxID_ANY, bmp, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
 

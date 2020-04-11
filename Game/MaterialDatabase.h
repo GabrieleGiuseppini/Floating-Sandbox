@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Materials.h"
-#include "ResourceLoader.h"
+#include "ResourceLocator.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
@@ -34,9 +34,9 @@ private:
 
 public:
 
-    static MaterialDatabase Load(ResourceLoader const & resourceLoader)
+    static MaterialDatabase Load(ResourceLocator const & resourceLocator)
     {
-        return Load(resourceLoader.GetMaterialDatabaseRootFilepath());
+        return Load(resourceLocator.GetMaterialDatabaseRootFilepath());
     }
 
     static MaterialDatabase Load(std::filesystem::path materialsRootDirectory)

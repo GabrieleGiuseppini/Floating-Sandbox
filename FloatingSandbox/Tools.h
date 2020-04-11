@@ -8,7 +8,7 @@
 #include "SoundController.h"
 
 #include <Game/IGameController.h>
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/image.h>
 #include <wx/window.h>
@@ -593,7 +593,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 };
 
 class MoveAllTool final : public BaseMoveTool<ShipId>
@@ -604,7 +604,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 };
 
 class PickAndPullTool final : public Tool
@@ -615,7 +615,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -739,7 +739,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -803,7 +803,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -942,7 +942,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1061,7 +1061,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1164,7 +1164,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1269,7 +1269,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1374,7 +1374,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1405,7 +1405,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1500,7 +1500,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1601,7 +1601,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1632,7 +1632,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1663,7 +1663,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1694,7 +1694,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1725,7 +1725,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1802,7 +1802,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -1884,7 +1884,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 
@@ -2017,7 +2017,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
     virtual void Initialize(InputState const & /*inputState*/) override
     {
@@ -2160,7 +2160,7 @@ public:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
 public:
 

@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/frame.h>
 #include <wx/gauge.h>
@@ -18,7 +18,7 @@ class SplashScreenDialog : public wxFrame
 {
 public:
 
-    SplashScreenDialog(ResourceLoader const & resourceLoader);
+    SplashScreenDialog(ResourceLocator const & resourceLocator);
 
 	virtual ~SplashScreenDialog();
 

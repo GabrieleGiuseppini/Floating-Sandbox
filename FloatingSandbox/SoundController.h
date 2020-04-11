@@ -9,7 +9,7 @@
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameWallClock.h>
@@ -40,7 +40,7 @@ class SoundController
 public:
 
     SoundController(
-        ResourceLoader & resourceLoader,
+        ResourceLocator & resourceLocator,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();

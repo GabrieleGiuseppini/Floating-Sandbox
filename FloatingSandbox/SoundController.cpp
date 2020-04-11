@@ -27,7 +27,7 @@ std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::millisec
 float constexpr WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
-    ResourceLoader & resourceLoader,
+    ResourceLocator & resourceLocator,
     ProgressCallback const & progressCallback)
     : // State
       mMasterEffectsVolume(100.0f)
@@ -78,7 +78,7 @@ SoundController::SoundController(
     // Initialize Sounds
     //
 
-    auto soundNames = resourceLoader.GetSoundNames();
+    auto soundNames = resourceLocator.GetSoundNames();
 
     for (size_t i = 0; i < soundNames.size(); ++i)
     {
@@ -93,7 +93,7 @@ SoundController::SoundController(
         //
 
         std::unique_ptr<sf::SoundBuffer> soundBuffer = std::make_unique<sf::SoundBuffer>();
-        if (!soundBuffer->loadFromFile(resourceLoader.GetSoundFilepath(soundName).string()))
+        if (!soundBuffer->loadFromFile(resourceLocator.GetSoundFilepath(soundName).string()))
         {
             throw GameException("Cannot load sound \"" + soundName + "\"");
         }
@@ -308,7 +308,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 false, // IsUnderwater
-                resourceLoader.GetSoundFilepath(soundName));
+                resourceLocator.GetSoundFilepath(soundName));
         }
         else if (soundType == SoundType::Break
 				|| soundType == SoundType::Destroy
@@ -604,7 +604,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 isUnderwater,
-                resourceLoader.GetSoundFilepath(soundName),
+                resourceLocator.GetSoundFilepath(soundName),
                 loopStartSample,
                 loopEndSample);
         }

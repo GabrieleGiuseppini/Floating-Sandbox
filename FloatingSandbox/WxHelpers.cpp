@@ -83,13 +83,13 @@ wxCursor WxHelpers::LoadCursor(
     std::string const & cursorName,
     int hotspotX,
     int hotspotY,
-    ResourceLoader & resourceLoader)
+    ResourceLocator & resourceLocator)
 {
     wxImage img = LoadCursorImage(
         cursorName,
         hotspotX,
         hotspotY,
-        resourceLoader);
+        resourceLocator);
 
     return wxCursor(img);
 }
@@ -98,9 +98,9 @@ wxImage WxHelpers::LoadCursorImage(
     std::string const & cursorName,
     int hotspotX,
     int hotspotY,
-    ResourceLoader & resourceLoader)
+    ResourceLocator & resourceLocator)
 {
-    auto filepath = resourceLoader.GetCursorFilepath(cursorName);
+    auto filepath = resourceLocator.GetCursorFilepath(cursorName);
     auto bmp = std::make_unique<wxBitmap>(filepath.string(), wxBITMAP_TYPE_PNG);
 
     wxImage img = bmp->ConvertToImage();

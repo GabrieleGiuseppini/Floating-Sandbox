@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <GameCore/ImageData.h>
 
@@ -27,11 +27,11 @@ namespace WxHelpers
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 
     wxImage LoadCursorImage(
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLoader & resourceLoader);
+        ResourceLocator & resourceLocator);
 };

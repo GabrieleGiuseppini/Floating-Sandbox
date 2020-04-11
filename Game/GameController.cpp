@@ -13,18 +13,18 @@
 
 std::unique_ptr<GameController> GameController::Create(
     std::function<void()> swapRenderBuffersFunction,
-    std::shared_ptr<ResourceLoader> resourceLoader,
+    std::shared_ptr<ResourceLocator> resourceLocator,
     ProgressCallback const & progressCallback)
 {
     // Load materials
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(*resourceLoader);
+    MaterialDatabase materialDatabase = MaterialDatabase::Load(*resourceLocator);
 
     // Create game dispatcher
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
-        *resourceLoader,
+        *resourceLocator,
         gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
         {
@@ -45,7 +45,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(gameEventDispatcher),
 			std::move(textLayer),
             std::move(materialDatabase),
-            resourceLoader));
+            resourceLocator));
 }
 
 GameController::GameController(
@@ -54,7 +54,7 @@ GameController::GameController(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
 	std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
-    std::shared_ptr<ResourceLoader> resourceLoader)
+    std::shared_ptr<ResourceLocator> resourceLocator)
     // State machines
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
@@ -73,10 +73,9 @@ GameController::GameController(
     , mRenderContext(std::move(renderContext))
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mResourceLoader(std::move(resourceLoader))
     , mTextLayer(std::move(textLayer))
     , mWorld(new Physics::World(
-        OceanFloorTerrain::LoadFromImage(mResourceLoader->GetDefaultOceanFloorTerrainFilepath()),
+        OceanFloorTerrain::LoadFromImage(resourceLocator->GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
         mGameParameters))

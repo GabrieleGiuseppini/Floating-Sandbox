@@ -9,6 +9,7 @@
 #include "MusicController.h"
 
 #include <Game/IGameController.h>
+#include <Game/ResourceLocator.h>
 
 #include <GameCore/Version.h>
 
@@ -29,7 +30,8 @@ public:
 
     UIPreferencesManager(
         std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<MusicController> musicController);
+        std::shared_ptr<MusicController> musicController,
+        ResourceLocator const & resourceLocator);
 
     ~UIPreferencesManager();
 

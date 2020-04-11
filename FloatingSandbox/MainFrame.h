@@ -23,7 +23,7 @@
 
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <wx/filedlg.h>
 #include <wx/frame.h>
@@ -322,7 +322,7 @@ private:
     // Helpers
     //
 
-    std::shared_ptr<ResourceLoader> mResourceLoader;
+    std::shared_ptr<ResourceLocator> mResourceLocator;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::shared_ptr<MusicController> mMusicController;

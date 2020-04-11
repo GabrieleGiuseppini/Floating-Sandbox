@@ -10,7 +10,7 @@
 #include <UIControls/SliderControl.h>
 
 #include <Game/IGameControllerSettingsOptions.h>
-#include <Game/ResourceLoader.h>
+#include <Game/ResourceLocator.h>
 
 #include <GameCore/Settings.h>
 
@@ -34,7 +34,7 @@ public:
         wxWindow * parent,
         std::shared_ptr<SettingsManager> settingsManager,
 		std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
-        ResourceLoader const & resourceLoader);
+        ResourceLocator const & resourceLocator);
 
     virtual ~SettingsDialog();
 
