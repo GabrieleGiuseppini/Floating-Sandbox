@@ -1608,8 +1608,23 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & /*event*/)
 {
-    assert(!!mSettingsManager);
-	if (mSettingsManager->EnforceDefaultsAndLastModifiedSettings())
+    // Load last-modified settings
+    bool hasLoadedSettings = false;
+    try
+    {
+        assert(!!mSettingsManager);
+        hasLoadedSettings = mSettingsManager->EnforceDefaultsAndLastModifiedSettings();
+    }
+    catch (std::exception const & exc)
+    {
+        OnError("Could not load last-modified settings: " + std::string(exc.what()), false);
+
+        // Disable menu item
+        mReloadLastModifiedSettingsMenuItem->Enable(false);
+    }
+
+    // Display notification
+	if (hasLoadedSettings)
 	{
 		assert(!!mGameController);
 		mGameController->DisplaySettingsLoadedNotification();

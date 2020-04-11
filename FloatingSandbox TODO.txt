@@ -313,21 +313,22 @@ Render:
 					- Not found json files
 					- Missing altogether
 				- Impl:
-					- See UIPreferencesManager getting default ship load path
-					- GameController::AddDefaultShip() 
-						- Call from MainFrame
-						- Call AddFallbackShip() ship in all error cases: Data/Misc/fallback_ship.png
-							- ResourceLocator method
-							- Also use on April 1st
+					- MainFrame:
+						- GameController::AddDefaultShip() 
+							- If April 1st: call AddFallbackShip() instead
+						- If error: 
+							- Display msg
+							- GameController::AddFallbackShip() 
+								- Data/Misc/fallback_ship.png, new ResourceLocator method
 				- Test after:
 					- Broken json
 					- Not found json files
 					- Missing altogether
-			= Catch corrupted settings jsons
-				- Main settings:
-					- Fuzzy-break them and see what happens at startup
-					- Reset main settings to defaults if broken (w/message)
-					- Test after
+			+ Catch corrupted settings jsons
+				+ Main settings:
+					+ Fuzzy-break them and see what happens at startup
+					+ Handle somehow
+					+ Test after
 				+ Persisted settings (user only):
 					+ Fuzzy-break them until SettingsWindows doesn't open
 					+ Handle somehow
