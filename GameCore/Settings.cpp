@@ -99,34 +99,42 @@ void SettingsStorage::ListSettings(
     std::smatch filenameMatch;
     for (auto const & filepath : mFileSystem->ListFiles(directoryPath))
     {
-        auto const filename = filepath.filename().string();
-        if (std::regex_match(filename, filenameMatch, SettingsFilenameRegex))
+        try
         {
-            //
-            // Good settings
-            //
-
-            // Extract name
-            assert(filenameMatch.size() == 2);
-            std::string settingsName = filenameMatch[1].str();
-
-            // Extract description
-
-            auto is = mFileSystem->OpenInputStream(filepath);
-            auto settingsValue = Utils::ParseJSONStream(*is);
-            if (!settingsValue.is<picojson::object>())
+            auto const filename = filepath.filename().string();
+            if (std::regex_match(filename, filenameMatch, SettingsFilenameRegex))
             {
-                throw GameException("JSON settings could not be loaded: root value is not an object");
+                //
+                // Good settings
+                //
+
+                // Extract name
+                assert(filenameMatch.size() == 2);
+                std::string settingsName = filenameMatch[1].str();
+
+                // Extract description
+
+                auto is = mFileSystem->OpenInputStream(filepath);
+                auto settingsValue = Utils::ParseJSONStream(*is);
+                if (!settingsValue.is<picojson::object>())
+                {
+                    throw GameException("JSON settings could not be loaded: root value is not an object");
+                }
+
+                auto const & description = Utils::GetMandatoryJsonMember<std::string>(
+                    settingsValue.get<picojson::object>(),
+                    "description");
+
+                // Store entry
+                outPersistedSettingsMetadata.emplace_back(
+                    PersistedSettingsKey(settingsName, storageType),
+                    description);
             }
-
-            auto const & description = Utils::GetMandatoryJsonMember<std::string>(
-                settingsValue.get<picojson::object>(),
-                "description");
-
-            // Store entry
-            outPersistedSettingsMetadata.emplace_back(
-                PersistedSettingsKey(settingsName, storageType),
-                description);
+        }
+        catch (std::exception const & exc)
+        {
+            LogMessage("ERROR: error processing setting file \"", filepath.string(), "\": ", exc.what(),
+                ". The file will be ignored.");
         }
     }
 }
@@ -170,7 +178,7 @@ SettingsSerializationContext::SettingsSerializationContext(
     // Prepare json
     mSettingsJson["version"] = picojson::value(Version::CurrentVersion().ToString());
     mSettingsJson["description"] = picojson::value(description);
-    mSettingsJson["settings"] = picojson::value(picojson::object());    
+    mSettingsJson["settings"] = picojson::value(picojson::object());
 
     mSettingsRoot = &(mSettingsJson["settings"].get<picojson::object>());
 }
@@ -187,7 +195,7 @@ SettingsSerializationContext::~SettingsSerializationContext()
         mSettingsKey,
         SettingsStreamName,
         SettingsExtension);
-    
+
     *os << settingsJson;
 }
 
@@ -272,7 +280,7 @@ bool SettingSerializer::Deserialize<std::string>(
     return false;
 }
 
-// rgbColor 
+// rgbColor
 
 template<>
 void SettingSerializer::Serialize<rgbColor>(
@@ -299,7 +307,7 @@ bool SettingSerializer::Deserialize<rgbColor>(
     return false;
 }
 
-// std::chrono::seconds 
+// std::chrono::seconds
 
 template<>
 void SettingSerializer::Serialize<std::chrono::seconds>(
@@ -326,7 +334,7 @@ bool SettingSerializer::Deserialize<std::chrono::seconds>(
 	return false;
 }
 
-// std::chrono::minutes 
+// std::chrono::minutes
 
 template<>
 void SettingSerializer::Serialize<std::chrono::minutes>(

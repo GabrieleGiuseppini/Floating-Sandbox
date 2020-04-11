@@ -323,18 +323,20 @@ Render:
 					- Broken json
 					- Not found json files
 					- Missing altogether
-			- Catch corrupted settings jsons
+			= Catch corrupted settings jsons
 				- Main settings:
 					- Fuzzy-break them and see what happens at startup
 					- Reset main settings to defaults if broken (w/message)
 					- Test after
-				- Persisted settings (user only):
-					- Fuzzy-break them until SettingsWindows doesn't open
-					- Handle somehow
-					- Test after
+				+ Persisted settings (user only):
+					+ Fuzzy-break them until SettingsWindows doesn't open
+					+ Handle somehow
+					+ Test after
 
 		- Diesel engine
 			- With John Smith's sound
+
+		- Superheated pulverization (*)
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
@@ -1123,6 +1125,9 @@ Render:
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
+
+	- Superheated materials become pulverized
+		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets
 
 	- Frontier:
 		- Only for non-rope points - rope points never take part in frontier
