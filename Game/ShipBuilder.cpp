@@ -518,9 +518,10 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
             if (!seenInstanceIndices.insert(pi.ElectricalElementInstanceIndex).second)
             {
                 throw GameException(
-                    std::string("Found more that one electrical element with index \"")
+                    std::string("Found more than one electrical element with instance ID \"")
                     + std::to_string(pi.ElectricalElementInstanceIndex)
-                    + "\" in electrical layer image");
+                    + "\" in the electrical layer image; make sure that all instanced elements"
+                    + " have unique values for the blue component of their color codes");
             }
         }
     }
