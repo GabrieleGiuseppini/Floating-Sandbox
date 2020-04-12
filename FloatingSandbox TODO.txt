@@ -299,6 +299,8 @@ Render:
 			- Titanic Interior
 			- Britannic
 				- Ask Mike
+			- Goodyear
+			- Hindenburg?
 
 		= Robustness:
 			= DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
@@ -307,23 +309,22 @@ Render:
 					+ Logger::FlushToFile(fs path)
 						+ Path at SysPaths class
 					- Test
-			- Handle when error at default_ship on startup
-				- Test before:
-					- Broken json
-					- Not found json files
-					- Missing altogether
-				- Impl:
-					- MainFrame:
-						- GameController::AddDefaultShip() 
-							- If April 1st: call AddFallbackShip() instead
-						- If error: 
-							- Display msg
-							- GameController::AddFallbackShip() 
-								- Data/Misc/fallback_ship.png, new ResourceLocator method
-				- Test after:
-					- Broken json
-					- Not found json files
-					- Missing altogether
+			+ Handle when error at default_ship on startup
+				+ Test before:
+					+ Broken json
+					+ Missing altogether
+				+ Impl:
+					+ MainFrame:
+						+ GameController::AddDefaultShip() 
+							+ If April 1st: call AddFallbackShip() instead
+						+ If error: 
+							+ Display msg
+							+ GameController::AddFallbackShip() 
+								+ Data/Misc/fallback_ship.png, new ResourceLocator method					
+				+ Test after:
+					+ Broken json
+					+ All fine
+					+ Special day
 			+ Catch corrupted settings jsons
 				+ Main settings:
 					+ Fuzzy-break them and see what happens at startup
@@ -333,6 +334,12 @@ Render:
 					+ Fuzzy-break them until SettingsWindows doesn't open
 					+ Handle somehow
 					+ Test after
+				+ Test that it may be saved again
+
+		- Pumps (*)
+
+		- Batisphere with pumps
+			- Batisphere ship
 
 		- Diesel engine
 			- With John Smith's sound
@@ -355,18 +362,16 @@ Render:
 			- Music:
 				- Kevin MacLeod, check out Long Note 1,2,3,...
 
-		- Pumps (*)
-
-		- Batisphere with pumps
-			- Batisphere ship
-			- Electrical layer view (*)
-
 		- Flood doors (*)		
 
 		- Take Mike's Lego Titanic when ready
 
 		- Auto-Texturizer
-			- ShipTexturizer class
+			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
+			  texture; two modes:
+				- ~"From structure": builds texture using structural materials' RenderColor (as opposed to color key like now)
+				- ~"TODO": using bump maps
+			- Both implemented in ShipTexturizer class
 				- Textures/ShipTexturization folder contains textures
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
@@ -890,7 +895,7 @@ Render:
 
 	- Make water texture scroll with wind speed
 
-	- Electrical view:
+	- Electrical view (*):
 		- Spec:
 			- New flag (not in ShipRenderMode, standalone ~like StressedSprings)
 				- Settable at SettingsDialog

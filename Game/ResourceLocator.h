@@ -25,6 +25,8 @@ public:
 
     std::filesystem::path GetDefaultShipDefinitionFilePath() const;
 
+    std::filesystem::path GetFallbackShipDefinitionFilePath() const;
+
 
     //
     // Textures

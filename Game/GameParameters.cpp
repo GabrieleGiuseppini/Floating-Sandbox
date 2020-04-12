@@ -36,7 +36,7 @@ GameParameters::GameParameters()
     , BasalWaveHeightAdjustment(1.0f)
     , BasalWaveLengthAdjustment(1.0f)
     , BasalWaveSpeedAdjustment(4.0f)
-    , TsunamiRate(60)
+    , TsunamiRate(100)
     , RogueWaveRate(2)
     // Storm
 	, StormRate(60)

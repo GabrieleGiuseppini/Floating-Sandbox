@@ -554,12 +554,6 @@ MainFrame::MainFrame(
     // Initialize timers
     //
 
-    mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
-    Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
-
-    mLowFrequencyTimer = std::make_unique<wxTimer>(this, ID_LOW_FREQUENCY_TIMER);
-    Connect(ID_LOW_FREQUENCY_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnLowFrequencyTimerTrigger);
-
     mCheckUpdatesTimer = std::make_unique<wxTimer>(this, ID_CHECK_UPDATES_TIMER);
     Connect(ID_CHECK_UPDATES_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnCheckUpdatesTimerTrigger);
 
@@ -873,23 +867,26 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Load initial ship
     //
 
-    auto defaultShipFilePath = mResourceLocator->GetDefaultShipDefinitionFilePath();
-
     try
     {
-        mGameController->AddShip(defaultShipFilePath);
+        // Try default ship first
+        mGameController->AddDefaultShip(*mResourceLocator);
     }
-    catch (std::exception const & e)
+    catch (std::exception const & exc)
     {
-        OnError("Error during initialization: " + std::string(e.what()), true);
+        OnError(
+            "There was a problem locating an initial ship to load in the game - it is strongly advised that the Floating Sandbox installation gets repaired."
+            " The error message was: " + std::string(exc.what()) + "\n"
+            "The game initialization will now continue using a fallback ship.",
+            false);
 
-        return;
+        // Try fallback ship now
+        mGameController->AddFallbackShip(*mResourceLocator);
     }
 
     splash->UpdateProgress(1.0f, "Ready!");
 
     this->mMainApp->Yield();
-
 
     //
     // Start check update timer
@@ -934,7 +931,23 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Start timers
     //
 
+
+    //
+    // Start game timer
+    //
+
+    mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
+    Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
+
     PostGameStepTimer();
+
+
+    //
+    // Start low-frequency timer
+    //
+
+    mLowFrequencyTimer = std::make_unique<wxTimer>(this, ID_LOW_FREQUENCY_TIMER);
+    Connect(ID_LOW_FREQUENCY_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnLowFrequencyTimerTrigger);
 
     StartLowFrequencyTimer();
 }
@@ -1841,13 +1854,23 @@ void MainFrame::OnError(
     else
     {
         // Restart game
-        PostGameStepTimer();
-        StartLowFrequencyTimer();
+
+        if (!!mGameTimer)
+        {
+            PostGameStepTimer();
+        }
+
+        if (!!mLowFrequencyTimer)
+        {
+            StartLowFrequencyTimer();
+        }
     }
 }
 
 void MainFrame::PostGameStepTimer()
 {
+    assert(!!mGameTimer);
+
     // On Windows the timer resolution is 15.something ms,
     // so we use a delay of zero to shoot for a maximum of ~64 frames/sec
     mGameTimer->Start(0, true);
@@ -1855,6 +1878,8 @@ void MainFrame::PostGameStepTimer()
 
 void MainFrame::StartLowFrequencyTimer()
 {
+    assert(!!mLowFrequencyTimer);
+
     mLowFrequencyTimer->Start(1000, false);
 }
 

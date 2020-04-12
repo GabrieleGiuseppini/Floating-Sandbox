@@ -4142,7 +4142,7 @@
         }, 
         "melting_temperature": 1000000.0, 
         "name": "Water", 
-        "render_color": "#0000C0", 
+        "render_color": "#F0F0F0", 
         "sound_type": "AirBubble", 
         "specific_heat": 4182.0, 
         "stiffness": 1.0, 
@@ -4402,6 +4402,35 @@
             "row": "100|Electrical (Basic)"
         }, 
         "thermal_conductivity": 0.25, 
+        "water_diffusion_speed": 0.5, 
+        "water_retention": 0.05, 
+        "buoyancy_volume_fill": 1.0
+    },
+
+    {
+        "color_key": "#FC2020", 
+        "combustion_type": "Combustion", 
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.", 
+        "ignition_temperature": 353.0, 
+        "is_hull": false, 
+	"is_legacy_electrical": true,
+        "mass": {
+            "density": 0.022935, 
+            "nominal_mass": 800
+        }, 
+        "melting_temperature": 1000000.0, 
+        "name": "Wood", 
+        "render_color": "#FC2020", 
+        "sound_type": "Wood", 
+        "specific_heat": 100.0, 
+        "stiffness": 1.0, 
+        "strength": 0.15, 
+        "template": {
+            "column": "8|Heating", 
+            "row": "100|Electrical (Basic)"
+        }, 
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
         "buoyancy_volume_fill": 1.0

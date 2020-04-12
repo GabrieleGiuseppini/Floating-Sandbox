@@ -35,6 +35,11 @@ std::filesystem::path ResourceLocator::GetDefaultShipDefinitionFilePath() const
     return defaultShipDefinitionFilePath;
 }
 
+std::filesystem::path ResourceLocator::GetFallbackShipDefinitionFilePath() const
+{
+    return std::filesystem::path("Data") / "Misc" / "fallback_ship.png";
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Textures
 ////////////////////////////////////////////////////////////////////////////////////////////
