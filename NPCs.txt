@@ -19,3 +19,11 @@ This regime has a few sub-states controlling the actions and the rendering of th
 - Rising: the NPC particle is underwater but rising towards the sea surface; the NPC might be rendered as swimming upwards.
 
 NPC particles will all be made of the same "NPC" material, which simulates human mass and buoyancy when breathing, resulting in a particle that would normally *barely* float. If arbitrary transitions between the three states are required - e.g. a floating NPC should start sinking all of a sudden - these will be implemented by means of forces added onto the particles.
+
+NPC Rendering
+===========
+
+We have three options for the rendering of NPCs:
+1) Prepared textures with all the frames necessary for movements
+2) Prepared frames with vertices of limbs for each in-between frame, which then get interpolated
+3) Fully physical stick-men
