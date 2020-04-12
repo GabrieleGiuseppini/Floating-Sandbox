@@ -76,25 +76,19 @@ void create_minidump(
 
 LONG WINAPI unhandled_exception_handler(struct _EXCEPTION_POINTERS* apExceptionInfo)
 {
-    std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath();
-    if (!std::filesystem::exists(diagnosticsFolderPath))
+    try
     {
-        try
-        {
-            std::filesystem::create_directories(diagnosticsFolderPath);
-        }
-        catch (...)
-        { /* ignore*/
-        }
+        std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
+        std::string const dateTimeString = Utils::MakeNowDateAndTimeString();
+
+        // Create minidump
+        create_minidump(apExceptionInfo, diagnosticsFolderPath, dateTimeString);
+
+        // Flush log
+        Logger::Instance.FlushToFile(diagnosticsFolderPath, dateTimeString);
     }
-
-    std::string const dateTimeString = Utils::MakeNowDateAndTimeString();
-
-    // Create minidump
-    create_minidump(apExceptionInfo, diagnosticsFolderPath, dateTimeString);
-
-    // Flush log
-    Logger::Instance.FlushToFile(diagnosticsFolderPath / (dateTimeString + "_log.txt"));
+    catch (...)
+    { /* ignore */ }
 
     return EXCEPTION_CONTINUE_SEARCH;
 }

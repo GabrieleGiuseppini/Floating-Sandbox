@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Utils.h"
+
 #include <cassert>
 #include <chrono>
 #include <ctime>
@@ -130,8 +132,12 @@ public:
         _LogToNothing(std::forward<TArgs>(args)...);
     }
 
-    void FlushToFile(std::filesystem::path const & logFilePath)
+    void FlushToFile(
+        std::filesystem::path const & logFolderPath,
+        std::string namePrefix = Utils::MakeNowDateAndTimeString())
     {
+        std::filesystem::path const logFilePath = logFolderPath / (namePrefix + "_log.txt");
+
         std::ofstream outputFile(logFilePath, std::ios_base::out | std::ios_base::trunc);
 
         for (auto const & s : mStoredMessages)

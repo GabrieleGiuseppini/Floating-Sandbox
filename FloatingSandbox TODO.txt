@@ -299,8 +299,8 @@ Render:
 			- Titanic Interior
 			- Britannic
 				- Ask Mike
-			- Goodyear
-			- Hindenburg?
+			+ Goodyear
+			+ Hindenburg
 
 		= Robustness:
 			= DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
@@ -343,6 +343,8 @@ Render:
 
 		- Diesel engine
 			- With John Smith's sound
+			- Redo electrical template
+		- Hide legacy_electrical materials from structural palette		
 
 		- Superheated pulverization (*)
 
@@ -1077,23 +1079,36 @@ Render:
 				- Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
 				  water is sucked in our out
 			- Water is taken @ Ship::UpdateWaterIntake()
-				- In: as long as external water pressure > internal water pressure
+				- In: as long as external water pressure > 0
+					- OLD: was: In: as long as external water pressure > internal water pressure
 				- Out: as long as internal water pressure > 0
 			- Continuous sound when pumping
 		- Impl:
 			- Materials: new electrical element type
-				- Property: float pumpForce (< or > 0 for in/out), only de-serialized for pumps
-				- Add property to guide
-			- struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpForce (-1.0,...,+1.0)
+				- Property: float pumpNominalForce (< for out, > for in), only de-serialized for pumps
+				- Add property to guide			
+			- struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
 				- union: int64_t, used for fast "if(is leaking)" check
-			- ElectricalElements::UpdateSinks():
-				- For each pump:
-					- smoothing state machine, w/operating temperatures
-					- eventually sets Points::LeakComposite::PumpForce
-					- @ power state changes: emit event, for continuous sound - exactly like ShipSound
-						- Need object ID
+			- ElectricalElements:
+				- TODO: re-look at how engines are done, in terms of:
+					- Destroy -> RPM & smoothing state machine
+				- PumpState:
+					- float TargetNominalForce (from cctor: takes material's PumpNominalForce)
+					- float CurrentNominalForce
+				- UpdateSinks():
+					- For each element that is also pump:
+						- smoothing state machine, w/operating temperatures
+						- eventually sets Points::LeakComposite::PumpNominalForce
+						- @ power state changes: emit event, for continuous sound, and highlight - exactly like ShipSound
+							- Need object ID
 			- Ship::UpdateWaterIntake()
 				- NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
+					+ max(
+						max(PumpForce * ext.w, 0), // != 0 <=> PumpForce > 0 && ext.w > 0 || PumpForce < 0 && ext.w < 0
+						max(-PumpForce * p.w, 0)   // != 0 <=> PumpForce < 0 && p.w > 0 || PumpForce > 0 && p.w < 0
+					  )
+
+					- OLD: was: NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
 				             + (TODO:REVISIT...) max(
 							max(PumpForce * (ext.w - p.w), 0)
 							max(-PumpForce * p.w, 0)
@@ -1110,6 +1125,12 @@ Render:
 				+ No ObjectID needed thus
 				- Open sound, Close sound
 		- Impl:
+			- Prep:
+				- See if may get rid of Springs::Characteristics::Hull
+				- See if may get rid of Springs::Characteristics::Rope
+				- See if may get rid of Springs::Characteristics
+			- ElectricalElement::Update -> IShipHandler::OnFloodDoorStateChange(open or close) -> Point::Hull (see if needed) 
+			  and Spring's::WaterPermeability
 			- TODOHERE
 			- ElectricalElements::Update():
 				- For each flood door element (own separate list, for perf):

@@ -970,6 +970,11 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
+    /*
+    std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
+    Logger::Instance.FlushToFile(diagnosticsFolderPath);
+    */
+
     Close();
 }
 

@@ -1,8 +1,14 @@
 {
 	"structure_image":"goodyear_blimp_structure.png.dat",
+	"electrical_image":"goodyear_blimp_electrical.png.dat",
 	"texture_image":"goodyear_blimp_texture.png.dat",
 	"offset":{"x":0.0, "y":10.0},
 	"ship_name":"Goodyear Blimp",
 	"created_by":"Michael Bozarth",
-	"year_built":"2016"
+	"year_built":"2016",
+	"electrical_panel":{
+		"0": {"panel_x":-2, "panel_y":0, "label":"Engine Thrust"},
+		"1": {"panel_x":-1, "panel_y":0, "label":"Engine" },
+		"2": {"panel_x":1, "panel_y":0, "label":"Cabin Lights" }
+	}
 }

@@ -33,7 +33,12 @@ std::filesystem::path StandardSystemPaths::GetUserGameSettingsRootFolderPath() c
     return GetUserGameRootFolderPath() / "Settings";
 }
 
-std::filesystem::path StandardSystemPaths::GetDiagnosticsFolderPath() const
+std::filesystem::path StandardSystemPaths::GetDiagnosticsFolderPath(bool ensureExists) const
 {
-    return GetUserGameRootFolderPath() / "Diagnostics";
+    auto const folderPath = GetUserGameRootFolderPath() / "Diagnostics";
+
+    if (ensureExists)
+        std::filesystem::create_directories(folderPath);
+
+    return folderPath;
 }

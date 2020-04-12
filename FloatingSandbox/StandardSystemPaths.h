@@ -28,7 +28,7 @@ public:
 
     std::filesystem::path GetUserGameSettingsRootFolderPath() const;
 
-    std::filesystem::path GetDiagnosticsFolderPath() const;
+    std::filesystem::path GetDiagnosticsFolderPath(bool ensureExists = false) const;
 
 private:
 
