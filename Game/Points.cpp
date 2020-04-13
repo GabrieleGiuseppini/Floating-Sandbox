@@ -816,11 +816,8 @@ void Points::UpdateCombustionLowFrequency(
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
             // Reset flame vector
-            // Technically, we should bootstrap the flame vector with the resultant
-            // of Q and the particle's current velocity, exactly like we do at
-            // the hi-freq state machine update; to do that we'd need to extract
-            // the calculation out of the hi-freq state machine update and into a
-            // helper function.
+            // TODOTEST
+            mCombustionStateBuffer[pointIndex].FlameVector = CalculateIdealFlameVector(GetVelocity(pointIndex));
             mCombustionStateBuffer[pointIndex].FlameVector = vec2f(0.0f, 1.0f);
 
             // Add point to vector of burning points, sorted by plane ID
@@ -1163,30 +1160,8 @@ void Points::UpdateCombustionHighFrequency(
         //
 
         // Vector Q is the vector describing the ideal, final flame's
-        // direction and (unscaled) length.
-        //
-        // At rest it's (0, 1) - simply, the flame pointing upwards.
-        // When the particle has velocity V, it is the interpolation of the rest upward
-        // vector (B) with the opposite of the particle's velocity:
-        //      Q = (1-a) * B - a * V
-        // Where 'a' depends on the magnitude of the particle's velocity.
-
-        vec2f const pointVelocity = GetVelocity(pointIndex);
-
-        // The interpolation factor depends on the magnitude of the particle's velocity,
-        // via a magic formula
-        float const interpolationFactor = SmoothStep(0.0f, 100.0f, pointVelocity.length());
-
-        vec2f constexpr B = vec2f(0.0f, 1.0f);
-        vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
-        float Ql = Q.length();
-
-        // Qn = normalized Q
-        vec2f const Qn = Q.normalise(Ql);
-
-        // Limit length of Q: no more than Qlmax
-        float constexpr Qlmax = 1.8f; // Magic number
-        Q = Qn * std::min(Ql, Qlmax);
+        // direction and length
+        vec2f const Q = CalculateIdealFlameVector(GetVelocity(pointIndex));
 
         //
         // Converge current flame vector towards target vector Q
@@ -1195,15 +1170,17 @@ void Points::UpdateCombustionHighFrequency(
         // rate * Q + (1 - rate) * f(n-1)
         // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
 
-        // Rate depends on the magnitude of velocity
-        float constexpr minConvergenceRate = 0.07f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
-        float constexpr maxConvergenceRate = 0.5f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        // Rate inversely depends on the magnitude of change:
+        // - A big change: little rate (lots of inertia)
+        // - A small change: big rate (immediately responsive)
+        float constexpr minConvergenceRate = 0.01f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        float constexpr maxConvergenceRate = 0.05f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        float const changeMagnitude = std::abs(Q.angleCw(pointCombustionState.FlameVector));
         float const convergenceRate =
             minConvergenceRate
-            + (maxConvergenceRate - minConvergenceRate) * LinearStep(15.0f, 40.0f, Ql);
-        pointCombustionState.FlameVector =
-            Q * convergenceRate
-            + pointCombustionState.FlameVector * (1.0f - convergenceRate);
+            + (maxConvergenceRate - minConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, changeMagnitude));
+
+        pointCombustionState.FlameVector += (Q - pointCombustionState.FlameVector) * convergenceRate;
     }
 
     //
@@ -1879,6 +1856,35 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+vec2f Points::CalculateIdealFlameVector(vec2f const & pointVelocity)
+{
+    // Vector Q is the vector describing the ideal, final flame's
+    // direction and (unscaled) length.
+    //
+    // At rest it's (0, 1) - simply, the flame pointing upwards.
+    // When the particle has velocity V, it is the interpolation of the rest upward
+    // vector (B) with the opposite of the particle's velocity:
+    //      Q = (1-a) * B - a * V
+    // Where 'a' depends on the magnitude of the particle's velocity.
+
+    // The interpolation factor depends on the magnitude of the particle's velocity,
+    // via a magic formula
+    float const interpolationFactor = SmoothStep(0.0f, 100.0f, pointVelocity.length());
+
+    vec2f constexpr B = vec2f(0.0f, 1.0f);
+    vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
+    float Ql = Q.length();
+
+    // Qn = normalized Q
+    vec2f const Qn = Q.normalise(Ql);
+
+    // Limit length of Q: no more than Qlmax
+    float constexpr Qlmax = 1.8f; // Magic number
+    Q = Qn * std::min(Ql, Qlmax);
+
+    return Q;
+}
 
 ElementIndex Points::FindFreeEphemeralParticle(
     float currentSimulationTime,

@@ -1617,6 +1617,8 @@ private:
             cumulatedIntakenWaterThresholdForAirBubbles);
     }
 
+    static inline vec2f CalculateIdealFlameVector(vec2f const & pointVelocity);
+
     inline void SetLeaking(ElementIndex pointElementIndex)
     {
         mIsLeakingBuffer[pointElementIndex] = true;
@@ -1625,7 +1627,7 @@ private:
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
     }
 
-    ElementIndex FindFreeEphemeralParticle(
+    inline ElementIndex FindFreeEphemeralParticle(
         float currentSimulationTime,
         bool doForce);
 
