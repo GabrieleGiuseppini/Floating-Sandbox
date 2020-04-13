@@ -1011,11 +1011,6 @@ Render:
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
 
-	- Move tool:
-		- Allow for moving orhpaned points
-			- At this moment we avoid that in PickPointToMove, but could allow for orhpaned point if no non-orphaned
-			  points are in radius
-
 	- Rot tool: rots without having to flood it
 		- Then merge scrub tool into this one, with SHIFT 
 		- Icon: ?
@@ -6261,6 +6256,10 @@ IF WX:
 			+ Sounds
 			+ Wiring (incl. underwater)
 		+ changes.txt
+	+ Move tool:
+		+ Allow for moving orhpaned points
+			+ At this moment we avoid that in PickPointToMove, but could allow for orhpaned point if no non-orphaned
+			  points are in radius
 
 
 

@@ -1,5 +1,6 @@
 TODO
 - New "Pick-and-Pull" tool! Use it to pull individual particles around
+- Improved trajectory of flames
 - Added 1 new ship
 - Retrofitted electrical elements to a few older ships (S.S. Californian, Goodyear Blimp, Hindenburg)
 - ...and a few more small improvements here and there

@@ -34,30 +34,46 @@ std::optional<ElementIndex> Ship::PickPointToMove(
     GameParameters const & gameParameters) const
 {
     //
-    // Find closest non-ephemeral, non-orphaned point within the radius
+    // Find closest non-ephemeral point within the radius
     //
 
     float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
 
-    float bestSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestPoint = NoneElementIndex;
+    // Separate orphaned and non-orphaned points; we'll choose
+    // orphaned when there are no non-orphaned
+    float bestNonOrphanedSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex bestNonOrphanedPoint = NoneElementIndex;
+    float bestOrphanedSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex bestOrphanedPoint = NoneElementIndex;
 
     for (auto p : mPoints.RawShipPoints())
     {
-        if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
+        float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
+        if (squareDistance < squareSearchRadius)
         {
-            float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
-            if (squareDistance < squareSearchRadius
-                && squareDistance < bestSquareDistance)
+            if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
             {
-                bestSquareDistance = squareDistance;
-                bestPoint = p;
+                if (squareDistance < bestNonOrphanedSquareDistance)
+                {
+                    bestNonOrphanedSquareDistance = squareDistance;
+                    bestNonOrphanedPoint = p;
+                }
+            }
+            else
+            {
+                if (squareDistance < bestOrphanedSquareDistance)
+                {
+                    bestOrphanedSquareDistance = squareDistance;
+                    bestOrphanedPoint = p;
+                }
             }
         }
     }
 
-    if (bestPoint != NoneElementIndex)
-        return bestPoint;
+    if (bestNonOrphanedPoint != NoneElementIndex)
+        return bestNonOrphanedPoint;
+    else if (bestOrphanedPoint != NoneElementIndex)
+        return bestOrphanedPoint;
     else
         return std::nullopt;
 }
