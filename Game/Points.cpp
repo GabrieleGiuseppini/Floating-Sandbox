@@ -1166,19 +1166,19 @@ void Points::UpdateCombustionHighFrequency(
         //
         // Converge current flame vector towards target vector Q
         //
-
-        // rate * Q + (1 - rate) * f(n-1)
+        //  fv(n) = rate * Q + (1 - rate) * fv(n-1)
         // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
+        //
 
         // Rate inversely depends on the magnitude of change:
         // - A big change: little rate (lots of inertia)
         // - A small change: big rate (immediately responsive)
-        float constexpr minConvergenceRate = 0.01f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
-        float constexpr maxConvergenceRate = 0.05f * GameParameters::SimulationStepTimeDuration<float> / 0.02f;
+        float constexpr MinConvergenceRate = 0.02f;
+        float constexpr MaxConvergenceRate = 0.05f;
         float const changeMagnitude = std::abs(Q.angleCw(pointCombustionState.FlameVector));
         float const convergenceRate =
-            minConvergenceRate
-            + (maxConvergenceRate - minConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, changeMagnitude));
+            MinConvergenceRate
+            + (MaxConvergenceRate - MinConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, changeMagnitude));
 
         pointCombustionState.FlameVector += (Q - pointCombustionState.FlameVector) * convergenceRate;
     }
