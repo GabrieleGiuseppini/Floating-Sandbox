@@ -1163,19 +1163,22 @@ void Points::UpdateCombustionHighFrequency(
         //
 
         // Vector Q is the vector describing the ideal, final flame's
-        // direction and (unscaled) length. At rest it's (0, 1).
-        // When the particle has velocity V, it is the resultant of the rest upward
-        // vector (B) added to a scaled-down opposite of the particle's velocity:
-        //  Q = B - velocityScale * V
+        // direction and (unscaled) length.
+        //
+        // At rest it's (0, 1) - simply, the flame pointing upwards.
+        // When the particle has velocity V, it is the interpolation of the rest upward
+        // vector (B) with the opposite of the particle's velocity:
+        //      Q = (1-a) * B - a * V
+        // Where 'a' depends on the magnitude of the particle's velocity.
 
         vec2f const pointVelocity = GetVelocity(pointIndex);
 
-        // The velocity scale depends on the velocity magnitude, via
-        // a magic formula
-        float const velocityScale = SmoothStep(0.0f, 100.0f, pointVelocity.length());
+        // The interpolation factor depends on the magnitude of the particle's velocity,
+        // via a magic formula
+        float const interpolationFactor = SmoothStep(0.0f, 100.0f, pointVelocity.length());
 
         vec2f constexpr B = vec2f(0.0f, 1.0f);
-        vec2f Q = B - pointVelocity * velocityScale;
+        vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
         float Ql = Q.length();
 
         // Qn = normalized Q
