@@ -992,7 +992,7 @@ void Points::UpdateCombustionHighFrequency(
         Smoke should be drawn behind flames, hence GenericTexture's should be drawn in a layer that is earlier than flames.
         However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
         that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P.
-        The only way out that I may think of, at this moment, is to draw flames and generic textures alternative, for each
+        The only way out that I may think of, at this moment, is to draw flames and generic textures alternatively, for each
         plane ID (!), or to make smoke fully opaque.
 
         //
