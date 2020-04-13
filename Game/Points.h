@@ -156,6 +156,36 @@ public:
         {}
     };
 
+    /*
+     * The leaking-related properties of a particle.
+     */
+    union LeakingComposite
+    {
+#pragma pack(push)
+        struct LeakingSourcesType
+        {
+            float StructuralLeak; // 0.0 or 1.0
+            float WaterPumpNominalForce; // -1.0 [out], ..., +1.0 [in]
+
+            LeakingSourcesType(
+                float structuralLeak,
+                float waterPumpNominalForce)
+                : StructuralLeak(structuralLeak)
+                , WaterPumpNominalForce(waterPumpNominalForce)
+            {}
+        };
+#pragma pack(pop)
+
+        LeakingSourcesType LeakingSources;
+        uint64_t IsCumulativelyLeaking; // Allows for "if (IsLeaking)"
+
+        LeakingComposite(bool isStructurallyLeaking)
+            : LeakingSources(
+                isStructurallyLeaking ? 1.0f : 0.0f,
+                0.0f)
+        {}
+    };
+
 private:
 
     /*
@@ -501,8 +531,8 @@ public:
         , mWaterVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mWaterMomentumBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
-        , mIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
-        , mFactoryIsLeakingBuffer(mBufferElementCount, shipPointCount, false)
+        , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
+        , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialHeatCapacityReciprocalBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -633,7 +663,7 @@ public:
         ElectricalMaterial const * electricalMaterial,
         bool isRope,
         ElementIndex electricalElementIndex,
-        bool isLeaking,
+        bool isStructurallyLeaking,
         vec4f const & color,
         vec2f const & textureCoordinates,
 		float randomNormalizedUniformFloat);
@@ -1168,21 +1198,28 @@ public:
         return mCumulatedIntakenWater[pointElementIndex];
     }
 
+    LeakingComposite const & GetLeakingComposite(ElementIndex pointElementIndex) const
+    {
+        return mLeakingCompositeBuffer[pointElementIndex];
+    }
+
+    /*TODO: needed?
     bool IsLeaking(ElementIndex pointElementIndex) const
     {
-        return mIsLeakingBuffer[pointElementIndex];
+        return mLeakingCompositeBuffer[pointElementIndex].IsLeaking != 0.0f;
     }
+    */
 
     void Damage(ElementIndex pointElementIndex)
     {
         if (!mMaterialIsHullBuffer[pointElementIndex])
         {
             //
-            // Start leaking
+            // Start structural leaking
             //
 
             // Set as leaking
-            mIsLeakingBuffer[pointElementIndex] = true;
+            mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
             // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
             mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
@@ -1621,9 +1658,9 @@ private:
         vec2f const & pointVelocity,
         float pointVelocityMagnitudeThreshold);
 
-    inline void SetLeaking(ElementIndex pointElementIndex)
+    inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
-        mIsLeakingBuffer[pointElementIndex] = true;
+        mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
@@ -1703,9 +1740,9 @@ private:
     // utilized for air bubbles
     Buffer<float> mCumulatedIntakenWater;
 
-    // When true, the point is intaking water
-    Buffer<bool> mIsLeakingBuffer;
-    Buffer<bool> mFactoryIsLeakingBuffer;
+    // Indicators of point intaking water
+    Buffer<LeakingComposite> mLeakingCompositeBuffer;
+    Buffer<bool> mFactoryIsStructurallyLeakingBuffer;
 
     //
     // Heat dynamics

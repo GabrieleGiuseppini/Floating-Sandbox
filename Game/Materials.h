@@ -182,7 +182,8 @@ public:
         PowerMonitor,
         ShipSound,
         SmokeEmitter,
-        WaterSensingSwitch
+        WaterSensingSwitch,
+        WaterPump
     };
 
     enum class EngineElementType
@@ -244,6 +245,9 @@ public:
     // Ship sound
     ShipSoundElementType ShipSoundType;
 
+    // Water pump
+    float WaterPumpNominalForce;
+
 public:
 
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
@@ -275,7 +279,8 @@ public:
         float enginePower,
         float engineResponsiveness,
         InteractiveSwitchElementType interactiveSwitchType,
-        ShipSoundElementType shipSoundType)
+        ShipSoundElementType shipSoundType,
+        float waterPumpNominalForce)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
@@ -296,6 +301,7 @@ public:
         , EngineResponsiveness(engineResponsiveness)
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
+        , WaterPumpNominalForce(waterPumpNominalForce)
     {
     }
 };

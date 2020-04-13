@@ -1066,25 +1066,25 @@ Render:
 			- Really?
 		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
-	- Pumps (*)
-		- Spec:
-			- New electrical element type
-			- Two types: "in" or "out"
-			- Pumps' intake is superimposed to leaking point's intake
-				- Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
+	= Pumps (*)
+		! Spec:
+			! New electrical element type
+			! Two types: "in" or "out"
+			! Pumps' intake is superimposed to leaking point's intake
+				! Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
 				  water is sucked in our out
-			- Water is taken @ Ship::UpdateWaterIntake()
-				- In: as long as external water pressure > 0
+			! Water is taken @ Ship::UpdateWaterIntake()
+				! In: as long as external water pressure > 0
 					- OLD: was: In: as long as external water pressure > internal water pressure
-				- Out: as long as internal water pressure > 0
-			- Continuous sound when pumping
-		- Impl:
-			- Materials: new electrical element type
-				- Property: float pumpNominalForce (< for out, > for in), only de-serialized for pumps
-				- Add property to guide			
-			- struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
-				- union: int64_t, used for fast "if(is leaking)" check
-			- Test perf
+				! Out: as long as internal water pressure > 0
+			! Continuous sound when pumping
+		= Impl:
+			+ Materials: new electrical element type
+				+ Property: float pumpNominalForce (< for out, > for in), only de-serialized for pumps				
+			+ struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
+				+ union: int64_t, used for fast "if(is leaking)" check
+			+ Test perf
+			+ Test destroy & repair
 			- ElectricalElements:
 				- TODO: re-look at how engines are done, in terms of:
 					- Destroy -> RPM & smoothing state machine
@@ -1110,6 +1110,7 @@ Render:
 							max(-PumpForce * p.w, 0)
 					     )
 			- Sound
+			- Add property to guide
 			- Update materials template
 
 	- Flood doors (*)

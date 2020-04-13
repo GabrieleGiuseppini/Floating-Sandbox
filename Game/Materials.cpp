@@ -224,6 +224,13 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             shipSoundType = StrToShipSoundElementType(shipSoundTypeStr);
         }
 
+        // Water pump properties
+        float waterPumpNominalForce = 0.0f;
+        if (ElectricalElementType::WaterPump == electricalType)
+        {
+            waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "water_pump_nominal_force");
+        }
+
         return ElectricalMaterial(
             name,
             electricalType,
@@ -243,7 +250,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             enginePower,
             engineResponsiveness,
             interactiveSwitchType,
-            shipSoundType);
+            shipSoundType,
+            waterPumpNominalForce);
     }
     catch (GameException const & ex)
     {
@@ -273,6 +281,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::ShipSound;
     else if (Utils::CaseInsensitiveEquals(str, "SmokeEmitter"))
         return ElectricalElementType::SmokeEmitter;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterPump"))
+        return ElectricalElementType::WaterPump;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSensingSwitch"))
         return ElectricalElementType::WaterSensingSwitch;
     else

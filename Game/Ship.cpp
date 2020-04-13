@@ -1173,8 +1173,8 @@ void Ship::UpdateWaterInflow(
     float & waterTaken)
 {
     //
-    // Intake/outtake water into/from all the leaking nodes that are either underwater
-    // or are overwater and taking rain.
+    // Intake/outtake water into/from all the leaking nodes (structural or forced)
+    // that are either underwater or are overwater and taking rain.
     //
     // Ephemeral points are never leaking, hence we ignore them
     //
@@ -1187,7 +1187,11 @@ void Ship::UpdateWaterInflow(
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
-        if (mPoints.IsLeaking(pointIndex))
+        // This is one of the few cases in which we prefer branching over calculating
+        // for all points, mostly because we expect a tiny fraction of all points to
+        // be leaking at any moment
+        auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
+        if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
             //
             // 1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
@@ -1892,7 +1896,7 @@ void Ship::RotPoints(
         // Interpolate alpha
         float const alpha = Mix(
             1.0f,
-            (mPoints.IsLeaking(p) ? leakingAlphaMax : alphaMax),
+            (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? leakingAlphaMax : alphaMax),
             waterEquivalent);
 
         // Decay

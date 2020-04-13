@@ -21,7 +21,7 @@ void Points::Add(
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
     ElementIndex electricalElementIndex,
-    bool isLeaking,
+    bool isStructurallyLeaking,
     vec4f const & color,
     vec2f const & textureCoordinates,
 	float randomNormalizedUniformFloat)
@@ -58,10 +58,10 @@ void Points::Add(
     mWaterVelocityBuffer.emplace_back(vec2f::zero());
     mWaterMomentumBuffer.emplace_back(vec2f::zero());
     mCumulatedIntakenWater.emplace_back(0.0f);
-    mIsLeakingBuffer.emplace_back(isLeaking);
-    if (isLeaking)
-        SetLeaking(pointIndex);
-    mFactoryIsLeakingBuffer.emplace_back(isLeaking);
+    mLeakingCompositeBuffer.emplace_back(LeakingComposite(isStructurallyLeaking));
+    if (isStructurallyLeaking)
+        SetStructurallyLeaking(pointIndex);
+    mFactoryIsStructurallyLeakingBuffer.emplace_back(isStructurallyLeaking);
 
     // Heat dynamics
     mTemperatureBuffer.emplace_back(GameParameters::Temperature0);
@@ -153,8 +153,8 @@ void Points::CreateEphemeralParticleAirBubble(
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
     assert(mWaterBuffer[pointIndex] == 0.0f);
     //mWaterBuffer[pointIndex] = 0.0f;
-    assert(false == mIsLeakingBuffer[pointIndex]);
-    //mIsLeakingBuffer[pointIndex] = false;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
@@ -224,8 +224,8 @@ void Points::CreateEphemeralParticleDebris(
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     assert(mWaterBuffer[pointIndex] == 0.0f);
     //mWaterBuffer[pointIndex] = 0.0f;
-    assert(false == mIsLeakingBuffer[pointIndex]);
-    //mIsLeakingBuffer[pointIndex] = false;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
@@ -310,8 +310,8 @@ void Points::CreateEphemeralParticleSmoke(
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
     assert(mWaterBuffer[pointIndex] == 0.0f);
     //mWaterBuffer[pointIndex] = 0.0f;
-    assert(false == mIsLeakingBuffer[pointIndex]);
-    //mIsLeakingBuffer[pointIndex] = false;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = temperature;
     assert(airStructuralMaterial.GetHeatCapacity() > 0.0f);
@@ -382,8 +382,8 @@ void Points::CreateEphemeralParticleSparkle(
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
     assert(mWaterBuffer[pointIndex] == 0.0f);
     //mWaterBuffer[pointIndex] = 0.0f;
-    assert(false == mIsLeakingBuffer[pointIndex]);
-    //mIsLeakingBuffer[pointIndex] = false;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
@@ -453,8 +453,8 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
     assert(mWaterBuffer[pointIndex] == 0.0f);
     //mWaterBuffer[pointIndex] = 0.0f;
-    assert(false == mIsLeakingBuffer[pointIndex]);
-    //mIsLeakingBuffer[pointIndex] = false;
+    assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
+    //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
     mTemperatureBuffer[pointIndex] = gameParameters.WaterTemperature;
     assert(waterStructuralMaterial.GetHeatCapacity() > 0.0f);
@@ -529,8 +529,9 @@ void Points::Restore(ElementIndex pointElementIndex)
     // Clear the damaged flag
     mIsDamagedBuffer[pointElementIndex] = false;
 
-    // Restore factory-time IsLeaking
-    mIsLeakingBuffer[pointElementIndex] = mFactoryIsLeakingBuffer[pointElementIndex];
+    // Restore factory-time structural IsLeaking
+    mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak =
+        mFactoryIsStructurallyLeakingBuffer[pointElementIndex] ? 1.0f : 0.0f;
 
     // Remove point from set of burning points, in case it was burning
     if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::NotBurning)
@@ -612,7 +613,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         // Randomize cumulated water intaken for each leaking point
         for (ElementIndex i : RawShipPoints())
         {
-            if (IsLeaking(i))
+            if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
                 mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
             }

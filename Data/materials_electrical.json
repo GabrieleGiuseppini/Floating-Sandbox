@@ -721,6 +721,40 @@
             "column": "2|Power Monitor", 
             "row": "20|Misc"
         }
+    },
+
+    {
+        "color_key": "#3C3D00",
+	"conducts_electricity": true,
+        "electrical_type": "WaterPump", 
+        "heat_generated": 300.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 398.15, 
+        "minimum_operating_temperature": 233.15, 
+        "name": "Water Pump In", 
+        "template": {
+            "column": "3|Water Pump In", 
+            "row": "20|Misc"
+        },
+	"water_pump_nominal_force": 1.0
+    },
+
+    {
+        "color_key": "#3D3C00",
+	"conducts_electricity": true,
+        "electrical_type": "WaterPump", 
+        "heat_generated": 300.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 398.15, 
+        "minimum_operating_temperature": 233.15, 
+        "name": "Water Pump Out", 
+        "template": {
+            "column": "4|Water Pump Out", 
+            "row": "20|Misc"
+        },
+	"water_pump_nominal_force": -1.0
     }
 
 ]
