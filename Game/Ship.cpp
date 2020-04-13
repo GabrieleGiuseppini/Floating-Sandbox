@@ -1868,14 +1868,12 @@ void Ship::RotPoints(
         * 10.0f; // Upping up a bit to fight against initial steep curve
 
     // Alpha: the smaller, the faster we rot
-    float const alphaMax =
-        gameParameters.RotAcceler8r != 0.0f
+    float const alphaMax = gameParameters.RotAcceler8r != 0.0f
         ? powf(1e-10f, gameParameters.RotAcceler8r / Nf)
         : 1.0f;
 
     // Leaking points rot faster - they are directly in contact with water after all!
-    float const leakingAlphaMax =
-        gameParameters.RotAcceler8r != 0.0f
+    float const leakingAlphaMax = gameParameters.RotAcceler8r != 0.0f
         ? alphaMax * 0.995f
         : 1.0f;
 
