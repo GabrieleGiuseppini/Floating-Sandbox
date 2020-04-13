@@ -1617,7 +1617,9 @@ private:
             cumulatedIntakenWaterThresholdForAirBubbles);
     }
 
-    static inline vec2f CalculateIdealFlameVector(vec2f const & pointVelocity);
+    static inline vec2f CalculateIdealFlameVector(
+        vec2f const & pointVelocity,
+        float pointVelocityMagnitudeThreshold);
 
     inline void SetLeaking(ElementIndex pointElementIndex)
     {

@@ -816,9 +816,9 @@ void Points::UpdateCombustionLowFrequency(
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
             // Reset flame vector
-            // TODOTEST
-            mCombustionStateBuffer[pointIndex].FlameVector = CalculateIdealFlameVector(GetVelocity(pointIndex));
-            mCombustionStateBuffer[pointIndex].FlameVector = vec2f(0.0f, 1.0f);
+            mCombustionStateBuffer[pointIndex].FlameVector = CalculateIdealFlameVector(
+                GetVelocity(pointIndex),
+                200.0f); // For an initial flame, we want the particle's current velocity to have a smaller impact on the flame vector
 
             // Add point to vector of burning points, sorted by plane ID
             assert(mBurningPoints.cend() == std::find(mBurningPoints.cbegin(), mBurningPoints.cend(), pointIndex));
@@ -1161,7 +1161,9 @@ void Points::UpdateCombustionHighFrequency(
 
         // Vector Q is the vector describing the ideal, final flame's
         // direction and length
-        vec2f const Q = CalculateIdealFlameVector(GetVelocity(pointIndex));
+        vec2f const Q = CalculateIdealFlameVector(
+            GetVelocity(pointIndex),
+            100.0f); // Particle's velocity has a larger impact on the final vector
 
         //
         // Converge current flame vector towards target vector Q
@@ -1857,7 +1859,9 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-vec2f Points::CalculateIdealFlameVector(vec2f const & pointVelocity)
+vec2f Points::CalculateIdealFlameVector(
+    vec2f const & pointVelocity,
+    float pointVelocityMagnitudeThreshold)
 {
     // Vector Q is the vector describing the ideal, final flame's
     // direction and (unscaled) length.
@@ -1869,12 +1873,13 @@ vec2f Points::CalculateIdealFlameVector(vec2f const & pointVelocity)
     // Where 'a' depends on the magnitude of the particle's velocity.
 
     // The interpolation factor depends on the magnitude of the particle's velocity,
-    // via a magic formula
-    float const interpolationFactor = SmoothStep(0.0f, 100.0f, pointVelocity.length());
+    // via a magic formula; the more the particle's velocity, the more the resultant
+    // vector is aligned with the particle's velocity
+    float const interpolationFactor = SmoothStep(0.0f, pointVelocityMagnitudeThreshold, pointVelocity.length());
 
     vec2f constexpr B = vec2f(0.0f, 1.0f);
     vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
-    float Ql = Q.length();
+    float const Ql = Q.length();
 
     // Qn = normalized Q
     vec2f const Qn = Q.normalise(Ql);
@@ -1916,7 +1921,7 @@ ElementIndex Points::FindFreeEphemeralParticle(
         }
 
         // Check whether it's the oldest
-        auto lifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
+        auto const lifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[p].StartSimulationTime;
         if (lifetime >= oldestParticleLifetime)
         {
             oldestParticle = p;

@@ -1089,6 +1089,7 @@ Render:
 				- Add property to guide			
 			- struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
 				- union: int64_t, used for fast "if(is leaking)" check
+			- Test perf
 			- ElectricalElements:
 				- TODO: re-look at how engines are done, in terms of:
 					- Destroy -> RPM & smoothing state machine
@@ -1113,6 +1114,7 @@ Render:
 							max(PumpForce * (ext.w - p.w), 0)
 							max(-PumpForce * p.w, 0)
 					     )
+			- Sound
 			- Update materials template
 
 	- Flood doors (*)
