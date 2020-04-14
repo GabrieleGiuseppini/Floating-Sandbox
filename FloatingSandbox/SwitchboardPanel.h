@@ -102,6 +102,13 @@ public:
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
+    virtual void OnWaterPumpCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        float normalizedForce,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
@@ -128,6 +135,14 @@ public:
         ElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override;
+
+    virtual void OnWaterPumpEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override;
+
+    virtual void OnWaterPumpUpdated(
+        ElectricalElementId electricalElementId,
+        float normalizedForce) override;
 
 private:
 
@@ -288,6 +303,7 @@ private:
     wxBitmap mPowerMonitorOnBitmap;
     wxBitmap mPowerMonitorOffBitmap;
 
+    wxBitmap mGauge0100Bitmap;
     wxBitmap mGaugeRpmBitmap;
     wxBitmap mGaugeVoltsBitmap;
 

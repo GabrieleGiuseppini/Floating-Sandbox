@@ -272,6 +272,21 @@ private:
             {}
         };
 
+        struct WaterPumpState
+        {
+            float NominalForce;
+            float TargetNormalizedForce; // 0.0...1.0; <> 0.0 <=> powered, == 0.0 <=> not powered
+            float CurrentNormalizedForce;
+            float LastPublishedNormalizedForce;
+
+            WaterPumpState(float nominalForce)
+                : NominalForce(nominalForce)
+                , TargetNormalizedForce(0.0f)
+                , CurrentNormalizedForce(0.0f)
+                , LastPublishedNormalizedForce(0.0f)
+            {}
+        };
+
         struct DummyState
         {};
 
@@ -284,6 +299,7 @@ private:
         PowerMonitorState PowerMonitor;
         ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
+        WaterPumpState WaterPump;
         DummyState Dummy;
 
         ElementState(CableState cable)
@@ -320,6 +336,10 @@ private:
 
         ElementState(SmokeEmitterState smokeEmitter)
             : SmokeEmitter(smokeEmitter)
+        {}
+
+        ElementState(WaterPumpState waterPump)
+            : WaterPump(waterPump)
         {}
 
         ElementState(DummyState dummy)
@@ -642,9 +662,9 @@ private:
         bool value);
 
     void RunLampStateMachine(
+        bool isConnectedToPower,
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallclockTime,
-        SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
         GameParameters const & gameParameters);
 

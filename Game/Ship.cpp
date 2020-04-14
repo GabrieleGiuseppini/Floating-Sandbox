@@ -1170,7 +1170,7 @@ void Ship::UpdateWaterInflow(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    float & waterTaken)
+    float & waterTakenInStep)
 {
     //
     // Intake/outtake water into/from all the leaking nodes (structural or forced)
@@ -1193,53 +1193,95 @@ void Ship::UpdateWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
+            // External water height (~=external pressure)
             //
-            // 1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
-            //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
-            //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
-            //
-            // Considering that at equilibrium we have v=0 and p=external_pressure,
-            // then c=external_pressure/density;
-            // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
-            // hence, the velocity of water incoming at point p, when the "water height" in the point is already
-            // wh and the external water pressure is d*height_of_water_at_y*g, is:
-            //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
-            //
-
             // We also incorporate rain in the sources of external water height:
             // - If point is below water surface: external water height is due to depth
             // - If point is above water surface: external water height is due to rain
             float const externalWaterHeight = std::max(
                 mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
-                    + 0.1f // Magic number to force flotsam to take some water in and eventually sink
-                    - mPoints.GetPosition(pointIndex).y,
+                + 0.1f // Magic number to force flotsam to take some water in and eventually sink
+                - mPoints.GetPosition(pointIndex).y,
                 rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
 
+            // Internal water height (~=internal pressure)
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
-            float incomingWaterVelocity;
-            if (externalWaterHeight >= internalWaterHeight)
+            //
+            // 1) Calculate new water due to structural leaks (holes)
+            //
+
+            float newWater_Structural;
             {
-                // Incoming water
-                incomingWaterVelocity = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
-            }
-            else
-            {
-                // Outgoing water
-                incomingWaterVelocity = - sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                //
+                // 1.1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
+                //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
+                //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
+                //
+                // Considering that at equilibrium we have v=0 and p=external_pressure,
+                // then c=external_pressure/density;
+                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
+                // hence, the velocity of water incoming at point p, when the "water height" in the point is already
+                // wh and the external water pressure is d*height_of_water_at_y*g, is:
+                //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
+                //
+
+                float incomingWaterVelocity_Structural;
+                if (externalWaterHeight >= internalWaterHeight)
+                {
+                    // Incoming water
+                    incomingWaterVelocity_Structural = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                }
+                else
+                {
+                    // Outgoing water
+                    incomingWaterVelocity_Structural = -sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                }
+
+                //
+                // 1.2) In/Outtake water according to velocity:
+                // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
+                //   height is thus Vw/A, i.e. v*dt
+                //
+
+                newWater_Structural =
+                    pointCompositeLeaking.LeakingSources.StructuralLeak // Dichotomical switch
+                    * incomingWaterVelocity_Structural
+                    * GameParameters::SimulationStepTimeDuration<float>
+                    * mPoints.GetMaterialWaterIntake(pointIndex)
+                    * gameParameters.WaterIntakeAdjustment;
             }
 
             //
-            // 2) In/Outtake water according to velocity:
-            // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
-            //   height is thus Vw/A, i.e. v*dt
+            // 2) Calculate new water due to forced leaks (pumps)
             //
 
-            float newWater =
-                incomingWaterVelocity
-                * GameParameters::SimulationStepTimeDuration<float>
-                * mPoints.GetMaterialWaterIntake(pointIndex)
-                * gameParameters.WaterIntakeAdjustment;
+            float newWater_Forced = 0.0f;
+            if (pointCompositeLeaking.LeakingSources.WaterPumpForce != 0.0f)
+            {
+                if (pointCompositeLeaking.LeakingSources.WaterPumpForce > 0.0f)
+                {
+                    // Inward pump: only works if underwater
+                    newWater_Forced = (externalWaterHeight > 0.0f)
+                        ? pointCompositeLeaking.LeakingSources.WaterPumpForce // No need to cap as sea is infinite
+                        : 0.0f;
+                }
+                else
+                {
+                    assert(pointCompositeLeaking.LeakingSources.WaterPumpForce < 0.0f);
+
+                    // Outward pump: only works if water inside
+                    newWater_Forced = (internalWaterHeight > 0.0f)
+                        ? pointCompositeLeaking.LeakingSources.WaterPumpForce // We'll cap it
+                        : 0.0f;
+                }
+            }
+
+            //
+            // 3) Apply resultant water changes
+            //
+
+            float newWater = newWater_Structural + newWater_Forced;
 
             if (newWater < 0.0f)
             {
@@ -1255,10 +1297,8 @@ void Ship::UpdateWaterInflow(
             // Adjust water
             mPoints.GetWater(pointIndex) += newWater;
 
-            // Adjust total cumulated intaken water at this point
-            mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
-
             // Check if it's time to produce air bubbles
+            mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
             if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful
@@ -1277,8 +1317,8 @@ void Ship::UpdateWaterInflow(
                 mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
             }
 
-            // Adjust total water taken during step
-            waterTaken += newWater;
+            // Adjust total water taken during this step
+            waterTakenInStep += newWater;
         }
     }
 }

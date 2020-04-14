@@ -161,6 +161,17 @@ void ElectricalElements::Add(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::WaterPump:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::WaterPumpState(electricalMaterial.WaterPumpNominalForce));
+
+            // Indices
+            mSinks.emplace_back(elementIndex);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             // State
@@ -290,6 +301,18 @@ void ElectricalElements::AnnounceInstancedElements()
                 break;
             }
 
+            case ElectricalMaterial::ElectricalElementType::WaterPump:
+            {
+                mGameEventHandler->OnWaterPumpCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    *mMaterialBuffer[elementIndex],
+                    mElementStateBuffer[elementIndex].WaterPump.CurrentNormalizedForce,
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
                 mGameEventHandler->OnSwitchCreated(
@@ -322,12 +345,18 @@ void ElectricalElements::HighlightElectricalElement(
 {
     rgbColor constexpr EngineOnHighlightColor = rgbColor(0xfc, 0xff, 0xa6);
     rgbColor constexpr EngineOffHighlightColor = rgbColor(0xc4, 0xb7, 0x02);
+
     rgbColor constexpr PowerOnHighlightColor = rgbColor(0x02, 0x5e, 0x1e);
     rgbColor constexpr PowerOffHighlightColor = rgbColor(0x91, 0x00, 0x00);
+
     rgbColor constexpr SoundOnHighlightColor = rgbColor(0xe0, 0xe0, 0xe0);
     rgbColor constexpr SoundOffHighlightColor = rgbColor(0x75, 0x75, 0x75);
+
     rgbColor constexpr SwitchOnHighlightColor = rgbColor(0x00, 0xab, 0x00);
     rgbColor constexpr SwitchOffHighlightColor = rgbColor(0xde, 0x00, 0x00);
+
+    rgbColor constexpr WaterPumpOnHighlightColor = rgbColor(0x47, 0x60, 0xff);
+    rgbColor constexpr WaterPumpOffHighlightColor = rgbColor(0x1b, 0x28, 0x80);
 
     // Switch state as appropriate
     switch (GetMaterialType(elementIndex))
@@ -382,6 +411,17 @@ void ElectricalElements::HighlightElectricalElement(
 
             break;
         }
+
+        case ElectricalMaterial::ElectricalElementType::WaterPump:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].WaterPump.TargetNormalizedForce != 0.0f ? WaterPumpOnHighlightColor : WaterPumpOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
         default:
         {
             // Shouldn't be invoked for non-highlightable elements
@@ -899,37 +939,40 @@ void ElectricalElements::UpdateSinks(
     //
     // Visit all sinks and run their state machine
     //
+    // Also visit deleted elements, as some types have
+    // post-deletion wind-down state machines
+    //
 
     for (auto sinkElementIndex : mSinks)
     {
-        if (!IsDeleted(sinkElementIndex))
+        //
+        // Update state machine
+        //
+
+        bool const isConnectedToPower =
+            (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]);
+
+        bool isProducingHeat = false;
+
+        switch (GetMaterialType(sinkElementIndex))
         {
-            //
-            // Update state machine
-            //
-
-            bool isProducingHeat = false;
-
-            switch (GetMaterialType(sinkElementIndex))
+            case ElectricalMaterial::ElectricalElementType::EngineController:
             {
-                case ElectricalMaterial::ElectricalElementType::EngineController:
+                if (!IsDeleted(sinkElementIndex))
                 {
                     auto & controllerState = mElementStateBuffer[sinkElementIndex].EngineController;
 
                     // Check whether it's powered
                     bool isPowered = false;
-                    if (controllerState.IsPowered)
+                    if (isConnectedToPower)
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                        if (controllerState.IsPowered
                             && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
                             isPowered = true;
                         }
-                    }
-                    else
-                    {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
-                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
+                        else if (!controllerState.IsPowered
+                                && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
                             isPowered = true;
                         }
@@ -1024,31 +1067,38 @@ void ElectricalElements::UpdateSinks(
 
                     // Remember state
                     mElementStateBuffer[sinkElementIndex].EngineController.IsPowered = isPowered;
-
-                    break;
                 }
 
-                case ElectricalMaterial::ElectricalElementType::Lamp:
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::Lamp:
+            {
+                // TODO: should we run wind-off state machine? Does the lamp know it's deleted?
+                if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
                     RunLampStateMachine(
+                        isConnectedToPower,
                         sinkElementIndex,
                         currentWallclockTime,
-                        currentConnectivityVisitSequenceNumber,
                         points,
                         gameParameters);
 
                     isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
-
-                    break;
                 }
 
-                case ElectricalMaterial::ElectricalElementType::OtherSink:
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::OtherSink:
+            {
+                if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
                     if (mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered)
                     {
-                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                        if (!isConnectedToPower
                             || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
                             mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = false;
@@ -1056,7 +1106,7 @@ void ElectricalElements::UpdateSinks(
                     }
                     else
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                        if (isConnectedToPower
                             && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
                             mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = true;
@@ -1064,16 +1114,19 @@ void ElectricalElements::UpdateSinks(
                     }
 
                     isProducingHeat = mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered;
-
-                    break;
                 }
 
-                case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+            {
+                if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
                     if (mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered)
                     {
-                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        if (!isConnectedToPower)
                         {
                             //
                             // Toggle state ON->OFF
@@ -1095,7 +1148,7 @@ void ElectricalElements::UpdateSinks(
                     }
                     else
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        if (isConnectedToPower)
                         {
                             //
                             // Toggle state OFF->ON
@@ -1115,18 +1168,21 @@ void ElectricalElements::UpdateSinks(
                             }
                         }
                     }
-
-                    break;
                 }
 
-                case ElectricalMaterial::ElectricalElementType::ShipSound:
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::ShipSound:
+            {
+                if (!IsDeleted(sinkElementIndex))
                 {
                     auto & state = mElementStateBuffer[sinkElementIndex].ShipSound;
 
                     // Update state machine
                     if (state.IsPlaying)
                     {
-                        if ((!state.IsSelfPowered && currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        if ((!state.IsSelfPowered && !isConnectedToPower)
                             || !mConductivityBuffer[sinkElementIndex].ConductsElectricity)
                         {
                             //
@@ -1151,7 +1207,7 @@ void ElectricalElements::UpdateSinks(
                     }
                     else
                     {
-                        if ((state.IsSelfPowered || currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex])
+                        if ((state.IsSelfPowered || isConnectedToPower)
                             && mConductivityBuffer[sinkElementIndex].ConductsElectricity)
                         {
                             //
@@ -1174,16 +1230,19 @@ void ElectricalElements::UpdateSinks(
                             }
                         }
                     }
-
-                    break;
                 }
 
-                case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            {
+                if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
                     if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
                     {
-                        if (currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                        if (!isConnectedToPower
                             || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
                         {
                             // Stop operating
@@ -1192,7 +1251,7 @@ void ElectricalElements::UpdateSinks(
                     }
                     else
                     {
-                        if (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]
+                        if (isConnectedToPower
                             && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
                         {
                             // Start operating
@@ -1241,29 +1300,117 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
                         }
                     }
-
-                    break;
                 }
 
-                default:
-                {
-                    assert(false);
-                    break;
-                }
+                break;
             }
 
-
-            //
-            // Generate heat if sink is working
-            //
-
-            if (isProducingHeat)
+            case ElectricalMaterial::ElectricalElementType::WaterPump:
             {
-                points.AddHeat(GetPointIndex(sinkElementIndex),
-                    mMaterialHeatGeneratedBuffer[sinkElementIndex]
-                    * gameParameters.ElectricalElementHeatProducedAdjustment
-                    * GameParameters::SimulationStepTimeDuration<float>);
+                auto const pointIndex = GetPointIndex(sinkElementIndex);
+
+                auto & waterPumpState = mElementStateBuffer[sinkElementIndex].WaterPump;
+
+                //
+                // 1) If not deleted, run operating state machine (connectivity, operating temperature)
+                //    in order to come up with TargetForce
+                //
+
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    if (waterPumpState.TargetNormalizedForce != 0.0f)
+                    {
+                        // Currently it's powered...
+                        // ...see if it stops being powered
+                        if (!isConnectedToPower
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
+                        {
+                            // State change: stop operating
+                            waterPumpState.TargetNormalizedForce = 0.0f;
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                        else
+                        {
+                            // Operating, thus producing heat
+                            isProducingHeat = true;
+                        }
+                    }
+                    else
+                    {
+                        // Currently it's not powered...
+                        // ...see if it becomes powered
+                        if (isConnectedToPower
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                        {
+                            // State change: start operating
+                            waterPumpState.TargetNormalizedForce = 1.0f;
+
+                            // Operating, thus producing heat
+                            isProducingHeat = true;
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                }
+
+                //
+                // 2) Smooth CurrentForce towards TargetForce and eventually act on particle
+                //
+                // We run this also when deleted, as it's part of our wind-down state machine
+                //
+
+                // Smooth current force
+                waterPumpState.CurrentNormalizedForce +=
+                    (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
+                    * 0.025f; // Convergence rate, magic number
+
+                // Apply force to point
+                points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce =
+                    waterPumpState.CurrentNormalizedForce
+                    * waterPumpState.NominalForce;
+
+                // Eventually publish force change notification
+                if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)
+                {
+                    // Notify
+                    mGameEventHandler->OnWaterPumpUpdated(
+                        ElectricalElementId(mShipId, sinkElementIndex),
+                        waterPumpState.CurrentNormalizedForce);
+
+                    // Remember last-published value
+                    waterPumpState.LastPublishedNormalizedForce = waterPumpState.CurrentNormalizedForce;
+                }
+
+                break;
             }
+
+            default:
+            {
+                assert(false);
+                break;
+            }
+        }
+
+
+        //
+        // Generate heat if sink is working
+        //
+
+        if (isProducingHeat)
+        {
+            points.AddHeat(GetPointIndex(sinkElementIndex),
+                mMaterialHeatGeneratedBuffer[sinkElementIndex]
+                * gameParameters.ElectricalElementHeatProducedAdjustment
+                * GameParameters::SimulationStepTimeDuration<float>);
         }
     }
 
@@ -1528,9 +1675,9 @@ void ElectricalElements::InternalChangeConductivity(
 }
 
 void ElectricalElements::RunLampStateMachine(
+    bool isConnectedToPower,
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallclockTime,
-    SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & /*gameParameters*/)
 {
@@ -1549,8 +1696,7 @@ void ElectricalElements::RunLampStateMachine(
         case ElementState::LampState::StateType::Initial:
         {
             // Transition to ON - if we have current or if we're self-powered AND if within operating temperature
-            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
-                || lamp.IsSelfPowered)
+            if ((isConnectedToPower || lamp.IsSelfPowered)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
             {
                 // Transition to ON
@@ -1572,7 +1718,7 @@ void ElectricalElements::RunLampStateMachine(
         {
             // Check whether we still have current, or we're wet and it's time to fail,
             // or whether we are outside of the operating temperature range
-            if ((   currentConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
+            if ((   !isConnectedToPower
                     && !lamp.IsSelfPowered
                 ) ||
                 (   points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
@@ -1621,8 +1767,7 @@ void ElectricalElements::RunLampStateMachine(
             // 0-1-0-1-Off
 
             // Check if we should become ON again
-            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
-                || lamp.IsSelfPowered)
+            if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
@@ -1675,8 +1820,7 @@ void ElectricalElements::RunLampStateMachine(
             // 0-1-0-1--0-1-Off
 
             // Check if we should become ON again
-            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
-                || lamp.IsSelfPowered)
+            if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
@@ -1743,8 +1887,7 @@ void ElectricalElements::RunLampStateMachine(
             assert(mAvailableLightBuffer[elementLampIndex] == 0.f);
 
             // Check if we should become ON again
-            if ((currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[elementLampIndex]
-                || lamp.IsSelfPowered)
+            if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {

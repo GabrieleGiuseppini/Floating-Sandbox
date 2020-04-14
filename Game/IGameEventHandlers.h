@@ -232,6 +232,16 @@ struct IElectricalElementGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnWaterPumpCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
+        float /*normalizedForce*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnElectricalElementAnnouncementsEnd()
     {
         // Default-implemented
@@ -289,6 +299,20 @@ struct IElectricalElementGameEventHandler
         ElectricalMaterial const & /*electricalMaterial*/,
         bool /*isPlaying*/,
         bool /*isUnderwater*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterPumpEnabled(
+        ElectricalElementId /*electricalElementId*/,
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterPumpUpdated(
+        ElectricalElementId /*electricalElementId*/,
+        float /*normalizedForce*/)
     {
         // Default-implemented
     }

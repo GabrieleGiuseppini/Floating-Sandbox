@@ -370,6 +370,22 @@ public:
         }
     }
 
+    virtual void OnWaterPumpCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        float normalizedForce,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        LogMessage("OnWaterPumpCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
+
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWaterPumpCreated(electricalElementId, instanceIndex, electricalMaterial, normalizedForce, panelElementMetadata);
+        }
+    }
+
     virtual void OnElectricalElementAnnouncementsEnd() override
     {
         // No need to aggregate this one
@@ -456,6 +472,28 @@ public:
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnShipSoundUpdated(electricalElementId, electricalMaterial, isPlaying, isUnderwater);
+        }
+    }
+
+    virtual void OnWaterPumpEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWaterPumpEnabled(electricalElementId, isEnabled);
+        }
+    }
+
+    virtual void OnWaterPumpUpdated(
+        ElectricalElementId electricalElementId,
+        float normalizedForce) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWaterPumpUpdated(electricalElementId, normalizedForce);
         }
     }
 

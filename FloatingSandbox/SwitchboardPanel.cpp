@@ -212,6 +212,7 @@ SwitchboardPanel::SwitchboardPanel(
     ProgressSteps += 1.0f; // 6.0f
     progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
+    mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
     mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
     mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
     mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
@@ -837,6 +838,73 @@ void SwitchboardPanel::OnEngineMonitorCreated(
         std::forward_as_tuple(instanceIndex, ggCtrl, nullptr, nullptr, panelElementMetadata));
 }
 
+void SwitchboardPanel::OnWaterPumpCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex instanceIndex,
+    ElectricalMaterial const & /*electricalMaterial*/,
+    float normalizedForce,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+{
+    //
+    // Create label
+    //
+
+    std::string label;
+    bool isHidden;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "Pump #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+
+        // Not hidden
+        isHidden = false;
+    }
+
+    //
+    // Create control
+    //
+
+    GaugeElectricalElementControl * ggCtrl = nullptr;
+
+    if (!isHidden)
+    {
+        ggCtrl = new GaugeElectricalElementControl(
+            mSwitchPanel,
+            mGauge0100Bitmap,
+            wxPoint(47, 47),
+            36.0f,
+            Pi<float> / 4.0f - 0.18f, // TODO
+            Pi<float> - Pi<float> / 4.0f + 0.18f, // TODO
+            label,
+            mPassiveCursor,
+            [this, electricalElementId]()
+            {
+                this->OnTick(electricalElementId);
+            },
+            1.0f - normalizedForce);
+
+        // Store as updateable element
+        mUpdateableElements.emplace_back(ggCtrl);
+    }
+
+    //
+    // Add monitor to maps
+    //
+
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(electricalElementId),
+        std::forward_as_tuple(instanceIndex, ggCtrl, nullptr, nullptr, panelElementMetadata));
+}
+
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 {
     //
@@ -1092,6 +1160,32 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
     if (ggCtrl != nullptr)
     {
         ggCtrl->SetValue(1.0f - rpm);
+    }
+}
+
+void SwitchboardPanel::OnWaterPumpEnabled(
+    ElectricalElementId /*electricalElementId*/,
+    bool /*isEnabled*/)
+{
+    // Ignored, simply because at the moment we don't have
+    // disabled images for gauges
+}
+
+void SwitchboardPanel::OnWaterPumpUpdated(
+    ElectricalElementId electricalElementId,
+    float normalizedForce)
+{
+    //
+    // Change gauge
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Gauge);
+
+    GaugeElectricalElementControl * ggCtrl = dynamic_cast<GaugeElectricalElementControl *>(elementInfo.Control);
+    if (ggCtrl != nullptr)
+    {
+        ggCtrl->SetValue(1.0f - normalizedForce);
     }
 }
 

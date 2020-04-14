@@ -4,7 +4,7 @@
         "electrical_image":"aegir_mark_iii_electrical.png.dat",
 	"offset":{"x":0.0, "y":-10.0},
 	"ship_name":"Aegir Mark III",
-	"created_by":"Regalis",
+	"created_by":"Regalis; Barotrauma",
 	"year_built":"2105",
 	"electrical_panel":{
 

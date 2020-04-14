@@ -4,7 +4,7 @@
         "electrical_image":"nehalennia_electrical.png.dat",
 	"offset":{"x":0.0, "y":-35.0},
 	"ship_name":"Nehalennia",
-	"created_by":"Regalis",
+	"created_by":"Regalis; Barotrauma",
 	"year_built":"2165",
 	"electrical_panel":{
 

@@ -248,7 +248,7 @@ private:
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        float & waterTaken);
+        float & waterTakenInStep);
 
     void UpdateWaterVelocities(
         GameParameters const & gameParameters,

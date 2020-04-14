@@ -341,8 +341,10 @@ Render:
 		- Batisphere with pumps
 			- Batisphere ship
 
+		- Check ships @ ShipContributions
+
 		- Diesel engine
-			- With John Smith's sound
+			- Tell John Smith that sound is not OK
 			- Redo electrical template
 		- Hide legacy_electrical materials from structural palette		
 
@@ -401,9 +403,11 @@ Render:
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
 		- Splash for bombs
-			- Ephemeral particle with own shader:
+			- Option A) Ephemeral particle with own shader:
 				- Texture of splash
 				- Elongated with vertical velocity
+			- Option B) Same as A, but instead of one single texture, a (small) set of frames 
+			- Option C) "Movie" like explosions
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
@@ -1085,31 +1089,57 @@ Render:
 				+ union: int64_t, used for fast "if(is leaking)" check
 			+ Test perf
 			+ Test destroy & repair
-			- ElectricalElements:
-				- TODO: re-look at how engines are done, in terms of:
-					- Destroy -> RPM & smoothing state machine
-				- PumpState:
-					- float TargetNominalForce (from cctor: takes material's PumpNominalForce)
-					- float CurrentNominalForce
-				- UpdateSinks():
-					- For each element that is also pump:
-						- smoothing state machine, w/operating temperatures
-						- eventually sets Points::LeakComposite::PumpNominalForce
-						- @ power state changes: emit event, for continuous sound, and highlight - exactly like ShipSound
-							- Need object ID
-			- Ship::UpdateWaterIntake()
-				- NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
+			= ElectricalElements:
+				+ PumpState:
+					+ float [const] NominalForce (from cctor: takes material's PumpNominalForce)
+					+ float TargetForce
+						+ <> 0.0 <=> powered, =0.0 <=> not powered
+					+ float CurrentForce
+				+ Add(): store as sink
+				+ UpdateSinks():
+					+ Move IsDeleted check for each type down to its case
+						+ See if due to this, we can now put back anything in switch
+					= Pump type:
+						+ 1) if ! Deleted: do operating state machine (connectivity, operating temperature) to come up 
+						  with TargetForce
+							+ @ power state changes: emit highlight					
+						+ 2) smooth CurrentForce towards TargetForce and set Points::LeakComposite::WaterPumpForce
+							+ Emit event for pitch and gauge here (exactly like engine's RPM)
+								+ See how we avoid at engine to do it when always zero
+				+ Announce: as new WaterPumpProbe
+				- Destroy:
+					- Enough to set Target to zero?
+				- Restore:
+					- TODO
+			= Ship::UpdateWaterIntake()
+				+ NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
 					+ max(
 						max(PumpForce * ext.w, 0), // != 0 <=> PumpForce > 0 && ext.w > 0 || PumpForce < 0 && ext.w < 0
 						max(-PumpForce * p.w, 0)   // != 0 <=> PumpForce < 0 && p.w > 0 || PumpForce > 0 && p.w < 0
 					  )
-
-					- OLD: was: NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
-				             + (TODO:REVISIT...) max(
-							max(PumpForce * (ext.w - p.w), 0)
-							max(-PumpForce * p.w, 0)
-					     )
+				- See if may optimize all those branches
+				- Verify assembly 
+				- Test perf impact with many structural leaks and no pump			
+			= ElectricalPanel: 
+				= Gfx: 
+					+ Gauge with pressure
+					- Move center down
+				+ Announcement
+				+ Response to state change
+				+ Test w/Circuit Test
 			- Sound
+			- Test
+				+ See if need to adjust nominal water pump force
+				+ Adjust convergence rate of pump force
+				= Adjust gauge hand angles
+				+ Adjust pump gauge bg color
+				- Destroy
+					- Gauge
+					- No working anymore
+				- Restore
+					- Gauge
+					- Working again
+			- See if switch needs post-deletion wind-down state machine ("TODO" in code)
 			- Add property to guide
 			- Update materials template
 

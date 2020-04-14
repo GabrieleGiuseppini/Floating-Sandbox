@@ -165,13 +165,13 @@ public:
         struct LeakingSourcesType
         {
             float StructuralLeak; // 0.0 or 1.0
-            float WaterPumpNominalForce; // -1.0 [out], ..., +1.0 [in]
+            float WaterPumpForce; // -1.0 [out], ..., +1.0 [in]
 
             LeakingSourcesType(
                 float structuralLeak,
                 float waterPumpNominalForce)
                 : StructuralLeak(structuralLeak)
-                , WaterPumpNominalForce(waterPumpNominalForce)
+                , WaterPumpForce(waterPumpNominalForce)
             {}
         };
 #pragma pack(pop)
@@ -1203,12 +1203,10 @@ public:
         return mLeakingCompositeBuffer[pointElementIndex];
     }
 
-    /*TODO: needed?
-    bool IsLeaking(ElementIndex pointElementIndex) const
+    LeakingComposite & GetLeakingComposite(ElementIndex pointElementIndex)
     {
-        return mLeakingCompositeBuffer[pointElementIndex].IsLeaking != 0.0f;
+        return mLeakingCompositeBuffer[pointElementIndex];
     }
-    */
 
     void Damage(ElementIndex pointElementIndex)
     {
