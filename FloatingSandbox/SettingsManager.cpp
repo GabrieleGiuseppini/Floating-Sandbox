@@ -110,6 +110,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(unsigned int, NumberOfStars);
     ADD_GC_SETTING(unsigned int, NumberOfClouds);
     ADD_GC_SETTING(float, EngineThrustAdjustment);
+    ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
 
     // Render
     ADD_GC_SETTING(rgbColor, FlatSkyColor);

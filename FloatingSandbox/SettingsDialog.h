@@ -171,6 +171,7 @@ private:
     wxCheckBox * mGenerateEngineWakeCheckBox;
     SliderControl<float> * mAirBubbleDensitySlider;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
+    SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;

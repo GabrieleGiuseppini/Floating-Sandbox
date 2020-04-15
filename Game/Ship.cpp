@@ -1185,6 +1185,10 @@ void Ship::UpdateWaterInflow(
         * GameParameters::SimulationStepTimeDuration<float> // -> m/step
         * gameParameters.RainFloodAdjustment;
 
+    float const waterPumpPowerMultiplier =
+        gameParameters.WaterPumpPowerAdjustment
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         // This is one of the few cases in which we prefer branching over calculating
@@ -1257,24 +1261,20 @@ void Ship::UpdateWaterInflow(
             //
 
             float newWater_Forced = 0.0f;
-            if (pointCompositeLeaking.LeakingSources.WaterPumpForce != 0.0f)
+            float const waterPumpForce = pointCompositeLeaking.LeakingSources.WaterPumpForce;
+            if (waterPumpForce > 0.0f)
             {
-                if (pointCompositeLeaking.LeakingSources.WaterPumpForce > 0.0f)
-                {
-                    // Inward pump: only works if underwater
-                    newWater_Forced = (externalWaterHeight > 0.0f)
-                        ? pointCompositeLeaking.LeakingSources.WaterPumpForce // No need to cap as sea is infinite
-                        : 0.0f;
-                }
-                else
-                {
-                    assert(pointCompositeLeaking.LeakingSources.WaterPumpForce < 0.0f);
-
-                    // Outward pump: only works if water inside
-                    newWater_Forced = (internalWaterHeight > 0.0f)
-                        ? pointCompositeLeaking.LeakingSources.WaterPumpForce // We'll cap it
-                        : 0.0f;
-                }
+                // Inward pump: only works if underwater
+                newWater_Forced = (externalWaterHeight > 0.0f)
+                    ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
+                    : 0.0f;
+            }
+            else if (waterPumpForce < 0.0f)
+            {
+                // Outward pump: only works if water inside
+                newWater_Forced = (internalWaterHeight > 0.0f)
+                    ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
+                    : 0.0f;
             }
 
             //

@@ -198,6 +198,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinEngineThrustAdjustment() const = 0;
     virtual float GetMaxEngineThrustAdjustment() const = 0;
 
+    virtual float GetMinWaterPumpPowerAdjustment() const = 0;
+    virtual float GetMaxWaterPumpPowerAdjustment() const = 0;
+
 	//
 	// Render parameters
 	//

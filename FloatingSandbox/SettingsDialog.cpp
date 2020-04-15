@@ -2909,7 +2909,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Engine Thrust Adjust",
-                    "Adjusts the thrust exherted by engines.",
+                    "Adjusts the thrust exerted by engines.",
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
@@ -2928,6 +2928,32 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Water Pump Power Adjust
+            {
+                mWaterPumpPowerAdjustmentSlider = new SliderControl<float>(
+                    electricalBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Water Pump Power Adjust",
+                    "Adjusts the power of water pumps.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPumpPowerAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterPumpPowerAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterPumpPowerAdjustment()));
+
+                electricalSizer->Add(
+                    mWaterPumpPowerAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             electricalBoxSizer->Add(electricalSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -2936,7 +2962,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         gridSizer->Add(
             electricalBox,
             wxGBPosition(1, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -4176,6 +4202,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
 
     mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
+
+    mWaterPumpPowerAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPumpPowerAdjustment));
 
     // Render
 

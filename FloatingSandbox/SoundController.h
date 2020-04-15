@@ -253,6 +253,13 @@ public:
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
+    virtual void OnWaterPumpCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        float normalizedForce,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
     virtual void OnSwitchToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;
@@ -271,6 +278,10 @@ public:
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
         bool isUnderwater) override;
+
+    virtual void OnWaterPumpUpdated(
+        ElectricalElementId electricalElementId,
+        float normalizedForce) override;
 
     virtual void OnBombPlaced(
         BombId bombId,

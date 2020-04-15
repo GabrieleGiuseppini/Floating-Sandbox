@@ -292,6 +292,7 @@ Render:
 				+ Tubon I: no hd
 		+ "ResourceLoader" -> "ResourceLocator"
 		+ Pinch tool (*)
+		+ Pumps (*)
 
 		= Retrofit ships:
 			+ SS Californian
@@ -336,8 +337,6 @@ Render:
 					+ Test after
 				+ Test that it may be saved again
 
-		- Pumps (*)
-
 		- Batisphere with pumps
 			- Batisphere ship
 
@@ -347,13 +346,6 @@ Render:
 			- Tell John Smith that sound is not OK
 			- Redo electrical template
 		- Hide legacy_electrical materials from structural palette		
-
-		- Superheated pulverization (*)
-
-		- See if may put smoke emitters behind triangles and springs
-			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
-			  need to have a way to change layer, which would however require a different rendering batch (because
-			  or different orthomatrix)
 
 		- Drop air temperature with storm
 			- By 10 degrees (local constexpr)
@@ -380,6 +372,13 @@ Render:
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
 					- Material DB <-> actual textures check: done at TBD
+
+		- Superheated pulverization (*)
+
+		- See if may put smoke emitters behind triangles and springs
+			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
+			  need to have a way to change layer, which would however require a different rendering batch (because
+			  or different orthomatrix)
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
@@ -1070,95 +1069,26 @@ Render:
 			- Really?
 		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
-	= Pumps (*)
-		! Spec:
-			! New electrical element type
-			! Two types: "in" or "out"
-			! Pumps' intake is superimposed to leaking point's intake
-				! Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
-				  water is sucked in our out
-			! Water is taken @ Ship::UpdateWaterIntake()
-				! In: as long as external water pressure > 0
-					- OLD: was: In: as long as external water pressure > internal water pressure
-				! Out: as long as internal water pressure > 0
-			! Continuous sound when pumping
-		= Impl:
-			+ Materials: new electrical element type
-				+ Property: float pumpNominalForce (< for out, > for in), only de-serialized for pumps				
-			+ struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
-				+ union: int64_t, used for fast "if(is leaking)" check
-			+ Test perf
-			+ Test destroy & repair
-			= ElectricalElements:
-				+ PumpState:
-					+ float [const] NominalForce (from cctor: takes material's PumpNominalForce)
-					+ float TargetForce
-						+ <> 0.0 <=> powered, =0.0 <=> not powered
-					+ float CurrentForce
-				+ Add(): store as sink
-				+ UpdateSinks():
-					+ Move IsDeleted check for each type down to its case
-						+ See if due to this, we can now put back anything in switch
-					= Pump type:
-						+ 1) if ! Deleted: do operating state machine (connectivity, operating temperature) to come up 
-						  with TargetForce
-							+ @ power state changes: emit highlight					
-						+ 2) smooth CurrentForce towards TargetForce and set Points::LeakComposite::WaterPumpForce
-							+ Emit event for pitch and gauge here (exactly like engine's RPM)
-								+ See how we avoid at engine to do it when always zero
-				+ Announce: as new WaterPumpProbe
-				- Destroy:
-					- Enough to set Target to zero?
-				- Restore:
-					- TODO
-			= Ship::UpdateWaterIntake()
-				+ NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
-					+ max(
-						max(PumpForce * ext.w, 0), // != 0 <=> PumpForce > 0 && ext.w > 0 || PumpForce < 0 && ext.w < 0
-						max(-PumpForce * p.w, 0)   // != 0 <=> PumpForce < 0 && p.w > 0 || PumpForce > 0 && p.w < 0
-					  )
-				- See if may optimize all those branches
-				- Verify assembly 
-				- Test perf impact with many structural leaks and no pump			
-			= ElectricalPanel: 
-				= Gfx: 
-					+ Gauge with pressure
-					- Move center down
-				+ Announcement
-				+ Response to state change
-				+ Test w/Circuit Test
-			- Sound
-			- Test
-				+ See if need to adjust nominal water pump force
-				+ Adjust convergence rate of pump force
-				= Adjust gauge hand angles
-				+ Adjust pump gauge bg color
-				- Destroy
-					- Gauge
-					- No working anymore
-				- Restore
-					- Gauge
-					- Working again
-			- See if switch needs post-deletion wind-down state machine ("TODO" in code)
-			- Add property to guide
-			- Update materials template
-
 	- Flood doors (*)
 		- Spec:		
 			- New electrical element
 			- Point that flood door is attached to may or may not be leaking
 			- When powered, inverts water permeability of all attached springs
-				- TODO: always on/always off - needed or may just flip structural's?
 			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
 				+ No ObjectID needed thus
-				- Open sound, Close sound
+				- Open sound X n1, Close sound X n2
 		- Impl:
 			- Prep:
 				- See if may get rid of Springs::Characteristics::Hull
 				- See if may get rid of Springs::Characteristics::Rope
 				- See if may get rid of Springs::Characteristics
-			- ElectricalElement::Update -> IShipHandler::OnFloodDoorStateChange(open or close) -> Point::Hull (see if needed) 
-			  and Spring's::WaterPermeability
+			- ElectricalElement::Update -> IShipHandler::OnFloodDoorStateChange(open or close) -> change Point::Hull (see if needed) 
+			  and change Spring's::WaterPermeability
+				- State:
+					- CurrentState: open or close (bool)
+				- On Open->Close transition, might also want to dry up points (THE point yes, what about the others?) or else
+				  existing water there will stagnate
+				- TODO: Initial Points&Springs: should also go through same code for each hull point
 			- TODOHERE
 			- ElectricalElements::Update():
 				- For each flood door element (own separate list, for perf):
@@ -1177,12 +1107,23 @@ Render:
 		- New ElectricalMaterial type
 		- ...to be worked on...
 
+	- Delayed switch
+		- Simple state machine @ UpdateAutomaticConductivity
+
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
 
 	- Superheated materials become pulverized
 		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets
+
+	- Frozen structure:
+		- Simply, in low-frequency spring coeffs' Update(), also do other side of temperature spectrum
+			- With breaking length becoming smaller
+			- With rest lengths staying the same
+				- Or negligibly smaller?
+			- With stiffness going marginally up
+		- Shader?
 
 	- Frontier:
 		- Only for non-rope points - rope points never take part in frontier
@@ -6291,6 +6232,77 @@ IF WX:
 		+ Allow for moving orhpaned points
 			+ At this moment we avoid that in PickPointToMove, but could allow for orhpaned point if no non-orphaned
 			  points are in radius
+	+ Pumps
+		! Spec:
+			! New electrical element type
+			! Two types: "in" or "out"
+			! Pumps' intake is superimposed to leaking point's intake
+				! Point that pump is attached to may or may not be hull, and may or may not be leaking; regardless, when powered,
+				  water is sucked in our out
+			! Water is taken @ Ship::UpdateWaterIntake()
+				! In: as long as external water pressure > 0
+				! Out: as long as internal water pressure > 0
+			! Continuous sound when pumping
+		+ Impl:
+			+ Materials: new electrical element type
+				+ Property: float pumpNominalForce (< for out, > for in), only de-serialized for pumps				
+			+ struct Points::LeakComposite: float StructuralLeak (0.0 or 1.0), float PumpNominalForce (-1.0,...,+1.0)
+				+ union: int64_t, used for fast "if(is leaking)" check
+			+ Test perf
+			+ Test destroy & repair
+			+ ElectricalElements:
+				+ PumpState:
+					+ float [const] NominalForce (from cctor: takes material's PumpNominalForce)
+					+ float TargetForce
+						+ <> 0.0 <=> powered, =0.0 <=> not powered
+					+ float CurrentForce
+				+ Add(): store as sink
+				+ UpdateSinks():
+					+ Move IsDeleted check for each type down to its case
+						+ See if due to this, we can now put back anything in switch
+					+ Pump type:
+						+ 1) if ! Deleted: do operating state machine (connectivity, operating temperature) to come up 
+						  with TargetForce
+							+ @ power state changes: emit highlight					
+						+ 2) smooth CurrentForce towards TargetForce and set Points::LeakComposite::WaterPumpForce
+							+ Emit event for pitch and gauge here (exactly like engine's RPM)
+								+ See how we avoid at engine to do it when always zero
+				+ Announce: as new WaterPumpProbe
+				+ Destroy:
+					+ Announce
+					+ Enough to set Target to zero
+				+ Restore:
+					+ Announce
+			+ Ship::UpdateWaterIntake()
+				+ NewWater = <normal is_leaking water, i.e. of StructuralLeak> // before capping
+					+ max(
+						max(PumpForce * ext.w, 0), // != 0 <=> PumpForce > 0 && ext.w > 0 || PumpForce < 0 && ext.w < 0
+						max(-PumpForce * p.w, 0)   // != 0 <=> PumpForce < 0 && p.w > 0 || PumpForce > 0 && p.w < 0
+					  )
+				+ See if may optimize all those branches
+			+ ElectricalPanel: 
+				+ Gfx: 
+					+ Gauge with pressure
+				+ Announcement
+				+ Response to state change
+				+ Test w/Circuit Test
+			+ Sound
+			+ Water Pump Adjust
+				+ & Ultra-Violent mode
+				+ SettingsDialog
+			+ Test
+				+ See if need to adjust nominal water pump force
+				+ Adjust convergence rate of pump force
+				+ Adjust gauge hand angles
+				+ Adjust pump gauge bg color
+				+ Destroy
+					+ Gauge
+					+ No working anymore
+				+ Restore
+					+ Gauge
+					+ Working again
+			+ Add pump property to guide
+			+ Update materials template
 
 
 

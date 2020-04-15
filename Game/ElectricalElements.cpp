@@ -579,6 +579,20 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::WaterPump:
+        {
+            mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce = 0.0f;
+
+            // Publish disable
+            mGameEventHandler->OnWaterPumpEnabled(
+                ElectricalElementId(
+                    mShipId,
+                    electricalElementIndex),
+                false);
+
+            break;
+        }
+
         default:
         {
             break;
@@ -664,10 +678,21 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             // Notify enabling
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
 
-            // Nothing to do: at the next UpdateSinks() that makes this sound work, there will be a state change
-            // and the sound will announce it
+            // Nothing else to do: at the next UpdateSinks() that makes this sound work, there will be a state change
 
             assert(!mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterPump:
+        {
+            // Notify enabling
+            mGameEventHandler->OnWaterPumpEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+
+            // Nothing else to do: at the next UpdateSinks() that makes this pump work, there will be a state change
+
+            assert(mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce == 0.0f);
 
             break;
         }
@@ -1074,7 +1099,6 @@ void ElectricalElements::UpdateSinks(
 
             case ElectricalMaterial::ElectricalElementType::Lamp:
             {
-                // TODO: should we run wind-off state machine? Does the lamp know it's deleted?
                 if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine

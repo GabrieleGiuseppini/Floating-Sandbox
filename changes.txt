@@ -1,5 +1,7 @@
 TODO
 - New "Pick-and-Pull" tool! Use it to pull individual particles around
+- Added new electrical materials:
+	- WaterPumps - take water in or out of the ship when powered
 - Improved trajectory of flames
 - Added 1 new ship
 - Retrofitted electrical elements to a few older ships (S.S. Californian, Goodyear Blimp, Hindenburg)

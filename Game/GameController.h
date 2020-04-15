@@ -546,6 +546,11 @@ public:
     float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
     float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
 
+    float GetWaterPumpPowerAdjustment() const override { return mGameParameters.WaterPumpPowerAdjustment; }
+    void SetWaterPumpPowerAdjustment(float value) override { mGameParameters.WaterPumpPowerAdjustment = value; }
+    float GetMinWaterPumpPowerAdjustment() const override { return GameParameters::MinWaterPumpPowerAdjustment; }
+    float GetMaxWaterPumpPowerAdjustment() const override { return GameParameters::MaxWaterPumpPowerAdjustment; }
+
     //
     // Render parameters
     //

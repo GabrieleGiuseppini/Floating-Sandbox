@@ -88,5 +88,6 @@ GameParameters::GameParameters()
     , MoveToolInertia(3.0f)
     , DoShowElectricalNotifications(true)
     , EngineThrustAdjustment(1.0f)
+    , WaterPumpPowerAdjustment(1.0f)
 {
 }

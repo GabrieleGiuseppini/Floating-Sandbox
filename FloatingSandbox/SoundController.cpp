@@ -303,7 +303,8 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::EngineOutboard1
                 || soundType == SoundType::EngineSteam1
-                || soundType == SoundType::EngineSteam2)
+                || soundType == SoundType::EngineSteam2
+                || soundType == SoundType::WaterPump)
         {
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
@@ -1484,6 +1485,17 @@ void SoundController::OnEngineMonitorCreated(
     }
 }
 
+void SoundController::OnWaterPumpCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex /*instanceIndex*/,
+    ElectricalMaterial const & /*electricalMaterial*/,
+    float /*normalizedForce*/,
+    std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+{
+    // Associate sound type with this element
+    mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::WaterPump);
+}
+
 void SoundController::OnSwitchToggled(
     ElectricalElementId /*electricalElementId*/,
     ElectricalState newState)
@@ -1609,6 +1621,26 @@ void SoundController::OnShipSoundUpdated(
     }
     else
     {
+        mLoopedSounds.Stop(electricalElementId);
+    }
+}
+
+void SoundController::OnWaterPumpUpdated(
+    ElectricalElementId electricalElementId,
+    float normalizedForce)
+{
+    if (normalizedForce != 0.0f)
+    {
+        // Make sure sound is running
+        if (!mLoopedSounds.IsPlaying(electricalElementId))
+            mLoopedSounds.Start(electricalElementId, false, 100.0f);
+
+        // Set pitch
+        mLoopedSounds.SetPitch(electricalElementId, normalizedForce);
+    }
+    else
+    {
+        // Make sure sound is not running
         mLoopedSounds.Stop(electricalElementId);
     }
 }

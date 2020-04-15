@@ -878,10 +878,10 @@ void SwitchboardPanel::OnWaterPumpCreated(
         ggCtrl = new GaugeElectricalElementControl(
             mSwitchPanel,
             mGauge0100Bitmap,
-            wxPoint(47, 47),
+            wxPoint(48, 58),
             36.0f,
-            Pi<float> / 4.0f - 0.18f, // TODO
-            Pi<float> - Pi<float> / 4.0f + 0.18f, // TODO
+            Pi<float> / 4.0f - 0.02f,
+            Pi<float> - Pi<float> / 4.0f + 0.01f,
             label,
             mPassiveCursor,
             [this, electricalElementId]()

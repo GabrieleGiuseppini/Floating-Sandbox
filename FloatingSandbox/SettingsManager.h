@@ -83,6 +83,7 @@ enum class GameSettings : size_t
     NumberOfStars,
     NumberOfClouds,
     EngineThrustAdjustment,
+    WaterPumpPowerAdjustment,
 
     // Render
     FlatSkyColor,
