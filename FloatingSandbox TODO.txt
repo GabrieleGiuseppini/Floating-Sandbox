@@ -337,8 +337,8 @@ Render:
 					+ Test after
 				+ Test that it may be saved again
 
-		- Batisphere with pumps
-			- Batisphere ship
+		= Batisphere with pumps
+			= Batisphere ship
 
 		- Check ships @ ShipContributions
 
@@ -1073,30 +1073,31 @@ Render:
 		- Spec:		
 			- New electrical element
 			- Point that flood door is attached to may or may not be leaking
-			- When powered, inverts water permeability of all attached springs
+			- When powered, inverts leaking of point, and water permeability of all attached springs
 			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
 				+ No ObjectID needed thus
 				- Open sound X n1, Close sound X n2
 		- Impl:
 			- Prep:
-				- See if may get rid of Springs::Characteristics::Hull
-				- See if may get rid of Springs::Characteristics::Rope
-				- See if may get rid of Springs::Characteristics
-			- ElectricalElement::Update -> IShipHandler::OnFloodDoorStateChange(open or close) -> change Point::Hull (see if needed) 
-			  and change Spring's::WaterPermeability
+				- Springs::Add() knows nothing about hullness
+					- WaterPermeability set to 1.0 
+					- See if may get rid of Springs::Characteristics::Hull					
+					- See if may get rid of Springs::Characteristics::Rope
+					- See if may get rid of Springs::Characteristics
+			- Ship::Finalize()
+				- Called by cctor
+				- Does multiple things:
+					- Visit all hull points and set water permeability accordingly
+					- Current call to detect connected component
+			- ElectricalElement::Update -> IShipHandler::OnFloodDoorActivated(bool isActivated) -> change Point::Hull (see if needed) 
+			  and change Spring's::WaterPermeability, via same method used by Ship::Finalize()
 				- State:
-					- CurrentState: open or close (bool)
+					- CurrentState: activated (powered) or not (bool)
 				- On Open->Close transition, might also want to dry up points (THE point yes, what about the others?) or else
 				  existing water there will stagnate
-				- TODO: Initial Points&Springs: should also go through same code for each hull point
-			- TODOHERE
-			- ElectricalElements::Update():
-				- For each flood door element (own separate list, for perf):
-					- Run state machine (including eventual lead-in/lead-out's)
-					- @ state changes:
-						- For all connected springs: Set(Current)WaterPermeability(idx, val)
-							- val depends on connectivity state and MaterialWaterPermeability
-						- Anything else? See water momenta algo
+			- If Point::Hull is still required:
+				- See first of all if it's just MaterialIsHull that is needed, or final resultant hullness (i.e. the one after door)
+					- If it's just MaterialIsHull that it's needed, nothing else to do here
 			+ No real need to also change Point::Buoyancy
 			+ No real need to also change Point::IsHull
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
@@ -1150,6 +1151,18 @@ Render:
 			- Maintain at repair
 		- Impl:
 			- Data structures
+				- FrontierManager class
+					- Kinda like 'ship' but for frontiers only; contains data structures (merged in one) and logic
+						- Including update and rendering logic
+					- Owned and maintained by Ship
+					- Logic that requires points/springs/triangles takes those as args
+					- Contains:
+						- Frontier stuff:
+							- Ad-hoc container (TBD)
+							- Ad-hoc container (for each frontier) of ad-hoc containers (for each edge) of point indices
+								- Directly uploaded for rendering
+						- Edges stuff:
+							- Indexed by same spring indices
 			- Jumpstart algo:
 				-	5	6	7
 					4	*	0

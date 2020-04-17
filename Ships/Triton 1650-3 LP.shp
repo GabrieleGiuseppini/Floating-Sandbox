@@ -1,0 +1,23 @@
+{
+	"structure_image":"triton_1650_3_lp_structure.png.dat",
+	"texture_image":"triton_1650_3_lp_texture.png.dat",
+        "electrical_image":"triton_1650_3_lp_electrical.png.dat",
+	"offset":{"x":0.0, "y":-70.0},
+	"ship_name":"Triton 1650-3 LP",
+	"created_by":"Gabriele Giuseppini; Triton Submarines",
+	"year_built":"2016",
+	"electrical_panel":{
+
+		"0": {"panel_x":-5, "panel_y": 0, "label": "Dive Pump" },
+		"3": {"panel_x":-4, "panel_y": 0, "label": "Dive Pump" },
+		"1": {"panel_x":-3, "panel_y": 0, "label": "Buoyancy Pump"},
+		"4": {"panel_x":-2, "panel_y": 0, "label": "Buoyancy Pump"},
+		"2": {"panel_x":-1, "panel_y": 0, "label": "Generator"},
+		"5": {"panel_x":1, "panel_y": 0, "label": "Headlights"},
+
+		"10": {"panel_x":3, "panel_y": 0, "label": "Engine L/R"},
+		"11": {"panel_x":4, "panel_y": 0, "label": "Engine L/R"},
+		"12": {"panel_x":5, "panel_y": 0, "label": "Engine U/D"},
+		"13": {"panel_x":6, "panel_y": 0, "label": "Engine U/D"}
+	}
+}

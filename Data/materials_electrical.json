@@ -509,6 +509,25 @@
             "row": "10|Engines"
         }
     },
+    {
+        "color_key": "#30E900",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 1.570796327,
+	"engine_power": 600.0,
+	"engine_responsiveness": 0.27,
+	"engine_type": "Outboard",
+        "heat_generated": 400.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "600HP Outboard Engine U/D", 
+        "template": {
+            "column": "6|600HP Outboard U/D",
+            "row": "10|Engines"
+        }
+    },
 
     {
         "color_key": "#30E600",
@@ -525,7 +544,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "550HP Steam Engine R/L", 
         "template": {
-            "column": "6|550HP Steam R/L",
+            "column": "7|550HP Steam R/L",
             "row": "10|Engines"
         }
     },
@@ -545,7 +564,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "7|1300HP Steam R/L",
+            "column": "8|1300HP Steam R/L",
             "row": "10|Engines"
         }
     },
@@ -565,7 +584,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "template": {
-            "column": "8|1300HP Steam U/D",
+            "column": "9|1300HP Steam U/D",
             "row": "10|Engines"
         }
     },
@@ -585,7 +604,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "template": {
-            "column": "9|4000HP Steam R/L",
+            "column": "10|4000HP Steam R/L",
             "row": "10|Engines"
         }
     },
