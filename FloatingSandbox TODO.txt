@@ -293,6 +293,11 @@ Render:
 		+ "ResourceLoader" -> "ResourceLocator"
 		+ Pinch tool (*)
 		+ Pumps (*)
+		+ Batisphere with pumps
+			+ Add 1000HP engine, both dirs
+			+ Lower dive pump
+			+ More pump power
+			+ changes.txt
 
 		= Retrofit ships:
 			+ SS Californian
@@ -335,16 +340,14 @@ Render:
 					+ Fuzzy-break them until SettingsWindows doesn't open
 					+ Handle somehow
 					+ Test after
-				+ Test that it may be saved again
-
-		= Batisphere with pumps
-			= Batisphere ship
+				+ Verify it may be saved again
 
 		- Check ships @ ShipContributions
 
 		- Diesel engine
 			- Tell John Smith that sound is not OK
 			- Redo electrical template
+
 		- Hide legacy_electrical materials from structural palette		
 
 		- Drop air temperature with storm
@@ -1161,9 +1164,14 @@ Render:
 							- Ad-hoc container (TBD)
 							- Ad-hoc container (for each frontier) of ad-hoc containers (for each edge) of point indices
 								- Directly uploaded for rendering
+								- Last point == first point 
 						- Edges stuff:
 							- Indexed by same spring indices
+							- Content:
+								- Frontier ID
+								- Index of edge in frontier container(s)
 			- Jumpstart algo:
+				- TODO: rewrite in terms of points, springs, and triangles, so it may be buried in FrontierManager @ Ship finalization time
 				-	5	6	7
 					4	*	0
 					3	2	1
