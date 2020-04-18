@@ -30,6 +30,10 @@ def main():
     d={}
     
     for elem in data:
+
+        # Hide legacy elements
+        if "is_legacy_electrical" in elem and elem["is_legacy_electrical"] == True:
+            continue;
         
         row = elem["template"]["row"]
         row_parts = row.split("|")

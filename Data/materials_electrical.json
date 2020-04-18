@@ -275,20 +275,7 @@
         }, 
         "wet_failure_rate": 0.0
     }, 
-    {
-        "color_key": "#4C0000",
-	"conducts_electricity": true,
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.", 
-        "electrical_type": "Cable", 
-        "heat_generated": 0.0, 
-        "maximum_operating_temperature": 398.15, 
-        "minimum_operating_temperature": 233.15, 
-        "name": "Electrical Cable Hull", 
-        "template": {
-            "column": "0|Cable Hull", 
-            "row": "6|Cables"
-        }
-    }, 
+
     {
         "color_key": "#700000",
 	"conducts_electricity": true,
@@ -298,10 +285,26 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Electrical Cable", 
         "template": {
-            "column": "1|Cable", 
+            "column": "0|Cable", 
             "row": "6|Cables"
         }
     },
+    {
+        "color_key": "#4C0000",
+	"conducts_electricity": true,
+        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make hull electrical structures is to provide electrical properties in the electrical layer corresponding to hull points in the structural layer.", 
+        "electrical_type": "Cable", 
+        "heat_generated": 0.0, 
+	"is_legacy_electrical": true,
+        "maximum_operating_temperature": 398.15, 
+        "minimum_operating_temperature": 233.15, 
+        "name": "Electrical Cable Hull", 
+        "template": {
+            "column": "1|Cable Hull", 
+            "row": "6|Cables"
+        }
+    }, 
+    
 
     {
         "color_key": "#804000",

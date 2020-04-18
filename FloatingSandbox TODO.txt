@@ -298,6 +298,7 @@ Render:
 			+ Lower dive pump
 			+ More pump power
 			+ changes.txt
+		+ Hide legacy_electrical materials from structural palette		
 
 		= Retrofit ships:
 			+ SS Californian
@@ -342,13 +343,9 @@ Render:
 					+ Test after
 				+ Verify it may be saved again
 
-		- Check ships @ ShipContributions
-
 		- Diesel engine
 			- Tell John Smith that sound is not OK
 			- Redo electrical template
-
-		- Hide legacy_electrical materials from structural palette		
 
 		- Drop air temperature with storm
 			- By 10 degrees (local constexpr)
