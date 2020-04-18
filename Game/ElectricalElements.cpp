@@ -959,6 +959,7 @@ void ElectricalElements::UpdateSinks(
     float currentSimulationTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -967,6 +968,11 @@ void ElectricalElements::UpdateSinks(
     // Also visit deleted elements, as some types have
     // post-deletion wind-down state machines
     //
+
+    float const effectiveAugmentedAirTemperature =
+        gameParameters.AirTemperature
+        + stormParameters.AirTemperatureDelta
+        + 200.0f; // To ensure buoyancy
 
     for (auto sinkElementIndex : mSinks)
     {
@@ -1308,14 +1314,14 @@ void ElectricalElements::UpdateSinks(
                             auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
 
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
-                            float const temperature = std::max(
+                            float const smokeTemperature = std::max(
                                 points.GetTemperature(emitterPointIndex),
-                                gameParameters.AirTemperature + 200.0f);
+                                effectiveAugmentedAirTemperature);
 
                             // Generate particle
                             points.CreateEphemeralParticleLightSmoke(
                                 points.GetPosition(emitterPointIndex),
-                                temperature,
+                                smokeTemperature,
                                 currentSimulationTime,
                                 points.GetPlaneId(emitterPointIndex),
                                 gameParameters);

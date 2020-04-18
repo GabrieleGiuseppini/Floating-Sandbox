@@ -230,7 +230,9 @@ private:
 
     // Mechanical
 
-    void ApplyWorldForces(GameParameters const & gameParameters);
+    void ApplyWorldForces(
+        Storm::Parameters const & stormParameters,
+        GameParameters const & gameParameters);
 
     void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
 

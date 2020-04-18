@@ -52,6 +52,7 @@ public:
     void Update(
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void OnPointDetached(ElementIndex pointElementIndex);

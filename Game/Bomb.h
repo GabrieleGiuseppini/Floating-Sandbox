@@ -41,6 +41,7 @@ public:
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters) = 0;
 
     /*

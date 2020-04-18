@@ -40,6 +40,7 @@ AntiMatterBomb::AntiMatterBomb(
 bool AntiMatterBomb::Update(
     GameWallClock::time_point currentWallClockTime,
     float /*currentSimulationTime*/,
+    Storm::Parameters const & /*stormParameters*/,
     GameParameters const & gameParameters)
 {
     auto const elapsed = std::chrono::duration<float>(currentWallClockTime - mLastUpdateTimePoint);

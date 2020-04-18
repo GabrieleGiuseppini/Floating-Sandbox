@@ -259,7 +259,7 @@ struct GameParameters
     // rain quantity (in m/h) at density = 1.0
     static float constexpr MaxRainQuantity = 0.05f; // 50mm/h == violent shower
 
-    // How much rain does affect water intaken
+    // How much rain affects water intaken
     float RainFloodAdjustment;
     static float constexpr MinRainFloodAdjustment = 0.0f;
     static float constexpr MaxRainFloodAdjustment = 3600.0f / (MaxRainQuantity * SimulationStepTimeDuration<float>); // Guarantees that max is one meter/frame

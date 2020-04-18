@@ -45,6 +45,7 @@ public:
         float AmbientDarkening; // [0.0f = full darkness, 1.0 = no darkening]
 		float RainDensity; // [0.0f = no rain, 1.0f = full rain]
         float RainQuantity; // m/h
+        float AirTemperatureDelta; // K
 
         Parameters()
         {
@@ -60,6 +61,7 @@ public:
             AmbientDarkening = 1.0f;
 			RainDensity = 0.0f;
             RainQuantity = 0.0f;
+            AirTemperatureDelta = 0.0f;
         }
     };
 

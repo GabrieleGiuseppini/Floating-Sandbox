@@ -299,6 +299,12 @@ Render:
 			+ More pump power
 			+ changes.txt
 		+ Hide legacy_electrical materials from structural palette		
+		+ Drop air temperature with storm
+			+ By 15 degrees (local constexpr)
+			+ New storm parameter, with modulation
+			+ Use everywhere we use GameParameters::AirTemperature
+				+ ApplyWorldForces
+				+ Others
 
 		= Retrofit ships:
 			+ SS Californian
@@ -346,17 +352,6 @@ Render:
 		- Diesel engine
 			- Tell John Smith that sound is not OK
 			- Redo electrical template
-
-		- Drop air temperature with storm
-			- By 10 degrees (local constexpr)
-			- New storm parameter, with modulation
-			- Use everywhere we use GameParameters::AirTemperature
-				- ApplyWorldForces
-				- TBD: others
-
-		- Add more background music:
-			- Music:
-				- Kevin MacLeod, check out Long Note 1,2,3,...
 
 		- Flood doors (*)		
 
@@ -425,6 +420,12 @@ Render:
 		- Cached quantities (*)
 
 		- Run w/OpenGL tracing to see if there's any errors
+
+		- Add more background music:
+			- Music:
+				+ "Symmetry" - Kevin MacLeod (incompetech.com)
+				- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
+				- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 
 		- Multi-threading, phase II:
 			- Springs: each iteration done in parallel with NThreads partitions

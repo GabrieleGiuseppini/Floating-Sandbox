@@ -212,7 +212,7 @@ void Ship::Update(
     //
 
     // Apply world forces
-    ApplyWorldForces(gameParameters);
+    ApplyWorldForces(stormParameters, gameParameters);
 
     //
     // Run spring relaxation iterations
@@ -274,6 +274,7 @@ void Ship::Update(
     mBombs.Update(
         currentWallClockTime,
         currentSimulationTime,
+        stormParameters,
         gameParameters);
 
 
@@ -375,6 +376,7 @@ void Ship::Update(
         currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
+        stormParameters,
         gameParameters);
 
     ///////////////////////////////////////////////////////////////////
@@ -679,12 +681,18 @@ void Ship::Render(
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::ApplyWorldForces(GameParameters const & gameParameters)
+void Ship::ApplyWorldForces(
+    Storm::Parameters const & stormParameters,
+    GameParameters const & gameParameters)
 {
+    float const effectiveAirTemperature =
+        gameParameters.AirTemperature
+        + stormParameters.AirTemperatureDelta;
+
     // Density of air, adjusted for temperature
     float const effectiveAirDensity =
         GameParameters::AirMass
-        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (gameParameters.AirTemperature - GameParameters::Temperature0));
+        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (effectiveAirTemperature - GameParameters::Temperature0));
 
     // Density of water, adjusted for temperature and manual adjustment
     float const effectiveWaterDensity  =
@@ -1841,7 +1849,9 @@ void Ship::PropagateHeat(
 		* gameParameters.HeatDissipationAdjustment
 		+ FastPow(stormParameters.RainDensity, 0.3f) * effectiveWaterConvectiveHeatTransferCoefficient;
 
-    float const airTemperature = gameParameters.AirTemperature;
+    float const airTemperature =
+        gameParameters.AirTemperature
+        + stormParameters.AirTemperatureDelta;
 
     // We also include ephemeral points, as they may be heated
     // and have a temperature

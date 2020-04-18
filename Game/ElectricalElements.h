@@ -473,6 +473,7 @@ public:
         float currentSimulationTime,
         SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
 public:

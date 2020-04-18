@@ -43,6 +43,7 @@ TimerBomb::TimerBomb(
 bool TimerBomb::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     switch (mState)
@@ -60,7 +61,7 @@ bool TimerBomb::Update(
                 // Emit smoke
                 mShipPoints.CreateEphemeralParticleHeavySmoke(
                     GetPosition() + vec2f(0.0f, 5.0f), // Where the fuse is
-                    gameParameters.AirTemperature + 300.0f,
+                    gameParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
                     currentSimulationTime,
                     GetPlaneId(),
                     gameParameters);

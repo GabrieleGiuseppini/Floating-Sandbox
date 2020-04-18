@@ -10,13 +10,19 @@ namespace Physics {
 void Bombs::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     // Run through all bombs and invoke Update() on each;
     // remove those bombs that have expired
     for (auto it = mCurrentBombs.begin(); it != mCurrentBombs.end(); /* incremented in loop */)
     {
-        bool isActive = (*it)->Update(currentWallClockTime, currentSimulationTime, gameParameters);
+        bool const isActive = (*it)->Update(
+            currentWallClockTime,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+
         if (!isActive)
         {
             //

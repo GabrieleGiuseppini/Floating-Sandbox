@@ -133,10 +133,14 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Fox Assor", "https://vk.com/id448121270" },
         {"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
 
-        {"Music:\t\t", "Dario Bazzichetto (Soul Heater)", "https://soundcloud.com/soul-heater" },
+        {"Music:\t\t", "\"The Short Journey to the Seabed\", Soul Heater", "https://soundcloud.com/soul-heater" },
+        {"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
+        {"\t\t\t\t", "\"Long Note Four\", Kevin MacLeod", "https://incompetech.com" },
+        {"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
+        {"\t\t\t\t", "\"Symmetry\", Kevin MacLeod", "https://incompetech.com" },
+        {"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
         {"\t\t\t\t", "Michael Bozarth; Stuart's Piano World", "https://stuartspianoworld.com/" },
-		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
-        {"\t\t\t\t", "Kevin MacLeod", "https://incompetech.com/" },
+        {"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
 
         {"Testing:\t\t", "Pac0master", "https://discordapp.com/" },
         {"\t\t\t\t", "McShooter2018", "https://discordapp.com/" },
@@ -200,7 +204,7 @@ AboutDialog::AboutDialog(
                     std::get<1>(credit) + (!std::get<2>(credit).empty() ? " - " : ""),
                     wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
                 credits2Label->SetFont(creditsContentFont);
-                credits23Sizer->Add(credits2Label, 0, wxALIGN_LEFT);
+                credits23Sizer->Add(credits2Label, 0, wxALIGN_LEFT | wxEXPAND);
 
                 if (!std::get<2>(credit).empty())
                 {
@@ -216,10 +220,10 @@ AboutDialog::AboutDialog(
                     credits23Sizer->Add(credits3Label, 0, wxALIGN_LEFT);
                 }
 
-                credits23Panel->SetSizer(credits23Sizer);
+                credits23Panel->SetSizerAndFit(credits23Sizer);
             }
 
-            creditsSizer->Add(credits23Panel, 1, wxALIGN_LEFT);
+            creditsSizer->Add(credits23Panel, 1, wxALIGN_LEFT | wxEXPAND);
         }
     }
 

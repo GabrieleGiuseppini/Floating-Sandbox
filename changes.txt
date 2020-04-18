@@ -6,6 +6,7 @@ TODO
 - Added 2 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 - Retrofitted electrical elements to a few older ships (S.S. Californian, Goodyear Blimp, Hindenburg)
+- Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
 - ...and a few more small improvements here and there
 
 1.14.0.6

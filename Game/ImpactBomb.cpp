@@ -34,6 +34,7 @@ ImpactBomb::ImpactBomb(
 bool ImpactBomb::Update(
     GameWallClock::time_point /*currentWallClockTime*/,
     float currentSimulationTime,
+    Storm::Parameters const & /*stormParameters*/,
     GameParameters const & gameParameters)
 {
     switch (mState)
