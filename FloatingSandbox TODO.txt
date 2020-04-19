@@ -312,7 +312,7 @@ Render:
 			+ Then build again with VS (after changes)
 				+ Verify all is fine 
 				+ Run unit tests as well
-			- push and merge
+			+ push and merge
 			- tell him
 		= Mouse wheel issue:
 			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
