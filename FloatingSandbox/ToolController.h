@@ -58,11 +58,11 @@ public:
         }
     }
 
-    void Update()
+    void UpdateSimulation()
     {
         if (nullptr != mCurrentTool)
         {
-            mCurrentTool->Update(mInputState);
+            mCurrentTool->UpdateSimulation(mInputState);
         }
     }
 

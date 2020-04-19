@@ -46,7 +46,7 @@ EventTickerPanel::~EventTickerPanel()
 {
 }
 
-void EventTickerPanel::Update()
+void EventTickerPanel::UpdateSimulation()
 {
     mCurrentCharStep += TickerCharStep;
     if (mCurrentCharStep >= TickerFontSize)

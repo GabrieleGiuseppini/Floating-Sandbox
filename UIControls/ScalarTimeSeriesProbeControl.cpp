@@ -63,7 +63,7 @@ void ScalarTimeSeriesProbeControl::RegisterSample(float value)
         value);
 }
 
-void ScalarTimeSeriesProbeControl::Update()
+void ScalarTimeSeriesProbeControl::UpdateSimulation()
 {
     Refresh();
 }

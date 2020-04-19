@@ -81,7 +81,7 @@ public:
     virtual void Initialize(InputState const & inputState) = 0;
     virtual void Deinitialize(InputState const & inputState) = 0;
 
-    virtual void Update(InputState const & inputState) = 0;
+    virtual void UpdateSimulation(InputState const & inputState) = 0;
 
     virtual void OnMouseMove(InputState const & inputState) = 0;
     virtual void OnLeftMouseDown(InputState const & inputState) = 0;
@@ -96,10 +96,10 @@ protected:
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController)
-        : mToolType(toolType)
-        , mToolCursorManager(toolCursorManager)
+        : mToolCursorManager(toolCursorManager)
         , mGameController(gameController)
         , mSoundController(soundController)
+        , mToolType(toolType)
     {}
 
     IToolCursorManager & mToolCursorManager;
@@ -122,7 +122,7 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
-    virtual void Update(InputState const & /*inputState*/) override {}
+    virtual void UpdateSimulation(InputState const & /*inputState*/) override {}
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
@@ -160,7 +160,7 @@ public:
         mCumulatedTime = std::chrono::microseconds(0);
     }
 
-    virtual void Update(InputState const & inputState) override;
+    virtual void UpdateSimulation(InputState const & inputState) override;
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
 
@@ -239,7 +239,7 @@ public:
         }
     }
 
-    virtual void Update(InputState const & /*inputState*/) override
+    virtual void UpdateSimulation(InputState const & /*inputState*/) override
     {
         if (!!mCurrentTrajectory)
         {
@@ -631,7 +631,7 @@ public:
     {
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool wasEngaged = !!mCurrentEngagementState;
 
@@ -864,7 +864,7 @@ public:
         mSoundController->StopSawSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -998,7 +998,7 @@ public:
         mSoundController->StopHeatBlasterSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool isEngaged;
         HeatBlasterActionType currentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
@@ -1115,7 +1115,7 @@ public:
         mSoundController->StopFireExtinguisherSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool isEngaged;
 
@@ -1459,7 +1459,7 @@ public:
         mSoundController->StopAirBubblesSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -1546,7 +1546,7 @@ public:
         mSoundController->StopFloodHoseSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -1851,7 +1851,7 @@ public:
     {
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool wasEngaged = !!mCurrentTrajectoryPreviousPosition;
 
@@ -1941,7 +1941,7 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
-    virtual void Update(InputState const & /*inputState*/) override {}
+    virtual void UpdateSimulation(InputState const & /*inputState*/) override {}
 
     virtual void OnMouseMove(InputState const & inputState) override
     {
@@ -2064,7 +2064,7 @@ public:
         mSoundController->StopRepairStructureSound();
     }
 
-    virtual void Update(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)

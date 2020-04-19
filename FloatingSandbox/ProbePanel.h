@@ -30,7 +30,7 @@ public:
 
     virtual ~ProbePanel();
 
-    void Update();
+    void UpdateSimulation();
 
 public:
 

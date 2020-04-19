@@ -1084,10 +1084,10 @@ void SoundController::PlayTickSound()
         true);
 }
 
-void SoundController::Update()
+void SoundController::UpdateSimulation()
 {
-    mFireBurningSound.Update();
-    mWaveMakerSound.Update();
+    mFireBurningSound.UpdateSimulation();
+    mWaveMakerSound.UpdateSimulation();
 
     // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
@@ -1095,7 +1095,7 @@ void SoundController::Update()
     mSawedWoodSound.SetVolume(0.0f);
 }
 
-void SoundController::LowFrequencyUpdate()
+void SoundController::LowFrequencyUpdateSimulation()
 {
 }
 

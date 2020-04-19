@@ -145,31 +145,31 @@ public:
         mDesiredState.reset();
     }
 
-    void Update()
+    void UpdateSimulation()
     {
         switch (mCurrentState)
         {
             case StateType::Stopped:
             {
-                Update_Stopped();
+                UpdateSimulation_Stopped();
                 break;
             }
 
             case StateType::FadingIn:
             {
-                Update_FadingIn();
+                UpdateSimulation_FadingIn();
                 break;
             }
 
             case StateType::Playing:
             {
-                Update_Playing();
+                UpdateSimulation_Playing();
                 break;
             }
 
             case StateType::FadingOut:
             {
-                Update_FadingOut();
+                UpdateSimulation_FadingOut();
                 break;
             }
         }
@@ -227,7 +227,7 @@ private:
         }
     }
 
-    void Update_Stopped()
+    void UpdateSimulation_Stopped()
     {
         //
         // Check if we need to transition
@@ -245,7 +245,7 @@ private:
                     mCurrentState = StateType::FadingIn;
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -262,7 +262,7 @@ private:
                     TransitionToPlaying();
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -276,7 +276,7 @@ private:
         }
     }
 
-    void Update_FadingIn()
+    void UpdateSimulation_FadingIn()
     {
         //
         // Check if we need to transition
@@ -300,7 +300,7 @@ private:
                     mCurrentState = StateType::FadingOut;
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -311,7 +311,7 @@ private:
                     TransitionToPlaying();
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -353,7 +353,7 @@ private:
         }
     }
 
-    void Update_Playing()
+    void UpdateSimulation_Playing()
     {
         //
         // Check if we need to transition
@@ -377,7 +377,7 @@ private:
                     mCurrentState = StateType::FadingOut;
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -405,7 +405,7 @@ private:
         EnsureMusicIsPlaying();
     }
 
-    void Update_FadingOut()
+    void UpdateSimulation_FadingOut()
     {
         //
         // Check if we need to transition
@@ -423,7 +423,7 @@ private:
                     mCurrentState = StateType::FadingIn;
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -440,7 +440,7 @@ private:
                     TransitionToPlaying();
 
                     // Start right away
-                    Update();
+                    UpdateSimulation();
 
                     return;
                 }
@@ -539,7 +539,7 @@ private:
     // Current state
     StateType mCurrentState;
 
-    // Desired state, queued awaiting for an Update()
+    // Desired state, queued awaiting for an UpdateSimulation()
     std::optional<StateType> mDesiredState;
 
     // Timestamp at which the current 'fade' state has started

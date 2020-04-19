@@ -1054,7 +1054,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     {
         // Update tool controller
         assert(!!mToolController);
-        mToolController->Update();
+        mToolController->UpdateSimulation();
 
         // Update game - will also render
         assert(!!mGameController);
@@ -1062,23 +1062,23 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 
         // Update probe panel
         assert(!!mProbePanel);
-        mProbePanel->Update();
+        mProbePanel->UpdateSimulation();
 
         // Update event ticker
         assert(!!mEventTickerPanel);
-        mEventTickerPanel->Update();
+        mEventTickerPanel->UpdateSimulation();
 
         // Update electrical panel
         assert(!!mElectricalPanel);
-        mElectricalPanel->Update();
+        mElectricalPanel->UpdateSimulation();
 
         // Update sound controller
         assert(!!mSoundController);
-        mSoundController->Update();
+        mSoundController->UpdateSimulation();
 
         // Update music controller
         assert(!!mMusicController);
-        mMusicController->Update();
+        mMusicController->UpdateSimulation();
 
         // Do after-render chores
         AfterGameRender();
@@ -1126,7 +1126,7 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
     //
 
     assert(!!mSoundController);
-    mSoundController->LowFrequencyUpdate();
+    mSoundController->LowFrequencyUpdateSimulation();
 
 
     //
@@ -1134,7 +1134,7 @@ void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
     //
 
     assert(!!mMusicController);
-    mMusicController->LowFrequencyUpdate();
+    mMusicController->LowFrequencyUpdateSimulation();
 }
 
 void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)

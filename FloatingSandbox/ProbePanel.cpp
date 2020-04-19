@@ -52,7 +52,7 @@ ProbePanel::~ProbePanel()
 {
 }
 
-void ProbePanel::Update()
+void ProbePanel::UpdateSimulation()
 {
     //
     // Update all probes
@@ -60,15 +60,15 @@ void ProbePanel::Update()
 
     if (IsActive())
     {
-        mFrameRateProbe->Update();
-        mURRatioProbe->Update();
-        mWaterTakenProbe->Update();
-        mWaterSplashProbe->Update();
-        mWindSpeedProbe->Update();
+        mFrameRateProbe->UpdateSimulation();
+        mURRatioProbe->UpdateSimulation();
+        mWaterTakenProbe->UpdateSimulation();
+        mWaterSplashProbe->UpdateSimulation();
+        mWindSpeedProbe->UpdateSimulation();
 
         for (auto const & p : mCustomProbes)
         {
-            p.second->Update();
+            p.second->UpdateSimulation();
         }
     }
 }

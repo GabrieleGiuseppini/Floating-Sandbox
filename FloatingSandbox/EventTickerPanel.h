@@ -27,7 +27,7 @@ public:
 
 	virtual ~EventTickerPanel();
 
-    void Update() override;
+    void UpdateSimulation();
 
 public:
 

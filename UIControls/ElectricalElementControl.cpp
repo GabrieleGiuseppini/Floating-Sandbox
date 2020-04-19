@@ -61,7 +61,7 @@ void GaugeElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
     Render(dc);
 }
 
-void GaugeElectricalElementControl::Update()
+void GaugeElectricalElementControl::UpdateSimulation()
 {
     //
     // Update physics

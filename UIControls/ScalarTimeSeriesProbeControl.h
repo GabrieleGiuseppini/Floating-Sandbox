@@ -23,7 +23,7 @@ public:
 
     void RegisterSample(float value);
 
-    void Update();
+    void UpdateSimulation();
 
     void Reset();
 

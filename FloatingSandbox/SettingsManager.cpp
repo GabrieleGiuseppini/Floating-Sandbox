@@ -12,7 +12,7 @@ std::string MangleSettingName(std::string && settingName);
 
 #define ADD_GC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
-        GameSettings::##name,                           \
+        GameSettings::name,                             \
         MangleSettingName(#name),                       \
         [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
         [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
@@ -20,7 +20,7 @@ std::string MangleSettingName(std::string && settingName);
 
 #define ADD_GC_SETTING_WITH_IMMEDIATE(type, name)       \
     factory.AddSetting<type>(                           \
-        GameSettings::##name,                           \
+        GameSettings::name,                             \
         MangleSettingName(#name),                       \
         [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
         [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
@@ -28,7 +28,7 @@ std::string MangleSettingName(std::string && settingName);
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
-        GameSettings::##name,                           \
+        GameSettings::name,                             \
         MangleSettingName(#name),                       \
         [soundController]() -> type { return soundController->Get##name(); },	\
         [soundController](auto const & v) { soundController->Set##name(v); },	\

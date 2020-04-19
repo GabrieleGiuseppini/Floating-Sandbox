@@ -480,7 +480,7 @@ private:
             , mShipPreview()
         {}
 
-        MessageType const mMessageType;
+        MessageType mMessageType;
 
         std::filesystem::path mScannedDirectoryPath;
         std::vector<std::filesystem::path> mScannedShipFilepaths;

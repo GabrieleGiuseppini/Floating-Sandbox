@@ -156,13 +156,13 @@ void MusicController::SetPlaySinkingMusic(bool playSinkingMusic)
     }
 }
 
-void MusicController::Update()
+void MusicController::UpdateSimulation()
 {
-    mBackgroundMusic.Update();
-    mSinkingMusic.Update();
+    mBackgroundMusic.UpdateSimulation();
+    mSinkingMusic.UpdateSimulation();
 }
 
-void MusicController::LowFrequencyUpdate()
+void MusicController::LowFrequencyUpdateSimulation()
 {
 }
 

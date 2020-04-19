@@ -53,7 +53,7 @@ public:
 
     virtual ~SwitchboardPanel();
 
-    void Update();
+    void UpdateSimulation();
 
     bool ProcessKeyDown(
         int keyCode,

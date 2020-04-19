@@ -546,7 +546,7 @@ struct ContinuousSound
         }
     }
 
-    void Update()
+    void UpdateSimulation()
     {
         mSound->update();
     }
@@ -857,7 +857,7 @@ struct MultiInstanceContinuousSounds
         }
     }
 
-    void Update()
+    void UpdateSimulation()
     {
         for (auto & p : mSounds)
         {
@@ -1158,9 +1158,9 @@ struct ContinuousSingleChoiceSound
         mSound.Stop(SoundStopMode::WithFadeOut);
     }
 
-    void Update()
+    void UpdateSimulation()
     {
-        mSound.Update();
+        mSound.UpdateSimulation();
     }
 
 protected:

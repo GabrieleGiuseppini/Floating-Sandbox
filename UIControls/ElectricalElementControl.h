@@ -130,7 +130,7 @@ public:
     virtual ~IUpdateableElectricalElementControl()
     {}
 
-    virtual void Update() = 0;
+    virtual void UpdateSimulation() = 0;
 };
 
 class SwitchElectricalElementControl
@@ -596,7 +596,7 @@ public:
         mTargetAngle = CalculateAngle(value, mMinAngle, mMaxAngle);
     }
 
-    virtual void Update() override;
+    virtual void UpdateSimulation() override;
 
 private:
 

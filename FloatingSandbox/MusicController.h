@@ -97,9 +97,9 @@ public:
     // Updating
     //
 
-    void Update();
+    void UpdateSimulation();
 
-    void LowFrequencyUpdate();
+    void LowFrequencyUpdateSimulation();
 
     void Reset();
 

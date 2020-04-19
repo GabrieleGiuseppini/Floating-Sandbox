@@ -15,7 +15,7 @@
 // Continuous Tool
 /////////////////////////////////////////////////////////////////////////
 
-void ContinuousTool::Update(InputState const & inputState)
+void ContinuousTool::UpdateSimulation(InputState const & inputState)
 {
     // We apply the tool only if the left mouse button is down
     if (inputState.IsLeftMouseDown)

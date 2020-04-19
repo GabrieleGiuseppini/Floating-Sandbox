@@ -327,11 +327,11 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-void SwitchboardPanel::Update()
+void SwitchboardPanel::UpdateSimulation()
 {
     for (auto ctrl : mUpdateableElements)
     {
-        ctrl->Update();
+        ctrl->UpdateSimulation();
     }
 }
 

@@ -15,7 +15,6 @@ static constexpr int Border = 10;
 
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
-static int constexpr SliderBorder = 10;
 
 static constexpr int MaxZoomIncrementPosition = 200;
 static constexpr int MaxPanIncrementPosition = 200;

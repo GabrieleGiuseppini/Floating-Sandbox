@@ -245,6 +245,9 @@ void ShipPreviewWindow::OnMouseSingleClick(wxMouseEvent & event)
     {
         Select(selectedInfoTileIndex);
     }
+
+    // Allow focus move
+    event.Skip();
 }
 
 void ShipPreviewWindow::OnMouseDoubleClick(wxMouseEvent & event)
