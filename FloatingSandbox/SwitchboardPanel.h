@@ -32,6 +32,8 @@
 #include <unordered_map>
 #include <vector>
 
+class SwitchPanel;
+
 class SwitchboardPanel
     : public wxCustomBackgroundWindow<wxPanel>
     , public ILifecycleGameEventHandler
@@ -215,7 +217,7 @@ private:
     wxPanel * mHintPanel;
     wxBoxSizer * mHintPanelSizer;
 
-    wxScrolled<wxPanel> * mSwitchPanel;
+    SwitchPanel * mSwitchPanel;
     wxBoxSizer * mSwitchPanelVSizer;
     wxGridBagSizer * mSwitchPanelElementSizer;
 
@@ -312,4 +314,24 @@ private:
     std::vector<wxBitmap> mEngineControllerHandBitmaps;
 
     wxSize mMinBitmapSize;
+};
+
+/*
+ * Scrollable panel that contains switches.
+ */
+class SwitchPanel : public wxScrolled<wxPanel>
+{
+public:
+
+    SwitchPanel(wxWindow * parent)
+        : wxScrolled<wxPanel>(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL)
+    {}
+
+    virtual bool AcceptsFocus() const override
+    {
+        // We do not want focus on this window as it steals mouse wheel events from the main window.
+        // All we process anyway are key events, which are explicitly forwarded to us by our
+        // parent, and mouse events originating on us.
+        return false;
+    }
 };

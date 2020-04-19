@@ -306,17 +306,38 @@ Render:
 				+ ApplyWorldForces
 				+ Others
 
+		- Cloud speed: adjust for wind being 2 or 4
+			- Close ticket then
+		= Mouse wheel issue:
+			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
+			+ Repro on my box: only after clicking on switchboard
+			+ Test wheel at LoggingDialog, LoadShipDialog
+			+ Fix with focus
+			+ Test that normal wheel in-game works
+			+ Test wheel at LoggingDialog, LoadShipDialog
+			- Poofy1932#9116
+				- Send him zip
+				- Bump up version
+			- Respond to other guy with Poofy's outcome
+		- DioxCode says people lose sound
+		- Respond to:
+			- https://gamejolt.com/x/permalink/comment/4142357
+			- https://gamejolt.com/x/permalink/comment/4138831
+
+
+
 		= Retrofit ships:
 			+ SS Californian
 				+ Nuke one "w/lights"?
 			- Titanic Interior
-			- Britannic
 				- Ask Mike
+			- Britannic				
 			+ Goodyear
 			+ Hindenburg
 
 		= Robustness:
 			= DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+				- Try myself
 				= Asked DKuz for help
 				= Flush log to disk on crash
 					+ Logger::FlushToFile(fs path)
@@ -352,6 +373,9 @@ Render:
 		- Diesel engine
 			- Tell John Smith that sound is not OK
 			- Redo electrical template
+
+		- About box in debug
+		- Debug console 
 
 		- Flood doors (*)		
 
@@ -1085,25 +1109,58 @@ Render:
 					- See if may get rid of Springs::Characteristics::Hull					
 					- See if may get rid of Springs::Characteristics::Rope
 					- See if may get rid of Springs::Characteristics
+				- Make sure there's no current Points::IsHull
+				- Add Points::IsHull (w/own bool buffer, Get(), and Set()), which will contain externally-computed resultant of 
+				  flood doors + material
+					- Default @ Points:Add(): false
+				- Change Points::MaterialIsHull usages:
+					- @ Points::OnDamage: to decide whether or not to make the point leaking
+						- Target: use new IsHull (kinda arbitrarily)
+					- @ ShipInteractions::Flood: to avoid flooding hull points
+						- Target: use new IsHull (to avoid flooding points on activated doors)
+				- Nuke MaterialIsHullBuffer as usages may directly check StructuralMaterial
+			- Ship::~SetAndPropagatePointHullness(pointIndex, bool isHull)
+				- Change Point::Hull and change Spring's::WaterPermeability
 			- Ship::Finalize()
 				- Called by cctor
 				- Does multiple things:
-					- Visit all hull points and set water permeability accordingly
+					- Visit all hull points and calls ~SetAndPropagatePointHullness(.)
 					- Current call to detect connected component
-			- ElectricalElement::Update -> IShipHandler::OnFloodDoorActivated(bool isActivated) -> change Point::Hull (see if needed) 
-			  and change Spring's::WaterPermeability, via same method used by Ship::Finalize()
+			- ElectricalElements:
 				- State:
-					- CurrentState: activated (powered) or not (bool)
+					- CurrentState (bool): activated (powered) or not
+				- Add: add to sinks; current state=!activated
+				- UpdateSinks:
+					- Do powered state machine
+					- On state toggle:
+						- Notification
+						- IShipHandler::OnFloodDoorActivated(true or false)
+				- Destroy: force toggle to not activated:
+					- State variable
+					- IShipHandler::OnFloodDoorActivated
+					- TBD: anything else? Look at others...
+				- Restore: probably nothing to do, as next UpdateSinks() will see if it works
+					- Assert currently not activated
+			- Ship::OnFloodDoorActivated(pointIndex, bool isActivated):
+				- Calculate target hullness = f(point's material hullness, isActivated)
+				- Invoke SetAndPropagatePointHullness(.)
 				- On Open->Close transition, might also want to dry up points (THE point yes, what about the others?) or else
 				  existing water there will stagnate
-			- If Point::Hull is still required:
-				- See first of all if it's just MaterialIsHull that is needed, or final resultant hullness (i.e. the one after door)
-					- If it's just MaterialIsHull that it's needed, nothing else to do here
+				- Fire event for Sound
+					- Event is aggregated with size
+			- SoundController:
+				- Open sound X n1, Close sound X n2
+				- Event response (size => volume)
+					- object-agnostic
 			+ No real need to also change Point::Buoyancy
 			+ No real need to also change Point::IsHull
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
+			- Test:
+				- w/Circuit Test (temporarily)
+				- Destroy
+				- Release
 
 	- Logic Gates
 		- New ElectricalMaterial type
