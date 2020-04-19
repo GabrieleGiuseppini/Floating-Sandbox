@@ -805,7 +805,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
         mMainPanel,
-        mMainFrameSizer,
         mGameController,
         mSoundController,
         mUIPreferencesManager,

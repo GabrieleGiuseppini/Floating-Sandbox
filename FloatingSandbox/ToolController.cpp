@@ -300,8 +300,6 @@ void ToolController::SetToolCursor(wxImage const & basisImage, float strength)
 
 void ToolController::InternalSetCurrentToolCursor()
 {
-    static int constexpr CursorStep = 30;
-
     //
     // Process basis image with ambient light blending and power bar
     //

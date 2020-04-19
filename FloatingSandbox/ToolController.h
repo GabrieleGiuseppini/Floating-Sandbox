@@ -18,7 +18,7 @@
 #include <memory>
 #include <vector>
 
-class ToolController
+class ToolController final
     : public IRenderGameEventHandler
     , public IToolCursorManager
 {

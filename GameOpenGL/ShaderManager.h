@@ -55,7 +55,7 @@ public:
         size_t programIndex = static_cast<size_t>(Program);
 
         // Find all texture parameters
-        for (auto parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
+        for (size_t parameterIndex = 0; parameterIndex < mPrograms[programIndex].UniformLocations.size(); ++parameterIndex)
         {
             if (mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation)
             {

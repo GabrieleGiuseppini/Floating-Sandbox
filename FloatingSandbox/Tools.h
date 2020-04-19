@@ -2174,9 +2174,6 @@ private:
     RepairSessionId mCurrentSessionId;
     RepairSessionStepId mCurrentSessionStepId;
 
-    // The currently-chosen cursor
-    wxCursor * mCurrentCursor;
-
     // Our cursors
     wxImage const mUpCursorImage;
     std::array<wxImage, 5> const mDownCursorImages;

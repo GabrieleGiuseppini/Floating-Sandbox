@@ -15,11 +15,8 @@
 #include <regex>
 #include <sstream>
 
-
 std::string const UpdateHost = "http://floatingsandbox.com";
 std::string const UpdateUrl = "/changes.txt";
-
-size_t constexpr ReadBufferSize = 1024 * 1024;
 
 UpdateChecker::UpdateChecker()
     : mOutcome()

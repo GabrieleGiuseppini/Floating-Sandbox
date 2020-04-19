@@ -27,7 +27,6 @@ static constexpr int MaxKeyboardShortcuts = 20;
 std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parent,
     wxWindow * parentLayoutWindow,
-    wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -38,7 +37,6 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
         new SwitchboardPanel(
             parent,
             parentLayoutWindow,
-            parentLayoutSizer,
             std::move(gameController),
             std::move(soundController),
             std::move(uiPreferencesManager),
@@ -49,7 +47,6 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
 SwitchboardPanel::SwitchboardPanel(
     wxWindow * parent,
     wxWindow * parentLayoutWindow,
-    wxSizer * parentLayoutSizer,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -69,7 +66,6 @@ SwitchboardPanel::SwitchboardPanel(
     , mSoundController(std::move(soundController))
     , mUIPreferencesManager(std::move(uiPreferencesManager))
     , mParentLayoutWindow(parentLayoutWindow)
-    , mParentLayoutSizer(parentLayoutSizer)
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
@@ -350,9 +346,9 @@ bool SwitchboardPanel::ProcessKeyDown(
     // Translate key into index
     //
 
-    int keyIndex;
+    size_t keyIndex;
     if (keyCode >= '1' && keyCode <= '9')
-        keyIndex = keyCode - '1';
+        keyIndex = static_cast<size_t>(keyCode - '1');
     else if (keyCode == '0')
         keyIndex = 9;
     else

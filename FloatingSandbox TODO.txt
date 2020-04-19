@@ -306,6 +306,12 @@ Render:
 				+ ApplyWorldForces
 				+ Others
 
+		= Sam's Mac build
+			+ Fix his issues
+			= Build all for CLang myself
+			- Then build again with VS and verify all is fine (after changes)
+			- push and merge
+			- tell him
 		= Mouse wheel issue:
 			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
 			+ Repro on my box: only after clicking on switchboard

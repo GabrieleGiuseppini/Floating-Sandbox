@@ -600,6 +600,11 @@ SoundController::SoundController(
                     }
                     break;
                 }
+
+                default:
+                {
+                    assert(false);
+                }
             }
 
             mLoopedSounds.AddAlternativeForSoundType(

@@ -44,7 +44,6 @@ public:
     static std::unique_ptr<SwitchboardPanel> Create(
         wxWindow * parent,
         wxWindow * parentLayoutWindow,
-        wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -151,7 +150,6 @@ private:
     SwitchboardPanel(
         wxWindow * parent,
         wxWindow * parentLayoutWindow,
-        wxSizer * parentLayoutSizer,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -215,7 +213,6 @@ private:
     wxBoxSizer * mMainVSizer2;
 
     wxPanel * mHintPanel;
-    wxBoxSizer * mHintPanelSizer;
 
     SwitchPanel * mSwitchPanel;
     wxBoxSizer * mSwitchPanelVSizer;
@@ -276,7 +273,6 @@ private:
     std::shared_ptr<UIPreferencesManager> const mUIPreferencesManager;
 
     wxWindow * const mParentLayoutWindow;
-    wxSizer * const mParentLayoutSizer;
 
     //
     // Bitmaps

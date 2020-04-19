@@ -25,7 +25,6 @@
 
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
-static int constexpr SliderBorder = 10;
 
 static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
@@ -4497,9 +4496,9 @@ void SettingsDialog::InsertPersistedSettingInCtrl(
 
 void SettingsDialog::LoadPersistedSettings(int index, bool withDefaults)
 {
-	assert(index < mPersistedSettings.size());
+	assert(index < static_cast<int>(mPersistedSettings.size()));
 
-	if (index < mPersistedSettings.size())
+	if (index < static_cast<int>(mPersistedSettings.size()))
 	{
 		if (withDefaults)
 		{

@@ -491,14 +491,14 @@ void ShipPreviewWindow::RecalculateGeometry(
         mCols, " nRows=", mRows, " expHMargin=", mExpandedHorizontalMargin, " virtH=", mVirtualHeight);
 
     // Update all info tiles's rectangles
-    for (int i = 0; i < mInfoTiles.size(); ++i)
+    for (size_t i = 0; i < mInfoTiles.size(); ++i)
     {
         mInfoTiles[i].Description1Size.reset();
         mInfoTiles[i].Description2Size.reset();
         mInfoTiles[i].FilenameSize.reset();
 
-        mInfoTiles[i].Col = i % mCols;
-        mInfoTiles[i].Row = i / mCols;
+        mInfoTiles[i].Col = static_cast<int>(i % mCols);
+        mInfoTiles[i].Row = static_cast<int>(i / mCols);
 
         int x = mInfoTiles[i].Col * mColumnWidth;
         int y = mInfoTiles[i].Row * RowHeight;

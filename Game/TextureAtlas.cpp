@@ -584,7 +584,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
     texturePositions.reserve(virtualNumberOfFrames);
 
-    for (int i = 0; i < inputTextureInfos.size(); ++i)
+    for (int i = 0; i < static_cast<int>(inputTextureInfos.size()); ++i)
     {
         int const c = i % numberOfFramesPerSide;
         int const r = i / numberOfFramesPerSide;

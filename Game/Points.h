@@ -604,7 +604,7 @@ public:
     /*
      * Returns an iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
      */
-    inline auto const RawShipPoints() const
+    inline auto RawShipPoints() const
     {
         return ElementIndexRangeIterable(0, mRawShipPointCount);
     }
@@ -622,7 +622,7 @@ public:
     /*
      * Returns a reverse iterator for the (unaligned) ship (i.e. non-ephemeral) points only.
      */
-    inline auto const RawShipPointsReverse() const
+    inline auto RawShipPointsReverse() const
     {
         return ElementIndexReverseRangeIterable(0, mRawShipPointCount);
     }
@@ -630,7 +630,7 @@ public:
     /*
      * Returns an iterator for the ephemeral points only.
      */
-    inline auto const EphemeralPoints() const
+    inline auto EphemeralPoints() const
     {
         return ElementIndexRangeIterable(mAlignedShipPointCount, mAllPointCount);
     }

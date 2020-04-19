@@ -2218,11 +2218,11 @@ std::vector<size_t> ShipBuilder::ReorderOptimally(
         }
 
         // Re-assign positions and scores of all vertices in the cache
-        int32_t currentCachePosition = 0;
+        size_t currentCachePosition = 0;
         for (auto it = modelLruVertexCache.begin(); it != modelLruVertexCache.end(); ++it, ++currentCachePosition)
         {
             vertexData[*it].CachePosition = (currentCachePosition < VertexCacheSize)
-                ? currentCachePosition
+                ? static_cast<int32_t>(currentCachePosition)
                 : -1;
 
             vertexData[*it].CurrentScore = CalculateVertexScore<VerticesInElement>(vertexData[*it]);
@@ -2312,7 +2312,7 @@ float ShipBuilder::CalculateVertexScore(VertexData const & vertexData)
     {
         // This vertex is in the cache
 
-        if (vertexData.CachePosition < VerticesInElement)
+        if (static_cast<size_t>(vertexData.CachePosition) < VerticesInElement)
         {
             // This vertex was used in the last element,
             // so it has a fixed score, whichever of the vertices
