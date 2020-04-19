@@ -138,9 +138,9 @@ int MainApp::FilterEvent(wxEvent & event)
             ((wxKeyEvent&)event).GetModifiers());
 
         if (isProcessed)
-            return true;
+            return Event_Processed;
     }
 
     // Not handled, continue processing
-    return -1;
+    return Event_Skip;
 }
