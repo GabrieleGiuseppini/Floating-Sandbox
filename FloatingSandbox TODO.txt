@@ -310,6 +310,7 @@ Render:
 			+ Fix his issues
 			= Build all for CLang myself
 			- Then build again with VS and verify all is fine (after changes)
+				- Run unit tests as well
 			- push and merge
 			- tell him
 		= Mouse wheel issue:
@@ -386,8 +387,6 @@ Render:
 
 		- Flood doors (*)		
 
-		- Take Mike's Lego Titanic when ready
-
 		- Auto-Texturizer
 			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
 			  texture; two modes:
@@ -398,6 +397,12 @@ Render:
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
 					- Material DB <-> actual textures check: done at TBD
+
+		- Take Mike's Lego Titanic when ready
+
+		- Release
+
+
 
 		- Superheated pulverization (*)
 

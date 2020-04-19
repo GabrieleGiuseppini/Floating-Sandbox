@@ -156,7 +156,7 @@ TEST_F(ShaderManagerTests, ParsesStaticParameters_Single)
     std::map<std::string, std::string> params;
     TestShaderManager::ParseLocalStaticParameters(source, params);
 
-    EXPECT_EQ(1, params.size());
+    EXPECT_EQ(1u, params.size());
 
     auto const & it = params.find("FOO");
     ASSERT_NE(it, params.end());
@@ -174,7 +174,7 @@ BAR = 89)";
     std::map<std::string, std::string> params;
     TestShaderManager::ParseLocalStaticParameters(source, params);
 
-    EXPECT_EQ(2, params.size());
+    EXPECT_EQ(2u, params.size());
 
     auto const & it1 = params.find("FOO");
     ASSERT_NE(it1, params.end());
@@ -257,8 +257,8 @@ TEST_F(ShaderManagerTests, ExtractsShaderParameters_Single)
 
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
-    ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
+    ASSERT_EQ(1u, result.size());
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_Multiple)
@@ -271,9 +271,9 @@ uniform mat4 paramOrthoMatrix;
 
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
-    ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
+    ASSERT_EQ(2u, result.size());
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresTrailingComment)
@@ -286,9 +286,9 @@ uniform mat4 paramOrthoMatrix;
 
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
-    ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::OrthoMatrix));
+    ASSERT_EQ(2u, result.size());
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::OrthoMatrix));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_IgnoresCommentedOutParameters)
@@ -301,8 +301,8 @@ foobar;
 
     auto result = TestShaderManager::ExtractShaderParameters(source);
 
-    ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
+    ASSERT_EQ(1u, result.size());
+    EXPECT_EQ(1u, result.count(Render::ProgramParameterType::EffectiveAmbientLightIntensity));
 }
 
 TEST_F(ShaderManagerTests, ExtractsShaderParameters_ErrorsOnUnrecognizedParameter)
@@ -337,8 +337,8 @@ TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Single)
 
     auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
-    ASSERT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count("ShipPointColor"));
+    ASSERT_EQ(1u, result.size());
+    EXPECT_EQ(1u, result.count("ShipPointColor"));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_Multiple)
@@ -352,9 +352,9 @@ in mat4 inGenericMipMappedTexture3;
 
     auto result = TestShaderManager::ExtractVertexAttributeNames(source);
 
-    ASSERT_EQ(2, result.size());
-    EXPECT_EQ(1, result.count("ShipPointColor"));
-    EXPECT_EQ(1, result.count("GenericMipMappedTexture3"));
+    ASSERT_EQ(2u, result.size());
+    EXPECT_EQ(1u, result.count("ShipPointColor"));
+    EXPECT_EQ(1u, result.count("GenericMipMappedTexture3"));
 }
 
 TEST_F(ShaderManagerTests, ExtractsVertexAttributeNames_ErrorsOnUnrecognizedAttribute)

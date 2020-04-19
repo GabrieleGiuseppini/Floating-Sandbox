@@ -17,7 +17,7 @@ TEST(TextureAtlasTests, OneTexture_MipMappable)
     EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 
-    ASSERT_EQ(1, atlasSpecification.TexturePositions.size());
+    ASSERT_EQ(1u, atlasSpecification.TexturePositions.size());
     ASSERT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TexturePositions[0].FrameId);
     ASSERT_EQ(0, atlasSpecification.TexturePositions[0].FrameLeftX);
     ASSERT_EQ(0, atlasSpecification.TexturePositions[0].FrameBottomY);
@@ -42,7 +42,7 @@ TEST(TextureAtlasTests, Placement1_MipMappable)
     EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 
-    ASSERT_EQ(8, atlasSpecification.TexturePositions.size());
+    ASSERT_EQ(8u, atlasSpecification.TexturePositions.size());
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 4), atlasSpecification.TexturePositions[0].FrameId);
     EXPECT_EQ(0, atlasSpecification.TexturePositions[0].FrameLeftX);
@@ -96,7 +96,7 @@ TEST(TextureAtlasTests, Placement1_NonMipMappable)
     EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 
-    ASSERT_EQ(8, atlasSpecification.TexturePositions.size());
+    ASSERT_EQ(8u, atlasSpecification.TexturePositions.size());
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 4), atlasSpecification.TexturePositions[0].FrameId);
     EXPECT_EQ(0, atlasSpecification.TexturePositions[0].FrameLeftX);
@@ -170,7 +170,7 @@ TEST(TextureAtlasTests, RegularAtlas)
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
 
-    ASSERT_EQ(16, atlasSpecification.TexturePositions.size());
+    ASSERT_EQ(16u, atlasSpecification.TexturePositions.size());
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TexturePositions[0].FrameId);
     EXPECT_EQ(0, atlasSpecification.TexturePositions[0].FrameLeftX);

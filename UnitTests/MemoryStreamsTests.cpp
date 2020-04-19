@@ -15,11 +15,11 @@ TEST(MemoryStreamsTests, BackingOutputStream_write)
 
     os.write(reinterpret_cast<char *>(testData), 3);
 
-    EXPECT_EQ(ms.size(),3);
+    EXPECT_EQ(ms.size(), 3u);
 
     os.write(reinterpret_cast<char *>(testData) + 3, 3);
 
-    EXPECT_EQ(ms.size(), 6);
+    EXPECT_EQ(ms.size(), 6u);
 
     EXPECT_EQ(0x05, static_cast<unsigned char>(ms.data()[0]));
     EXPECT_EQ(0x00, static_cast<unsigned char>(ms.data()[1]));
@@ -37,7 +37,7 @@ TEST(MemoryStreamsTests, BackingOutputStream_streaming)
 
     os << "foo" << "bar";
 
-    ASSERT_EQ(ms.size(), 6);
+    ASSERT_EQ(ms.size(), 6u);
 
     EXPECT_EQ('f', ms.data()[0]);
     EXPECT_EQ('o', ms.data()[1]);
@@ -57,7 +57,7 @@ TEST(MemoryStreamsTests, BackingOutputStream_put)
     os.put('o');
     os.put('i');
 
-    ASSERT_EQ(ms.size(), 3);
+    ASSERT_EQ(ms.size(), 3u);
 
     EXPECT_EQ('h', ms.data()[0]);
     EXPECT_EQ('o', ms.data()[1]);

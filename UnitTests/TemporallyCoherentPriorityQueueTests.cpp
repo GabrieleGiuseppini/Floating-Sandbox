@@ -7,7 +7,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Empty)
     TemporallyCoherentPriorityQueue<float> q(10);
 
     EXPECT_TRUE(q.empty());
-    EXPECT_EQ(0, q.size());
+    EXPECT_EQ(0u, q.size());
     EXPECT_TRUE(q.verify_heap());
 }
 
@@ -18,7 +18,7 @@ TEST(TemporallyCoherentPriorityQueueTest, OneElement)
     q.add_or_update(5, 6.0f);
 
     EXPECT_FALSE(q.empty());
-    EXPECT_EQ(1, q.size());
+    EXPECT_EQ(1u, q.size());
     EXPECT_TRUE(q.verify_heap());
 }
 
@@ -30,7 +30,7 @@ TEST(TemporallyCoherentPriorityQueueTest, TwoElements)
     q.add_or_update(8, 3.0f);
 
     EXPECT_FALSE(q.empty());
-    EXPECT_EQ(2, q.size());
+    EXPECT_EQ(2u, q.size());
     EXPECT_TRUE(q.verify_heap());
 }
 
@@ -41,7 +41,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Pop_OneElement)
     q.add_or_update(5, 6.0f);
 
     EXPECT_FALSE(q.empty());
-    EXPECT_EQ(1, q.size());
+    EXPECT_EQ(1u, q.size());
 
     auto i = q.pop();
 
@@ -102,7 +102,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Sorting)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     auto i = q.pop();
     EXPECT_EQ(3u, i);
@@ -166,7 +166,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Update_Mid)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.add_or_update(5, 2.0f);
 
@@ -198,7 +198,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Update_Smallest)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.add_or_update(3, 13.0f);
 
@@ -230,7 +230,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Update_Largest)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.add_or_update(2, 2.0f);
 
@@ -262,7 +262,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Update_SamePriority)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.add_or_update(2, 12.0f);
 
@@ -294,7 +294,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Update_NoRealChange)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.add_or_update(2, 11.0f);
 
@@ -363,7 +363,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Remove_Smallest)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.remove_if_in(3);
 
@@ -393,7 +393,7 @@ TEST(TemporallyCoherentPriorityQueueTest, Remove_Largest)
     q.add_or_update(3, 1.0f);
     q.add_or_update(2, 12.0f);
 
-    ASSERT_EQ(4, q.size());
+    ASSERT_EQ(4u, q.size());
 
     q.remove_if_in(2);
 

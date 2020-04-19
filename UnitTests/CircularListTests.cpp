@@ -279,23 +279,23 @@ TEST(CircularListTests, Size_MoreThanMax_ManyTimes)
 {
     CircularList<int, 4> cl;
 
-    for (int i = 0; i < 11; ++i)
+    for (size_t i = 0; i < 11; ++i)
     {
         if (i < 4)
             EXPECT_EQ(i, cl.size());
         else
-            EXPECT_EQ(4, cl.size());
+            EXPECT_EQ(4u, cl.size());
 
         cl.emplace(
             [](int)
             {
             },
-            i);
+            static_cast<int>(i));
 
         if (i < 4)
             EXPECT_EQ(i + 1, cl.size());
         else
-            EXPECT_EQ(4, cl.size());
+            EXPECT_EQ(4u, cl.size());
     }
 }
 

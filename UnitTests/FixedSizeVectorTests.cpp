@@ -469,7 +469,7 @@ TEST(FixedSizeVectorTests, Sort)
             return std::get<1>(t1) < std::get<1>(t2);
         });
 
-    EXPECT_EQ(4, vec.size());
+    EXPECT_EQ(4u, vec.size());
 
     EXPECT_EQ(0u, std::get<0>(vec[0]));
     EXPECT_EQ(15u, std::get<0>(vec[1]));

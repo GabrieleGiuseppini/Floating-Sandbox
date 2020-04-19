@@ -122,18 +122,18 @@ TEST(IntegralLinearSliderCoreTest, ZeroToTen)
 
     EXPECT_EQ(core.GetNumberOfTicks(), 57);
 
-    EXPECT_EQ(core.TickToValue(0), 100);
+    EXPECT_EQ(core.TickToValue(0), 100u);
     EXPECT_EQ(core.ValueToTick(100), 0);
 
-    EXPECT_EQ(core.TickToValue(1), 112); // 96 + 16
+    EXPECT_EQ(core.TickToValue(1), 112u); // 96 + 16
     EXPECT_EQ(core.ValueToTick(111), 0);
     EXPECT_EQ(core.ValueToTick(112), 1);
 
-    EXPECT_EQ(core.TickToValue(2), 128); // 96 + 32
+    EXPECT_EQ(core.TickToValue(2), 128u); // 96 + 32
     EXPECT_EQ(core.ValueToTick(127), 1);
     EXPECT_EQ(core.ValueToTick(128), 2);
 
-    EXPECT_EQ(core.TickToValue(57), 1000);
+    EXPECT_EQ(core.TickToValue(57), 1000u);
     EXPECT_EQ(core.ValueToTick(999), 56);
     EXPECT_EQ(core.ValueToTick(1000), 57);
 }

@@ -167,7 +167,7 @@ TEST(BoundedVectorTests, Back)
     vec.emplace_back(5);
     vec.emplace_back(6);
 
-    ASSERT_EQ(2, vec.size());
+    ASSERT_EQ(2u, vec.size());
 
     EXPECT_EQ(6, vec.back());
 }
@@ -179,7 +179,7 @@ TEST(BoundedVectorTests, Indexer)
     vec.emplace_back(5);
     vec.emplace_back(6);
 
-    ASSERT_EQ(2, vec.size());
+    ASSERT_EQ(2u, vec.size());
 
     EXPECT_EQ(5, vec[0]);
     EXPECT_EQ(6, vec[1]);
@@ -199,7 +199,7 @@ TEST(BoundedVectorTests, Sort)
             return std::get<1>(t1) < std::get<1>(t2);
         });
 
-    EXPECT_EQ(4, vec.size());
+    EXPECT_EQ(4u, vec.size());
 
     EXPECT_EQ(0u, std::get<0>(vec[0]));
     EXPECT_EQ(15u, std::get<0>(vec[1]));
