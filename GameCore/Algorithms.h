@@ -8,6 +8,8 @@
 #include "GameTypes.h"
 #include "SysSpecifics.h"
 
+#include <algorithm>
+
 namespace Algorithms {
 
 template<typename TVector>

@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 
 /*
  * This class is the base of a hierarchy implementing a simple buffer of "things".

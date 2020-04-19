@@ -308,9 +308,10 @@ Render:
 
 		= Sam's Mac build
 			+ Fix his issues
-			= Build all for CLang myself
-			- Then build again with VS and verify all is fine (after changes)
-				- Run unit tests as well
+			+ Build all for CLang myself
+			+ Then build again with VS (after changes)
+				+ Verify all is fine 
+				+ Run unit tests as well
 			- push and merge
 			- tell him
 		= Mouse wheel issue:
@@ -338,7 +339,8 @@ Render:
 				+ Nuke one "w/lights"?
 			- Titanic Interior
 				- Ask Mike
-			- Britannic				
+			= Britannic
+				- changes.txt
 			+ Goodyear
 			+ Hindenburg
 
