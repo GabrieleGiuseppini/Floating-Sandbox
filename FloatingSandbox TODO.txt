@@ -306,14 +306,6 @@ Render:
 				+ ApplyWorldForces
 				+ Others
 
-		= Sam's Mac build
-			+ Fix his issues
-			+ Build all for CLang myself
-			+ Then build again with VS (after changes)
-				+ Verify all is fine 
-				+ Run unit tests as well
-			+ push and merge
-			- tell him
 		= Mouse wheel issue:
 			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
 			+ Repro on my box: only after clicking on switchboard
@@ -324,14 +316,22 @@ Render:
 			- Poofy1932#9116
 				- Send him zip
 				- Bump up version
-			- Respond to other guy with Poofy's outcome
-		- DioxCode says people lose sound
+			- Respond to other guy (f1lterit?) with Poofy's outcome
+		= DioxCode says people lose sound
+			+ Asked for people/repro steps
+		= Try Pandadude's ships and get back to him
+			- Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
+			- Draco: same as Oceanic III, but weight seems overall better
+			- Olympic: weight is good; masts same as above; a bit more rigid
+		= Try _Astyuu_'s ships
+			- Ask: 
+				- IJN Akitsu Maru, reordering panel
+		+ Test Unversinkbar and see if it could come back
 		- Respond to:
 			- https://gamejolt.com/x/permalink/comment/4142357
 			- https://gamejolt.com/x/permalink/comment/4138831
 
-
-		- Cloud speed: adjust for wind being 2 or 4
+		= Cloud speed: adjust for wind being 2 or 4
 			- Close ticket then
 
 		= Retrofit ships:
@@ -339,8 +339,8 @@ Render:
 				+ Nuke one "w/lights"?
 			- Titanic Interior
 				- Ask Mike
-			= Britannic
-				- changes.txt
+			+ Britannic
+				+ changes.txt
 			+ Goodyear
 			+ Hindenburg
 
@@ -379,12 +379,8 @@ Render:
 					+ Test after
 				+ Verify it may be saved again
 
-		- Diesel engine
-			+ Tell John Smith that sound is not OK
-			= Asked new sound
-			- Redo electrical template
+		+ About box in debug
 
-		- About box in debug
 		- Debug console 
 
 		- Flood doors (*)		
@@ -401,6 +397,12 @@ Render:
 					- Material DB <-> actual textures check: done at TBD
 
 		- Take Mike's Lego Titanic when ready
+			- Or make ball of lego
+
+		- Diesel engine
+			+ Tell John Smith that sound is not OK
+			= Asked new sound
+			- Redo electrical template
 
 		- Release
 

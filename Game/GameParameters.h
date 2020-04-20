@@ -229,7 +229,7 @@ struct GameParameters
 
     std::chrono::minutes TsunamiRate;
     static std::chrono::minutes constexpr MinTsunamiRate = std::chrono::minutes(0);
-    static std::chrono::minutes constexpr MaxTsunamiRate = std::chrono::minutes(120);
+    static std::chrono::minutes constexpr MaxTsunamiRate = std::chrono::minutes(240);
 
     std::chrono::minutes RogueWaveRate;
     static std::chrono::minutes constexpr MinRogueWaveRate = std::chrono::minutes(0);

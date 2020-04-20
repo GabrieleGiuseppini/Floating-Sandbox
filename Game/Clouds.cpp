@@ -74,14 +74,14 @@ void Clouds::Update(
     // Update clouds
     //
 
+    // Convert wind speed into cloud speed.
+    //
     // We do not take variable wind speed into account, otherwise clouds would move with gusts
     // and we don't want that. We do take storm wind into account though.
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.
-    float const cloudSpeed =
-        -7.0f * baseAndStormSpeedMagnitude / 8.0f
-        + windSign * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.14f);
+    float const cloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f);
 
     for (auto & cloud : mClouds)
     {
