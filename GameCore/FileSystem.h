@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "Log.h"
+
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -108,12 +110,32 @@ public:
 		if (std::filesystem::exists(directoryPath)
 			&& std::filesystem::is_directory(directoryPath))
 		{
-			for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+            auto directoryIterator = std::filesystem::directory_iterator(
+                directoryPath,
+                std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink);
+
+			for (auto const & entryIt : directoryIterator)
 			{
-				if (std::filesystem::is_regular_file(entryIt.path()))
-				{
-					filePaths.push_back(entryIt.path());
-				}
+                try
+                {
+                    auto const entryFilepath = entryIt.path();
+
+                    if (std::filesystem::is_regular_file(entryFilepath))
+                    {
+                        // Make sure the filename may be converted to the local codepage
+                        // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
+                        std::string _ = entryFilepath.filename().string();
+                        (void)_;
+
+                        filePaths.push_back(entryFilepath);
+                    }
+                }
+                catch (std::exception const & ex)
+                {
+                    LogMessage("Ignoring a file directory entry due to error: ", ex.what());
+
+                    // Ignore this file
+                }
 			}
 		}
 

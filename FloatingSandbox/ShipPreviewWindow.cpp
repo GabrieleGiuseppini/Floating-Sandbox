@@ -819,19 +819,35 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
 
     try
     {
-        for (auto const & entryIt : std::filesystem::directory_iterator(directoryPath))
+        auto directoryIterator = std::filesystem::directory_iterator(
+            directoryPath,
+            std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink);
+
+        for (auto const & entryIt : directoryIterator)
         {
-            auto const entryFilepath = entryIt.path();
             try
             {
+                auto const entryFilepath = entryIt.path();
+
                 if (std::filesystem::is_regular_file(entryFilepath)
                     && (entryFilepath.extension().string() == ".png" || ShipDefinitionFile::IsShipDefinitionFile(entryFilepath)))
                 {
+                    // Make sure the filename may be converted to the local codepage
+                    // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
+                    std::string _ = entryFilepath.filename().string();
+                    (void)_;
+
+                    // If we're here, the filename may be converted safely...
+                    // ...store the file path
                     shipFilepaths.push_back(entryFilepath);
                 }
             }
-            catch (...)
-            { /*ignore this file*/ }
+            catch (std::exception const & ex)
+            {
+                LogMessage("PreviewThread::ScanDirectory(): ...ignoring an entry due to error: ", ex.what());
+
+                // Ignore this file
+            }
         }
     }
     catch (...)
@@ -845,7 +861,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
         shipFilepaths.end(),
         [](auto const & a, auto const & b) -> bool
         {
-            return a.filename().string() < b.filename().string();
+            return a.filename().compare(b.filename()) < 0;
         });
 
     // Notify

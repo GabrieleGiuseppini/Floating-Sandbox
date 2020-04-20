@@ -305,53 +305,13 @@ Render:
 			+ Use everywhere we use GameParameters::AirTemperature
 				+ ApplyWorldForces
 				+ Others
-
-		= Mouse wheel issue:
-			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
-			+ Repro on my box: only after clicking on switchboard
-			+ Test wheel at LoggingDialog, LoadShipDialog
-			+ Fix with focus
-			+ Test that normal wheel in-game works
-			+ Test wheel at LoggingDialog, LoadShipDialog
-			- Poofy1932#9116
-				- Send him zip
-				- Bump up version
-			- Respond to other guy (f1lterit?) with Poofy's outcome
-		= DioxCode says people lose sound
-			+ Asked for people/repro steps
-		= Try Pandadude's ships and get back to him
-			- Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
-			- Draco: same as Oceanic III, but weight seems overall better
-			- Olympic: weight is good; masts same as above; a bit more rigid
-		= Try _Astyuu_'s ships
-			- Ask: 
-				- IJN Akitsu Maru, reordering panel
-		+ Test Unversinkbar and see if it could come back
-		- Respond to:
-			- https://gamejolt.com/x/permalink/comment/4142357
-			- https://gamejolt.com/x/permalink/comment/4138831
-
-		= Cloud speed: adjust for wind being 2 or 4
-			- Close ticket then
-
-		= Retrofit ships:
-			+ SS Californian
-				+ Nuke one "w/lights"?
-			- Titanic Interior
-				- Ask Mike
-			+ Britannic
-				+ changes.txt
-			+ Goodyear
-			+ Hindenburg
-
-		= Robustness:
-			= DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
-				- Try myself
-				= Asked DKuz for help
-				= Flush log to disk on crash
+		+ Robustness:
+			+ DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+				+ Try myself
+				+ Flush log to disk on crash
 					+ Logger::FlushToFile(fs path)
 						+ Path at SysPaths class
-					- Test
+				+ changes.txt
 			+ Handle when error at default_ship on startup
 				+ Test before:
 					+ Broken json
@@ -378,8 +338,45 @@ Render:
 					+ Handle somehow
 					+ Test after
 				+ Verify it may be saved again
+		+ Test About box in debug
 
-		+ About box in debug
+		= Mouse wheel issue:
+			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
+			+ Repro on my box: only after clicking on switchboard
+			+ Test wheel at LoggingDialog, LoadShipDialog
+			+ Fix with focus
+			+ Test that normal wheel in-game works
+			+ Test wheel at LoggingDialog, LoadShipDialog
+			- Poofy1932#9116
+				- Send him zip
+				- Bump up version
+			- Respond to other guy (f1lterit?) with Poofy's outcome
+		= DioxCode says people lose sound
+			+ Asked for people/repro steps
+		= Try Pandadude's ships and get back to him
+			- Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
+			- Draco: same as Oceanic III, but weight seems overall better
+			- Olympic: weight is good; masts same as above; a bit more rigid
+		= Try _Astyuu_'s ships
+			- Ask: 
+				- IJN Akitsu Maru, reordering panel
+		+ Test Unversinkbar and see if it could come back
+		- Respond to:
+			- https://gamejolt.com/x/permalink/comment/4142357
+			- https://gamejolt.com/x/permalink/comment/4138831
+
+		+ Cloud speed: adjust for wind being 2 or 4
+			+ Close ticket then
+
+		= Retrofit ships:
+			+ SS Californian
+				+ Nuke one "w/lights"?
+			- Titanic Interior
+				- Ask Mike
+			+ Britannic
+				+ changes.txt
+			+ Goodyear
+			+ Hindenburg
 
 		- Debug console 
 

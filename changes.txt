@@ -7,6 +7,7 @@ TODO
 	- Triton 1650-3 LP: shows pumps in action
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg
 - Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
+- Fixed crash when opening the "Load Ship" window in a folder containing a ship file with foreign characters
 - ...and a few more small improvements here and there
 
 1.14.0.6

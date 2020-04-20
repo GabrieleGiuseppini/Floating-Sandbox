@@ -27,7 +27,9 @@ ShipLoadDialog::ShipLoadDialog(
 		_("Load Ship"),
 		wxDefaultPosition,
         wxDefaultSize,
-		wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
+        wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED
+            | wxSTAY_ON_TOP
+            ,
 		_T("Load Ship Dialog"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -298,7 +300,7 @@ int ShipLoadDialog::ShowModal()
     if (!selectedPath.IsEmpty())
         mShipPreviewWindow->SetDirectory(std::filesystem::path(selectedPath.ToStdString()));
 
-    // Run modal
+    // Run self as modal
     return wxDialog::ShowModal();
 }
 
