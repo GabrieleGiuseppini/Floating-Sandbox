@@ -1788,6 +1788,33 @@ void SoundController::OnAntiMatterBombImploding()
         false);
 }
 
+void SoundController::OnWatertightDoorOpened(
+    bool isUnderwater,
+    unsigned int size)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WatertightDoorOpened,
+        isUnderwater,
+        std::max(
+            100.0f,
+            30.0f * size),
+        true);
+}
+
+void SoundController::OnWatertightDoorClosed(
+    bool isUnderwater,
+    unsigned int size)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WatertightDoorClosed,
+        isUnderwater,
+        std::max(
+            100.0f,
+            30.0f * size),
+        true);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(

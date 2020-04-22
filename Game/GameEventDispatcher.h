@@ -38,6 +38,8 @@ public:
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
         , mLightFlickerEvents()
+        , mWatertightDoorOpenedEvents()
+        , mWatertightDoorClosedEvents()
         // Sinks
         , mRenderSinks()
         , mLifecycleSinks()
@@ -738,6 +740,20 @@ public:
         }
     }
 
+    virtual void OnWatertightDoorOpened(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mWatertightDoorOpenedEvents[std::make_tuple(isUnderwater)] += size;
+    }
+
+    virtual void OnWatertightDoorClosed(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mWatertightDoorClosedEvents[std::make_tuple(isUnderwater)] += size;
+    }
+
 public:
 
     /*
@@ -821,6 +837,16 @@ public:
             {
                 sink->OnTimerBombDefused(std::get<0>(entry.first), entry.second);
             }
+
+            for (auto const & entry : mWatertightDoorOpenedEvents)
+            {
+                sink->OnWatertightDoorOpened(std::get<0>(entry.first), entry.second);
+            }
+
+            for (auto const & entry : mWatertightDoorClosedEvents)
+            {
+                sink->OnWatertightDoorClosed(std::get<0>(entry.first), entry.second);
+            }
         }
 
         mSpringRepairedEvents.clear();
@@ -828,7 +854,8 @@ public:
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
         mTimerBombDefusedEvents.clear();
-        mTimerBombDefusedEvents.clear();
+        mWatertightDoorOpenedEvents.clear();
+        mWatertightDoorClosedEvents.clear();
     }
 
     void RegisterRenderEventHandler(IRenderGameEventHandler * sink)
@@ -888,6 +915,8 @@ private:
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorOpenedEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
 
     // The registered sinks

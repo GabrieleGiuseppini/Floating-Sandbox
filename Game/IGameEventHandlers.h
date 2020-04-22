@@ -474,4 +474,18 @@ struct IGenericGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnWatertightDoorOpened(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWatertightDoorClosed(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
 };

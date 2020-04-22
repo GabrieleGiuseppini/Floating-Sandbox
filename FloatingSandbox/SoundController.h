@@ -318,6 +318,14 @@ public:
 
     virtual void OnAntiMatterBombImploding() override;
 
+    virtual void OnWatertightDoorOpened(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    virtual void OnWatertightDoorClosed(
+        bool isUnderwater,
+        unsigned int size) override;
+
 private:
 
     struct PlayingSound

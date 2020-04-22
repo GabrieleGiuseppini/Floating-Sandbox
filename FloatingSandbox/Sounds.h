@@ -59,6 +59,8 @@ enum class SoundType : uint32_t
     EngineSteam2,
     EngineTelegraph,
     WaterPump,
+    WatertightDoorClosed,
+    WatertightDoorOpened,
     ShipBell1,
     ShipBell2,
     ShipHorn1,

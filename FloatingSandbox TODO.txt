@@ -385,7 +385,10 @@ Render:
 			- changes.txt
 
 		- Visual notification for Pinch tool: simply circle around point
-			- Managed by points, somehow within "highlight" framework
+			- Managed by points, somehow within "highlight" framework:
+				- HightlightMode: enum at RenderContext
+				- ShipRenderContext stores vertices in different groups, depending on highlight mode
+				- ShipRenderContext::RenderHighlights does all groups
 
 		- Send for testing
 
@@ -1117,8 +1120,8 @@ Render:
 	= Flood doors (*) - really "Powered watertight doors"
 		- Spec:		
 			- New electrical element
-			- Point that flood door is attached to may or may not be leaking
-			- When powered, inverts leaking of point, and water permeability of all attached springs
+			- Point that flood door is attached to may or may not be hull
+			- When powered, inverts hullness of point, and water permeability of all attached springs
 			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
 				+ No ObjectID needed thus
 				- Open sound X n1, Close sound X n2
@@ -1187,10 +1190,10 @@ Render:
 				+ Announcement
 				+ State change
 				+ Enable/disable
-			- SoundController:
+			= SoundController:
 				- Open sound X n1, Close sound X n2
-				- Event response (size => volume)
-					- object-agnostic
+				+ Event response (size => volume)
+					+ object-agnostic
 			+ No real need to also change Point::Buoyancy
 			+ No real need to also change Point::IsHull
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
@@ -1198,6 +1201,7 @@ Render:
 			+ Springs::IsHull should be gone by now
 			- Test:
 				+ w/Circuit Test (temporarily)
+				- Operation
 				- Destroy
 				- Release
 			- Add new type to Materials Guide
