@@ -379,12 +379,15 @@ Render:
 			+ Goodyear
 			+ Hindenburg
 
-		- Registration
-
 		- Flood doors (*)
 		- Do "Unsinkable" ship
 			- Use texture from my own
 			- changes.txt
+
+		- Visual notification for Pinch tool: simply circle around point
+			- Managed by points, somehow within "highlight" framework
+
+		- Send for testing
 
 		- Auto-Texturizer
 			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
@@ -1111,7 +1114,7 @@ Render:
 			- Really?
 		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
-	- Flood doors (*)
+	= Flood doors (*) - really "Powered watertight doors"
 		- Spec:		
 			- New electrical element
 			- Point that flood door is attached to may or may not be leaking
@@ -1143,28 +1146,47 @@ Render:
 				- Does multiple things:
 					- Visit all hull points and calls ~SetAndPropagatePointHullness(.)
 					- Current call to detect connected component
-			- ElectricalElements:
-				- State:
-					- CurrentState (bool): activated (powered) or not
-				- Add: add to sinks; current state=!activated
-				- UpdateSinks:
-					- Do powered state machine
-					- On state toggle:
-						- Notification
-						- IShipHandler::OnFloodDoorActivated(true or false)
-				- Destroy: force toggle to not activated:
+			- New electrical element:
+				! Passive, and carries just open/close state
+				- Announcement
+				- State change
+				- Enabled/Disabled
+			= ElectricalElements:
+				+ State:
+					+ CurrentState (bool): activated (powered) or not
+				+ Add: add to sinks; current state=!activated
+				- TODOHERE: redo with electrical element carrying directly open/close instead of activated/deactivated
+					- WatertightDoorState remembers both IsActive and CurrentIsOpen
+					- ElectricalElements::Add takes also Points to determine whether point is hull or not hull (closed/open) at rest
+					- IShipHandler takes directly open or close
+					- Highlight: based on open/close instead of activated/deactivated
+				- Announcement				
+				= UpdateSinks:
+					+ Do powered state machine
+					- On state toggle:						
+						+ IShipHandler::HandleWatertightDoorActivated(true or false)
+						- Publish electrical element state
+						+ Highlight						
+				= Destroy: force toggle to not activated:
 					- State variable
-					- IShipHandler::OnFloodDoorActivated
-					- TBD: anything else? Look at others...
-				- Restore: probably nothing to do, as next UpdateSinks() will see if it works
-					- Assert currently not activated
-			- Ship::OnFloodDoorActivated(pointIndex, bool isActivated):
+					- IShipHandler::HandleWatertightDoorActivated
+					- Publish electrical element state
+					- Publish Enabled/Disabled					
+				= Restore: probably nothing to do, as next UpdateSinks() will see if it works
+					+ Assert currently not activated
+					- Enable/Disable
+			- Ship::HandleWatertightDoorActivated(pointIndex, bool isActivated):
 				- Calculate target hullness = f(point's material hullness, isActivated)
 				- Invoke SetAndPropagatePointHullness(.)
 				- On Open->Close transition, might also want to dry up points (THE point yes, what about the others?) or else
 				  existing water there will stagnate
 				- Fire event for Sound
 					- Event is aggregated with size
+			- Electrical panel:
+				- Gfx: open/close (?)
+				- Announcement
+				- State change
+				- Enable/disable
 			- SoundController:
 				- Open sound X n1, Close sound X n2
 				- Event response (size => volume)
@@ -1178,6 +1200,8 @@ Render:
 				- w/Circuit Test (temporarily)
 				- Destroy
 				- Release
+			- Add new type to Materials Guide
+			- Redo electrical materials template
 
 	- Logic Gates
 		- New ElectricalMaterial type

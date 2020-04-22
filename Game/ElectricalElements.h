@@ -287,6 +287,15 @@ private:
             {}
         };
 
+        struct WatertightDoorState
+        {
+            bool IsActivated; // Current state: operating when true, not operating when false
+
+            WatertightDoorState(bool isActivated)
+                : IsActivated(isActivated)
+            {}
+        };
+
         struct DummyState
         {};
 
@@ -300,6 +309,7 @@ private:
         ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
         WaterPumpState WaterPump;
+        WatertightDoorState WatertightDoor;
         DummyState Dummy;
 
         ElementState(CableState cable)
@@ -340,6 +350,10 @@ private:
 
         ElementState(WaterPumpState waterPump)
             : WaterPump(waterPump)
+        {}
+
+        ElementState(WatertightDoorState watertightDoor)
+            : WatertightDoor(watertightDoor)
         {}
 
         ElementState(DummyState dummy)

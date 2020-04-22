@@ -12,8 +12,6 @@
 
 namespace Physics {
 
-float constexpr LampWetFailureWaterThreshold = 0.1f;
-
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
@@ -179,6 +177,17 @@ void ElectricalElements::Add(
 
             // Indices
             mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::WatertightDoorState(false));
+
+            // Indices
+            mEngineSinks.emplace_back(elementIndex);
 
             break;
         }
@@ -358,6 +367,9 @@ void ElectricalElements::HighlightElectricalElement(
     rgbColor constexpr WaterPumpOnHighlightColor = rgbColor(0x47, 0x60, 0xff);
     rgbColor constexpr WaterPumpOffHighlightColor = rgbColor(0x1b, 0x28, 0x80);
 
+    rgbColor constexpr WatertightDoorOnHighlightColor = rgbColor(0x9e, 0xff, 0xf2);
+    rgbColor constexpr WatertightDoorOffHighlightColor = rgbColor(0x80, 0xb0, 0xaa);
+
     // Switch state as appropriate
     switch (GetMaterialType(elementIndex))
     {
@@ -417,6 +429,16 @@ void ElectricalElements::HighlightElectricalElement(
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].WaterPump.TargetNormalizedForce != 0.0f ? WaterPumpOnHighlightColor : WaterPumpOffHighlightColor,
+                GameWallClock::GetInstance().NowAsFloat());
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+        {
+            points.StartPointHighlight(
+                GetPointIndex(elementIndex),
+                mElementStateBuffer[elementIndex].WatertightDoor.IsActivated ? WatertightDoorOnHighlightColor : WatertightDoorOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
 
             break;
@@ -583,12 +605,42 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         {
             mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce = 0.0f;
 
+            // At UpdateSinks() we'll smooth towards new TargetNormalizedForce and eventually
+            // publish an electrical element state update
+
             // Publish disable
             mGameEventHandler->OnWaterPumpEnabled(
                 ElectricalElementId(
                     mShipId,
                     electricalElementIndex),
                 false);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+        {
+            /* TODOHERE
+            // Publish state change, if necessary
+            if (mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated)
+            {
+                mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated = false;
+
+                // Propagate structural effect
+                assert(nullptr != mShipPhysicsHandler);
+                mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, false);
+
+                // Publish state change
+                mGameEventHandler->OnShipSoundUpdated(
+                    ElectricalElementId(mShipId, electricalElementIndex),
+                    *mMaterialBuffer[electricalElementIndex],
+                    false,
+                    false); // Irrelevant
+            }
+
+            // Publish disable
+            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
+            */
 
             break;
         }
@@ -693,6 +745,20 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             // Nothing else to do: at the next UpdateSinks() that makes this pump work, there will be a state change
 
             assert(mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce == 0.0f);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+        {
+            /* TODOHERE
+            // Notify enabling
+            //mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
+            */
+
+            // Nothing else to do: at the next UpdateSinks() that makes this door work, there will be a state change
+
+            assert(!mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated);
 
             break;
         }
@@ -1423,6 +1489,71 @@ void ElectricalElements::UpdateSinks(
                 break;
             }
 
+            case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+            {
+                //
+                // Run operating state machine (connectivity, operating temperature)
+                //
+
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    auto const pointIndex = GetPointIndex(sinkElementIndex);
+
+                    auto & watertightDoorState = mElementStateBuffer[sinkElementIndex].WatertightDoor;
+
+                    if (watertightDoorState.IsActivated)
+                    {
+                        // Currently it's activated...
+                        // ...see if it stops being activated
+                        if (!isConnectedToPower
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
+                        {
+                            //
+                            // State change: stop operating
+                            //
+
+                            watertightDoorState.IsActivated = false;
+
+                            // Propagate structural effect
+                            assert(nullptr != mShipPhysicsHandler);
+                            mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, false);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Currently it's not activated...
+                        // ...see if it becomes activated
+                        if (isConnectedToPower
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                        {
+                            //
+                            // State change: start operating
+                            //
+
+                            watertightDoorState.IsActivated = true;
+
+                            // Propagate structural effect
+                            assert(nullptr != mShipPhysicsHandler);
+                            mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, true);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                }
+
+                break;
+            }
+
             default:
             {
                 assert(false);
@@ -1711,6 +1842,8 @@ void ElectricalElements::RunLampStateMachine(
     Points & points,
     GameParameters const & /*gameParameters*/)
 {
+    float constexpr LampWetFailureWaterThreshold = 0.1f;
+
     //
     // Lamp is only on if visited or self-powered and within operating temperature;
     // actual light depends on flicker state machine

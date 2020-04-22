@@ -285,6 +285,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::WaterPump;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSensingSwitch"))
         return ElectricalElementType::WaterSensingSwitch;
+    else if (Utils::CaseInsensitiveEquals(str, "WatertightDoor"))
+        return ElectricalElementType::WatertightDoor;
     else
         throw GameException("Unrecognized ElectricalElementType \"" + str + "\"");
 }

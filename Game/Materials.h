@@ -172,18 +172,19 @@ public:
 
     enum class ElectricalElementType
     {
-        Lamp,
         Cable,
         Engine,
         EngineController,
         Generator,
         InteractiveSwitch,
+        Lamp,
         OtherSink,
         PowerMonitor,
         ShipSound,
         SmokeEmitter,
+        WaterPump,
         WaterSensingSwitch,
-        WaterPump
+        WatertightDoor
     };
 
     enum class EngineElementType

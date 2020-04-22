@@ -425,6 +425,10 @@ private:
         float sequenceProgress,
         GameParameters const & gameParameters) override;
 
+    virtual void HandleWatertightDoorActivated(
+        ElementIndex pointElementIndex,
+        bool isActivated) override;
+
 private:
 
 #ifdef _DEBUG

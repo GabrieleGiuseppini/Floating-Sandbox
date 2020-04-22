@@ -174,4 +174,12 @@ struct IShipPhysicsHandler
         vec2f const & centerPosition,
         float sequenceProgress,
         GameParameters const & gameParameters) = 0;
+
+    //
+    // Gadgets
+    //
+
+    virtual void HandleWatertightDoorActivated(
+        ElementIndex pointElementIndex,
+        bool isActivated) = 0;
 };
