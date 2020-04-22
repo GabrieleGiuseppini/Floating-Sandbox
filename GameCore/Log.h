@@ -136,7 +136,7 @@ public:
         std::filesystem::path const & logFolderPath,
         std::string namePrefix = Utils::MakeNowDateAndTimeString())
     {
-        std::filesystem::path const logFilePath = logFolderPath / (namePrefix + "_log.txt");
+        std::filesystem::path const logFilePath = logFolderPath / (namePrefix + ".log");
 
         std::ofstream outputFile(logFilePath, std::ios_base::out | std::ios_base::trunc);
 

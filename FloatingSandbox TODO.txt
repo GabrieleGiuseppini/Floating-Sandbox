@@ -339,6 +339,10 @@ Render:
 					+ Test after
 				+ Verify it may be saved again
 		+ Test About box in debug
+		+ Cloud speed: adjust for wind being 2 or 4
+			+ Close ticket then
+		+ Secret typing state machine
+
 
 		= Mouse wheel issue:
 			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
@@ -365,9 +369,6 @@ Render:
 			- https://gamejolt.com/x/permalink/comment/4142357
 			- https://gamejolt.com/x/permalink/comment/4138831
 
-		+ Cloud speed: adjust for wind being 2 or 4
-			+ Close ticket then
-
 		= Retrofit ships:
 			+ SS Californian
 				+ Nuke one "w/lights"?
@@ -378,9 +379,12 @@ Render:
 			+ Goodyear
 			+ Hindenburg
 
-		- Debug console 
+		- Registration
 
-		- Flood doors (*)		
+		- Flood doors (*)
+		- Do "Unsinkable" ship
+			- Use texture from my own
+			- changes.txt
 
 		- Auto-Texturizer
 			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a

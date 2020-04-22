@@ -224,6 +224,13 @@ GameController::GameController(
         ControlParameterSmoothingTrajectoryTime);
 }
 
+ShipMetadata GameController::ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator)
+{
+    std::filesystem::path const shipDefinitionFilePath = resourceLocator.GetFallbackShipDefinitionFilePath();
+
+    return ResetAndLoadShip(shipDefinitionFilePath);
+}
+
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     assert(!!mWorld);
@@ -272,9 +279,11 @@ ShipMetadata GameController::AddDefaultShip(ResourceLocator const & resourceLoca
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     auto const tm = std::localtime(&now_c);
     bool const isSpecialDay =
-        (tm->tm_mon == 3 && tm->tm_mday == 1)
-        || (tm->tm_mon == 0 && tm->tm_mday == 17)
-        || (tm->tm_mon == 4 && tm->tm_mday == 28);
+        (tm->tm_mon == 3 && tm->tm_mday == 1)   // Apr 1
+        || (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17
+        || (tm->tm_mon == 4 && tm->tm_mday == 28)  // May 28
+        || (tm->tm_mon == 3 && tm->tm_mday == 26)  // April 26
+        ;
 
     std::filesystem::path const shipDefinitionFilePath = isSpecialDay
         ? resourceLocator.GetFallbackShipDefinitionFilePath()

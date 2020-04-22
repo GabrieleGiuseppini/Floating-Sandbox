@@ -115,6 +115,7 @@ public:
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
 
+    ShipMetadata ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata AddFallbackShip(ResourceLocator const & resourceLocator) override;

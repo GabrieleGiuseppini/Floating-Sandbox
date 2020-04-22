@@ -50,7 +50,10 @@ AboutDialog::AboutDialog(
     mainSizer->AddSpacer(1);
 
     wxStaticText * title2Label = new wxStaticText(this, wxID_ANY, _(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-    title2Label->SetLabelText("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n(c) Gabriele Giuseppini 2018-2020\nThis version licensed to Mattia and Elia");
+    title2Label->SetLabelText(
+        "Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n"
+        "(c) Gabriele Giuseppini 2018-2020\n"
+        "This version licensed to Mattia, Elia, and all the others kids in the world");
     mainSizer->Add(title2Label, 0, wxALIGN_CENTRE);
 
     mainSizer->AddSpacer(5);
@@ -152,6 +155,8 @@ AboutDialog::AboutDialog(
 		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
         {"\t\t\t\t", "KikoTheBoatBuilder", "https://discordapp.com/" },
         {"\t\t\t\t", "DioxCode ", "https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ" },
+
+        {"Factory of ideas:\t", "Mattia Giuseppini", "" },
 
         {"Multi-platform building:\t", "The_SamminAter", "https://discordapp.com/" },
 

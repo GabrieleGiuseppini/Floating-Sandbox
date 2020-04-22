@@ -16,6 +16,10 @@
 #include <wx/app.h>
 #include <wx/msgdlg.h>
 
+#include <functional>
+#include <optional>
+#include <string>
+
 #ifdef _MSC_VER
 // Nothing to do here - we use RC files
 #else
@@ -51,7 +55,19 @@ public:
 
 private:
 
+    bool RunSecretTypingStateMachine(wxKeyEvent const & keyEvent);
+
+private:
+
     MainFrame * mMainFrame{ nullptr };
+
+
+    //
+    // Secret typing state machine
+    //
+
+    std::optional<std::string> mCurrentSecretTypingSequence{ std::nullopt };
+    std::vector<std::pair<std::string, std::function<void()>>> mSecretTypingMappings;
 };
 
 IMPLEMENT_APP(MainApp);
@@ -97,6 +113,7 @@ bool MainApp::OnInit()
     EnableFloatingPointExceptions();
 #endif
 
+
     //
     // Initialize wxWidgets
     //
@@ -106,7 +123,7 @@ bool MainApp::OnInit()
 
 
     //
-    // Create frame and start
+    // Create frame
     //
 
     try
@@ -116,31 +133,143 @@ bool MainApp::OnInit()
             wxICON(BBB_SHIP_ICON));
 
         SetTopWindow(mMainFrame);
-
-        return true;
     }
     catch (std::exception const & e)
     {
         wxMessageBox(std::string(e.what()), wxT("Error"), wxICON_ERROR);
 
+        // Abort
         return false;
     }
+
+
+    //
+    // Initialize secret typing mappings
+    //
+
+    mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingOpenDebugWindow, mMainFrame));
+    mSecretTypingMappings.emplace_back("FALLBACK", std::bind(&MainFrame::OnSecretTypingLoadFallbackShip, mMainFrame));
+
+
+    //
+    // Run
+    //
+
+    return true;
 }
 
 int MainApp::FilterEvent(wxEvent & event)
 {
-    // This is the only way for us to catch KEY_UP events
-    if (event.GetEventType() == wxEVT_KEY_UP
-        && nullptr != mMainFrame)
+    if (nullptr != mMainFrame)
     {
-        bool isProcessed = mMainFrame->ProcessKeyUp(
-            ((wxKeyEvent&)event).GetKeyCode(),
-            ((wxKeyEvent&)event).GetModifiers());
+        // This is the only way for us to catch KEY_UP events
+        if (event.GetEventType() == wxEVT_KEY_UP)
+        {
+            //
+            // Forward to main frame
+            //
 
-        if (isProcessed)
-            return Event_Processed;
+            wxKeyEvent const & keyEvent = static_cast<wxKeyEvent const &>(event);
+
+            bool isProcessed = mMainFrame->ProcessKeyUp(
+                keyEvent.GetKeyCode(),
+                keyEvent.GetModifiers());
+
+            if (isProcessed)
+                return Event_Processed;
+        }
+        else if (event.GetEventType() == wxEVT_KEY_DOWN
+            || event.GetEventType() == wxEVT_CHAR
+            || event.GetEventType() == wxEVT_CHAR_HOOK)
+        {
+            //
+            // Run secret typing state machine and, if not processed,
+            // forward to main frame
+            //
+
+            wxKeyEvent const & keyEvent = static_cast<wxKeyEvent const &>(event);
+
+            if (RunSecretTypingStateMachine(keyEvent))
+            {
+                return Event_Processed;
+            }
+            else if (mMainFrame->ProcessKeyDown(keyEvent.GetKeyCode(), keyEvent.GetModifiers()))
+            {
+                return Event_Processed;
+            }
+        }
     }
 
-    // Not handled, continue processing
+    // Event not handled, continue processing
     return Event_Skip;
+}
+
+bool MainApp::RunSecretTypingStateMachine(wxKeyEvent const & keyEvent)
+{
+    if (keyEvent.GetKeyCode() == 'D' && keyEvent.GetModifiers() == wxMOD_ALT)
+    {
+        // Start/restart state machine
+        mCurrentSecretTypingSequence.emplace("");
+
+        // Event handled
+        return true;
+    }
+    else if (mCurrentSecretTypingSequence.has_value())
+    {
+        if (keyEvent.GetModifiers() == wxMOD_NONE
+            && keyEvent.GetKeyCode() >= 0x20
+            && keyEvent.GetKeyCode() <= 0x7f)
+        {
+            // Add character
+            mCurrentSecretTypingSequence->push_back(static_cast<char>(keyEvent.GetKeyCode()));
+
+            // Check whether it's a (partial or full) match against our mappings
+            bool atLeastOneMatch = false;
+            for (auto const & mapping : mSecretTypingMappings)
+            {
+                if (0 == mapping.first.compare(0, mCurrentSecretTypingSequence->length(), *mCurrentSecretTypingSequence))
+                {
+                    // Match (partial or full)
+                    atLeastOneMatch = true;
+
+                    // Check whether full match
+                    if (mapping.first.length() == mCurrentSecretTypingSequence->length())
+                    {
+                        // Full match!
+
+                        // Reset state machine
+                        // ...interrupt state machine
+                        mCurrentSecretTypingSequence.reset();
+
+                        // Handle event
+                        mapping.second();
+
+                        // Event handled
+                        return true;
+                    }
+                }
+            }
+
+            if (!atLeastOneMatch)
+            {
+                // Completely wrong key...
+                // ...interrupt state machine
+                mCurrentSecretTypingSequence.reset();
+            }
+
+            // Event handled
+            return true;
+        }
+        else
+        {
+            // Interrupt state machine
+            mCurrentSecretTypingSequence.reset();
+
+            // Event handled
+            return true;
+        }
+    }
+
+    // Event not handled, continue processing
+    return false;
 }

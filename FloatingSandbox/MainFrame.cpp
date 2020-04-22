@@ -140,8 +140,7 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxWANTS_CHARS);
-    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this); // Just for arrow keys
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1));
     mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -664,6 +663,18 @@ bool MainFrame::ProcessKeyUp(
     return false;
 }
 
+void MainFrame::OnSecretTypingOpenDebugWindow()
+{
+    LogMessage("TODOHERE: MainFrame::OnSecretTypingOpenDebugWindow");
+}
+
+void MainFrame::OnSecretTypingLoadFallbackShip()
+{
+    ResetState();
+    mGameController->ResetAndLoadFallbackShip(*mResourceLocator);
+}
+
+
 //
 // App event handlers
 //
@@ -969,20 +980,17 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
-    /*
-    std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
-    Logger::Instance.FlushToFile(diagnosticsFolderPath);
-    */
+    // Flush log
+    try
+    {
+        std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
+        Logger::Instance.FlushToFile(diagnosticsFolderPath, "last_run");
+    }
+    catch (...)
+    { /* ignore */ }
 
+    // Close frame
     Close();
-}
-
-void MainFrame::OnKeyDown(wxKeyEvent & event)
-{
-    bool isProcessed = ProcessKeyDown(event.GetKeyCode(), event.GetModifiers());
-
-    if (!isProcessed)
-        event.Skip();
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
