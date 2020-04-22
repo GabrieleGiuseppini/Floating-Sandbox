@@ -16,7 +16,8 @@ void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
-    ElectricalMaterial const & electricalMaterial)
+    ElectricalMaterial const & electricalMaterial,
+    Points const & points)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
 
@@ -184,10 +185,13 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::WatertightDoor:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::WatertightDoorState(false));
+            mElementStateBuffer.emplace_back(
+                ElementState::WatertightDoorState(
+                    false,                                          // IsActive
+                    !points.GetMaterialIsHull(pointElementIndex))); // DefaultIsOpen: open <=> material open (==not hull)
 
             // Indices
-            mEngineSinks.emplace_back(elementIndex);
+            mSinks.emplace_back(elementIndex);
 
             break;
         }
@@ -334,6 +338,20 @@ void ElectricalElements::AnnounceInstancedElements()
                 break;
             }
 
+            case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+            {
+                assert(!mElementStateBuffer[elementIndex].WatertightDoor.IsActivated);
+
+                mGameEventHandler->OnWatertightDoorCreated(
+                    ElectricalElementId(mShipId, elementIndex),
+                    mInstanceInfos[elementIndex].InstanceIndex,
+                    *mMaterialBuffer[elementIndex],
+                    mElementStateBuffer[elementIndex].WatertightDoor.DefaultIsOpen,
+                    mInstanceInfos[elementIndex].PanelElementMetadata);
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::Cable:
             case ElectricalMaterial::ElectricalElementType::Lamp:
             case ElectricalMaterial::ElectricalElementType::OtherSink:
@@ -367,8 +385,8 @@ void ElectricalElements::HighlightElectricalElement(
     rgbColor constexpr WaterPumpOnHighlightColor = rgbColor(0x47, 0x60, 0xff);
     rgbColor constexpr WaterPumpOffHighlightColor = rgbColor(0x1b, 0x28, 0x80);
 
-    rgbColor constexpr WatertightDoorOnHighlightColor = rgbColor(0x9e, 0xff, 0xf2);
-    rgbColor constexpr WatertightDoorOffHighlightColor = rgbColor(0x80, 0xb0, 0xaa);
+    rgbColor constexpr WatertightDoorOpenHighlightColor = rgbColor(0x9e, 0xff, 0xf2);
+    rgbColor constexpr WatertightDoorClosedHighlightColor = rgbColor(0x80, 0xb0, 0xaa);
 
     // Switch state as appropriate
     switch (GetMaterialType(elementIndex))
@@ -438,7 +456,7 @@ void ElectricalElements::HighlightElectricalElement(
         {
             points.StartPointHighlight(
                 GetPointIndex(elementIndex),
-                mElementStateBuffer[elementIndex].WatertightDoor.IsActivated ? WatertightDoorOnHighlightColor : WatertightDoorOffHighlightColor,
+                mElementStateBuffer[elementIndex].WatertightDoor.IsOpen() ? WatertightDoorOpenHighlightColor : WatertightDoorClosedHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
 
             break;
@@ -537,6 +555,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
+            // See if state change
             if (mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent)
             {
                 mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent = false;
@@ -568,6 +587,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::PowerMonitor:
         {
+            // Publish state change, if necessary
             if (mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered)
             {
                 mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered = false;
@@ -620,27 +640,25 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::WatertightDoor:
         {
-            /* TODOHERE
+            auto & watertightDoorState = mElementStateBuffer[electricalElementIndex].WatertightDoor;
+
             // Publish state change, if necessary
-            if (mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated)
+            if (watertightDoorState.IsActivated)
             {
-                mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated = false;
+                watertightDoorState.IsActivated = false;
 
                 // Propagate structural effect
                 assert(nullptr != mShipPhysicsHandler);
-                mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, false);
+                mShipPhysicsHandler->HandleWatertightDoorUpdated(GetPointIndex(electricalElementIndex), watertightDoorState.IsOpen());
 
                 // Publish state change
-                mGameEventHandler->OnShipSoundUpdated(
+                mGameEventHandler->OnWatertightDoorUpdated(
                     ElectricalElementId(mShipId, electricalElementIndex),
-                    *mMaterialBuffer[electricalElementIndex],
-                    false,
-                    false); // Irrelevant
+                    watertightDoorState.IsOpen());
             }
 
             // Publish disable
-            mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
-            */
+            mGameEventHandler->OnWatertightDoorEnabled(ElectricalElementId(mShipId, electricalElementIndex), false);
 
             break;
         }
@@ -751,12 +769,11 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::WatertightDoor:
         {
-            /* TODOHERE
             // Notify enabling
-            //mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
-            */
+            mGameEventHandler->OnWatertightDoorEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
 
-            // Nothing else to do: at the next UpdateSinks() that makes this door work, there will be a state change
+            // Nothing else to do: the last status we've announced is for !Activated (we did at Destroy);
+            // at the next UpdateSinks() that makes this door work, there will be a state change
 
             assert(!mElementStateBuffer[electricalElementIndex].WatertightDoor.IsActivated);
 
@@ -1501,6 +1518,7 @@ void ElectricalElements::UpdateSinks(
 
                     auto & watertightDoorState = mElementStateBuffer[sinkElementIndex].WatertightDoor;
 
+                    bool hasStateChanged = false;
                     if (watertightDoorState.IsActivated)
                     {
                         // Currently it's activated...
@@ -1514,15 +1532,7 @@ void ElectricalElements::UpdateSinks(
 
                             watertightDoorState.IsActivated = false;
 
-                            // Propagate structural effect
-                            assert(nullptr != mShipPhysicsHandler);
-                            mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, false);
-
-                            // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
-                            {
-                                HighlightElectricalElement(sinkElementIndex, points);
-                            }
+                            hasStateChanged = true;
                         }
                     }
                     else
@@ -1538,15 +1548,25 @@ void ElectricalElements::UpdateSinks(
 
                             watertightDoorState.IsActivated = true;
 
-                            // Propagate structural effect
-                            assert(nullptr != mShipPhysicsHandler);
-                            mShipPhysicsHandler->HandleWatertightDoorActivated(pointIndex, true);
+                            hasStateChanged = true;
+                        }
+                    }
 
-                            // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
-                            {
-                                HighlightElectricalElement(sinkElementIndex, points);
-                            }
+                    if (hasStateChanged)
+                    {
+                        // Propagate structural effect
+                        assert(nullptr != mShipPhysicsHandler);
+                        mShipPhysicsHandler->HandleWatertightDoorUpdated(pointIndex, watertightDoorState.IsOpen());
+
+                        // Publish state change
+                        mGameEventHandler->OnWatertightDoorUpdated(
+                            ElectricalElementId(mShipId, sinkElementIndex),
+                            watertightDoorState.IsOpen());
+
+                        // Show notifications
+                        if (gameParameters.DoShowElectricalNotifications)
+                        {
+                            HighlightElectricalElement(sinkElementIndex, points);
                         }
                     }
                 }

@@ -1306,7 +1306,8 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
             elementInfo.elementIndex,
             elementInfo.instanceIndex,
             elementInfo.panelElementMetadata,
-            *electricalMaterial);
+            *electricalMaterial,
+            points);
     }
 
 

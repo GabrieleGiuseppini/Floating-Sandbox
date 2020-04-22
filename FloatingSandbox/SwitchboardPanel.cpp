@@ -69,7 +69,7 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
-    float constexpr TotalProgressSteps = 8.0f;
+    float constexpr TotalProgressSteps = 9.0f;
     float ProgressSteps = 0.0;
 
     wxPanel::Create(
@@ -211,12 +211,21 @@ SwitchboardPanel::SwitchboardPanel(
         ProgressSteps += 1.0f; // 6.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
+        mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorOpenDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_open_disabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
+        mMinBitmapSize.DecTo(mWatertightDoorOpenEnabledBitmap.GetSize());
+
+        ProgressSteps += 1.0f; // 7.0f
+        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+
         mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
         mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
         mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 7.0f
+        ProgressSteps += 1.0f; // 8.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
         mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -233,7 +242,7 @@ SwitchboardPanel::SwitchboardPanel(
         mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
-        ProgressSteps += 1.0f; // 8.0f
+        ProgressSteps += 1.0f; // 9.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
         dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
@@ -905,6 +914,69 @@ void SwitchboardPanel::OnWaterPumpCreated(
         std::forward_as_tuple(instanceIndex, ggCtrl, nullptr, nullptr, panelElementMetadata));
 }
 
+void SwitchboardPanel::OnWatertightDoorCreated(
+    ElectricalElementId electricalElementId,
+    ElectricalElementInstanceIndex instanceIndex,
+    ElectricalMaterial const & /*electricalMaterial*/,
+    bool isOpen,
+    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+{
+    //
+    // Create label
+    //
+
+    std::string label;
+    bool isHidden;
+    if (!!panelElementMetadata)
+    {
+        label = panelElementMetadata->Label;
+        isHidden = panelElementMetadata->IsHidden;
+    }
+    else
+    {
+        // Make label
+        std::stringstream ss;
+        ss << "WaterDoor #" << static_cast<int>(instanceIndex);
+        label = ss.str();
+
+        // Not hidden
+        isHidden = false;
+    }
+
+    //
+    // Create control
+    //
+
+    SwitchElectricalElementControl * swCtrl = nullptr;
+
+    if (!isHidden)
+    {
+        swCtrl = new AutomaticSwitchElectricalElementControl(
+            mSwitchPanel,
+            mWatertightDoorOpenEnabledBitmap,
+            mWatertightDoorClosedEnabledBitmap,
+            mWatertightDoorOpenDisabledBitmap,
+            mWatertightDoorClosedDisabledBitmap,
+            label,
+            mPassiveCursor,
+            [this, electricalElementId]()
+            {
+                this->OnTick(electricalElementId);
+            },
+            isOpen ? ElectricalState::On : ElectricalState::Off);
+    }
+
+    //
+    // Add indicator to maps
+    //
+
+    assert(mElementMap.find(electricalElementId) == mElementMap.end());
+    mElementMap.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(electricalElementId),
+        std::forward_as_tuple(instanceIndex, swCtrl, swCtrl, nullptr, panelElementMetadata));
+}
+
 void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 {
     //
@@ -1186,6 +1258,42 @@ void SwitchboardPanel::OnWaterPumpUpdated(
     if (ggCtrl != nullptr)
     {
         ggCtrl->SetValue(1.0f - normalizedForce);
+    }
+}
+
+void SwitchboardPanel::OnWatertightDoorEnabled(
+    ElectricalElementId electricalElementId,
+    bool isEnabled)
+{
+    //
+    // Enable/disable indicator
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+
+    SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
+    if (swCtrl != nullptr)
+    {
+        swCtrl->SetEnabled(isEnabled);
+    }
+}
+
+void SwitchboardPanel::OnWatertightDoorUpdated(
+    ElectricalElementId electricalElementId,
+    bool isOpen)
+{
+    //
+    // Toggle indicator
+    //
+
+    auto & elementInfo = mElementMap.at(electricalElementId);
+    assert(elementInfo.Control == nullptr || elementInfo.Control->GetControlType() == ElectricalElementControl::ControlType::Switch);
+
+    SwitchElectricalElementControl * swCtrl = dynamic_cast<SwitchElectricalElementControl *>(elementInfo.Control);
+    if (swCtrl != nullptr)
+    {
+        swCtrl->SetState(isOpen ? ElectricalState::On : ElectricalState::Off);
     }
 }
 

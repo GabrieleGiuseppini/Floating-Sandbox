@@ -2842,12 +2842,12 @@ void Ship::DoAntiMatterBombExplosion(
     }
 }
 
-void Ship::HandleWatertightDoorActivated(
+void Ship::HandleWatertightDoorUpdated(
     ElementIndex pointElementIndex,
-    bool isActivated)
+    bool isOpen)
 {
     // TODOHERE
-    LogMessage("TODOHERE: Ship::HandleWatertightDoorActivated(", pointElementIndex, ", ", isActivated, ")");
+    LogMessage("TODOHERE: Ship::HandleWatertightDoorUpdated(", pointElementIndex, ", ", isOpen, ")");
 }
 
 #ifdef _DEBUG

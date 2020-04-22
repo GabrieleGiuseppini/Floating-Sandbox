@@ -1146,35 +1146,35 @@ Render:
 				- Does multiple things:
 					- Visit all hull points and calls ~SetAndPropagatePointHullness(.)
 					- Current call to detect connected component
-			- New electrical element:
+			+ New electrical element:
 				! Passive, and carries just open/close state
-				- Announcement
-				- State change
-				- Enabled/Disabled
-			= ElectricalElements:
+				+ Announcement
+				+ State change
+				+ Enabled/Disabled
+			+ ElectricalElements:
 				+ State:
 					+ CurrentState (bool): activated (powered) or not
 				+ Add: add to sinks; current state=!activated
-				- TODOHERE: redo with electrical element carrying directly open/close instead of activated/deactivated
-					- WatertightDoorState remembers both IsActive and CurrentIsOpen
-					- ElectricalElements::Add takes also Points to determine whether point is hull or not hull (closed/open) at rest
-					- IShipHandler takes directly open or close
-					- Highlight: based on open/close instead of activated/deactivated
-				- Announcement				
-				= UpdateSinks:
+				+ Redo with electrical element carrying directly open/close instead of activated/deactivated
+					+ WatertightDoorState remembers both IsActive and CurrentIsOpen
+					+ ElectricalElements::Add takes also Points to determine whether point is hull or not hull (closed/open) at rest
+					+ IShipHandler takes directly open or close
+					+ Highlight: based on open/close instead of activated/deactivated
+				+ Announcement				
+				+ UpdateSinks:
 					+ Do powered state machine
-					- On state toggle:						
+					+ On state toggle:						
 						+ IShipHandler::HandleWatertightDoorActivated(true or false)
-						- Publish electrical element state
+						+ Publish electrical element state
 						+ Highlight						
-				= Destroy: force toggle to not activated:
-					- State variable
-					- IShipHandler::HandleWatertightDoorActivated
-					- Publish electrical element state
-					- Publish Enabled/Disabled					
-				= Restore: probably nothing to do, as next UpdateSinks() will see if it works
+				+ Destroy: force toggle to not activated:
+					+ State variable
+					+ IShipHandler::HandleWatertightDoorActivated
+					+ Publish electrical element state
+					+ Publish Enabled/Disabled					
+				+ Restore: probably nothing to do, as next UpdateSinks() will see if it works
 					+ Assert currently not activated
-					- Enable/Disable
+					+ Enable/Disable
 			- Ship::HandleWatertightDoorActivated(pointIndex, bool isActivated):
 				- Calculate target hullness = f(point's material hullness, isActivated)
 				- Invoke SetAndPropagatePointHullness(.)
@@ -1182,11 +1182,11 @@ Render:
 				  existing water there will stagnate
 				- Fire event for Sound
 					- Event is aggregated with size
-			- Electrical panel:
-				- Gfx: open/close (?)
-				- Announcement
-				- State change
-				- Enable/disable
+			+ Electrical panel:
+				+ Gfx: open/close/disabled
+				+ Announcement
+				+ State change
+				+ Enable/disable
 			- SoundController:
 				- Open sound X n1, Close sound X n2
 				- Event response (size => volume)
@@ -1197,7 +1197,7 @@ Render:
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
 			- Test:
-				- w/Circuit Test (temporarily)
+				+ w/Circuit Test (temporarily)
 				- Destroy
 				- Release
 			- Add new type to Materials Guide

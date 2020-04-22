@@ -179,7 +179,7 @@ struct IShipPhysicsHandler
     // Gadgets
     //
 
-    virtual void HandleWatertightDoorActivated(
+    virtual void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
-        bool isActivated) = 0;
+        bool isOpen) = 0;
 };

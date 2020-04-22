@@ -242,6 +242,16 @@ struct IElectricalElementGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnWatertightDoorCreated(
+        ElectricalElementId /*electricalElementId*/,
+        ElectricalElementInstanceIndex /*instanceIndex*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
+        bool /*isOpen*/,
+        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnElectricalElementAnnouncementsEnd()
     {
         // Default-implemented
@@ -313,6 +323,20 @@ struct IElectricalElementGameEventHandler
     virtual void OnWaterPumpUpdated(
         ElectricalElementId /*electricalElementId*/,
         float /*normalizedForce*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWatertightDoorEnabled(
+        ElectricalElementId /*electricalElementId*/,
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWatertightDoorUpdated(
+        ElectricalElementId /*electricalElementId*/,
+        bool /*isOpen*/)
     {
         // Default-implemented
     }

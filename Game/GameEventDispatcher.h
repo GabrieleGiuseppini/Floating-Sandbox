@@ -386,6 +386,22 @@ public:
         }
     }
 
+    virtual void OnWatertightDoorCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        bool isOpen,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+    {
+        LogMessage("OnWatertightDoorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
+
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWatertightDoorCreated(electricalElementId, instanceIndex, electricalMaterial, isOpen, panelElementMetadata);
+        }
+    }
+
     virtual void OnElectricalElementAnnouncementsEnd() override
     {
         // No need to aggregate this one
@@ -494,6 +510,28 @@ public:
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWaterPumpUpdated(electricalElementId, normalizedForce);
+        }
+    }
+
+    virtual void OnWatertightDoorEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWatertightDoorEnabled(electricalElementId, isEnabled);
+        }
+    }
+
+    virtual void OnWatertightDoorUpdated(
+        ElectricalElementId electricalElementId,
+        bool isOpen) override
+    {
+        // No need to aggregate this one
+        for (auto sink : mElectricalElementSinks)
+        {
+            sink->OnWatertightDoorUpdated(electricalElementId, isOpen);
         }
     }
 

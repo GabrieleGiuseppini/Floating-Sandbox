@@ -798,6 +798,22 @@
             "row": "20|Misc"
         },
 	"water_pump_nominal_force": -3.0
+    },
+
+    {
+        "color_key": "#242400",
+	"conducts_electricity": true,
+        "electrical_type": "WatertightDoor", 
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 398.15, 
+        "minimum_operating_temperature": 233.15, 
+        "name": "Watertight Door", 
+        "template": {
+            "column": "5|Watertight Door",
+            "row": "20|Misc"
+        }
     }
 
 ]

@@ -110,6 +110,13 @@ public:
         float normalizedForce,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
+    virtual void OnWatertightDoorCreated(
+        ElectricalElementId electricalElementId,
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
+        bool isOpen,
+        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
@@ -144,6 +151,14 @@ public:
     virtual void OnWaterPumpUpdated(
         ElectricalElementId electricalElementId,
         float normalizedForce) override;
+
+    virtual void OnWatertightDoorEnabled(
+        ElectricalElementId electricalElementId,
+        bool isEnabled) override;
+
+    virtual void OnWatertightDoorUpdated(
+        ElectricalElementId electricalElementId,
+        bool isOpen) override;
 
 private:
 
@@ -300,6 +315,11 @@ private:
 
     wxBitmap mPowerMonitorOnBitmap;
     wxBitmap mPowerMonitorOffBitmap;
+
+    wxBitmap mWatertightDoorOpenEnabledBitmap;
+    wxBitmap mWatertightDoorClosedEnabledBitmap;
+    wxBitmap mWatertightDoorOpenDisabledBitmap;
+    wxBitmap mWatertightDoorClosedDisabledBitmap;
 
     wxBitmap mGauge0100Bitmap;
     wxBitmap mGaugeRpmBitmap;

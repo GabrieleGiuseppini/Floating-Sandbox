@@ -290,10 +290,21 @@ private:
         struct WatertightDoorState
         {
             bool IsActivated; // Current state: operating when true, not operating when false
+            bool DefaultIsOpen; // Door state when inactive
 
-            WatertightDoorState(bool isActivated)
+            WatertightDoorState(
+                bool isActivated,
+                bool defaultIsOpen)
                 : IsActivated(isActivated)
+                , DefaultIsOpen(defaultIsOpen)
             {}
+
+            bool IsOpen() const
+            {
+                return IsActivated == false
+                    ? DefaultIsOpen
+                    : !DefaultIsOpen;
+            }
         };
 
         struct DummyState
@@ -437,7 +448,8 @@ public:
         ElementIndex pointElementIndex,
         ElectricalElementInstanceIndex instanceIndex,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
-        ElectricalMaterial const & electricalMaterial);
+        ElectricalMaterial const & electricalMaterial,
+        Points const & points);
 
     void AnnounceInstancedElements();
 

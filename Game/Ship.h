@@ -425,9 +425,9 @@ private:
         float sequenceProgress,
         GameParameters const & gameParameters) override;
 
-    virtual void HandleWatertightDoorActivated(
+    virtual void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
-        bool isActivated) override;
+        bool isOpen) override;
 
 private:
 
