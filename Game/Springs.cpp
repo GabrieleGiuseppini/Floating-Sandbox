@@ -15,7 +15,6 @@ void Springs::Add(
     Octant factoryPointAOctant,
     Octant factoryPointBOctant,
     SuperTrianglesVector const & superTriangles,
-    Characteristics characteristics,
     Points const & points)
 {
     ElementIndex const springIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -51,20 +50,19 @@ void Springs::Add(
     // Coefficients recalculated later, but stiffness grows slowly and shrinks fast, hence we want to start high
     mCoefficientsBuffer.emplace_back(std::numeric_limits<float>::max(), 0.0f);
 
-    mMaterialCharacteristicsBuffer.emplace_back(characteristics);
-
     // Base structural material is arbitrarily the weakest of the two;
     // only affects sound and name, anyway
     mBaseStructuralMaterialBuffer.emplace_back(
         points.GetStructuralMaterial(pointAIndex).Strength < points.GetStructuralMaterial(pointBIndex).Strength
-        ? &points.GetStructuralMaterial(pointAIndex)
-        : &points.GetStructuralMaterial(pointBIndex));
+        ? &(points.GetStructuralMaterial(pointAIndex))
+        : &(points.GetStructuralMaterial(pointBIndex)));
 
-    // Spring is impermeable if it's a hull spring (i.e. if at least one endpoint is hull)
-    mMaterialWaterPermeabilityBuffer.emplace_back(
-        Characteristics::None != (characteristics & Characteristics::Hull)
-        ? 0.0f
-        : 1.0f);
+    // If both nodes are rope, then the spring is rope
+    // (non-rope <-> rope springs are "connections" and not to be treated as ropes)
+    mIsRopeBuffer.emplace_back(points.IsRope(pointAIndex) && points.IsRope(pointBIndex));
+
+    // Spring is permeable by default - will be changed later
+    mWaterPermeabilityBuffer.emplace_back(1.0f);
 
     // Heat properties are average
     float const thermalConductivity =

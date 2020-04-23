@@ -1118,37 +1118,46 @@ Render:
 		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
 	= Flood doors (*) - really "Powered watertight doors"
-		- Spec:		
-			- New electrical element
-			- Point that flood door is attached to may or may not be hull
-			- When powered, inverts hullness of point, and water permeability of all attached springs
-			- Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
-				+ No ObjectID needed thus
-				- Open sound X n1, Close sound X n2
-		- Impl:
-			- Prep:
-				- Springs::Add() knows nothing about hullness
-					- WaterPermeability set to 1.0 
-					- See if may get rid of Springs::Characteristics::Hull					
-					- See if may get rid of Springs::Characteristics::Rope
-					- See if may get rid of Springs::Characteristics
-				- Make sure there's no current Points::IsHull
-				- Add Points::IsHull (w/own bool buffer, Get(), and Set()), which will contain externally-computed resultant of 
+		! Spec:		
+			! New electrical element
+			! Point that flood door is attached to may or may not be hull
+			! When powered, inverts hullness of point, and water permeability of all attached springs
+			! Plays one-shot sound @ when open or closed - much like TimerBomb's defuse
+				! No ObjectID needed thus
+				! Open sound X n1, Close sound X n2
+		= Impl:
+			+ Prep:
+				+ Springs::Add() knows nothing about hullness
+					+ WaterPermeability set to 1.0 
+					+ Get rid of Springs::Characteristics::Hull					
+					+ Replace Springs::Characteristics with simple bool IsRope buffer
+					+ Get rid of Springs::Characteristics
+				+ Make sure there's no current Points::IsHull
+				+ Add Points::IsHull (w/own bool buffer, Get(), and Set()), which will contain externally-computed resultant of 
 				  flood doors + material
-					- Default @ Points:Add(): false
-				- Change Points::MaterialIsHull usages:
-					- @ Points::OnDamage: to decide whether or not to make the point leaking
-						- Target: use new IsHull (kinda arbitrarily)
-					- @ ShipInteractions::Flood: to avoid flooding hull points
-						- Target: use new IsHull (to avoid flooding points on activated doors)
-				- Nuke MaterialIsHullBuffer as usages may directly check StructuralMaterial
-			- Ship::~SetAndPropagatePointHullness(pointIndex, bool isHull)
-				- Change Point::Hull and change Spring's::WaterPermeability
-			- Ship::Finalize()
-				- Called by cctor
-				- Does multiple things:
-					- Visit all hull points and calls ~SetAndPropagatePointHullness(.)
-					- Current call to detect connected component
+					+ Default @ Points:Add(): from material
+				+ Change Points::MaterialIsHull usages:
+					+ @ Points::OnDamage: to decide whether or not to make the point leaking
+						+ Target: use material's IsHull (kinda arbitrarily)
+					+ @ ShipInteractions::Flood: to avoid flooding hull points
+						+ Target: use new IsHull (to avoid flooding points on activated doors)
+				+ Nuke MaterialIsHullBuffer as usages may directly check StructuralMaterial
+			+ Ship::SetAndPropagateResultantPointHullness(pointIndex, bool isHull)
+				+ Change Point::Hull and change Spring's::WaterPermeability according to old code:
+					// The spring is hull if at least one node is hull
+					// (we don't propagate water along a hull spring)
+					if (points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointAIndex1])
+					    || points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointBIndex1]))
+					    characteristics |= static_cast<int>(Springs::Characteristics::Hull);
+					 mMaterialWaterPermeabilityBuffer.emplace_back(
+						Characteristics::None != (characteristics & Characteristics::Hull)
+						? 0.0f
+						: 1.0f);
+			+ Ship::Finalize()
+				+ Called by cctor
+				+ Does multiple things:
+					+ Visit all hull points and calls ~SetAndPropagatePointHullness(.)
+					+ Current call to detect connected component
 			+ New electrical element:
 				! Passive, and carries just open/close state
 				+ Announcement
@@ -1178,20 +1187,19 @@ Render:
 				+ Restore: probably nothing to do, as next UpdateSinks() will see if it works
 					+ Assert currently not activated
 					+ Enable/Disable
-			- Ship::HandleWatertightDoorActivated(pointIndex, bool isActivated):
-				- Calculate target hullness = f(point's material hullness, isActivated)
-				- Invoke SetAndPropagatePointHullness(.)
-				- On Open->Close transition, might also want to dry up points (THE point yes, what about the others?) or else
-				  existing water there will stagnate
-				- Fire event for Sound
-					- Event is aggregated with size
+			+ Ship::HandleWatertightDoorUpdated(pointIndex, bool isOpen):
+				+ Calculate target hullness = f(point's material hullness, isOpen)
+				+ Invoke SetAndPropagatePointHullness(.)
+				+ On Open->Close transition, might also want to dry up point or else existing water there will stagnate
+				+ Fire event for Sound
+					+ Event is aggregated with size
 			+ Electrical panel:
 				+ Gfx: open/close/disabled
 				+ Announcement
 				+ State change
 				+ Enable/disable
-			= SoundController:
-				- Open sound X n1, Close sound X n2
+			+ SoundController:
+				+ Open sound X n1, Close sound X n2
 				+ Event response (size => volume)
 					+ object-agnostic
 			+ No real need to also change Point::Buoyancy
@@ -1199,11 +1207,11 @@ Render:
 				+ Points' hullness is only used to decide whether or not to make a point Leak when an attached spring breaks; we
 				  leave this determined by underlying structural material
 			+ Springs::IsHull should be gone by now
-			- Test:
+			= Test:
 				+ w/Circuit Test (temporarily)
-				- Operation
+				+ Operation
 				- Destroy
-				- Release
+				- Restore
 			- Add new type to Materials Guide
 			- Redo electrical materials template
 

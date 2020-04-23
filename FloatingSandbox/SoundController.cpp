@@ -439,7 +439,9 @@ SoundController::SoundController(
                 || soundType == SoundType::ElectricalPanelDock
                 || soundType == SoundType::ElectricalPanelUndock
                 || soundType == SoundType::GlassTick
-                || soundType == SoundType::EngineTelegraph)
+                || soundType == SoundType::EngineTelegraph
+                || soundType == SoundType::WatertightDoorClosed
+                || soundType == SoundType::WatertightDoorOpened)
         {
             //
             // - one-shot sound
@@ -1789,12 +1791,11 @@ void SoundController::OnAntiMatterBombImploding()
 }
 
 void SoundController::OnWatertightDoorOpened(
-    bool isUnderwater,
+    bool /*isUnderwater*/,
     unsigned int size)
 {
-    PlayUOneShotMultipleChoiceSound(
+    PlayOneShotMultipleChoiceSound(
         SoundType::WatertightDoorOpened,
-        isUnderwater,
         std::max(
             100.0f,
             30.0f * size),
@@ -1802,12 +1803,11 @@ void SoundController::OnWatertightDoorOpened(
 }
 
 void SoundController::OnWatertightDoorClosed(
-    bool isUnderwater,
+    bool /*isUnderwater*/,
     unsigned int size)
 {
-    PlayUOneShotMultipleChoiceSound(
+    PlayOneShotMultipleChoiceSound(
         SoundType::WatertightDoorClosed,
-        isUnderwater,
         std::max(
             100.0f,
             30.0f * size),

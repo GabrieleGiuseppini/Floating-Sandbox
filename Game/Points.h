@@ -523,7 +523,7 @@ public:
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
-        , mMaterialIsHullBuffer(mBufferElementCount, shipPointCount, false)
+        , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -566,8 +566,8 @@ public:
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
         // Highlight
         , mHighlightedPoints()
-		// Randomness
-		, mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
+        // Randomness
+        , mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsWholeColorBufferDirty(true)
@@ -666,7 +666,7 @@ public:
         bool isStructurallyLeaking,
         vec4f const & color,
         vec2f const & textureCoordinates,
-		float randomNormalizedUniformFloat);
+        float randomNormalizedUniformFloat);
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
@@ -763,7 +763,7 @@ public:
         ElementIndex pointStride,
         float currentSimulationTime,
         float dt,
-		Storm::Parameters const & stormParameters,
+        Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void UpdateCombustionHighFrequency(
@@ -1081,9 +1081,16 @@ public:
     // Water dynamics
     //
 
-    bool GetMaterialIsHull(ElementIndex pointElementIndex) const
+    bool GetIsHull(ElementIndex pointElementIndex) const
     {
-        return mMaterialIsHullBuffer[pointElementIndex];
+        return mIsHullBuffer[pointElementIndex];
+    }
+
+    void SetIsHull(
+        ElementIndex pointElementIndex,
+        bool value)
+    {
+        mIsHullBuffer[pointElementIndex] = value;
     }
 
     float GetMaterialWaterIntake(ElementIndex pointElementIndex) const
@@ -1114,6 +1121,13 @@ public:
     float & GetWater(ElementIndex pointElementIndex)
     {
         return mWaterBuffer[pointElementIndex];
+    }
+
+    void SetWater(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mWaterBuffer[pointElementIndex] = value;
     }
 
     bool IsWet(
@@ -1210,7 +1224,8 @@ public:
 
     void Damage(ElementIndex pointElementIndex)
     {
-        if (!mMaterialIsHullBuffer[pointElementIndex])
+        // Start structural leaking if the point is originally hull
+        if (!mMaterialsBuffer[pointElementIndex].Structural->IsHull)
         {
             //
             // Start structural leaking
@@ -1719,7 +1734,7 @@ private:
     // Water dynamics
     //
 
-    Buffer<bool> mMaterialIsHullBuffer;
+    Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
@@ -1814,11 +1829,11 @@ private:
 
     std::vector<HighlightState> mHighlightedPoints;
 
-	//
-	// Randomness
-	//
+    //
+    // Randomness
+    //
 
-	Buffer<float> mRandomNormalizedUniformFloatBuffer;
+    Buffer<float> mRandomNormalizedUniformFloatBuffer;
 
     //
     // Immutable render attributes

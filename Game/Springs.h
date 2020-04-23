@@ -36,13 +36,6 @@ public:
         DestroyAllTriangles = 2
     };
 
-    enum class Characteristics : uint8_t
-    {
-        None = 0,
-        Hull = 1,    // Does not take water
-        Rope = 2     // Ropes are drawn differently
-    };
-
     /*
      * The endpoints of a spring.
      */
@@ -127,10 +120,10 @@ public:
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
-        , mMaterialCharacteristicsBuffer(mBufferElementCount, mElementCount, Characteristics::None)
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
+        , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
         // Water
-        , mMaterialWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
         , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialMeltingTemperatureBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -167,7 +160,6 @@ public:
         Octant factoryPointAOctant,
         Octant factoryPointBOctant,
         SuperTrianglesVector const & superTriangles,
-        Characteristics characteristics,
         Points const & points);
 
     void Destroy(
@@ -485,15 +477,25 @@ public:
         return *(mBaseStructuralMaterialBuffer[springElementIndex]);
     }
 
-    inline bool IsRope(ElementIndex springElementIndex) const;
+    inline bool IsRope(ElementIndex springElementIndex) const
+    {
+        return mIsRopeBuffer[springElementIndex];
+    }
 
     //
     // Water
     //
 
-    float GetMaterialWaterPermeability(ElementIndex springElementIndex) const
+    float GetWaterPermeability(ElementIndex springElementIndex) const
     {
-        return mMaterialWaterPermeabilityBuffer[springElementIndex];
+        return mWaterPermeabilityBuffer[springElementIndex];
+    }
+
+    void SetWaterPermeability(
+        ElementIndex springElementIndex,
+        float value)
+    {
+        mWaterPermeabilityBuffer[springElementIndex] = value;
     }
 
     //
@@ -661,16 +663,18 @@ private:
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<Coefficients> mCoefficientsBuffer;
-    Buffer<Characteristics> mMaterialCharacteristicsBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
+    Buffer<bool> mIsRopeBuffer;
 
     //
     // Water
     //
 
     // Water propagates through this spring according to this value;
-    // 0.0 makes water not propagate
-    Buffer<float> mMaterialWaterPermeabilityBuffer;
+    // 0.0 makes water not propagate.
+    // Changed externally dynamically, as a resultant of material
+    // hullness and other dynamic factors
+    Buffer<float> mWaterPermeabilityBuffer;
 
     //
     // Hear
@@ -717,11 +721,3 @@ private:
 }
 
 template <> struct is_flag<Physics::Springs::DestroyOptions> : std::true_type {};
-template <> struct is_flag<Physics::Springs::Characteristics> : std::true_type {};
-
-inline bool Physics::Springs::IsRope(ElementIndex springElementIndex) const
-{
-    assert(springElementIndex < mElementCount);
-
-    return !!(mMaterialCharacteristicsBuffer[springElementIndex] & Physics::Springs::Characteristics::Rope);
-}

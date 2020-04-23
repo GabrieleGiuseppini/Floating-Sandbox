@@ -1144,20 +1144,6 @@ Physics::Springs ShipBuilder::CreateSprings(
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
-        int characteristics = 0;
-
-        // The spring is hull if at least one node is hull
-        // (we don't propagate water along a hull spring)
-        if (points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointAIndex1])
-            || points.GetMaterialIsHull(pointIndexRemap[springInfos2[s].PointBIndex1]))
-            characteristics |= static_cast<int>(Springs::Characteristics::Hull);
-
-        // If both nodes are rope, then the spring is rope
-        // (non-rope <-> rope springs are "connections" and not to be treated as ropes)
-        if (points.IsRope(pointIndexRemap[springInfos2[s].PointAIndex1])
-            && points.IsRope(pointIndexRemap[springInfos2[s].PointBIndex1]))
-            characteristics |= static_cast<int>(Springs::Characteristics::Rope);
-
         // Create spring
         springs.Add(
             pointIndexRemap[springInfos2[s].PointAIndex1],
@@ -1165,7 +1151,6 @@ Physics::Springs ShipBuilder::CreateSprings(
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
             springInfos2[s].SuperTriangles2,
-            static_cast<Springs::Characteristics>(characteristics),
             points);
 
         // Add spring to its endpoints

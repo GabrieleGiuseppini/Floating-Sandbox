@@ -66,6 +66,8 @@ public:
 
 public:
 
+    void Finalize();
+
     ///////////////////////////////////////////////////////////////
     // Interactions
     ///////////////////////////////////////////////////////////////
@@ -321,6 +323,10 @@ private:
 private:
 
     void RunConnectivityVisit();
+
+    inline void SetAndPropagateResultantPointHullness(
+        ElementIndex pointElementIndex,
+        bool isHull);
 
     void DestroyConnectedTriangles(ElementIndex pointElementIndex);
 

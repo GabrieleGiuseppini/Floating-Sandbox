@@ -1,8 +1,9 @@
 TODO
 - New "Pick-and-Pull" tool! Use it to pull individual particles around
 - Added new electrical materials:
-	- WaterPumps - take water in or out of the ship when powered
-- Improved trajectory of flames
+	- Water Pumps - take water in or out of the ship when powered
+	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or be contained at will
+- Improved trajectory of flames on burning particles
 - Added 2 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg

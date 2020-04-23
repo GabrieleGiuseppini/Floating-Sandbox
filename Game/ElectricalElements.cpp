@@ -187,8 +187,8 @@ void ElectricalElements::Add(
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::WatertightDoorState(
-                    false,                                          // IsActive
-                    !points.GetMaterialIsHull(pointElementIndex))); // DefaultIsOpen: open <=> material open (==not hull)
+                    false, // IsActive
+                    !points.GetStructuralMaterial(pointElementIndex).IsHull)); // DefaultIsOpen: open <=> material open (==not hull)
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -921,7 +921,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         bool isProducingCurrent;
                         if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent)
                         {
-                            if (points.IsWet(sourcePointIndex, 0.3f)
+                            if (points.IsWet(sourcePointIndex, 0.55f)
                                 || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
                             {
                                 isProducingCurrent = false;
@@ -933,7 +933,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         }
                         else
                         {
-                            if (!points.IsWet(sourcePointIndex, 0.3f)
+                            if (!points.IsWet(sourcePointIndex, 0.15f)
                                 && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
                             {
                                 isProducingCurrent = true;
@@ -1052,6 +1052,7 @@ void ElectricalElements::UpdateSinks(
     // post-deletion wind-down state machines
     //
 
+    // For smoke
     float const effectiveAugmentedAirTemperature =
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta
@@ -1862,7 +1863,8 @@ void ElectricalElements::RunLampStateMachine(
     Points & points,
     GameParameters const & /*gameParameters*/)
 {
-    float constexpr LampWetFailureWaterThreshold = 0.1f;
+    float constexpr LampWetFailureWaterHighWatermark = 0.1f;
+    float constexpr LampWetFailureWaterLowWatermark = 0.055f;
 
     //
     // Lamp is only on if visited or self-powered and within operating temperature;
@@ -1904,7 +1906,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((   !isConnectedToPower
                     && !lamp.IsSelfPowered
                 ) ||
-                (   points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                (   points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterHighWatermark)
                     && CheckWetFailureTime(lamp, currentWallclockTime)
                 ) ||
                 (
@@ -1951,7 +1953,7 @@ void ElectricalElements::RunLampStateMachine(
 
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
@@ -2004,7 +2006,7 @@ void ElectricalElements::RunLampStateMachine(
 
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
@@ -2071,7 +2073,7 @@ void ElectricalElements::RunLampStateMachine(
 
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
-                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterThreshold)
+                && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;

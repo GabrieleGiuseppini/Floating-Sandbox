@@ -111,8 +111,8 @@ Ship::Ship(
     mTriangles.RegisterShipPhysicsHandler(this);
     mElectricalElements.RegisterShipPhysicsHandler(this);
 
-    // Do a first connectivity pass (for the first Update)
-    RunConnectivityVisit();
+    // Finalize
+    Finalize();
 }
 
 void Ship::Announce()
@@ -128,7 +128,7 @@ bool Ship::IsUnderwater(ElementIndex pointElementIndex) const
 
 void Ship::Update(
     float currentSimulationTime,
-	Storm::Parameters const & stormParameters,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
     Render::RenderContext const & renderContext)
 {
@@ -676,6 +676,27 @@ void Ship::Render(
 // Private Helpers
 ///////////////////////////////////////////////////////////////////////////////////
 
+void Ship::Finalize()
+{
+    //
+    // 1. Propagate (ship) point materials' hullness
+    //
+
+    for (auto const pointIndex : mPoints.RawShipPoints())
+    {
+        if (mPoints.GetStructuralMaterial(pointIndex).IsHull)
+        {
+            SetAndPropagateResultantPointHullness(pointIndex, true);
+        }
+    }
+
+
+    //
+    // 2. Do a first connectivity pass (for the first Update)
+    //
+
+    RunConnectivityVisit();
+}
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Mechanical Dynamics
@@ -1386,7 +1407,8 @@ void Ship::UpdateWaterVelocities(
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         //
-        // 1) Calculate water momenta along all springs connected to this point
+        // 1) Calculate water momenta along *all* springs connected to this point,
+        //    including impermeable ones - as we'll eventually bounce back along those
         //
 
         // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
@@ -1476,10 +1498,10 @@ void Ship::UpdateWaterVelocities(
             //
 
             pointSplashFreeNeighbors +=
-                mSprings.GetMaterialWaterPermeability(cs.SpringIndex)
+                mSprings.GetWaterPermeability(cs.SpringIndex)
                 * pointFreenessFactorBufferData[cs.OtherEndpointIndex];
 
-            pointSplashNeighbors += mSprings.GetMaterialWaterPermeability(cs.SpringIndex);
+            pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
         }
 
 
@@ -1519,7 +1541,7 @@ void Ship::UpdateWaterVelocities(
 
             assert(springOutboundQuantityOfWater >= 0.0f);
 
-            if (mSprings.GetMaterialWaterPermeability(cs.SpringIndex) != 0.0f)
+            if (mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 //
                 // Water - and momentum - move from point to endpoint
@@ -1732,7 +1754,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
 void Ship::PropagateHeat(
     float /*currentSimulationTime*/,
     float dt,
-	Storm::Parameters const & stormParameters,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -1842,12 +1864,12 @@ void Ship::PropagateHeat(
 
     float const waterTemperature = gameParameters.WaterTemperature;
 
-	// We include rain in air
-	float const effectiveAirConvectiveHeatTransferCoefficient =
-		GameParameters::AirConvectiveHeatTransferCoefficient
-		* dt
-		* gameParameters.HeatDissipationAdjustment
-		+ FastPow(stormParameters.RainDensity, 0.3f) * effectiveWaterConvectiveHeatTransferCoefficient;
+    // We include rain in air
+    float const effectiveAirConvectiveHeatTransferCoefficient =
+        GameParameters::AirConvectiveHeatTransferCoefficient
+        * dt
+        * gameParameters.HeatDissipationAdjustment
+        + FastPow(stormParameters.RainDensity, 0.3f) * effectiveWaterConvectiveHeatTransferCoefficient;
 
     float const airTemperature =
         gameParameters.AirTemperature
@@ -2111,6 +2133,24 @@ void Ship::RunConnectivityVisit()
     mPoints.ReorderBurningPointsForDepth();
 }
 
+void Ship::SetAndPropagateResultantPointHullness(
+    ElementIndex pointElementIndex,
+    bool isHull)
+{
+    // Set point's resultant hullness
+    mPoints.SetIsHull(pointElementIndex, isHull);
+
+    // Propagate springs' water permeability accordingly:
+    // the spring is impermeable if at least one endpoint is hull
+    // (we don't want to propagate water towards a hull point)
+    for (auto const & cs : mPoints.GetConnectedSprings(pointElementIndex).ConnectedSprings)
+    {
+        mSprings.SetWaterPermeability(
+            cs.SpringIndex,
+            (isHull || mPoints.GetIsHull(cs.OtherEndpointIndex)) ? 0.0f : 1.0f);
+    }
+}
+
 void Ship::DestroyConnectedTriangles(ElementIndex pointElementIndex)
 {
     //
@@ -2287,45 +2327,45 @@ void Ship::GenerateSparklesForCut(
 }
 
 void Ship::GenerateSparklesForLightning(
-	ElementIndex pointElementIndex,
-	float currentSimulationTime,
-	GameParameters const & /*gameParameters*/)
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & /*gameParameters*/)
 {
-	//
-	// Choose number of particles
-	//
+    //
+    // Choose number of particles
+    //
 
-	unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-		GameParameters::MinSparkleParticlesForLightningEvent, GameParameters::MaxSparkleParticlesForLightningEvent);
+    unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
+        GameParameters::MinSparkleParticlesForLightningEvent, GameParameters::MaxSparkleParticlesForLightningEvent);
 
 
-	//
-	// Create particles
-	//
+    //
+    // Create particles
+    //
 
-	for (unsigned int d = 0; d < sparkleParticleCount; ++d)
-	{
-		// Velocity magnitude
-		float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-			GameParameters::MinSparkleParticlesForLightningVelocity, GameParameters::MaxSparkleParticlesForLightningVelocity);
+    for (unsigned int d = 0; d < sparkleParticleCount; ++d)
+    {
+        // Velocity magnitude
+        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
+            GameParameters::MinSparkleParticlesForLightningVelocity, GameParameters::MaxSparkleParticlesForLightningVelocity);
 
-		// Velocity angle: uniform
-		float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
+        // Velocity angle: uniform
+        float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
 
-		// Choose a lifetime
-		float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-				GameParameters::MinSparkleParticlesForLightningLifetime,
-				GameParameters::MaxSparkleParticlesForLightningLifetime);
+        // Choose a lifetime
+        float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+                GameParameters::MinSparkleParticlesForLightningLifetime,
+                GameParameters::MaxSparkleParticlesForLightningLifetime);
 
-		// Create sparkle
-		mPoints.CreateEphemeralParticleSparkle(
-			mPoints.GetPosition(pointElementIndex),
-			vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
-			mPoints.GetStructuralMaterial(pointElementIndex),
-			currentSimulationTime,
-			maxLifetime,
-			mPoints.GetPlaneId(pointElementIndex));
-	}
+        // Create sparkle
+        mPoints.CreateEphemeralParticleSparkle(
+            mPoints.GetPosition(pointElementIndex),
+            vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
+            mPoints.GetStructuralMaterial(pointElementIndex),
+            currentSimulationTime,
+            maxLifetime,
+            mPoints.GetPlaneId(pointElementIndex));
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -2846,8 +2886,35 @@ void Ship::HandleWatertightDoorUpdated(
     ElementIndex pointElementIndex,
     bool isOpen)
 {
-    // TODOHERE
-    LogMessage("TODOHERE: Ship::HandleWatertightDoorUpdated(", pointElementIndex, ", ", isOpen, ")");
+    // Update point and springs
+    bool const isHull = !isOpen;
+    SetAndPropagateResultantPointHullness(pointElementIndex, isHull);
+
+    if (!isOpen)
+    {
+        //
+        // Open->Close transition
+        //
+
+        // Dry up point
+        mPoints.SetWater(pointElementIndex, 0.0f);
+
+        // Fire event
+        mGameEventHandler->OnWatertightDoorClosed(
+            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+            1);
+    }
+    else
+    {
+        //
+        // Close->Open transition
+        //
+
+        // Fire event
+        mGameEventHandler->OnWatertightDoorOpened(
+            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+            1);
+    }
 }
 
 #ifdef _DEBUG

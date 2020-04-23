@@ -396,14 +396,14 @@ MainFrame::MainFrame(
     mToolsMenu->Append(triggerRogueWaveMenuItem);
     Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
-	mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
+    mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(mTriggerStormMenuItem);
     Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
-	mTriggerStormMenuItem->Enable(true);
+    mTriggerStormMenuItem->Enable(true);
 
-	wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning\tALT+L"), wxEmptyString, wxITEM_NORMAL);
-	mToolsMenu->Append(triggerLightningMenuItem);
-	Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
+    wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning\tALT+L"), wxEmptyString, wxITEM_NORMAL);
+    mToolsMenu->Append(triggerLightningMenuItem);
+    Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
 
     mainMenuBar->Append(mToolsMenu, _("Tools"));
 
@@ -608,7 +608,7 @@ bool MainFrame::ProcessKeyDown(
         vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
         vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-		LogMessage("@ ", worldCoords.toString(), ":");
+        LogMessage("@ ", worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
 
@@ -721,6 +721,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
+        splash.reset();
+
         OnError("Error during initialization of game controller: " + std::string(e.what()), true);
 
         return;
@@ -748,6 +750,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
+        splash.reset();
+
         OnError("Error during initialization of sound controller: " + std::string(e.what()), true);
 
         return;
@@ -775,6 +779,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
+        splash.reset();
+
         OnError("Error during initialization of music controller: " + std::string(e.what()), true);
 
         return;
@@ -806,7 +812,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mMusicController,
         *mResourceLocator);
 
-	ReconcileWithUIPreferences();
+    ReconcileWithUIPreferences();
 
 
     //
@@ -852,6 +858,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
+        splash.reset();
+
         OnError("Error during initialization of tool controller: " + std::string(e.what()), true);
 
         return;
@@ -884,11 +892,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & exc)
     {
-        OnError(
-            "There was a problem locating an initial ship to load in the game - it is strongly advised that the Floating Sandbox installation gets repaired."
-            " The error message was: " + std::string(exc.what()) + "\n"
-            "The game initialization will now continue using a fallback ship.",
-            false);
+        LogMessage("Error locating default ship: ", exc.what());
 
         // Try fallback ship now
         mGameController->AddFallbackShip(*mResourceLocator);
@@ -1611,8 +1615,8 @@ void MainFrame::OnTriggerStormMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
 {
-	assert(!!mGameController);
-	mGameController->TriggerLightning();
+    assert(!!mGameController);
+    mGameController->TriggerLightning();
 }
 
 //////////
@@ -1649,11 +1653,11 @@ void MainFrame::OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & /*event*/)
     }
 
     // Display notification
-	if (hasLoadedSettings)
-	{
-		assert(!!mGameController);
-		mGameController->DisplaySettingsLoadedNotification();
-	}
+    if (hasLoadedSettings)
+    {
+        assert(!!mGameController);
+        mGameController->DisplaySettingsLoadedNotification();
+    }
 }
 
 void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1663,10 +1667,10 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
         mPreferencesDialog = std::make_unique<PreferencesDialog>(
             this,
             mUIPreferencesManager,
-			[this]()
-			{
-				this->ReconcileWithUIPreferences();
-			});
+            [this]()
+            {
+                this->ReconcileWithUIPreferences();
+            });
     }
 
     mPreferencesDialog->Open();
@@ -1717,13 +1721,13 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnShowStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-	mUIPreferencesManager->SetShowStatusText(mShowStatusTextMenuItem->IsChecked());
+    mUIPreferencesManager->SetShowStatusText(mShowStatusTextMenuItem->IsChecked());
 }
 
 void MainFrame::OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent & /*event*/)
 {
-	assert(!!mUIPreferencesManager);
-	mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextMenuItem->IsChecked());
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextMenuItem->IsChecked());
 }
 
 void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1806,7 +1810,7 @@ void MainFrame::ResetState()
 
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
-	mTriggerStormMenuItem->Enable(true);
+    mTriggerStormMenuItem->Enable(true);
 }
 
 void MainFrame::UpdateFrameTitle()
@@ -1942,7 +1946,7 @@ void MainFrame::SetPaused(bool isPaused)
 
 void MainFrame::ReconcileWithUIPreferences()
 {
-	mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
-	mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
+    mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
+    mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
 }
