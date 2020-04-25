@@ -250,8 +250,8 @@ void Ship::Pull(
     // that keeps the system stable. This is the stiffness that generates a force such
     // that its integration in a simulation step (DT) produces a delta position
     // equal (and not greater) than the "spring"'s displacement itself.
-    // In a regime where the particle velocity is zeroed at every simulation,
-    // and thus it only exists during the N mechanical sub-iterations, the delta
+    // In a regime where the particle velocity is zeroed at every simulation - like we do
+    // here - and thus it only exists during the N mechanical sub-iterations, the delta
     // position after i mechanical sub-iterations of a force F is:
     //      Dp(i) = T(i) * F/m * dt^2
     // Where T(n) is the triangular coefficient, and dt is the sub-iteration delta-time
@@ -287,6 +287,20 @@ void Ship::Pull(
     //
 
     mPoints.SetVelocity(pointElementIndex, vec2f::zero());
+
+    ////////////////////////////////////////////////////////////
+
+    //
+    // Highlight element
+    //
+
+    // The "strength" of the highlight depends on the displacement magnitude,
+    // going asymptotically to 1.0 for length = 200
+    float const highlightStrength = 1.0f - std::exp(-displacementLength / 100.0f);
+
+    mPoints.StartCircleHighlight(
+        pointElementIndex,
+        Mix(vec3f(0.0f, 0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), highlightStrength));
 }
 
 void Ship::DestroyAt(

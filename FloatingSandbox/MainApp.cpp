@@ -20,12 +20,6 @@
 #include <optional>
 #include <string>
 
-#ifdef _MSC_VER
-// Nothing to do here - we use RC files
-#else
-#include "Resources/ShipBBB.xpm"
-#endif
-
 #ifdef _DEBUG
 #ifdef _MSC_VER
 #include <crtdbg.h>
@@ -128,9 +122,7 @@ bool MainApp::OnInit()
 
     try
     {
-        mMainFrame = new MainFrame(
-            this,
-            wxICON(BBB_SHIP_ICON));
+        mMainFrame = new MainFrame(this);
 
         SetTopWindow(mMainFrame);
     }

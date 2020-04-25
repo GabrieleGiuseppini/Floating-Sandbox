@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
 #include <GameCore/PrecalculatedFunction.h>
 
@@ -1419,25 +1420,53 @@ void Points::UpdateEphemeralParticles(
 
 void Points::UpdateHighlights(GameWallClock::float_time currentWallClockTime)
 {
-    auto constexpr HighlightLifetime = 1s;
+    //
+    // ElectricalElement highlights
+    //
 
-    for (auto it = mHighlightedPoints.begin(); it != mHighlightedPoints.end(); /* incremented in loop */)
+    auto constexpr ElectricalElementHighlightLifetime = 1s;
+
+    for (auto it = mElectricalElementHighlightedPoints.begin(); it != mElectricalElementHighlightedPoints.end(); /* incremented in loop */)
     {
         // Calculate progress
         float const progress = GameWallClock::Progress(
             currentWallClockTime,
             it->StartTime,
-            HighlightLifetime);
+            ElectricalElementHighlightLifetime);
 
         if (progress > 1.0f)
         {
             // Expire
-            it = mHighlightedPoints.erase(it);
+            it = mElectricalElementHighlightedPoints.erase(it);
         }
         else
         {
             // Update
             it->Progress = progress;
+            ++it;
+        }
+    }
+
+    //
+    // Circle
+    //
+
+    for (auto it = mCircleHighlightedPoints.begin(); it != mCircleHighlightedPoints.end(); /* incremented in loop */)
+    {
+        // Expected sequence when not renewed:
+        // - Highlight created: SimulationStepsExperienced = 0
+        // - Points::Update: SimulationStepsExperienced = 1
+        // - Render
+        // - Points::Update: SimulationStepsExperienced = 2 => removed
+        // - Render (none)
+        ++it->SimulationStepsExperienced;
+        if (++it->SimulationStepsExperienced > 1)
+        {
+            // Expire
+            it = mCircleHighlightedPoints.erase(it);
+        }
+        else
+        {
             ++it;
         }
     }
@@ -1795,15 +1824,28 @@ void Points::UploadHighlights(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    for (auto const & h : mHighlightedPoints)
+    for (auto const & h : mElectricalElementHighlightedPoints)
     {
         renderContext.UploadShipHighlight(
             shipId,
+            HighlightMode::ElectricalElement,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
             5.0f, // HalfQuadSize, magic number
             h.HighlightColor,
             h.Progress);
+    }
+
+    for (auto const & h : mCircleHighlightedPoints)
+    {
+        renderContext.UploadShipHighlight(
+            shipId,
+            HighlightMode::Circle,
+            GetPlaneId(h.PointIndex),
+            GetPosition(h.PointIndex),
+            4.0f, // HalfQuadSize, magic number
+            h.HighlightColor,
+            1.0f);
     }
 }
 

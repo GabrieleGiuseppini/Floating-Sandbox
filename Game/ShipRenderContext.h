@@ -751,6 +751,7 @@ public:
     //
 
     inline void UploadHighlight(
+        HighlightMode highlightMode,
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
@@ -767,10 +768,12 @@ public:
         float const topY = centerPosition.y - halfQuadSize;
         float const bottomY = centerPosition.y + halfQuadSize;
 
+        auto & highlightVertexBuffer = mHighlightVertexBuffers[static_cast<size_t>(highlightMode)];
+
         // Triangle 1
 
         // Top-left
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             vec2f(-1.0f, 1.0f),
             vColor,
@@ -778,7 +781,7 @@ public:
             fPlaneId);
 
         // Top-Right
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(1.0f, 1.0f),
             vColor,
@@ -786,7 +789,7 @@ public:
             fPlaneId);
 
         // Bottom-left
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(-1.0f, -1.0f),
             vColor,
@@ -796,7 +799,7 @@ public:
         // Triangle 2
 
         // Top-Right
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(1.0f, 1.0f),
             vColor,
@@ -804,7 +807,7 @@ public:
             fPlaneId);
 
         // Bottom-left
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(-1.0f, -1.0f),
             vColor,
@@ -812,7 +815,7 @@ public:
             fPlaneId);
 
         // Bottom-right
-        mHighlightVertexBuffer.emplace_back(
+        highlightVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             vec2f(1.0f, -1.0f),
             vColor,
@@ -1180,7 +1183,7 @@ private:
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
 
-    std::vector<HighlightVertex> mHighlightVertexBuffer;
+    std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightMode::_Last) + 1> mHighlightVertexBuffers;
     GameOpenGLVBO mHighlightVertexVBO;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;

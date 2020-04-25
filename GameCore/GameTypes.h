@@ -334,6 +334,17 @@ using Octant = std::int32_t;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * The different visual ways in which we render highlights.
+ */
+enum class HighlightMode : size_t
+{
+    Circle = 0,
+    ElectricalElement,
+
+    _Last = ElectricalElement
+};
+
+/*
  * The different ways in which ships may be rendered.
  */
 enum class ShipRenderMode

@@ -462,16 +462,16 @@ private:
     };
 
     /*
-     * A point being highlighted, half-way through its highlight state machine.
+     * A point being highlighted in the "ElectricalElement" mode, half-way through its highlight state machine.
      */
-    struct HighlightState
+    struct ElectricalElementHighlightState
     {
         ElementIndex PointIndex;
         rgbColor HighlightColor;
         GameWallClock::float_time StartTime;
         float Progress;
 
-        HighlightState(
+        ElectricalElementHighlightState(
             ElementIndex pointIndex,
             rgbColor const & highlightColor,
             GameWallClock::float_time startTime)
@@ -488,6 +488,30 @@ private:
             HighlightColor = highlightColor;
             StartTime = startTime;
             Progress = 0.0f;
+        }
+    };
+
+    /*
+     * A point being highlighted in the "Circle" mode.
+     */
+    struct CircleHighlightState
+    {
+        ElementIndex PointIndex;
+        rgbColor HighlightColor;
+        size_t SimulationStepsExperienced;
+
+        CircleHighlightState(
+            ElementIndex pointIndex,
+            rgbColor const & highlightColor)
+            : PointIndex(pointIndex)
+            , HighlightColor(highlightColor)
+            , SimulationStepsExperienced(0)
+        {}
+
+        void Reset(rgbColor const & highlightColor)
+        {
+            HighlightColor = highlightColor;
+            SimulationStepsExperienced = 0;
         }
     };
 
@@ -564,8 +588,9 @@ public:
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, shipPointCount, SequenceNumber())
         // Repair
         , mRepairStateBuffer(mBufferElementCount, shipPointCount, RepairState())
-        // Highlight
-        , mHighlightedPoints()
+        // Highlights
+        , mElectricalElementHighlightedPoints()
+        , mCircleHighlightedPoints()
         // Randomness
         , mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
@@ -1571,21 +1596,21 @@ public:
     // Highlights
     //
 
-    void StartPointHighlight(
+    void StartElectricalElementHighlight(
         ElementIndex pointElementIndex,
         rgbColor highlightColor,
         GameWallClock::float_time currentWallClockTime)
     {
         // See if we're already highlighting this point
         auto pointIt = std::find_if(
-            mHighlightedPoints.begin(),
-            mHighlightedPoints.end(),
+            mElectricalElementHighlightedPoints.begin(),
+            mElectricalElementHighlightedPoints.end(),
             [&pointElementIndex](auto const & hs)
             {
                 return hs.PointIndex == pointElementIndex;
             });
 
-        if (pointIt != mHighlightedPoints.end())
+        if (pointIt != mElectricalElementHighlightedPoints.end())
         {
             // Restart it
             pointIt->Reset(highlightColor, currentWallClockTime);
@@ -1593,10 +1618,37 @@ public:
         else
         {
             // Start new highlight altogether
-            mHighlightedPoints.emplace_back(
+            mElectricalElementHighlightedPoints.emplace_back(
                 pointElementIndex,
                 highlightColor,
                 currentWallClockTime);
+        }
+    }
+
+    void StartCircleHighlight(
+        ElementIndex pointElementIndex,
+        rgbColor highlightColor)
+    {
+        // See if we're already highlighting this point
+        auto pointIt = std::find_if(
+            mCircleHighlightedPoints.begin(),
+            mCircleHighlightedPoints.end(),
+            [&pointElementIndex](auto const & hs)
+            {
+                return hs.PointIndex == pointElementIndex;
+            });
+
+        if (pointIt != mCircleHighlightedPoints.end())
+        {
+            // Restart it
+            pointIt->Reset(highlightColor);
+        }
+        else
+        {
+            // Start new highlight altogether
+            mCircleHighlightedPoints.emplace_back(
+                pointElementIndex,
+                highlightColor);
         }
     }
 
@@ -1824,10 +1876,11 @@ private:
     Buffer<RepairState> mRepairStateBuffer;
 
     //
-    // Highlight state
+    // Highlights
     //
 
-    std::vector<HighlightState> mHighlightedPoints;
+    std::vector<ElectricalElementHighlightState> mElectricalElementHighlightedPoints;
+    std::vector<CircleHighlightState> mCircleHighlightedPoints;
 
     //
     // Randomness

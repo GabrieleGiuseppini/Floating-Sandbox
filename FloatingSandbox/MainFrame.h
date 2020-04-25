@@ -55,9 +55,7 @@ public:
 
 public:
 
-    MainFrame(
-        wxApp * mainApp,
-        wxIcon const & icon);
+    MainFrame(wxApp * mainApp);
 
     virtual ~MainFrame();
 

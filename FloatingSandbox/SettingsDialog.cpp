@@ -23,6 +23,12 @@
 #include <algorithm>
 #include <stdexcept>
 
+#ifdef _MSC_VER
+ // Nothing to do here - we use RC files
+#else
+#include "Resources/ShipBBB.xpm"
+#endif
+
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
 

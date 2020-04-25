@@ -39,6 +39,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanTexture;
 	else if (lstr == "rain")
 		return ProgramType::Rain;
+    else if (lstr == "ship_circle_highlights")
+        return ProgramType::ShipCircleHighlights;
+    else if (lstr == "ship_electrical_element_highlights")
+        return ProgramType::ShipElectricalElementHighlights;
     else if (lstr == "ship_explosions")
         return ProgramType::ShipExplosions;
     else if (lstr == "ship_flames_background_1")
@@ -55,8 +59,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFlamesForeground3;
     else if (lstr == "ship_generic_mipmapped_textures")
         return ProgramType::ShipGenericMipMappedTextures;
-    else if (lstr == "ship_highlights")
-        return ProgramType::ShipHighlights;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
     else if (lstr == "ship_points_color_with_temperature")
@@ -127,6 +129,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanTexture";
 	case ProgramType::Rain:
 		return "Rain";
+    case ProgramType::ShipCircleHighlights:
+        return "ShipCircleHighlights";
+    case ProgramType::ShipElectricalElementHighlights:
+        return "ShipElectricalElementHighlights";
     case ProgramType::ShipExplosions:
         return "ShipExplosions";
     case ProgramType::ShipFlamesBackground1:
@@ -143,8 +149,6 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFlamesForeground3";
     case ProgramType::ShipGenericMipMappedTextures:
         return "ShipGenericMipMappedTextures";
-    case ProgramType::ShipHighlights:
-        return "ShipHighlights";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
     case ProgramType::ShipPointsColorWithTemperature:

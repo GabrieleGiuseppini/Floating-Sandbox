@@ -37,6 +37,12 @@
 #include <sstream>
 #include <thread>
 
+#ifdef _MSC_VER
+ // Nothing to do here - we use RC files
+#else
+#include "Resources/ShipBBB.xpm"
+#endif
+
 long const ID_MAIN_CANVAS = wxNewId();
 
 long const ID_LOAD_SHIP_MENUITEM = wxNewId();
@@ -104,9 +110,7 @@ long const ID_GAME_TIMER = wxNewId();
 long const ID_LOW_FREQUENCY_TIMER = wxNewId();
 long const ID_CHECK_UPDATES_TIMER = wxNewId();
 
-MainFrame::MainFrame(
-    wxApp * mainApp,
-    wxIcon const & icon)
+MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
     , mResourceLocator(new ResourceLocator())
     , mGameController()
@@ -133,7 +137,7 @@ MainFrame::MainFrame(
         wxDEFAULT_FRAME_STYLE,
         _T("Main Frame"));
 
-    SetIcon(icon);
+    SetIcon(wxICON(BBB_SHIP_ICON));
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
     Centre();

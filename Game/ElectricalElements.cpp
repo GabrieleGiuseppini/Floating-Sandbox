@@ -393,7 +393,7 @@ void ElectricalElements::HighlightElectricalElement(
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].Engine.LastHighlightedRpm != 0.0f? EngineOnHighlightColor : EngineOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -403,7 +403,7 @@ void ElectricalElements::HighlightElectricalElement(
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].Generator.IsProducingCurrent ? PowerOnHighlightColor : PowerOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -414,7 +414,7 @@ void ElectricalElements::HighlightElectricalElement(
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mConductivityBuffer[elementIndex].ConductsElectricity ? SwitchOnHighlightColor : SwitchOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -424,7 +424,7 @@ void ElectricalElements::HighlightElectricalElement(
 
         case ElectricalMaterial::ElectricalElementType::PowerMonitor:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].PowerMonitor.IsPowered ? PowerOnHighlightColor : PowerOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -434,7 +434,7 @@ void ElectricalElements::HighlightElectricalElement(
 
         case ElectricalMaterial::ElectricalElementType::ShipSound:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].ShipSound.IsPlaying  ? SoundOnHighlightColor : SoundOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -444,7 +444,7 @@ void ElectricalElements::HighlightElectricalElement(
 
         case ElectricalMaterial::ElectricalElementType::WaterPump:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].WaterPump.TargetNormalizedForce != 0.0f ? WaterPumpOnHighlightColor : WaterPumpOffHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());
@@ -454,7 +454,7 @@ void ElectricalElements::HighlightElectricalElement(
 
         case ElectricalMaterial::ElectricalElementType::WatertightDoor:
         {
-            points.StartPointHighlight(
+            points.StartElectricalElementHighlight(
                 GetPointIndex(elementIndex),
                 mElementStateBuffer[elementIndex].WatertightDoor.IsOpen() ? WatertightDoorOpenHighlightColor : WatertightDoorClosedHighlightColor,
                 GameWallClock::GetInstance().NowAsFloat());

@@ -83,7 +83,7 @@ ShipRenderContext::ShipRenderContext(
     , mGenericMipMappedTextureVBO()
     , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
     //
-    , mHighlightVertexBuffer()
+    , mHighlightVertexBuffers()
     , mHighlightVertexVBO()
     //
     , mVectorArrowVertexBuffer()
@@ -189,7 +189,6 @@ ShipRenderContext::ShipRenderContext(
     glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
     mHighlightVertexVBO = vbos[9];
-    mHighlightVertexBuffer.reserve(16); // Arbitrary
 
     mVectorArrowVBO = vbos[10];
 
@@ -776,8 +775,12 @@ void ShipRenderContext::UpdateOrthoMatrices()
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipHighlights>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipHighlights, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipElectricalElementHighlights>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipElectricalElementHighlights, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipCircleHighlights>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipCircleHighlights, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -1148,7 +1151,8 @@ void ShipRenderContext::RenderStart(PlaneId maxMaxPlaneId)
     mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
     mGenericMipMappedTextureTotalPlaneVertexCount = 0;
 
-    mHighlightVertexBuffer.clear();
+    for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
+        mHighlightVertexBuffers[i].clear();
 
 
     //
@@ -2174,38 +2178,60 @@ void ShipRenderContext::RenderExplosions()
 
 void ShipRenderContext::RenderHighlights()
 {
-    if (!mHighlightVertexBuffer.empty())
+    for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
     {
-        //
-        // Upload buffer
-        //
+        if (!mHighlightVertexBuffers[i].empty())
+        {
+            //
+            // Upload buffer
+            //
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
 
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(HighlightVertex) * mHighlightVertexBuffer.size(),
-            mHighlightVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
+            glBufferData(GL_ARRAY_BUFFER,
+                sizeof(HighlightVertex) * mHighlightVertexBuffers[i].size(),
+                mHighlightVertexBuffers[i].data(),
+                GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-        //
-        // Render
-        //
+            //
+            // Render
+            //
 
-        glBindVertexArray(*mHighlightVAO);
+            glBindVertexArray(*mHighlightVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::ShipHighlights>();
+            switch (static_cast<HighlightMode>(i))
+            {
+                case HighlightMode::Circle:
+                {
+                    mShaderManager.ActivateProgram<ProgramType::ShipCircleHighlights>();
+                    break;
+                }
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
+                case HighlightMode::ElectricalElement:
+                {
+                    mShaderManager.ActivateProgram<ProgramType::ShipElectricalElementHighlights>();
+                    break;
+                }
 
-        assert(0 == (mHighlightVertexBuffer.size() % 6));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHighlightVertexBuffer.size()));
+                default:
+                {
+                    assert(false);
+                    break;
+                }
+            }
 
-        glBindVertexArray(0);
+            if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+                glLineWidth(0.1f);
+
+            assert(0 == (mHighlightVertexBuffer.size() % 6));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHighlightVertexBuffers[i].size()));
+
+            glBindVertexArray(0);
+        }
     }
 }
 

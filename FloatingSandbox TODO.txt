@@ -386,25 +386,42 @@ Render:
 			+ Add ropes
 			+ Enlarge V water channels
 			+ changes.txt
+			- Final test
 
-		- Visual notification for Pinch tool: simply circle around point
-			- Managed by points, somehow within "highlight" framework:
-				- HightlightMode: enum at RenderContext
-				- ShipRenderContext stores vertices in different groups, depending on highlight mode
-				- ShipRenderContext::RenderHighlights() does all groups, each with own shader
+		= Visual notification for Pinch tool: simply circle around point
+			+ Managed by points, somehow within "highlight" framework:
+				+ HightlightMode: enum at RenderContext
+					+ Name of new one: Circle
+				+ ShipRenderContext stores vertices in different groups, depending on highlight mode
+				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
+					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
+					+ New shader name: "ShipCircleHighlights"
+			- Pinch tool: simply add to points
+			+ Points update
+			- Shader
 
+		- Commit & Merge
 		- Send for testing
+		- Bump-up version
 
 		- Auto-Texturizer
+			- New ShipTexturizer class, owned by GameController
+				- Created at GameController create time, and kept forever
+					- Maintains cache
+				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
+				- Also holds auto-texturization mode setting, see below
 			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
 			  texture; two modes:
 				- ~"From structure": builds texture using structural materials' RenderColor (as opposed to color key like now)
 				- ~"TODO": using bump maps
-			- Both implemented in ShipTexturizer class
+				- Setting storage is @ ShipTexturizer, brokered by GameController
+			- Both texturizations implemented in ShipTexturizer class
 				- Textures/ShipTexturization folder contains textures
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
-					- Material DB <-> actual textures check: done at TBD
+					- Material DB <-> actual textures check: done by GameController at its Create() time,
+					  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
+			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
 
 		- Take Mike's Lego Titanic when ready
 			- Or make ball of lego
