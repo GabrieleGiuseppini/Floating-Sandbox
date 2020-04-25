@@ -842,7 +842,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                     // When higher than watermark: conductivity state toggles to opposite than material's
                     // When lower than watermark: conductivity state toggles to same as material's
 
-                    float constexpr WaterLowWatermark = 0.15f;
+                    float constexpr WaterLowWatermark = 0.05f;
                     float constexpr WaterHighWatermark = 0.45f;
 
                     if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
@@ -1797,9 +1797,10 @@ void ElectricalElements::InternalSetSwitchState(
             ElectricalElementId(mShipId, elementIndex),
             switchState);
 
-        // Show notifications - for interactive switches only
+        // Show notifications - for some types only
         if (gameParameters.DoShowElectricalNotifications
-            && mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch)
+            && (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
+                || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch))
         {
             HighlightElectricalElement(elementIndex, points);
         }

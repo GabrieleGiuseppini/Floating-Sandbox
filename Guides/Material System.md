@@ -132,6 +132,7 @@ Here's an explanation of the elements:
    - "SmokeEmitter": emits smoke - ideal for funnels and engine exhaust pipes.
    - "WaterPump": when powered, takes water either in or out, depending on the nominal force of the pump.
    - "WaterSensingSwitch": a switch that toggles automatically when wet.
+   - "WatertightDoor": when powered, inverts the "hull-ness" of the underlying particle - i.e. it either allows water to flow through the particle, or prevents water from flowing through it.
 - _engine direction_: when the element is of the Engine type, describes the main axis of the engine thrust, in radians.
 - _engine power_: when the element is of the Engine type, describes the maximum engine power, in HP.
 - _engine responsiveness_: when the element is of the Engine type, describes how quickly the engine responds to throttle changes; between 0.0 (totally unresponsive) and 1.0 (immediate response).

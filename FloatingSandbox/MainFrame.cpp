@@ -330,11 +330,9 @@ MainFrame::MainFrame(
     mToolsMenu->Append(pinMenuItem);
     Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
 
-    /*
     wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles\tB"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(injectAirBubblesMenuItem);
     Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
-    */
 
     wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry\tF"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(floodHoseMenuItem);
@@ -611,18 +609,6 @@ bool MainFrame::ProcessKeyDown(
         LogMessage("@ ", worldCoords.toString(), ":");
 
         mGameController->QueryNearestPointAt(screenCoords);
-
-        return true;
-    }
-    else if (keyCode == 'B')
-    {
-        // Air Bubbles tool
-
-        assert(!!mToolController);
-        mToolController->SetTool(ToolType::InjectAirBubbles);
-
-        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
-        // around this, but this is an Easter Egg after all....
 
         return true;
     }

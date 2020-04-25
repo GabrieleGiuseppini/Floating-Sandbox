@@ -87,11 +87,12 @@ int DoAnalyzeShip(int argc, char ** argv)
     std::cout << std::fixed;
 
     std::cout << "  Total mass                   : " << analysisInfo.TotalMass << std::endl;
-    std::cout << "  Equivalent mass              : " << analysisInfo.MassPerPoint << std::endl;
-    std::cout << "  Equivalent air buoyant mass  : " << analysisInfo.AirBuoyantMassPerPoint << std::endl;
-    std::cout << "  Equivalent water buoyant mass: " << analysisInfo.WaterBuoyantMassPerPoint << std::endl;
-    std::cout << "  Center of mass               : " << analysisInfo.BaricentricX << ", " << analysisInfo.BaricentricY << std::endl;
-    std::cout << "  Center of water buoyant mass : " << analysisInfo.WaterBuoyantBaricentricX << ", " << analysisInfo.WaterBuoyantBaricentricY << std::endl;
+    std::cout << "  Equivalent mass              : " << analysisInfo.AverageMassPerPoint << std::endl;
+    std::cout << "  Equivalent air buoyant mass  : " << analysisInfo.AverageAirBuoyantMassPerPoint << " => R=" << (analysisInfo.AverageMassPerPoint - analysisInfo.AverageAirBuoyantMassPerPoint) << std::endl;
+    std::cout << "  Equivalent water buoyant mass: " << analysisInfo.AverageWaterBuoyantMassPerPoint << " => R=" << (analysisInfo.AverageMassPerPoint - analysisInfo.AverageWaterBuoyantMassPerPoint) << std::endl;
+    std::cout << "  Center of mass               : " << analysisInfo.CenterOfMass << std::endl;
+    std::cout << "  Center of buoyancy           : " << analysisInfo.CenterOfDisplacedDensity << std::endl;
+    std::cout << "  Momentum at Equilibrium      : " << analysisInfo.EquilibriumMomentum << std::endl;
 
     return 0;
 }

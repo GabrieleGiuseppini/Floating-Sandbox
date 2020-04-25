@@ -10,7 +10,6 @@
 #include <Game/MaterialDatabase.h>
 
 #include <GameCore/Colors.h>
-#include <GameCore/Vectors.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -34,66 +33,52 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     // Visit all points
     ShipAnalyzer::AnalysisInfo analysisInfo;
     float totalMass = 0.0f;
-    float airBuoyantMass = 0.0f;
-    float waterBuoyantMass = 0.0f;
+    float totalDisplacedDensity = 0.0f; // Assuming fully submersed
     float numPoints = 0.0f;
     for (int x = 0; x < image.Size.Width; ++x)
     {
-        float worldX = static_cast<float>(x) - halfWidth;
+        float const worldX = static_cast<float>(x) - halfWidth;
 
         // From bottom to top
         for (int y = 0; y < image.Size.Height; ++y)
         {
-            float worldY = static_cast<float>(y);
+            vec2f const worldPosition(worldX, static_cast<float>(y));
 
-            auto pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width);
-
-            StructuralMaterial const * structuralMaterial = materials.FindStructuralMaterial(image.Data[pixelIndex]);
+            auto const pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width);
+            StructuralMaterial const * const structuralMaterial = materials.FindStructuralMaterial(image.Data[pixelIndex]);
             if (nullptr != structuralMaterial)
             {
-                numPoints += 1.0f;
-
+                // Update total masses
                 totalMass += structuralMaterial->GetMass();
-
-                airBuoyantMass +=
-                    structuralMaterial->GetMass()
-                    - (structuralMaterial->BuoyancyVolumeFill * GameParameters::AirMass);
-
-                float const particleWaterBuoyantMass =
-                    structuralMaterial->GetMass()
-                    - (structuralMaterial->BuoyancyVolumeFill * GameParameters::WaterMass);
-
-                waterBuoyantMass += particleWaterBuoyantMass;
-
+                totalDisplacedDensity += structuralMaterial->BuoyancyVolumeFill;
 
                 // Update centers of mass
-                analysisInfo.BaricentricX += worldX * structuralMaterial->GetMass();
-                analysisInfo.BaricentricY += worldY * structuralMaterial->GetMass();
-                analysisInfo.WaterBuoyantBaricentricX += worldX * particleWaterBuoyantMass;
-                analysisInfo.WaterBuoyantBaricentricY += worldY * particleWaterBuoyantMass;
+                analysisInfo.CenterOfMass += worldPosition * structuralMaterial->GetMass();
+                analysisInfo.CenterOfDisplacedDensity += worldPosition * structuralMaterial->BuoyancyVolumeFill;
+
+                numPoints += 1.0f;
             }
         }
     }
 
     if (totalMass != 0.0f)
     {
-        analysisInfo.BaricentricX /= totalMass;
-        analysisInfo.BaricentricY /= totalMass;
-    }
+        analysisInfo.CenterOfMass /= totalMass;
+        analysisInfo.CenterOfDisplacedDensity /= totalDisplacedDensity;
 
-    if (waterBuoyantMass != 0.0f)
-    {
-        analysisInfo.WaterBuoyantBaricentricX /= waterBuoyantMass;
-        analysisInfo.WaterBuoyantBaricentricY /= waterBuoyantMass;
+        // (Xg - Xb) x (M * G0)
+        analysisInfo.EquilibriumMomentum =
+            (analysisInfo.CenterOfMass - analysisInfo.CenterOfDisplacedDensity)
+            .cross(GameParameters::GravityNormalized * totalMass);
     }
 
     analysisInfo.TotalMass = totalMass;
 
     if (numPoints != 0.0f)
     {
-        analysisInfo.MassPerPoint = totalMass / numPoints;
-        analysisInfo.AirBuoyantMassPerPoint = airBuoyantMass / numPoints;
-        analysisInfo.WaterBuoyantMassPerPoint = waterBuoyantMass / numPoints;
+        analysisInfo.AverageMassPerPoint = totalMass / numPoints;
+        analysisInfo.AverageAirBuoyantMassPerPoint = (totalDisplacedDensity * GameParameters::AirMass) / numPoints;
+        analysisInfo.AverageWaterBuoyantMassPerPoint = (totalDisplacedDensity * GameParameters::WaterMass) / numPoints;
     }
 
     return analysisInfo;

@@ -4,6 +4,8 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
+#include <GameCore/Vectors.h>
+
 #include <string>
 
 class ShipAnalyzer
@@ -14,24 +16,22 @@ public:
     {
         float TotalMass;
 
-        float MassPerPoint;
-        float AirBuoyantMassPerPoint;
-        float WaterBuoyantMassPerPoint;
+        float AverageMassPerPoint;
+        float AverageAirBuoyantMassPerPoint;
+        float AverageWaterBuoyantMassPerPoint;
 
-        float BaricentricX;
-        float BaricentricY;
-        float WaterBuoyantBaricentricX;
-        float WaterBuoyantBaricentricY;
+        vec2f CenterOfMass;
+        vec2f CenterOfDisplacedDensity; // Assuming fully submerged
+        float EquilibriumMomentum; // Assuming fully submerged, in equilibrium
 
         AnalysisInfo()
             : TotalMass(0.0f)
-            , MassPerPoint(0.0f)
-            , AirBuoyantMassPerPoint(0.0f)
-            , WaterBuoyantMassPerPoint(0.0f)
-            , BaricentricX(0.0f)
-            , BaricentricY(0.0f)
-            , WaterBuoyantBaricentricX(0.0f)
-            , WaterBuoyantBaricentricY(0.0f)
+            , AverageMassPerPoint(0.0f)
+            , AverageAirBuoyantMassPerPoint(0.0f)
+            , AverageWaterBuoyantMassPerPoint(0.0f)
+            , CenterOfMass(vec2f::zero())
+            , CenterOfDisplacedDensity(vec2f::zero())
+            , EquilibriumMomentum(0.0f)
         {}
     };
 
