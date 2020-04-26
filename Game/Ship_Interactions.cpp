@@ -296,11 +296,11 @@ void Ship::Pull(
 
     // The "strength" of the highlight depends on the displacement magnitude,
     // going asymptotically to 1.0 for length = 200
-    float const highlightStrength = 1.0f - std::exp(-displacementLength / 100.0f);
+    float const highlightStrength = 1.0f - std::exp(-displacementLength / 10.0f);
 
     mPoints.StartCircleHighlight(
         pointElementIndex,
-        Mix(vec3f(0.0f, 0.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), highlightStrength));
+        Mix(vec3f(0.0f, 0.0f, 0.0f), vec3f(1.0f, 0.1f, 0.1f), highlightStrength));
 }
 
 void Ship::DestroyAt(

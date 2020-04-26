@@ -2227,7 +2227,7 @@ void ShipRenderContext::RenderHighlights()
             if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
                 glLineWidth(0.1f);
 
-            assert(0 == (mHighlightVertexBuffer.size() % 6));
+            assert(0 == (mHighlightVertexBuffers[i].size() % 6));
             glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHighlightVertexBuffers[i].size()));
 
             glBindVertexArray(0);

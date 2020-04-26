@@ -1459,8 +1459,8 @@ void Points::UpdateHighlights(GameWallClock::float_time currentWallClockTime)
         // - Render
         // - Points::Update: SimulationStepsExperienced = 2 => removed
         // - Render (none)
-        ++it->SimulationStepsExperienced;
-        if (++it->SimulationStepsExperienced > 1)
+        ++(it->SimulationStepsExperienced);
+        if (it->SimulationStepsExperienced > 1)
         {
             // Expire
             it = mCircleHighlightedPoints.erase(it);

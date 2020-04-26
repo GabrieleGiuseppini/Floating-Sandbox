@@ -576,45 +576,57 @@ bool MainFrame::ProcessKeyDown(
     int keyCode,
     int keyModifiers)
 {
-    assert(!!mUIPreferencesManager);
-    auto const panIncrement = mUIPreferencesManager->GetPanIncrement();
-
     if (keyCode == WXK_LEFT)
     {
-        // Left
-        mGameController->Pan(vec2f(-panIncrement, 0.0f));
-        return true;
+        if (!!mGameController && !!mUIPreferencesManager)
+        {
+            // Left
+            mGameController->Pan(vec2f(-mUIPreferencesManager->GetPanIncrement(), 0.0f));
+            return true;
+        }
     }
     else if (keyCode == WXK_UP)
     {
-        // Up
-        mGameController->Pan(vec2f(00.0f, -panIncrement));
-        return true;
+        if (!!mGameController && !!mUIPreferencesManager)
+        {
+            // Up
+            mGameController->Pan(vec2f(00.0f, -mUIPreferencesManager->GetPanIncrement()));
+            return true;
+        }
     }
     else if (keyCode == WXK_RIGHT)
     {
-        // Right
-        mGameController->Pan(vec2f(panIncrement, 0.0f));
-        return true;
+        if (!!mGameController && !!mUIPreferencesManager)
+        {
+            // Right
+            mGameController->Pan(vec2f(mUIPreferencesManager->GetPanIncrement(), 0.0f));
+            return true;
+        }
     }
     else if (keyCode == WXK_DOWN)
     {
-        // Down
-        mGameController->Pan(vec2f(0.0f, panIncrement));
-        return true;
+        if (!!mGameController && !!mUIPreferencesManager)
+        {
+            // Down
+            mGameController->Pan(vec2f(0.0f, mUIPreferencesManager->GetPanIncrement()));
+            return true;
+        }
     }
     else if (keyCode == '/')
     {
-        // Query
+        if (!!mGameController && !!mToolController)
+        {
+            // Query
 
-        vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
-        vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
+            vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
+            vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
-        LogMessage("@ ", worldCoords.toString(), ":");
+            LogMessage("@ ", worldCoords.toString(), ":");
 
-        mGameController->QueryNearestPointAt(screenCoords);
+            mGameController->QueryNearestPointAt(screenCoords);
 
-        return true;
+            return true;
+        }
     }
     else
     {

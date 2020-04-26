@@ -344,6 +344,17 @@ Render:
 			+ Close ticket then
 		+ Secret typing state machine
 		+ Flood doors (*)
+		+ Visual notification for Pinch tool: simply circle around point
+			+ Managed by points, somehow within "highlight" framework:
+				+ HightlightMode: enum at RenderContext
+					+ Name of new one: Circle
+				+ ShipRenderContext stores vertices in different groups, depending on highlight mode
+				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
+					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
+					+ New shader name: "ShipCircleHighlights"
+			+ Pinch tool: simply add to points
+			+ Points update
+			+ Shader
 
 
 		= Mouse wheel issue:
@@ -357,19 +368,17 @@ Render:
 				- Send him zip
 				- Bump up version
 			- Respond to other guy (f1lterit?) with Poofy's outcome
-		= DioxCode says people lose sound
+		+ DioxCode says people lose sound
 			+ Asked for people/repro steps
-		= Try Pandadude's ships and get back to him
-			- Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
-			- Draco: same as Oceanic III, but weight seems overall better
-			- Olympic: weight is good; masts same as above; a bit more rigid
+		+ Try Pandadude's ships and get back to him
+			+ Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
+			+ Draco: same as Oceanic III, but weight seems overall better
+			+ Olympic: weight is good; masts same as above; a bit more rigid
 		= Try _Astyuu_'s ships
-			- Ask: 
-				- IJN Akitsu Maru, reordering panel
+			+ Asked
 		+ Test Unversinkbar and see if it could come back
 		- Respond to:
 			- https://gamejolt.com/x/permalink/comment/4142357
-			- https://gamejolt.com/x/permalink/comment/4138831
 
 		= Retrofit ships:
 			+ SS Californian
@@ -388,23 +397,17 @@ Render:
 			+ changes.txt
 			- Final test
 
-		= Visual notification for Pinch tool: simply circle around point
-			+ Managed by points, somehow within "highlight" framework:
-				+ HightlightMode: enum at RenderContext
-					+ Name of new one: Circle
-				+ ShipRenderContext stores vertices in different groups, depending on highlight mode
-				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
-					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
-					+ New shader name: "ShipCircleHighlights"
-			+ Pinch tool: simply add to points
-			+ Points update
-			- Shader
-
+		= Try new Hesleden
+			- Ask him whistle and horn
+			- changes.txt
 		- Try TimCan's submarine claxon
+			- changes.txt
 
 		- Commit & Merge
 		- Send for testing
 		- Bump-up version
+
+		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 
 		- Auto-Texturizer
 			- New ShipTexturizer class, owned by GameController
