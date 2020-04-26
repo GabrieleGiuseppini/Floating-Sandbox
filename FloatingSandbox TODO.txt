@@ -355,40 +355,35 @@ Render:
 			+ Pinch tool: simply add to points
 			+ Points update
 			+ Shader
-
-
-		= Mouse wheel issue:
+		+ Mouse wheel issue:
 			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
 			+ Repro on my box: only after clicking on switchboard
 			+ Test wheel at LoggingDialog, LoadShipDialog
 			+ Fix with focus
 			+ Test that normal wheel in-game works
 			+ Test wheel at LoggingDialog, LoadShipDialog
-			- Poofy1932#9116
-				- Send him zip
-				- Bump up version
-			- Respond to other guy (f1lterit?) with Poofy's outcome
-		+ DioxCode says people lose sound
-			+ Asked for people/repro steps
-		+ Try Pandadude's ships and get back to him
-			+ Oceanic III: good: rigidity, sinking dynamics; bad: a bit too heavy, center of mass not centered, it's bent towards the stern
-			+ Draco: same as Oceanic III, but weight seems overall better
-			+ Olympic: weight is good; masts same as above; a bit more rigid
-		= Try _Astyuu_'s ships
-			+ Asked
-		+ Test Unversinkbar and see if it could come back
-		- Respond to:
-			- https://gamejolt.com/x/permalink/comment/4142357
-
-		= Retrofit ships:
+		+ Retrofit ships:
 			+ SS Californian
 				+ Nuke one "w/lights"?
-			- Titanic Interior
-				- Ask Mike
 			+ Britannic
 				+ changes.txt
 			+ Goodyear
 			+ Hindenburg
+		+ See if may raise max # of explosions
+		+ Lower volume of engines
+		+ Try _Astyuu_'s ships
+			+ Said yes
+			+ Try new pack to see if he's fixed the ordering of the electrical panel on the IJN Akitsu Maru
+			+ Take latest IJN Akitsu Maru
+			+ changes.txt
+		+ Try new Hesleden
+			+ Ask him whistle and horn
+			+ Try to rewire
+			+ changes.txt
+			+ Take it
+
+		- Respond to:
+			- https://gamejolt.com/x/permalink/comment/4142357
 
 		= Do "Unsinkable" ship
 			+ Use texture from my own
@@ -396,12 +391,15 @@ Render:
 			+ Enlarge V water channels
 			+ changes.txt
 			- Final test
-
-		= Try new Hesleden
-			- Ask him whistle and horn
+		
+		= Try Flugzeugdampfer_I
+			= Ask for an update, with nicer panel and more powerful engine
 			- changes.txt
+
 		- Try TimCan's submarine claxon
 			- changes.txt
+
+		
 
 		- Commit & Merge
 		- Send for testing

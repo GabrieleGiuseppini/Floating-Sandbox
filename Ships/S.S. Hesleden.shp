@@ -1,8 +1,25 @@
 {
 	"structure_image":"ss_hesleden_structure.png.dat",
 	"texture_image":"ss_hesleden_texture.png.dat",
-	"offset":{"x":0.0, "y":-9.0},
+	"electrical_image" : "ss_hesleden_electrical.png.dat",
+	"offset":{"x":0.0, "y":-18.0},
 	"ship_name":"S.S. Hesleden",
 	"created_by":"John Smith",
-	"year_built":"2022"
+	"year_built":"2022",
+		"description":
+		"This is the S.S. Hesleden. To properly use this ship, follow these intructions:<br/>Go to 'Options' -> 'Settings' -> under the 'Mechanics, Fluids, and Lights' tab -> 'Simulation Quality' and set it at 2. Next, look for 'Luminance Adjust' and set it to 2 as well, then look for 'Water Craziness' and set it to 0. After that, look under the 'Rendering' tab, then look for 'Water Level of Detail' and set it to 1. Now you should be good to go! So enjoy!",
+	"electrical_panel":{
+		"5": {"panel_x":-5, "panel_y":0, "label":"Engine #1 Controller" },
+		"20": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"40": {"panel_x":-3, "panel_y":0, "label":"Engine #2", "is_hidden": true },
+		"22": {"panel_x":-2, "panel_y":0, "label":"Engine #3", "is_hidden": true },
+		"8": {"panel_x":-1, "panel_y":0, "label":"Engine #2 Controller" },
+		"30": {"panel_x":0, "panel_y":0, "label":"Engine #4" },
+		"50": {"panel_x":1, "panel_y":0, "label":"Engine #5", "is_hidden": true },
+		"33": {"panel_x":2, "panel_y":0, "label":"Engine #6", "is_hidden": true },
+		"1": {"panel_x":3, "panel_y":0, "label":"Horn" },
+		"6": {"panel_x":4, "panel_y":0, "label":"Whistle" },
+		"14": {"panel_x":5, "panel_y":0, "label":"Forward Lights" },
+		"13": {"panel_x":6, "panel_y":0, "label":"Aft Lights" }
+		}
 }

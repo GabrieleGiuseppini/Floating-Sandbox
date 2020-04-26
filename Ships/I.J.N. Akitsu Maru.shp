@@ -1,0 +1,25 @@
+{
+	"structure_image":"ijn_akitsu_maru_structure.png.dat",
+	"electrical_image":"ijn_akitsu_maru_electrical.png.dat",
+	"texture_image":"ijn_akitsu_maru_texture.png.dat",
+	"offset":{"x":0.0, "y":-5.0},
+	"ship_name":"I.J.N. Akitsu Maru",
+	"year_built":"1942",
+	"created_by":"_ASTYuu_",
+	"description":
+		"Akitsu Maru was a Japanese landing craft depot ship and escort aircraft carrier operated by the Imperial Japanese Army (IJA). In some sources Akitsu Maru and her sister ship Nigitsu Maru are also considered to be the first amphibious assault ships.<br/><br/>Structure and texture made by _ASTYuu_.",
+	"electrical_panel":{
+
+		"1": {"panel_x":-3, "panel_y":0, "label":"Boiler 1" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Boiler 2" },
+		"3": {"panel_x":-1, "panel_y":0, "label":"Boiler 3" },
+		"4": {"panel_x":-0, "panel_y":0, "label":"Boiler 4" },
+		"7": {"panel_x":2, "panel_y":0, "label":"Engine 1" },
+		"8": {"panel_x":3, "panel_y":0, "label":"Engine 2" },
+		"6": {"panel_x":6, "panel_y":0, "label":"Engine 2 RPM" },
+		"5": {"panel_x":5, "panel_y":0, "label":"Engine 1 RPM" },
+		"45": {"panel_x":-5, "panel_y":0, "label":"Horn" },
+		"9": {"panel_x":-8, "panel_y":0, "label":"Lights Aft" },
+		"10": {"panel_x":-7, "panel_y":0, "label":"Lights Bow" }
+	}
+}

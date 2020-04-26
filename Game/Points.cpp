@@ -847,7 +847,9 @@ void Points::UpdateCombustionLowFrequency(
 
     if (!mCombustionExplosionCandidates.empty())
     {
-        size_t const maxExplosionPoints = std::min(size_t(6), mCombustionExplosionCandidates.size());
+        size_t const maxExplosionPoints = std::min(
+            size_t(10), // Magic number
+            mCombustionExplosionCandidates.size());
 
         // Sort top N candidates by ignition temperature delta
         std::nth_element(
