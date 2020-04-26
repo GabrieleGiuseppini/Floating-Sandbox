@@ -396,9 +396,11 @@ Render:
 				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
 					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
 					+ New shader name: "ShipCircleHighlights"
-			- Pinch tool: simply add to points
+			+ Pinch tool: simply add to points
 			+ Points update
 			- Shader
+
+		- Try TimCan's submarine claxon
 
 		- Commit & Merge
 		- Send for testing
