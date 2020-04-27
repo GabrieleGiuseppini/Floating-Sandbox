@@ -153,6 +153,7 @@ Here's an explanation of the elements:
 - _ship sound type_: when the element is of the ShipSound type, describes the type of sound that is played when the element is activated. Valid values are:
    - "Bell1", "Bell2": alarm bell sounds.
    - "Horn1", "Horn2", "Horn3": steam horn sounds.
+   - "Klaxon1": klaxon sounds (submarine alarm).
 - _wet failure rate_: the average number of lamps of this material that will fail in a minute when wet.
    - For example, 2.0 means that a wet lamp will most likely turn off after 30 seconds of becoming wet.
 - _water pump nominal force_: when the element is of the WaterPump type, describes the force with which the pump takes water in (when positive) or out (when negative).

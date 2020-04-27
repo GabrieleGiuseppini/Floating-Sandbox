@@ -205,7 +205,8 @@ public:
         Bell2,
         Horn1,
         Horn2,
-        Horn3
+        Horn3,
+        Klaxon1
     };
 
 public:

@@ -718,6 +718,22 @@
         }
     },
 
+    {
+        "color_key": "#40B000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Klaxon 1", 
+	"ship_sound_type": "Klaxon1",
+        "template": {
+            "column": 5, 
+            "row": "15|Klaxon"
+        }
+    },
 
 
     {

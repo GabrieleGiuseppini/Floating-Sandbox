@@ -1,8 +1,29 @@
 {
 	"structure_image":"red_october_structure.png.dat",
+	"electrical_image":"red_october_electrical.png.dat",
 	"texture_image":"red_october_texture.png.dat",
-	"offset":{"x":0.0, "y":-8.0},
+	"offset":{"x":0.0, "y":-60.0},
 	"ship_name":"Red October",
 	"created_by":"Michael Bozarth",
-	"year_built":"1990"
+	"year_built":"1990",
+	"electrical_panel":{
+
+		"254": {"panel_x":-13, "panel_y":0, "label":"Main Power" },
+
+		"1": {"panel_x":-12, "panel_y":0, "label":"Aft/Fore" },
+		"0": {"panel_x":-12, "panel_y":0, "label":"Aft/Fore", "is_hidden":true },
+		"5": {"panel_x":-11, "panel_y":0, "label":"Up/Down Aft" },
+		"6": {"panel_x":-11, "panel_y":0, "label":"Up/Down Aft", "is_hidden":true },
+
+		"10": {"panel_x":-8, "panel_y":0, "label":"Headlights" },
+		"2": {"panel_x":-7, "panel_y":0, "label":"Flood pump", "is_hidden":true  },
+		"11": {"panel_x":-7, "panel_y":0, "label":"Flood pump" },
+		"3": {"panel_x":-6, "panel_y":0, "label":"Buoyancy pump", "is_hidden":true  },
+		"12": {"panel_x":-6, "panel_y":0, "label":"Buoyancy pump" },
+	
+		"7": {"panel_x":-2, "panel_y":0, "label":"Up/Down Fore" },
+		"8": {"panel_x":-2, "panel_y":0, "label":"Up/Down Fore", "is_hidden":true },
+
+		"4": {"panel_x":0, "panel_y":0, "label":"Diving Alarm" }
+	}
 }

@@ -323,6 +323,8 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::Horn2;
     else if (Utils::CaseInsensitiveEquals(str, "Horn3"))
         return ShipSoundElementType::Horn3;
+    else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
+        return ShipSoundElementType::Klaxon1;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
 }
