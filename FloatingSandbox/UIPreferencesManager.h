@@ -149,6 +149,16 @@ public:
         mShowShipDescriptionsAtShipLoad = value;
     }
 
+    bool GetDoAutoZoomAtShipLoad() const
+    {
+        return mGameController->GetDoAutoZoomOnShipLoad();
+    }
+
+    void SetDoAutoZoomAtShipLoad(bool value)
+    {
+        mGameController->SetDoAutoZoomOnShipLoad(value);
+    }
+
     bool GetDoShowTsunamiNotifications() const
     {
         return mGameController->GetDoShowTsunamiNotifications();
@@ -209,25 +219,25 @@ public:
         mPanIncrement = value;
     }
 
-	bool GetShowStatusText() const
-	{
-		return mGameController->GetShowStatusText();
-	}
+    bool GetShowStatusText() const
+    {
+        return mGameController->GetShowStatusText();
+    }
 
-	void SetShowStatusText(bool value)
-	{
-		mGameController->SetShowStatusText(value);
-	}
+    void SetShowStatusText(bool value)
+    {
+        mGameController->SetShowStatusText(value);
+    }
 
-	bool GetShowExtendedStatusText() const
-	{
-		return mGameController->GetShowExtendedStatusText();
-	}
+    bool GetShowExtendedStatusText() const
+    {
+        return mGameController->GetShowExtendedStatusText();
+    }
 
-	void SetShowExtendedStatusText(bool value)
-	{
-		mGameController->SetShowExtendedStatusText(value);
-	}
+    void SetShowExtendedStatusText(bool value)
+    {
+        mGameController->SetShowExtendedStatusText(value);
+    }
 
     //
     // Sounds

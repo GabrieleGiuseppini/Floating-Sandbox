@@ -23,7 +23,7 @@ public:
     PreferencesDialog(
         wxWindow * parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-		std::function<void()> onChangeCallback);
+        std::function<void()> onChangeCallback);
 
     virtual ~PreferencesDialog();
 
@@ -36,13 +36,14 @@ private:
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
-    void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
-    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
-	void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
-	void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
+    void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
+    void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
+    void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
@@ -73,13 +74,14 @@ private:
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
+    wxCheckBox * mAutoZoomAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
-    wxCheckBox * mShowElectricalNotificationsCheckBox;
-    wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
-	wxCheckBox * mShowStatusTextCheckBox;
-	wxCheckBox * mShowExtendedStatusTextCheckBox;
+    wxCheckBox * mShowStatusTextCheckBox;
+    wxCheckBox * mShowExtendedStatusTextCheckBox;
+    wxCheckBox * mShowElectricalNotificationsCheckBox;
+    wxCheckBox * mShowTsunamiNotificationsCheckBox;
 
     // Global Sound and Music
     wxCheckBox * mGlobalMuteCheckBox;
@@ -95,5 +97,5 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
-	std::function<void()> mOnChangeCallback;
+    std::function<void()> mOnChangeCallback;
 };

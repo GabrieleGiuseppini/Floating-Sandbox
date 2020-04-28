@@ -42,15 +42,17 @@ public:
 
     void Announce();
 
-    ShipId GetId() const { return mId; }
+    inline ShipId GetId() const { return mId; }
 
-    World const & GetParentWorld() const { return mParentWorld; }
-    World & GetParentWorld() { return mParentWorld; }
+    inline World const & GetParentWorld() const { return mParentWorld; }
+    inline World & GetParentWorld() { return mParentWorld; }
 
-    size_t GetPointCount() const { return mPoints.GetElementCount(); }
+    inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
 
-    auto const & GetPoints() const { return mPoints; }
-    auto & GetPoints() { return mPoints; }
+    inline vec2f GetSize() const { return mSize; }
+
+    inline auto const & GetPoints() const { return mPoints; }
+    inline auto & GetPoints() { return mPoints; }
 
     bool IsUnderwater(ElementIndex pointElementIndex) const;
 
@@ -486,6 +488,9 @@ private:
     MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+
+    // The (initial) world size of  the ship
+    vec2f const mSize;
 
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;

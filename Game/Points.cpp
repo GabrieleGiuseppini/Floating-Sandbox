@@ -25,7 +25,7 @@ void Points::Add(
     bool isStructurallyLeaking,
     vec4f const & color,
     vec2f const & textureCoordinates,
-	float randomNormalizedUniformFloat)
+    float randomNormalizedUniformFloat)
 {
     ElementIndex const pointIndex = static_cast<ElementIndex>(mIsDamagedBuffer.GetCurrentPopulatedSize());
 
@@ -93,19 +93,19 @@ void Points::Add(
     mConnectedTrianglesBuffer.emplace_back();
     mFactoryConnectedTrianglesBuffer.emplace_back();
 
-	// Connectivity
+    // Connectivity
     mConnectedComponentIdBuffer.emplace_back(NoneConnectedComponentId);
     mPlaneIdBuffer.emplace_back(NonePlaneId);
     mPlaneIdFloatBuffer.emplace_back(0.0f);
     mCurrentConnectivityVisitSequenceNumberBuffer.emplace_back();
 
-	// Repair state
+    // Repair state
     mRepairStateBuffer.emplace_back();
 
-	// Randomness
-	mRandomNormalizedUniformFloatBuffer.emplace_back(randomNormalizedUniformFloat);
+    // Randomness
+    mRandomNormalizedUniformFloatBuffer.emplace_back(randomNormalizedUniformFloat);
 
-	// Immutable render attributes
+    // Immutable render attributes
     mColorBuffer.emplace_back(color);
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
@@ -630,7 +630,7 @@ void Points::UpdateCombustionLowFrequency(
     ElementIndex pointStride,
     float currentSimulationTime,
     float dt,
-	Storm::Parameters const & stormParameters,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -664,8 +664,8 @@ void Points::UpdateCombustionLowFrequency(
             float const effectiveIgnitionTemperature =
                 mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
 
-			// Note: we don't check for rain on purpose: we allow flames to develop even if it rains,
-			// we'll eventually smother them later
+            // Note: we don't check for rain on purpose: we allow flames to develop even if it rains,
+            // we'll eventually smother them later
             if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureHighWatermark
                 && GetWater(pointIndex) < GameParameters::SmotheringWaterLowWatermark
                 && GetDecay(pointIndex) > GameParameters::SmotheringDecayHighWatermark)
@@ -714,14 +714,14 @@ void Points::UpdateCombustionLowFrequency(
                 // Notify combustion end
                 mGameEventHandler->OnPointCombustionEnd();
             }
-			else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(rainExtinguishCdf))
-			{
-				//
-				// Transition to Extinguishing - by smothering for rain
-				//
+            else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(rainExtinguishCdf))
+            {
+                //
+                // Transition to Extinguishing - by smothering for rain
+                //
 
-				SmotherCombustion(pointIndex, false);
-			}
+                SmotherCombustion(pointIndex, false);
+            }
             else
             {
                 // Apply effects of burning
@@ -1773,8 +1773,8 @@ void Points::UploadEphemeralParticles(
             case EphemeralType::Sparkle:
             {
                 vec2f const velocityVector =
-					-GetVelocity(pointIndex)
-					/ GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
+                    -GetVelocity(pointIndex)
+                    / GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
                 renderContext.UploadShipSparkle(
                     shipId,

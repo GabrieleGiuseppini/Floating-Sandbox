@@ -146,4 +146,7 @@ struct IGameController
 
     virtual bool GetDoShowElectricalNotifications() const = 0;
     virtual void SetDoShowElectricalNotifications(bool value) = 0;
+
+    virtual bool GetDoAutoZoomOnShipLoad() const = 0;
+    virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
 };

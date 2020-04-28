@@ -170,6 +170,16 @@ public:
         return mViewModel.GetVisibleWorldBottomRight().y;
     }
 
+    float CalculateZoomForWorldWidth(float worldWidth) const
+    {
+        return mViewModel.CalculateZoomForWorldWidth(worldWidth);
+    }
+
+    float CalculateZoomForWorldHeight(float worldHeight) const
+    {
+        return mViewModel.CalculateZoomForWorldHeight(worldHeight);
+    }
+
     //
 
     rgbColor const & GetFlatSkyColor() const

@@ -43,8 +43,8 @@
  */
 class GameController final
     : public IGameController
-	, public IGameControllerSettings
-	, public IGameControllerSettingsOptions
+    , public IGameControllerSettings
+    , public IGameControllerSettingsOptions
     , public ILifecycleGameEventHandler
     , public IWavePhenomenaGameEventHandler
 {
@@ -97,11 +97,11 @@ public:
         mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
     }
 
-	void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) override
-	{
-		assert(!!mGameEventDispatcher);
-		mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
-	}
+    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
+    }
 
     void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) override
     {
@@ -138,12 +138,12 @@ public:
 
     void SetPaused(bool isPaused) override;
     void SetMoveToolEngaged(bool isEngaged) override;
-	void DisplaySettingsLoadedNotification() override;
+    void DisplaySettingsLoadedNotification() override;
 
-	bool GetShowStatusText() const override;
-	void SetShowStatusText(bool value) override;
-	bool GetShowExtendedStatusText() const override;
-	void SetShowExtendedStatusText(bool value) override;
+    bool GetShowStatusText() const override;
+    void SetShowStatusText(bool value) override;
+    bool GetShowExtendedStatusText() const override;
+    void SetShowExtendedStatusText(bool value) override;
 
     //
     // World probing
@@ -191,7 +191,7 @@ public:
     void TriggerTsunami() override;
     void TriggerRogueWave() override;
     void TriggerStorm() override;
-	void TriggerLightning() override;
+    void TriggerLightning() override;
 
     void HighlightElectricalElement(ElectricalElementId electricalElementId) override;
 
@@ -216,20 +216,23 @@ public:
     vec2f ScreenToWorld(vec2f const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const override;
 
-	//
-	// Interaction parameters
-	//
+    //
+    // Interaction parameters
+    //
 
-	bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
-	void SetDoShowTsunamiNotifications(bool value) override { mDoShowTsunamiNotifications = value; }
+    bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
+    void SetDoShowTsunamiNotifications(bool value) override { mDoShowTsunamiNotifications = value; }
 
     bool GetDoShowElectricalNotifications() const override { return mGameParameters.DoShowElectricalNotifications; }
     void SetDoShowElectricalNotifications(bool value) override { mGameParameters.DoShowElectricalNotifications = value; }
 
+    bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
+    void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
-	/////////////////////////////////////////////////////////
-	// IGameControllerSettings and IGameControllerSettingsOptions
-	/////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////
+    // IGameControllerSettings and IGameControllerSettingsOptions
+    /////////////////////////////////////////////////////////
 
     //
     // Game parameters
@@ -338,25 +341,25 @@ public:
     float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
     float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
-	// Storm
+    // Storm
 
-	std::chrono::minutes GetStormRate() const override { return mGameParameters.StormRate; }
-	void SetStormRate(std::chrono::minutes value) override { mGameParameters.StormRate = value; }
-	std::chrono::minutes GetMinStormRate() const override { return GameParameters::MinStormRate; }
-	std::chrono::minutes GetMaxStormRate() const override { return GameParameters::MaxStormRate; }
+    std::chrono::minutes GetStormRate() const override { return mGameParameters.StormRate; }
+    void SetStormRate(std::chrono::minutes value) override { mGameParameters.StormRate = value; }
+    std::chrono::minutes GetMinStormRate() const override { return GameParameters::MinStormRate; }
+    std::chrono::minutes GetMaxStormRate() const override { return GameParameters::MaxStormRate; }
 
-	std::chrono::seconds GetStormDuration() const override { return mGameParameters.StormDuration; }
-	void SetStormDuration(std::chrono::seconds value) override { mGameParameters.StormDuration = value; }
-	std::chrono::seconds GetMinStormDuration() const override { return GameParameters::MinStormDuration; }
-	std::chrono::seconds GetMaxStormDuration() const override { return GameParameters::MaxStormDuration; }
+    std::chrono::seconds GetStormDuration() const override { return mGameParameters.StormDuration; }
+    void SetStormDuration(std::chrono::seconds value) override { mGameParameters.StormDuration = value; }
+    std::chrono::seconds GetMinStormDuration() const override { return GameParameters::MinStormDuration; }
+    std::chrono::seconds GetMaxStormDuration() const override { return GameParameters::MaxStormDuration; }
 
-	float GetStormStrengthAdjustment() const override { return mGameParameters.StormStrengthAdjustment; }
-	void SetStormStrengthAdjustment(float value) override { mGameParameters.StormStrengthAdjustment = value; }
-	float GetMinStormStrengthAdjustment() const override { return GameParameters::MinStormStrengthAdjustment; }
-	float GetMaxStormStrengthAdjustment() const override { return GameParameters::MaxStormStrengthAdjustment; }
+    float GetStormStrengthAdjustment() const override { return mGameParameters.StormStrengthAdjustment; }
+    void SetStormStrengthAdjustment(float value) override { mGameParameters.StormStrengthAdjustment = value; }
+    float GetMinStormStrengthAdjustment() const override { return GameParameters::MinStormStrengthAdjustment; }
+    float GetMaxStormStrengthAdjustment() const override { return GameParameters::MaxStormStrengthAdjustment; }
 
-	bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
-	void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
+    bool GetDoRainWithStorm() const override { return mGameParameters.DoRainWithStorm; }
+    void SetDoRainWithStorm(bool value) override { mGameParameters.DoRainWithStorm = value; }
 
     float GetRainFloodAdjustment() const override { return mGameParameters.RainFloodAdjustment; }
     void SetRainFloodAdjustment(float value) override { mGameParameters.RainFloodAdjustment = value; }
@@ -427,12 +430,12 @@ public:
 
     // Misc
 
-	OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
+    OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
     void SetOceanFloorTerrain(OceanFloorTerrain const & value) override { mWorld->SetOceanFloorTerrain(value); }
 
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }
-	void SetSeaDepthImmediate(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValueImmediate(value); }
+    void SetSeaDepthImmediate(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValueImmediate(value); }
     float GetMinSeaDepth() const override { return GameParameters::MinSeaDepth; }
     float GetMaxSeaDepth() const override { return GameParameters::MaxSeaDepth; }
 
@@ -443,7 +446,7 @@ public:
 
     float GetOceanFloorDetailAmplification() const override { return mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].GetValue(); }
     void SetOceanFloorDetailAmplification(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValue(value); }
-	void SetOceanFloorDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValueImmediate(value); }
+    void SetOceanFloorDetailAmplificationImmediate(float value) override { mFloatParameterSmoothers[OceanFloorDetailAmplificationParameterSmoother].SetValueImmediate(value); }
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
@@ -662,7 +665,7 @@ private:
         std::unique_ptr<Render::RenderContext> renderContext,
         std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-		std::unique_ptr<TextLayer> textLayer,
+        std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
         std::shared_ptr<ResourceLocator> resourceLocator);
 
@@ -671,11 +674,12 @@ private:
     void OnShipAdded(
         ShipDefinition shipDefinition,
         std::filesystem::path const & shipDefinitionFilepath,
-        ShipId shipId);
+        ShipId shipId,
+        bool doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
-	void DisplayInertialVelocity(float inertialVelocityMagnitude);
+    void DisplayInertialVelocity(float inertialVelocityMagnitude);
 
 private:
 
@@ -724,6 +728,7 @@ private:
 
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
+    bool mDoAutoZoomOnShipLoad;
 
 
     //
@@ -733,7 +738,7 @@ private:
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-	std::shared_ptr<TextLayer> mTextLayer;
+    std::shared_ptr<TextLayer> mTextLayer;
 
 
     //

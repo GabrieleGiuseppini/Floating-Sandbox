@@ -52,6 +52,8 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
+    vec2f GetShipSize(ShipId shipId) const;
+
     inline float GetOceanSurfaceHeightAt(float x) const
     {
         return mOceanSurface.GetHeightAt(x);

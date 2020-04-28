@@ -22,10 +22,10 @@ static constexpr int MaxPanIncrementPosition = 200;
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-	std::function<void()> onChangeCallback)
+    std::function<void()> onChangeCallback)
     : mParent(parent)
     , mUIPreferencesManager(std::move(uiPreferencesManager))
-	, mOnChangeCallback(std::move(onChangeCallback))
+    , mOnChangeCallback(std::move(onChangeCallback))
 {
     Create(
         mParent,
@@ -122,7 +122,7 @@ void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 
-	mOnChangeCallback();
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -130,7 +130,7 @@ void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*eve
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
 
-	mOnChangeCallback();
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -143,7 +143,7 @@ void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent
         mUIPreferencesManager->ResetUpdateBlacklist();
     }
 
-	mOnChangeCallback();
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -151,7 +151,7 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
 
-	mOnChangeCallback();
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -159,13 +159,53 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
 
-	mOnChangeCallback();
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoAutoZoomAtShipLoad(mAutoZoomAtShipLoadCheckBox->GetValue());
+
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowStatusText(mShowStatusTextCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -183,39 +223,7 @@ void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
 
-	mOnChangeCallback();
-}
-
-void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
-
-	mOnChangeCallback();
-}
-
-void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
-
-	mOnChangeCallback();
-}
-
-void PreferencesDialog::OnShowStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-	assert(!!mUIPreferencesManager);
-	mUIPreferencesManager->SetShowStatusText(mShowStatusTextCheckBox->GetValue());
-
-	mOnChangeCallback();
-}
-
-void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-	assert(!!mUIPreferencesManager);
-	mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextCheckBox->GetValue());
-
-	mOnChangeCallback();
+    mOnChangeCallback();
 }
 
 void PreferencesDialog::OnGlobalMuteCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -420,20 +428,20 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             Border);
     }
 
-	{
-		mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+    {
+        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
 
-		mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
+        mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
 
-		mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+        mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
 
-		gridSizer->Add(
-			mShowStatusTextCheckBox,
-			wxGBPosition(4, 2),
-			wxGBSpan(1, 2),
-			wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-			Border);
-	}
+        gridSizer->Add(
+            mShowStatusTextCheckBox,
+            wxGBPosition(4, 2),
+            wxGBSpan(1, 2),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
 
     //
     // Row 6
@@ -454,23 +462,57 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             Border);
     }
 
-	{
-		mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+    {
+        mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
 
-		mShowExtendedStatusTextCheckBox->SetToolTip("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered.");
+        mShowExtendedStatusTextCheckBox->SetToolTip("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered.");
 
-		mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
+        mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
 
-		gridSizer->Add(
-			mShowExtendedStatusTextCheckBox,
-			wxGBPosition(5, 2),
-			wxGBSpan(1, 2),
-			wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-			Border);
-	}
+        gridSizer->Add(
+            mShowExtendedStatusTextCheckBox,
+            wxGBPosition(5, 2),
+            wxGBSpan(1, 2),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
 
     //
     // Row 7
+    //
+
+    {
+        mAutoZoomAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
+
+        mAutoZoomAtShipLoadCheckBox->SetToolTip("Enables or disables auto-zooming when loading a new ship.");
+
+        mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mAutoZoomAtShipLoadCheckBox,
+            wxGBPosition(6, 0),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    {
+        mShowElectricalNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+
+        mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
+
+        mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mShowElectricalNotificationsCheckBox,
+            wxGBPosition(6, 2),
+            wxGBSpan(1, 2),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    //
+    // Row 8
     //
 
     {
@@ -482,34 +524,11 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         gridSizer->Add(
             mAutoShowSwitchboardCheckBox,
-            wxGBPosition(6, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Row 8
-    //
-
-    {
-        mShowElectricalNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
-
-        mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowElectricalNotificationsCheckBox,
             wxGBPosition(7, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
-
-    //
-    // Row 9
-    //
 
     {
         mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
@@ -520,8 +539,8 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         gridSizer->Add(
             mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(8, 0),
-            wxGBSpan(1, 1),
+            wxGBPosition(7, 2),
+            wxGBSpan(1, 2),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
@@ -535,7 +554,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         40,
         0,
         wxGBPosition(0, 1),
-        wxGBSpan(9, 1));
+        wxGBSpan(8, 1));
 
 
     // Finalize panel
@@ -726,13 +745,14 @@ void PreferencesDialog::ReadSettings()
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
+    mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
-    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
-    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
-	mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
-	mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
+    mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
+    mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
+    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
+    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());

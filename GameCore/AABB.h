@@ -7,6 +7,8 @@
 
 #include "Vectors.h"
 
+#include <limits>
+
 namespace Geometry {
 
 // Axis-Aligned Bounding Box
@@ -15,6 +17,11 @@ class AABB
 public:
     vec2f TopRight;
     vec2f BottomLeft;
+
+    AABB()
+        : TopRight(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest())
+        , BottomLeft(std::numeric_limits<float>::max(), std::numeric_limits<float>::max())
+    {}
 
     AABB(
         float left,
@@ -42,7 +49,24 @@ public:
         return TopRight.y - BottomLeft.y;
     }
 
-    void ExtendTo(AABB const & other)
+    inline vec2f GetSize() const
+    {
+        return vec2f(GetWidth(), GetHeight());
+    }
+
+    inline void ExtendTo(vec2f const & point)
+    {
+        if (point.x > TopRight.x)
+            TopRight.x = point.x;
+        if (point.y > TopRight.y)
+            TopRight.y = point.y;
+        if (point.x < BottomLeft.x)
+            BottomLeft.x = point.x;
+        if (point.y < BottomLeft.y)
+            BottomLeft.y = point.y;
+    }
+
+    inline void ExtendTo(AABB const & other)
     {
         if (other.TopRight.x > TopRight.x)
             TopRight.x = other.TopRight.x;

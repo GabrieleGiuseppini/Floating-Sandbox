@@ -66,7 +66,7 @@ public:
      */
     float ClampZoom(float const & zoom) const
     {
-		float clampedZoom = zoom;
+        float clampedZoom = zoom;
 
         //
         // Width
@@ -79,13 +79,13 @@ public:
 
         if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
         {
-			clampedZoom = visibleWorldWidth * clampedZoom / ((mCam.x - MaxWorldLeft) * 2.0f);
+            clampedZoom = visibleWorldWidth * clampedZoom / ((mCam.x - MaxWorldLeft) * 2.0f);
             visibleWorldWidth = CalculateVisibleWorldWidth(clampedZoom);
         }
 
         if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
         {
-			clampedZoom = visibleWorldWidth * clampedZoom / ((MaxWorldRight - mCam.x) * 2.0f);
+            clampedZoom = visibleWorldWidth * clampedZoom / ((MaxWorldRight - mCam.x) * 2.0f);
         }
 
         //
@@ -99,18 +99,18 @@ public:
 
         if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
         {
-			clampedZoom = visibleWorldHeight * clampedZoom / ((MaxWorldTop - mCam.y) * 2.0f);
+            clampedZoom = visibleWorldHeight * clampedZoom / ((MaxWorldTop - mCam.y) * 2.0f);
             visibleWorldHeight = CalculateVisibleWorldHeight(clampedZoom);
         }
 
         if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
         {
-			clampedZoom = visibleWorldHeight * clampedZoom / ((mCam.y - MaxWorldBottom) * 2.0f);
+            clampedZoom = visibleWorldHeight * clampedZoom / ((mCam.y - MaxWorldBottom) * 2.0f);
         }
 
         if (clampedZoom > MaxZoom)
         {
-			clampedZoom = MaxZoom;
+            clampedZoom = MaxZoom;
         }
 
         return clampedZoom;
@@ -239,15 +239,15 @@ public:
     // Coordinate transformations
     //
 
-	/*
-	 * Equivalent of the transformation we usually perform in vertex shaders.
-	 */
-	inline vec2f WorldToNdc(vec2f const & worldCoordinates) const
-	{
-		return vec2f(
-			worldCoordinates.x * mKernelOrthoMatrix[0][0] + mKernelOrthoMatrix[3][0],
-			worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
-	}
+    /*
+     * Equivalent of the transformation we usually perform in vertex shaders.
+     */
+    inline vec2f WorldToNdc(vec2f const & worldCoordinates) const
+    {
+        return vec2f(
+            worldCoordinates.x * mKernelOrthoMatrix[0][0] + mKernelOrthoMatrix[3][0],
+            worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
+    }
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
     {
@@ -285,6 +285,26 @@ public:
 
         // An NDC height of 2 is the entire visible world height
         return (ndcH / 2.0f) * mVisibleWorldHeight;
+    }
+
+    /*
+     * Calculates the zoom required to ensure that the specified world
+     * width is fully visible in the canvas.
+     */
+    inline float CalculateZoomForWorldWidth(float worldWidth) const
+    {
+        assert(worldWidth > 0.0f);
+        return ZoomHeightConstant * GetAspectRatio() / worldWidth;
+    }
+
+    /*
+     * Calculates the zoom required to ensure that the specified world
+     * height is fully visible in the canvas.
+     */
+    inline float CalculateZoomForWorldHeight(float worldHeight) const
+    {
+        assert(worldHeight > 0.0f);
+        return ZoomHeightConstant / worldHeight;
     }
 
     //
@@ -367,14 +387,14 @@ private:
 
     float CalculateVisibleWorldWidth(float zoom) const
     {
-        return CalculateVisibleWorldHeight(zoom) * static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+        return CalculateVisibleWorldHeight(zoom) * GetAspectRatio();
     }
 
     float CalculateVisibleWorldHeight(float zoom) const
     {
         assert(zoom != 0.0f);
 
-        return 2.0f * 70.0f / zoom;
+        return ZoomHeightConstant / zoom;
     }
 
     void RecalculateAttributes()
@@ -402,7 +422,8 @@ private:
 private:
 
     // Constants
-    static constexpr float MaxZoom = 1000.0f;
+    static float constexpr MaxZoom = 1000.0f;
+    static float constexpr ZoomHeightConstant = 2.0f * 70.0f; // World height at zoom=1.0
 
     // Primary inputs
     float mZoom;

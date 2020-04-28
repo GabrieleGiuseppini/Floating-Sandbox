@@ -75,19 +75,26 @@ size_t World::GetShipCount() const
     return mAllShips.size();
 }
 
+size_t World::GetShipPointCount(ShipId shipId) const
+{
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->GetPointCount();
+}
+
+vec2f World::GetShipSize(ShipId shipId) const
+{
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->GetSize();
+}
+
 bool World::IsUnderwater(ElementId elementId) const
 {
     auto const shipId = elementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     return mAllShips[shipId]->IsUnderwater(elementId.GetLocalObjectId());
-}
-
-size_t World::GetShipPointCount(ShipId shipId) const
-{
-    assert(shipId >= 0 && shipId < mAllShips.size());
-
-    return mAllShips[shipId]->GetPointCount();
 }
 
 //////////////////////////////////////////////////////////////////////////////

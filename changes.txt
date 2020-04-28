@@ -1,18 +1,19 @@
 TODO
-- New "Pick-and-Pull" tool! Use it to pull individual particles around
+- New "Pick-and-Pull" tool - use it to pull particles around in a very physical way!
 - Added new electrical materials:
 	- Water Pumps - take water in or out of the ship when powered
-	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or be contained at will
+	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or keeping it contained
 - Added 4 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles
 - Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
-- Fixed crash when opening the "Load Ship" window in a folder containing a ship file with foreign characters
-- Fixed issue with mouse wheel stopping working after loading ship with electrical panel
+- Fixed crash occurring when opening the "Load Ship" window in a folder containing a ship file with foreign characters
+- Fixed issue with mouse wheel stopping working after loading a ship with an electrical panel
 - Lowered curve of cloud speed dependency from wind speed
 - ...and a few more small improvements here and there
+- Musical theme for this release: The Cure, Wish
 
 1.14.0.6
 - Added new electrical materials:

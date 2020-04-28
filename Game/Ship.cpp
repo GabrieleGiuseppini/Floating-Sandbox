@@ -7,6 +7,7 @@
 
 #include "Ship_StateMachines.h"
 
+#include <GameCore/AABB.h>
 #include <GameCore/Algorithms.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
@@ -71,6 +72,7 @@ Ship::Ship(
     , mMaterialDatabase(materialDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
+    , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))

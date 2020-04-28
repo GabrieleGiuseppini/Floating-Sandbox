@@ -11,6 +11,7 @@
 #include "Materials.h"
 #include "RenderContext.h"
 
+#include <GameCore/AABB.h>
 #include <GameCore/Buffer.h>
 #include <GameCore/BufferAllocator.h>
 #include <GameCore/ElementContainer.h>
@@ -805,6 +806,17 @@ public:
     void UpdateHighlights(GameWallClock::float_time currentWallClockTime);
 
     void Query(ElementIndex pointElementIndex) const;
+
+    Geometry::AABB GetAABB() const
+    {
+        Geometry::AABB box;
+        for (ElementIndex pointIndex : RawShipPoints())
+        {
+            box.ExtendTo(GetPosition(pointIndex));
+        }
+
+        return box;
+    }
 
     //
     // Render

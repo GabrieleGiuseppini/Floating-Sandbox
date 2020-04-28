@@ -209,6 +209,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Auto-zoom at ship load
+        //
+
+        auto doAutoZoomAtShipLoadIt = preferencesRootObject.find("auto_zoom_at_ship_load");
+        if (doAutoZoomAtShipLoadIt != preferencesRootObject.end()
+            && doAutoZoomAtShipLoadIt->second.is<bool>())
+        {
+            mGameController->SetDoAutoZoomOnShipLoad(doAutoZoomAtShipLoadIt->second.get<bool>());
+        }
+
+        //
         // Auto show switchboard
         //
 
@@ -263,27 +274,27 @@ void UIPreferencesManager::LoadPreferences()
             mPanIncrement = static_cast<float>(panIncrementIt->second.get<double>());
         }
 
-		//
-		// Show status text
-		//
+        //
+        // Show status text
+        //
 
-		auto showStatusTextIt = preferencesRootObject.find("show_status_text");
-		if (showStatusTextIt != preferencesRootObject.end()
-			&& showStatusTextIt->second.is<bool>())
-		{
-			mGameController->SetShowStatusText(showStatusTextIt->second.get<bool>());
-		}
+        auto showStatusTextIt = preferencesRootObject.find("show_status_text");
+        if (showStatusTextIt != preferencesRootObject.end()
+            && showStatusTextIt->second.is<bool>())
+        {
+            mGameController->SetShowStatusText(showStatusTextIt->second.get<bool>());
+        }
 
-		//
-		// Show extended status text
-		//
+        //
+        // Show extended status text
+        //
 
-		auto showExtendedStatusTextIt = preferencesRootObject.find("show_extended_status_text");
-		if (showExtendedStatusTextIt != preferencesRootObject.end()
-			&& showExtendedStatusTextIt->second.is<bool>())
-		{
-			mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
-		}
+        auto showExtendedStatusTextIt = preferencesRootObject.find("show_extended_status_text");
+        if (showExtendedStatusTextIt != preferencesRootObject.end()
+            && showExtendedStatusTextIt->second.is<bool>())
+        {
+            mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
+        }
 
         //
         // Sound and Music
@@ -384,6 +395,9 @@ void UIPreferencesManager::SavePreferences() const
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
 
+    // Add auto zoom at ship load
+    preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());
+
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
 
@@ -399,11 +413,11 @@ void UIPreferencesManager::SavePreferences() const
     // Add pan increment
     preferencesRootObject["pan_increment"] = picojson::value(static_cast<double>(mPanIncrement));
 
-	// Add show status text
-	preferencesRootObject["show_status_text"] = picojson::value(mGameController->GetShowStatusText());
+    // Add show status text
+    preferencesRootObject["show_status_text"] = picojson::value(mGameController->GetShowStatusText());
 
-	// Add show extended status text
-	preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
+    // Add show extended status text
+    preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
 
     //
     // Sounds and Music

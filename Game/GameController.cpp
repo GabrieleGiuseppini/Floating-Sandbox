@@ -32,8 +32,8 @@ std::unique_ptr<GameController> GameController::Create(
             progressCallback(0.9f * progress, message);
         });
 
-	// Create text layer
-	std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(renderContext->GetTextRenderContext());
+    // Create text layer
+    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(renderContext->GetTextRenderContext());
 
     //
     // Create controller
@@ -44,7 +44,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
-			std::move(textLayer),
+            std::move(textLayer),
             std::move(materialDatabase),
             resourceLocator));
 }
@@ -53,7 +53,7 @@ GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::function<void()> swapRenderBuffersFunction,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-	std::unique_ptr<TextLayer> textLayer,
+    std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
     std::shared_ptr<ResourceLocator> resourceLocator)
     // State machines
@@ -70,6 +70,7 @@ GameController::GameController(
     // Parameters that we own
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
+    , mDoAutoZoomOnShipLoad(true)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
@@ -266,7 +267,8 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     OnShipAdded(
         std::move(shipDefinition),
         shipDefinitionFilepath,
-        shipId);
+        shipId,
+        mDoAutoZoomOnShipLoad);
 
     mWorld->Announce();
 
@@ -323,7 +325,8 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     OnShipAdded(
         std::move(shipDefinition),
         shipDefinitionFilepath,
-        shipId);
+        shipId,
+        false);
 
     mWorld->Announce();
 
@@ -365,7 +368,8 @@ void GameController::ReloadLastShip()
     OnShipAdded(
         std::move(shipDefinition),
         mLastShipLoadedFilepath,
-        shipId);
+        shipId,
+        false);
 
     mWorld->Announce();
 }
@@ -583,32 +587,32 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::DisplaySettingsLoadedNotification()
 {
-	assert(!!mTextLayer);
-	mTextLayer->AddEphemeralTextLine("SETTINGS LOADED");
+    assert(!!mTextLayer);
+    mTextLayer->AddEphemeralTextLine("SETTINGS LOADED");
 }
 
 bool GameController::GetShowStatusText() const
 {
-	assert(!!mTextLayer);
-	return mTextLayer->IsStatusTextEnabled();
+    assert(!!mTextLayer);
+    return mTextLayer->IsStatusTextEnabled();
 }
 
 void GameController::SetShowStatusText(bool value)
 {
-	assert(!!mTextLayer);
-	mTextLayer->SetStatusTextEnabled(value);
+    assert(!!mTextLayer);
+    mTextLayer->SetStatusTextEnabled(value);
 }
 
 bool GameController::GetShowExtendedStatusText() const
 {
-	assert(!!mTextLayer);
-	return mTextLayer->IsExtendedStatusTextEnabled();
+    assert(!!mTextLayer);
+    return mTextLayer->IsExtendedStatusTextEnabled();
 }
 
 void GameController::SetShowExtendedStatusText(bool value)
 {
-	assert(!!mTextLayer);
-	mTextLayer->SetExtendedStatusTextEnabled(value);
+    assert(!!mTextLayer);
+    mTextLayer->SetExtendedStatusTextEnabled(value);
 }
 
 float GameController::GetCurrentSimulationTime() const
@@ -696,11 +700,11 @@ void GameController::MoveBy(
         inertialVelocity,
         mGameParameters);
 
-	// Eventually display inertial velocity
-	if (worldOffset.length() == 0.0f)
-	{
-		DisplayInertialVelocity(inertialVelocity.length());
-	}
+    // Eventually display inertial velocity
+    if (worldOffset.length() == 0.0f)
+    {
+        DisplayInertialVelocity(inertialVelocity.length());
+    }
 }
 
 void GameController::MoveBy(
@@ -719,11 +723,11 @@ void GameController::MoveBy(
         inertialVelocity,
         mGameParameters);
 
-	// Eventually display velocity
-	if (worldOffset.length() == 0.0f)
-	{
-		DisplayInertialVelocity(inertialVelocity.length());
-	}
+    // Eventually display velocity
+    if (worldOffset.length() == 0.0f)
+    {
+        DisplayInertialVelocity(inertialVelocity.length());
+    }
 }
 
 void GameController::RotateBy(
@@ -1095,8 +1099,8 @@ void GameController::TriggerStorm()
 
 void GameController::TriggerLightning()
 {
-	assert(!!mWorld);
-	mWorld->TriggerLightning();
+    assert(!!mWorld);
+    mWorld->TriggerLightning();
 }
 
 void GameController::HighlightElectricalElement(ElectricalElementId electricalElementId)
@@ -1235,8 +1239,30 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 void GameController::OnShipAdded(
     ShipDefinition shipDefinition,
     std::filesystem::path const & shipDefinitionFilepath,
-    ShipId shipId)
+    ShipId shipId,
+    bool doAutoZoom)
 {
+    if (doAutoZoom)
+    {
+        // Calculate zoom to fit width and height (plus a nicely-looking margin)
+        vec2f const shipSize = mWorld->GetShipSize(shipId);
+        float const newZoom = std::min(
+            mRenderContext->CalculateZoomForWorldWidth(shipSize.x + 5.0f),
+            mRenderContext->CalculateZoomForWorldHeight(shipSize.y + 3.0f));
+
+        // If calculated zoom requires zoom out: use it
+        if (newZoom <= this->mRenderContext->GetZoom())
+        {
+            mZoomParameterSmoother->SetValueImmediate(newZoom);
+        }
+        else if (newZoom > 1.0f)
+        {
+            // Would need to zoom-in closer...
+            // ...let's stop at 1.0 then
+            mZoomParameterSmoother->SetValueImmediate(1.0f);
+        }
+    }
+
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
@@ -1306,14 +1332,14 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
 void GameController::DisplayInertialVelocity(float inertialVelocityMagnitude)
 {
-	if (inertialVelocityMagnitude >= 5.0f)
-	{
-		std::stringstream ss;
-		ss << std::fixed << std::setprecision(2)
-			<< inertialVelocityMagnitude
-			<< " M/SEC";
+    if (inertialVelocityMagnitude >= 5.0f)
+    {
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2)
+            << inertialVelocityMagnitude
+            << " M/SEC";
 
-		assert(!!mTextLayer);
-		mTextLayer->AddEphemeralTextLine(ss.str());
-	}
+        assert(!!mTextLayer);
+        mTextLayer->AddEphemeralTextLine(ss.str());
+    }
 }
