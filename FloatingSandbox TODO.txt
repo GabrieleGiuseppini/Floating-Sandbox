@@ -396,9 +396,8 @@ Render:
 				+ Also add pumps & engine to it
 			+ changes.txt
 			+ Material template
-			+ Materials' guide
-		
-		= "Auto-Zoom at Ship Load":
+			+ Materials' guide		
+		+ "Auto-Zoom at Ship Load":
 			+ By GameController @ AddShip
 				+ Only when changing ship
 			+ Uses ViewModel::CalculateZoomForWorldWidth(.): calcs zoom required to fit that world width in screen
@@ -407,19 +406,21 @@ Render:
 			+ Then: if calculated zoom requires zoom out: use it; 
 				else: if calculated zoom requires zoom in and more than 1.0 (i.e. more zoom in than): set to 1.0; else: leave as-is
 			+ UIPreferences - with storage @ GameController
-			- See if may maintain zoom significance @ ViewModel::OnCanvasResize()
 
-		- Music cleanup:
-			- Ti direi quindi di eliminare sicuramente sinkingship_2.ogg (piano) e sinkingship_3.ogg (violino).
-			- Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
+		= Music cleanup:
+			+ Ti direi quindi di eliminare sicuramente sinkingship_2.ogg (piano) e sinkingship_3.ogg (violino).
+			+ Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
 			Per quanto riguarda le altre:
-			- sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
-			- sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
-			- sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
+			+ sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
+			+ sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
+			= sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
+				= Asked file to Officer TimCan
 
 		- Commit & Merge
 		- Send for testing
 		- Bump-up version
+
+		- make gbenchmark optional
 
 		= Try Flugzeugdampfer_I (_Astyuu_)
 			= Ask for an update, with nicer panel and more powerful engine
