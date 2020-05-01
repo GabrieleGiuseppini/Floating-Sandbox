@@ -6,6 +6,7 @@ This game is a realistic two-dimensional particle system, which uses mass-spring
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 <img src="https://i.imgur.com/kovxCty.png">
+<img src="https://i.imgur.com/XHw3Jrl.png">
 
 You can create your own physical objects by drawing images using colors that correspond to materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. The game comes with a handy template image that you can use to quickly select the right materials for your object.
 
