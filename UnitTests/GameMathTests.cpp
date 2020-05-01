@@ -21,7 +21,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
 	GameMathTests,
     FastPowTest,
     ::testing::Values(
@@ -79,7 +79,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GameMathTests,
     FastExpTest,
     ::testing::Values(

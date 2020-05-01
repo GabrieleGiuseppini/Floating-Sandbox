@@ -57,7 +57,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayoutHelperTests,
     UndecoratedOnlyLayoutTest,
     ::testing::Values(
@@ -387,7 +387,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayoutHelperTests,
     DecoratedAndUndecoratedLayoutTest,
     ::testing::Values(

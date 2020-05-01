@@ -21,16 +21,12 @@ There are lots of improvements that I'm currently working on; some of these are:
 - Water drag to simulate parts gliding underwater
 	- Requires maintaining convex hull and ship perimeter normals
 - Waves and splashes originating from collisions with water
-- Smoke
-- Storms and lightning
+- Smoke from fire
 - Multiple ships and collision detection among parts of the ships
-- Water pumps and anti-flood walls controllable via electrical switches (Mathias Garbe's idea)
-- Persistent settings
 - Ocean floor that gets dents when an impact occurs (Louis Benedict's idea)
 - Time-of-day cycle (i.e. day light change during the game)
-- Morse code sound before sinking, and ship horns
-- Auto-zoom when a ship is loaded
 - NPC's that move freely within ships
+- In-game ship editor
 
 These and other ideas will come out with frequent releases.
 
@@ -91,11 +87,11 @@ I tried to do my best to craft the CMake files in a platform-independent way, bu
 
 In order to build the game, you will need the following dependencies:
 - <a href="https://www.wxwidgets.org/">WxWidgets</a> (cross-platform GUI library)*
-- <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image library)*
+- <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image manipulation library)*
 - <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library)*
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
 - <a href="https://github.com/google/benchmark">Google Benchmark</a>
-- <a href="https://github.com/google/googletest/">Google Test</a>
+- <a href="https://github.com/google/googletest/">Google Test</a> (I'm building out of the _release-1.10.0_ tag)
 
 Dependencies marked with * may be statically linked by using the `MSVC_USE_STATIC_LINKING` option.
 

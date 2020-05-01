@@ -13,7 +13,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     One_Runs,
     TaskThreadPoolTests_OneRuns,
     ::testing::Values(
@@ -53,7 +53,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Four_Runs,
     TaskThreadPoolTests_FourRuns,
     ::testing::Values(

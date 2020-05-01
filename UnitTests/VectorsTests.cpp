@@ -35,7 +35,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VectorTests,
     Normalization2fTest,
     ::testing::Values(

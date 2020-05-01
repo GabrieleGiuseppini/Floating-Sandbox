@@ -9,7 +9,7 @@ public:
     virtual void TearDown() {}
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SegmentIntersectionTests,
     SegmentIntersectionTest,
     ::testing::Values(
