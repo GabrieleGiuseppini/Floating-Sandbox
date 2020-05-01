@@ -82,6 +82,12 @@ I started coding this game after stumbling upon Luke Wren's and Francis Racicot'
 
 After a while I realized that I had rewritten all of the original code, and that my new project was thus worthy of a new name and a new source code repository, the one you are looking at now.
 
+So far I've also added the following:
+- Thermodynamics, with flames and explosions
+- Complex electrical elements (switches, pumps, flood doors, engines, etc.) and an electrical panel to control them all
+- Storms with rain and lightnings
+- Ability to persist and reload the ~100 simulation settings
+
 # Building the Game
 I build this game with Visual Studio 2019 (thus full C++ 17 support).
 I tried to do my best to craft the CMake files in a platform-independent way, but I'm working on this exclusively in Visual Studio, hence I'm sure some unportable features have slipped in. Feel free to send pull requests for CMake edits for other platforms.
