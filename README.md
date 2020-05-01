@@ -60,7 +60,7 @@ Users can interact with a body in different ways:
 - Apply radial forces and angular forces
 - Move individual parts
 
-<img src="https://i.imgur.com/WUk7qGv.png">
+<img src="https://i.imgur.com/6LOVsqX.jpg">
 
 # History
 I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) Luke's GitHub repo and started playing with the source code. After less than a year I had been making these major changes on the original codebase:
