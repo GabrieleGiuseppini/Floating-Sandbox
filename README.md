@@ -57,8 +57,9 @@ Users can interact with a body in different ways:
 - Pin individual points of the body so that their position (and velocity) becomes frozen
 - Add or remove water to and from the body
 - Add or remove heat to and from the body - and let it catch fire!
-- Apply radial forces and angular forces
-- Move individual parts
+- Apply radial and angular forces
+- Move or pull individual parts
+- Generate waves
 
 <img src="https://i.imgur.com/6LOVsqX.jpg">
 

@@ -406,24 +406,25 @@ Render:
 			+ Then: if calculated zoom requires zoom out: use it; 
 				else: if calculated zoom requires zoom in and more than 1.0 (i.e. more zoom in than): set to 1.0; else: leave as-is
 			+ UIPreferences - with storage @ GameController
-
-		= Music cleanup:
+		+ Music cleanup:
 			+ Ti direi quindi di eliminare sicuramente sinkingship_2.ogg (piano) e sinkingship_3.ogg (violino).
 			+ Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
 			Per quanto riguarda le altre:
 			+ sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
 			+ sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
-			= sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
-				= Asked file to Officer TimCan
+			+ sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
 
 		- Commit & Merge
 		- Send for testing
 		- Bump-up version
 
-		- make gbenchmark optional
+		- See whether water-sensing OFF switches work
 
+		- make gbenchmark optional
+		- Get new sleeping sun from TimCan
 		= Try Flugzeugdampfer_I (_Astyuu_)
-			= Ask for an update, with nicer panel and more powerful engine
+			+ Ask for an update, with nicer panel and more powerful engine
+			- Check updated zip
 			- changes.txt
 
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
@@ -452,10 +453,10 @@ Render:
 
 		- Diesel engine
 			+ Tell John Smith that sound is not OK
-			= Asked new sound
+			= Got new sounds, try
 			- Redo electrical template
 
-		- Release
+		- Release: the "Eternal Patrol" update 
 
 
 
@@ -1260,9 +1261,7 @@ Render:
 				- Should also consider normal to surface of ocean, so if two surfaces intersect, we get
 				  momentum from waves to ship
 				- The new directional drag should make parts of the ship break off
-			- External water pressure should inflict stress on springs
-				- Have to visit frontier points and, if underwater, do force perpendicular towards interior
-
+			- Pressure implosion (*)
 
 		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
@@ -1283,6 +1282,12 @@ Render:
 						  take that frontierId
 						- TODO
 	
+	- Pressure implosions(*)
+		- Spec:
+			- External water pressure should inflict stress on springs
+			- Have to visit frontier points and, if underwater, do force perpendicular towards interior
+			- Need own sounds
+
 	- Punch tool: interacts with frontier, just like a punch
 		- Requires frontier work first
 
