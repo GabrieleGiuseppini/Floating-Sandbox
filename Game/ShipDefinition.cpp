@@ -46,7 +46,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             try
             {
                 ropesLayerImage.emplace(
-                    ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.RopesLayerImageFilePath));
+                    ImageFileTools::LoadImageRgbLowerLeft(basePath / *sdf.RopesLayerImageFilePath));
             }
             catch (GameException const & gex)
             {
@@ -63,7 +63,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             try
             {
                 electricalLayerImage.emplace(
-                    ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.ElectricalLayerImageFilePath));
+                    ImageFileTools::LoadImageRgbLowerLeft(basePath / *sdf.ElectricalLayerImageFilePath));
             }
             catch (GameException const & gex)
             {
@@ -118,7 +118,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     // Load structural layer image
     //
 
-    ImageData structuralImage = ImageFileTools::LoadImageRgbUpperLeft(absoluteStructuralLayerImageFilePath);
+    ImageData structuralImage = ImageFileTools::LoadImageRgbLowerLeft(absoluteStructuralLayerImageFilePath);
 
     //
     // Make texture layer image

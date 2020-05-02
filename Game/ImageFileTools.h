@@ -24,7 +24,6 @@ public:
     static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, int resizedWidth);
     static RgbaImageData LoadImageRgbaLowerLeftAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbLowerLeftAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
-    static RgbImageData LoadImageRgbUpperLeft(std::filesystem::path const & filepath);
 
     static void SaveImage(
         std::filesystem::path filepath,

@@ -427,11 +427,11 @@ Render:
 		+ See "invalid extension" error message
 			+ Test
 
-		- See if may get rid of ImageFileTools::Load...UpperLeft
-			- ShipBuilder
+		= See if may get rid of ImageFileTools::Load...UpperLeft
+			+ ShipBuilder
 			+ OceanFloor
 			+ ShipAnalyzer
-			- Nuke from ImageFileTools
+			+ Nuke from ImageFileTools
 			- Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
 			  ImageFileTools::LoadXYZ without "LowerLeft"
 			  - Don't forget ShipAnalyzer
@@ -442,14 +442,16 @@ Render:
 					- Maintains cache
 				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
 				- Also holds auto-texturization mode setting, see below
-			- Auto-Texturization mode (@ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
+			- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
 			  texture; two modes:
+				- ShipAutoTexturizationMode At GameTypes
 				- ~"From structure": builds texture using structural materials' RenderColor (as opposed to color key like now)
-				- ~"TODO": using bump maps
+				- ~"Material": using bump maps
 				- Setting storage is @ ShipTexturizer, brokered by GameController
 			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
 			- Both texturizations implemented in ShipTexturizer class
-				- Textures/ShipTexturization folder contains textures
+				- Textures/Materials folder contains textures
+					- ResourceLocator::GetMaterialTextureFolderPath()
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
 					- Material DB <-> actual textures check: done by GameController at its Create() time,

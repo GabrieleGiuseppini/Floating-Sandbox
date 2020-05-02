@@ -135,15 +135,6 @@ RgbImageData ImageFileTools::LoadImageRgbLowerLeftAndResize(
         maxSize);
 }
 
-RgbImageData ImageFileTools::LoadImageRgbUpperLeft(std::filesystem::path const & filepath)
-{
-    return InternalLoadImage<rgbColor>(
-        filepath,
-        IL_RGB,
-        IL_ORIGIN_UPPER_LEFT,
-        std::nullopt);
-}
-
 void ImageFileTools::SaveImage(
     std::filesystem::path filepath,
     RgbaImageData const & image)
