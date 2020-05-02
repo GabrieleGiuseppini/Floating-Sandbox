@@ -416,12 +416,14 @@ Render:
 		+ Commit & Merge
 		+ Send for testing
 		+ Bump-up version
-
-		- Post roadmap
+		+ Post roadmap
+		+ make gbenchmark optional
 
 		- See whether water-sensing OFF switches work
+		- Multiple instance ID error: say where they both are
+		- See "invalid extension" bug: why ship load dialog allows one to select something that later is not recognized as a valid extension
+			- It looks like a .shp saying that layer_x is "foo\bar" without extension
 
-		- make gbenchmark optional
 		- Get new sleeping sun from TimCan
 		= Try Flugzeugdampfer_I (_Astyuu_)
 			+ Ask for an update, with nicer panel and more powerful engine
@@ -441,13 +443,18 @@ Render:
 				- ~"From structure": builds texture using structural materials' RenderColor (as opposed to color key like now)
 				- ~"TODO": using bump maps
 				- Setting storage is @ ShipTexturizer, brokered by GameController
+			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
 			- Both texturizations implemented in ShipTexturizer class
 				- Textures/ShipTexturization folder contains textures
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
 					- Material DB <-> actual textures check: done by GameController at its Create() time,
 					  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
-			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
+			- Texturizations:
+				- By triangles, with nearest neighbor
+			- ShipTexturizer:
+				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
+				- Cache usage counts are reset upon each new texturization - but textures are not purged
 
 		- Take Mike's Lego Titanic when ready
 			- Or make ball of lego
@@ -658,6 +665,8 @@ Render:
 		- Textures: https://oceana.org/marine-life
 		- Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
 		- AABB around ships' connected components, so that fish AI's avoid them
+			- Need to maintain AABB for each connected component
+				- At connected component detection algorithm
 	- Plants on the bottom - don't have to interact with the ship, just on layer in front of it
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -1153,6 +1162,9 @@ Render:
 	- New electrical material: clamp
 		- When powered, destroys point (and of course its springs)
 		- Make ship with lifeboats, using multiple clamps to keep it
+
+	- New electrical material: flickering lights
+		- Lights that flicker forever
 
 	- Breaking waves (Muller's paper)
 

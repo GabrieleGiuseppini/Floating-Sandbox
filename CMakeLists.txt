@@ -27,25 +27,55 @@ if(EXISTS "${USER_SETTINGS_FILE}")
 endif()
 
 ####################################################
-#  External library configuration
+#  External libraries configuration
 ####################################################
+
+#
+# PicoJSON
+#
+
+find_package(PicoJSON REQUIRED)
+
+#
+# Google Benchmark
+#
 
 list(APPEND CMAKE_PREFIX_PATH "${BENCHMARK_ROOT_DIR}")
 
-find_package(PicoJSON REQUIRED)
-find_package(benchmark REQUIRED)
+find_package(benchmark) # Not required as benchmarks are optional and used only for testing
+
+#
+# wxWidgets
+#
 
 find_package(wxWidgets REQUIRED base gl core html media)
 
+#
+# DevIL
+#
+
 find_package(DevIL REQUIRED)
+
 if (WIN32)
+
+	# Record runtime DevIL libraries that we need to install
+
 	get_filename_component(DEVIL_LIB_DIR ${IL_LIBRARIES} DIRECTORY)
+
 	file(GLOB DEVIL_RUNTIME_LIBRARIES
 		${DEVIL_LIB_DIR}/*.dll)
 endif()
 
+#
+# SFML
+#
+
 find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
+
 if (WIN32)
+
+	# Record runtime SFML libraries that we need to install
+
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
 		HINTS ${SFML_DIR}/../../../
@@ -74,13 +104,22 @@ if (WIN32)
 		${SFML_BIN_DIR}/openal32.dll)
 endif()
 
+#
+# OpenGL
+#
+
 find_package(OpenGL REQUIRED)
+
+#
+# GTest
+#
 
 if(MSVC_USE_STATIC_LINKING) # No way to 'negate' a variable easily
 	set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
 else()
 	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif()
+
 add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
 
 ####################################################
@@ -164,8 +203,6 @@ else(MSVC)
 	set(ADDITIONAL_LIBRARIES "")
 endif(MSVC)
 
-
-
 ####################################################
 # Sub-projects
 ####################################################
@@ -182,7 +219,7 @@ add_subdirectory(UIControls)
 add_subdirectory(UnitTests)
 
 ####################################################
-# Misc
+# Visual Studio specifics
 ####################################################
 
 if (MSVC)
