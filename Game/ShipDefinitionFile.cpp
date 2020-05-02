@@ -104,7 +104,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(
             auto const res = electricalPanelMetadata.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(instanceIndex),
-                std::forward_as_tuple(int(panelX), int(panelY), label, isHidden));
+                std::forward_as_tuple(IntegralPoint(int(panelX), int(panelY)), label, isHidden));
 
             if (!res.second)
                 throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");

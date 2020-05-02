@@ -38,6 +38,8 @@ private:
 
     static void CheckInitialized();
 
+    static unsigned int InternalLoadImage(std::filesystem::path const & filepath);
+
     struct ResizeInfo
     {
         std::function<ImageSize(ImageSize const &)> ResizeHandler;

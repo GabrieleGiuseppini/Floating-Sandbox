@@ -22,6 +22,8 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
 
     if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
     {
+        std::filesystem::path const basePath = filepath.parent_path();
+
         //
         // Load full definition
         //
@@ -29,25 +31,49 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
 
         //
-        // Make paths absolute
+        // Make structure layer image path absolute
         //
-
-        std::filesystem::path basePath = filepath.parent_path();
 
         absoluteStructuralLayerImageFilePath =
             basePath / sdf.StructuralLayerImageFilePath;
 
+        //
+        // Load ropes layer image
+        //
+
         if (!!sdf.RopesLayerImageFilePath)
         {
-            ropesLayerImage.emplace(
-                ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.RopesLayerImageFilePath));
+            try
+            {
+                ropesLayerImage.emplace(
+                    ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.RopesLayerImageFilePath));
+            }
+            catch (GameException const & gex)
+            {
+                throw GameException("Error loading rope layer image: " + std::string(gex.what()));
+            }
         }
+
+        //
+        // Load electrical layer image
+        //
 
         if (!!sdf.ElectricalLayerImageFilePath)
         {
-            electricalLayerImage.emplace(
-                ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.ElectricalLayerImageFilePath));
+            try
+            {
+                electricalLayerImage.emplace(
+                    ImageFileTools::LoadImageRgbUpperLeft(basePath / *sdf.ElectricalLayerImageFilePath));
+            }
+            catch (GameException const & gex)
+            {
+                throw GameException("Error loading electrical layer image: " + std::string(gex.what()));
+            }
         }
+
+        //
+        // Make texture layer image path
+        //
 
         if (!!sdf.TextureLayerImageFilePath)
         {
@@ -89,13 +115,13 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     assert(!!shipMetadata);
 
     //
-    // Load structural image
+    // Load structural layer image
     //
 
     ImageData structuralImage = ImageFileTools::LoadImageRgbUpperLeft(absoluteStructuralLayerImageFilePath);
 
     //
-    // Load texture image
+    // Make texture layer image
     //
 
     std::optional<RgbaImageData> textureImage;
@@ -106,8 +132,15 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         {
             // Just load as-is
 
-            textureImage.emplace(
-                ImageFileTools::LoadImageRgbaLowerLeft(absoluteTextureLayerImageFilePath));
+            try
+            {
+                textureImage.emplace(
+                    ImageFileTools::LoadImageRgbaLowerLeft(absoluteTextureLayerImageFilePath));
+            }
+            catch (GameException const & gex)
+            {
+                throw GameException("Error loading texture layer image: " + std::string(gex.what()));
+            }
 
             break;
         }

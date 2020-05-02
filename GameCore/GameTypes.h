@@ -11,6 +11,51 @@
 #include <sstream>
 #include <string>
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Geometry
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * Integral point's coordinates.
+ */
+struct IntegralPoint
+{
+    int X;
+    int Y;
+
+    IntegralPoint(
+        int x,
+        int y)
+        : X(x)
+        , Y(y)
+    {}
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << X << ", " << Y << ")";
+        return ss.str();
+    }
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
+{
+    os << p.ToString();
+    return os;
+}
+
+
+/*
+ * Octants, i.e. the direction of a spring connecting two neighbors.
+ *
+ * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
+ */
+using Octant = std::int32_t;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Data Structures
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
  * These types define the cardinality of elements in the ElementContainer.
  *
@@ -288,18 +333,15 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
  */
 struct ElectricalPanelElementMetadata
 {
-    int X;
-    int Y;
+    IntegralPoint PanelCoordinates;
     std::string Label;
     bool IsHidden;
 
     ElectricalPanelElementMetadata(
-        int x,
-        int y,
+        IntegralPoint panelCoordinates,
         std::string const & label,
         bool isHidden)
-        : X(x)
-        , Y(y)
+        : PanelCoordinates(panelCoordinates)
         , Label(label)
         , IsHidden(isHidden)
     {}
@@ -321,13 +363,6 @@ enum class HeatBlasterActionType
     Heat,
     Cool
 };
-
-/*
- * Octants, i.e. the direction of a spring connecting two neighbors.
- *
- * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
- */
-using Octant = std::int32_t;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering

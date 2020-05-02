@@ -419,18 +419,18 @@ Render:
 		+ Post roadmap
 		+ make gbenchmark optional
 
-		- See whether water-sensing OFF switches work
-		- Multiple instance ID error: say where they both are
-		- See "invalid extension" bug: why ship load dialog allows one to select something that later is not recognized as a valid extension
-			- It looks like a .shp saying that layer_x is "foo\bar" without extension
+		= See whether water-sensing OFF switches work
+			= It does, tell John Smith
+		+ Multiple instance ID error: say where they both are
+			+ Test
+		+ See "invalid extension" error message
+			+ Test
 
-		- Get new sleeping sun from TimCan
-		= Try Flugzeugdampfer_I (_Astyuu_)
-			+ Ask for an update, with nicer panel and more powerful engine
-			- Check updated zip
-			- changes.txt
-
-		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
+		- See if may get rid of ImageFileTools::Load...UpperLeft
+			- ShipBuilder
+			- OceanFloor
+			- Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
+			  ImageFileTools::LoadXYZ without "LowerLeft"
 
 		- Auto-Texturizer
 			- New ShipTexturizer class, owned by GameController
@@ -456,12 +456,17 @@ Render:
 				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
 				- Cache usage counts are reset upon each new texturization - but textures are not purged
 
+		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
+
 		- Take Mike's Lego Titanic when ready
 			- Or make ball of lego
-
+		- Get new sleeping sun from TimCan
+		= Try Flugzeugdampfer_I (_Astyuu_)
+			+ Ask for an update, with nicer panel and more powerful engine
+			- Check updated zip
+			- changes.txt
 		- Diesel engine
-			+ Tell John Smith that sound is not OK
-			= Got new sounds, try
+			= Got new sounds from John Smith, check them out
 			- Redo electrical template
 
 		- Release: the "Eternal Patrol" update 
@@ -473,7 +478,7 @@ Render:
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
 			  need to have a way to change layer, which would however require a different rendering batch (because
-			  or different orthomatrix)
+			  of different orthomatrix)
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
@@ -483,7 +488,7 @@ Render:
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index
-					- Do state-machine typing in MainFrame, "<control sequence>DEBUG" -> DebugWindow						
+					- Use SecretTypingDebugConsole
 			- AA) Try with force-based adjusting
 				- Gives a chance to springs to prevent flips
 			- A)
@@ -497,11 +502,11 @@ Render:
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
 		- Splash for bombs
-			- Option A) Ephemeral particle with own shader:
+			- Option A) Ephemeral particles with own shader:
 				- Texture of splash
 				- Elongated with vertical velocity
 			- Option B) Same as A, but instead of one single texture, a (small) set of frames 
-			- Option C) "Movie" like explosions
+			- Option C) Fully "movie" (not ephemeral particles), just like explosions
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects

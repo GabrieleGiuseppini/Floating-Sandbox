@@ -21,7 +21,7 @@ MusicController::MusicController(
     : // State
       mIsMuted(false)
     , mBackgroundMusicVolume(50.0f)
-    , mPlayBackgroundMusic(false)
+    , mPlayBackgroundMusic(true)
     , mGameMusicVolume(100.0f)
     , mPlaySinkingMusic(true)
     // Music

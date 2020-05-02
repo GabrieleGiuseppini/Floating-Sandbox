@@ -20,7 +20,7 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
+#include <optional>
 #include <vector>
 
 /*
@@ -43,6 +43,7 @@ private:
 
     struct PointInfo
     {
+        std::optional<IntegralPoint> OriginalDefinitionCoordinates; // From any of the layers that provide points
         vec2f Position;
         vec2f TextureCoordinates;
         vec4f RenderColor;
@@ -56,13 +57,15 @@ private:
         std::vector<ElementIndex> ConnectedSprings1;
 
         PointInfo(
+            std::optional<IntegralPoint> originalDefinitionCoordinates,
             vec2f position,
             vec2f textureCoordinates,
             vec4f renderColor,
             StructuralMaterial const & structuralMtl,
             bool isRope,
             float water)
-            : Position(position)
+            : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
+            , Position(position)
             , TextureCoordinates(textureCoordinates)
             , RenderColor(renderColor)
             , StructuralMtl(structuralMtl)

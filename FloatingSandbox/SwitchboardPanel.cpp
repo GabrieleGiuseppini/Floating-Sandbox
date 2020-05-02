@@ -993,7 +993,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
             if (!!(it.second.PanelElementMetadata))
                 layoutElements.emplace_back(
                     it.first,
-                    LayoutHelper::LayoutElement<ElectricalElementId>::IntegralPoint{ it.second.PanelElementMetadata->X, it.second.PanelElementMetadata->Y });
+                    it.second.PanelElementMetadata->PanelCoordinates);
             else
                 layoutElements.emplace_back(
                     it.first,

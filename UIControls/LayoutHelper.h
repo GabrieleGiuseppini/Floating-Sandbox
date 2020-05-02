@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -21,12 +22,6 @@ public:
     template<typename TElement>
     struct LayoutElement
     {
-        struct IntegralPoint
-        {
-            int X;
-            int Y;
-        };
-
         TElement Element;
         std::optional<IntegralPoint> Coordinates;
 

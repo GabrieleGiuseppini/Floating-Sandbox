@@ -234,7 +234,7 @@ static_assert(offsetof(vec2f, x) == 0);
 static_assert(offsetof(vec2f, y) == sizeof(float));
 static_assert(sizeof(vec2f) == 2 * sizeof(float));
 
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec2f const & v)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec2f const & v)
 {
     os << v.toString();
     return os;
@@ -556,7 +556,7 @@ static_assert(offsetof(vec4f, z) == 2 * sizeof(float));
 static_assert(offsetof(vec4f, w) == 3 * sizeof(float));
 static_assert(sizeof(vec4f) == 4 * sizeof(float));
 
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec4f const & v)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec4f const & v)
 {
     os << v.toString();
     return os;

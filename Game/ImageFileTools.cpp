@@ -19,24 +19,11 @@ bool ImageFileTools::mIsInitialized = false;
 
 ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 {
-    CheckInitialized();
-
-    ILuint imghandle;
-    ilGenImages(1, &imghandle);
-    ilBindImage(imghandle);
-
     //
     // Load image
     //
 
-    std::string filepathStr = filepath.string();
-    ILconst_string ilFilename(filepathStr.c_str());
-    if (!ilLoadImage(ilFilename))
-    {
-        ILint devilError = ilGetError();
-        std::string devilErrorMessage(iluErrorString(devilError));
-        throw GameException("Could not load image \"" + filepathStr + "\": " + devilErrorMessage);
-    }
+    ILuint imgHandle = InternalLoadImage(filepath);
 
     //
     // Get size
@@ -50,7 +37,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
     // Delete image
     //
 
-    ilDeleteImage(imghandle);
+    ilDeleteImage(imgHandle);
 
 
     //
@@ -59,7 +46,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 
     if (width == 0 || height == 0)
     {
-        throw GameException("Could not load image \"" + filepathStr + "\": image is empty");
+        throw GameException("Could not load image \"" + filepath.string() + "\": image is empty");
     }
 
     return ImageSize(width, height);
@@ -197,6 +184,38 @@ void ImageFileTools::CheckInitialized()
     }
 }
 
+unsigned int ImageFileTools::InternalLoadImage(std::filesystem::path const & filepath)
+{
+    CheckInitialized();
+
+    ILuint imghandle;
+    ilGenImages(1, &imghandle);
+    ilBindImage(imghandle);
+
+    //
+    // Load image
+    //
+
+    std::string const filepathStr = filepath.string();
+    ILconst_string ilFilename(filepathStr.c_str());
+    if (!ilLoadImage(ilFilename))
+    {
+        ILint const devilError = ilGetError();
+
+        // First check if the file is missing altogether
+        if (!std::filesystem::exists(filepath))
+        {
+            throw GameException("Could not load image \"" + filepathStr + "\": the file does not exist");
+        }
+
+        // Provide DevIL's error message now
+        std::string const devilErrorMessage(iluErrorString(devilError));
+        throw GameException("Could not load image \"" + filepathStr + "\": " + devilErrorMessage);
+    }
+
+    return static_cast<unsigned int>(imghandle);
+}
+
 template <typename TColor>
 ImageData<TColor> ImageFileTools::InternalLoadImageLowerLeftAndResize(
     std::filesystem::path const & filepath,
@@ -230,24 +249,11 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
     int targetOrigin,
     std::optional<ResizeInfo> resizeInfo)
 {
-    CheckInitialized();
-
     //
     // Load image
     //
 
-    ILuint imghandle;
-    ilGenImages(1, &imghandle);
-    ilBindImage(imghandle);
-
-    std::string filepathStr = filepath.string();
-    ILconst_string ilFilename(filepathStr.c_str());
-    if (!ilLoadImage(ilFilename))
-    {
-        ILint devilError = ilGetError();
-        std::string devilErrorMessage(iluErrorString(devilError));
-        throw GameException("Could not load image \"" + filepathStr + "\": " + devilErrorMessage);
-    }
+    ILuint imgHandle = InternalLoadImage(filepath);
 
     //
     // Check if we need to convert it
@@ -261,7 +267,7 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
-            throw GameException("Could not convert image \"" + filepathStr + "\": " + devilErrorMessage);
+            throw GameException("Could not convert image \"" + filepath.string() + "\": " + devilErrorMessage);
         }
     }
 
@@ -314,13 +320,11 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
     auto data = std::make_unique<TColor[]>(imageSize.Width * imageSize.Height);
     std::memcpy(static_cast<void*>(data.get()), imageData, imageSize.Width * imageSize.Height * bpp);
 
-
     //
     // Delete image
     //
 
-    ilDeleteImage(imghandle);
-
+    ilDeleteImage(imgHandle);
 
 
     return ImageData<TColor>(
