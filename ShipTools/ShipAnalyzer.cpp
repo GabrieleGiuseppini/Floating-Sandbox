@@ -23,7 +23,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & materialsDir)
 {
     // Load image
-    auto image = ImageFileTools::LoadImageRgbUpperLeft(std::filesystem::path(inputFile));
+    auto image = ImageFileTools::LoadImageRgbLowerLeft(std::filesystem::path(inputFile));
 
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 
@@ -44,7 +44,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
         {
             vec2f const worldPosition(worldX, static_cast<float>(y));
 
-            auto const pixelIndex = (x + (image.Size.Height - y - 1) * image.Size.Width);
+            auto const pixelIndex = (x + y * image.Size.Width);
             StructuralMaterial const * const structuralMaterial = materials.FindStructuralMaterial(image.Data[pixelIndex]);
             if (nullptr != structuralMaterial)
             {

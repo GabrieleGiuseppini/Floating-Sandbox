@@ -12,12 +12,15 @@ size_t OceanFloorTerrain::Size = GameParameters::OceanFloorTerrainSamples<size_t
 
 namespace /* anonymous */ {
 
+    /*
+     * Y=H at topmost, Y=0 if nothing found
+     */
     int GetTopmostY(
         RgbImageData const & imageData,
         int x)
     {
         int imageY;
-        for (imageY = 0 /*top*/; imageY < imageData.Size.Height; ++imageY)
+        for (imageY = imageData.Size.Height - 1; imageY >= 0; --imageY)
         {
             int pointIndex = imageY * imageData.Size.Width + x;
             if (imageData.Data[pointIndex] != rgbColor::zero())
@@ -27,7 +30,7 @@ namespace /* anonymous */ {
             }
         }
 
-        return imageY;
+        return imageY + 1;
     }
 }
 
@@ -36,7 +39,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
 
     // Load image
-    RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgbUpperLeft(imageFilePath);
+    RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgbLowerLeft(imageFilePath);
     float const halfHeight = static_cast<float>(oceanFloorImage.Size.Height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples
@@ -45,7 +48,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
     // world width
     float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.Width) / GameParameters::MaxWorldWidth;
-  
+
     for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples<size_t>; ++s)
     {
         // Calculate pixel X
@@ -55,18 +58,19 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
         float const imageX = worldX * worldXToImageX;
 
         // Integral and fractional parts
-        int const imageXI = static_cast<int>(floor(imageX));        
+        int const imageXI = static_cast<int>(floor(imageX));
         float const imageXIF = imageX - static_cast<float>(imageXI);
 
         assert(imageXI >= 0 && imageXI < oceanFloorImage.Size.Width);
 
         // Find topmost Y's at this image X
-        float const sampleValue = static_cast<float>(oceanFloorImage.Size.Height - GetTopmostY(oceanFloorImage, imageXI)) - halfHeight;
+        //      Y=H at topmost => s=H/2, Y=0 if nothing found => s=-H/2
+        float const sampleValue = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI)) - halfHeight;
 
         if (imageXI < oceanFloorImage.Size.Width - 1)
         {
             // Interpolate with next pixel
-            float const sampleValue2 = static_cast<float>(oceanFloorImage.Size.Height - GetTopmostY(oceanFloorImage, imageXI + 1)) - halfHeight;
+            float const sampleValue2 = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI + 1)) - halfHeight;
 
             // Store sample
             terrainBuffer[s] =

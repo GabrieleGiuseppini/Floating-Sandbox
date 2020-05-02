@@ -421,6 +421,7 @@ Render:
 
 		= See whether water-sensing OFF switches work
 			= It does, tell John Smith
+		- Ask auto-zoom
 		+ Multiple instance ID error: say where they both are
 			+ Test
 		+ See "invalid extension" error message
@@ -428,9 +429,12 @@ Render:
 
 		- See if may get rid of ImageFileTools::Load...UpperLeft
 			- ShipBuilder
-			- OceanFloor
+			+ OceanFloor
+			+ ShipAnalyzer
+			- Nuke from ImageFileTools
 			- Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
 			  ImageFileTools::LoadXYZ without "LowerLeft"
+			  - Don't forget ShipAnalyzer
 
 		- Auto-Texturizer
 			- New ShipTexturizer class, owned by GameController
