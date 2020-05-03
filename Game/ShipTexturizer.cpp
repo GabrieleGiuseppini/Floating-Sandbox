@@ -20,19 +20,51 @@ RgbaImageData ShipTexturizer::Texturize(
     std::vector<ShipBuildPoint> const & points) const
 {
     // TODOTEST: for the time being we always do it with structure, as we used to do
-    /*
+
+    //
     // Resize it up - ideally by 8, but don't exceed 4096 (magic number) in any dimension
+    //
 
-    int maxDimension = std::max(shipDefinition.StructuralLayerImage.Size.Width, shipDefinition.StructuralLayerImage.Size.Height);
-    int magnify = 8;
-    while (maxDimension * magnify > 4096 && magnify > 1)
-        magnify /= 2;
+    int const maxDimension = std::max(structureSize.Width, structureSize.Height);
+    assert(maxDimension > 0);
 
-    return ImageFileTools::LoadImageRgbaAndMagnify(
-        shipDefinition.
-            absoluteTextureLayerImageFilePath,
-            magnify));
-    */
-    std::unique_ptr<rgbaColor[]> newImageData;
-    return RgbaImageData(1, 1, std::move(newImageData));
+    int const magnificationFactor = std::max(1, 4096 / maxDimension);
+
+    ImageSize const textureSize = structureSize * magnificationFactor;
+
+    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.Width * textureSize.Height);
+
+    // TODO: optimize (precalc'd indices)
+    for (int y = 1; y <= structureSize.Height; ++y)
+    {
+        for (int x = 1; x <= structureSize.Width; ++x)
+        {
+            rgbaColor pixelColor;
+            if (pointMatrix[x][y].has_value())
+            {
+                // TODOTEST: We're using RenderColor here, rather than color key, just because
+                // material doesn't carry color key
+                pixelColor = rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor);
+            }
+            else
+            {
+                pixelColor = rgbaColor::zero();
+            }
+
+            // Fill quad
+            for (int yy = 0; yy < magnificationFactor; ++yy)
+            {
+                for (int xx = 0; xx < magnificationFactor; ++xx)
+                {
+                    int const destIndex =
+                        (x - 1) * magnificationFactor + xx
+                        + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
+
+                    newImageData[destIndex] = pixelColor;
+                }
+            }
+        }
+    }
+
+    return RgbaImageData(textureSize, std::move(newImageData));
 }

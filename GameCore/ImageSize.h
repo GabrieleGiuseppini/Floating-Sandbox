@@ -62,6 +62,13 @@ public:
         return !(*this == other);
     }
 
+    inline ImageSize operator*(int magnificationFactor) const
+    {
+        return ImageSize(
+            this->Width * magnificationFactor,
+            this->Height * magnificationFactor);
+    }
+
     inline ImageSize Union(ImageSize const & other) const
     {
         return ImageSize(

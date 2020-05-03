@@ -467,14 +467,14 @@ Render:
 				+ Simple member
 				+ Then invokes ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
 			+ ShipTexturizer instance is passed by GameController to ShipBuilder (via World)
-			= ShipBuilder uses ShipTexturizer to create - and return - texture
-				= Args: 
+			+ ShipBuilder uses ShipTexturizer to create - and return - texture
+				+ Args: 
 					+ ShipBuildTypes.h:
 						+ Definition (using) of ShipBuildPointIndexMatrix
 						+ ShipBuildPoint
-				- First experiment: current (legacy) structure texture
-					- Simple Nx magnify
-				- Invoke from ShipBuilder
+				+ First experiment: current (legacy) structure texture
+					+ Simple Nx magnify
+				+ Invoke from ShipBuilder
 			- StructuralMaterial has new mandatory "texture_name" string arg
 			- Do texturizations:
 				- FlatStructure:
@@ -488,6 +488,7 @@ Render:
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
 			- Implement ShipTexturizer::VerifyMaterialsDatabase
+			- Try edge smoothing
 			- Decide ShipAutoTexturizationMode default
 			- Tests:
 				- Ship with texture too large than OpenGL's limits: verify we still display error and everything continues

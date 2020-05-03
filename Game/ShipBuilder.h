@@ -43,59 +43,6 @@ public:
 
 private:
 
-    struct PointInfo
-    {
-        std::optional<IntegralPoint> OriginalDefinitionCoordinates; // From any of the layers that provide points
-        vec2f Position;
-        vec2f TextureCoordinates;
-        vec4f RenderColor;
-        StructuralMaterial const & StructuralMtl;
-        bool IsRope;
-        bool IsLeaking;
-        float Water;
-
-        ElectricalMaterial const * ElectricalMtl;
-        ElectricalElementInstanceIndex ElectricalElementInstanceIndex;
-        std::vector<ElementIndex> ConnectedSprings1;
-
-        PointInfo(
-            std::optional<IntegralPoint> originalDefinitionCoordinates,
-            vec2f position,
-            vec2f textureCoordinates,
-            vec4f renderColor,
-            StructuralMaterial const & structuralMtl,
-            bool isRope,
-            float water)
-            : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
-            , Position(position)
-            , TextureCoordinates(textureCoordinates)
-            , RenderColor(renderColor)
-            , StructuralMtl(structuralMtl)
-            , IsRope(isRope)
-            , IsLeaking(isRope ? true : false) // Ropes leak by default
-            , Water(water)
-            , ElectricalMtl(nullptr)
-            , ElectricalElementInstanceIndex(NoneElectricalElementInstanceIndex)
-            , ConnectedSprings1()
-        {
-        }
-
-        bool ContainsConnectedSpring(ElementIndex springIndex1)
-        {
-            return std::find(
-                ConnectedSprings1.cbegin(),
-                ConnectedSprings1.cend(),
-                springIndex1)
-                != ConnectedSprings1.cend();
-        }
-
-        void AddConnectedSpring(ElementIndex springIndex1)
-        {
-            assert(!ContainsConnectedSpring(springIndex1));
-            ConnectedSprings1.push_back(springIndex1);
-        }
-    };
-
     struct RopeSegment
     {
         ElementIndex PointAIndex1;
@@ -134,7 +81,7 @@ private:
         }
     };
 
-    struct SpringInfo
+    struct ShipBuildSpring
     {
         ElementIndex PointAIndex1;
         uint32_t PointAAngle;
@@ -144,7 +91,7 @@ private:
 
         FixedSizeVector<ElementIndex, 2> SuperTriangles2;
 
-        SpringInfo(
+        ShipBuildSpring(
             ElementIndex pointAIndex1,
             uint32_t pointAAngle,
             ElementIndex pointBIndex1,
@@ -158,13 +105,13 @@ private:
         }
     };
 
-    struct TriangleInfo
+    struct ShipBuildTriangle
     {
         std::array<ElementIndex, 3> PointIndices1;
 
         FixedSizeVector<ElementIndex, 4> SubSprings2;
 
-        TriangleInfo(
+        ShipBuildTriangle(
             std::array<ElementIndex, 3> const & pointIndices1)
             : PointIndices1(pointIndices1)
             , SubSprings2()
@@ -210,7 +157,7 @@ private:
         ElementIndex pointIndex,
         Physics::Points const & points,
         std::vector<ElementIndex> const & pointIndexRemap,
-        std::vector<SpringInfo> const & springInfos)
+        std::vector<ShipBuildSpring> const & springInfos)
     {
         for (auto cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
@@ -241,53 +188,53 @@ private:
     static void AppendRopeEndpoints(
         RgbImageData const & ropeLayerImage,
         std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
-        std::vector<PointInfo> & pointInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> & pointIndexMatrix,
+        std::vector<ShipBuildPoint> & pointInfos1,
+        ShipBuildPointIndexMatrix & pointIndexMatrix,
         MaterialDatabase const & materialDatabase,
         vec2f const & shipOffset);
 
     static void DecoratePointsWithElectricalMaterials(
         RgbImageData const & layerImage,
-        std::vector<PointInfo> & pointInfos1,
+        std::vector<ShipBuildPoint> & pointInfos1,
         bool isDedicatedElectricalLayer,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         MaterialDatabase const & materialDatabase);
 
     static void AppendRopes(
         std::map<MaterialDatabase::ColorKey, RopeSegment> const & ropeSegments,
         ImageSize const & structureImageSize,
         StructuralMaterial const & ropeMaterial,
-        std::vector<PointInfo> & pointInfos1,
-        std::vector<SpringInfo> & springInfos1);
+        std::vector<ShipBuildPoint> & pointInfos1,
+        std::vector<ShipBuildSpring> & springInfos1);
 
     static void CreateShipElementInfos(
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        std::vector<PointInfo> & pointInfos1,
-        std::vector<SpringInfo> & springInfos1,
-        std::vector<TriangleInfo> & triangleInfos1,
+        std::vector<ShipBuildPoint> & pointInfos1,
+        std::vector<ShipBuildSpring> & springInfos1,
+        std::vector<ShipBuildTriangle> & triangleInfos1,
         size_t & leakingPointsCount);
 
     static Physics::Points CreatePoints(
-        std::vector<PointInfo> const & pointInfos2,
+        std::vector<ShipBuildPoint> const & pointInfos2,
         Physics::World & parentWorld,
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices);
 
-    static std::vector<TriangleInfo> FilterOutRedundantTriangles(
-        std::vector<TriangleInfo> const & triangleInfos2,
+    static std::vector<ShipBuildTriangle> FilterOutRedundantTriangles(
+        std::vector<ShipBuildTriangle> const & triangleInfos2,
         Physics::Points const & points,
         std::vector<ElementIndex> const & pointIndexRemap,
-        std::vector<SpringInfo> const & springInfos2);
+        std::vector<ShipBuildSpring> const & springInfos2);
 
     static void ConnectSpringsAndTriangles(
-        std::vector<SpringInfo> & springInfos2,
-        std::vector<TriangleInfo> & triangleInfos2);
+        std::vector<ShipBuildSpring> & springInfos2,
+        std::vector<ShipBuildTriangle> & triangleInfos2);
 
     static Physics::Springs CreateSprings(
-        std::vector<SpringInfo> const & springInfos2,
+        std::vector<ShipBuildSpring> const & springInfos2,
         Physics::Points & points,
         std::vector<ElementIndex> const & pointIndexRemap,
         Physics::World & parentWorld,
@@ -295,7 +242,7 @@ private:
         GameParameters const & gameParameters);
 
     static Physics::Triangles CreateTriangles(
-        std::vector<TriangleInfo> const & triangleInfos2,
+        std::vector<ShipBuildTriangle> const & triangleInfos2,
         Physics::Points & points,
         std::vector<ElementIndex> const & pointIndexRemap);
 
@@ -311,7 +258,7 @@ private:
 
 private:
 
-    using ReorderingResults = std::tuple<std::vector<PointInfo>, std::vector<ElementIndex>, std::vector<SpringInfo>>;
+    using ReorderingResults = std::tuple<std::vector<ShipBuildPoint>, std::vector<ElementIndex>, std::vector<ShipBuildSpring>>;
 
     //
     // Reordering
@@ -319,68 +266,68 @@ private:
 
     template <int StripeLength>
     static ReorderingResults ReorderPointsAndSpringsOptimally_Stripes(
-        std::vector<PointInfo> const & pointInfos1,
-        std::vector<SpringInfo> const & springInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        std::vector<ShipBuildPoint> const & pointInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
     template <int StripeLength>
     static void ReorderPointsAndSpringsOptimally_Stripes_Stripe(
         int y,
-        std::vector<PointInfo> const & pointInfos1,
+        std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<bool> & reorderedPointInfos1,
-        std::vector<SpringInfo> const & springInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1,
         std::vector<bool> & reorderedSpringInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
         std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
-        std::vector<PointInfo> & pointInfos2,
+        std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<SpringInfo> & springInfos2);
+        std::vector<ShipBuildSpring> & springInfos2);
 
     static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
-        std::vector<PointInfo> const & pointInfos1,
-        std::vector<SpringInfo> const & springInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        std::vector<ShipBuildPoint> const & pointInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
     static void ReorderPointsAndSpringsOptimally_Blocks_Row(
         int y,
-        std::vector<PointInfo> const & pointInfos1,
+        std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<bool> & reorderedPointInfos1,
-        std::vector<SpringInfo> const & springInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1,
         std::vector<bool> & reorderedSpringInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
         std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
-        std::vector<PointInfo> & pointInfos2,
+        std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<SpringInfo> & springInfos2);
+        std::vector<ShipBuildSpring> & springInfos2);
 
     template <int BlockSize>
     static ReorderingResults ReorderPointsAndSpringsOptimally_Tiling(
-        std::vector<PointInfo> const & pointInfos1,
-        std::vector<SpringInfo> const & springInfos1,
-        std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]> const & pointIndexMatrix,
+        std::vector<ShipBuildPoint> const & pointInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
-    static std::vector<SpringInfo> ReorderSpringsOptimally_TomForsyth(
-        std::vector<SpringInfo> const & springInfos1,
+    static std::vector<ShipBuildSpring> ReorderSpringsOptimally_TomForsyth(
+        std::vector<ShipBuildSpring> const & springInfos1,
         size_t pointCount);
 
-    static std::vector<TriangleInfo> ReorderTrianglesOptimally_ReuseOptimization(
-        std::vector<TriangleInfo> const & triangleInfos1,
+    static std::vector<ShipBuildTriangle> ReorderTrianglesOptimally_ReuseOptimization(
+        std::vector<ShipBuildTriangle> const & triangleInfos1,
         size_t pointCount);
 
-    static std::vector<TriangleInfo> ReorderTrianglesOptimally_TomForsyth(
-        std::vector<TriangleInfo> const & triangleInfos1,
+    static std::vector<ShipBuildTriangle> ReorderTrianglesOptimally_TomForsyth(
+        std::vector<ShipBuildTriangle> const & triangleInfos1,
         size_t pointCount);
 
-    static float CalculateACMR(std::vector<SpringInfo> const & springInfos);
+    static float CalculateACMR(std::vector<ShipBuildSpring> const & springInfos);
 
-    static float CalculateACMR(std::vector<TriangleInfo> const & triangleInfos);
+    static float CalculateACMR(std::vector<ShipBuildTriangle> const & triangleInfos);
 
-    static float CalculateVertexMissRatio(std::vector<TriangleInfo> const & triangleInfos);
+    static float CalculateVertexMissRatio(std::vector<ShipBuildTriangle> const & triangleInfos);
 
 private:
 
