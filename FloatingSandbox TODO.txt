@@ -451,6 +451,7 @@ Render:
 							  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
 					- Setting storage is @ ShipTexturizer, brokered by GameController
 				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder					
+				! Edge smoothing is already done by means of tessellation
 			+ ShipAutoTexturizationMode At GameTypes
 			+ ResourceLocator::GetMaterialTexturesFolderPath()
 			+ Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
@@ -476,9 +477,9 @@ Render:
 					+ Simple Nx magnify
 				+ Invoke from ShipBuilder
 			- StructuralMaterial has new mandatory "texture_name" string arg
-			- Do texturizations:
-				- FlatStructure:
-					- TODOHERE
+				- For now just optional
+			- Do texturizations
+				+ FlatStructure:
 				- MaterialTextures:
 					- TODOHERE
 			- ShipTexturizer's cache:
@@ -487,8 +488,8 @@ Render:
 			- I/GameController settings: ShipAutoTexturizationMode
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
+			- Make StructuralMaterial' "texture_name" mandatory
 			- Implement ShipTexturizer::VerifyMaterialsDatabase
-			- Try edge smoothing
 			- Decide ShipAutoTexturizationMode default
 			- Tests:
 				- Ship with texture too large than OpenGL's limits: verify we still display error and everything continues

@@ -46,16 +46,10 @@ RgbaImageData ShipTexturizer::Texturize(
     {
         for (int x = 1; x <= structureSize.Width; ++x)
         {
-            // Get fixed pixel color
-            rgbaColor pixelColor;
-            if (pointMatrix[x][y].has_value())
-            {
-                pixelColor = rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor);
-            }
-            else
-            {
-                pixelColor = rgbaColor::zero(); // Fully transparent
-            }
+            // Get structure pixel color
+            rgbaColor const structurePixelColor = pointMatrix[x][y].has_value()
+                ? rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor)
+                : rgbaColor::zero(); // Fully transparent
 
             // Fill quad
             for (int yy = 0; yy < magnificationFactor; ++yy)
@@ -66,7 +60,7 @@ RgbaImageData ShipTexturizer::Texturize(
 
                 for (int xx = 0; xx < magnificationFactor; ++xx)
                 {
-                    newImageData[quadOffset + xx] = pixelColor;
+                    newImageData[quadOffset + xx] = structurePixelColor;
                 }
             }
         }

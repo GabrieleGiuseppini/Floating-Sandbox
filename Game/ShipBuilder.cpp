@@ -609,13 +609,13 @@ void ShipBuilder::AppendRopes(
 
         // W = wide, N = narrow
 
-        float dx = endPos.x - startPos.x;
-        float dy = endPos.y - startPos.y;
+        float const dx = endPos.x - startPos.x;
+        float const dy = endPos.y - startPos.y;
         bool widestIsX;
         float slope;
         float startW, startN;
         float endW;
-        float stepW;
+        float stepW; // +1.0/-1.0
         if (fabs(dx) > fabs(dy))
         {
             widestIsX = true;
@@ -697,7 +697,7 @@ void ShipBuilder::AppendRopes(
                 newPosition = vec2f(curN, curW);
             }
 
-            auto newPointIndex = static_cast<ElementIndex>(pointInfos1.size());
+            auto const newPointIndex = static_cast<ElementIndex>(pointInfos1.size());
 
             // Add ShipBuildSpring
             ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
