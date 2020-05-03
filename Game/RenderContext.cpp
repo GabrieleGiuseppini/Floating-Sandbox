@@ -25,10 +25,10 @@ RenderContext::RenderContext(
     // Buffers
     : mStarVertexBuffer()
     , mStarVBO()
-	, mLightningVertexBuffer()
-	, mBackgroundLightningVertexCount(0)
-	, mForegroundLightningVertexCount(0)
-	, mLightningVBO()
+    , mLightningVertexBuffer()
+    , mBackgroundLightningVertexCount(0)
+    , mForegroundLightningVertexCount(0)
+    , mLightningVBO()
     , mCloudVertexBuffer()
     , mCloudVBO()
     , mLandSegmentBuffer()
@@ -41,19 +41,19 @@ RenderContext::RenderContext(
     , mCrossOfLightVBO()
     , mHeatBlasterFlameVBO()
     , mFireExtinguisherSprayVBO()
-	, mRainVBO()
+    , mRainVBO()
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
     , mStarVAO()
-	, mLightningVAO()
+    , mLightningVAO()
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
     , mCrossOfLightVAO()
     , mHeatBlasterFlameVAO()
     , mFireExtinguisherSprayVAO()
-	, mRainVAO()
+    , mRainVAO()
     , mWorldBorderVAO()
     // Textures
     , mCloudTextureAtlasOpenGLHandle()
@@ -75,7 +75,7 @@ RenderContext::RenderContext(
     , mUploadedNoiseTexturesManager()
     // Misc Parameters
     , mCurrentStormAmbientDarkening(1.0f)
-	, mCurrentRainDensity(0.0f)
+    , mCurrentRainDensity(0.0f)
     , mEffectiveAmbientLightIntensity(1.0f)
     // Ships
     , mShips()
@@ -182,14 +182,14 @@ RenderContext::RenderContext(
     GLuint vbos[10];
     glGenBuffers(10, vbos);
     mStarVBO = vbos[0];
-	mLightningVBO = vbos[1];
+    mLightningVBO = vbos[1];
     mCloudVBO = vbos[2];
     mLandVBO = vbos[3];
     mOceanVBO = vbos[4];
     mCrossOfLightVBO = vbos[5];
     mHeatBlasterFlameVBO = vbos[6];
     mFireExtinguisherSprayVBO = vbos[7];
-	mRainVBO = vbos[8];
+    mRainVBO = vbos[8];
     mWorldBorderVBO = vbos[9];
 
 
@@ -212,25 +212,25 @@ RenderContext::RenderContext(
     glBindVertexArray(0);
 
 
-	//
-	// Initialize Lightning VAO
-	//
+    //
+    // Initialize Lightning VAO
+    //
 
-	glGenVertexArrays(1, &tmpGLuint);
-	mLightningVAO = tmpGLuint;
+    glGenVertexArrays(1, &tmpGLuint);
+    mLightningVAO = tmpGLuint;
 
-	glBindVertexArray(*mLightningVAO);
-	CheckOpenGLError();
+    glBindVertexArray(*mLightningVAO);
+    CheckOpenGLError();
 
-	// Describe vertex attributes
-	glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
-	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning1));
-	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning1), 4, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)0);
-	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning2));
-	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning2), 3, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)(4 * sizeof(float)));
-	CheckOpenGLError();
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning1), 4, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Lightning2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Lightning2), 3, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void*)(4 * sizeof(float)));
+    CheckOpenGLError();
 
-	glBindVertexArray(0);
+    glBindVertexArray(0);
 
 
     //
@@ -351,38 +351,38 @@ RenderContext::RenderContext(
     glBindVertexArray(0);
 
 
-	//
-	// Initialize Rain VAO
-	//
+    //
+    // Initialize Rain VAO
+    //
 
-	glGenVertexArrays(1, &tmpGLuint);
-	mRainVAO = tmpGLuint;
+    glGenVertexArrays(1, &tmpGLuint);
+    mRainVAO = tmpGLuint;
 
-	glBindVertexArray(*mRainVAO);
-	CheckOpenGLError();
+    glBindVertexArray(*mRainVAO);
+    CheckOpenGLError();
 
-	// Describe vertex attributes
-	glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
-	glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rain));
-	glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void*)0);
-	CheckOpenGLError();
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rain));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void*)0);
+    CheckOpenGLError();
 
-	// Upload quad
-	{
-		RainVertex rainVertices[6]{
-			{-1.0, 1.0},
-			{-1.0, -1.0},
-			{1.0, 1.0},
-			{-1.0, -1.0},
-			{1.0, 1.0},
-			{1.0, -1.0}
-		};
+    // Upload quad
+    {
+        RainVertex rainVertices[6]{
+            {-1.0, 1.0},
+            {-1.0, -1.0},
+            {1.0, 1.0},
+            {-1.0, -1.0},
+            {1.0, 1.0},
+            {1.0, -1.0}
+        };
 
-		glBufferData(GL_ARRAY_BUFFER, sizeof(RainVertex) * 6, rainVertices, GL_STATIC_DRAW);
-		CheckOpenGLError();
-	}
+        glBufferData(GL_ARRAY_BUFFER, sizeof(RainVertex) * 6, rainVertices, GL_STATIC_DRAW);
+        CheckOpenGLError();
+    }
 
-	glBindVertexArray(0);
+    glBindVertexArray(0);
 
 
     //
@@ -766,8 +766,8 @@ RenderContext::RenderContext(
     mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
     mShaderManager->ActivateProgram<ProgramType::FireExtinguisherSpray>();
     mShaderManager->SetTextureParameters<ProgramType::FireExtinguisherSpray>();
-	mShaderManager->ActivateProgram<ProgramType::Lightning>();
-	mShaderManager->SetTextureParameters<ProgramType::Lightning>();
+    mShaderManager->ActivateProgram<ProgramType::Lightning>();
+    mShaderManager->SetTextureParameters<ProgramType::Lightning>();
 
 
     //
@@ -797,7 +797,7 @@ RenderContext::RenderContext(
     OnViewModelUpdated();
 
     OnEffectiveAmbientLightIntensityUpdated();
-	OnRainDensityUpdated();
+    OnRainDensityUpdated();
     OnOceanTransparencyUpdated();
     OnOceanDarkeningRateUpdated();
     OnOceanRenderParametersUpdated();
@@ -844,6 +844,16 @@ void RenderContext::Reset()
 {
     // Clear ships
     mShips.clear();
+}
+
+void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
+{
+    // Check texture against max texture size
+    if (texture.Size.Width > GameOpenGL::MaxTextureSize
+        || texture.Size.Height > GameOpenGL::MaxTextureSize)
+    {
+        throw GameException("We are sorry, but this ship's texture image is too large for your graphics driver");
+    }
 }
 
 void RenderContext::AddShip(
@@ -1026,48 +1036,48 @@ void RenderContext::RenderCloudsStart()
 
 void RenderContext::UploadLightningsStart(size_t lightningCount)
 {
-	//
-	// Prepare buffer
-	//
+    //
+    // Prepare buffer
+    //
 
-	if (lightningCount > 0)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
+    if (lightningCount > 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-		auto const nVertices = 6 * lightningCount;
-		if (nVertices > mLightningVertexBuffer.max_size())
-		{
-			glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
-			CheckOpenGLError();
-		}
+        auto const nVertices = 6 * lightningCount;
+        if (nVertices > mLightningVertexBuffer.max_size())
+        {
+            glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
+            CheckOpenGLError();
+        }
 
-		mLightningVertexBuffer.map_and_fill(nVertices);
+        mLightningVertexBuffer.map_and_fill(nVertices);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	else
-	{
-		mLightningVertexBuffer.reset();
-	}
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else
+    {
+        mLightningVertexBuffer.reset();
+    }
 
-	mBackgroundLightningVertexCount = 0;
-	mForegroundLightningVertexCount = 0;
+    mBackgroundLightningVertexCount = 0;
+    mForegroundLightningVertexCount = 0;
 }
 
 void RenderContext::UploadLightningsEnd()
 {
-	if (mLightningVertexBuffer.size() > 0)
-	{
-		//
-		// Upload lightning vertex buffer
-		//
+    if (mLightningVertexBuffer.size() > 0)
+    {
+        //
+        // Upload lightning vertex buffer
+        //
 
-		glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-		mLightningVertexBuffer.unmap();
+        mLightningVertexBuffer.unmap();
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 void RenderContext::UploadCloudsStart(size_t cloudCount)
@@ -1114,45 +1124,45 @@ void RenderContext::UploadCloudsEnd()
 
 void RenderContext::RenderCloudsEnd()
 {
-	////////////////////////////////////////////////////
-	// Draw background clouds, iff there are background lightnings
-	////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // Draw background clouds, iff there are background lightnings
+    ////////////////////////////////////////////////////
 
-	// The number of clouds we want to draw *over* background
-	// lightnings
-	size_t constexpr CloudsOverLightnings = 5;
-	GLsizei cloudsOverLightningVertexStart = 0;
+    // The number of clouds we want to draw *over* background
+    // lightnings
+    size_t constexpr CloudsOverLightnings = 5;
+    GLsizei cloudsOverLightningVertexStart = 0;
 
-	if (mBackgroundLightningVertexCount > 0
-		&& mCloudVertexBuffer.size() > 6 * CloudsOverLightnings)
-	{
-		glBindVertexArray(*mCloudVAO);
+    if (mBackgroundLightningVertexCount > 0
+        && mCloudVertexBuffer.size() > 6 * CloudsOverLightnings)
+    {
+        glBindVertexArray(*mCloudVAO);
 
-		mShaderManager->ActivateProgram<ProgramType::Clouds>();
+        mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
-		if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-			glLineWidth(0.1f);
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
 
-		cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
-		glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
-		CheckOpenGLError();
-	}
+        cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
+        glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
+        CheckOpenGLError();
+    }
 
-	////////////////////////////////////////////////////
-	// Draw background lightnings
-	////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // Draw background lightnings
+    ////////////////////////////////////////////////////
 
-	if (mBackgroundLightningVertexCount > 0)
-	{
-		glBindVertexArray(*mLightningVAO);
+    if (mBackgroundLightningVertexCount > 0)
+    {
+        glBindVertexArray(*mLightningVAO);
 
-		mShaderManager->ActivateProgram<ProgramType::Lightning>();
+        mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-		glDrawArrays(GL_TRIANGLES,
-			0,
-			static_cast<GLsizei>(mBackgroundLightningVertexCount));
-		CheckOpenGLError();
-	}
+        glDrawArrays(GL_TRIANGLES,
+            0,
+            static_cast<GLsizei>(mBackgroundLightningVertexCount));
+        CheckOpenGLError();
+    }
 
     ////////////////////////////////////////////////////
     // Draw clouds
@@ -1347,17 +1357,17 @@ void RenderContext::RenderEnd()
         RenderFireExtinguisherSpray();
     }
 
-	// Render foreground lightnings
-	if (mForegroundLightningVertexCount > 0)
-	{
-		RenderForegroundLightnings();
-	}
+    // Render foreground lightnings
+    if (mForegroundLightningVertexCount > 0)
+    {
+        RenderForegroundLightnings();
+    }
 
-	// Render rain
-	if (mCurrentRainDensity != 0.0f)
-	{
-		RenderRain();
-	}
+    // Render rain
+    if (mCurrentRainDensity != 0.0f)
+    {
+        RenderRain();
+    }
 
     // Render world end
     RenderWorldBorder();
@@ -1466,7 +1476,7 @@ void RenderContext::RenderFireExtinguisherSpray()
         *mFireExtinguisherSprayShaderToRender,
         GameWallClock::GetInstance().NowAsFloat());
 
-	// Draw
+    // Draw
     assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
 
@@ -1475,33 +1485,33 @@ void RenderContext::RenderFireExtinguisherSpray()
 
 void RenderContext::RenderForegroundLightnings()
 {
-	assert(mForegroundLightningVertexCount > 0);
+    assert(mForegroundLightningVertexCount > 0);
 
-	glBindVertexArray(*mLightningVAO);
+    glBindVertexArray(*mLightningVAO);
 
-	mShaderManager->ActivateProgram<ProgramType::Lightning>();
+    mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-	glDrawArrays(GL_TRIANGLES,
-		static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),
-		static_cast<GLsizei>(mForegroundLightningVertexCount));
-	CheckOpenGLError();
+    glDrawArrays(GL_TRIANGLES,
+        static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),
+        static_cast<GLsizei>(mForegroundLightningVertexCount));
+    CheckOpenGLError();
 }
 
 void RenderContext::RenderRain()
 {
-	glBindVertexArray(*mRainVAO);
+    glBindVertexArray(*mRainVAO);
 
-	mShaderManager->ActivateProgram(ProgramType::Rain);
+    mShaderManager->ActivateProgram(ProgramType::Rain);
 
-	// Set time parameter
-	mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-		ProgramType::Rain,
-		GameWallClock::GetInstance().NowAsFloat());
+    // Set time parameter
+    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+        ProgramType::Rain,
+        GameWallClock::GetInstance().NowAsFloat());
 
-	// Draw
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    // Draw
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	glBindVertexArray(0);
+    glBindVertexArray(0);
 }
 
 void RenderContext::RenderWorldBorder()
@@ -1617,9 +1627,9 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
-	mShaderManager->ActivateProgram<ProgramType::Lightning>();
-	mShaderManager->SetProgramParameter<ProgramType::Lightning, ProgramParameterType::EffectiveAmbientLightIntensity>(
-		mEffectiveAmbientLightIntensity);
+    mShaderManager->ActivateProgram<ProgramType::Lightning>();
+    mShaderManager->SetProgramParameter<ProgramType::Lightning, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
     mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
@@ -1641,9 +1651,9 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
         mEffectiveAmbientLightIntensity);
 
-	mShaderManager->ActivateProgram<ProgramType::Rain>();
-	mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveAmbientLightIntensity>(
-		mEffectiveAmbientLightIntensity);
+    mShaderManager->ActivateProgram<ProgramType::Rain>();
+    mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mEffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::EffectiveAmbientLightIntensity>(
@@ -1664,11 +1674,11 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
 void RenderContext::OnRainDensityUpdated()
 {
-	// Set parameter in all programs
+    // Set parameter in all programs
 
-	mShaderManager->ActivateProgram<ProgramType::Rain>();
-	mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
-		mCurrentRainDensity);
+    mShaderManager->ActivateProgram<ProgramType::Rain>();
+    mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
+        mCurrentRainDensity);
 }
 
 void RenderContext::OnOceanTransparencyUpdated()

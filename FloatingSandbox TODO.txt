@@ -450,9 +450,7 @@ Render:
 							- Material DB <-> actual textures check: done by GameController at its Create() time,
 							  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
 					- Setting storage is @ ShipTexturizer, brokered by GameController
-				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder
-					
-
+				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder					
 			+ ShipAutoTexturizationMode At GameTypes
 			+ ResourceLocator::GetMaterialTexturesFolderPath()
 			+ Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
@@ -469,22 +467,25 @@ Render:
 				+ Simple member
 				+ Then invokes ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
 			+ ShipTexturizer instance is passed by GameController to ShipBuilder (via World)
-			- ShipBuilder uses ShipTexturizer to create - and return - texture
-				- Args: 
-					- ShipBuildTypes.h:
-						- Definition (using) of ShipBuildPointMatrix
-						- ShipBuildPoint
+			= ShipBuilder uses ShipTexturizer to create - and return - texture
+				= Args: 
+					+ ShipBuildTypes.h:
+						+ Definition (using) of ShipBuildPointIndexMatrix
+						+ ShipBuildPoint
 				- First experiment: current (legacy) structure texture
 					- Simple Nx magnify
+				- Invoke from ShipBuilder
 			- StructuralMaterial has new mandatory "texture_name" string arg
 			- Do texturizations:
-				- By triangles, with nearest neighbor
-				- TODOHERE
+				- FlatStructure:
+					- TODOHERE
+				- MaterialTextures:
+					- TODOHERE
 			- ShipTexturizer's cache:
 				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
-				- Cache usage counts are reset upon each new texturization - but textures are not purged
-			- I/GameController settings
-			- SettingsDialog
+				- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
+			- I/GameController settings: ShipAutoTexturizationMode
+				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
 			- Implement ShipTexturizer::VerifyMaterialsDatabase
 			- Decide ShipAutoTexturizationMode default

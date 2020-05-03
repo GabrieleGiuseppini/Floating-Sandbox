@@ -14,7 +14,10 @@ void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDat
     // TODO
 }
 
-RgbaImageData ShipTexturizer::Texturize(ShipDefinition const & shipDefinition) const
+RgbaImageData ShipTexturizer::Texturize(
+    ImageSize const & structureSize,
+    ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
+    std::vector<ShipBuildPoint> const & points) const
 {
     // TODOTEST: for the time being we always do it with structure, as we used to do
     /*

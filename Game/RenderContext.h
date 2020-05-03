@@ -9,7 +9,6 @@
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
-#include "ShipDefinition.h"
 #include "ShipRenderContext.h"
 #include "TextRenderContext.h"
 #include "TextureAtlas.h"
@@ -53,14 +52,14 @@ public:
 
 public:
 
-	//
-	// Components
-	//
+    //
+    // Components
+    //
 
-	std::shared_ptr<TextRenderContext> GetTextRenderContext() const
-	{
-		return mTextRenderContext;
-	}
+    std::shared_ptr<TextRenderContext> GetTextRenderContext() const
+    {
+        return mTextRenderContext;
+    }
 
 
     //
@@ -544,6 +543,8 @@ public:
 
     void Reset();
 
+    void ValidateShipTexture(RgbaImageData const & texture) const;
+
     void AddShip(
         ShipId shipId,
         size_t pointCount,
@@ -553,9 +554,9 @@ public:
 
 public:
 
-	//////////////////////////////////////////////////////////////////
-	// Rendering
-	//////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
+    // Rendering
+    //////////////////////////////////////////////////////////////////
 
     void RenderStart();
 
@@ -588,73 +589,73 @@ public:
     void RenderCloudsStart();
 
 
-	inline void UploadStormAmbientDarkening(float darkening)
-	{
-		if (darkening != mCurrentStormAmbientDarkening)
-		{
-			mCurrentStormAmbientDarkening = darkening;
-			OnEffectiveAmbientLightIntensityUpdated();
-		}
-	}
+    inline void UploadStormAmbientDarkening(float darkening)
+    {
+        if (darkening != mCurrentStormAmbientDarkening)
+        {
+            mCurrentStormAmbientDarkening = darkening;
+            OnEffectiveAmbientLightIntensityUpdated();
+        }
+    }
 
-	inline void UploadRain(float density)
-	{
-		if (density != mCurrentRainDensity)
-		{
-			mCurrentRainDensity = density;
-			OnRainDensityUpdated();
-		}
-	}
+    inline void UploadRain(float density)
+    {
+        if (density != mCurrentRainDensity)
+        {
+            mCurrentRainDensity = density;
+            OnRainDensityUpdated();
+        }
+    }
 
 
-	void UploadLightningsStart(size_t lightningCount);
+    void UploadLightningsStart(size_t lightningCount);
 
-	inline void UploadBackgroundLightning(
-		float ndcX,
-		float progress,
-		float renderProgress,
-		float personalitySeed)
-	{
-		// Get NDC coordinates of world y=0 (i.e. sea level)
-		float const ndcSeaLevel = mViewModel.WorldToNdc(vec2f::zero()).y;
+    inline void UploadBackgroundLightning(
+        float ndcX,
+        float progress,
+        float renderProgress,
+        float personalitySeed)
+    {
+        // Get NDC coordinates of world y=0 (i.e. sea level)
+        float const ndcSeaLevel = mViewModel.WorldToNdc(vec2f::zero()).y;
 
-		// Store vertices
-		StoreLightningVertices(
-			ndcX,
-			ndcSeaLevel,
-			progress,
-			renderProgress,
-			personalitySeed,
-			mBackgroundLightningVertexCount);
+        // Store vertices
+        StoreLightningVertices(
+            ndcX,
+            ndcSeaLevel,
+            progress,
+            renderProgress,
+            personalitySeed,
+            mBackgroundLightningVertexCount);
 
-		mBackgroundLightningVertexCount += 6;
-	}
+        mBackgroundLightningVertexCount += 6;
+    }
 
-	inline void UploadForegroundLightning(
-		vec2f tipWorldCoordinates,
-		float progress,
-		float renderProgress,
-		float personalitySeed)
-	{
-		// Get NDC coordinates of tip point, a few metres down,
-		// to make sure tip touches visually the point
-		vec2f const ndcTip = mViewModel.WorldToNdc(
-			tipWorldCoordinates
-			+ vec2f(0.0f, -3.0f));
+    inline void UploadForegroundLightning(
+        vec2f tipWorldCoordinates,
+        float progress,
+        float renderProgress,
+        float personalitySeed)
+    {
+        // Get NDC coordinates of tip point, a few metres down,
+        // to make sure tip touches visually the point
+        vec2f const ndcTip = mViewModel.WorldToNdc(
+            tipWorldCoordinates
+            + vec2f(0.0f, -3.0f));
 
-		// Store vertices
-		StoreLightningVertices(
-			ndcTip.x,
-			ndcTip.y,
-			progress,
-			renderProgress,
-			personalitySeed,
-			mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
+        // Store vertices
+        StoreLightningVertices(
+            ndcTip.x,
+            ndcTip.y,
+            progress,
+            renderProgress,
+            personalitySeed,
+            mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
 
-		mForegroundLightningVertexCount += 6;
-	}
+        mForegroundLightningVertexCount += 6;
+    }
 
-	void UploadLightningsEnd();
+    void UploadLightningsEnd();
 
 
     void UploadCloudsStart(size_t cloudCount);
@@ -1534,90 +1535,90 @@ public:
 
 private:
 
-	inline void StoreLightningVertices(
-		float ndcX,
-		float ndcBottomY,
-		float progress,
-		float renderProgress,
-		float personalitySeed,
-		size_t vertexBufferIndex)
-	{
-		if (ndcBottomY > 1.0)
-			return; // Above top, discard
+    inline void StoreLightningVertices(
+        float ndcX,
+        float ndcBottomY,
+        float progress,
+        float renderProgress,
+        float personalitySeed,
+        size_t vertexBufferIndex)
+    {
+        if (ndcBottomY > 1.0)
+            return; // Above top, discard
 
-		float constexpr LightningQuadWidth = 0.5f;
+        float constexpr LightningQuadWidth = 0.5f;
 
-		float const leftX = ndcX - LightningQuadWidth / 2.0f;
-		float const rightX = ndcX + LightningQuadWidth / 2.0f;
-		float const topY = 1.0f;
-		float const bottomY = ndcBottomY;
+        float const leftX = ndcX - LightningQuadWidth / 2.0f;
+        float const rightX = ndcX + LightningQuadWidth / 2.0f;
+        float const topY = 1.0f;
+        float const bottomY = ndcBottomY;
 
-		// Append vertices - two triangles
+        // Append vertices - two triangles
 
-		// Triangle 1
+        // Triangle 1
 
-		// Top-left
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(leftX, topY),
-			-1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
+        // Top-left
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(leftX, topY),
+            -1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
 
-		// Top-Right
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(rightX, topY),
-			1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
+        // Top-Right
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(rightX, topY),
+            1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
 
-		// Bottom-left
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(leftX, bottomY),
-			-1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
+        // Bottom-left
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(leftX, bottomY),
+            -1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
 
-		// Triangle 2
+        // Triangle 2
 
-		// Top-Right
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(rightX, topY),
-			1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
+        // Top-Right
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(rightX, topY),
+            1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
 
-		// Bottom-left
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(leftX, bottomY),
-			-1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
+        // Bottom-left
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(leftX, bottomY),
+            -1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
 
-		// Bottom-right
-		mLightningVertexBuffer.emplace_at(
-			vertexBufferIndex++,
-			vec2f(rightX, bottomY),
-			1.0f,
-			ndcBottomY,
-			progress,
-			renderProgress,
-			personalitySeed);
-	}
+        // Bottom-right
+        mLightningVertexBuffer.emplace_at(
+            vertexBufferIndex++,
+            vec2f(rightX, bottomY),
+            1.0f,
+            ndcBottomY,
+            progress,
+            renderProgress,
+            personalitySeed);
+    }
 
 private:
 
@@ -1626,13 +1627,13 @@ private:
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();
-	void RenderForegroundLightnings();
-	void RenderRain();
+    void RenderForegroundLightnings();
+    void RenderRain();
     void RenderWorldBorder();
 
     void OnViewModelUpdated();
     void OnEffectiveAmbientLightIntensityUpdated();
-	void OnRainDensityUpdated();
+    void OnRainDensityUpdated();
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
@@ -1681,30 +1682,30 @@ private:
         {}
     };
 
-	struct LightningVertex
-	{
-		vec2f ndc;
-		float spacePositionX;
-		float ndcBottomY;
-		float progress;
-		float renderProgress;
-		float personalitySeed;
+    struct LightningVertex
+    {
+        vec2f ndc;
+        float spacePositionX;
+        float ndcBottomY;
+        float progress;
+        float renderProgress;
+        float personalitySeed;
 
-		LightningVertex(
-			vec2f _ndc,
-			float _spacePositionX,
-			float _ndcBottomY,
-			float _progress,
-			float _renderProgress,
-			float _personalitySeed)
-			: ndc(_ndc)
-			, spacePositionX(_spacePositionX)
-			, ndcBottomY(_ndcBottomY)
-			, progress(_progress)
-			, renderProgress(_renderProgress)
-			, personalitySeed(_personalitySeed)
-		{}
-	};
+        LightningVertex(
+            vec2f _ndc,
+            float _spacePositionX,
+            float _ndcBottomY,
+            float _progress,
+            float _renderProgress,
+            float _personalitySeed)
+            : ndc(_ndc)
+            , spacePositionX(_spacePositionX)
+            , ndcBottomY(_ndcBottomY)
+            , progress(_progress)
+            , renderProgress(_renderProgress)
+            , personalitySeed(_personalitySeed)
+        {}
+    };
 
     struct CloudVertex
     {
@@ -1783,18 +1784,18 @@ private:
         {}
     };
 
-	struct RainVertex
-	{
-		float ndcX;
-		float ndcY;
+    struct RainVertex
+    {
+        float ndcX;
+        float ndcY;
 
-		RainVertex(
-			float _ndcX,
-			float _ndcY)
-			: ndcX(_ndcX)
-			, ndcY(_ndcY)
-		{}
-	};
+        RainVertex(
+            float _ndcX,
+            float _ndcY)
+            : ndcX(_ndcX)
+            , ndcY(_ndcY)
+        {}
+    };
 
     struct WorldBorderVertex
     {
@@ -1824,10 +1825,10 @@ private:
     BoundedVector<StarVertex> mStarVertexBuffer;
     GameOpenGLVBO mStarVBO;
 
-	GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
-	size_t mBackgroundLightningVertexCount;
-	size_t mForegroundLightningVertexCount;
-	GameOpenGLVBO mLightningVBO;
+    GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
+    size_t mBackgroundLightningVertexCount;
+    size_t mForegroundLightningVertexCount;
+    GameOpenGLVBO mLightningVBO;
 
     GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
@@ -1849,7 +1850,7 @@ private:
     std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
     GameOpenGLVBO mFireExtinguisherSprayVBO;
 
-	GameOpenGLVBO mRainVBO;
+    GameOpenGLVBO mRainVBO;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
@@ -1859,14 +1860,14 @@ private:
     //
 
     GameOpenGLVAO mStarVAO;
-	GameOpenGLVAO mLightningVAO;
+    GameOpenGLVAO mLightningVAO;
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mFireExtinguisherSprayVAO;
-	GameOpenGLVAO mRainVAO;
+    GameOpenGLVAO mRainVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
     //
@@ -1904,7 +1905,7 @@ private:
     //
 
     float mCurrentStormAmbientDarkening;
-	float mCurrentRainDensity;
+    float mCurrentRainDensity;
     float mEffectiveAmbientLightIntensity;
 
     //

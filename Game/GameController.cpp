@@ -243,6 +243,10 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
 
+    // Pre-validate ship's texture
+    if (shipDefinition.TextureLayerImage.has_value())
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
@@ -254,11 +258,10 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
         mGameParameters);
 
     // Add ship to new world
-    ShipId shipId = newWorld->AddShip(
+    auto [shipId, textureImage] = newWorld->AddShip(
         std::move(shipDefinition),
         mMaterialDatabase,
         mShipTexturizer,
-        *mRenderContext,
         mGameParameters);
 
     //
@@ -268,12 +271,11 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     Reset(std::move(newWorld));
 
     OnShipAdded(
+        shipId,
+        std::move(textureImage),
         shipMetadata,
         shipDefinitionFilepath,
-        shipId,
         mDoAutoZoomOnShipLoad);
-
-    mWorld->Announce();
 
     return shipMetadata;
 }
@@ -309,15 +311,18 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
 
+    // Pre-validate ship's texture
+    if (shipDefinition.TextureLayerImage.has_value())
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     // Load ship into current world
-    ShipId shipId = mWorld->AddShip(
+    auto [shipId, textureImage] = mWorld->AddShip(
         std::move(shipDefinition),
         mMaterialDatabase,
         mShipTexturizer,
-        *mRenderContext,
         mGameParameters);
 
     //
@@ -325,12 +330,11 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     //
 
     OnShipAdded(
+        shipId,
+        std::move(textureImage),
         shipMetadata,
         shipDefinitionFilepath,
-        shipId,
         false);
-
-    mWorld->Announce();
 
     return shipMetadata;
 }
@@ -347,6 +351,10 @@ void GameController::ReloadLastShip()
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(mLastShipLoadedFilepath);
 
+    // Pre-validate ship's texture
+    if (shipDefinition.TextureLayerImage.has_value())
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
@@ -358,11 +366,10 @@ void GameController::ReloadLastShip()
         mGameParameters);
 
     // Load ship into new world
-    ShipId shipId = newWorld->AddShip(
+    auto [shipId, textureImage] = newWorld->AddShip(
         std::move(shipDefinition),
         mMaterialDatabase,
         mShipTexturizer,
-        *mRenderContext,
         mGameParameters);
 
     //
@@ -372,12 +379,11 @@ void GameController::ReloadLastShip()
     Reset(std::move(newWorld));
 
     OnShipAdded(
+        shipId,
+        std::move(textureImage),
         shipMetadata,
         mLastShipLoadedFilepath,
-        shipId,
         false);
-
-    mWorld->Announce();
 }
 
 RgbImageData GameController::TakeScreenshot()
@@ -1243,11 +1249,13 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 }
 
 void GameController::OnShipAdded(
-    ShipMetadata const & shipMetadata,
-    std::filesystem::path const & shipDefinitionFilepath,
     ShipId shipId,
+    RgbaImageData&& textureImage,
+    ShipMetadata const& shipMetadata,
+    std::filesystem::path const& shipDefinitionFilepath,
     bool doAutoZoom)
 {
+    // Auto-zoom (if requested)
     if (doAutoZoom)
     {
         // Calculate zoom to fit width and height (plus a nicely-looking margin)
@@ -1269,11 +1277,20 @@ void GameController::OnShipAdded(
         }
     }
 
-    // Notify
+    // Add ship to rendering engine
+    mRenderContext->AddShip(
+        shipId,
+        mWorld->GetShipPointCount(shipId),
+        std::move(textureImage));
+
+    // Notify ship load
     mGameEventDispatcher->OnShipLoaded(
         shipId,
         shipMetadata.ShipName,
         shipMetadata.Author);
+
+    // Announce
+    mWorld->Announce();
 
     // Remember last loaded ship
     mLastShipLoadedFilepath = shipDefinitionFilepath;

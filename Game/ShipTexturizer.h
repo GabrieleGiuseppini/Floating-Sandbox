@@ -7,7 +7,7 @@
 
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
-#include "ShipDefinition.h"
+#include "ShipBuildTypes.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -37,7 +37,10 @@ public:
 
     void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
 
-    RgbaImageData Texturize(ShipDefinition const & shipDefinition) const;
+    RgbaImageData Texturize(
+        ImageSize const & structureSize,
+        ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
+        std::vector<ShipBuildPoint> const & points) const;
 
 private:
 

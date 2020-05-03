@@ -39,14 +39,13 @@ World::World(
     mOceanFloor.Update(gameParameters);
 }
 
-ShipId World::AddShip(
+std::tuple<ShipId, RgbaImageData> World::AddShip(
     ShipDefinition && shipDefinition,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
-    Render::RenderContext & renderContext,
     GameParameters const & gameParameters)
 {
-    ShipId shipId = static_cast<ShipId>(mAllShips.size());
+    ShipId const shipId = static_cast<ShipId>(mAllShips.size());
 
     // Build ship
     auto [ship, textureImage] = ShipBuilder::Create(
@@ -59,17 +58,10 @@ ShipId World::AddShip(
         shipTexturizer,
         gameParameters);
 
-    // Add ship to rendering engine
-    // (might fail and throw)
-    renderContext.AddShip(
-        shipId,
-        ship->GetPointCount(),
-        std::move(textureImage));
-
     // Store ship
     mAllShips.push_back(std::move(ship));
 
-    return shipId;
+    return std::make_tuple(shipId, std::move(textureImage));
 }
 
 void World::Announce()
@@ -85,6 +77,13 @@ void World::Announce()
 size_t World::GetShipCount() const
 {
     return mAllShips.size();
+}
+
+size_t World::GetShipPointCount(ShipId shipId) const
+{
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->GetPointCount();
 }
 
 vec2f World::GetShipSize(ShipId shipId) const

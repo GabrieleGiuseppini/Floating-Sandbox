@@ -16,6 +16,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/GameChronometer.h>
+#include <GameCore/ImageData.h>
 #include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
@@ -37,11 +38,10 @@ public:
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters);
 
-    ShipId AddShip(
+    std::tuple<ShipId, RgbaImageData> AddShip(
         ShipDefinition && shipDefinition,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
-        Render::RenderContext & renderContext,
         GameParameters const & gameParameters);
 
     void Announce();
@@ -52,6 +52,8 @@ public:
     }
 
     size_t GetShipCount() const;
+
+    size_t GetShipPointCount(ShipId shipId) const;
 
     vec2f GetShipSize(ShipId shipId) const;
 

@@ -673,9 +673,10 @@ private:
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipAdded(
+        ShipId shipId,
+        RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
         std::filesystem::path const & shipDefinitionFilepath,
-        ShipId shipId,
         bool doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);

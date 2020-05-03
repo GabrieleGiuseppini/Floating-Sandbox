@@ -8,6 +8,7 @@
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
+#include "ShipBuildTypes.h"
 #include "ShipDefinition.h"
 
 #include <GameCore/FixedSizeVector.h>
