@@ -476,15 +476,15 @@ Render:
 				+ First experiment: current (legacy) structure texture
 					+ Simple Nx magnify
 				+ Invoke from ShipBuilder
-			- StructuralMaterial has new mandatory "texture_name" string arg
-				- For now just optional
-			- Do texturizations
+			+ StructuralMaterial has new mandatory "texture_name" string arg
+				+ For now just optional
+			= Do texturizations
 				+ FlatStructure:
 				- MaterialTextures:
-					- TODOHERE
-			- ShipTexturizer's cache:
-				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
-				- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
+					- TODO: level of detail?
+					- ShipTexturizer's cache:
+						- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
+						- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
 			- I/GameController settings: ShipAutoTexturizationMode
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials

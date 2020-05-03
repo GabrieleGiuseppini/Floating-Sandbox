@@ -40,6 +40,10 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         if (!!materialSoundStr)
             materialSound = StrToMaterialSoundType(*materialSoundStr);
 
+        // TODO: make it mandatory
+        std::string const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name")
+            .value_or(std::string());
+
         // Water
 
         bool const isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
@@ -74,6 +78,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             renderColor,
             uniqueType,
             materialSound,
+            materialTextureName,
             isHull,
             waterIntake,
             waterDiffusionSpeed,

@@ -642,7 +642,8 @@
         "template": {
             "column": 0, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1, 
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -661,7 +662,7 @@
         "melting_temperature": 1000000.0, 
         "name": "Wood", 
         "render_color": "#E0D8C0", 
-        "sound_type": "Wood", 
+        "sound_type": "Wood",
         "specific_heat": 300.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
@@ -669,6 +670,7 @@
             "column": 0, 
             "row": "42|Wood"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1390,6 +1392,7 @@
             "column": 1, 
             "row": "40|Wood Hull"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1416,6 +1419,7 @@
             "column": 1, 
             "row": "42|Wood"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1650,6 +1654,7 @@
             "column": 2, 
             "row": "40|Wood Hull"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1676,6 +1681,7 @@
             "column": 2, 
             "row": "42|Wood"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1858,6 +1864,7 @@
             "column": 3, 
             "row": "40|Wood Hull"
         }, 
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -1883,7 +1890,8 @@
         "template": {
             "column": 3, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2065,7 +2073,8 @@
         "template": {
             "column": 4, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2091,7 +2100,8 @@
         "template": {
             "column": 4, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2273,7 +2283,8 @@
         "template": {
             "column": 5, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2299,7 +2310,8 @@
         "template": {
             "column": 5, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2481,7 +2493,8 @@
         "template": {
             "column": 6, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2507,7 +2520,8 @@
         "template": {
             "column": 6, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2689,7 +2703,8 @@
         "template": {
             "column": 7, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2715,7 +2730,8 @@
         "template": {
             "column": 7, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2743,7 +2759,8 @@
         "template": {
             "column": 8, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -2769,7 +2786,8 @@
         "template": {
             "column": 8, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -3111,7 +3129,8 @@
         "template": {
             "column": 8, 
             "row": "40|Wood Hull"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -3137,7 +3156,8 @@
         "template": {
             "column": 9, 
             "row": "42|Wood"
-        }, 
+        },
+	"texture_name": "wood_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -3241,7 +3261,8 @@
         "template": {
             "column": "3|Double-Bottom Wood", 
             "row": "90|Double-Bottom"
-        }, 
+        },
+	"texture_name": "wood_2",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 
@@ -4419,7 +4440,7 @@
             "nominal_mass": 800
         }, 
         "melting_temperature": 1000000.0, 
-        "name": "Wood", 
+        "name": "Heating Element", 
         "render_color": "#FC2020", 
         "sound_type": "Wood", 
         "specific_heat": 100.0, 

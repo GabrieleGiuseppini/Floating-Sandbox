@@ -60,6 +60,8 @@ public:
 
     std::optional<MaterialSoundType> MaterialSound;
 
+    std::string MaterialTextureName;
+
     // Water
     bool IsHull;
     float WaterIntake;
@@ -121,6 +123,7 @@ public:
         vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
+        std::string materialTextureName,
         // Water
         bool isHull,
         float waterIntake,
@@ -148,6 +151,7 @@ public:
         , RenderColor(renderColor)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
+        , MaterialTextureName(materialTextureName)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
