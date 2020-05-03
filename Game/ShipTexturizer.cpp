@@ -7,7 +7,10 @@
 
 #include "ImageFileTools.h"
 
+#include <GameCore/Log.h>
+
 #include <algorithm>
+#include <chrono>
 
 void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
 {
@@ -19,10 +22,9 @@ RgbaImageData ShipTexturizer::Texturize(
     ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
     std::vector<ShipBuildPoint> const & points) const
 {
-    // TODOTEST: for the time being we always do it with structure, as we used to do
-
     //
-    // Resize it up - ideally by 8, but don't exceed 4096 (magic number) in any dimension
+    // Calculate target texture size: integral multiple of structure size, but without
+    // exceeding 4096 (magic number, also max texture size for low-end gfx cards)
     //
 
     int const maxDimension = std::max(structureSize.Width, structureSize.Height);
@@ -32,39 +34,48 @@ RgbaImageData ShipTexturizer::Texturize(
 
     ImageSize const textureSize = structureSize * magnificationFactor;
 
+    //
+    // Create texture
+    //
+
     auto newImageData = std::make_unique<rgbaColor[]>(textureSize.Width * textureSize.Height);
 
-    // TODO: optimize (precalc'd indices)
+    auto const startTime = std::chrono::steady_clock::now();
+
     for (int y = 1; y <= structureSize.Height; ++y)
     {
         for (int x = 1; x <= structureSize.Width; ++x)
         {
+            // Get fixed pixel color
             rgbaColor pixelColor;
             if (pointMatrix[x][y].has_value())
             {
-                // TODOTEST: We're using RenderColor here, rather than color key, just because
-                // material doesn't carry color key
                 pixelColor = rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor);
             }
             else
             {
-                pixelColor = rgbaColor::zero();
+                pixelColor = rgbaColor::zero(); // Fully transparent
             }
 
             // Fill quad
             for (int yy = 0; yy < magnificationFactor; ++yy)
             {
+                int const quadOffset =
+                    (x - 1) * magnificationFactor
+                    + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
+
                 for (int xx = 0; xx < magnificationFactor; ++xx)
                 {
-                    int const destIndex =
-                        (x - 1) * magnificationFactor + xx
-                        + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
-
-                    newImageData[destIndex] = pixelColor;
+                    newImageData[quadOffset + xx] = pixelColor;
                 }
             }
         }
     }
+
+    auto const endTime = std::chrono::steady_clock::now();
+    LogMessage("Ship Auto-Texturization time: ",
+        std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count(),
+        "us");
 
     return RgbaImageData(textureSize, std::move(newImageData));
 }

@@ -493,6 +493,8 @@ Render:
 			- Tests:
 				- Ship with texture too large than OpenGL's limits: verify we still display error and everything continues
 
+		- Check if ropes' step makes ropes so heavy
+
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 
 		- Take Mike's Lego Titanic when ready
