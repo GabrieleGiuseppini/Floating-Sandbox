@@ -45,7 +45,7 @@ class RenderContext
 public:
 
     RenderContext(
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
 
@@ -544,14 +544,10 @@ public:
 
     void Reset();
 
-    void ValidateShip(
-        ShipDefinition const & shipDefinition) const;
-
     void AddShip(
         ShipId shipId,
         size_t pointCount,
-        RgbaImageData texture,
-        ShipDefinition::TextureOriginType textureOrigin);
+        RgbaImageData texture);
 
     RgbImageData TakeScreenshot();
 

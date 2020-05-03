@@ -28,18 +28,7 @@ public:
 
     std::optional<RgbImageData> ElectricalLayerImage;
 
-    RgbaImageData TextureLayerImage;
-
-    enum class TextureOriginType
-    {
-        // The texture comes from the proper texture layer
-        Texture,
-
-        // The texture is a fallback to the structural image
-        StructuralImage
-    };
-
-    TextureOriginType TextureOrigin;
+    std::optional<RgbaImageData> TextureLayerImage;
 
     ShipMetadata const Metadata;
 
@@ -51,14 +40,12 @@ private:
         RgbImageData structuralLayerImage,
         std::optional<RgbImageData> ropesLayerImage,
         std::optional<RgbImageData> electricalLayerImage,
-        RgbaImageData textureLayerImage,
-        TextureOriginType textureOrigin,
+        std::optional<RgbaImageData> textureLayerImage,
         ShipMetadata const metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))
         , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))
         , TextureLayerImage(std::move(textureLayerImage))
-        , TextureOrigin(textureOrigin)
         , Metadata(std::move(metadata))
     {
     }

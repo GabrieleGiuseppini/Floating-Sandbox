@@ -19,7 +19,7 @@ namespace Render {
 ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
-    ResourceLocator & resourceLocator,
+    ResourceLocator const & resourceLocator,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
     // Buffers
@@ -846,23 +846,26 @@ void RenderContext::Reset()
     mShips.clear();
 }
 
-void RenderContext::ValidateShip(
-    ShipDefinition const & shipDefinition) const
-{
-    // Check texture against max texture size
-    if (shipDefinition.TextureLayerImage.Size.Width > GameOpenGL::MaxTextureSize
-        || shipDefinition.TextureLayerImage.Size.Height > GameOpenGL::MaxTextureSize)
-    {
-        throw GameException("We are sorry, but this ship's texture image is too large for your graphics driver");
-    }
-}
-
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
-    RgbaImageData texture,
-    ShipDefinition::TextureOriginType textureOrigin)
+    RgbaImageData texture)
 {
+    //
+    // Validate ship
+    //
+
+    // Check texture against max texture size
+    if (texture.Size.Width > GameOpenGL::MaxTextureSize
+        || texture.Size.Height > GameOpenGL::MaxTextureSize)
+    {
+        throw GameException("We are sorry, but this ship's texture image is too large for your graphics driver");
+    }
+
+    //
+    // Add ship
+    //
+
     assert(shipId == mShips.size());
 
     size_t const newShipCount = mShips.size() + 1;
@@ -880,7 +883,6 @@ void RenderContext::AddShip(
             newShipCount,
             pointCount,
             std::move(texture),
-            textureOrigin,
             *mShaderManager,
             *mExplosionTextureAtlasMetadata,
             *mGenericLinearTextureAtlasMetadata,

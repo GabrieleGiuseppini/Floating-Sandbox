@@ -30,13 +30,14 @@ class ShipBuilder
 {
 public:
 
-    static std::unique_ptr<Physics::Ship> Create(
+    static std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> Create(
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
-        ShipDefinition const & shipDefinition,
+        ShipDefinition && shipDefinition,
         MaterialDatabase const & materialDatabase,
+        ShipTexturizer const & shipTexturizer,
         GameParameters const & gameParameters);
 
 private:
@@ -204,7 +205,7 @@ private:
         };
     };
 
-    static bool IsConnectedToNonRopePoints(
+    static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         Physics::Points const & points,
         std::vector<ElementIndex> const & pointIndexRemap,
@@ -223,7 +224,7 @@ private:
     }
 
     template <typename CoordType>
-    static vec2f MakeTextureCoordinates(
+    static inline vec2f MakeTextureCoordinates(
         CoordType x,
         CoordType y,
         ImageSize const & imageSize)

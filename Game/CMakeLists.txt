@@ -26,6 +26,7 @@ set  (GAME_SOURCES
 	ResourceLocator.h
 	ShipBuilder.cpp
 	ShipBuilder.h
+	ShipBuildTypes.h
 	ShipDefinition.cpp
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
@@ -33,6 +34,8 @@ set  (GAME_SOURCES
 	ShipMetadata.h
 	ShipPreview.cpp
 	ShipPreview.h
+	ShipTexturizer.cpp
+	ShipTexturizer.h
 	TextLayer.cpp
 	TextLayer.h)
 

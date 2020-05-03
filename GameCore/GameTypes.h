@@ -368,6 +368,15 @@ enum class HeatBlasterActionType
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * The different auto-texturization modes for ships that don't have a texture layer.
+ */
+enum class ShipAutoTexturizationMode
+{
+    FlatStructure,      // Builds texture using structural materials' RenderColor
+    MaterialTextures    // Builds texture using materials' "Bump Maps"
+};
+
+/*
  * The different visual ways in which we render highlights.
  */
 enum class HighlightMode : size_t

@@ -15,8 +15,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     std::filesystem::path absoluteStructuralLayerImageFilePath;
     std::optional<RgbImageData> ropesLayerImage;
     std::optional<RgbImageData> electricalLayerImage;
-    std::filesystem::path absoluteTextureLayerImageFilePath;
-    ShipDefinition::TextureOriginType textureOrigin;
+    std::optional<RgbaImageData> textureLayerImage;
     std::vector<std::string> electricalElementLabels;
     std::optional<ShipMetadata> shipMetadata;
 
@@ -72,26 +71,21 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         }
 
         //
-        // Make texture layer image path
+        // Load texture layer image
         //
 
         if (!!sdf.TextureLayerImageFilePath)
         {
-            // Texture image is as specified
-
-            absoluteTextureLayerImageFilePath = basePath / *sdf.TextureLayerImageFilePath;
-
-            textureOrigin = ShipDefinition::TextureOriginType::Texture;
+            try
+            {
+                textureLayerImage.emplace(
+                    ImageFileTools::LoadImageRgba(basePath / *sdf.TextureLayerImageFilePath));
+            }
+            catch (GameException const & gex)
+            {
+                throw GameException("Error loading texture layer image: " + std::string(gex.what()));
+            }
         }
-        else
-        {
-            // Texture image is the structural image
-
-            absoluteTextureLayerImageFilePath = absoluteStructuralLayerImageFilePath;
-
-            textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
-        }
-
 
         //
         // Make metadata
@@ -106,8 +100,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         //
 
         absoluteStructuralLayerImageFilePath = filepath;
-        absoluteTextureLayerImageFilePath = absoluteStructuralLayerImageFilePath;
-        textureOrigin = ShipDefinition::TextureOriginType::StructuralImage;
 
         shipMetadata.emplace(std::filesystem::path(filepath).stem().string());
     }
@@ -121,55 +113,13 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     ImageData structuralImage = ImageFileTools::LoadImageRgb(absoluteStructuralLayerImageFilePath);
 
     //
-    // Make texture layer image
+    // Create definition
     //
-
-    std::optional<RgbaImageData> textureImage;
-
-    switch (textureOrigin)
-    {
-        case ShipDefinition::TextureOriginType::Texture:
-        {
-            // Just load as-is
-
-            try
-            {
-                textureImage.emplace(
-                    ImageFileTools::LoadImageRgba(absoluteTextureLayerImageFilePath));
-            }
-            catch (GameException const & gex)
-            {
-                throw GameException("Error loading texture layer image: " + std::string(gex.what()));
-            }
-
-            break;
-        }
-
-        case ShipDefinition::TextureOriginType::StructuralImage:
-        {
-            // Resize it up - ideally by 8, but don't exceed 4096 (magic number) in any dimension
-
-            int maxDimension = std::max(structuralImage.Size.Width, structuralImage.Size.Height);
-            int magnify = 8;
-            while (maxDimension * magnify > 4096 && magnify > 1)
-                magnify /= 2;
-
-            textureImage.emplace(
-                ImageFileTools::LoadImageRgbaAndMagnify(
-                    absoluteTextureLayerImageFilePath,
-                    magnify));
-
-            break;
-        }
-    }
-
-    assert(!!textureImage);
 
     return ShipDefinition(
         std::move(structuralImage),
         std::move(ropesLayerImage),
         std::move(electricalLayerImage),
-        std::move(*textureImage),
-        textureOrigin,
+        std::move(textureLayerImage),
         *shipMetadata);
 }

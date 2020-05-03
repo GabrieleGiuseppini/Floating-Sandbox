@@ -49,6 +49,11 @@ std::filesystem::path ResourceLocator::GetTexturesRootFolderPath() const
     return std::filesystem::path("Data") / "Textures";
 }
 
+std::filesystem::path ResourceLocator::GetMaterialTexturesFolderPath() const
+{
+    return GetTexturesRootFolderPath() / "Materials";
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Fonts
 ////////////////////////////////////////////////////////////////////////////////////////////

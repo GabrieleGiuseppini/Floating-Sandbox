@@ -22,13 +22,14 @@ using namespace Physics;
 
 //////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<Ship> ShipBuilder::Create(
+std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::shared_ptr<TaskThreadPool> taskThreadPool,
-    ShipDefinition const & shipDefinition,
+    ShipDefinition && shipDefinition,
     MaterialDatabase const & materialDatabase,
+    ShipTexturizer const & shipTexturizer,
     GameParameters const & gameParameters)
 {
     int const structureWidth = shipDefinition.StructuralLayerImage.Size.Width;
@@ -97,7 +98,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y)) + shipDefinition.Metadata.Offset,
-                    MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
+                    MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size), // TODO: should be texture image?
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
                     structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
@@ -333,7 +334,7 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements.");
 
-    return std::make_unique<Ship>(
+    auto ship = std::make_unique<Ship>(
         shipId,
         parentWorld,
         materialDatabase,
@@ -343,6 +344,16 @@ std::unique_ptr<Ship> ShipBuilder::Create(
         std::move(springs),
         std::move(triangles),
         std::move(electricalElements));
+
+    // TODOTEST
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(shipDefinition.StructuralLayerImage.Size.Height * shipDefinition.StructuralLayerImage.Size.Width);
+    for (int x = 0; x < shipDefinition.StructuralLayerImage.Size.Width; ++x)
+        for (int y = 0; y < shipDefinition.StructuralLayerImage.Size.Height; ++y)
+            newImageData[x + y * shipDefinition.StructuralLayerImage.Size.Width] = rgbaColor(0, 0, 255, 255);
+
+    return std::make_tuple(
+        std::move(ship),
+        RgbaImageData(shipDefinition.StructuralLayerImage.Size, std::move(newImageData)));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

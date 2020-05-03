@@ -12,6 +12,7 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
+#include "ShipTexturizer.h"
 
 #include <GameCore/AABB.h>
 #include <GameCore/GameChronometer.h>
@@ -37,8 +38,10 @@ public:
         GameParameters const & gameParameters);
 
     ShipId AddShip(
-        ShipDefinition const & shipDefinition,
+        ShipDefinition && shipDefinition,
         MaterialDatabase const & materialDatabase,
+        ShipTexturizer const & shipTexturizer,
+        Render::RenderContext & renderContext,
         GameParameters const & gameParameters);
 
     void Announce();
@@ -49,8 +52,6 @@ public:
     }
 
     size_t GetShipCount() const;
-
-    size_t GetShipPointCount(ShipId shipId) const;
 
     vec2f GetShipSize(ShipId shipId) const;
 
@@ -238,12 +239,12 @@ public:
         vec2f const & targetPos,
         float radius) const;
 
-	std::optional<vec2f> FindSuitableLightningTarget() const;
+    std::optional<vec2f> FindSuitableLightningTarget() const;
 
-	void ApplyLightning(
-		vec2f const & targetPos,
-		float currentSimulationTime,
-		GameParameters const & gameParameters);
+    void ApplyLightning(
+        vec2f const & targetPos,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void TriggerTsunami();
 
@@ -251,7 +252,7 @@ public:
 
     void TriggerStorm();
 
-	void TriggerLightning();
+    void TriggerLightning();
 
     void HighlightElectricalElement(ElectricalElementId electricalElementId);
 

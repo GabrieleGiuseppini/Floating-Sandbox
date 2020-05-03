@@ -36,7 +36,7 @@ class TextRenderContext
 public:
 
     TextRenderContext(
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         int canvasWidth,
         int canvasHeight,

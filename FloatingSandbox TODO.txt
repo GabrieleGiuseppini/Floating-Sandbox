@@ -432,9 +432,7 @@ Render:
 			  ImageFileTools::LoadXYZ without "LowerLeft"
 			  + Don't forget ShipAnalyzer
 
-		= See whether water-sensing OFF switches work
-			= It does, tell John Smith
-		- Ask auto-zoom
+		= Ask if auto-zoom considering position would be a good idea or not
 
 		= Auto-Texturizer
 			! Spec: new ShipTexturizer class, owned by GameController
@@ -442,29 +440,56 @@ Render:
 					- Maintains cache
 				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
 				- Also holds auto-texturization mode setting, see below
-			- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
-			  texture; two modes:
-				- ShipAutoTexturizationMode At GameTypes
+				- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
+				  texture; two modes:
 					- "FlatStructure": builds texture using structural materials' RenderColor (as opposed to color key like now)
 					- "MaterialTextures": using materials' "bump maps"
-				- Setting storage is @ ShipTexturizer, brokered by GameController
-			- Make ship definition not fill-in the texture image when not specified
-				- Copy code to ShipTexturizer
-				- TexturePath is also optional
-				- Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
-			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
-			- Both texturizations implemented in ShipTexturizer class
-				- Textures/Materials folder contains textures
-					- ResourceLocator::GetMaterialTexturesFolderPath()
-					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
-				- Structural material has new mandatory "texture_name" string arg
-					- Material DB <-> actual textures check: done by GameController at its Create() time,
-					  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
-			- Texturizations:
+						- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
+						- Textures/Materials folder contains textures
+						- Structural material has new mandatory "texture_name" string arg
+							- Material DB <-> actual textures check: done by GameController at its Create() time,
+							  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
+					- Setting storage is @ ShipTexturizer, brokered by GameController
+				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder
+					
+
+			+ ShipAutoTexturizationMode At GameTypes
+			+ ResourceLocator::GetMaterialTexturesFolderPath()
+			+ Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
+			+ ShipDefinition::TextureLayerImage is now optional
+				= Copy structure->texture code to ShipTexturizer		
+			+ Path:
+				+ GameController::AddShip:
+					+ Load Definition
+					+ World->AddShip(definition, ..., renderContext)
+						+ ShipBuilder::Create -> [ship, texture image]
+						+ RenderContext::AddShip(texture image)
+							+ Validate texture size
+			+ GameController creates instance of ShipTexturizer at Create time
+				+ Simple member
+				+ Then invokes ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
+			+ ShipTexturizer instance is passed by GameController to ShipBuilder (via World)
+			- ShipBuilder uses ShipTexturizer to create - and return - texture
+				- Args: 
+					- ShipBuildTypes.h:
+						- Definition (using) of ShipBuildPointMatrix
+						- ShipBuildPoint
+				- First experiment: current (legacy) structure texture
+					- Simple Nx magnify
+			- StructuralMaterial has new mandatory "texture_name" string arg
+			- Do texturizations:
 				- By triangles, with nearest neighbor
+				- TODOHERE
 			- ShipTexturizer's cache:
 				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
 				- Cache usage counts are reset upon each new texturization - but textures are not purged
+			- I/GameController settings
+			- SettingsDialog
+			- Do textures for all materials
+			- Implement ShipTexturizer::VerifyMaterialsDatabase
+			- Decide ShipAutoTexturizationMode default
+			- Tests:
+				- Ship with texture too large than OpenGL's limits: verify we still display error and everything continues
 
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 

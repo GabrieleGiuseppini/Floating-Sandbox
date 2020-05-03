@@ -8,7 +8,7 @@
 namespace Render {
 
 TextRenderContext::TextRenderContext(
-    ResourceLocator & resourceLocator,
+    ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
     int canvasHeight,

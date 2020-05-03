@@ -711,7 +711,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 assert(!!mMainGLCanvas);
                 mMainGLCanvas->SwapBuffers();
             },
-            mResourceLocator,
+            *mResourceLocator,
             [&splash, this](float progress, std::string const & message)
             {
                 // 0.0 -> 0.5

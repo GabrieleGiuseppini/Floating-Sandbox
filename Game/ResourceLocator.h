@@ -34,6 +34,8 @@ public:
 
     std::filesystem::path GetTexturesRootFolderPath() const;
 
+    std::filesystem::path GetMaterialTexturesFolderPath() const;
+
 
     //
     // Fonts

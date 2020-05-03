@@ -40,21 +40,33 @@ World::World(
 }
 
 ShipId World::AddShip(
-    ShipDefinition const & shipDefinition,
+    ShipDefinition && shipDefinition,
     MaterialDatabase const & materialDatabase,
+    ShipTexturizer const & shipTexturizer,
+    Render::RenderContext & renderContext,
     GameParameters const & gameParameters)
 {
     ShipId shipId = static_cast<ShipId>(mAllShips.size());
 
-    auto ship = ShipBuilder::Create(
+    // Build ship
+    auto [ship, textureImage] = ShipBuilder::Create(
         shipId,
         *this,
         mGameEventHandler,
         mTaskThreadPool,
-        shipDefinition,
+        std::move(shipDefinition),
         materialDatabase,
+        shipTexturizer,
         gameParameters);
 
+    // Add ship to rendering engine
+    // (might fail and throw)
+    renderContext.AddShip(
+        shipId,
+        ship->GetPointCount(),
+        std::move(textureImage));
+
+    // Store ship
     mAllShips.push_back(std::move(ship));
 
     return shipId;
@@ -73,13 +85,6 @@ void World::Announce()
 size_t World::GetShipCount() const
 {
     return mAllShips.size();
-}
-
-size_t World::GetShipPointCount(ShipId shipId) const
-{
-    assert(shipId >= 0 && shipId < mAllShips.size());
-
-    return mAllShips[shipId]->GetPointCount();
 }
 
 vec2f World::GetShipSize(ShipId shipId) const
@@ -586,27 +591,27 @@ void World::QueryNearestPointAt(
 
 std::optional<vec2f> World::FindSuitableLightningTarget() const
 {
-	// Try all ships until a target is found
-	for (auto const & ship : mAllShips)
-	{
-		auto target = ship->FindSuitableLightningTarget();
-		if (!!target)
-			return target;
-	}
+    // Try all ships until a target is found
+    for (auto const & ship : mAllShips)
+    {
+        auto target = ship->FindSuitableLightningTarget();
+        if (!!target)
+            return target;
+    }
 
-	return std::nullopt;
+    return std::nullopt;
 }
 
 void World::ApplyLightning(
-	vec2f const & targetPos,
-	float currentSimulationTime,
-	GameParameters const & gameParameters)
+    vec2f const & targetPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
-	// Apply to all ships
-	for (auto & ship : mAllShips)
-	{
-		ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
-	}
+    // Apply to all ships
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
+    }
 }
 
 void World::TriggerTsunami()
@@ -621,7 +626,7 @@ void World::TriggerStorm()
 
 void World::TriggerLightning()
 {
-	mStorm.TriggerLightning();
+    mStorm.TriggerLightning();
 }
 
 void World::TriggerRogueWave()

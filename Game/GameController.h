@@ -17,6 +17,7 @@
 #include "RenderContext.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
+#include "ShipTexturizer.h"
 #include "TextLayer.h"
 
 #include <GameCore/Colors.h>
@@ -52,7 +53,7 @@ public:
 
     static std::unique_ptr<GameController> Create(
         std::function<void()> swapRenderBuffersFunction,
-        std::shared_ptr<ResourceLocator> resourceLocator,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
 public:
@@ -667,12 +668,12 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
-        std::shared_ptr<ResourceLocator> resourceLocator);
+        ResourceLocator const & resourceLocator);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipAdded(
-        ShipDefinition shipDefinition,
+        ShipMetadata const & shipMetadata,
         std::filesystem::path const & shipDefinitionFilepath,
         ShipId shipId,
         bool doAutoZoom);
@@ -739,6 +740,7 @@ private:
     std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<TextLayer> mTextLayer;
+    ShipTexturizer mShipTexturizer;
 
 
     //

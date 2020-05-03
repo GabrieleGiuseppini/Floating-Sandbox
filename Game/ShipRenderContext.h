@@ -41,7 +41,6 @@ public:
         size_t shipCount,
         size_t pointCount,
         RgbaImageData shipTexture,
-        ShipDefinition::TextureOriginType textureOrigin,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,

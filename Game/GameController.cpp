@@ -14,18 +14,18 @@
 
 std::unique_ptr<GameController> GameController::Create(
     std::function<void()> swapRenderBuffersFunction,
-    std::shared_ptr<ResourceLocator> resourceLocator,
+    ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
     // Load materials
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(*resourceLocator);
+    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
     // Create game dispatcher
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
-        *resourceLocator,
+        resourceLocator,
         gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
         {
@@ -55,7 +55,7 @@ GameController::GameController(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
-    std::shared_ptr<ResourceLocator> resourceLocator)
+    ResourceLocator const & resourceLocator)
     // State machines
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
@@ -76,8 +76,9 @@ GameController::GameController(
     , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mTextLayer(std::move(textLayer))
+    , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
-        OceanFloorTerrain::LoadFromImage(resourceLocator->GetDefaultOceanFloorTerrainFilepath()),
+        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilepath()),
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
         mGameParameters))
@@ -96,6 +97,9 @@ GameController::GameController(
     , mLastPublishedTotalFrameCount(0u)
     , mSkippedFirstStatPublishes(0)
 {
+    // Verify materials' textures
+    mShipTexturizer.VerifyMaterialDatabase(mMaterialDatabase);
+
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
@@ -236,6 +240,12 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
 {
     assert(!!mWorld);
 
+    // Load ship definition
+    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+
+    // Save metadata
+    ShipMetadata shipMetadata(shipDefinition.Metadata);
+
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
@@ -243,19 +253,12 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
         std::make_shared<TaskThreadPool>(),
         mGameParameters);
 
-    // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
-
-    // Validate ship
-    mRenderContext->ValidateShip(shipDefinition);
-
-    // Save metadata
-    ShipMetadata shipMetadata(shipDefinition.Metadata);
-
     // Add ship to new world
     ShipId shipId = newWorld->AddShip(
-        shipDefinition,
+        std::move(shipDefinition),
         mMaterialDatabase,
+        mShipTexturizer,
+        *mRenderContext,
         mGameParameters);
 
     //
@@ -265,7 +268,7 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     Reset(std::move(newWorld));
 
     OnShipAdded(
-        std::move(shipDefinition),
+        shipMetadata,
         shipDefinitionFilepath,
         shipId,
         mDoAutoZoomOnShipLoad);
@@ -306,16 +309,15 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
 
-    // Validate ship
-    mRenderContext->ValidateShip(shipDefinition);
-
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     // Load ship into current world
     ShipId shipId = mWorld->AddShip(
-        shipDefinition,
+        std::move(shipDefinition),
         mMaterialDatabase,
+        mShipTexturizer,
+        *mRenderContext,
         mGameParameters);
 
     //
@@ -323,7 +325,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     //
 
     OnShipAdded(
-        std::move(shipDefinition),
+        shipMetadata,
         shipDefinitionFilepath,
         shipId,
         false);
@@ -337,6 +339,17 @@ void GameController::ReloadLastShip()
 {
     assert(!!mWorld);
 
+    if (mLastShipLoadedFilepath.empty())
+    {
+        throw std::runtime_error("No ship has been loaded yet");
+    }
+
+    // Load ship definition
+    auto shipDefinition = ShipDefinition::Load(mLastShipLoadedFilepath);
+
+    // Remember metadata
+    ShipMetadata shipMetadata(shipDefinition.Metadata);
+
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
@@ -344,19 +357,12 @@ void GameController::ReloadLastShip()
         std::make_shared<TaskThreadPool>(),
         mGameParameters);
 
-    // Load ship definition
-
-    if (mLastShipLoadedFilepath.empty())
-    {
-        throw std::runtime_error("No ship has been loaded yet");
-    }
-
-    auto shipDefinition = ShipDefinition::Load(mLastShipLoadedFilepath);
-
     // Load ship into new world
     ShipId shipId = newWorld->AddShip(
-        shipDefinition,
+        std::move(shipDefinition),
         mMaterialDatabase,
+        mShipTexturizer,
+        *mRenderContext,
         mGameParameters);
 
     //
@@ -366,7 +372,7 @@ void GameController::ReloadLastShip()
     Reset(std::move(newWorld));
 
     OnShipAdded(
-        std::move(shipDefinition),
+        shipMetadata,
         mLastShipLoadedFilepath,
         shipId,
         false);
@@ -1237,7 +1243,7 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 }
 
 void GameController::OnShipAdded(
-    ShipDefinition shipDefinition,
+    ShipMetadata const & shipMetadata,
     std::filesystem::path const & shipDefinitionFilepath,
     ShipId shipId,
     bool doAutoZoom)
@@ -1263,18 +1269,11 @@ void GameController::OnShipAdded(
         }
     }
 
-    // Add ship to rendering engine
-    mRenderContext->AddShip(
-        shipId,
-        mWorld->GetShipPointCount(shipId),
-        std::move(shipDefinition.TextureLayerImage),
-        shipDefinition.TextureOrigin);
-
     // Notify
     mGameEventDispatcher->OnShipLoaded(
         shipId,
-        shipDefinition.Metadata.ShipName,
-        shipDefinition.Metadata.Author);
+        shipMetadata.ShipName,
+        shipMetadata.Author);
 
     // Remember last loaded ship
     mLastShipLoadedFilepath = shipDefinitionFilepath;
