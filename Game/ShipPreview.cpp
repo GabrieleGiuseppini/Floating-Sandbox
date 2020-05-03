@@ -76,7 +76,7 @@ std::unique_ptr<ShipPreview> ShipPreview::Load(
     // Load preview image and trim it
     //
 
-    auto previewImage = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+    auto previewImage = ImageFileTools::LoadImageRgbaAndResize(
         previewImageFilePath,
         maxSize);
 

@@ -23,7 +23,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & materialsDir)
 {
     // Load image
-    auto image = ImageFileTools::LoadImageRgbLowerLeft(std::filesystem::path(inputFile));
+    auto image = ImageFileTools::LoadImageRgb(std::filesystem::path(inputFile));
 
     float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
 

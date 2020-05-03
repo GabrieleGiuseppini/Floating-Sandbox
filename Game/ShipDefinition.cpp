@@ -46,7 +46,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             try
             {
                 ropesLayerImage.emplace(
-                    ImageFileTools::LoadImageRgbLowerLeft(basePath / *sdf.RopesLayerImageFilePath));
+                    ImageFileTools::LoadImageRgb(basePath / *sdf.RopesLayerImageFilePath));
             }
             catch (GameException const & gex)
             {
@@ -63,7 +63,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             try
             {
                 electricalLayerImage.emplace(
-                    ImageFileTools::LoadImageRgbLowerLeft(basePath / *sdf.ElectricalLayerImageFilePath));
+                    ImageFileTools::LoadImageRgb(basePath / *sdf.ElectricalLayerImageFilePath));
             }
             catch (GameException const & gex)
             {
@@ -118,7 +118,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     // Load structural layer image
     //
 
-    ImageData structuralImage = ImageFileTools::LoadImageRgbLowerLeft(absoluteStructuralLayerImageFilePath);
+    ImageData structuralImage = ImageFileTools::LoadImageRgb(absoluteStructuralLayerImageFilePath);
 
     //
     // Make texture layer image
@@ -135,7 +135,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
             try
             {
                 textureImage.emplace(
-                    ImageFileTools::LoadImageRgbaLowerLeft(absoluteTextureLayerImageFilePath));
+                    ImageFileTools::LoadImageRgba(absoluteTextureLayerImageFilePath));
             }
             catch (GameException const & gex)
             {
@@ -155,7 +155,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
                 magnify /= 2;
 
             textureImage.emplace(
-                ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
+                ImageFileTools::LoadImageRgbaAndMagnify(
                     absoluteTextureLayerImageFilePath,
                     magnify));
 

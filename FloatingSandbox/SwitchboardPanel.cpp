@@ -108,7 +108,7 @@ SwitchboardPanel::SwitchboardPanel(
 
             for (auto const & backgroundBitmapFilepath : backgroundBitmapFilepaths)
             {
-                auto backgroundBitmapThumb1 = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+                auto backgroundBitmapThumb1 = ImageFileTools::LoadImageRgbaAndResize(
                     backgroundBitmapFilepath,
                     128);
 

@@ -44,7 +44,6 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Inte
     return os;
 }
 
-
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.
  *

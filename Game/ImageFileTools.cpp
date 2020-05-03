@@ -54,11 +54,6 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 
 RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepath)
 {
-    return LoadImageRgbaLowerLeft(filepath);
-}
-
-RgbaImageData ImageFileTools::LoadImageRgbaLowerLeft(std::filesystem::path const & filepath)
-{
     return InternalLoadImage<rgbaColor>(
         filepath,
         IL_RGBA,
@@ -66,7 +61,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeft(std::filesystem::path const
         std::nullopt);
 }
 
-RgbImageData ImageFileTools::LoadImageRgbLowerLeft(std::filesystem::path const & filepath)
+RgbImageData ImageFileTools::LoadImageRgb(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbColor>(
         filepath,
@@ -75,7 +70,7 @@ RgbImageData ImageFileTools::LoadImageRgbLowerLeft(std::filesystem::path const &
         std::nullopt);
 }
 
-RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
+RgbaImageData ImageFileTools::LoadImageRgbaAndMagnify(
     std::filesystem::path const & filepath,
     int magnificationFactor)
 {
@@ -93,7 +88,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndMagnify(
             ILU_NEAREST));
 }
 
-RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     std::filesystem::path const & filepath,
     int resizedWidth)
 {
@@ -115,21 +110,21 @@ RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
             ILU_BILINEAR));
 }
 
-RgbaImageData ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     std::filesystem::path const & filepath,
     ImageSize const & maxSize)
 {
-    return InternalLoadImageLowerLeftAndResize<rgbaColor>(
+    return InternalLoadImageAndResize<rgbaColor>(
         filepath,
         IL_RGBA,
         maxSize);
 }
 
-RgbImageData ImageFileTools::LoadImageRgbLowerLeftAndResize(
+RgbImageData ImageFileTools::LoadImageRgbAndResize(
     std::filesystem::path const & filepath,
     ImageSize const & maxSize)
 {
-    return InternalLoadImageLowerLeftAndResize<rgbColor>(
+    return InternalLoadImageAndResize<rgbColor>(
         filepath,
         IL_RGB,
         maxSize);
@@ -208,7 +203,7 @@ unsigned int ImageFileTools::InternalLoadImage(std::filesystem::path const & fil
 }
 
 template <typename TColor>
-ImageData<TColor> ImageFileTools::InternalLoadImageLowerLeftAndResize(
+ImageData<TColor> ImageFileTools::InternalLoadImageAndResize(
     std::filesystem::path const & filepath,
     int targetFormat,
     ImageSize const & maxSize)

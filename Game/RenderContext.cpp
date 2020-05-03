@@ -471,7 +471,7 @@ RenderContext::RenderContext(
     {
         auto const & tfs = mOceanTextureFrameSpecifications[i];
 
-        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+        auto textureThumbnail = ImageFileTools::LoadImageRgbaAndResize(
             tfs.FilePath,
             ThumbnailSize);
 
@@ -494,7 +494,7 @@ RenderContext::RenderContext(
     {
         auto const & tfs = mLandTextureFrameSpecifications[i];
 
-        auto textureThumbnail = ImageFileTools::LoadImageRgbaLowerLeftAndResize(
+        auto textureThumbnail = ImageFileTools::LoadImageRgbaAndResize(
             tfs.FilePath,
             ThumbnailSize);
 

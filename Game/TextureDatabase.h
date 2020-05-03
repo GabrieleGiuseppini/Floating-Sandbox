@@ -118,7 +118,7 @@ struct TextureFrameSpecification
 
     TextureFrame<TextureGroups> LoadFrame() const
     {
-        RgbaImageData imageData = ImageFileTools::LoadImageRgbaLowerLeft(FilePath);
+        RgbaImageData imageData = ImageFileTools::LoadImageRgba(FilePath);
 
         return TextureFrame<TextureGroups>(
             Metadata,

@@ -415,29 +415,29 @@ Render:
 			+ sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
 		+ Commit & Merge
 		+ Send for testing
+
 		+ Bump-up version
 		+ Post roadmap
 		+ make gbenchmark optional
-
-		= See whether water-sensing OFF switches work
-			= It does, tell John Smith
-		- Ask auto-zoom
 		+ Multiple instance ID error: say where they both are
 			+ Test
 		+ See "invalid extension" error message
 			+ Test
-
-		= See if may get rid of ImageFileTools::Load...UpperLeft
+		+ See if may get rid of ImageFileTools::Load...UpperLeft
 			+ ShipBuilder
 			+ OceanFloor
 			+ ShipAnalyzer
 			+ Nuke from ImageFileTools
-			- Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
+			+ Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
 			  ImageFileTools::LoadXYZ without "LowerLeft"
-			  - Don't forget ShipAnalyzer
+			  + Don't forget ShipAnalyzer
 
-		- Auto-Texturizer
-			- New ShipTexturizer class, owned by GameController
+		= See whether water-sensing OFF switches work
+			= It does, tell John Smith
+		- Ask auto-zoom
+
+		= Auto-Texturizer
+			! Spec: new ShipTexturizer class, owned by GameController
 				- Created at GameController create time, and kept forever
 					- Maintains cache
 				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
@@ -445,20 +445,24 @@ Render:
 			- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
 			  texture; two modes:
 				- ShipAutoTexturizationMode At GameTypes
-				- ~"From structure": builds texture using structural materials' RenderColor (as opposed to color key like now)
-				- ~"Material": using bump maps
+					- "FlatStructure": builds texture using structural materials' RenderColor (as opposed to color key like now)
+					- "MaterialTextures": using materials' "bump maps"
 				- Setting storage is @ ShipTexturizer, brokered by GameController
+			- Make ship definition not fill-in the texture image when not specified
+				- Copy code to ShipTexturizer
+				- TexturePath is also optional
+				- Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
 			- ShipTexturizer instance is passed by GameController to ShipBuilder at ship build time
 			- Both texturizations implemented in ShipTexturizer class
 				- Textures/Materials folder contains textures
-					- ResourceLocator::GetMaterialTextureFolderPath()
+					- ResourceLocator::GetMaterialTexturesFolderPath()
 					- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
 				- Structural material has new mandatory "texture_name" string arg
 					- Material DB <-> actual textures check: done by GameController at its Create() time,
 					  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
 			- Texturizations:
 				- By triangles, with nearest neighbor
-			- ShipTexturizer:
+			- ShipTexturizer's cache:
 				- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
 				- Cache usage counts are reset upon each new texturization - but textures are not purged
 

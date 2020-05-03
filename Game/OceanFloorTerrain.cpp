@@ -39,7 +39,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
 
     // Load image
-    RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgbLowerLeft(imageFilePath);
+    RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgb(imageFilePath);
     float const halfHeight = static_cast<float>(oceanFloorImage.Size.Height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples
