@@ -41,6 +41,7 @@ RgbaImageData ShipTexturizer::Texturize(
     assert(maxDimension > 0);
 
     int const magnificationFactor = std::max(1, 4096 / maxDimension);
+    float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
     ImageSize const textureSize = structureSize * magnificationFactor;
 
@@ -81,28 +82,32 @@ RgbaImageData ShipTexturizer::Texturize(
             {
                 assert(mAutoTexturizationMode == ShipAutoTexturizationMode::MaterialTextures);
 
-                vec3f structurePixelColorF = structurePixelColor.toVec3f();
+                vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
                 // Get bump map texture
                 assert(pointMatrix[x][y].has_value());
                 RgbImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[x][y]].StructuralMtl.MaterialTextureName);
 
-                // Fill quad with color multiplied with bump map texture
+                //
+                // Fill quad with color multiply-blended with bump map texture
+                //
+
+                float const baseWorldY = static_cast<float>(y - 1);
+
+                int const baseTargetQuadOffset =
+                    ((x - 1) + (y - 1) * textureSize.Width)
+                    * magnificationFactor;
+
                 for (int yy = 0; yy < magnificationFactor; ++yy)
                 {
-                    int const quadOffset =
-                        (x - 1) * magnificationFactor
-                        + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
+                    int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.Width;
 
-                    float const worldY =
-                        static_cast<float>(y - 1)
-                        + static_cast<float>(yy) / static_cast<float>(magnificationFactor);
+                    float const worldY = baseWorldY + static_cast<float>(yy) * magnificationFactorInvF;
 
+                    float const baseWorldX = static_cast<float>(x - 1);
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        float const worldX =
-                            static_cast<float>(x - 1)
-                            + static_cast<float>(xx) / static_cast<float>(magnificationFactor);
+                        float const worldX = baseWorldX + static_cast<float>(xx) * magnificationFactorInvF;
 
                         vec3f const bumpMapSample = SampleTexture(
                             materialTexture,
@@ -115,7 +120,7 @@ RgbaImageData ShipTexturizer::Texturize(
                             structurePixelColorF.z * bumpMapSample.z);
 
                         // Store resultant color, using structure's alpha channel value
-                        newImageData[quadOffset + xx] = rgbaColor(resultantColor, structurePixelColor.a);
+                        newImageData[targetQuadOffset + xx] = rgbaColor(resultantColor, structurePixelColor.a);
                     }
                 }
             }
@@ -188,13 +193,8 @@ vec3f ShipTexturizer::SampleTexture(
     // Bilinear
     //
 
-    int const nextPixelXI = pixelXI < texture.Size.Width - 1
-        ? pixelXI + 1
-        : 0;
-
-    int const nextPixelYI = pixelYI < texture.Size.Height - 1
-        ? pixelYI + 1
-        : 0;
+    int const nextPixelXI = (pixelXI + 1) % texture.Size.Width;
+    int const nextPixelYI = (pixelYI + 1) % texture.Size.Height;
 
     // Linear interpolation between x samples at bottom
     vec3f const interpolatedXColorBottom = Mix(
