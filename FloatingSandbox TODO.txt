@@ -481,11 +481,14 @@ Render:
 			= Do texturizations
 				+ FlatStructure:
 				- MaterialTextures:
+					- MaterialTextureMagnificationFactor:
+						- Getter and setter
+						- Upon setting: store mMaterialTextureWorldToPixelConversionFactor = 1/.
 					- TODO: level of detail?
 					- ShipTexturizer's cache:
 						- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
 						- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
-			- I/GameController settings: ShipAutoTexturizationMode
+			- I/GameController settings: ShipAutoTexturizationMode & MaterialTextureMagnificationFactor
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
 			- Make StructuralMaterial' "texture_name" mandatory
@@ -493,8 +496,6 @@ Render:
 			- Decide ShipAutoTexturizationMode default
 			- Tests:
 				- Ship with texture too large than OpenGL's limits: verify we still display error and everything continues
-
-		- Check if ropes' step makes ropes so heavy
 
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 
@@ -1344,6 +1345,9 @@ Render:
 		- Spec:
 			- External water pressure should inflict stress on springs
 			- Have to visit frontier points and, if underwater, do force perpendicular towards interior
+				- How to deal with counter-pressure from inside though?
+					- One idea: each connected component remember whether it's leaking, and only CC's without
+					  any leaking would be subject to pressure
 			- Need own sounds
 
 	- Punch tool: interacts with frontier, just like a punch

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -91,3 +92,9 @@ public:
     }
 };
 #pragma pack(pop)
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, ImageSize const & is)
+{
+    os << is.ToString();
+    return os;
+}

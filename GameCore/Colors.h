@@ -13,6 +13,8 @@
 #include <ostream>
 #include <string>
 
+#pragma pack(push)
+
 struct rgbColor
 {
 public:
@@ -94,6 +96,8 @@ public:
     std::string toString() const;
 };
 
+#pragma pack(pop)
+
 static_assert(offsetof(rgbColor, r) == 0 * sizeof(uint8_t));
 static_assert(offsetof(rgbColor, g) == 1 * sizeof(uint8_t));
 static_assert(offsetof(rgbColor, b) == 2 * sizeof(uint8_t));
@@ -104,6 +108,8 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, rgbCo
     os << c.toString();
     return os;
 }
+
+#pragma pack(push)
 
 struct rgbaColor
 {
@@ -238,6 +244,8 @@ public:
 
     std::string toString() const;
 };
+
+#pragma pack(pop)
 
 static_assert(offsetof(rgbaColor, r) == 0 * sizeof(uint8_t));
 static_assert(offsetof(rgbaColor, g) == 1 * sizeof(uint8_t));

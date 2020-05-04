@@ -13,6 +13,8 @@
 #include <ostream>
 #include <string>
 
+#pragma pack(push)
+
 struct vec2f
 {
 public:
@@ -230,6 +232,8 @@ public:
     std::string toString() const;
 };
 
+#pragma pack(pop)
+
 static_assert(offsetof(vec2f, x) == 0);
 static_assert(offsetof(vec2f, y) == sizeof(float));
 static_assert(sizeof(vec2f) == 2 * sizeof(float));
@@ -239,6 +243,8 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec2
     os << v.toString();
     return os;
 }
+
+#pragma pack(push)
 
 struct vec3f
 {
@@ -404,6 +410,8 @@ public:
     std::string toString() const;
 };
 
+#pragma pack(pop)
+
 static_assert(offsetof(vec3f, x) == 0);
 static_assert(offsetof(vec3f, y) == sizeof(float));
 static_assert(offsetof(vec3f, z) == 2 * sizeof(float));
@@ -414,6 +422,8 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec3f
     os << v.toString();
     return os;
 }
+
+#pragma pack(push)
 
 struct vec4f
 {
@@ -549,6 +559,8 @@ public:
 
     std::string toString() const;
 };
+
+#pragma pack(pop)
 
 static_assert(offsetof(vec4f, x) == 0);
 static_assert(offsetof(vec4f, y) == sizeof(float));

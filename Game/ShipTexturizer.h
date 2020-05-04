@@ -11,7 +11,9 @@
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/Vectors.h>
 
+#include <cassert>
 #include <filesystem>
 #include <unordered_map>
 
@@ -19,13 +21,9 @@ class ShipTexturizer
 {
 public:
 
-    ShipTexturizer(ResourceLocator const & resourceLocator)
-        : mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
-        , mTextureCache()
-        , mAutoTexturizationMode(ShipAutoTexturizationMode::FlatStructure)
-    {}
+    ShipTexturizer(ResourceLocator const & resourceLocator);
 
-    inline ShipAutoTexturizationMode GetAutoTexturizationMode() const
+    ShipAutoTexturizationMode GetAutoTexturizationMode() const
     {
         return 	mAutoTexturizationMode;
     }
@@ -33,6 +31,19 @@ public:
     void SetAutoTexturizationMode(ShipAutoTexturizationMode value)
     {
         mAutoTexturizationMode = value;
+    }
+
+    float GetMaterialTextureMagnification() const
+    {
+        return mMaterialTextureMagnification;
+    }
+
+    void SetMaterialTextureMagnification(float value)
+    {
+        assert(value != 0.0f);
+
+        mMaterialTextureMagnification = value;
+        mMaterialTextureWorldToPixelConversionFactor = 1.0f / value;
     }
 
     void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
@@ -44,21 +55,40 @@ public:
 
 private:
 
+    inline RgbImageData const & GetMaterialTexture(std::string const & textureName) const;
+
+    inline vec3f SampleTexture(
+        RgbImageData const & texture,
+        float pixelX,
+        float pixelY) const;
+
+private:
+
+    //
+    // Settings that we are the storage of
+    //
+
+    ShipAutoTexturizationMode mAutoTexturizationMode;
+    float mMaterialTextureMagnification;
+
+    //
+    // Material textures
+    //
+
     std::filesystem::path const mMaterialTexturesFolderPath;
+
+    float mMaterialTextureWorldToPixelConversionFactor;
 
     struct CachedTexture
     {
-        RgbaImageData Texture;
+        RgbImageData Texture;
         size_t UseCount;
 
-        CachedTexture(RgbaImageData && texture)
+        CachedTexture(RgbImageData && texture)
             : Texture(std::move(texture))
             , UseCount(0)
         {}
     };
 
-    mutable std::unordered_map<std::string, CachedTexture> mTextureCache;
-
-    // We are the storage for this setting
-    ShipAutoTexturizationMode mAutoTexturizationMode;
+    mutable std::unordered_map<std::string, CachedTexture> mMaterialTextureCache;
 };
