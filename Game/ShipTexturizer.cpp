@@ -131,8 +131,8 @@ RgbaImageData ShipTexturizer::Texturize(
         }
     }
 
-    LogMessage("Ship Auto-Texturization: magFactor=", magnificationFactor,
-        " textureSize=", textureSize,
+    LogMessage("Ship Auto-Texturization:",
+        " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
         " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 
     return RgbaImageData(textureSize, std::move(newImageData));
