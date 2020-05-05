@@ -101,23 +101,18 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                float const baseWorldY = static_cast<float>(y - 1);
-
                 int const baseTargetQuadOffset =
                     ((x - 1) + (y - 1) * textureSize.Width)
                     * magnificationFactor;
 
-                for (int yy = 0; yy < magnificationFactor; ++yy)
+                float worldY = static_cast<float>(y - 1);
+                for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
                     int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.Width;
 
-                    float const worldY = baseWorldY + static_cast<float>(yy) * magnificationFactorInvF;
-
-                    float const baseWorldX = static_cast<float>(x - 1);
-                    for (int xx = 0; xx < magnificationFactor; ++xx)
+                    float worldX = static_cast<float>(x - 1);
+                    for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
                     {
-                        float const worldX = baseWorldX + static_cast<float>(xx) * magnificationFactorInvF;
-
                         vec3f const bumpMapSample = SampleTexture(
                             materialTexture,
                             worldX * mMaterialTextureWorldToPixelConversionFactor,

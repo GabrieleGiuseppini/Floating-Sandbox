@@ -490,12 +490,12 @@ Render:
 						- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
 					= Perf:
 						+ Start: Heat Generation Test: 998/1050ms
-						= Try converting material texture to floats first
+						+ Try converting material texture to floats first
 							+ New ImageData instantiation: vec3f
 							+ ImageTools: conversion
 							+ Do at load time and store in cache
-						- Heat Generation Test: 
-						- Factor out WorldW,Y and keep adding
+						+ Factor out WorldW,Y and keep adding
+						+ Heat Generation Test: 962/1032ms						
 			- I/GameController settings: ShipAutoTexturizationMode & MaterialTextureMagnificationFactor
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
