@@ -55,10 +55,10 @@ public:
 
 private:
 
-    inline RgbImageData const & GetMaterialTexture(std::string const & textureName) const;
+    inline Vec3fImageData const & GetMaterialTexture(std::string const & textureName) const;
 
     inline vec3f SampleTexture(
-        RgbImageData const & texture,
+        Vec3fImageData const & texture,
         float pixelX,
         float pixelY) const;
 
@@ -81,10 +81,10 @@ private:
 
     struct CachedTexture
     {
-        RgbImageData Texture;
+        Vec3fImageData Texture;
         size_t UseCount;
 
-        CachedTexture(RgbImageData && texture)
+        CachedTexture(Vec3fImageData && texture)
             : Texture(std::move(texture))
             , UseCount(0)
         {}

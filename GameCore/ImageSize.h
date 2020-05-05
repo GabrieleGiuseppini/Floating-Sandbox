@@ -70,6 +70,11 @@ public:
             this->Height * magnificationFactor);
     }
 
+    inline int GetPixelCount() const
+    {
+        return this->Width * this->Height;
+    }
+
     inline ImageSize Union(ImageSize const & other) const
     {
         return ImageSize(

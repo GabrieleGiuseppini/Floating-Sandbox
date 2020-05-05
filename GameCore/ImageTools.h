@@ -96,6 +96,8 @@ public:
 
     static RgbImageData ToAlpha(RgbaImageData const & imageData);
 
+    static Vec3fImageData ToVec3f(RgbImageData const & imageData);
+
 private:
 
     template<typename TColor>

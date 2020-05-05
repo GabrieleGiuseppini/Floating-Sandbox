@@ -10,8 +10,8 @@ void ImageTools::BlendWithColor(
     rgbColor const & color,
     float alpha)
 {
-    size_t const Size = imageData.Size.Width * imageData.Size.Height;
-    for (size_t i = 0; i < Size; ++i)
+    size_t const pixelCount = imageData.Size.GetPixelCount();
+    for (size_t i = 0; i < pixelCount; ++i)
     {
         imageData.Data[i] = imageData.Data[i].mix(color, alpha);
     }
@@ -44,8 +44,8 @@ void ImageTools::Overlay(
 
 void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
 {
-    size_t const Size = imageData.Size.Width * imageData.Size.Height;
-    for (size_t i = 0; i < Size; ++i)
+    size_t const pixelCount = imageData.Size.GetPixelCount();
+    for (size_t i = 0; i < pixelCount; ++i)
     {
         imageData.Data[i].alpha_multiply();
     }
@@ -57,7 +57,7 @@ RgbaImageData ImageTools::Truncate(
 {
     ImageSize const finalImageSize = imageSize.Intersection(imageData.Size);
 
-    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.Height * finalImageSize.Width);
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.GetPixelCount());
 
     for (int r = 0; r < finalImageSize.Height; ++r)
     {
@@ -74,7 +74,7 @@ RgbaImageData ImageTools::Truncate(
 
 RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.Height * imageData.Size.Width);
+    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetPixelCount());
 
     for (int r = 0; r < imageData.Size.Height; ++r)
     {
@@ -90,7 +90,7 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 
 RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.Height * imageData.Size.Width);
+    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetPixelCount());
 
     for (int r = 0; r < imageData.Size.Height; ++r)
     {
@@ -104,4 +104,18 @@ RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
     }
 
     return RgbImageData(imageData.Size, std::move(newImageData));
+}
+
+Vec3fImageData ImageTools::ToVec3f(RgbImageData const & imageData)
+{
+    auto const pixelCount = imageData.Size.GetPixelCount();
+
+    std::unique_ptr<vec3f[]> convertedData = std::make_unique<vec3f[]>(pixelCount);
+
+    for (int p = 0; p < pixelCount; ++p)
+    {
+        convertedData[p] = imageData.Data[p].toVec3f();
+    }
+
+    return Vec3fImageData(imageData.Size, std::move(convertedData));
 }

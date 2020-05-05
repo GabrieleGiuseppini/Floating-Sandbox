@@ -8,6 +8,7 @@
 #include "ImageFileTools.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -49,7 +50,7 @@ RgbaImageData ShipTexturizer::Texturize(
     // Create texture
     //
 
-    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.Width * textureSize.Height);
+    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetPixelCount());
 
     auto const startTime = std::chrono::steady_clock::now();
 
@@ -65,6 +66,10 @@ RgbaImageData ShipTexturizer::Texturize(
             if (mAutoTexturizationMode == ShipAutoTexturizationMode::FlatStructure
                 || !pointMatrix[x][y].has_value())
             {
+                //
+                // Flat structure
+                //
+
                 // Fill quad with color
                 for (int yy = 0; yy < magnificationFactor; ++yy)
                 {
@@ -80,16 +85,20 @@ RgbaImageData ShipTexturizer::Texturize(
             }
             else
             {
+                //
+                // Material textures
+                //
+
                 assert(mAutoTexturizationMode == ShipAutoTexturizationMode::MaterialTextures);
 
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
                 // Get bump map texture
                 assert(pointMatrix[x][y].has_value());
-                RgbImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[x][y]].StructuralMtl.MaterialTextureName);
+                Vec3fImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[x][y]].StructuralMtl.MaterialTextureName);
 
                 //
-                // Fill quad with color multiply-blended with bump map texture
+                // Fill quad with color multiply-blended with "bump map" texture
                 //
 
                 float const baseWorldY = static_cast<float>(y - 1);
@@ -136,7 +145,7 @@ RgbaImageData ShipTexturizer::Texturize(
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-RgbImageData const & ShipTexturizer::GetMaterialTexture(std::string const & textureName) const
+Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & textureName) const
 {
     std::string const TODOtextureName = "wood_1";
 
@@ -156,10 +165,10 @@ RgbImageData const & ShipTexturizer::GetMaterialTexture(std::string const & text
 
         // Load and cache texture
         // TODO: use name->path map built at cctor
-        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTexturesFolderPath / "wood_1.png");
+        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTexturesFolderPath / (TODOtextureName + ".png"));
         auto const inserted = mMaterialTextureCache.emplace(
             TODOtextureName,
-            std::move(texture));
+            ImageTools::ToVec3f(texture));
 
         assert(inserted.second);
 
@@ -168,7 +177,7 @@ RgbImageData const & ShipTexturizer::GetMaterialTexture(std::string const & text
 }
 
 vec3f ShipTexturizer::SampleTexture(
-    RgbImageData const & texture,
+    Vec3fImageData const & texture,
     float pixelX,
     float pixelY) const
 {
@@ -198,14 +207,14 @@ vec3f ShipTexturizer::SampleTexture(
 
     // Linear interpolation between x samples at bottom
     vec3f const interpolatedXColorBottom = Mix(
-        texture.Data[pixelXI + pixelYI * texture.Size.Width].toVec3f(),
-        texture.Data[nextPixelXI + pixelYI * texture.Size.Width].toVec3f(),
+        texture.Data[pixelXI + pixelYI * texture.Size.Width],
+        texture.Data[nextPixelXI + pixelYI * texture.Size.Width],
         pixelDx);
 
     // Linear interpolation between x samples at top
     vec3f const interpolatedXColorTop = Mix(
-        texture.Data[pixelXI + nextPixelYI * texture.Size.Width].toVec3f(),
-        texture.Data[nextPixelXI + nextPixelYI * texture.Size.Width].toVec3f(),
+        texture.Data[pixelXI + nextPixelYI * texture.Size.Width],
+        texture.Data[nextPixelXI + nextPixelYI * texture.Size.Width],
         pixelDx);
 
     // Linear interpolation between two vertical samples

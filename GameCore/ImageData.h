@@ -7,6 +7,7 @@
 
 #include "Colors.h"
 #include "ImageSize.h"
+#include "Vectors.h"
 
 #include <memory>
 
@@ -48,3 +49,4 @@ public:
 
 using RgbImageData = ImageData<rgbColor>;
 using RgbaImageData = ImageData<rgbaColor>;
+using Vec3fImageData = ImageData<vec3f>;

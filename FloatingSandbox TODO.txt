@@ -488,12 +488,14 @@ Render:
 					- ShipTexturizer's cache:
 						- Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
 						- Cache usage counts are reset at beginning of each new texturization - but textures are not purged
-					- Perf:
+					= Perf:
 						+ Start: Heat Generation Test: 998/1050ms
-						- Try converting material texture to floats first
-							- New ImageData instantiation: vec3f
-							- ImageData::Convert<target>()
-							- Do at load time and store in cache
+						= Try converting material texture to floats first
+							+ New ImageData instantiation: vec3f
+							+ ImageTools: conversion
+							+ Do at load time and store in cache
+						- Heat Generation Test: 
+						- Factor out WorldW,Y and keep adding
 			- I/GameController settings: ShipAutoTexturizationMode & MaterialTextureMagnificationFactor
 				- And SettingsManager, SettingsDialog
 			- Do textures for all materials
