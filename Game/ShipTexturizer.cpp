@@ -176,17 +176,17 @@ vec3f ShipTexturizer::SampleTexture(
     float pixelX,
     float pixelY) const
 {
-    // Wrap coordinates
-    float const wrappedPixelX = std::fmodf(pixelX, static_cast<float>(texture.Size.Width));
-    float const wrappedPixelY = std::fmodf(pixelY, static_cast<float>(texture.Size.Height));
-
     // Integral part
-    int32_t const pixelXI = FastTruncateInt32(wrappedPixelX);
-    int32_t const pixelYI = FastTruncateInt32(wrappedPixelY);
+    int32_t pixelXI = FastTruncateInt32(pixelX);
+    int32_t pixelYI = FastTruncateInt32(pixelY);
 
     // Fractional part between index and next index
-    float const pixelDx = wrappedPixelX - pixelXI;
-    float const pixelDy = wrappedPixelY - pixelYI;
+    float const pixelDx = pixelX - pixelXI;
+    float const pixelDy = pixelY - pixelYI;
+
+    // Wrap integral coordinates
+    pixelXI %= texture.Size.Width;
+    pixelYI %= texture.Size.Height;
 
     assert(pixelXI >= 0 && pixelXI < texture.Size.Width);
     assert(pixelDx >= 0.0f && pixelDx < 1.0f);

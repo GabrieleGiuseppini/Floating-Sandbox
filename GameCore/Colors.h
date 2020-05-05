@@ -48,9 +48,9 @@ public:
     }
 
     inline rgbColor(vec3f const & c)
-        : r(static_cast<uint8_t>(round(c.x * 255.0f)))
-        , g(static_cast<uint8_t>(round(c.y * 255.0f)))
-        , b(static_cast<uint8_t>(round(c.z * 255.0f)))
+        : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
+        , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
+        , b(static_cast<uint8_t>(c.z * 255.0f + 0.5f))
     {
     }
 
@@ -147,19 +147,19 @@ public:
     }
 
     inline rgbaColor(vec4f const & c)
-        : r(static_cast<uint8_t>(round(c.x * 255.0f)))
-        , g(static_cast<uint8_t>(round(c.y * 255.0f)))
-        , b(static_cast<uint8_t>(round(c.z * 255.0f)))
-        , a(static_cast<uint8_t>(round(c.w * 255.0f)))
+        : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
+        , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
+        , b(static_cast<uint8_t>(c.z * 255.0f + 0.5f))
+        , a(static_cast<uint8_t>(c.w * 255.0f + 0.5f))
     {
     }
 
     inline rgbaColor(
         vec3f const & c,
         uint8_t _a)
-        : r(static_cast<uint8_t>(round(c.x * 255.0f)))
-        , g(static_cast<uint8_t>(round(c.y * 255.0f)))
-        , b(static_cast<uint8_t>(round(c.z * 255.0f)))
+        : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
+        , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
+        , b(static_cast<uint8_t>(c.z * 255.0f + 0.5f))
         , a(_a)
     {
     }
@@ -189,9 +189,9 @@ public:
     inline void alpha_multiply()
     {
         float const alpha = static_cast<float>(a) / 255.0f;
-        r = static_cast<uint8_t>(round(r * alpha));
-        g = static_cast<uint8_t>(round(g * alpha));
-        b = static_cast<uint8_t>(round(b * alpha));
+        r = static_cast<uint8_t>(r * alpha + 0.5f);
+        g = static_cast<uint8_t>(g * alpha + 0.5f);
+        b = static_cast<uint8_t>(b * alpha + 0.5f);
     }
 
     inline rgbaColor blend(rgbaColor const & otherColor) const noexcept
@@ -206,7 +206,7 @@ public:
 
         float const finalAlpha = thisAlpha + otherAlpha * (1.0f - thisAlpha);
 
-        return rgbaColor(result, static_cast<uint8_t>(round(finalAlpha * 255.0f)));
+        return rgbaColor(result, static_cast<uint8_t>(finalAlpha * 255.0f + 0.5f));
     }
 
     inline rgbaColor mix(

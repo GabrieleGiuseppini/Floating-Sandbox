@@ -197,7 +197,9 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
 
     std::unique_ptr<rgbaColor[]> readBuffer(std::move(baseTexture.Data));
     std::unique_ptr<rgbaColor[]> writeBuffer = std::make_unique<rgbaColor[]>(
-        std::max(1, (readImageSize.Width / 2) * (readImageSize.Height / 2)));
+        std::max(
+            1,
+            (readImageSize.Width / 2) * (readImageSize.Height / 2)));
 
     for (GLint textureLevel = 1; ; ++textureLevel)
     {
@@ -216,16 +218,17 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
         rgbaColor * wp = writeBuffer.get();
         for (int h = 0; h < height; ++h)
         {
+            int const baseWriteIndex = h * width;
+            int const baseReadIndex = (h * 2) * readImageSize.Width;
+            int const baseReadIndexNextLine = (h * 2 + 1) * readImageSize.Width;
             for (int w = 0; w < width; ++w)
             {
                 //
                 // Apply box filter
                 //
 
-                int wIndex = ((h * width) + w);
-
-                int rIndex = (((h * 2) * readImageSize.Width) + (w * 2));
-                int rIndexNextLine = ((((h * 2) + 1) * readImageSize.Width) + (w * 2));
+                int const rIndex = baseReadIndex + (w * 2);
+                int const rIndexNextLine = baseReadIndexNextLine + (w * 2);
 
                 rgbaColorAccumulation sum(rp[rIndex]);
 
@@ -240,7 +243,7 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
                         sum += rp[rIndexNextLine + 1];
                 }
 
-                wp[wIndex] = sum.toRgbaColor();
+                wp[baseWriteIndex + w] = sum.toRgbaColor();
             }
         }
 
