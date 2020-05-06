@@ -67,13 +67,14 @@ RgbaImageData ShipTexturizer::Texturize(
 
     //
     // Calculate target texture size: integral multiple of structure size, but without
-    // exceeding 4096 (magic number, also max texture size for low-end gfx cards)
+    // exceeding 4096 (magic number, also max texture size for low-end gfx cards),
+    // and no more than 32 times the original size
     //
 
     int const maxDimension = std::max(structureSize.Width, structureSize.Height);
     assert(maxDimension > 0);
 
-    int const magnificationFactor = std::max(1, 4096 / maxDimension);
+    int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
     float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
     ImageSize const textureSize = structureSize * magnificationFactor;

@@ -720,7 +720,8 @@
         "template": {
             "column": 0, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -746,7 +747,8 @@
         "template": {
             "column": 1, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -772,7 +774,8 @@
         "template": {
             "column": 2, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -798,7 +801,8 @@
         "template": {
             "column": 3, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -824,7 +828,8 @@
         "template": {
             "column": 4, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -850,7 +855,8 @@
         "template": {
             "column": 5, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -876,7 +882,8 @@
         "template": {
             "column": 6, 
             "row": "50|Cloth"
-        }, 
+        },
+	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.5, 
@@ -3400,7 +3407,8 @@
         "template": {
             "column": "0|Glass Hull", 
             "row": "100|Glass"
-        }, 
+        },
+	"texture_name":"glass_1",
         "thermal_conductivity": 0.8,
 	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
@@ -3426,7 +3434,8 @@
         "template": {
             "column": "1|Glass", 
             "row": "100|Glass"
-        }, 
+        },
+	"texture_name":"glass_1",
         "thermal_conductivity": 0.8,
 	"thermal_expansion_coefficient": 0.000005,
         "water_diffusion_speed": 0.5, 
@@ -4342,7 +4351,8 @@
         "template": {
             "column": 3,
             "row": "80|Concrete Hull"
-        }, 
+        },
+	"texture_name":"concrete_2",
         "thermal_conductivity": 1.7, 
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.0, 
@@ -4370,7 +4380,8 @@
         "template": {
             "column": 4,
             "row": "80|Concrete"
-        }, 
+        },
+	"texture_name":"concrete_1",
         "thermal_conductivity": 0.3, 
 	"thermal_expansion_coefficient": 0.00008,
         "water_diffusion_speed": 0.5, 

@@ -1476,7 +1476,7 @@ void Points::UpdateHighlights(GameWallClock::float_time currentWallClockTime)
 
 void Points::Query(ElementIndex pointElementIndex) const
 {
-    LogMessage("PointIndex: ", pointElementIndex);
+    LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" = " + mMaterialsBuffer[pointElementIndex].Structural->Name) : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
     LogMessage("W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     //LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
