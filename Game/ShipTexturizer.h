@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <filesystem>
+#include <optional>
 #include <unordered_map>
 
 class ShipTexturizer
@@ -57,7 +58,7 @@ private:
 
     static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePath(std::filesystem::path const materialTexturesFolderPath);
 
-    inline Vec3fImageData const & GetMaterialTexture(std::string const & textureName) const;
+    inline Vec3fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
 
     void ResetMaterialTextureCacheUseCounts() const;
 

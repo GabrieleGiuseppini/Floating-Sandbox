@@ -60,7 +60,7 @@ public:
 
     std::optional<MaterialSoundType> MaterialSound;
 
-    std::string MaterialTextureName;
+    std::optional<std::string> MaterialTextureName;
 
     // Water
     bool IsHull;
@@ -123,7 +123,7 @@ public:
         vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
-        std::string materialTextureName,
+        std::optional<std::string> materialTextureName,
         // Water
         bool isHull,
         float waterIntake,

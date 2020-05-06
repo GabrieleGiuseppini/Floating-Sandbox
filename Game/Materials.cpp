@@ -35,14 +35,12 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         else if (name == "Water")
             uniqueType = MaterialUniqueType::Water;
 
-        std::optional<std::string> materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
+        std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
         std::optional<MaterialSoundType> materialSound;
         if (!!materialSoundStr)
             materialSound = StrToMaterialSoundType(*materialSoundStr);
 
-        // TODO: make it mandatory
-        std::string const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name")
-            .value_or(std::string());
+        std::optional<std::string> const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name");
 
         // Water
 

@@ -7,6 +7,7 @@
 
 #include "ImageFileTools.h"
 
+#include <GameCore/GameException.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
@@ -39,7 +40,18 @@ ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
 
 void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
 {
-    // TODO: use mMaterialTextureNameToTextureFilePath to verify all names
+    for (auto const & entry : materialDatabase.GetStructuralMaterialsByColorKeys())
+    {
+        if (entry.second.MaterialTextureName.has_value())
+        {
+            if (mMaterialTextureNameToTextureFilePath.count(*entry.second.MaterialTextureName) == 0)
+            {
+                throw GameException(
+                    "Material texture name \"" + *entry.second.MaterialTextureName + "\""
+                    + " specified for material \"" + entry.second.Name + "\" is unknown");
+            }
+        }
+    }
 }
 
 RgbaImageData ShipTexturizer::Texturize(
@@ -121,9 +133,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset =
-                    ((x - 1) + (y - 1) * textureSize.Width)
-                    * magnificationFactor;
+                int const baseTargetQuadOffset = ((x - 1) + (y - 1) * textureSize.Width) * magnificationFactor;
 
                 float worldY = static_cast<float>(y - 1);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
@@ -138,13 +148,13 @@ RgbaImageData ShipTexturizer::Texturize(
                             worldX * mMaterialTextureWorldToPixelConversionFactor,
                             worldY * mMaterialTextureWorldToPixelConversionFactor);
 
-                        // TODOTEST: bi-directional multiply blending
-                        /*
-                        vec3f const resultantColor(
-                            structurePixelColorF.x * bumpMapSample.x,
-                            structurePixelColorF.y * bumpMapSample.y,
-                            structurePixelColorF.z * bumpMapSample.z);
-                        */
+                        ////// Vanilla multiply blending
+                        ////vec3f const resultantColor(
+                        ////    structurePixelColorF.x * bumpMapSample.x,
+                        ////    structurePixelColorF.y * bumpMapSample.y,
+                        ////    structurePixelColorF.z * bumpMapSample.z);
+
+                        // Bi-directional multiply blending
                         vec3f const resultantColor(
                             BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
                             BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
@@ -186,12 +196,11 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
     return materialTextureNameToTextureFilePath;
 }
 
-Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & textureName) const
+Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
 {
-    // TODOHERE
-    std::string const TODOtextureName = "metal_riveted_1";
+    std::string const actualTextureName = textureName.value_or("none");
 
-    auto const & it = mMaterialTextureCache.find(TODOtextureName);
+    auto const & it = mMaterialTextureCache.find(actualTextureName);
     if (it != mMaterialTextureCache.end())
     {
         // Texture is cached
@@ -209,10 +218,10 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & te
         }
 
         // Load and cache texture
-        assert(mMaterialTextureNameToTextureFilePath.count(TODOtextureName) > 0);
-        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePath.at(TODOtextureName));
+        assert(mMaterialTextureNameToTextureFilePath.count(actualTextureName) > 0);
+        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePath.at(actualTextureName));
         auto const inserted = mMaterialTextureCache.emplace(
-            TODOtextureName,
+            actualTextureName,
             ImageTools::ToVec3f(texture));
 
         assert(inserted.second);

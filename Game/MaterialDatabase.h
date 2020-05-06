@@ -215,7 +215,7 @@ public:
         return nullptr;
     }
 
-    auto const & GetStructuralMaterials() const
+    auto const & GetStructuralMaterialsByColorKeys() const
     {
         return mStructuralMaterialMap;
     }
