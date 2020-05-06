@@ -1,0 +1,5 @@
+1) Make it a tile:
+	- Sample Size 10, generate until good
+2) Saturation to zero
+3) Blend mode to multiply
+4) Brightness+Contrast until OK

@@ -17,9 +17,19 @@
 size_t constexpr MaterialTextureCacheSizeHighWatermark = 40;
 size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
 
+namespace /*anonymous*/ {
+
+    inline float BidirMultiplyBlend(float x1, float x2)
+    {
+        return (x2 <= 0.5f)
+            ? x1 * 2.0f * x2                        // Damper: x1 * [0.0, 1.0]
+            : x1 + (x2 - x1) * 2.0f * (x2 - 0.5f);  // Amplifier:x1 + (x2 -x1) * [0.0, 1.0]
+    }
+}
+
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures)
-    , mMaterialTextureMagnification(0.14f)
+    , mMaterialTextureMagnification(0.08f)
     , mMaterialTextureWorldToPixelConversionFactor(1.0f / mMaterialTextureMagnification)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
     , mMaterialTextureNameToTextureFilePath(MakeMaterialTextureNameToTextureFilePath(mMaterialTexturesFolderPath))
@@ -39,6 +49,9 @@ RgbaImageData ShipTexturizer::Texturize(
 {
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
+
+    // TODOTEST
+    mMaterialTextureCache.clear();
 
     //
     // Calculate target texture size: integral multiple of structure size, but without
@@ -125,10 +138,17 @@ RgbaImageData ShipTexturizer::Texturize(
                             worldX * mMaterialTextureWorldToPixelConversionFactor,
                             worldY * mMaterialTextureWorldToPixelConversionFactor);
 
+                        // TODOTEST: bi-directional multiply blending
+                        /*
                         vec3f const resultantColor(
                             structurePixelColorF.x * bumpMapSample.x,
                             structurePixelColorF.y * bumpMapSample.y,
                             structurePixelColorF.z * bumpMapSample.z);
+                        */
+                        vec3f const resultantColor(
+                            BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
+                            BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
+                            BidirMultiplyBlend(structurePixelColorF.z, bumpMapSample.z));
 
                         // Store resultant color, using structure's alpha channel value
                         newImageData[targetQuadOffset + xx] = rgbaColor(resultantColor, structurePixelColor.a);
@@ -139,6 +159,7 @@ RgbaImageData ShipTexturizer::Texturize(
     }
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
+        " materialTextureMagnification=", mMaterialTextureMagnification,
         " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
         " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 
@@ -168,7 +189,7 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
 Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & textureName) const
 {
     // TODOHERE
-    std::string const TODOtextureName = "wood_1";
+    std::string const TODOtextureName = "metal_riveted_1";
 
     auto const & it = mMaterialTextureCache.find(TODOtextureName);
     if (it != mMaterialTextureCache.end())

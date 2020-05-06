@@ -508,11 +508,18 @@ Render:
 					+ Loads
 					+ Reconciliation
 					+ Magnification range & formula
-			- Do textures for all materials
+			+ Test "special multiply" blend mode
+			= Do textures for all materials
+				+ metal_riveted_1
+				- metal_?
+				- wood_?
 			- Make StructuralMaterial' "texture_name" mandatory
 				- Really? Or want instead to allow some materials - e.g. air - to not have textures?
 			- Implement ShipTexturizer::VerifyMaterialsDatabase
 			- Decide ShipAutoTexturizationMode and Magnification default
+			- Perf:
+				- Smaller ships take longer
+					- May be cap magnification factor?
 			- Tests:
 				- Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues
 
