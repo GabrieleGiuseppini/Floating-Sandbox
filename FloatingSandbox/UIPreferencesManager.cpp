@@ -209,6 +209,28 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Ship auto-texturization mode
+        //
+
+        auto shipAutoTexturizationModeIt = preferencesRootObject.find("ship_auto_texturization_mode");
+        if (shipAutoTexturizationModeIt != preferencesRootObject.end()
+            && shipAutoTexturizationModeIt->second.is<std::int64_t>())
+        {
+            mGameController->SetShipAutoTexturizationMode(static_cast<ShipAutoTexturizationMode>(shipAutoTexturizationModeIt->second.get<std::int64_t>()));
+        }
+
+        //
+        // Ship auto-texturization material texture magnification
+        //
+
+        auto shipAutoTexturizationMaterialTextureMagnificationIt = preferencesRootObject.find("ship_auto_texturization_material_texture_magnification");
+        if (shipAutoTexturizationMaterialTextureMagnificationIt != preferencesRootObject.end()
+            && shipAutoTexturizationMaterialTextureMagnificationIt->second.is<double>())
+        {
+            mGameController->SetShipAutoTexturizationMaterialTextureMagnification(static_cast<float>(shipAutoTexturizationMaterialTextureMagnificationIt->second.get<double>()));
+        }
+
+        //
         // Auto-zoom at ship load
         //
 
@@ -394,6 +416,12 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
+
+    // Add ship auto-texturization mode
+    preferencesRootObject["ship_auto_texturization_mode"] = picojson::value(static_cast<std::int64_t>(mGameController->GetShipAutoTexturizationMode()));
+
+    // Add ship auto-texturization material texture magnification
+    preferencesRootObject["ship_auto_texturization_material_texture_magnification"] = picojson::value(static_cast<double>(mGameController->GetShipAutoTexturizationMaterialTextureMagnification()));
 
     // Add auto zoom at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());

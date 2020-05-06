@@ -14,18 +14,22 @@
 #include <algorithm>
 #include <chrono>
 
+size_t constexpr MaterialTextureCacheSizeHighWatermark = 40;
+size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
+
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures)
-    , mMaterialTextureMagnification(0.05f)
+    , mMaterialTextureMagnification(0.14f)
     , mMaterialTextureWorldToPixelConversionFactor(1.0f / mMaterialTextureMagnification)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
+    , mMaterialTextureNameToTextureFilePath(MakeMaterialTextureNameToTextureFilePath(mMaterialTexturesFolderPath))
     , mMaterialTextureCache()
 {
 }
 
 void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
 {
-    // TODO
+    // TODO: use mMaterialTextureNameToTextureFilePath to verify all names
 }
 
 RgbaImageData ShipTexturizer::Texturize(
@@ -33,6 +37,9 @@ RgbaImageData ShipTexturizer::Texturize(
     ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
     std::vector<ShipBuildPoint> const & points) const
 {
+    // Zero-out cache usage counts
+    ResetMaterialTextureCacheUseCounts();
+
     //
     // Calculate target texture size: integral multiple of structure size, but without
     // exceeding 4096 (magic number, also max texture size for low-end gfx cards)
@@ -131,7 +138,7 @@ RgbaImageData ShipTexturizer::Texturize(
         }
     }
 
-    LogMessage("Ship Auto-Texturization:",
+    LogMessage("ShipTexturizer: completed auto-texturization:",
         " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
         " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 
@@ -140,8 +147,27 @@ RgbaImageData ShipTexturizer::Texturize(
 
 ///////////////////////////////////////////////////////////////////////////////////
 
+std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePath(std::filesystem::path const materialTexturesFolderPath)
+{
+    std::unordered_map<std::string, std::filesystem::path> materialTextureNameToTextureFilePath;
+
+    for (auto const & entryIt : std::filesystem::directory_iterator(materialTexturesFolderPath))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path()))
+        {
+            std::string const textureName = entryIt.path().stem().string();
+
+            assert(materialTextureNameToTextureFilePath.count(textureName) == 0);
+            materialTextureNameToTextureFilePath[textureName] = entryIt.path();
+        }
+    }
+
+    return materialTextureNameToTextureFilePath;
+}
+
 Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & textureName) const
 {
+    // TODOHERE
     std::string const TODOtextureName = "wood_1";
 
     auto const & it = mMaterialTextureCache.find(TODOtextureName);
@@ -155,12 +181,15 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & te
     {
         // Have to load texture
 
-        // Check whether need to purge
-        // TODOHERE
+        // Check whether need to make room in the cache, first
+        if (mMaterialTextureCache.size() + 1 >= MaterialTextureCacheSizeHighWatermark)
+        {
+            PurgeMaterialTextureCache(MaterialTextureCacheSizeLowWatermark);
+        }
 
         // Load and cache texture
-        // TODO: use name->path map built at cctor
-        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTexturesFolderPath / (TODOtextureName + ".png"));
+        assert(mMaterialTextureNameToTextureFilePath.count(TODOtextureName) > 0);
+        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePath.at(TODOtextureName));
         auto const inserted = mMaterialTextureCache.emplace(
             TODOtextureName,
             ImageTools::ToVec3f(texture));
@@ -168,6 +197,48 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::string const & te
         assert(inserted.second);
 
         return inserted.first->second.Texture;
+    }
+}
+
+void ShipTexturizer::ResetMaterialTextureCacheUseCounts() const
+{
+    std::for_each(
+        mMaterialTextureCache.begin(),
+        mMaterialTextureCache.end(),
+        [](auto & kv)
+        {
+            kv.second.UseCount = 0;
+        });
+}
+
+void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
+{
+    LogMessage("ShipTexturizer: purging ", maxSize, " material texture cache elements");
+
+    // Create vector with keys and usage counts
+    std::vector<std::pair<std::string, size_t>> keyUsages;
+    std::transform(
+        mMaterialTextureCache.cbegin(),
+        mMaterialTextureCache.cend(),
+        std::back_inserter(keyUsages),
+        [](auto const & it) ->std::pair<std::string, size_t>
+        {
+            return std::make_pair(it.first, it.second.UseCount);
+        });
+
+    // Sorty by usage count, ascending
+    std::sort(
+        keyUsages.begin(),
+        keyUsages.end(),
+        [](auto const & lhs, auto const & rhs)
+        {
+            return lhs.second < rhs.second;
+        });
+
+    // Trim the top elements
+    for (size_t i = 0; i < maxSize && i < keyUsages.size(); ++i)
+    {
+        mMaterialTextureCache.erase(keyUsages[i].first);
     }
 }
 

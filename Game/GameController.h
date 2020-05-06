@@ -230,6 +230,11 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
+    ShipAutoTexturizationMode GetShipAutoTexturizationMode() const override { return mShipTexturizer.GetAutoTexturizationMode(); }
+    void SetShipAutoTexturizationMode(ShipAutoTexturizationMode value) override { mShipTexturizer.SetAutoTexturizationMode(value); }
+
+    float GetShipAutoTexturizationMaterialTextureMagnification() const override { return mShipTexturizer.GetMaterialTextureMagnification(); }
+    void SetShipAutoTexturizationMaterialTextureMagnification(float value) override { mShipTexturizer.SetMaterialTextureMagnification(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions

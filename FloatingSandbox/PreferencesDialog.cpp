@@ -13,6 +13,9 @@
 
 static constexpr int Border = 10;
 
+static int constexpr StaticBoxTopMargin = 7;
+static int constexpr StaticBoxInsetMargin = 10;
+
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
 
@@ -61,6 +64,17 @@ PreferencesDialog::PreferencesDialog(
     PopulateGamePanel(gamePanel);
 
     notebook->AddPage(gamePanel, "Game Preferences");
+
+
+    //
+    // Ships Preferences
+    //
+
+    wxPanel * shipsPanel = new wxPanel(notebook);
+
+    PopulateShipsPanel(shipsPanel);
+
+    notebook->AddPage(shipsPanel, "Ships Preferences");
 
 
     //
@@ -154,26 +168,10 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
-void PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoAutoZoomAtShipLoad(mAutoZoomAtShipLoadCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
-void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
+    mUIPreferencesManager->SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -210,6 +208,30 @@ void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent &
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoAutoZoomAtShipLoad(mAutoZoomAtShipLoadCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -218,10 +240,27 @@ void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEv
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mFlatStructureAutoTexturizationModeRadioButton->GetValue())
+    {
+        mUIPreferencesManager->SetShipAutoTexturizationMode(ShipAutoTexturizationMode::FlatStructure);
+    }
+    else
+    {
+        assert(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
+        mUIPreferencesManager->SetShipAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures);
+    }
+
+    ReconciliateShipAutoTexturizationModeSettings();
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnMaterialTextureMagnificationSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
+    mUIPreferencesManager->SetShipAutoTexturizationMaterialTextureMagnification(MaterialTextureMagnificationSpinToMaterialTextureMagnification(event.GetPosition()));
 
     mOnChangeCallback();
 }
@@ -448,14 +487,14 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
 
-        mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+        mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
 
-        mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
+        mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
 
         gridSizer->Add(
-            mShowShipDescriptionAtShipLoadCheckBox,
+            mShowTsunamiNotificationsCheckBox,
             wxGBPosition(5, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
@@ -478,7 +517,51 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     //
-    // Row 7
+    // Add spacers
+    //
+
+    // Col 1
+    gridSizer->Add(
+        40,
+        0,
+        wxGBPosition(0, 1),
+        wxGBSpan(6, 1));
+
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void PreferencesDialog::PopulateShipsPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    gridSizer->SetFlexibleDirection(wxVERTICAL);
+    gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
+
+
+    //
+    // Row 1
+    //
+
+    {
+        mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+
+        mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+
+        mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mShowShipDescriptionAtShipLoadCheckBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxALL,
+            Border);
+    }
+
+    //
+    // Row 2
     //
 
     {
@@ -490,29 +573,14 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         gridSizer->Add(
             mAutoZoomAtShipLoadCheckBox,
-            wxGBPosition(6, 0),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
-    {
-        mShowElectricalNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
-
-        mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowElectricalNotificationsCheckBox,
-            wxGBPosition(6, 2),
-            wxGBSpan(1, 2),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
     //
-    // Row 8
+    // Row 3
     //
 
     {
@@ -524,37 +592,83 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         gridSizer->Add(
             mAutoShowSwitchboardCheckBox,
-            wxGBPosition(7, 0),
+            wxGBPosition(2, 0),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
+    //
+    // Row 4
+    //
+
     {
-        mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowElectricalNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
 
-        mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
+        mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
 
-        mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
+        mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
 
         gridSizer->Add(
-            mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(7, 2),
-            wxGBSpan(1, 2),
+            mShowElectricalNotificationsCheckBox,
+            wxGBPosition(3, 0),
+            wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
     //
-    // Add spacers
+    // Row 5
     //
 
-    // Col 1
-    gridSizer->Add(
-        40,
-        0,
-        wxGBPosition(0, 1),
-        wxGBSpan(8, 1));
+    {
+        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, _("Auto-Texturization Mode"));
+
+        wxBoxSizer * autoTexturizationBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+        autoTexturizationBoxSizer1->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * autoTexturizationModeBoxSizer = new wxGridBagSizer(5, 5);
+            autoTexturizationModeBoxSizer->SetFlexibleDirection(wxHORIZONTAL);
+            autoTexturizationModeBoxSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
+
+            mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(autoTexturizationBox, wxID_ANY, _("Flat Structure"),
+                wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+            mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using the materials' matte colors.");
+            mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
+            autoTexturizationModeBoxSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 3), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+            //
+
+            mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(autoTexturizationBox, wxID_ANY, _("Material Textures"),
+                wxDefaultPosition, wxDefaultSize);
+            mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using material-specific textures.");
+            mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
+            autoTexturizationModeBoxSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1),
+                wxBOTTOM | wxALIGN_CENTER_VERTICAL, 2); // Doesn't align otherwise
+
+            auto label = new wxStaticText(autoTexturizationBox, wxID_ANY, "Texture Magnification:", wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+            autoTexturizationModeBoxSizer->Add(label, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+            mMaterialTextureMagnificationSpinCtrl = new wxSpinCtrl(autoTexturizationBox, wxID_ANY, _T("Texture Magnification"), wxDefaultPosition, wxSize(75, -1),
+                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+            mMaterialTextureMagnificationSpinCtrl->SetRange(1, 100);
+            mMaterialTextureMagnificationSpinCtrl->SetToolTip("Changes the zoom level of materials' textures.");
+            mMaterialTextureMagnificationSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnMaterialTextureMagnificationSpinCtrl, this);
+            autoTexturizationModeBoxSizer->Add(mMaterialTextureMagnificationSpinCtrl, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+            autoTexturizationBoxSizer1->Add(autoTexturizationModeBoxSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        autoTexturizationBox->SetSizerAndFit(autoTexturizationBoxSizer1);
+
+        gridSizer->Add(
+            autoTexturizationBox,
+            wxGBPosition(4, 0),
+            wxGBSpan(1, 1),
+            wxALL,
+            Border);
+    }
 
 
     // Finalize panel
@@ -744,15 +858,31 @@ void PreferencesDialog::ReadSettings()
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
-    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
-    mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
-    mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
+    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
     mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
+
+    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
+    mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
+    mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
-    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
+    switch (mUIPreferencesManager->GetShipAutoTexturizationMode())
+    {
+        case ShipAutoTexturizationMode::FlatStructure:
+        {
+            mFlatStructureAutoTexturizationModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case ShipAutoTexturizationMode::MaterialTextures:
+        {
+            mMaterialTexturesAutoTexturizationModeRadioButton->SetValue(true);
+            break;
+        }
+    }
+    mMaterialTextureMagnificationSpinCtrl->SetValue(MaterialTextureMagnificationToMaterialTextureMagnificationSpin(mUIPreferencesManager->GetShipAutoTexturizationMaterialTextureMagnification()));
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());
@@ -781,6 +911,27 @@ float PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
 int PreferencesDialog::PanIncrementToPanIncrementSpin(float panIncrement)
 {
     return static_cast<int>(panIncrement);
+}
+
+float PreferencesDialog::MaterialTextureMagnificationSpinToMaterialTextureMagnification(int spinPosition)
+{
+    if (spinPosition <= 50) // 0.02 -> 1.0
+        return static_cast<float>(spinPosition) / 50.0f;
+    else // 1.02 -> 2.0
+        return 1.0f + 1.0f * static_cast<float>(spinPosition - 50) / 50.0f;
+}
+
+int PreferencesDialog::MaterialTextureMagnificationToMaterialTextureMagnificationSpin(float materialTextureMagnification)
+{
+    if (materialTextureMagnification <= 1.0f)
+        return static_cast<int>(round(materialTextureMagnification * 50.0f));
+    else
+        return 50 + static_cast<int>(round((materialTextureMagnification - 1.0f) / 1.0f * 50.0f));
+}
+
+void PreferencesDialog::ReconciliateShipAutoTexturizationModeSettings()
+{
+    mMaterialTextureMagnificationSpinCtrl->Enable(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
 }
 
 void PreferencesDialog::ReconcileSoundSettings()

@@ -139,6 +139,26 @@ public:
         mSaveSettingsOnExit = value;
     }
 
+    ShipAutoTexturizationMode GetShipAutoTexturizationMode() const
+    {
+        return mGameController->GetShipAutoTexturizationMode();
+    }
+
+    void SetShipAutoTexturizationMode(ShipAutoTexturizationMode value)
+    {
+        mGameController->SetShipAutoTexturizationMode(value);
+    }
+
+    float GetShipAutoTexturizationMaterialTextureMagnification() const
+    {
+        return mGameController->GetShipAutoTexturizationMaterialTextureMagnification();
+    }
+
+    void SetShipAutoTexturizationMaterialTextureMagnification(float value)
+    {
+        mGameController->SetShipAutoTexturizationMaterialTextureMagnification(value);
+    }
+
     bool GetShowShipDescriptionsAtShipLoad() const
     {
         return mShowShipDescriptionsAtShipLoad;

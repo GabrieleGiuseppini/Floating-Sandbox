@@ -35,15 +35,18 @@ private:
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
-    void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
-    void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
-    void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
+    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
     void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
+
+    void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
-    void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
+    void OnMaterialTextureMagnificationSpinCtrl(wxSpinEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
@@ -54,6 +57,7 @@ private:
 private:
 
     void PopulateGamePanel(wxPanel * panel);
+    void PopulateShipsPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
 
     void ReadSettings();
@@ -64,6 +68,10 @@ private:
     static float PanIncrementSpinToPanIncrement(int spinPosition);
     static int PanIncrementToPanIncrementSpin(float panIncrement);
 
+    static float MaterialTextureMagnificationSpinToMaterialTextureMagnification(int spinPosition);
+    static int MaterialTextureMagnificationToMaterialTextureMagnificationSpin(float materialTextureMagnification);
+
+    void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();
 
 private:
@@ -73,17 +81,22 @@ private:
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
-    wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
-    wxCheckBox * mAutoZoomAtShipLoadCheckBox;
-    wxCheckBox * mAutoShowSwitchboardCheckBox;
+    wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
     wxCheckBox * mShowStatusTextCheckBox;
     wxCheckBox * mShowExtendedStatusTextCheckBox;
-    wxCheckBox * mShowElectricalNotificationsCheckBox;
-    wxCheckBox * mShowTsunamiNotificationsCheckBox;
 
-    // Global Sound and Music
+    // Ships panel
+    wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
+    wxCheckBox * mAutoZoomAtShipLoadCheckBox;
+    wxCheckBox * mAutoShowSwitchboardCheckBox;
+    wxCheckBox * mShowElectricalNotificationsCheckBox;
+    wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
+    wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
+    wxSpinCtrl * mMaterialTextureMagnificationSpinCtrl;
+
+    // Global Sound and Music panel
     wxCheckBox * mGlobalMuteCheckBox;
     SliderControl<float> * mBackgroundMusicVolumeSlider;
     wxCheckBox * mPlayBackgroundMusicCheckBox;

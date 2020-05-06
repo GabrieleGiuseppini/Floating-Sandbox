@@ -55,7 +55,13 @@ public:
 
 private:
 
+    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePath(std::filesystem::path const materialTexturesFolderPath);
+
     inline Vec3fImageData const & GetMaterialTexture(std::string const & textureName) const;
+
+    void ResetMaterialTextureCacheUseCounts() const;
+
+    void PurgeMaterialTextureCache(size_t maxSize) const;
 
     inline vec3f SampleTexture(
         Vec3fImageData const & texture,
@@ -76,6 +82,8 @@ private:
     //
 
     std::filesystem::path const mMaterialTexturesFolderPath;
+
+    std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePath;
 
     float mMaterialTextureWorldToPixelConversionFactor;
 
