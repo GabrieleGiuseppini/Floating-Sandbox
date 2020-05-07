@@ -521,12 +521,13 @@ Render:
 				+ paper
 				+ Re-check all so far				
 				+ cardboard
-				+ carbon
+				+ carbon				
+				+ double-bottom others
+				+ rubber
+				+ lego
 				= double-bottom wood
-				
-				- lego				
-				- double-bottom others				
-			= Deal with unset StructuralMaterial' "texture_name"
+				- fiberglass								
+			+ Deal with unset StructuralMaterial' "texture_name"
 				+ Use 'none'
 			+ Implement ShipTexturizer::VerifyMaterialsDatabase
 			- Test transparency setting

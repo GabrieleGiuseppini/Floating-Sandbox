@@ -3,9 +3,10 @@ TODO
 - Added new electrical materials:
 	- Water Pumps - take water in or out of the ship when powered
 	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or keeping it contained
-- Added 4 new ships, among which:
+- Added 5 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action
+	- Balls of Lego(c): shows the Lego(c) material in action
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles
 - Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
