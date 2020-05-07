@@ -524,6 +524,7 @@ Render:
 				- lego
 				- double-bottom wood
 				- double-bottom others
+				- carbon
 			= Deal with unset StructuralMaterial' "texture_name"
 				+ Use 'none'
 			+ Implement ShipTexturizer::VerifyMaterialsDatabase
