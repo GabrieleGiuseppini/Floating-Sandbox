@@ -208,7 +208,7 @@
             "column": 0, 
             "row": "22|Titanium"
         },
-	"texture_name": "metal_bulkheads_1_small",
+	"texture_name": "metal_bulkheads_1",
         "thermal_conductivity": 17.0,
 	"thermal_expansion_coefficient": 0.0000087,
         "water_diffusion_speed": 0.5, 
@@ -938,7 +938,7 @@
             "column": 0, 
             "row": "55|Carbon Hull"
         },
-	"texture_name":"wood_studded_1",
+	"texture_name":"carbon_1",
         "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -963,7 +963,8 @@
         "template": {
             "column": 1, 
             "row": "55|Carbon"
-        }, 
+        },
+	"texture_name":"carbon_1",
         "thermal_conductivity": 1.7,
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -1130,7 +1131,8 @@
         "template": {
             "column": 0, 
             "row": "70|Cardboard Hull"
-        }, 
+        },
+	"texture_name":"cardboard_1",
         "thermal_conductivity": 0.05,
 	"thermal_expansion_coefficient": 0.0043,
         "water_diffusion_speed": 0.5, 
@@ -1157,7 +1159,8 @@
         "template": {
             "column": 1, 
             "row": "70|Cardboard"
-        }, 
+        },
+	"texture_name":"cardboard_1",
         "thermal_conductivity": 0.05,
 	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.55,
@@ -3357,7 +3360,7 @@
             "column": "3|Double-Bottom Wood", 
             "row": "90|Double-Bottom"
         },
-	"texture_name":"wood_studded_1",
+	"texture_name":"wood_planks_2",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00015,
         "water_diffusion_speed": 0.5, 

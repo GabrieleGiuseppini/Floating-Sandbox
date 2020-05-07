@@ -519,12 +519,13 @@ Render:
 				+ glass_1
 				+ cloth_1 
 				+ paper
-				- Re-check all so far				
-				- cardboard
-				- lego
-				- double-bottom wood
-				- double-bottom others
-				- carbon
+				+ Re-check all so far				
+				+ cardboard
+				+ carbon
+				= double-bottom wood
+				
+				- lego				
+				- double-bottom others				
 			= Deal with unset StructuralMaterial' "texture_name"
 				+ Use 'none'
 			+ Implement ShipTexturizer::VerifyMaterialsDatabase
