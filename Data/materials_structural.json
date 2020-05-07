@@ -1186,7 +1186,8 @@
         "template": {
             "column": 2, 
             "row": "70|Paper Hull"
-        }, 
+        },
+	"texture_name":"paper_2",
         "thermal_conductivity": 0.05,
 	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
@@ -1215,7 +1216,8 @@
         "template": {
             "column": 3, 
             "row": "70|Paper"
-        }, 
+        },
+	"texture_name":"paper_1",
         "thermal_conductivity": 0.05,
 	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
