@@ -526,14 +526,24 @@ Render:
 				+ rubber
 				+ lego
 				= double-bottom wood
-				- fiberglass								
+				= fiberglass								
 			+ Deal with unset StructuralMaterial' "texture_name"
 				+ Use 'none'
 			+ Implement ShipTexturizer::VerifyMaterialsDatabase
+			+ Script to validate materials
+				+ texture_name
+				+ render_color==key_color
+				+ Also run ship verification script
 			- Test transparency setting
-				- Dialog: TODO
-			- Decide ShipAutoTexturizationMode and Magnification and Transparency default
-				- Decide what to override in .shp
+				- Dialog: do as spin for time being
+			- Finalize mechanism:
+				- Default ship auto-texturization: materials
+				- ShipDefinition/File has optional "auto_texturization_mode": "<one or the other>"
+				- ShipTexturizer has new boolean setting: ForceSettingsOverShip
+				- This optional<AutoTexturizationMode> is passed to ShipTexturizer, which decides what to do
+				- Dialog:
+					- Transparency setting (and move to sliders now)
+					- Force checkbox
 			- Tooltips for auto-texturization: add "...when ships don't have their own texture layer."
 				- Also for strength: not for rigidity
 			- Perf:
@@ -542,6 +552,9 @@ Render:
 			- Tests:
 				- Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues
 			- Remove cache clearing for testing
+
+		- Remove discord url's from About box
+		- Rename menus: "Simulation Settings" & "Game Preferences"
 
 		- Offset sinking water with Points::GetFactoryWater()
 			- Calc'd at Add()
@@ -565,6 +578,10 @@ Render:
 			- Add material to a ship
 			- Redo electrical template
 			- Update materials' guide
+
+		- Think about changing the way electrical circuits are done:
+			- Only the cables should be able to make 8 connections (sides + diagonals)
+			- Any devices should only be connected in 4 direction (sides only)
 
 		- Release: the "Eternal Patrol" update 
 

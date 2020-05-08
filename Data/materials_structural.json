@@ -1182,7 +1182,7 @@
         }, 
         "melting_temperature": 1000000.0, 
         "name": "Paper Hull", 
-        "render_color": "#FCFAFA",
+        "render_color": "#F2F5F5",
 	"rust_receptivity": 10.0,
         "sound_type": "Cloth", 
         "specific_heat": 1400.0, 
@@ -3808,7 +3808,8 @@
         "template": {
             "column": 6, 
             "row": "55|Fiberglass Hull"
-        }, 
+        },
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3834,7 +3835,8 @@
         "template": {
             "column": 7, 
             "row": "55|Fiberglass Hull"
-        }, 
+        },
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3860,7 +3862,8 @@
         "template": {
             "column": 8, 
             "row": "55|Fiberglass Hull"
-        }, 
+        },
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3886,7 +3889,8 @@
         "template": {
             "column": 9, 
             "row": "60|Fiberglass"
-        }, 
+        },
+	"texture_name":"fiberglass_2",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3912,7 +3916,8 @@
         "template": {
             "column": 10, 
             "row": "60|Fiberglass"
-        }, 
+        },
+	"texture_name":"fiberglass_2",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3938,7 +3943,8 @@
         "template": {
             "column": 11, 
             "row": "60|Fiberglass"
-        }, 
+        },
+	"texture_name":"fiberglass_2",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 

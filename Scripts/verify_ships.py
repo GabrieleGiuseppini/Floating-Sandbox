@@ -12,7 +12,10 @@ JSON_FIELD_NAMES = [
     "ship_name",
     "created_by",
     "year_built",
-    "description"
+    "description",
+    "electrical_panel",
+    "do_hide_electricals_in_preview",
+    "do_hide_hd_in_preview"
     ]
 
 MANDATORY_JSON_FIELD_NAMES = [

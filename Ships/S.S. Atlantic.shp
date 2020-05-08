@@ -2,7 +2,7 @@
 	"structure_image":"ss_atlantic_structure.png.dat",
         "electrical_image":"ss_atlantic_electrical.png.dat",
 	"offset":{"x":0.0, "y":-12.0},
-	"ship_name":"S.S Atlantic",
+	"ship_name":"S.S. Atlantic",
 	"created_by":"John Kipfer",
 	"year_built":"1800",
 	"electrical_panel":{
