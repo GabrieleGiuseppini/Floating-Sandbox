@@ -3890,7 +3890,7 @@
             "column": 9, 
             "row": "60|Fiberglass"
         },
-	"texture_name":"fiberglass_2",
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3917,7 +3917,7 @@
             "column": 10, 
             "row": "60|Fiberglass"
         },
-	"texture_name":"fiberglass_2",
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 
@@ -3944,7 +3944,7 @@
             "column": 11, 
             "row": "60|Fiberglass"
         },
-	"texture_name":"fiberglass_2",
+	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04, 
         "water_diffusion_speed": 0.5, 
         "water_retention": 0.05, 

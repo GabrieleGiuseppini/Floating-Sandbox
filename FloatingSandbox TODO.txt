@@ -478,7 +478,7 @@ Render:
 				+ Invoke from ShipBuilder
 			+ StructuralMaterial has new mandatory "texture_name" string arg
 				+ For now just optional
-			= Do texturizations
+			+ Do texturizations
 				+ FlatStructure:
 				+ MaterialTextures:
 					+ MaterialTextureMagnificationFactor:
@@ -525,8 +525,9 @@ Render:
 				+ double-bottom others
 				+ rubber
 				+ lego
+				+ fiberglass
 				= double-bottom wood
-				= fiberglass								
+				
 			+ Deal with unset StructuralMaterial' "texture_name"
 				+ Use 'none'
 			+ Implement ShipTexturizer::VerifyMaterialsDatabase
