@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "PreferencesDialog.h"
 
+#include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 
 #include <wx/gbsizer.h>
@@ -15,6 +16,7 @@ static constexpr int Border = 10;
 
 static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
+static int constexpr CellBorder = 8;
 
 static int constexpr SliderWidth = 40;
 static int constexpr SliderHeight = 140;
@@ -67,14 +69,14 @@ PreferencesDialog::PreferencesDialog(
 
 
     //
-    // Ships Preferences
+    // Ship Preferences
     //
 
     wxPanel * shipsPanel = new wxPanel(notebook);
 
-    PopulateShipsPanel(shipsPanel);
+    PopulateShipPanel(shipsPanel);
 
-    notebook->AddPage(shipsPanel, "Ships Preferences");
+    notebook->AddPage(shipsPanel, "Ship Preferences");
 
 
     //
@@ -257,14 +259,6 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnMaterialTextureMagnificationSpinCtrl(wxSpinEvent & event)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShipAutoTexturizationMaterialTextureMagnification(MaterialTextureMagnificationSpinToMaterialTextureMagnification(event.GetPosition()));
-
-    mOnChangeCallback();
-}
-
 void PreferencesDialog::OnGlobalMuteCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -314,11 +308,11 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:", wxDefaultPosition, wxDefaultSize, 0);
+        wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:");
 
         gridSizer->Add(
             screenshotDirStaticText,
-            wxGBPosition(0, 0),
+            wxGBPosition(0, 1),
             wxGBSpan(1, 4), // Take entire row
             wxRIGHT | wxLEFT | wxEXPAND | wxALIGN_BOTTOM,
             Border);
@@ -338,13 +332,11 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             wxSize(-1, -1),
             wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
         mScreenshotDirPickerCtrl->SetToolTip("Sets the directory into which in-game screenshots are automatically saved.");
-        mScreenshotDirPickerCtrl->SetMinSize(wxSize(540, -1));
-
         mScreenshotDirPickerCtrl->Bind(wxEVT_DIRPICKER_CHANGED, &PreferencesDialog::OnScreenshotDirPickerChanged, this);
 
         gridSizer->Add(
             mScreenshotDirPickerCtrl,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 1),
             wxGBSpan(1, 4), // Take entire row
             wxRIGHT | wxLEFT | wxEXPAND,
             Border);
@@ -354,97 +346,50 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     // Row 3
     //
 
-    {
-        mShowTipOnStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mShowTipOnStartupCheckBox->SetToolTip("Enables or disables the tips shown when the game starts.");
-
-        mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowTipOnStartupCheckBox,
-            wxGBPosition(2, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    {
-        mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
-            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-
-        mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
-
-        mZoomIncrementSpinCtrl->SetToolTip("Changes the amount by which zoom changes when using the zoom controls.");
-
-        mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
-
-        gridSizer->Add(
-            mZoomIncrementSpinCtrl,
-            wxGBPosition(2, 2),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-    {
-        auto label = new wxStaticText(panel, wxID_ANY, "Zoom Increment", wxDefaultPosition, wxDefaultSize,
-            wxALIGN_LEFT);
-
-        gridSizer->Add(
-            label,
-            wxGBPosition(2, 3),
-            wxGBSpan(1, 1),
-            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM,
-            Border);
-    }
+    gridSizer->Add(1, 15, wxGBPosition(2, 0), wxGBSpan(6, 1), wxEXPAND);
 
     //
     // Row 4
     //
 
     {
-        mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mCheckForUpdatesAtStartupCheckBox->SetToolTip("Enables or disables checking for new versions when the game starts.");
-
-        mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
+        mShowTipOnStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowTipOnStartupCheckBox->SetToolTip("Enables or disables the tips shown when the game starts.");
+        mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
 
         gridSizer->Add(
-            mCheckForUpdatesAtStartupCheckBox,
-            wxGBPosition(3, 0),
+            mShowTipOnStartupCheckBox,
+            wxGBPosition(3, 1),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
     {
-        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
-            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
+        {
+            mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
+                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+            mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
+            mZoomIncrementSpinCtrl->SetToolTip("Changes the amount by which zoom changes when using the zoom controls.");
+            mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
 
-        mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
+            rowSizer->Add(mZoomIncrementSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+        }
 
-        mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, "Zoom Increment", wxDefaultPosition, wxDefaultSize,
+                wxALIGN_LEFT);
+
+            rowSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
+        }
 
         gridSizer->Add(
-            mPanIncrementSpinCtrl,
-            wxGBPosition(3, 2),
+            rowSizer,
+            wxGBPosition(3, 4),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-    {
-        auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
-            wxALIGN_LEFT);
-
-        gridSizer->Add(
-            label,
-            wxGBPosition(3, 3),
-            wxGBSpan(1, 1),
-            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM,
             Border);
     }
 
@@ -453,32 +398,43 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-modified settings when exiting the game.");
-
-        mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+        mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+        mCheckForUpdatesAtStartupCheckBox->SetToolTip("Enables or disables checking for new versions when the game starts.");
+        mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
 
         gridSizer->Add(
-            mSaveSettingsOnExitCheckBox,
-            wxGBPosition(4, 0),
+            mCheckForUpdatesAtStartupCheckBox,
+            wxGBPosition(4, 1),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
 
     {
-        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
+        {
+            mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
+                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+            mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
+            mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
+            mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
 
-        mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+            rowSizer->Add(mPanIncrementSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
+                wxALIGN_LEFT);
+
+            rowSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
+        }
 
         gridSizer->Add(
-            mShowStatusTextCheckBox,
-            wxGBPosition(4, 2),
-            wxGBSpan(1, 2),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            rowSizer,
+            wxGBPosition(4, 4),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
             Border);
     }
 
@@ -487,15 +443,43 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
+        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-modified settings when exiting the game.");
+        mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mSaveSettingsOnExitCheckBox,
+            wxGBPosition(5, 1),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    {
+        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
+        mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+
+        gridSizer->Add(
+            mShowStatusTextCheckBox,
+            wxGBPosition(5, 4),
+            wxGBSpan(1, 1),
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
+            Border);
+    }
+
+    //
+    // Row 7
+    //
+
+    {
         mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-
         mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
-
         mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
 
         gridSizer->Add(
             mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(5, 0),
+            wxGBPosition(6, 1),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
@@ -503,15 +487,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
     {
         mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-
         mShowExtendedStatusTextCheckBox->SetToolTip("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered.");
-
         mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
 
         gridSizer->Add(
             mShowExtendedStatusTextCheckBox,
-            wxGBPosition(5, 2),
-            wxGBSpan(1, 2),
+            wxGBPosition(6, 4),
+            wxGBSpan(1, 1),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
@@ -520,12 +502,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     // Add spacers
     //
 
-    // Col 1
-    gridSizer->Add(
-        40,
-        0,
-        wxGBPosition(0, 1),
-        wxGBSpan(6, 1));
+    gridSizer->Add(1, 1, wxGBPosition(0, 0), wxGBSpan(7, 1), wxEXPAND);
+    gridSizer->AddGrowableCol(0, 1);
+    gridSizer->AddGrowableCol(2, 1);
+
+    gridSizer->AddGrowableCol(3, 1);
+    gridSizer->Add(1, 1, wxGBPosition(0, 5), wxGBSpan(7, 1), wxEXPAND);
+    gridSizer->AddGrowableCol(5, 1);
 
 
     // Finalize panel
@@ -533,143 +516,208 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void PreferencesDialog::PopulateShipsPanel(wxPanel * panel)
+void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
-    gridSizer->SetFlexibleDirection(wxVERTICAL);
-    gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
-
-
     //
-    // Row 1
+    // Auto-Texturization
     //
 
     {
-        mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, _("Auto-Texturization"));
 
-        mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
-
-        mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowShipDescriptionAtShipLoadCheckBox,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxALL,
-            Border);
-    }
-
-    //
-    // Row 2
-    //
-
-    {
-        mAutoZoomAtShipLoadCheckBox = new wxCheckBox(panel, wxID_ANY, _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mAutoZoomAtShipLoadCheckBox->SetToolTip("Enables or disables auto-zooming when loading a new ship.");
-
-        mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mAutoZoomAtShipLoadCheckBox,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Row 3
-    //
-
-    {
-        mAutoShowSwitchboardCheckBox = new wxCheckBox(panel, wxID_ANY, _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded.");
-
-        mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mAutoShowSwitchboardCheckBox,
-            wxGBPosition(2, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Row 4
-    //
-
-    {
-        mShowElectricalNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-
-        mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
-
-        mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowElectricalNotificationsCheckBox,
-            wxGBPosition(3, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Row 5
-    //
-
-    {
-        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, _("Auto-Texturization Mode"));
-
-        wxBoxSizer * autoTexturizationBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-        autoTexturizationBoxSizer1->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * autoTexturizationBoxSizer = new wxBoxSizer(wxVERTICAL);
+        autoTexturizationBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * autoTexturizationModeBoxSizer = new wxGridBagSizer(5, 5);
-            autoTexturizationModeBoxSizer->SetFlexibleDirection(wxHORIZONTAL);
-            autoTexturizationModeBoxSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
+            wxGridBagSizer * autoTexturizationSizer = new wxGridBagSizer(0, 0);
 
-            mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(autoTexturizationBox, wxID_ANY, _("Flat Structure"),
-                wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-            mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using the materials' matte colors.");
-            mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
-            autoTexturizationModeBoxSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 3), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+            // Texturization Mode
+            {
+                wxStaticBox * texturizationModeBox = new wxStaticBox(autoTexturizationBox, wxID_ANY, _("Mode"));
 
-            //
+                wxBoxSizer * texturizationModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+                texturizationModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
-            mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(autoTexturizationBox, wxID_ANY, _("Material Textures"),
-                wxDefaultPosition, wxDefaultSize);
-            mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using material-specific textures.");
-            mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
-            autoTexturizationModeBoxSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1),
-                wxBOTTOM | wxALIGN_CENTER_VERTICAL, 2); // Doesn't align otherwise
+                {
+                    wxGridBagSizer * texturizationModeBoxSizer2 = new wxGridBagSizer(3, 3);
 
-            auto label = new wxStaticText(autoTexturizationBox, wxID_ANY, "Texture Magnification:", wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-            autoTexturizationModeBoxSizer->Add(label, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Flat Structure"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using the materials' matte colors.");
+                    mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
+                    texturizationModeBoxSizer2->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-            mMaterialTextureMagnificationSpinCtrl = new wxSpinCtrl(autoTexturizationBox, wxID_ANY, _T("Texture Magnification"), wxDefaultPosition, wxSize(75, -1),
-                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-            mMaterialTextureMagnificationSpinCtrl->SetRange(1, 100);
-            mMaterialTextureMagnificationSpinCtrl->SetToolTip("Changes the zoom level of materials' textures.");
-            mMaterialTextureMagnificationSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnMaterialTextureMagnificationSpinCtrl, this);
-            autoTexturizationModeBoxSizer->Add(mMaterialTextureMagnificationSpinCtrl, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    //
 
-            autoTexturizationBoxSizer1->Add(autoTexturizationModeBoxSizer, 0, wxALL, StaticBoxInsetMargin);
+                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Material Textures"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using material-specific textures.");
+                    mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
+                    texturizationModeBoxSizer2->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    texturizationModeBoxSizer1->Add(texturizationModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                texturizationModeBox->SetSizerAndFit(texturizationModeBoxSizer1);
+
+                autoTexturizationSizer->Add(
+                    texturizationModeBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+
+            // Material Texture Magnification
+            {
+                mMaterialTextureMagnificationSlider = new SliderControl<float>(
+                    autoTexturizationBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Texture Magnification",
+                    "Changes the level of detail of materials' textures.",
+                    [this](float value)
+                    {
+                        assert(!!mUIPreferencesManager);
+                        mUIPreferencesManager->SetShipAutoTexturizationMaterialTextureMagnification(value);
+                        mOnChangeCallback();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        0.1f,
+                        1.0f, // TODO: change formula on the other side, so that 1.0 is default
+                        2.0f));
+
+                autoTexturizationSizer->Add(
+                    mMaterialTextureMagnificationSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Material Texture Transparency
+            {
+                mMaterialTextureTransparencySlider = new SliderControl<float>(
+                    autoTexturizationBox,
+                    SliderWidth,
+                    SliderHeight,
+                    "Texture Transparency",
+                    "Changes the transparency of materials' textures.",
+                    [this](float value)
+                    {
+                        assert(!!mUIPreferencesManager);
+                        mUIPreferencesManager->SetShipAutoTexturizationMaterialTextureTransparency(value);
+                        mOnChangeCallback();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                autoTexturizationSizer->Add(
+                    mMaterialTextureTransparencySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            autoTexturizationBoxSizer->Add(autoTexturizationSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        autoTexturizationBox->SetSizerAndFit(autoTexturizationBoxSizer1);
+        autoTexturizationBox->SetSizerAndFit(autoTexturizationBoxSizer);
 
         gridSizer->Add(
             autoTexturizationBox,
-            wxGBPosition(4, 0),
+            wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxALL,
-            Border);
+            wxEXPAND | wxALL,
+            CellBorder);
     }
 
+    //
+    // Misc
+    //
+
+    {
+        wxStaticBox * miscBox = new wxStaticBox(panel, wxID_ANY, _("Miscellaneous"));
+
+        wxBoxSizer * miscBoxSizer = new wxBoxSizer(wxVERTICAL);
+        miscBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * miscSizer = new wxGridBagSizer(0, 0);
+
+            // Show Ship Description at Ship Load
+            {
+                mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+                mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
+
+                miscSizer->Add(
+                    mShowShipDescriptionAtShipLoadCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Auto-Zoom
+            {
+                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoZoomAtShipLoadCheckBox->SetToolTip("Enables or disables auto-zooming when loading a new ship.");
+                mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
+
+                miscSizer->Add(
+                    mAutoZoomAtShipLoadCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Auto-Show Switchboard
+            {
+                mAutoShowSwitchboardCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded.");
+                mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
+
+                miscSizer->Add(
+                    mAutoShowSwitchboardCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Show Electrical Notifications
+            {
+                mShowElectricalNotificationsCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
+                mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
+
+                miscSizer->Add(
+                    mShowElectricalNotificationsCheckBox,
+                    wxGBPosition(3, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            miscBoxSizer->Add(miscSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        miscBox->SetSizerAndFit(miscBoxSizer);
+
+        gridSizer->Add(
+            miscBox,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -882,7 +930,8 @@ void PreferencesDialog::ReadSettings()
             break;
         }
     }
-    mMaterialTextureMagnificationSpinCtrl->SetValue(MaterialTextureMagnificationToMaterialTextureMagnificationSpin(mUIPreferencesManager->GetShipAutoTexturizationMaterialTextureMagnification()));
+    mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationMaterialTextureMagnification());
+    mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationMaterialTextureTransparency());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());
@@ -913,25 +962,10 @@ int PreferencesDialog::PanIncrementToPanIncrementSpin(float panIncrement)
     return static_cast<int>(panIncrement);
 }
 
-float PreferencesDialog::MaterialTextureMagnificationSpinToMaterialTextureMagnification(int spinPosition)
-{
-    if (spinPosition <= 50) // 0.02 -> 1.0
-        return static_cast<float>(spinPosition) / 50.0f;
-    else // 1.02 -> 2.0
-        return 1.0f + 1.0f * static_cast<float>(spinPosition - 50) / 50.0f;
-}
-
-int PreferencesDialog::MaterialTextureMagnificationToMaterialTextureMagnificationSpin(float materialTextureMagnification)
-{
-    if (materialTextureMagnification <= 1.0f)
-        return static_cast<int>(round(materialTextureMagnification * 50.0f));
-    else
-        return 50 + static_cast<int>(round((materialTextureMagnification - 1.0f) / 1.0f * 50.0f));
-}
-
 void PreferencesDialog::ReconciliateShipAutoTexturizationModeSettings()
 {
-    mMaterialTextureMagnificationSpinCtrl->Enable(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
+    mMaterialTextureMagnificationSlider->Enable(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
+    mMaterialTextureTransparencySlider->Enable(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
 }
 
 void PreferencesDialog::ReconcileSoundSettings()
