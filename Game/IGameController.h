@@ -155,4 +155,7 @@ struct IGameController
 
     virtual float GetShipAutoTexturizationMaterialTextureMagnification() const = 0;
     virtual void SetShipAutoTexturizationMaterialTextureMagnification(float value) = 0;
+
+    virtual float GetShipAutoTexturizationMaterialTextureTransparency() const = 0;
+    virtual void SetShipAutoTexturizationMaterialTextureTransparency(float value) = 0;
 };

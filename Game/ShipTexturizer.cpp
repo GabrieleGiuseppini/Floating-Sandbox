@@ -31,6 +31,7 @@ namespace /*anonymous*/ {
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures)
     , mMaterialTextureMagnification(0.08f)
+    , mMaterialTextureAlpha(1.0f)
     , mMaterialTextureWorldToPixelConversionFactor(1.0f / mMaterialTextureMagnification)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
     , mMaterialTextureNameToTextureFilePath(MakeMaterialTextureNameToTextureFilePath(mMaterialTexturesFolderPath))
@@ -156,13 +157,19 @@ RgbaImageData ShipTexturizer::Texturize(
                         ////    structurePixelColorF.z * bumpMapSample.z);
 
                         // Bi-directional multiply blending
-                        vec3f const resultantColor(
+                        vec3f const resultantColorF(
                             BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
                             BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
                             BidirMultiplyBlend(structurePixelColorF.z, bumpMapSample.z));
 
-                        // Store resultant color, using structure's alpha channel value
-                        newImageData[targetQuadOffset + xx] = rgbaColor(resultantColor, structurePixelColor.a);
+                        // Store resultant color, using structure's alpha channel value,
+                        // and blended with transparency
+                        newImageData[targetQuadOffset + xx] = rgbaColor(
+                            Mix(
+                                structurePixelColorF,
+                                resultantColorF,
+                                mMaterialTextureAlpha),
+                            structurePixelColor.a);
                     }
                 }
             }

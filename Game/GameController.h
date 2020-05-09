@@ -236,6 +236,9 @@ public:
     float GetShipAutoTexturizationMaterialTextureMagnification() const override { return mShipTexturizer.GetMaterialTextureMagnification(); }
     void SetShipAutoTexturizationMaterialTextureMagnification(float value) override { mShipTexturizer.SetMaterialTextureMagnification(value); }
 
+    float GetShipAutoTexturizationMaterialTextureTransparency() const override { return mShipTexturizer.GetMaterialTextureTransparency(); }
+    void SetShipAutoTexturizationMaterialTextureTransparency(float value) override { mShipTexturizer.SetMaterialTextureTransparency(value); }
+
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
     /////////////////////////////////////////////////////////

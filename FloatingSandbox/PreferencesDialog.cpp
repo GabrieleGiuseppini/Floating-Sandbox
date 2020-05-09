@@ -297,6 +297,11 @@ void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 
 void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 {
+    //
+    // | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+    //     | X |       | X   X |
+    //
+
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
     gridSizer->SetFlexibleDirection(wxHORIZONTAL);
@@ -313,7 +318,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         gridSizer->Add(
             screenshotDirStaticText,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 4), // Take entire row
+            wxGBSpan(1, 5), // Take entire row
             wxRIGHT | wxLEFT | wxEXPAND | wxALIGN_BOTTOM,
             Border);
     }
@@ -337,7 +342,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         gridSizer->Add(
             mScreenshotDirPickerCtrl,
             wxGBPosition(1, 1),
-            wxGBSpan(1, 4), // Take entire row
+            wxGBSpan(1, 5), // Take entire row
             wxRIGHT | wxLEFT | wxEXPAND,
             Border);
     }
@@ -346,7 +351,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     // Row 3
     //
 
-    gridSizer->Add(1, 15, wxGBPosition(2, 0), wxGBSpan(6, 1), wxEXPAND);
+    gridSizer->Add(1, 15, wxGBPosition(2, 0), wxGBSpan(7, 1), wxEXPAND);
 
     //
     // Row 4
@@ -366,32 +371,32 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        {
-            mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
-                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-            mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
-            mZoomIncrementSpinCtrl->SetToolTip("Changes the amount by which zoom changes when using the zoom controls.");
-            mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
-
-            rowSizer->Add(mZoomIncrementSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
-
-        {
-            auto label = new wxStaticText(panel, wxID_ANY, "Zoom Increment", wxDefaultPosition, wxDefaultSize,
-                wxALIGN_LEFT);
-
-            rowSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
+        mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
+            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+        mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
+        mZoomIncrementSpinCtrl->SetToolTip("Changes the amount by which zoom changes when using the zoom controls.");
+        mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
 
         gridSizer->Add(
-            rowSizer,
+            mZoomIncrementSpinCtrl,
             wxGBPosition(3, 4),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
             Border);
     }
+
+    {
+        auto label = new wxStaticText(panel, wxID_ANY, "Zoom Increment", wxDefaultPosition, wxDefaultSize,
+            wxALIGN_LEFT);
+
+        gridSizer->Add(
+            label,
+            wxGBPosition(3, 5),
+            wxGBSpan(1, 1),
+            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+            Border);
+    }
+
 
     //
     // Row 5
@@ -411,30 +416,29 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        {
-            mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
-                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-            mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
-            mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
-            mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
-
-            rowSizer->Add(mPanIncrementSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
-
-        {
-            auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
-                wxALIGN_LEFT);
-
-            rowSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
+        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
+            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+        mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
+        mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
+        mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
 
         gridSizer->Add(
-            rowSizer,
+            mPanIncrementSpinCtrl,
             wxGBPosition(4, 4),
             wxGBSpan(1, 1),
             wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+            Border);
+    }
+
+    {
+        auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
+            wxALIGN_LEFT);
+
+        gridSizer->Add(
+            label,
+            wxGBPosition(4, 5),
+            wxGBSpan(1, 1),
+            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
             Border);
     }
 
@@ -463,7 +467,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         gridSizer->Add(
             mShowStatusTextCheckBox,
             wxGBPosition(5, 4),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
@@ -493,7 +497,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         gridSizer->Add(
             mShowExtendedStatusTextCheckBox,
             wxGBPosition(6, 4),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
             Border);
     }
@@ -507,8 +511,8 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     gridSizer->AddGrowableCol(2, 1);
 
     gridSizer->AddGrowableCol(3, 1);
-    gridSizer->Add(1, 1, wxGBPosition(0, 5), wxGBSpan(7, 1), wxEXPAND);
-    gridSizer->AddGrowableCol(5, 1);
+    gridSizer->Add(1, 1, wxGBPosition(0, 6), wxGBSpan(7, 1), wxEXPAND);
+    gridSizer->AddGrowableCol(6, 1);
 
 
     // Finalize panel

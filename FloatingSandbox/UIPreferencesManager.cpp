@@ -231,6 +231,17 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Ship auto-texturization material texture transparency
+        //
+
+        auto shipAutoTexturizationMaterialTextureTransparencyIt = preferencesRootObject.find("ship_auto_texturization_material_texture_transparency");
+        if (shipAutoTexturizationMaterialTextureTransparencyIt != preferencesRootObject.end()
+            && shipAutoTexturizationMaterialTextureTransparencyIt->second.is<double>())
+        {
+            mGameController->SetShipAutoTexturizationMaterialTextureTransparency(static_cast<float>(shipAutoTexturizationMaterialTextureTransparencyIt->second.get<double>()));
+        }
+
+        //
         // Auto-zoom at ship load
         //
 
@@ -422,6 +433,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add ship auto-texturization material texture magnification
     preferencesRootObject["ship_auto_texturization_material_texture_magnification"] = picojson::value(static_cast<double>(mGameController->GetShipAutoTexturizationMaterialTextureMagnification()));
+
+    // Add ship auto-texturization material texture transparency
+    preferencesRootObject["ship_auto_texturization_material_texture_transparency"] = picojson::value(static_cast<double>(mGameController->GetShipAutoTexturizationMaterialTextureTransparency()));
 
     // Add auto zoom at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());

@@ -46,7 +46,6 @@ private:
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
-    void OnMaterialTextureMagnificationSpinCtrl(wxSpinEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
@@ -57,7 +56,7 @@ private:
 private:
 
     void PopulateGamePanel(wxPanel * panel);
-    void PopulateShipsPanel(wxPanel * panel);
+    void PopulateShipPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
 
     void ReadSettings();
@@ -67,9 +66,6 @@ private:
 
     static float PanIncrementSpinToPanIncrement(int spinPosition);
     static int PanIncrementToPanIncrementSpin(float panIncrement);
-
-    static float MaterialTextureMagnificationSpinToMaterialTextureMagnification(int spinPosition);
-    static int MaterialTextureMagnificationToMaterialTextureMagnificationSpin(float materialTextureMagnification);
 
     void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();
@@ -94,7 +90,8 @@ private:
     wxCheckBox * mShowElectricalNotificationsCheckBox;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
-    wxSpinCtrl * mMaterialTextureMagnificationSpinCtrl;
+    SliderControl<float> * mMaterialTextureMagnificationSlider;
+    SliderControl<float> * mMaterialTextureTransparencySlider;
 
     // Global Sound and Music panel
     wxCheckBox * mGlobalMuteCheckBox;

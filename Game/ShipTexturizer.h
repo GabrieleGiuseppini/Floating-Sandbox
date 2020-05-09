@@ -47,6 +47,16 @@ public:
         mMaterialTextureWorldToPixelConversionFactor = 1.0f / value;
     }
 
+    float GetMaterialTextureTransparency() const
+    {
+        return 1.0f - mMaterialTextureAlpha;
+    }
+
+    void SetMaterialTextureTransparency(float value)
+    {
+        mMaterialTextureAlpha = 1.0f - value;
+    }
+
     void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
 
     RgbaImageData Texturize(
@@ -77,6 +87,7 @@ private:
 
     ShipAutoTexturizationMode mAutoTexturizationMode;
     float mMaterialTextureMagnification;
+    float mMaterialTextureAlpha;
 
     //
     // Material textures

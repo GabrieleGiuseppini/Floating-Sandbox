@@ -159,6 +159,16 @@ public:
         mGameController->SetShipAutoTexturizationMaterialTextureMagnification(value);
     }
 
+    float GetShipAutoTexturizationMaterialTextureTransparency() const
+    {
+        return mGameController->GetShipAutoTexturizationMaterialTextureTransparency();
+    }
+
+    void SetShipAutoTexturizationMaterialTextureTransparency(float value)
+    {
+        mGameController->SetShipAutoTexturizationMaterialTextureTransparency(value);
+    }
+
     bool GetShowShipDescriptionsAtShipLoad() const
     {
         return mShowShipDescriptionsAtShipLoad;
