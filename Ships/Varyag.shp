@@ -1,5 +1,6 @@
 {
 	"structure_image":"varyag_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"offset":{"x":0.0, "y":0.0},
 	"ship_name":"Varyag",
 	"created_by":"Dkuz",

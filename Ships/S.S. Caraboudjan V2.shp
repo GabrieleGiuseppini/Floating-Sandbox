@@ -1,5 +1,6 @@
 {
 	"structure_image":"ss_caraboudjan_v2_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"offset":{"x":0.0, "y":-15.0},
 	"ship_name":"S.S. Caraboudjan V2",
 	"year_built":"1946",

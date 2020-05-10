@@ -16,6 +16,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     std::optional<RgbImageData> ropesLayerImage;
     std::optional<RgbImageData> electricalLayerImage;
     std::optional<RgbaImageData> textureLayerImage;
+    std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings;
     std::vector<std::string> electricalElementLabels;
     std::optional<ShipMetadata> shipMetadata;
 
@@ -88,9 +89,10 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         }
 
         //
-        // Make metadata
+        // Other members
         //
 
+        autoTexturizationSettings = sdf.AutoTexturizationSettings;
         shipMetadata.emplace(sdf.Metadata);
     }
     else
@@ -121,5 +123,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         std::move(ropesLayerImage),
         std::move(electricalLayerImage),
         std::move(textureLayerImage),
+        std::move(autoTexturizationSettings),
         *shipMetadata);
 }

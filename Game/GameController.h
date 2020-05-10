@@ -230,14 +230,12 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
-    ShipAutoTexturizationMode GetShipAutoTexturizationMode() const override { return mShipTexturizer.GetAutoTexturizationMode(); }
-    void SetShipAutoTexturizationMode(ShipAutoTexturizationMode value) override { mShipTexturizer.SetAutoTexturizationMode(value); }
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationDefaultSettings() const override { return mShipTexturizer.GetDefaultSettings(); }
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationDefaultSettings() override { return mShipTexturizer.GetDefaultSettings(); }
+    void SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings const & value) override { mShipTexturizer.SetDefaultSettings(value); }
 
-    float GetShipAutoTexturizationMaterialTextureMagnification() const override { return mShipTexturizer.GetMaterialTextureMagnification(); }
-    void SetShipAutoTexturizationMaterialTextureMagnification(float value) override { mShipTexturizer.SetMaterialTextureMagnification(value); }
-
-    float GetShipAutoTexturizationMaterialTextureTransparency() const override { return mShipTexturizer.GetMaterialTextureTransparency(); }
-    void SetShipAutoTexturizationMaterialTextureTransparency(float value) override { mShipTexturizer.SetMaterialTextureTransparency(value); }
+    bool GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings() const override { return mShipTexturizer.GetDoForceDefaultSettingsOntoShipSettings(); }
+    void SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(bool value) override { mShipTexturizer.SetDoForceDefaultSettingsOntoShipSettings(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions

@@ -1,5 +1,6 @@
 {
 	"structure_image":"3_balls_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"3 Balls",
 	"year_built":"2013",
 	"description":"These three balls are made out of:<br/> <ol><li>Iron</li><li>Stiff Titanium</li><li>Wood</li></ol>"

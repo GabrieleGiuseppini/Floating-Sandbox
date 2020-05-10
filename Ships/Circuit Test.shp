@@ -1,5 +1,6 @@
 {
 	"structure_image":"circuit_test_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"electrical_image":"circuit_test_electrical.png.dat",
 	"electrical_panel":{
 

@@ -84,9 +84,8 @@ void UIPreferencesManager::LoadPreferences()
         // Ship load directories
         //
 
-        auto shipLoadDirectoriesIt = preferencesRootObject.find("ship_load_directories");
-        if (shipLoadDirectoriesIt != preferencesRootObject.end()
-            && shipLoadDirectoriesIt->second.is<picojson::array>())
+        if (auto shipLoadDirectoriesIt = preferencesRootObject.find("ship_load_directories");
+            shipLoadDirectoriesIt != preferencesRootObject.end() && shipLoadDirectoriesIt->second.is<picojson::array>())
         {
             mShipLoadDirectories.clear();
 
@@ -117,9 +116,8 @@ void UIPreferencesManager::LoadPreferences()
         // Screenshots folder path
         //
 
-        auto screenshotsFolderPathIt = preferencesRootObject.find("screenshots_folder_path");
-        if (screenshotsFolderPathIt != preferencesRootObject.end()
-            && screenshotsFolderPathIt->second.is<std::string>())
+        if (auto screenshotsFolderPathIt = preferencesRootObject.find("screenshots_folder_path");
+            screenshotsFolderPathIt != preferencesRootObject.end() && screenshotsFolderPathIt->second.is<std::string>())
         {
             mScreenshotsFolderPath = screenshotsFolderPathIt->second.get<std::string>();
         }
@@ -128,9 +126,8 @@ void UIPreferencesManager::LoadPreferences()
         // Blacklisted updates
         //
 
-        auto blacklistedUpdatedIt = preferencesRootObject.find("blacklisted_updates");
-        if (blacklistedUpdatedIt != preferencesRootObject.end()
-            && blacklistedUpdatedIt->second.is<picojson::array>())
+        if (auto blacklistedUpdatedIt = preferencesRootObject.find("blacklisted_updates");
+            blacklistedUpdatedIt != preferencesRootObject.end() && blacklistedUpdatedIt->second.is<picojson::array>())
         {
             mBlacklistedUpdates.clear();
 
@@ -157,9 +154,8 @@ void UIPreferencesManager::LoadPreferences()
         // Check updates at startup
         //
 
-        auto checkUpdatesAtStartupIt = preferencesRootObject.find("check_updates_at_startup");
-        if (checkUpdatesAtStartupIt != preferencesRootObject.end()
-            && checkUpdatesAtStartupIt->second.is<bool>())
+        if (auto checkUpdatesAtStartupIt = preferencesRootObject.find("check_updates_at_startup");
+            checkUpdatesAtStartupIt != preferencesRootObject.end() && checkUpdatesAtStartupIt->second.is<bool>())
         {
             mCheckUpdatesAtStartup = checkUpdatesAtStartupIt->second.get<bool>();
         }
@@ -168,9 +164,8 @@ void UIPreferencesManager::LoadPreferences()
         // Show startup tip
         //
 
-        auto showStartupTipIt = preferencesRootObject.find("show_startup_tip");
-        if (showStartupTipIt != preferencesRootObject.end()
-            && showStartupTipIt->second.is<bool>())
+        if (auto showStartupTipIt = preferencesRootObject.find("show_startup_tip");
+            showStartupTipIt != preferencesRootObject.end() && showStartupTipIt->second.is<bool>())
         {
             mShowStartupTip = showStartupTipIt->second.get<bool>();
         }
@@ -179,9 +174,8 @@ void UIPreferencesManager::LoadPreferences()
         // Save settings on exit
         //
 
-        auto saveSettingsOnExitIt = preferencesRootObject.find("save_settings_on_exit");
-        if (saveSettingsOnExitIt != preferencesRootObject.end()
-            && saveSettingsOnExitIt->second.is<bool>())
+        if (auto saveSettingsOnExitIt = preferencesRootObject.find("save_settings_on_exit");
+            saveSettingsOnExitIt != preferencesRootObject.end() && saveSettingsOnExitIt->second.is<bool>())
         {
             mSaveSettingsOnExit = saveSettingsOnExitIt->second.get<bool>();
         }
@@ -190,9 +184,8 @@ void UIPreferencesManager::LoadPreferences()
         // Show ship descriptions at ship load
         //
 
-        auto showShipDescriptionAtShipLoadIt = preferencesRootObject.find("show_ship_descriptions_at_ship_load");
-        if (showShipDescriptionAtShipLoadIt != preferencesRootObject.end()
-            && showShipDescriptionAtShipLoadIt->second.is<bool>())
+        if (auto showShipDescriptionAtShipLoadIt = preferencesRootObject.find("show_ship_descriptions_at_ship_load");
+            showShipDescriptionAtShipLoadIt != preferencesRootObject.end() && showShipDescriptionAtShipLoadIt->second.is<bool>())
         {
             mShowShipDescriptionsAtShipLoad = showShipDescriptionAtShipLoadIt->second.get<bool>();
         }
@@ -201,53 +194,40 @@ void UIPreferencesManager::LoadPreferences()
         // Show tsunami notifications
         //
 
-        auto showTsunamiNotificationsIt = preferencesRootObject.find("show_tsunami_notifications");
-        if (showTsunamiNotificationsIt != preferencesRootObject.end()
-            && showTsunamiNotificationsIt->second.is<bool>())
+        if (auto showTsunamiNotificationsIt = preferencesRootObject.find("show_tsunami_notifications");
+            showTsunamiNotificationsIt != preferencesRootObject.end() && showTsunamiNotificationsIt->second.is<bool>())
         {
             mGameController->SetDoShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
         }
 
         //
-        // Ship auto-texturization mode
+        // Ship auto-texturization default settings
         //
 
-        auto shipAutoTexturizationModeIt = preferencesRootObject.find("ship_auto_texturization_mode");
-        if (shipAutoTexturizationModeIt != preferencesRootObject.end()
-            && shipAutoTexturizationModeIt->second.is<std::int64_t>())
+        if (auto shipAutoTexturizationDefaultSettingsIt = preferencesRootObject.find("ship_auto_texturization_default_settings");
+            shipAutoTexturizationDefaultSettingsIt != preferencesRootObject.end() && shipAutoTexturizationDefaultSettingsIt->second.is<picojson::object>())
         {
-            mGameController->SetShipAutoTexturizationMode(static_cast<ShipAutoTexturizationMode>(shipAutoTexturizationModeIt->second.get<std::int64_t>()));
+            mGameController->SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationDefaultSettingsIt->second.get<picojson::object>()));
         }
 
-        //
-        // Ship auto-texturization material texture magnification
-        //
+        // We don't load/save this setting on purpose
+        //////
+        ////// Ship auto-texturization force defaults onto ship
+        //////
 
-        auto shipAutoTexturizationMaterialTextureMagnificationIt = preferencesRootObject.find("ship_auto_texturization_material_texture_magnification");
-        if (shipAutoTexturizationMaterialTextureMagnificationIt != preferencesRootObject.end()
-            && shipAutoTexturizationMaterialTextureMagnificationIt->second.is<double>())
-        {
-            mGameController->SetShipAutoTexturizationMaterialTextureMagnification(static_cast<float>(shipAutoTexturizationMaterialTextureMagnificationIt->second.get<double>()));
-        }
-
-        //
-        // Ship auto-texturization material texture transparency
-        //
-
-        auto shipAutoTexturizationMaterialTextureTransparencyIt = preferencesRootObject.find("ship_auto_texturization_material_texture_transparency");
-        if (shipAutoTexturizationMaterialTextureTransparencyIt != preferencesRootObject.end()
-            && shipAutoTexturizationMaterialTextureTransparencyIt->second.is<double>())
-        {
-            mGameController->SetShipAutoTexturizationMaterialTextureTransparency(static_cast<float>(shipAutoTexturizationMaterialTextureTransparencyIt->second.get<double>()));
-        }
+        ////if (auto shipAutoTexturizationForceDefaultsOntoShipIt = preferencesRootObject.find("ship_auto_texturization_force_defaults_onto_ship");
+        ////    shipAutoTexturizationForceDefaultsOntoShipIt != preferencesRootObject.end()
+        ////    && shipAutoTexturizationForceDefaultsOntoShipIt->second.is<bool>())
+        ////{
+        ////    mGameController->SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(shipAutoTexturizationForceDefaultsOntoShipIt->second.get<bool>());
+        ////}
 
         //
         // Auto-zoom at ship load
         //
 
-        auto doAutoZoomAtShipLoadIt = preferencesRootObject.find("auto_zoom_at_ship_load");
-        if (doAutoZoomAtShipLoadIt != preferencesRootObject.end()
-            && doAutoZoomAtShipLoadIt->second.is<bool>())
+        if (auto doAutoZoomAtShipLoadIt = preferencesRootObject.find("auto_zoom_at_ship_load");
+            doAutoZoomAtShipLoadIt != preferencesRootObject.end() && doAutoZoomAtShipLoadIt->second.is<bool>())
         {
             mGameController->SetDoAutoZoomOnShipLoad(doAutoZoomAtShipLoadIt->second.get<bool>());
         }
@@ -256,9 +236,8 @@ void UIPreferencesManager::LoadPreferences()
         // Auto show switchboard
         //
 
-        auto autoShowSwitchboardIt = preferencesRootObject.find("auto_show_switchboard");
-        if (autoShowSwitchboardIt != preferencesRootObject.end()
-            && autoShowSwitchboardIt->second.is<bool>())
+        if (auto autoShowSwitchboardIt = preferencesRootObject.find("auto_show_switchboard");
+            autoShowSwitchboardIt != preferencesRootObject.end() && autoShowSwitchboardIt->second.is<bool>())
         {
             mAutoShowSwitchboard = autoShowSwitchboardIt->second.get<bool>();
         }
@@ -267,9 +246,8 @@ void UIPreferencesManager::LoadPreferences()
         // Switchboard background bitmap index
         //
 
-        auto switchboardBackgroundBitmapIndexIt = preferencesRootObject.find("switchboard_background_bitmap_index");
-        if (switchboardBackgroundBitmapIndexIt != preferencesRootObject.end()
-            && switchboardBackgroundBitmapIndexIt->second.is<std::int64_t>())
+        if (auto switchboardBackgroundBitmapIndexIt = preferencesRootObject.find("switchboard_background_bitmap_index");
+            switchboardBackgroundBitmapIndexIt != preferencesRootObject.end() && switchboardBackgroundBitmapIndexIt->second.is<std::int64_t>())
         {
             mSwitchboardBackgroundBitmapIndex = static_cast<int>(switchboardBackgroundBitmapIndexIt->second.get<std::int64_t>());
         }
@@ -278,9 +256,8 @@ void UIPreferencesManager::LoadPreferences()
         // Show electrical notifications
         //
 
-        auto showElectricalNotificationsIt = preferencesRootObject.find("show_electrical_notifications");
-        if (showElectricalNotificationsIt != preferencesRootObject.end()
-            && showElectricalNotificationsIt->second.is<bool>())
+        if (auto showElectricalNotificationsIt = preferencesRootObject.find("show_electrical_notifications");
+            showElectricalNotificationsIt != preferencesRootObject.end() && showElectricalNotificationsIt->second.is<bool>())
         {
             mGameController->SetDoShowElectricalNotifications(showElectricalNotificationsIt->second.get<bool>());
         }
@@ -289,9 +266,8 @@ void UIPreferencesManager::LoadPreferences()
         // Zoom increment
         //
 
-        auto zoomIncrementIt = preferencesRootObject.find("zoom_increment");
-        if (zoomIncrementIt != preferencesRootObject.end()
-            && zoomIncrementIt->second.is<double>())
+        if (auto zoomIncrementIt = preferencesRootObject.find("zoom_increment");
+            zoomIncrementIt != preferencesRootObject.end() && zoomIncrementIt->second.is<double>())
         {
             mZoomIncrement = static_cast<float>(zoomIncrementIt->second.get<double>());
         }
@@ -300,9 +276,8 @@ void UIPreferencesManager::LoadPreferences()
         // Pan increment
         //
 
-        auto panIncrementIt = preferencesRootObject.find("pan_increment");
-        if (panIncrementIt != preferencesRootObject.end()
-            && panIncrementIt->second.is<double>())
+        if (auto panIncrementIt = preferencesRootObject.find("pan_increment");
+            panIncrementIt != preferencesRootObject.end() && panIncrementIt->second.is<double>())
         {
             mPanIncrement = static_cast<float>(panIncrementIt->second.get<double>());
         }
@@ -311,9 +286,8 @@ void UIPreferencesManager::LoadPreferences()
         // Show status text
         //
 
-        auto showStatusTextIt = preferencesRootObject.find("show_status_text");
-        if (showStatusTextIt != preferencesRootObject.end()
-            && showStatusTextIt->second.is<bool>())
+        if (auto showStatusTextIt = preferencesRootObject.find("show_status_text");
+            showStatusTextIt != preferencesRootObject.end() && showStatusTextIt->second.is<bool>())
         {
             mGameController->SetShowStatusText(showStatusTextIt->second.get<bool>());
         }
@@ -322,9 +296,8 @@ void UIPreferencesManager::LoadPreferences()
         // Show extended status text
         //
 
-        auto showExtendedStatusTextIt = preferencesRootObject.find("show_extended_status_text");
-        if (showExtendedStatusTextIt != preferencesRootObject.end()
-            && showExtendedStatusTextIt->second.is<bool>())
+        if (auto showExtendedStatusTextIt = preferencesRootObject.find("show_extended_status_text");
+            showExtendedStatusTextIt != preferencesRootObject.end() && showExtendedStatusTextIt->second.is<bool>())
         {
             mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
         }
@@ -335,49 +308,43 @@ void UIPreferencesManager::LoadPreferences()
 
         {
             // Global mute
-            auto globalMuteIt = preferencesRootObject.find("global_mute");
-            if (globalMuteIt != preferencesRootObject.end()
-                && globalMuteIt->second.is<bool>())
+            if (auto globalMuteIt = preferencesRootObject.find("global_mute");
+                globalMuteIt != preferencesRootObject.end() && globalMuteIt->second.is<bool>())
             {
                 AudioController::SetGlobalMute(globalMuteIt->second.get<bool>());
             }
 
             // Background music volume
-            auto backgroundMusicVolumeIt = preferencesRootObject.find("background_music_volume");
-            if (backgroundMusicVolumeIt != preferencesRootObject.end()
-                && backgroundMusicVolumeIt->second.is<double>())
+            if (auto backgroundMusicVolumeIt = preferencesRootObject.find("background_music_volume");
+                backgroundMusicVolumeIt != preferencesRootObject.end() && backgroundMusicVolumeIt->second.is<double>())
             {
                 mMusicController->SetBackgroundMusicVolume(static_cast<float>(backgroundMusicVolumeIt->second.get<double>()));
             }
 
             // Play background music
-            auto playBackgroundMusicIt = preferencesRootObject.find("play_background_music");
-            if (playBackgroundMusicIt != preferencesRootObject.end()
-                && playBackgroundMusicIt->second.is<bool>())
+            if (auto playBackgroundMusicIt = preferencesRootObject.find("play_background_music");
+                playBackgroundMusicIt != preferencesRootObject.end() && playBackgroundMusicIt->second.is<bool>())
             {
                 mMusicController->SetPlayBackgroundMusic(playBackgroundMusicIt->second.get<bool>());
             }
 
             // Last-played background music
-            auto lastPlayedBackgroundMusicIt = preferencesRootObject.find("last_played_background_music");
-            if (lastPlayedBackgroundMusicIt != preferencesRootObject.end()
-                && lastPlayedBackgroundMusicIt->second.is<int64_t>())
+            if (auto lastPlayedBackgroundMusicIt = preferencesRootObject.find("last_played_background_music");
+                lastPlayedBackgroundMusicIt != preferencesRootObject.end() && lastPlayedBackgroundMusicIt->second.is<int64_t>())
             {
                 mMusicController->SetLastPlayedBackgroundMusic(lastPlayedBackgroundMusicIt->second.get<int64_t>());
             }
 
             // Game music volume
-            auto gameMusicVolumeIt = preferencesRootObject.find("game_music_volume");
-            if (gameMusicVolumeIt != preferencesRootObject.end()
-                && gameMusicVolumeIt->second.is<double>())
+            if (auto gameMusicVolumeIt = preferencesRootObject.find("game_music_volume");
+                gameMusicVolumeIt != preferencesRootObject.end() && gameMusicVolumeIt->second.is<double>())
             {
                 mMusicController->SetGameMusicVolume(static_cast<float>(gameMusicVolumeIt->second.get<double>()));
             }
 
             // Play sinking music
-            auto playSinkingMusicIt = preferencesRootObject.find("play_sinking_music");
-            if (playSinkingMusicIt != preferencesRootObject.end()
-                && playSinkingMusicIt->second.is<bool>())
+            if (auto playSinkingMusicIt = preferencesRootObject.find("play_sinking_music");
+                playSinkingMusicIt != preferencesRootObject.end() && playSinkingMusicIt->second.is<bool>())
             {
                 mMusicController->SetPlaySinkingMusic(playSinkingMusicIt->second.get<bool>());
             }
@@ -428,14 +395,12 @@ void UIPreferencesManager::SavePreferences() const
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
 
-    // Add ship auto-texturization mode
-    preferencesRootObject["ship_auto_texturization_mode"] = picojson::value(static_cast<std::int64_t>(mGameController->GetShipAutoTexturizationMode()));
+    // Add ship auto-texturization default settings
+    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController->GetShipAutoTexturizationDefaultSettings().ToJSON());
 
-    // Add ship auto-texturization material texture magnification
-    preferencesRootObject["ship_auto_texturization_material_texture_magnification"] = picojson::value(static_cast<double>(mGameController->GetShipAutoTexturizationMaterialTextureMagnification()));
-
-    // Add ship auto-texturization material texture transparency
-    preferencesRootObject["ship_auto_texturization_material_texture_transparency"] = picojson::value(static_cast<double>(mGameController->GetShipAutoTexturizationMaterialTextureTransparency()));
+    // We don't load/save this setting on purpose
+    ////// Add ship auto-texturization force defaults onto ship
+    ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings());
 
     // Add auto zoom at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());

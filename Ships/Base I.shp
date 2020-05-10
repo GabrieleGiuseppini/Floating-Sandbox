@@ -1,5 +1,6 @@
 {
 	"structure_image":"base_i_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"Base I",
 	"offset":{"x":0.0, "y":0.0},
 	"description":"'Base I' or 'Base 1' has basically no purpose other than to float in this game. Its work was probably to be on land and be used to hold a rocket. But in a game like this, there is basically no way to use this once monster of a machine. Only to live on the water and be sunk... Forever. Unless you somehow bring it on land without a scratch."

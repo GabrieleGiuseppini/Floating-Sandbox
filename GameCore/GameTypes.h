@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <picojson.h>
+
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -375,6 +377,29 @@ enum class ShipAutoTexturizationMode : std::int64_t
     FlatStructure = 1,      // Builds texture using structural materials' RenderColor
     MaterialTextures = 2    // Builds texture using materials' "Bump Maps"
 };
+
+/*
+ * Ship auto-texturization settings.
+ */
+struct ShipAutoTexturizationSettings
+{
+    ShipAutoTexturizationMode Mode;
+    float MaterialTextureMagnification;
+    float MaterialTextureTransparency;
+
+    ShipAutoTexturizationSettings(
+        ShipAutoTexturizationMode mode,
+        float materialTextureMagnification,
+        float materialTextureTransparency)
+        : Mode(mode)
+        , MaterialTextureMagnification(materialTextureMagnification)
+        , MaterialTextureTransparency(materialTextureTransparency)
+    {}
+
+    static ShipAutoTexturizationSettings FromJSON(picojson::object const & jsonObject);
+    picojson::object ToJSON() const;
+};
+
 
 /*
  * The different visual ways in which we render highlights.

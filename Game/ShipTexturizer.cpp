@@ -24,15 +24,16 @@ namespace /*anonymous*/ {
     {
         return (x2 <= 0.5f)
             ? x1 * 2.0f * x2                        // Damper: x1 * [0.0, 1.0]
-            : x1 + (x2 - x1) * 2.0f * (x2 - 0.5f);  // Amplifier:x1 + (x2 -x1) * [0.0, 1.0]
+            : x1 + (x2 - x1) * 2.0f * (x2 - 0.5f);  // Amplifier:x1 + (x2 - x1) * [0.0, 1.0]
     }
 }
 
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
-    : mAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures)
-    , mMaterialTextureMagnification(1.0f)
-    , mMaterialTextureAlpha(1.0f)
-    , mMaterialTextureWorldToPixelConversionFactor(MaterialTextureMagnificationToPixelConversionFactor(mMaterialTextureMagnification))
+    : mDefaultSettings(
+        ShipAutoTexturizationMode::MaterialTextures,
+        1.0f, // MaterialTextureMagnification
+        0.0f) // MaterialTextureMagnification
+    , mDoForceDefaultSettingsOntoShipSettings(false)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
     , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
     , mMaterialTextureCache()
@@ -56,15 +57,13 @@ void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDat
 }
 
 RgbaImageData ShipTexturizer::Texturize(
+    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
     ImageSize const & structureSize,
     ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
     std::vector<ShipBuildPoint> const & points) const
 {
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
-
-    // TODOTEST
-    mMaterialTextureCache.clear();
 
     //
     // Calculate target texture size: integral multiple of structure size, but without
@@ -79,6 +78,19 @@ RgbaImageData ShipTexturizer::Texturize(
     float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
     ImageSize const textureSize = structureSize * magnificationFactor;
+
+    //
+    // Prepare constants
+    //
+
+    ShipAutoTexturizationSettings const & settings = (mDoForceDefaultSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
+        ? mDefaultSettings
+        : *shipDefinitionSettings;
+
+    float const materialTextureWorldToPixelConversionFactor =
+        MaterialTextureMagnificationToPixelConversionFactor(settings.MaterialTextureMagnification);
+
+    float const materialTextureAlpha = 1.0f - settings.MaterialTextureTransparency;
 
     //
     // Create texture
@@ -97,7 +109,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 ? rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor)
                 : rgbaColor::zero(); // Fully transparent
 
-            if (mAutoTexturizationMode == ShipAutoTexturizationMode::FlatStructure
+            if (settings.Mode == ShipAutoTexturizationMode::FlatStructure
                 || !pointMatrix[x][y].has_value())
             {
                 //
@@ -123,7 +135,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Material textures
                 //
 
-                assert(mAutoTexturizationMode == ShipAutoTexturizationMode::MaterialTextures);
+                assert(settings.Mode == ShipAutoTexturizationMode::MaterialTextures);
 
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
@@ -147,8 +159,8 @@ RgbaImageData ShipTexturizer::Texturize(
                     {
                         vec3f const bumpMapSample = SampleTexture(
                             materialTexture,
-                            worldX * mMaterialTextureWorldToPixelConversionFactor,
-                            worldY * mMaterialTextureWorldToPixelConversionFactor);
+                            worldX * materialTextureWorldToPixelConversionFactor,
+                            worldY * materialTextureWorldToPixelConversionFactor);
 
                         ////// Vanilla multiply blending
                         ////vec3f const resultantColor(
@@ -165,10 +177,9 @@ RgbaImageData ShipTexturizer::Texturize(
                         // Store resultant color, using structure's alpha channel value,
                         // and blended with transparency
                         newImageData[targetQuadOffset + xx] = rgbaColor(
-                            Mix(
-                                structurePixelColorF,
+                            Mix(structurePixelColorF,
                                 resultantColorF,
-                                mMaterialTextureAlpha),
+                                materialTextureAlpha),
                             structurePixelColor.a);
                     }
                 }
@@ -177,7 +188,7 @@ RgbaImageData ShipTexturizer::Texturize(
     }
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
-        " materialTextureMagnification=", mMaterialTextureMagnification,
+        " materialTextureMagnification=", settings.MaterialTextureMagnification,
         " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
         " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 

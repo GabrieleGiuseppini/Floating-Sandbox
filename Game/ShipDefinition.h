@@ -7,6 +7,7 @@
 
 #include "ShipMetadata.h"
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/Vectors.h>
 
@@ -30,6 +31,8 @@ public:
 
     std::optional<RgbaImageData> TextureLayerImage;
 
+    std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
+
     ShipMetadata const Metadata;
 
     static ShipDefinition Load(std::filesystem::path const & filepath);
@@ -41,11 +44,13 @@ private:
         std::optional<RgbImageData> ropesLayerImage,
         std::optional<RgbImageData> electricalLayerImage,
         std::optional<RgbaImageData> textureLayerImage,
+        std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings,
         ShipMetadata const metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))
         , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))
         , TextureLayerImage(std::move(textureLayerImage))
+        , AutoTexturizationSettings(std::move(autoTexturizationSettings))
         , Metadata(std::move(metadata))
     {
     }

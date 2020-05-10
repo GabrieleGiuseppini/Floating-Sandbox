@@ -11,6 +11,7 @@
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/Version.h>
 
 #include <algorithm>
@@ -139,34 +140,29 @@ public:
         mSaveSettingsOnExit = value;
     }
 
-    ShipAutoTexturizationMode GetShipAutoTexturizationMode() const
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationDefaultSettings() const
     {
-        return mGameController->GetShipAutoTexturizationMode();
+        return mGameController->GetShipAutoTexturizationDefaultSettings();
     }
 
-    void SetShipAutoTexturizationMode(ShipAutoTexturizationMode value)
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationDefaultSettings()
     {
-        mGameController->SetShipAutoTexturizationMode(value);
+        return mGameController->GetShipAutoTexturizationDefaultSettings();
     }
 
-    float GetShipAutoTexturizationMaterialTextureMagnification() const
+    void SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings const & settings)
     {
-        return mGameController->GetShipAutoTexturizationMaterialTextureMagnification();
+        mGameController->SetShipAutoTexturizationDefaultSettings(settings);
     }
 
-    void SetShipAutoTexturizationMaterialTextureMagnification(float value)
+    bool GetShipAutoTexturizationForceDefaultsOntoShipDefinition() const
     {
-        mGameController->SetShipAutoTexturizationMaterialTextureMagnification(value);
+        return mGameController->GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings();
     }
 
-    float GetShipAutoTexturizationMaterialTextureTransparency() const
+    void SetShipAutoTexturizationForceDefaultsOntoShipDefinition(bool value)
     {
-        return mGameController->GetShipAutoTexturizationMaterialTextureTransparency();
-    }
-
-    void SetShipAutoTexturizationMaterialTextureTransparency(float value)
-    {
-        mGameController->SetShipAutoTexturizationMaterialTextureTransparency(value);
+        mGameController->SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(value);
     }
 
     bool GetShowShipDescriptionsAtShipLoad() const

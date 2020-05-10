@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ShipDefinitionFile.h"
 
+#include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
 ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFilePath)
@@ -26,28 +27,46 @@ ShipDefinitionFile ShipDefinitionFile::Create(
     picojson::object const & definitionJson,
     std::string const & defaultShipName)
 {
-    std::string structuralLayerImageFilePath = Utils::GetMandatoryJsonMember<std::string>(
+    std::string const structuralLayerImageFilePath = Utils::GetMandatoryJsonMember<std::string>(
         definitionJson,
         "structure_image");
 
-    std::optional<std::string> ropesLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const ropesLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "ropes_image");
 
-    std::optional<std::string> electricalLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const electricalLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "electrical_image");
 
-    std::optional<std::string> textureLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const textureLayerImageFilePath = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "texture_image");
 
-    bool doHideElectricalsInPreview = Utils::GetOptionalJsonMember<bool>(
+    std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings;
+    if (auto const memberIt = definitionJson.find("auto_texturization"); memberIt != definitionJson.end())
+    {
+        // Check constraints
+        if (textureLayerImageFilePath.has_value())
+        {
+            throw GameException("Ship definition cannot contain an \"auto_texturization\" directive when it also contains a \"texture_image\" directive");
+        }
+
+        if (!memberIt->second.is<picojson::object>())
+        {
+            throw GameException("Invalid syntax of \"auto_texturization\" directive in ship definition.");
+        }
+
+        // Parse
+        autoTexturizationSettings = ShipAutoTexturizationSettings::FromJSON(memberIt->second.get<picojson::object>());
+    }
+
+    bool const doHideElectricalsInPreview = Utils::GetOptionalJsonMember<bool>(
         definitionJson,
         "do_hide_electricals_in_preview",
         false);
 
-    bool doHideHDInPreview = Utils::GetOptionalJsonMember<bool>(
+    bool const doHideHDInPreview = Utils::GetOptionalJsonMember<bool>(
         definitionJson,
         "do_hide_hd_in_preview",
         false);
@@ -56,25 +75,25 @@ ShipDefinitionFile ShipDefinitionFile::Create(
     // Metadata
     //
 
-    std::string shipName = Utils::GetOptionalJsonMember<std::string>(
+    std::string const shipName = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "ship_name",
         defaultShipName);
 
-    std::optional<std::string> author = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const author = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "created_by");
 
-    std::optional<std::string> yearBuilt = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const yearBuilt = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "year_built");
 
-    std::optional<std::string> description = Utils::GetOptionalJsonMember<std::string>(
+    std::optional<std::string> const description = Utils::GetOptionalJsonMember<std::string>(
         definitionJson,
         "description");
 
     vec2f offset(0.0f, 0.0f);
-    std::optional<picojson::object> offsetObject = Utils::GetOptionalJsonObject(definitionJson, "offset");
+    std::optional<picojson::object> const offsetObject = Utils::GetOptionalJsonObject(definitionJson, "offset");
     if (!!offsetObject)
     {
         offset.x = Utils::GetMandatoryJsonMember<float>(*offsetObject, "x");
@@ -86,7 +105,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(
     //
 
     std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata;
-    std::optional<picojson::object> electricalPanelMetadataObject = Utils::GetOptionalJsonObject(definitionJson, "electrical_panel");
+    std::optional<picojson::object> const electricalPanelMetadataObject = Utils::GetOptionalJsonObject(definitionJson, "electrical_panel");
     if (!!electricalPanelMetadataObject)
     {
         for (auto const & it : *electricalPanelMetadataObject)
@@ -117,6 +136,7 @@ ShipDefinitionFile ShipDefinitionFile::Create(
         ropesLayerImageFilePath,
         electricalLayerImageFilePath,
         textureLayerImageFilePath,
+        autoTexturizationSettings,
         doHideElectricalsInPreview,
         doHideHDInPreview,
         ShipMetadata(

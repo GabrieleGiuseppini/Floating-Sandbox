@@ -24,45 +24,42 @@ public:
 
     ShipTexturizer(ResourceLocator const & resourceLocator);
 
-    ShipAutoTexturizationMode GetAutoTexturizationMode() const
-    {
-        return 	mAutoTexturizationMode;
-    }
-
-    void SetAutoTexturizationMode(ShipAutoTexturizationMode value)
-    {
-        mAutoTexturizationMode = value;
-    }
-
-    float GetMaterialTextureMagnification() const
-    {
-        return mMaterialTextureMagnification;
-    }
-
-    void SetMaterialTextureMagnification(float value)
-    {
-        assert(value != 0.0f);
-
-        mMaterialTextureMagnification = value;
-        mMaterialTextureWorldToPixelConversionFactor = MaterialTextureMagnificationToPixelConversionFactor(mMaterialTextureMagnification);
-    }
-
-    float GetMaterialTextureTransparency() const
-    {
-        return 1.0f - mMaterialTextureAlpha;
-    }
-
-    void SetMaterialTextureTransparency(float value)
-    {
-        mMaterialTextureAlpha = 1.0f - value;
-    }
-
     void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
 
     RgbaImageData Texturize(
+        std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
         ImageSize const & structureSize,
         ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
         std::vector<ShipBuildPoint> const & points) const;
+
+    //
+    // Settings
+    //
+
+    ShipAutoTexturizationSettings const & GetDefaultSettings() const
+    {
+        return mDefaultSettings;
+    }
+
+    ShipAutoTexturizationSettings & GetDefaultSettings()
+    {
+        return mDefaultSettings;
+    }
+
+    void SetDefaultSettings(ShipAutoTexturizationSettings const & defaultSettings)
+    {
+        mDefaultSettings = defaultSettings;
+    }
+
+    bool GetDoForceDefaultSettingsOntoShipSettings() const
+    {
+        return mDoForceDefaultSettingsOntoShipSettings;
+    }
+
+    void SetDoForceDefaultSettingsOntoShipSettings(bool value)
+    {
+        mDoForceDefaultSettingsOntoShipSettings = value;
+    }
 
 private:
 
@@ -87,9 +84,8 @@ private:
     // Settings that we are the storage of
     //
 
-    ShipAutoTexturizationMode mAutoTexturizationMode;
-    float mMaterialTextureMagnification;
-    float mMaterialTextureAlpha;
+    ShipAutoTexturizationSettings mDefaultSettings;
+    bool mDoForceDefaultSettingsOntoShipSettings;
 
     //
     // Material textures
@@ -98,8 +94,6 @@ private:
     std::filesystem::path const mMaterialTexturesFolderPath;
 
     std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePathMap;
-
-    float mMaterialTextureWorldToPixelConversionFactor;
 
     struct CachedTexture
     {

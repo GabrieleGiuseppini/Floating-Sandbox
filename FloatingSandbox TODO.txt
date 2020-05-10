@@ -432,8 +432,6 @@ Render:
 			  ImageFileTools::LoadXYZ without "LowerLeft"
 			  + Don't forget ShipAnalyzer
 
-		= Ask if auto-zoom considering position would be a good idea or not
-
 		= Auto-Texturizer
 			! Spec: new ShipTexturizer class, owned by GameController
 				- Created at GameController create time, and kept forever
@@ -535,15 +533,27 @@ Render:
 				+ render_color==key_color
 				+ Also run ship verification script
 			+ Test transparency setting
-			- Finalize:
-				- Default ship auto-texturization: TBD
-				- ShipDefinition/File has optional "auto_texturization_mode": "<one or the other>"
-					- Or struct
-				- ShipTexturizer has new boolean setting: ForceSettingsOverShip
-				- This optional<AutoTexturizationMode> is passed to ShipTexturizer, which decides what to do
-				- Dialog:
-					- Transparency setting (and move to sliders now)
-					- Force checkbox
+			+ Finalize:
+				+ GameTypes
+					+ ShipAutoTexturizationSettings
+					+ Use at ShipTexturizer as storage
+					+ Use at UIPreferencesManager 
+				+ ShipDefinition/File has optional "auto_texturization" struct				
+				+ ShipTexturizer has new boolean setting: ForceSettingsOverShip
+				+ This optional<AutoTexturizationMode> is passed to ShipTexturizer, which decides what to do
+				+ Dialog:
+					+ Transparency setting (and move to sliders now)
+					+ Force checkbox
+				+ Test:
+					+ Saves settings
+					+ Loads settings
+					+ Defaults apply to png and shps without auto_texturization
+					+ Ship's auto_texturization is honored when different than defaults
+						+ Just mode - and verify defaults for other two
+						+ Mode and other two
+					+ Forcing works
+			- Default ship auto-texturization: TBD, check poll
+				= And then populate .shp's accordingly				
 			+ Tooltips for auto-texturization:
 				+ Add "...when ships don't have their own texture layer."
 				+ Add "Changes are only visible after a ship is reloaded."/"next ship load".
@@ -556,13 +566,15 @@ Render:
 					+ Cap magnification factor and recalc texture size
 			+ Tests:
 				+ Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues: 2012 Ark
-			- Remove cache clearing for testing
+			+ Remove cache clearing for testing
 			- merge
 			- changes.txt
 
 		+ Clouds bug
 			+ Test again
 			+ changes.txt
+		
+		= Ask if auto-zoom considering position would be a good idea or not
 
 		+ Remove discord url's from About box
 		- Rename menus: "Simulation Settings" X 2 & "Game Preferences"

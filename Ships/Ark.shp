@@ -1,0 +1,5 @@
+{
+	"structure_image":"ark_structure.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
+	"ship_name":"Ark"
+}

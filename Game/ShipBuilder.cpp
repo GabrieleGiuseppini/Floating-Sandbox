@@ -48,7 +48,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     // ShipBuildTriangle's
     std::vector<ShipBuildTriangle> triangleInfos;
 
-
     //
     // Process structural layer points and:
     // - Identify all points, calculate texture coordinates, and create ShipBuildPoint's for them
@@ -330,7 +329,11 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     RgbaImageData textureImage = shipDefinition.TextureLayerImage.has_value()
         ? std::move(*shipDefinition.TextureLayerImage) // Use provided texture
-        : shipTexturizer.Texturize(shipDefinition.StructuralLayerImage.Size, pointIndexMatrix, pointInfos);
+        : shipTexturizer.Texturize(
+            shipDefinition.AutoTexturizationSettings,
+            shipDefinition.StructuralLayerImage.Size,
+            pointIndexMatrix,
+            pointInfos); // Auto-texturize
 
     //
     // We're done!

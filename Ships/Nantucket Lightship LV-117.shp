@@ -1,5 +1,6 @@
 {
 	"structure_image":"nantucket_lightship_lv_117_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"offset":{"x":0.0, "y":-19.0},
 	"ship_name":"Nantucket Lightship LV-117"
 }

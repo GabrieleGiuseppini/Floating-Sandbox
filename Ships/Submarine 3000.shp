@@ -1,0 +1,5 @@
+{
+	"structure_image":"submarine_3000_structure.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
+	"ship_name":"Submarine 3000"
+}

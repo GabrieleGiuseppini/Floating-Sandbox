@@ -1,5 +1,6 @@
 {
 	"structure_image":"4_balls_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"4 Balls",
 	"year_built":"2020",
 	"description":"These four balls are made out of:<br/> <ol><li>Concrete</li><li>Glass</li><li>Steel</li><li>Paper</li></ol>"

@@ -1,0 +1,5 @@
+{
+	"structure_image":"base_iii_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
+	"ship_name":"Base III"
+}

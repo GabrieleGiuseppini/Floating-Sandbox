@@ -1,6 +1,7 @@
 {
 	"structure_image":"balls_of_rubber_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"Balls of Rubber",
 	"year_built":"2019",
-	"description":"Three balls made of the new rubber material: 'Hard' rubber and 'Soft' rubber. Watch them bounce over the ocean floor!"
+	"description":"Three balls made of rubber: 'Hard' rubber and 'Soft' rubber. Watch them bounce over mountains and the ocean floor!"
 }

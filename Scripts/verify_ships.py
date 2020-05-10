@@ -8,6 +8,7 @@ JSON_FIELD_NAMES = [
     "texture_image",
     "electrical_image",
     "ropes_image",
+    "auto_texturization",
     "offset",
     "ship_name",
     "created_by",

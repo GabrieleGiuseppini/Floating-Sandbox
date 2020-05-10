@@ -1,6 +1,7 @@
 {
 	"structure_image":"heat_generation_test_structural.png.dat",
 	"electrical_image":"heat_generation_test_electrical.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
 	"offset":{"x":0.0, "y":-4.0},
 	"ship_name":"Heat Generation Test",
 	"created_by":"Gabriele Giuseppini",
