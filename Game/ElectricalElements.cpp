@@ -803,12 +803,14 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
     {
         for (size_t l = 0; l < mLamps.size(); ++l)
         {
+            auto const lampElementIndex = mLamps[l];
+
             float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-                mMaterialLightSpreadBuffer[l],
+                mMaterialLightSpreadBuffer[lampElementIndex],
                 gameParameters.LightSpreadAdjustment);
 
             mLampRawDistanceCoefficientBuffer[l] = CalculateLampRawDistanceCoefficient(
-                mMaterialLuminiscenceBuffer[l],
+                mMaterialLuminiscenceBuffer[lampElementIndex],
                 gameParameters.LuminiscenceAdjustment,
                 lampLightSpreadMaxDistance);
 
