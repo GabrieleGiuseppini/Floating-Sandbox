@@ -4577,14 +4577,14 @@
             "nominal_mass": 800
         }, 
         "melting_temperature": 1000000.0, 
-        "name": "Heating Element", 
+        "name": "Heating Element 100KW", 
         "render_color": "#FC2020", 
         "sound_type": "Wood", 
         "specific_heat": 100.0, 
         "stiffness": 1.0, 
         "strength": 0.15, 
         "template": {
-            "column": "8|Heating", 
+            "column": "8|Heating Element 100KW", 
             "row": "100|Electrical (Basic)"
         }, 
         "thermal_conductivity": 0.1,

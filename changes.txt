@@ -3,6 +3,7 @@ TODO
 - Added new electrical materials:
 	- Water Pumps - take water in or out of the ship when powered
 	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or keeping it contained
+	- Heating Element 1MW - a second heating element that produces a lot of heat! You may use it to ignite fires at the touch of a switch! 
 - Added 5 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action

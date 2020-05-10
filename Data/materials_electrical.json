@@ -740,12 +740,25 @@
         "color_key": "#FC2020",
 	"conducts_electricity": true,
         "electrical_type": "OtherSink", 
-        "heat_generated": 50000.0, 
+        "heat_generated": 100000.0, 
         "maximum_operating_temperature": 1783.15, 
         "minimum_operating_temperature": 173.15, 
-        "name": "Heating Element", 
+        "name": "Heating Element 100KW", 
         "template": {
-            "column": "0|Heating Element", 
+            "column": "0|Heating Element 100KW", 
+            "row": "20|Misc"
+        }
+    }, 
+    {
+        "color_key": "#FC3030",
+	"conducts_electricity": true,
+        "electrical_type": "OtherSink", 
+        "heat_generated": 1000000.0, 
+        "maximum_operating_temperature": 1783.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heating Element 1MW", 
+        "template": {
+            "column": "1|Heating Element 1MW", 
             "row": "20|Misc"
         }
     }, 
@@ -761,7 +774,7 @@
         "name": "Smoke Emitter", 
 	"particle_emission_rate": 0.05,
         "template": {
-            "column": "1|Smoke Emitter", 
+            "column": "2|Smoke Emitter", 
             "row": "20|Misc"
         }
     },
@@ -777,7 +790,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Power Monitor", 
         "template": {
-            "column": "2|Power Monitor", 
+            "column": "3|Power Monitor", 
             "row": "20|Misc"
         }
     },
@@ -793,7 +806,7 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Water Pump In", 
         "template": {
-            "column": "3|Water Pump In", 
+            "column": "4|Water Pump In", 
             "row": "20|Misc"
         },
 	"water_pump_nominal_force": 3.0
@@ -810,7 +823,7 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Water Pump Out", 
         "template": {
-            "column": "4|Water Pump Out", 
+            "column": "5|Water Pump Out", 
             "row": "20|Misc"
         },
 	"water_pump_nominal_force": -3.0
@@ -827,7 +840,7 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Watertight Door", 
         "template": {
-            "column": "5|Watertight Door",
+            "column": "6|Watertight Door",
             "row": "20|Misc"
         }
     }
