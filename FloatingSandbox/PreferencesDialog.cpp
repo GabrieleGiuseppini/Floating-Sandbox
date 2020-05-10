@@ -549,7 +549,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                     mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Flat Structure"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using the materials' matte colors.");
+                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting are only visible after a new ship is loaded.");
                     mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeBoxSizer2->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -557,7 +557,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                     mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Material Textures"),
                         wxDefaultPosition, wxDefaultSize);
-                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("Generates a ship's high-definition image using material-specific textures.");
+                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting are only visible after a new ship is loaded.");
                     mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeBoxSizer2->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -582,7 +582,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Texture Magnification",
-                    "Changes the level of detail of materials' textures.",
+                    "Changes the level of detail of materials' textures. Changes to this setting are only visible after a new ship is loaded.",
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
@@ -591,7 +591,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     },
                     std::make_unique<ExponentialSliderCore>(
                         0.1f,
-                        1.0f, // TODO: change formula on the other side, so that 1.0 is default
+                        1.0f,
                         2.0f));
 
                 autoTexturizationSizer->Add(
@@ -609,7 +609,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Texture Transparency",
-                    "Changes the transparency of materials' textures.",
+                    "Changes the transparency of materials' textures. Changes to this setting are only visible after a new ship is loaded.",
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);

@@ -44,7 +44,7 @@ public:
         assert(value != 0.0f);
 
         mMaterialTextureMagnification = value;
-        mMaterialTextureWorldToPixelConversionFactor = 1.0f / value;
+        mMaterialTextureWorldToPixelConversionFactor = MaterialTextureMagnificationToPixelConversionFactor(mMaterialTextureMagnification);
     }
 
     float GetMaterialTextureTransparency() const
@@ -66,7 +66,9 @@ public:
 
 private:
 
-    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePath(std::filesystem::path const materialTexturesFolderPath);
+    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath);
+
+    static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
     inline Vec3fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
 
@@ -95,7 +97,7 @@ private:
 
     std::filesystem::path const mMaterialTexturesFolderPath;
 
-    std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePath;
+    std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePathMap;
 
     float mMaterialTextureWorldToPixelConversionFactor;
 

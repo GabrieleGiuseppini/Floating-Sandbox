@@ -30,11 +30,11 @@ namespace /*anonymous*/ {
 
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mAutoTexturizationMode(ShipAutoTexturizationMode::MaterialTextures)
-    , mMaterialTextureMagnification(0.08f)
+    , mMaterialTextureMagnification(1.0f)
     , mMaterialTextureAlpha(1.0f)
-    , mMaterialTextureWorldToPixelConversionFactor(1.0f / mMaterialTextureMagnification)
+    , mMaterialTextureWorldToPixelConversionFactor(MaterialTextureMagnificationToPixelConversionFactor(mMaterialTextureMagnification))
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
-    , mMaterialTextureNameToTextureFilePath(MakeMaterialTextureNameToTextureFilePath(mMaterialTexturesFolderPath))
+    , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
     , mMaterialTextureCache()
 {
 }
@@ -45,7 +45,7 @@ void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDat
     {
         if (entry.second.MaterialTextureName.has_value())
         {
-            if (mMaterialTextureNameToTextureFilePath.count(*entry.second.MaterialTextureName) == 0)
+            if (mMaterialTextureNameToTextureFilePathMap.count(*entry.second.MaterialTextureName) == 0)
             {
                 throw GameException(
                     "Material texture name \"" + *entry.second.MaterialTextureName + "\""
@@ -186,7 +186,7 @@ RgbaImageData ShipTexturizer::Texturize(
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePath(std::filesystem::path const materialTexturesFolderPath)
+std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath)
 {
     std::unordered_map<std::string, std::filesystem::path> materialTextureNameToTextureFilePath;
 
@@ -202,6 +202,12 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
     }
 
     return materialTextureNameToTextureFilePath;
+}
+
+float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float magnification)
+{
+    // Magic number
+    return 1.0f / (0.08f * magnification);
 }
 
 Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
@@ -226,8 +232,8 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::str
         }
 
         // Load and cache texture
-        assert(mMaterialTextureNameToTextureFilePath.count(actualTextureName) > 0);
-        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePath.at(actualTextureName));
+        assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
+        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
         auto const inserted = mMaterialTextureCache.emplace(
             actualTextureName,
             ImageTools::ToVec3f(texture));
