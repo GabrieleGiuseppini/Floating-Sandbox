@@ -12,6 +12,7 @@ TODO
 - Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
 - Fixed crash occurring when opening the "Load Ship" window in a folder containing a ship file with foreign characters
 - Fixed issue with mouse wheel stopping working after loading a ship with an electrical panel
+- Fixed issue with clouds filling up the entire screen after an hour of gameplay
 - Lowered curve of cloud speed dependency from wind speed
 - ...and a few more small improvements here and there
 - Musical theme for this release: The Cure, Wish

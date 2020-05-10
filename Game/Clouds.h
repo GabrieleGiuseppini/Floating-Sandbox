@@ -68,28 +68,24 @@ private:
 
         uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds
         float X;
-        float Y;
+        float const Y;
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
 
         Cloud(
             uint32_t id,
             float initialX,
-            float initialY,
-            float initialScale,
+            float y,
+            float scale,
             float darkening)
             : Id(id)
             , X(initialX)
-            , Y(initialY)
-            , Scale(initialScale)
+            , Y(y)
+            , Scale(scale)
             , Darkening(darkening)
             , mLinearSpeedX(GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))
             , mPeriodicSpeedXAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f)
             , mPeriodicSpeedXPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f)
-            , mPeriodicSpeedYAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00007f)
-            , mPeriodicSpeedYPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.005f)
-            , mPeriodicSpeedScaleAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.0003f)
-            , mPeriodicSpeedScalePeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.002f)
         {
         }
 
@@ -100,8 +96,6 @@ private:
             float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
             X += (mLinearSpeedX * cloudSpeed * dt) + (mPeriodicSpeedXAmp * sinf(mPeriodicSpeedXPeriod * cloudSpeed * currentSimulationTime));
-            Y += (mPeriodicSpeedYAmp * sinf(mPeriodicSpeedYPeriod * cloudSpeed * currentSimulationTime));
-            Scale += (mPeriodicSpeedScaleAmp * sinf(mPeriodicSpeedScalePeriod * cloudSpeed * currentSimulationTime));
         }
 
     private:
@@ -109,12 +103,6 @@ private:
         float const mLinearSpeedX;
         float const mPeriodicSpeedXAmp;
         float const mPeriodicSpeedXPeriod;
-
-        float const mPeriodicSpeedYAmp;
-        float const mPeriodicSpeedYPeriod;
-
-        float const mPeriodicSpeedScaleAmp;
-        float const mPeriodicSpeedScalePeriod;
     };
 
     uint32_t mLastCloudId;
