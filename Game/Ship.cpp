@@ -1951,13 +1951,18 @@ void Ship::RotPoints(
         ? alphaMax * 0.995f
         : 1.0f;
 
+    // Underwater points have this extra amount of equivalent water
+    float const extraEquivalentWaterForUnderwaterPoints = gameParameters.RotAcceler8r != 0.0f
+        ? 0.175f
+        : 0.0f;
+
     // Process all non-ephemeral points - no real reason to exclude ephemerals, other
     // than they're not expected to rot
     for (auto p : mPoints.RawShipPoints())
     {
         float waterEquivalent =
             mPoints.GetWater(p)
-            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? 0.175f : 0.0f); // Also rust a bit underwater points, even hull ones
+            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? extraEquivalentWaterForUnderwaterPoints : 0.0f); // Also rust a bit underwater points, even hull ones
 
         // Adjust with material's rust receptivity
         waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);

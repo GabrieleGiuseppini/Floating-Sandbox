@@ -1012,7 +1012,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Strength Adjust",
-                    "Adjusts the strength of springs.",
+                    "Adjusts the breaking point of springs under stress. Has no effect on the rigidity of a ship.",
 					[this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
@@ -1064,7 +1064,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     "Rot Acceler8r",
-                    "Adjusts the speed with which materials rot when exposed to sea water.",
+                    "Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether.",
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
