@@ -414,15 +414,15 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     wxMenu * optionsMenu = new wxMenu();
 
-    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Settings...\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Simulation Settings...\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openSettingsWindowMenuItem);
     Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
 
-    mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Settings\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
+    mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Simulation Settings\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(mReloadLastModifiedSettingsMenuItem);
     Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnReloadLastModifiedSettingsMenuItem);
 
-    wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Preferences...\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Game Preferences...\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openPreferencesWindowMenuItem);
     Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 

@@ -35,7 +35,7 @@ PreferencesDialog::PreferencesDialog(
     Create(
         mParent,
         wxID_ANY,
-        _("Preferences"),
+        _("Game Preferences"),
         wxDefaultPosition,
         wxSize(400, -1),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
@@ -65,7 +65,7 @@ PreferencesDialog::PreferencesDialog(
 
     PopulateGamePanel(gamePanel);
 
-    notebook->AddPage(gamePanel, "Game Preferences");
+    notebook->AddPage(gamePanel, "Game");
 
 
     //
@@ -76,7 +76,7 @@ PreferencesDialog::PreferencesDialog(
 
     PopulateShipPanel(shipsPanel);
 
-    notebook->AddPage(shipsPanel, "Ship Preferences");
+    notebook->AddPage(shipsPanel, "Ships");
 
 
     //

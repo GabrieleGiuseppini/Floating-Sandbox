@@ -240,7 +240,6 @@ Render:
 	- Maximord - "Maximord" (Parallels)
 	- Pac0master - "<Same as now>" (Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070)
 	- The_SamminAter - "The_SamminAter" (Parallels)
-	- Costin88boss: Windows 10, AMD, ATI OpenGL 4.6 w/Radeon RX 560 Series w/2GB RAM
 
 - Marketing:
 	- www.floatingsandbox.com:
@@ -248,26 +247,7 @@ Render:
 
 - Roadmap:
 
-		+ PR:
-			+ Update version @ floatingsandbox.com
-			+ New screenshots @
-				+ GameJolt
-				+ floatingsandbox.com
-			+ Re-read & update game intro @ GameJolt
-			+ Multi-part blog
-			+ fs.com: add FAQ for electrical panel -> Gabe's blog
-
-		- Publish roadmap:
-			- Flood doors, pumps
-			- Frontier -> Hydrodynamics (underwater gliding)
-			- In-game Ship Builder
-			- Spring relaxation optimization -> Rigidity
-			- NPCs
-			- Collision detection -> Multiple Ships
-
-
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
-
 
 		+ Branch
 		+ Bump up version
@@ -573,13 +553,10 @@ Render:
 		+ Clouds bug
 			+ Test again
 			+ changes.txt
+		+ Remove discord url's from About box
+		+ Rename menus: "Simulation Settings" X 2 & "Game Preferences"
 		
 		= Ask if auto-zoom considering position would be a good idea or not
-
-		+ Remove discord url's from About box
-		- Rename menus: "Simulation Settings" X 2 & "Game Preferences"
-
-		- Saved settings bug: change all settings and verify may reload later
 
 		- Offset sinking water with Points::GetFactoryWater()
 			- Calc'd at Add()
@@ -591,8 +568,6 @@ Render:
 			- Lower melting temperature of Lego
 			- Redo template
 			- changes.txt
-
-		- Check bug with game running for a long time
 
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 
@@ -612,15 +587,27 @@ Render:
 			- Redo electrical template
 			- Update materials' guide
 
-		- Think about changing the way electrical circuits are done:
-			- Only the cables should be able to make 8 connections (sides + diagonals)
-			- Any devices should only be connected in 4 direction (sides only)
-
 		- Release: the "Eternal Patrol" update 
 
 
+		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
-		- Superheated pulverization (*)
+		- Parallelize OpenGL:
+			+ Start:
+				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
+				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5)
+				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
+			- Spec:
+				- Rendering runs entirely on separate thread
+					- Context needs to made current in this thread
+				- Loop:
+					- Start to render everything (on render thread)
+					- Do all physics
+					- Wait until everything rendered
+					- SwapBuffers
+					- Upload all buffers (clouds, water, ship, etc.)
+			- Impl:
+				- Make test app
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
@@ -629,8 +616,6 @@ Render:
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
-
-		- H and V electrical cables (*)
 
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
@@ -1203,7 +1188,7 @@ Render:
 
 	- New structural materials:
 		- Sodium: explodes when particle's water > threshold
-			- Requires performing visit: TBD: how?
+			- At points' low-freq combustion update				  
 		- "Lightning rod" material
 			- Has precedence when looking for candidates @ Lightning strike
 
@@ -1227,6 +1212,15 @@ Render:
 			- Gfx: Clock dial (normalized on duration), new ElectricalControl
 			- Sound: clock
 
+	- Superheated pulverization
+		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets
+
+	- Circuit issue simplification:
+		- Option A: H and V electrical cables
+		- Option B:
+			- Only the cables should be able to make 8 connections (sides + diagonals)
+			- Any devices should only be connected in 4 direction (sides only)
+		- Option C: multiple electrical layers
 
 	- Directional water drag (*)
 		! After frontier work
@@ -1238,9 +1232,6 @@ Render:
 		- Increase the amount of drag adjustment users may do
 			- Goal: water should become lava with high drag
 		- See if worth separating into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
-
-	- H and V electrical cables (*)
-		- TBD: needs to be spec'd
 
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
@@ -1348,9 +1339,6 @@ Render:
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
-
-	- Superheated materials become pulverized
-		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets
 
 	- Frozen structure:
 		- Simply, in low-frequency spring coeffs' Update(), also do other side of temperature spectrum

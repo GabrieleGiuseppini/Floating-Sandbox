@@ -77,7 +77,7 @@ SettingsDialog::SettingsDialog(
     Create(
         mParent,
         wxID_ANY,
-        _("Settings"),
+        _("Simulation Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
