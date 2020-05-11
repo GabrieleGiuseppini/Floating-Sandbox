@@ -32,7 +32,7 @@ ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mDefaultSettings(
         ShipAutoTexturizationMode::MaterialTextures,
         1.0f, // MaterialTextureMagnification
-        0.0f) // MaterialTextureMagnification
+        0.0f) // MaterialTextureTransparency
     , mDoForceDefaultSettingsOntoShipSettings(false)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
     , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
