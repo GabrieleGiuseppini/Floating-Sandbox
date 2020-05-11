@@ -10,6 +10,7 @@ TODO
 	- Balls of Lego(c): shows the Lego(c) material in action
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles
+- Improved melting dynamics
 - Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
 - Fixed crash occurring when opening the "Load Ship" window in a folder containing a ship file with foreign characters
 - Fixed issue with mouse wheel stopping working after loading a ship with an electrical panel

@@ -3964,7 +3964,7 @@
         "render_color": "#E4E4E4", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -3992,7 +3992,7 @@
         "render_color": "#B3000B", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4020,7 +4020,7 @@
         "render_color": "#EFED00", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4048,7 +4048,7 @@
         "render_color": "#186F36", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4076,7 +4076,7 @@
         "render_color": "#13377B", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4104,7 +4104,7 @@
         "render_color": "#050505", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4132,7 +4132,7 @@
         "render_color": "#F4F4F4", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4160,7 +4160,7 @@
         "render_color": "#E3000B", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4188,7 +4188,7 @@
         "render_color": "#FFED00", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4216,7 +4216,7 @@
         "render_color": "#287F46", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4244,7 +4244,7 @@
         "render_color": "#23478B", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4272,7 +4272,7 @@
         "render_color": "#080808", 
         "rust_receptivity": 0, 
         "sound_type": "Lego", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 523.512,
         "stiffness": 1.1, 
         "strength": 0.06, 
         "template": {
@@ -4525,7 +4525,7 @@
         "name": "Electrical Cable Hull", 
         "render_color": "#4C0000", 
         "sound_type": "Cable", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 1400.0, 
         "stiffness": 1.0, 
         "strength": 0.092, 
         "template": {
@@ -4552,7 +4552,7 @@
         "name": "Electrical Cable", 
         "render_color": "#700000", 
         "sound_type": "Cable", 
-        "specific_heat": 1423.512, 
+        "specific_heat": 1400.0, 
         "stiffness": 1.0, 
         "strength": 0.09, 
         "template": {

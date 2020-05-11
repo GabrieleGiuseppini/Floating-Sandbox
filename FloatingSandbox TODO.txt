@@ -600,12 +600,20 @@ Render:
 			- Spec:
 				- Rendering runs entirely on separate thread
 					- Context needs to made current in this thread
-				- Loop:
-					- Start to render everything (on render thread)
-					- Do all physics
-					- Wait until everything rendered
-					- SwapBuffers
+				- Loop:					
+					- Do all physics, without touching RenderContext
+					- Wait until everything rendered		- (nop if not rendering)
+											- render completes here
+											- SwapBuffers
 					- Upload all buffers (clouds, water, ship, etc.)
+						- Safe to upload entire buffer in 
+						  "locked synchronous mode" here
+						- Those uploaded elem-by-elem are aggregated
+						  by RenderContext on caller's thread
+					- Start to render everything (on render thread)
+						- Here uploads take place of those buffers
+						  aggregated by RenderContext 
+						  
 			- Impl:
 				- Make test app
 

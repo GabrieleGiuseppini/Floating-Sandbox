@@ -387,9 +387,18 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
-    float const springTemperature =
-        (points.GetTemperature(endpointAIndex) + points.GetTemperature(endpointBIndex)) / 2.0f;
+    // Note: in 1.14, the spring temperature was the average of the two points.
+    // Differences in temperature between adjacent points made it so that springs'
+    // melting was widely underestimated.
+    // In reality, a spring is as "soft" as its softness point.
+    ////float const springTemperature =
+    ////    (points.GetTemperature(endpointAIndex) + points.GetTemperature(endpointBIndex)) / 2.0f;
+    float const springTemperature = std::max(
+        points.GetTemperature(endpointAIndex),
+        points.GetTemperature(endpointBIndex));
 
+    // Excedence of temperature over melting temperature; might be negative
+    // if we're below the melting temperature
     float const meltingOverheat = springTemperature - GetMaterialMeltingTemperature(springIndex);
 
     //
@@ -447,6 +456,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     }
     else
     {
+        // Sudden decrease
         mCoefficientsBuffer[springIndex].StiffnessCoefficient = desiredStiffnessCoefficient;
     }
 
@@ -474,7 +484,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     //  - The actual number of mechanics iterations we'll be performing
     //
     // The breaking elongation is the strength multiplied with the spring's rest length, so that it's ready to be
-    // compared against the spring's absolute delta L without dividing the delta L by the rest length
+    // compared against the spring's absolute delta L without having to divide the delta L by the rest length
     //
 
     // Decay of spring == avg of two endpoints' decay
