@@ -63,6 +63,7 @@ void Points::Add(
     if (isStructurallyLeaking)
         SetStructurallyLeaking(pointIndex);
     mFactoryIsStructurallyLeakingBuffer.emplace_back(isStructurallyLeaking);
+    mTotalFactoryWetPoints += (water > 0.0f ? 1 : 0);
 
     // Heat dynamics
     mTemperatureBuffer.emplace_back(GameParameters::Temperature0);

@@ -558,6 +558,7 @@ public:
         , mCumulatedIntakenWater(mBufferElementCount, shipPointCount, 0.0f)
         , mLeakingCompositeBuffer(mBufferElementCount, shipPointCount, LeakingComposite(false))
         , mFactoryIsStructurallyLeakingBuffer(mBufferElementCount, shipPointCount, false)
+        , mTotalFactoryWetPoints(0)
         // Heat dynamics
         , mTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialHeatCapacityReciprocalBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1259,6 +1260,11 @@ public:
         return mLeakingCompositeBuffer[pointElementIndex];
     }
 
+    ElementCount GetTotalFactoryWetPoints() const
+    {
+        return mTotalFactoryWetPoints;
+    }
+
     void Damage(ElementIndex pointElementIndex)
     {
         // Start structural leaking if the point is originally hull
@@ -1820,6 +1826,9 @@ private:
     // Indicators of point intaking water
     Buffer<LeakingComposite> mLeakingCompositeBuffer;
     Buffer<bool> mFactoryIsStructurallyLeakingBuffer;
+
+    // Total number of points that where wet at factory time
+    ElementCount mTotalFactoryWetPoints;
 
     //
     // Heat dynamics

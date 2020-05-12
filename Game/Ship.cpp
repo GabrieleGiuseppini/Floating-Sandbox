@@ -1674,7 +1674,7 @@ void Ship::UpdateSinking()
 
     if (!mIsSinking)
     {
-        if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10) // High watermark
+        if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10 + mPoints.GetTotalFactoryWetPoints()) // High watermark
         {
             // Started sinking
             mGameEventHandler->OnSinkingBegin(mId);
@@ -1683,7 +1683,7 @@ void Ship::UpdateSinking()
     }
     else
     {
-        if (wetPointCount < mPoints.GetRawShipPointCount() * 1 / 10) // Low watermark
+        if (wetPointCount < mPoints.GetRawShipPointCount() * 1 / 10 + mPoints.GetTotalFactoryWetPoints()) // Low watermark
         {
             // Stopped sinking
             mGameEventHandler->OnSinkingEnd(mId);
