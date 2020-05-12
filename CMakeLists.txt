@@ -48,6 +48,11 @@ find_package(benchmark) # Not required as benchmarks are optional and used only 
 # wxWidgets
 #
 
+if(APPLE)
+	# find_package() on OSX does not use wxWidgets_ROOT_DIR, use intermediate wx-config exe instead...
+	set(wxWidgets_CONFIG_EXECUTABLE "${wxWidgets_ROOT_DIR}/wx-config")
+endif(APPLE)
+
 find_package(wxWidgets REQUIRED base gl core html media)
 
 #
