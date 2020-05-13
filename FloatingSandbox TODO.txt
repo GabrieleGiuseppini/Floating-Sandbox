@@ -418,8 +418,7 @@ Render:
 			+ Lower melting temperature of Lego
 			+ Redo both templates
 			+ changes.txt
-
-		= Auto-Texturizer
+		+ Auto-Texturizer
 			! Spec: new ShipTexturizer class, owned by GameController
 				- Created at GameController create time, and kept forever
 					- Maintains cache
@@ -554,24 +553,24 @@ Render:
 				+ Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues: 2012 Ark
 			+ Remove cache clearing for testing
 			+ merge
-			- changes.txt
-
+			+ changes.txt
 		+ Clouds bug
 			+ Test again
 			+ changes.txt
 		+ Remove discord url's from About box
 		+ Rename menus: "Simulation Settings" X 2 & "Game Preferences"
-
-		- Non-instanced water-sensing switches
-			- Ask Pac0master
-		
-		= Offset sinking water with Points::GetTotalFactoryWetPoints()
+		+ Offset sinking water with Points::GetTotalFactoryWetPoints()
 			+ Calc'd by Points at Add()
 			+ Exposed as getter
 			+ Used at sinking detection
-			- Test
+			+ Test
 				+ Ball of water
-				- 3 balls
+				+ 3 balls
+
+		- Non-instanced water-sensing switches
+			- Do
+			- changes.txt
+			- redo template
 
 		- I found a bug- I spawned a tsunami and almost immediately (within 5 secs) used the wave tool to cut it down. Then in the middle of the tsunami, where I had used the tool, seemed to stretch infinitely high, then glitching to not there at all. Then the sea opened up and parted at the speed of the tsunami, until there was no ocean at all, just the seabed and land!
 
@@ -595,6 +594,9 @@ Render:
 		- Bump-up version
 
 		- Release: the "Eternal Patrol" update 
+
+		- Blog:
+			- all new electrical elements
 
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
