@@ -138,6 +138,7 @@ Here's an explanation of the elements:
 - _engine responsiveness_: when the element is of the Engine type, describes how quickly the engine responds to throttle changes; between 0.0 (totally unresponsive) and 1.0 (immediate response).
 - _engine type_: when the element is of the Engine type, describes the type of engine. Valid values are:
    - "Outboard": an outboard engine, suitable for boats and small ships.
+   - "Diesel": a diesel engine, suitable for small and mid-size ships.
    - "Steam": a steam engine, suitable for large ships.
 - _heat generated_: the amount of heat generated when functioning, in KJ/s.
 - _interactive switch type_: when the element is of the InteractiveSwitch type, describes the type of switch. Valid values are:

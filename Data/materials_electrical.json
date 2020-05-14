@@ -223,9 +223,9 @@
 	"is_instanced": false,
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
-        "name": "Generator", 
+        "name": "Non-Instanced Generator", 
         "template": {
-            "column": "0|Generator", 
+            "column": "0|NI Generator", 
             "row": "5|Generators"
         }
     }, 
@@ -237,9 +237,9 @@
 	"is_instanced": true,
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
-        "name": "Generator (Instanced)", 
+        "name": "Generator",
         "template": {
-            "column": "1|I Generator", 
+            "column": "1|Generator", 
             "row": "5|Generators"
         }
     }, 
@@ -398,20 +398,35 @@
     },
 
     {
-        "color_key": "#30D000",
+        "color_key": "#887000",
 	"conducts_electricity": true,
-        "electrical_type": "EngineController", 
-        "heat_generated": 0.0, 
-	"is_instanced": true,
-        "is_self_powered": false, 
+        "electrical_type": "WaterSensingSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Engine Controller", 
+        "name": "Non-Instanced Water Sensing Switch ON",
         "template": {
-            "column": "0|Engine Controller", 
-            "row": "10|Engines"
+            "column": "6|NI Water Switch ON",
+            "row": "8|Switches"
+        }
+    }, 
+    {
+        "color_key": "#187000",
+	"conducts_electricity": false,
+        "electrical_type": "WaterSensingSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Water Sensing Switch OFF",
+        "template": {
+            "column": "7|NI Water Switch OFF",
+            "row": "8|Switches"
         }
     },
+
+
 
     {
         "color_key": "#30E000",
@@ -428,8 +443,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "50HP Outboard Engine R/L", 
         "template": {
-            "column": "1|50HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "0|50HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
 
@@ -448,8 +463,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "130HP Outboard Engine R/L", 
         "template": {
-            "column": "2|130HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "1|130HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
 
@@ -468,8 +483,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "230HP Outboard Engine R/L", 
         "template": {
-            "column": "3|230HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "2|230HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
 
@@ -488,8 +503,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "400HP Outboard Engine R/L", 
         "template": {
-            "column": "4|400HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "3|400HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
 
@@ -508,12 +523,10 @@
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine R/L", 
         "template": {
-            "column": "5|600HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "4|600HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
-
-
     {
         "color_key": "#30E900",
 	"conducts_electricity": false,
@@ -529,8 +542,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1000HP Outboard Engine R/L", 
         "template": {
-            "column": "6|1000HP Outboard R/L",
-            "row": "10|Engines"
+            "column": "5|1000HP Outboard R/L",
+            "row": "10|Outboard Engines"
         }
     },
     {
@@ -548,8 +561,68 @@
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine U/D", 
         "template": {
-            "column": "7|1000HP Outboard U/D",
-            "row": "10|Engines"
+            "column": "6|1000HP Outboard U/D",
+            "row": "10|Outboard Engines"
+        }
+    },
+
+
+
+
+
+
+    {
+        "color_key": "#30D000",
+	"conducts_electricity": true,
+        "electrical_type": "EngineController", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Engine Controller", 
+        "template": {
+            "column": "0|Engine Controller", 
+            "row": "12|Misc Engines"
+        }
+    },
+
+    {
+        "color_key": "#30EB00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.021,
+	"engine_type": "Diesel",
+        "heat_generated": 1200.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "1000HP Diesel Engine R/L", 
+        "template": {
+            "column": "1|1000HP Diesel R/L",
+            "row": "12|Misc Engines"
+        }
+    },
+    {
+        "color_key": "#30EC00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+	"engine_power": 2000.0,
+	"engine_responsiveness": 0.023,
+	"engine_type": "Diesel",
+        "heat_generated": 1200.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "2000HP Diesel Engine R/L", 
+        "template": {
+            "column": "2|2000HP Diesel R/L",
+            "row": "12|Misc Engines"
         }
     },
 
@@ -568,8 +641,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "550HP Steam Engine R/L", 
         "template": {
-            "column": "8|550HP Steam R/L",
-            "row": "10|Engines"
+            "column": "3|550HP Steam R/L",
+            "row": "12|Misc Engines"
         }
     },
 
@@ -588,8 +661,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "9|1300HP Steam R/L",
-            "row": "10|Engines"
+            "column": "4|1300HP Steam R/L",
+            "row": "12|Misc Engines"
         }
     },
 
@@ -608,8 +681,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "template": {
-            "column": "10|1300HP Steam U/D",
-            "row": "10|Engines"
+            "column": "5|1300HP Steam U/D",
+            "row": "12|Misc Engines"
         }
     },
 
@@ -628,10 +701,13 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "template": {
-            "column": "11|4000HP Steam R/L",
-            "row": "10|Engines"
+            "column": "6|4000HP Steam R/L",
+            "row": "12|Misc Engines"
         }
     },
+
+
+
 
     {
         "color_key": "#409000",

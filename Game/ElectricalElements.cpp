@@ -247,7 +247,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::Generator:
             {
-                // Announce instanced generators as power probes
+                // Announce generators that are instanced as power probes
                 if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                 {
                     mGameEventHandler->OnPowerProbeCreated(
@@ -328,12 +328,16 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
-                mGameEventHandler->OnSwitchCreated(
-                    ElectricalElementId(mShipId, elementIndex),
-                    mInstanceInfos[elementIndex].InstanceIndex,
-                    SwitchType::AutomaticSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
-                    mInstanceInfos[elementIndex].PanelElementMetadata);
+                // Announce water-sensing switches that are instanced as switches
+                if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                {
+                    mGameEventHandler->OnSwitchCreated(
+                        ElectricalElementId(mShipId, elementIndex),
+                        mInstanceInfos[elementIndex].InstanceIndex,
+                        SwitchType::AutomaticSwitch,
+                        static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                        mInstanceInfos[elementIndex].PanelElementMetadata);
+                }
 
                 break;
             }
@@ -573,7 +577,6 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
-        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             // Publish disable
             mGameEventHandler->OnSwitchEnabled(
@@ -634,6 +637,22 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
                     mShipId,
                     electricalElementIndex),
                 false);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            // See whether we need to publish a disable
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                // Publish disable
+                mGameEventHandler->OnSwitchEnabled(
+                    ElectricalElementId(
+                        mShipId,
+                        electricalElementIndex),
+                    false);
+            }
 
             break;
         }
@@ -725,7 +744,6 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
-        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             // Notify enabling
             mGameEventHandler->OnSwitchEnabled(ElectricalElementId(mShipId, electricalElementIndex), true);
@@ -763,6 +781,22 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             // Nothing else to do: at the next UpdateSinks() that makes this pump work, there will be a state change
 
             assert(mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce == 0.0f);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+        {
+            // See whether we need to publish an enable
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                // Publish disable
+                mGameEventHandler->OnSwitchEnabled(
+                    ElectricalElementId(
+                        mShipId,
+                        electricalElementIndex),
+                    true);
+            }
 
             break;
         }
@@ -1795,9 +1829,12 @@ void ElectricalElements::InternalSetSwitchState(
         InternalChangeConductivity(elementIndex, static_cast<bool>(switchState));
 
         // Notify switch toggled
-        mGameEventHandler->OnSwitchToggled(
-            ElectricalElementId(mShipId, elementIndex),
-            switchState);
+        if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+        {
+            mGameEventHandler->OnSwitchToggled(
+                ElectricalElementId(mShipId, elementIndex),
+                switchState);
+        }
 
         // Show notifications - for some types only
         if (gameParameters.DoShowElectricalNotifications

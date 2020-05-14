@@ -301,7 +301,8 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-        else if (soundType == SoundType::EngineOutboard1
+        else if (soundType == SoundType::EngineDiesel1
+                || soundType == SoundType::EngineOutboard1
                 || soundType == SoundType::EngineSteam1
                 || soundType == SoundType::EngineSteam2
                 || soundType == SoundType::WaterPump)
@@ -1497,7 +1498,11 @@ void SoundController::OnEngineMonitorCreated(
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
-    if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Outboard)
+    if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Diesel)
+    {
+        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineDiesel1);
+    }
+    else if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Outboard)
     {
         mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard1);
     }
@@ -1557,6 +1562,7 @@ void SoundController::OnEngineMonitorUpdated(
         float pitch;
         switch (mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId))
         {
+            case SoundType::EngineDiesel1:
             case SoundType::EngineOutboard1:
             {
                 volume = 50.0f;

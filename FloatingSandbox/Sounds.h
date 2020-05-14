@@ -54,6 +54,7 @@ enum class SoundType : uint32_t
     ElectricalPanelDock,
     ElectricalPanelUndock,
     GlassTick,
+    EngineDiesel1,
     EngineOutboard1,
     EngineSteam1,
     EngineSteam2,

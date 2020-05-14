@@ -306,7 +306,9 @@ ElectricalMaterial::InteractiveSwitchElementType ElectricalMaterial::StrToIntera
 
 ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "Outboard"))
+    if (Utils::CaseInsensitiveEquals(str, "Diesel"))
+        return EngineElementType::Diesel;
+    else if (Utils::CaseInsensitiveEquals(str, "Outboard"))
         return EngineElementType::Outboard;
     else if (Utils::CaseInsensitiveEquals(str, "Steam"))
         return EngineElementType::Steam;

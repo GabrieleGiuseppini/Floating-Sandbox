@@ -59,6 +59,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ElectricalPanelUndock;
     else if (Utils::CaseInsensitiveEquals(str, "GlassTick"))
         return SoundType::GlassTick;
+    else if (Utils::CaseInsensitiveEquals(str, "EngineDiesel1"))
+        return SoundType::EngineDiesel1;
     else if (Utils::CaseInsensitiveEquals(str, "EngineOutboard1"))
         return SoundType::EngineOutboard1;
     else if (Utils::CaseInsensitiveEquals(str, "EngineSteam1"))

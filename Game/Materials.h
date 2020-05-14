@@ -193,6 +193,7 @@ public:
 
     enum class EngineElementType
     {
+        Diesel,
         Outboard,
         Steam
     };
