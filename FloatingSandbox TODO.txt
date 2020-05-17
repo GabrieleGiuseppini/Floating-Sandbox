@@ -595,6 +595,22 @@ Render:
 				- mMainPanel->Layout(); // after  mMainPanel->SetSizer(mMainPanelSizer);
 				- pass canvas size to rendercontext
 
+				- PRE:
+					17:26:31.138270:ShipTexturizer: completed auto-texturization: materialTextureMagnification=1 structureSize=203x52 textureSize=4060x1040 magFactor=20 time=237792us
+					17:26:31.138270:Created ship: W=203, H=52, 5231/9328buf points, 19932 springs, 9819 triangles, 6 electrical elements.
+					17:26:31.300279:Layout: decoratedW=0, decoratedH=0, W=0, H=0
+					17:26:31.301279:OnMainGLCanvasResize: 1350x668
+					17:26:31.819288:Post-Initialize took 6.79314s
+					17:26:32.159295:OnMainGLCanvasResize: 1366x684
+					17:26:32.163295:OnMainGLCanvasResize: 1360x740
+				- POST:
+				- Test:
+					- Ship w/out electrical panel
+					- Ship with electrical panel
+
+		+ Undo (some of the) .shp changes
+		- And see if there's ships that need the opposite change
+
 		- Take Mike's Lego Titanic when ready
 			+ Or make ball of lego
 		- Get new sleeping sun from TimCan
@@ -607,7 +623,8 @@ Render:
 		- Send for testing
 		- Bump-up version
 
-		- Do post with auto-texturization screenshots and subs
+		- Do post with auto-texturization screenshots
+			- And link to TinCan's video
 
 		- Release: the "Eternal Patrol" update 
 

@@ -1,6 +1,5 @@
 {
 	"structure_image":"rms_titanic_mini_structural.png.dat",
-	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"R.M.S. Titanic (Mini)",
 	"created_by":"McShooter2018",
 	"year_built":"2018",

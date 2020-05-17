@@ -1,6 +1,5 @@
 {
 	"structure_image":"rms_hope_structural.png.dat",
-	"auto_texturization": { "mode": "material_textures" },
 	"offset":{"x":0.0, "y":-15.0},
 	"ship_name":"R.M.S. Hope",
 	"year_built":"1911",

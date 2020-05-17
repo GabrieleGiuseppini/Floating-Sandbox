@@ -1,6 +1,5 @@
 {
 	"structure_image":"trellis_structure.png.dat",
-	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"Trellis",
 	"offset":{"x":0.0, "y":-20.0},
 	"created_by":"Pac0master"
