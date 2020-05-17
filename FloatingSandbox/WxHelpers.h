@@ -14,8 +14,7 @@
 #include <wx/image.h>
 #include <wx/wx.h>
 
-#include <filesystem>
-#include <memory>
+#include <string>
 
 namespace WxHelpers
 {

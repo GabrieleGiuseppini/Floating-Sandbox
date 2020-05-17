@@ -48,7 +48,7 @@ public:
         std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
         UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
-        picojson::value structuralMaterialsRoot = Utils::ParseJSONFile(
+        picojson::value const structuralMaterialsRoot = Utils::ParseJSONFile(
             materialsRootDirectory / "materials_structural.json");
 
         if (!structuralMaterialsRoot.is<picojson::array>())
@@ -56,7 +56,7 @@ public:
             throw GameException("Structural materials definition is not a JSON array");
         }
 
-        picojson::array structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
+        picojson::array const & structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
         for (auto const & materialElem : structuralMaterialsRootArray)
         {
             if (!materialElem.is<picojson::object>())
@@ -126,7 +126,7 @@ public:
         std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialsMap;
         std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
 
-        picojson::value electricalMaterialsRoot = Utils::ParseJSONFile(
+        picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
             materialsRootDirectory / "materials_electrical.json");
 
         if (!electricalMaterialsRoot.is<picojson::array>())
@@ -134,7 +134,7 @@ public:
             throw GameException("Electrical materials definition is not a JSON array");
         }
 
-        picojson::array electricalMaterialsRootArray = electricalMaterialsRoot.get<picojson::array>();
+        picojson::array const & electricalMaterialsRootArray = electricalMaterialsRoot.get<picojson::array>();
         for (auto const & materialElem : electricalMaterialsRootArray)
         {
             if (!materialElem.is<picojson::object>())
@@ -196,9 +196,9 @@ public:
     }
 
     StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
-    {
-        auto srchIt = mStructuralMaterialMap.find(colorKey);
-        if (srchIt != mStructuralMaterialMap.end())
+    {        
+        if (auto srchIt = mStructuralMaterialMap.find(colorKey);
+            srchIt != mStructuralMaterialMap.end())
         {
             // Found color key verbatim!
             return &(srchIt->second);
@@ -295,9 +295,9 @@ private:
     {
     }
 
-    std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
-    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
-    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
+    std::map<ColorKey, StructuralMaterial> const mStructuralMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> const mNonInstancedElectricalMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> const mInstancedElectricalMaterialMap;
 
-    UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
+    UniqueStructuralMaterialsArray const mUniqueStructuralMaterials;
 };

@@ -677,7 +677,7 @@ private:
     Buffer<float> mWaterPermeabilityBuffer;
 
     //
-    // Hear
+    // Heat
     //
 
     Buffer<float> mMaterialThermalConductivityBuffer;

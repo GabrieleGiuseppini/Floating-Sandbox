@@ -10,8 +10,6 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>
 
-#include <cassert>
-
 ToolController::ToolController(
     ToolType initialToolType,
     float initialEffectiveAmbientLightIntensity,

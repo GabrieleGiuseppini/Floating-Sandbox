@@ -67,7 +67,6 @@ source_group(" " FILES ${SOURCES})
 
 add_library (GameCoreLib ${SOURCES})
 
-target_include_directories(GameCoreLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameCoreLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameCoreLib INTERFACE ..)
 

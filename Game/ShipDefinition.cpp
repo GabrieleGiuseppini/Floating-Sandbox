@@ -103,7 +103,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
 
         absoluteStructuralLayerImageFilePath = filepath;
 
-        shipMetadata.emplace(std::filesystem::path(filepath).stem().string());
+        shipMetadata.emplace(filepath.stem().string());
     }
 
     assert(!!shipMetadata);

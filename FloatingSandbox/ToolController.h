@@ -15,6 +15,7 @@
 #include <wx/frame.h>
 #include <wx/image.h>
 
+#include <cassert>
 #include <memory>
 #include <vector>
 

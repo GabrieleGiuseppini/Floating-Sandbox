@@ -5,12 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Log.h"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <functional>
 #include <iterator>
 
 /*

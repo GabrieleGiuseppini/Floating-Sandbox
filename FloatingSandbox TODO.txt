@@ -585,6 +585,15 @@ Render:
 			+ Add material to a ship
 			+ Redo electrical template
 			+ Update materials' guide
+		+ Rebuild with latest changes
+
+		- Import other changes:
+			- MainFrame: 
+				- MainFrame style:  wxDEFAULT_FRAME_STYLE | wxMAXIMIZE,
+				- Panel & Canvas size: wxDefaultSize
+				- mMainFrameSize->"mMainPanelSizer"
+				- mMainPanel->Layout(); // after  mMainPanel->SetSizer(mMainPanelSizer);
+				- pass canvas size to rendercontext
 
 		- Take Mike's Lego Titanic when ready
 			+ Or make ball of lego
@@ -608,7 +617,12 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
+		- Enable Git LFS
+
 		- Bump-up version
+
+		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+		- See timeBeginPeriod()
 
 		- Parallelize OpenGL:
 			+ Start:

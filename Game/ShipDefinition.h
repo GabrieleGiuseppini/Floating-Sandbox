@@ -7,14 +7,10 @@
 
 #include "ShipMetadata.h"
 
-#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/Vectors.h>
 
 #include <filesystem>
-#include <memory>
 #include <optional>
-#include <string>
 
 /*
 * The complete definition of a ship.

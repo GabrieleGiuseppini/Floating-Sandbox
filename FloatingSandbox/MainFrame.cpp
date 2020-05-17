@@ -1175,6 +1175,8 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
             event.GetSize().GetX(),
             event.GetSize().GetY());
     }
+
+	event.Skip();
 }
 
 void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
@@ -1241,7 +1243,7 @@ void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent & event)
     mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
 }
 
-void MainFrame::OnMainGLCanvasCaptureMouseLost(wxCloseEvent & /*event*/)
+void MainFrame::OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->UnsetTool();

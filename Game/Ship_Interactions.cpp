@@ -300,7 +300,11 @@ void Ship::Pull(
 
     mPoints.StartCircleHighlight(
         pointElementIndex,
-        Mix(vec3f(0.0f, 0.0f, 0.0f), vec3f(1.0f, 0.1f, 0.1f), highlightStrength));
+        rgbColor(
+            Mix(
+                vec3f(0.0f, 0.0f, 0.0f),
+                vec3f(1.0f, 0.1f, 0.1f),
+                highlightStrength)));
 }
 
 void Ship::DestroyAt(

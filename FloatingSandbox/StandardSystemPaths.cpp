@@ -3,7 +3,6 @@
 * Created:				2019-01-22
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-
 #include "StandardSystemPaths.h"
 
 #include <GameCore/Version.h>

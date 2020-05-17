@@ -47,11 +47,9 @@ class MainFrame
 	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
-public:
+private:
 
     static constexpr bool StartInFullScreenMode = true;
-    static constexpr int CursorStep = 30;
-    static constexpr int PowerBarThickness = 2;
 
 public:
 
@@ -149,7 +147,7 @@ private:
     void OnMainGLCanvasRightUp(wxMouseEvent& event);
     void OnMainGLCanvasMouseMove(wxMouseEvent& event);
     void OnMainGLCanvasMouseWheel(wxMouseEvent& event);
-    void OnMainGLCanvasCaptureMouseLost(wxCloseEvent& event);
+    void OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent& event);
 
     // Menu
     void OnZoomInMenuItemSelected(wxCommandEvent & event);

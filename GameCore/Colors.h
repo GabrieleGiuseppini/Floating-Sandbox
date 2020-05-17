@@ -47,7 +47,7 @@ public:
     {
     }
 
-    inline rgbColor(vec3f const & c)
+    inline constexpr explicit rgbColor(vec3f const & c)
         : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
         , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
         , b(static_cast<uint8_t>(c.z * 255.0f + 0.5f))
@@ -74,7 +74,7 @@ public:
             || (r == other.r && g == other.g && b < other.b);
 	}
 
-    inline vec3f toVec3f() const
+    inline constexpr vec3f toVec3f() const
     {
         return vec3f(
             static_cast<float>(r) / 255.0f,
@@ -82,7 +82,7 @@ public:
             static_cast<float>(b) / 255.0f);
     }
 
-    inline vec4f toVec4f(float a) const
+    inline constexpr vec4f toVec4f(float a) const
     {
         return vec4f(
             static_cast<float>(r) / 255.0f,
@@ -146,7 +146,7 @@ public:
     {
     }
 
-    inline rgbaColor(vec4f const & c)
+    inline constexpr explicit rgbaColor(vec4f const & c)
         : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
         , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
         , b(static_cast<uint8_t>(c.z * 255.0f + 0.5f))
@@ -154,7 +154,7 @@ public:
     {
     }
 
-    inline rgbaColor(
+    inline constexpr rgbaColor(
         vec3f const & c,
         uint8_t _a)
         : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
@@ -218,12 +218,12 @@ public:
         return rgbaColor(result, this->a);
     }
 
-    inline rgbColor toRgbColor() const
+    inline constexpr rgbColor toRgbColor() const
     {
         return rgbColor(r, g, b);
     }
 
-    inline vec3f toVec3f() const noexcept
+    inline constexpr vec3f toVec3f() const noexcept
     {
         return vec3f(
             static_cast<float>(r) / 255.0f,
@@ -231,7 +231,7 @@ public:
             static_cast<float>(b) / 255.0f);
     }
 
-    inline vec4f toVec4f() const noexcept
+    inline constexpr vec4f toVec4f() const noexcept
     {
         return vec4f(
             static_cast<float>(r) / 255.0f,
