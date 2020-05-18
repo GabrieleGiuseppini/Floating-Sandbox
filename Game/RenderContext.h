@@ -26,6 +26,7 @@
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/ImageSize.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
@@ -44,6 +45,7 @@ class RenderContext
 public:
 
     RenderContext(
+        ImageSize const & initialCanvasSize,
         ResourceLocator const & resourceLocator,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);

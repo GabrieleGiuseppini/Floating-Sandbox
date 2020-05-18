@@ -210,8 +210,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     //
 
     float constexpr SearchRadius = 0.75f; // Magic number
-
-    float const squareSearchRadius = SearchRadius * SearchRadius;
+    float constexpr SquareSearchRadius = SearchRadius * SearchRadius;
 
     float bestSquareDistance = std::numeric_limits<float>::max();
     ElementIndex bestPoint = NoneElementIndex;
@@ -219,7 +218,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     for (auto p : mPoints)
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
-        if (squareDistance < squareSearchRadius
+        if (squareDistance < SquareSearchRadius
             && squareDistance < bestSquareDistance)
         {
             bestSquareDistance = squareDistance;

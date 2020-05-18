@@ -19,6 +19,7 @@ namespace Render {
 ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
+    ImageSize const & initialCanvasSize,
     ResourceLocator const & resourceLocator,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
@@ -88,7 +89,7 @@ RenderContext::RenderContext(
     , mShaderManager()
     , mTextRenderContext()
     // Render parameters
-    , mViewModel(1.0f, vec2f::zero(), 100, 100)
+    , mViewModel(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
     , mAmbientLightIntensity(1.0f)
     , mOceanTransparency(0.8125f)

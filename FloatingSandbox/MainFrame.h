@@ -84,7 +84,7 @@ private:
     // Controls that we're interacting with
     //
 
-    wxBoxSizer * mMainFrameSizer;
+    wxBoxSizer * mMainPanelSizer;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;

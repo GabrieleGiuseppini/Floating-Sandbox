@@ -17,6 +17,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
 #include <GameCore/Version.h>
@@ -134,7 +135,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         std::string(APPLICATION_NAME_WITH_SHORT_VERSION),
         wxDefaultPosition,
         wxDefaultSize,
-        wxDEFAULT_FRAME_STYLE,
+        wxDEFAULT_FRAME_STYLE | wxMAXIMIZE,
         _T("Main Frame"));
 
     SetIcon(wxICON(BBB_SHIP_ICON));
@@ -144,8 +145,8 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1));
-    mMainFrameSizer = new wxBoxSizer(wxVERTICAL);
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
 
@@ -177,7 +178,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         ID_MAIN_CANVAS,
         mainGLCanvasAttributes,
         wxDefaultPosition,
-        wxSize(1, 1),
+        wxDefaultSize,
         0L,
         _T("Main GL Canvas"));
 
@@ -190,7 +191,7 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
 
-    mMainFrameSizer->Add(
+    mMainPanelSizer->Add(
         mMainGLCanvas.get(),
         1,                  // Occupy all available vertical space
         wxEXPAND,           // Expand also horizontally
@@ -516,9 +517,9 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mProbePanel = std::make_unique<ProbePanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mProbePanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mProbePanel.get(), 0, wxEXPAND); // Expand horizontally
 
-    mMainFrameSizer->Hide(mProbePanel.get());
+    mMainPanelSizer->Hide(mProbePanel.get());
 
 
 
@@ -528,9 +529,9 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mEventTickerPanel = std::make_unique<EventTickerPanel>(mMainPanel);
 
-    mMainFrameSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND); // Expand horizontally
 
-    mMainFrameSizer->Hide(mEventTickerPanel.get());
+    mMainPanelSizer->Hide(mEventTickerPanel.get());
 
 
 
@@ -538,7 +539,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     // Finalize frame
     //
 
-    mMainPanel->SetSizer(mMainFrameSizer);
+    mMainPanel->SetSizer(mMainPanelSizer);
+    mMainPanel->Layout();
 
 
 
@@ -706,6 +708,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mGameController = GameController::Create(
+            ImageSize(
+                mMainGLCanvas->GetSize().GetWidth(),
+                mMainGLCanvas->GetSize().GetHeight()),
             [this]()
             {
                 assert(!!mMainGLCanvas);
@@ -837,7 +842,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             this->mMainApp->Yield();
         });
 
-    mMainFrameSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
 
 
     //
@@ -1696,14 +1701,14 @@ void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
 
     if (mShowEventTickerMenuItem->IsChecked())
     {
-        mMainFrameSizer->Show(mEventTickerPanel.get());
+        mMainPanelSizer->Show(mEventTickerPanel.get());
     }
     else
     {
-        mMainFrameSizer->Hide(mEventTickerPanel.get());
+        mMainPanelSizer->Hide(mEventTickerPanel.get());
     }
 
-    mMainFrameSizer->Layout();
+    mMainPanelSizer->Layout();
 }
 
 void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1712,14 +1717,14 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 
     if (mShowProbePanelMenuItem->IsChecked())
     {
-        mMainFrameSizer->Show(mProbePanel.get());
+        mMainPanelSizer->Show(mProbePanel.get());
     }
     else
     {
-        mMainFrameSizer->Hide(mProbePanel.get());
+        mMainPanelSizer->Hide(mProbePanel.get());
     }
 
-    mMainFrameSizer->Layout();
+    mMainPanelSizer->Layout();
 }
 
 void MainFrame::OnShowStatusTextMenuItemSelected(wxCommandEvent & /*event*/)

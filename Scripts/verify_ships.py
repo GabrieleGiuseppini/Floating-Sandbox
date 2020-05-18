@@ -86,6 +86,7 @@ def main():
     missing_files = 0
     invalid_files = 0
     mismatched_ship_names = 0
+    orphan_dat_files = 0
 
 
     # 
@@ -93,6 +94,9 @@ def main():
     #
 
     file_names = os.listdir(ships_path)
+
+    dat_files = set()
+    referenced_dat_files = set()
 
     for file_name in file_names:
 
@@ -104,6 +108,10 @@ def main():
         elif not file_name_ext in [".dat", ".shp", ".png"]:
             print("ERROR: {}: unrecognized file type".format(file_name))
             extraneous_files += 1
+
+        ### Update set of dat files
+        if file_name_ext == ".dat":
+            dat_files.add(file_name)
 
         if file_name_ext != ".shp":
             continue
@@ -131,6 +139,8 @@ def main():
                     missing_files += 1
             if not check_file_valid(ships_path, file_name, ship_definition, file_field_name):
                     invalid_files += 1
+            if file_field_name in ship_definition:
+                    referenced_dat_files.add(ship_definition[file_field_name])
 
         ### Check ship name
         if "ship_name" in ship_definition:
@@ -138,6 +148,15 @@ def main():
             if ship_name != file_name_root:
                 print("ERROR: {}: ship name '{}' does not match file name '{}'".format(file_name, ship_name, file_name_root))
                 mismatched_ship_names += 1
+
+
+    #
+    # Make sure all dat files are referenced
+    #
+
+    for orphan_dat_file in dat_files - referenced_dat_files:
+        print("ERROR: dat file '{}' is orphan".format(orphan_dat_file))
+        orphan_dat_files += 1
 
 
     #
@@ -153,5 +172,6 @@ def main():
     print("  missing_files            : {}".format(missing_files))
     print("  invalid_files            : {}".format(invalid_files))
     print("  mismatched_ship_names    : {}".format(mismatched_ship_names))
+    print("  orphan_dat_files         : {}".format(orphan_dat_files))
 
 main()

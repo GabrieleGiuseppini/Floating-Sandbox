@@ -13,6 +13,7 @@
 #include <sstream>
 
 std::unique_ptr<GameController> GameController::Create(
+    ImageSize const & initialCanvasSize,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -25,6 +26,7 @@ std::unique_ptr<GameController> GameController::Create(
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
+        initialCanvasSize,
         resourceLocator,
         gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)

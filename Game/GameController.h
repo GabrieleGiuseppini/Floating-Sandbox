@@ -25,6 +25,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/ImageSize.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
@@ -52,6 +53,7 @@ class GameController final
 public:
 
     static std::unique_ptr<GameController> Create(
+        ImageSize const & initialCanvasSize,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
