@@ -219,7 +219,8 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
         if (squareDistance < SquareSearchRadius
-            && squareDistance < bestSquareDistance)
+            && squareDistance < bestSquareDistance
+            && mPoints.IsActive(p))
         {
             bestSquareDistance = squareDistance;
             bestPoint = p;
@@ -885,7 +886,8 @@ bool Ship::ApplyHeatBlasterAt(
     for (auto pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (pointSquareDistance < squareRadius)
+        if (pointSquareDistance < squareRadius
+            && mPoints.IsActive(pointIndex))
         {
             //
             // Inject/remove heat at this point

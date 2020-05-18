@@ -612,10 +612,10 @@ Render:
 					+ Ship w/out electrical panel
 					+ Ship with electrical panel
 
-		- See issue with pick
+		= See issue with pick
 
 		+ Undo (some of the) .shp changes
-		- And see if there's ships that need the opposite change
+		- ...and see if there's ships that need the opposite change
 			- While choosing ships for the side-by-side images in post
 
 		- Take Mike's Lego Titanic when ready
