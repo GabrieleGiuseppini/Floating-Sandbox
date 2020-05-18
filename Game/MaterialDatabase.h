@@ -34,6 +34,11 @@ private:
 
 public:
 
+    // Only movable
+    MaterialDatabase(MaterialDatabase const & other) = delete;
+    MaterialDatabase(MaterialDatabase && other) = default;
+    MaterialDatabase & operator=(MaterialDatabase const & other) = delete;
+
     static MaterialDatabase Load(ResourceLocator const & resourceLocator)
     {
         return Load(resourceLocator.GetMaterialDatabaseRootFilepath());
@@ -47,6 +52,9 @@ public:
 
         std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
         UniqueStructuralMaterialsArray uniqueStructuralMaterials;
+
+        for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
+            uniqueStructuralMaterials[i].second = nullptr;
 
         picojson::value const structuralMaterialsRoot = Utils::ParseJSONFile(
             materialsRootDirectory / "materials_structural.json");
@@ -196,7 +204,7 @@ public:
     }
 
     StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
-    {        
+    {
         if (auto srchIt = mStructuralMaterialMap.find(colorKey);
             srchIt != mStructuralMaterialMap.end())
         {
@@ -295,9 +303,9 @@ private:
     {
     }
 
-    std::map<ColorKey, StructuralMaterial> const mStructuralMaterialMap;
-    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> const mNonInstancedElectricalMaterialMap;
-    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> const mInstancedElectricalMaterialMap;
+    std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
+    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
 
-    UniqueStructuralMaterialsArray const mUniqueStructuralMaterials;
+    UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
 };

@@ -611,8 +611,7 @@ Render:
 				+ Test:
 					+ Ship w/out electrical panel
 					+ Ship with electrical panel
-
-		= See issue with pick
+		+ Fix issue with pick
 
 		+ Undo (some of the) .shp changes
 		- ...and see if there's ships that need the opposite change
