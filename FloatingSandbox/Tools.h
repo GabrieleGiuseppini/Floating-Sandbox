@@ -675,12 +675,12 @@ public:
 
                 // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
-                // - Stride > 20.0: 0.09 (<20 steps to 0.9 of target)
+                // - Stride > 50.0: 0.09 (<20 steps to 0.9 of target)
                 float constexpr MinConvRate = 0.03f;
-                float constexpr MaxConvRate = 0.1f;
+                float constexpr MaxConvRate = 0.09f;
                 float const newConvergenceSpeed =
                     MinConvRate
-                    + (MaxConvRate - MinConvRate) * SmoothStep(2.0f, 20.0f, worldStride);
+                    + (MaxConvRate - MinConvRate) * SmoothStep(2.0f, 50.0f, worldStride);
 
                 // Change current convergence rate depending on how much mouse has moved
                 // - Small mouse movement: old speed

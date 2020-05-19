@@ -1,0 +1,22 @@
+{
+	"structure_image":"dkm_flugzeugdampfer_I_1_structure.png.dat",
+	"electrical_image":"dkm_flugzeugdampfer_I_1_electrical.png.dat",
+	"texture_image":"dkm_flugzeugdampfer_I_1_texture.png.dat",
+	"ship_name":"D.K.M. Flugzeugdampfer I Design 1",
+	"year_built":"1915",
+	"created_by":"_ASTYuu_",
+	"description":
+		"The Flugzeugdampfer I was the first planned aircraft carrier conversion project of the German Imperial Navy (Kaiserliche Marine) during World War I. The Imperial Navy had experimented previously with seaplane carriers, though these earlier conversions were too slow to operate with the High Seas Fleet and carried an insufficient number of aircraft. I was intended to carry between 23 and 30 aircraft, including fighters, bombers, and torpedo-bombers. The ship was based on the incomplete hull of the Italian passenger ship Ausonia, which was being built in Hamburg. The conversion was proposed by the Air Department of the Reichs Navy Office, but it was abandoned after negotiations within the German Navy over a proposed moratorium on new ships at the end of the war. After World War I ended, high inflation in Germany added to the cost of the ship, and as a result, the Italian shipping company for whom the ship was originally built, declined to purchase her. The vessel was therefore sold to shipbreakers and dismantled in 1922.<br/>Structure and texture made by _ASTYuu_",
+	"electrical_panel":{
+		"1": {"panel_x":-1, "panel_y":0, "label":"Boiler 1" },
+		"2": {"panel_x":0, "panel_y":0, "label":"Boiler 2" },
+		"3": {"panel_x":1, "panel_y":0, "label":"Boiler 3" },
+		"4": {"panel_x":2, "panel_y":0, "label":"Engine 1/2" },
+		"6": {"panel_x":4, "panel_y":0, "label":"Engine 1 RPM" },
+		"7": {"panel_x":5, "panel_y":0, "label":"Engine 2 RPM" },
+		"45": {"panel_x":-3, "panel_y":0, "label":"Horn" },
+		"10": {"panel_x":-5, "panel_y":0, "label":"Lights Bow" },
+		"11": {"panel_x":-6, "panel_y":0, "label":"Lights aft" }
+		}
+		
+}

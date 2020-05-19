@@ -554,6 +554,7 @@ Render:
 			+ Remove cache clearing for testing
 			+ merge
 			+ changes.txt
+		+ Send for testing
 		+ Clouds bug
 			+ Test again
 			+ changes.txt
@@ -612,25 +613,24 @@ Render:
 					+ Ship w/out electrical panel
 					+ Ship with electrical panel
 		+ Fix issue with pick
-
 		+ Undo (some of the) .shp changes
-		- ...and see if there's ships that need the opposite change
-			- While choosing ships for the side-by-side images in post
+		+ Try Flugzeugdampfer_I (_Astyuu_)
+			+ Ask for an update, with nicer panel and more powerful engine
+			+ Check updated zip: unzipped at C:\Users\Neurodancer\Desktop\Ships contributions TODO\_ASTYuu_'s\DKM_Flugzeugdampfer
+			+ All good, take 1; ask if will add new materials
+			+ changes.txt
+			+ Ship verify
+		+ Test smaller PickNPull coefficient
 
 		- Take Mike's Lego Titanic when ready
 			+ Or make ball of lego
 		- Get new sleeping sun from TimCan
-		= Try Flugzeugdampfer_I (_Astyuu_)
-			+ Ask for an update, with nicer panel and more powerful engine
-			+ Check updated zip: unzipped at C:\Users\Neurodancer\Desktop\Ships contributions TODO\_ASTYuu_'s\DKM_Flugzeugdampfer
-			- All good, take 1; ask if will add new materials
-			- changes.txt
+
+		+ Do post with auto-texturization screenshots
+			+ And link to TinCan's video
 
 		- Send for testing
 		- Bump-up version
-
-		- Do post with auto-texturization screenshots
-			- And link to TinCan's video
 
 		- Release: the "Eternal Patrol" update 
 
