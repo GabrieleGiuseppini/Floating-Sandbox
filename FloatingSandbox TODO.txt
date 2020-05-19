@@ -621,16 +621,17 @@ Render:
 			+ changes.txt
 			+ Ship verify
 		+ Test smaller PickNPull coefficient
+		+ Make ball of lego
+		+ Send for testing
+		+ Bump-up version
 
-		- Take Mike's Lego Titanic when ready
-			+ Or make ball of lego
+		- Take RMS Aquitania 1914 (Fox Assor)
+			- Asked actual author name
+		
 		- Get new sleeping sun from TimCan
 
 		+ Do post with auto-texturization screenshots
 			+ And link to TinCan's video
-
-		- Send for testing
-		- Bump-up version
 
 		- Release: the "Eternal Patrol" update 
 

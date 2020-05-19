@@ -11,7 +11,7 @@ TODO
 - Added 6 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action
-	- Balls of Lego(c): shows the Lego(c) material in action
+	- Balls of Lego(c): showcases the improved Lego(c) material
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles
 - Improved melting dynamics
