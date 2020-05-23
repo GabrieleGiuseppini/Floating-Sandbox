@@ -28,7 +28,8 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         vec4f::zero(),
         std::nullopt,
-        std::nullopt,
+        std::nullopt, // Sound
+        "TestMaterial",
         // Water
         false,
         1.0f,
@@ -42,8 +43,8 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         1.0f,
         StructuralMaterial::MaterialCombustionType::Combustion,
-        0.0f,
-        0.0f,
+        0.0f, // Radius
+        0.0f, // Strength
         // Misc
         1.0f,
         false);
