@@ -25,7 +25,6 @@
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
 
-#include <wx/filedlg.h>
 #include <wx/frame.h>
 #include <wx/glcanvas.h>
 #include <wx/menu.h>

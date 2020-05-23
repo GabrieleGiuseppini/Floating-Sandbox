@@ -1,0 +1,21 @@
+{
+	"structure_image":"ss_kronprinzessin_cecilie_structural.png.dat",
+        "electrical_image":"ss_kronprinzessin_cecilie_electrical.png.dat",	
+	"texture_image":"ss_kronprinzessin_cecilie_texture.png.dat",
+	"ship_name":"S.S. Kronprinzessin Cecilie",
+	"offset":{"x":0.0, "y":-20.0},
+	"created_by":"Fox Assor; Michael C. Brady",
+	"year_built":"1906",
+	"electrical_panel":{
+
+		"23": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"56": {"panel_x":-3, "panel_y":0, "label":"RPM #1" },
+		"79": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"14": {"panel_x":-1, "panel_y":0, "label":"RPM #2" },
+					
+		"4": {"panel_x":1, "panel_y":0, "label":"Funnel #1 Smoke + Lights" },
+		"3": {"panel_x":2, "panel_y":0, "label":"Funnel #2 Smoke" },
+		"2": {"panel_x":3, "panel_y":0, "label":"Funnel #3 Smoke" },
+		"1": {"panel_x":4, "panel_y":0, "label":"Funnel #4 Smoke" }
+	}
+}

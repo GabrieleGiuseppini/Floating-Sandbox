@@ -1,0 +1,21 @@
+{
+	"structure_image":"admiral_nakhimov_structural.png.dat",
+	"electrical_image":"admiral_nakhimov_electrical.png.dat",
+	"texture_image":"admiral_nakhimov_texture.png.dat",
+	"ship_name":"Admiral Nakhimov",
+	"offset":{"x":0.0, "y":-10.0},
+	"created_by":"Fox Assor; Olekit24 (Shipbucket.com)",
+	"year_built":"1985",
+	"electrical_panel":{
+
+		"0": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"7": {"panel_x":-3, "panel_y":0, "label":"RPM #1" },
+		"40": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"20": {"panel_x":-1, "panel_y":0, "label":"RPM #2" },
+					
+		"4": {"panel_x":1, "panel_y":0, "label":"Horn" },
+		
+		"2": {"panel_x":3, "panel_y":0, "label":"Funnel #1 Smoke" },
+		"1": {"panel_x":4, "panel_y":0, "label":"Funnel #2 Smoke" }
+	}
+}

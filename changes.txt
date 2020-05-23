@@ -8,7 +8,7 @@ TODO
 	- Heating Element 1MW - a second heating element that produces *a lot* of heat - you may use it to ignite fires at the touch of a switch! 
 	- Non-instanced Water-Sending Switch - an automatic, water-sensing switch that does not clutter your electrical panel
 	- ...and a new type of engine altogether: "Diesel" engine
-- Added 6 new ships, among which:
+- Added 12 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action
 	- Balls of Lego(c): showcases the improved Lego(c) material

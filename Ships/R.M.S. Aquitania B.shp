@@ -1,0 +1,21 @@
+{
+	"structure_image":"rms_aquitania_b_structural.png.dat",
+        "electrical_image":"rms_aquitania_b_electrical.png.dat",
+	"texture_image":"rms_aquitania_b_texture.png.dat",
+	"ship_name":"R.M.S. Aquitania B",
+	"offset":{"x":0.0, "y":-10.0},
+	"created_by":"Fox Assor",
+	"year_built":"1914",
+	"electrical_panel":{
+
+		"23": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"56": {"panel_x":-3, "panel_y":0, "label":"RPM #1" },
+		"79": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"14": {"panel_x":-1, "panel_y":0, "label":"RPM #2" },
+					
+		"4": {"panel_x":1, "panel_y":0, "label":"Funnel #1 Smoke" },
+		"3": {"panel_x":2, "panel_y":0, "label":"Funnel #2 Smoke" },
+		"2": {"panel_x":3, "panel_y":0, "label":"Funnel #3 Smoke" },
+		"1": {"panel_x":4, "panel_y":0, "label":"Funnel #4 Smoke" }
+	}
+}

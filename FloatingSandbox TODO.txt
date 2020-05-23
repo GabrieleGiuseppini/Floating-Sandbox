@@ -624,14 +624,12 @@ Render:
 		+ Make ball of lego
 		+ Send for testing
 		+ Bump-up version
-
-		- Take RMS Aquitania 1914 (Fox Assor)
-			- Asked actual author name
-		
-		- Get new sleeping sun from TimCan
-
 		+ Do post with auto-texturization screenshots
 			+ And link to TinCan's video
+		+ Take Fox Assor's ships
+		+ changes.txt
+
+		- Get new sleeping sun from TimCan
 
 		- Release: the "Eternal Patrol" update 
 
@@ -648,6 +646,9 @@ Render:
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 		- See timeBeginPeriod()
 
+		- Test with spring relaxation having SpringForceInertia=0.03~0.0625
+			- Also with: reduction fraction = 0.53, Damping = 0.046875
+
 		- Parallelize OpenGL:
 			+ Start:
 				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
@@ -655,23 +656,41 @@ Render:
 				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
 			- Spec:
 				- Rendering runs entirely on separate thread
-					- Context needs to made current in this thread
-				- Loop:					
-					- Do all physics, without touching RenderContext
-					- Wait until everything rendered		- (nop if not rendering)
-											- render completes here
-											- SwapBuffers
-					- Upload all buffers (clouds, water, ship, etc.)
+					- Context & SwapBuffers needs to made current in this thread
+				- Update & Render Game Loop:					
+					- Do all physics (World & Ship), without
+					  touching RenderContext
+					- Wait until everything rendered			- (nop if not rendering)
+												- render completes here
+												- SwapBuffers
+					- Upload all buffers (World & Ship)
 						- Safe to upload entire buffer in 
 						  "locked synchronous mode" here
-						- Those uploaded elem-by-elem are aggregated
-						  by RenderContext on caller's thread
-					- Start to render everything (on render thread)
+						- Those uploaded elem-by-elem are here just 
+						  aggregated by RenderContext on caller's
+						  thread 
+						  - Might mean that we don't use mapped 
+						    buffers anymore
+					- Queue render of everything (on render thread)
 						- Here uploads take place of those buffers
-						  aggregated by RenderContext 
+						  that were aggregated by RenderContext 
+						- This is the one that will be waited
+						  after the physics update
 						  
-			- Impl:
-				- Make test app
+			- Setters:
+				- Main thread: @ SetXYZ():
+					- Lock mSettingsMutex
+					- Set value
+						- So that getter finds same value
+					- Then set "mIsXXXDirty" flag
+					- Unlock mSettingsMutex
+				- Render thread: @ RenderStart:
+					- Lock mSettingsMutex
+					- Process all dirty flags & invoke "OnXXXUpdated" as appropriate
+						- And clear dirty flags
+					- Unlock mSettingsMutex
+			- Getters:
+				- Plain from main thread, no locks
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
@@ -887,6 +906,58 @@ Render:
 	- Meteorites
 	- Earthquake
 	- Add circular zones around bombs when placing showing what the expected blast radius should be. The circle should change in size when settings are tweaked. Much better than crunching numbers to figure out what's gonna happen.
+
+	- Ideas from the FS discord server:
+		-Whirpools
+		-ports and piers to RP with
+		-Waterspout/tornadoes
+		-Animal NPCs
+		-sea life
+		-Pixel Ground for higher end PCs
+		-trees and grass for islands
+		-make underground tunnels
+		-atomic bomb
+		-snowstorms
+		-infinite map or expand the map size
+		-option to disable bouyancy from temperature
+		-mines
+		-water reflections
+		-icebergs and growlers
+		-ability to spawn more than 1 ship
+		-freeze tool
+		-Styrofoam material, it always floats and never degrades
+		-projectile explosives
+		-copper material that oxygenate and turn blue
+		-hydrofoil and hovercraft material
+		-electrical wires that when active and cut create sparks and light things on fire
+		-morse code chat
+		-rust from humidity
+		-hull damage status
+		-working gun turrets
+		-foam from bubbles and suction
+		-emergency flares and fireworks
+		-aircraft and submarine AI that can spawn and raid a ship
+		-cargo holds and bunker hatches
+		-multiplayer
+		-ability to weigh anchor
+		-selectable backgrounds
+		-lifeboat layer
+		-Volcanoes
+		-rot tool for abave water deteriation
+		-NPCs
+		-time travel
+		-torpedoes
+		-toggle camera to follow a ship with engines
+		-splashes from the water when a steamer's funnel buckles and falls
+		-pipeworks
+		-sunsets
+		-surface wake
+		-spring optimizations
+		-mist for a ship's final plunge
+		-day/night cycle
+		-change gravity
+		-tides
+		-background layers
 
 ======================================================================================================================
 ======================================================================================================================

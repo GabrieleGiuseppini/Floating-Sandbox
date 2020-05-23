@@ -1,0 +1,22 @@
+{
+	"structure_image":"wilhelm_gustloff_structural.png.dat",
+	"electrical_image":"wilhelm_gustloff_electrical.png.dat",
+	"texture_image":"wilhelm_gustloff_texture.png.dat",
+	"ship_name":"Wilhelm Gustloff",
+	"offset":{"x":0.0, "y":-10.0},
+	"created_by":"Fox Assor",
+	"year_built":"2020",
+	"electrical_panel":{
+
+		"0": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"7": {"panel_x":-3, "panel_y":0, "label":"RPM #1" },
+		"40": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"20": {"panel_x":-1, "panel_y":0, "label":"RPM #2" },
+					
+		"4": {"panel_x":1, "panel_y":0, "label":"Horn" },
+		
+		"1": {"panel_x":3, "panel_y":0, "label":"Funnel Smoke" },
+		"51": {"panel_x":4, "panel_y":0, "label":"Lights Aft" },
+		"50": {"panel_x":5, "panel_y":0, "label":"Lights Fore" }
+	}
+}
