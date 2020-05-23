@@ -645,9 +645,6 @@ Render:
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 		- See timeBeginPeriod()
 
-		- Test with spring relaxation having SpringForceInertia=0.03~0.0625
-			- Also with: reduction fraction = 0.53, Damping = 0.046875
-
 		- Parallelize OpenGL:
 			+ Start:
 				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
