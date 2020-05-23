@@ -1,4 +1,4 @@
-TODO
+1.15.0.2
 - Added automatic texturization: ships that do not have a high-definition texture image of their own now get, by default, an automatically-generated high-definition texture computed using the individual particles' materials
 	- Floating Sandbox purists may always turn this new feature off under "Game Preferences" -> "Ships"
 - New "Pick-and-Pull" tool - use it to pull particles around in a very physical way!
@@ -15,9 +15,9 @@ TODO
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles
 - Improved melting dynamics
-- Added new background music track, "Symmetry" by Kevin MacLeod (incompetech.com)
+- Added new background music track, "Symmetry" - by Kevin MacLeod (incompetech.com)
 - Fixed crash occurring when opening the "Load Ship" window in a folder containing a ship file with foreign characters
-- Fixed issue with mouse wheel stopping working after loading a ship with an electrical panel
+- Fixed issue with mouse wheel/zoom stopping working
 - Fixed issue with clouds filling up the entire screen after an hour of gameplay
 - Lowered curve of cloud speed dependency from wind speed
 - ...and a few more small improvements here and there
