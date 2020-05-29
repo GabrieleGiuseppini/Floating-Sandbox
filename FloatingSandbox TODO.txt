@@ -629,6 +629,11 @@ Render:
 		+ Take Fox Assor's ships
 		+ changes.txt
 		+ Take new sleeping sun from Officer TinCan
+		+ Enable Git LFS
+
+		- Ships:
+			- Wreno's
+			+ New Hesleden
 
 		- Release: the "Eternal Patrol" update 
 
@@ -638,9 +643,17 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
-		- Enable Git LFS
-
 		- Bump-up version
+
+		- OpenGL:
+			- Clear stencil bit
+				- Actually: see if stencil is still needed
+			- Try with depth size = 8 bits
+				- Test flames on many conn components
+
+		- MacOS:
+			- MainFrame: all timers: timeout not zero, but one
+				- Double-check FPS afterwards
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 		- See timeBeginPeriod()
@@ -650,6 +663,7 @@ Render:
 				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
 				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5)
 				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
+				- Bazzico: TODO
 			- Spec:
 				- Rendering runs entirely on separate thread
 					- Context & SwapBuffers needs to made current in this thread
@@ -826,6 +840,7 @@ Render:
 			+ Got his Paypal
 			- Publish
 	- New ships:
+		- Next ship made: "Turbentiy Banalniy"
 		- To test:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -954,6 +969,10 @@ Render:
 		-change gravity
 		-tides
 		-background layers
+		-3 bodies of water:
+			- sea water: the default
+			- lake water: a brownish color; not as good as decaying ships, they turn brown but don't break apart
+			- river water: a constant turbulent water that flows along the contour of the terrain much like a river does
 
 ======================================================================================================================
 ======================================================================================================================
@@ -999,7 +1018,10 @@ Render:
 				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
+	- See if may upgrade SFML to master (~2.6) with OPUS support
+		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
+
 
 - Simulation Optimizations:
 

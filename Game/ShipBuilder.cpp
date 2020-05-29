@@ -93,7 +93,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                 pointIndexMatrix[x + 1][y + 1] = static_cast<ElementIndex>(pointIndex);
 
                 pointInfos.emplace_back(
-                    IntegralPoint(x, y),
+                    IntegralPoint(x, structureHeight - 1 - y),
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y)) + shipDefinition.Metadata.Offset,
@@ -116,7 +116,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                     {
                         throw GameException(
                             "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                            + IntegralPoint(x, y).ToString());
+                            + IntegralPoint(x, structureHeight - 1 - y).ToString());
                     }
                 }
             }
@@ -396,7 +396,7 @@ void ShipBuilder::AppendRopeEndpoints(
                     // Make a point
                     pointIndex = static_cast<ElementIndex>(pointInfos1.size());
                     pointInfos1.emplace_back(
-                        IntegralPoint(x, y),
+                        IntegralPoint(x, height - 1 - y),
                         vec2f(
                             static_cast<float>(x) - halfWidth,
                             static_cast<float>(y))
@@ -420,7 +420,7 @@ void ShipBuilder::AppendRopeEndpoints(
                     if (pointIndex == srchRopeSegment.PointAIndex1
                         || pointIndex == srchRopeSegment.PointBIndex1)
                     {
-                        throw GameException("There is already a rope at point " + IntegralPoint(x, y).ToString());
+                        throw GameException("There is already a rope at point " + IntegralPoint(x, height - 1 - y).ToString());
                     }
                 }
 
@@ -430,7 +430,7 @@ void ShipBuilder::AppendRopeEndpoints(
                 {
                     throw GameException(
                         "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                        + IntegralPoint(x, y).ToString() + " in the rope layer image");
+                        + IntegralPoint(x, height - 1 - y).ToString() + " in the rope layer image");
                 }
 
                 // Change endpoint's color to match the rope's - or else the spring will look bad,
@@ -475,7 +475,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
-                        + "\" of pixel found at " + IntegralPoint(x, y).ToString()
+                        + "\" of pixel found at " + IntegralPoint(x, height - 1 - y).ToString()
                         + " in the " + (isDedicatedElectricalLayer ? "electrical" : "structural")
                         + " layer image");
                 }
@@ -495,7 +495,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "The electrical layer image specifies an electrical material at "
-                        + IntegralPoint(x, y).ToString()
+                        + IntegralPoint(x, height - 1 - y).ToString()
                         + ", but no pixel may be found at those coordinates in the structural layer image");
                 }
 
