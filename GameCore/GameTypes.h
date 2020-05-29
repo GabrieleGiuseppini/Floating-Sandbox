@@ -32,6 +32,14 @@ struct IntegralPoint
         , Y(y)
     {}
 
+    static IntegralPoint FromFlippedY(
+        int x,
+        int y,
+        int height)
+    {
+        return IntegralPoint(x, height - 1 - y);
+    }
+
     std::string ToString() const
     {
         std::stringstream ss;
