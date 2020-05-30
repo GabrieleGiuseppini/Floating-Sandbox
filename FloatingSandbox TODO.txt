@@ -636,6 +636,9 @@ Render:
 
 		+ "Get More Ships..." link
 		+ Redo elec template
+		+ Test whole ship preview
+
+		- Send installer for testing
 
 		- Release: the "Eternal Patrol" update 
 

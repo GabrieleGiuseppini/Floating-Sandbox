@@ -1,12 +1,12 @@
-1.15.0.2
+1.15.0.3
 - Added automatic texturization: ships that do not have a high-definition texture image of their own now get, by default, an automatically-generated high-definition texture computed using the individual particles' materials
 	- Floating Sandbox purists may always turn this new feature off under "Game Preferences" -> "Ships"
 - New "Pick-and-Pull" tool - use it to pull particles around in a very physical way!
 - Added new electrical materials:
 	- Water Pumps - take water in or out of the ship when powered
-	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or keeping it contained
+	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or stay contained
 	- Heating Element 10MW - a second heating element that produces *a lot* of heat - you may use it to ignite fires at the touch of a switch! 
-	- Non-instanced Water-Sending Switch - an automatic, water-sensing switch that does not clutter your electrical panel
+	- Non-instanced Water-Sensing Switch - a second water-sensing switch that does not clutter your electrical panel
 	- ...and a new type of engine altogether: "Diesel" engine
 - Added 21 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action

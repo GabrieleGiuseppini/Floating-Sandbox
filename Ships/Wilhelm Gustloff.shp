@@ -3,7 +3,7 @@
 	"electrical_image":"wilhelm_gustloff_electrical.png.dat",
 	"texture_image":"wilhelm_gustloff_texture.png.dat",
 	"ship_name":"Wilhelm Gustloff",
-	"offset":{"x":0.0, "y":-10.0},
+	"offset":{"x":0.0, "y":-7.0},
 	"created_by":"Fox Assor",
 	"year_built":"2020",
 	"electrical_panel":{
