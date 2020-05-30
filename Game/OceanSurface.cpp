@@ -370,7 +370,7 @@ void OceanSurface::ApplyThanosSnap(
 
     float constexpr WaterDepression = 1.0f / SWEHeightFieldAmplification;
 
-    for (size_t idx = sampleIndexStart; idx <= sampleIndexEnd; ++idx)
+    for (auto idx = sampleIndexStart; idx <= sampleIndexEnd; ++idx)
         mHeightField[idx] -= WaterDepression;
 }
 

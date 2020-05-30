@@ -77,7 +77,7 @@ public:
             sampleIndexI += SamplesCount - 1; // Includes shift to left
         }
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && static_cast<size_t>(sampleIndexI) <= SamplesCount);
 
         return mSamples[sampleIndexI].SampleValue;
     }
@@ -132,7 +132,7 @@ public:
             sampleIndexDx += 1.0f;
         }
 
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexI >= 0 && static_cast<size_t>(sampleIndexI) < SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue

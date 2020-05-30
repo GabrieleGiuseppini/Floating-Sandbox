@@ -900,12 +900,12 @@ public:
         return mPositionBuffer[pointElementIndex];
     }
 
-    vec2f * restrict GetPositionBufferAsVec2()
+    vec2f * GetPositionBufferAsVec2()
     {
         return mPositionBuffer.data();
     }
 
-    float * restrict GetPositionBufferAsFloat()
+    float * GetPositionBufferAsFloat()
     {
         return reinterpret_cast<float *>(mPositionBuffer.data());
     }
@@ -935,12 +935,12 @@ public:
         return mVelocityBuffer[pointElementIndex];
     }
 
-    vec2f * restrict GetVelocityBufferAsVec2()
+    vec2f * GetVelocityBufferAsVec2()
     {
         return mVelocityBuffer.data();
     }
 
-    float * restrict GetVelocityBufferAsFloat()
+    float * GetVelocityBufferAsFloat()
     {
         return reinterpret_cast<float *>(mVelocityBuffer.data());
     }
@@ -970,12 +970,12 @@ public:
         return mSpringForceBuffer[pointElementIndex];
     }
 
-    float * restrict GetSpringForceBufferAsFloat()
+    float * GetSpringForceBufferAsFloat()
     {
         return reinterpret_cast<float *>(mSpringForceBuffer.data());
     }
 
-    vec2f * restrict GetSpringForceBufferAsVec2()
+    vec2f * GetSpringForceBufferAsVec2()
     {
         return mSpringForceBuffer.data();
     }
@@ -990,12 +990,12 @@ public:
         return mNonSpringForceBuffer[pointElementIndex];
     }
 
-    float * restrict GetNonSpringForceBufferAsFloat()
+    float * GetNonSpringForceBufferAsFloat()
     {
         return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
     }
 
-    vec2f * restrict GetNonSpringForceBufferAsVec2()
+    vec2f * GetNonSpringForceBufferAsVec2()
     {
         return mNonSpringForceBuffer.data();
     }
@@ -1082,7 +1082,7 @@ public:
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    float * restrict GetIntegrationFactorBufferAsFloat()
+    float * GetIntegrationFactorBufferAsFloat()
     {
         return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
     }
@@ -1146,7 +1146,7 @@ public:
         return mMaterialWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
-    float * restrict GetWaterBufferAsFloat()
+    float * GetWaterBufferAsFloat()
     {
         return mWaterBuffer.data();
     }
@@ -1188,7 +1188,7 @@ public:
         mWaterBuffer.copy_from(*newWaterBuffer);
     }
 
-    vec2f * restrict GetWaterVelocityBufferAsVec2()
+    vec2f * GetWaterVelocityBufferAsVec2()
     {
         return mWaterVelocityBuffer.data();
     }
@@ -1197,7 +1197,7 @@ public:
      * Only valid after a call to UpdateWaterMomentaFromVelocities() and when
      * neither water quantities nor velocities have changed.
      */
-    vec2f * restrict GetWaterMomentumBufferAsVec2f()
+    vec2f * GetWaterMomentumBufferAsVec2f()
     {
         return mWaterMomentumBuffer.data();
     }
@@ -1301,7 +1301,7 @@ public:
         return mTemperatureBuffer[pointElementIndex];
     }
 
-    float * restrict GetTemperatureBufferAsFloat()
+    float * GetTemperatureBufferAsFloat()
     {
         return mTemperatureBuffer.data();
     }
@@ -1390,7 +1390,7 @@ public:
         return mLightBuffer[pointElementIndex];
     }
 
-    float *restrict GetLightBufferAsFloat()
+    float * GetLightBufferAsFloat()
     {
         return mLightBuffer.data();
     }
@@ -1569,7 +1569,7 @@ public:
         return mPlaneIdBuffer[pointElementIndex];
     }
 
-    PlaneId * restrict GetPlaneIdBufferAsPlaneId()
+    PlaneId * GetPlaneIdBufferAsPlaneId()
     {
         return mPlaneIdBuffer.data();
     }

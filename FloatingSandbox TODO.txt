@@ -650,6 +650,7 @@ Render:
 				- Actually: see if stencil is still needed
 			- Try with depth size = 8 bits
 				- Test flames on many conn components
+			- Run w/OpenGL tracing to see if there's any errors
 
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one
@@ -747,9 +748,7 @@ Render:
 		
 		- Attempt to use total point masses for springs (*)
 
-		- Cached quantities (*)
-
-		- Run w/OpenGL tracing to see if there's any errors
+		- Cached quantities (*)		
 
 		- Add more background music:
 			- Music:
