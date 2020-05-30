@@ -630,14 +630,9 @@ Render:
 		+ changes.txt
 		+ Take new sleeping sun from Officer TinCan
 		+ Enable Git LFS
-
-		= Ships:
-			= Nomadavid's
-				- RMS Carpathia B: ropes
-			- Ships with tugs (Takara)
-				- Fix listing
-				- Add electricals
-			- Changes.txt: new ships
+		+ Ships:
+			+ Nomadavid's
+			+ Changes.txt: new ships
 
 		+ "Get More Ships..." link
 		+ Redo elec template
