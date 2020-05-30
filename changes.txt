@@ -5,12 +5,13 @@
 - Added new electrical materials:
 	- Water Pumps - take water in or out of the ship when powered
 	- Watertight Doors - open and close watertight compartments allowing water in the ship to flow or keeping it contained
-	- Heating Element 1MW - a second heating element that produces *a lot* of heat - you may use it to ignite fires at the touch of a switch! 
+	- Heating Element 10MW - a second heating element that produces *a lot* of heat - you may use it to ignite fires at the touch of a switch! 
 	- Non-instanced Water-Sending Switch - an automatic, water-sensing switch that does not clutter your electrical panel
 	- ...and a new type of engine altogether: "Diesel" engine
-- Added 12 new ships, among which:
+- Added 17 new ships, among which:
 	- Triton 1650-3 LP: shows pumps in action
 	- S.S. Blue Lady: shows pumps and watertight doors in action
+	- S.S. Lurline, Fortnite(c) Battle Bus: showcase on-demand combustion with 10MW heating element
 	- Balls of Lego(c): showcases the improved Lego(c) material
 - Retrofitted electrical elements to a few older ships: H.M.H.S. Britannic (With Power), S.S. Californian, Goodyear Blimp, Hindenburg, S.S. Hesleden, Red October
 - Improved trajectory of flames on burning particles

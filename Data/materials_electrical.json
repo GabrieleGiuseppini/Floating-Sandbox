@@ -625,6 +625,25 @@
             "row": "12|Misc Engines"
         }
     },
+    {
+        "color_key": "#30ED00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 0.0,
+	"engine_power": 6000.0,
+	"engine_responsiveness": 0.018,
+	"engine_type": "Diesel",
+        "heat_generated": 1400.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "6000HP Diesel Engine R/L", 
+        "template": {
+            "column": "3|6000HP Diesel R/L",
+            "row": "12|Misc Engines"
+        }
+    },
 
     {
         "color_key": "#30E600",
@@ -641,7 +660,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "550HP Steam Engine R/L", 
         "template": {
-            "column": "3|550HP Steam R/L",
+            "column": "4|550HP Steam R/L",
             "row": "12|Misc Engines"
         }
     },
@@ -661,7 +680,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "template": {
-            "column": "4|1300HP Steam R/L",
+            "column": "5|1300HP Steam R/L",
             "row": "12|Misc Engines"
         }
     },
@@ -681,7 +700,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "template": {
-            "column": "5|1300HP Steam U/D",
+            "column": "6|1300HP Steam U/D",
             "row": "12|Misc Engines"
         }
     },
@@ -701,7 +720,7 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "template": {
-            "column": "6|4000HP Steam R/L",
+            "column": "7|4000HP Steam R/L",
             "row": "12|Misc Engines"
         }
     },
@@ -829,12 +848,12 @@
         "color_key": "#FC3030",
 	"conducts_electricity": true,
         "electrical_type": "OtherSink", 
-        "heat_generated": 1000000.0, 
+        "heat_generated": 10000000.0, 
         "maximum_operating_temperature": 1783.15, 
         "minimum_operating_temperature": 173.15, 
-        "name": "Heating Element 1MW", 
+        "name": "Heating Element 10MW", 
         "template": {
-            "column": "1|Heating Element 1MW", 
+            "column": "1|Heating Element 10MW", 
             "row": "20|Misc"
         }
     }, 

@@ -1,0 +1,13 @@
+{
+	"structure_image":"fortnite_battle_bus_structural.png.dat",	
+	"texture_image":"fortnite_battle_bus_texture.png.dat",
+	"electrical_image":"fortnite_battle_bus_electrical.png.dat",
+	"ship_name":"Fortnite Battle Bus",
+	"created_by":"Nomadavid",
+	"electrical_panel":{
+
+		"1": {"panel_x":-1, "panel_y":0, "label":"Balloon Ignition" },
+		"0": {"panel_x":1, "panel_y":0, "label":"Headlights" }
+
+	}
+}

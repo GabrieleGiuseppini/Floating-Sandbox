@@ -104,7 +104,7 @@ AboutDialog::AboutDialog(
         {"Ship engineers:", "TopHatLemons", "" },
         {"\t\t\t\t", "Truce#3326", "" },
         {"\t\t\t\t", "RetroGraczzPL", "" },
-        {"\t\t\t\t", "SS Nomadavid", "" },
+        {"\t\t\t\t", "Nomadavid", "" },
         {"\t\t\t\t", "Wreno", "" },
         {"\t\t\t\t", "Pac0master", "" },
         {"\t\t\t\t", "CorbinPasta93", "" },
@@ -135,6 +135,8 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Alex di Roma", "" },
         {"\t\t\t\t", "Fox Assor", "https://vk.com/id448121270" },
         {"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+        {"\t\t\t\t", "2017 Leonardo", "" },
+        {"\t\t\t\t", "sinking_feeling", "" },
 
         {"Music:\t\t", "\"The Short Journey to the Seabed\", Soul Heater", "https://soundcloud.com/soul-heater" },
         {"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },

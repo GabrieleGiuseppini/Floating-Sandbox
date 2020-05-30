@@ -1,0 +1,18 @@
+{
+    "structure_image":"ss_lurline_structural.png.dat",
+    "electrical_image":"ss_lurline_electrical.png.dat",
+    "texture_image":"ss_lurline_texture.png.dat",
+    "ship_name":"S.S. Lurline",
+    "created_by":"sinking_feeling",
+	"electrical_panel":{
+
+		"0": {"panel_x":-10, "panel_y":0, "label":"Engine" },
+		"1": {"panel_x":-9, "panel_y":0, "label":"Engine RPM" },
+
+		"10": {"panel_x":-5, "panel_y":0, "label":"F1 Lights" },
+		"11": {"panel_x":-2, "panel_y":0, "label":"F2 Lights" },
+
+		"12": {"panel_x":0, "panel_y":0, "label":"Diesel Tank Heater" },
+		"2": {"panel_x":3, "panel_y":0, "label":"Bell" }
+	}
+}
