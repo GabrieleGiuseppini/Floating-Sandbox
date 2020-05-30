@@ -1,0 +1,19 @@
+{
+	"structure_image":"rms_carpathia_b_structural.png.dat",
+	"electrical_image":"rms_carpathia_b_electrical.png.dat",
+	"texture_image":"rms_carpathia_b_texture.png.dat",
+	"offset": { "x":0.0, "y":-12.0 },
+	"ship_name":"R.M.S. Carpathia B",
+	"created_by":"Nomadavid",
+	"electrical_panel":{
+
+		"2": {"panel_x":-4, "panel_y":0, "label":"Engines" },
+		"0": {"panel_x":-3, "panel_y":0, "label":"RPM #1" },
+		"1": {"panel_x":-2, "panel_y":0, "label":"RPM #2" },
+
+		"10": {"panel_x":0, "panel_y":0, "label":"Mains" },
+					
+		"20": {"panel_x":3, "panel_y":0, "label":"Mast Ignition" }
+
+	}
+}

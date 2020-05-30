@@ -1,0 +1,18 @@
+{
+	"structure_image":"mts_oceanos_structural.png.dat",
+	"electrical_image":"mts_oceanos_electrical.png.dat",
+	"texture_image":"mts_oceanos_texture.png.dat",
+	"ship_name":"M.T.S. Oceanos",
+	"created_by":"Nomadavid",
+	"electrical_panel":{
+
+		"1": {"panel_x":-4, "panel_y":0, "label":"Engine" },
+		"0": {"panel_x":-3, "panel_y":0, "label":"RPM" },
+
+		"2": {"panel_x":0, "panel_y":0, "label":"Horn" },
+						
+		"12": {"panel_x":3, "panel_y":0, "label":"Water Alarm" },
+		"10": {"panel_x":4, "panel_y":0, "label":"Water Door" },
+		"11": {"panel_x":5, "panel_y":0, "label":"Water Door 2", "is_hidden":true }
+	}
+}

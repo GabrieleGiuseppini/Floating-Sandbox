@@ -112,7 +112,7 @@ AboutDialog::AboutDialog(
         {"\t\t\t\t", "Bluefox", "" },
         {"\t\t\t\t", "KikoTheBoatBuilder", "" },
         {"\t\t\t\t", "Albert Windsor", "" },
-        {"\t\t\t\t", "ShipBuilder1912", "" },
+        {"\t\t\t\t", "Takara", "" },
         {"\t\t\t\t", "Michael Bozarth", "https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
         {"\t\t\t\t", "Rockabilly Rebel", "" },
         {"\t\t\t\t", "McShooter2018", "" },

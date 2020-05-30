@@ -632,15 +632,12 @@ Render:
 		+ Enable Git LFS
 
 		= Ships:
-			= Wreno's
-				- Radio rock (make lighter) - JonBrisby
-			= Nomadavid (working on it)
-				= R.M.S. Carpathia B
-					+ Author: "Nomadavid"
-					- He's fixing propeller leak
-				- Orca
+			= Nomadavid's
+				- RMS Carpathia B: ropes
+			- Ships with tugs (Takara)
+				- Fix listing
+				- Add electricals
 			- Changes.txt: new ships
-			+ New Hesleden
 
 		+ "Get More Ships..." link
 		+ Redo elec template
@@ -1674,7 +1671,7 @@ Render:
 			- API:
 				- static factory (folder path)
 					- enumerates ship files
-						- ShipDefinition: export IsShipFile(.) for .png and ShipDefinitionFile::IsShipDefinitionFile
+						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile
 					- passes their paths to cctor
 				- getter for (sorted) list of file paths
 				- StartPreviewEnumeration()

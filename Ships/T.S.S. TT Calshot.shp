@@ -1,0 +1,22 @@
+{
+	"structure_image":"tss_tt_calshot_structural.png.dat",
+	"electrical_image":"tss_tt_calshot_electrical.png.dat",
+	"texture_image":"tss_tt_calshot_texture.png.dat",
+	"ship_name":"T.S.S. T/T Calshot",
+	"created_by":"Nomadavid",
+	"electrical_panel":{
+
+		"1": {"panel_x":-5, "panel_y":0, "label":"Engine" },
+		"0": {"panel_x":-4, "panel_y":0, "label":"RPM" },
+		"2": {"panel_x":-3, "panel_y":0, "label":"Mains" },
+		"20": {"panel_x":-2, "panel_y":0, "label":"RPM #2" },					
+		"11": {"panel_x":-1, "panel_y":0, "label":"Upper Deck" },
+		"10": {"panel_x":0, "panel_y":0, "label":"Lower Deck" },
+		
+		"12": {"panel_x":2, "panel_y":0, "label":"Pumps" },
+		"23": {"panel_x":3, "panel_y":0, "label":"Pump #1" },
+		"22": {"panel_x":4, "panel_y":0, "label":"Pump #2" },
+		"21": {"panel_x":5, "panel_y":0, "label":"Pump #3" },
+		"20": {"panel_x":6, "panel_y":0, "label":"Pump #4" }
+	}
+}

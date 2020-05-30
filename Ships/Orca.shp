@@ -1,0 +1,19 @@
+{
+	"structure_image":"orca_structural.png.dat",
+	"electrical_image":"orca_electrical.png.dat",
+	"texture_image":"orca_texture.png.dat",
+	"offset": { "x": 0.0, "y": -10.0 },
+	"ship_name":"Orca",
+	"created_by":"Nomadavid",
+	"electrical_panel":{
+
+		"0": {"panel_x":-3, "panel_y":0, "label":"Engine" },
+		"1": {"panel_x":-2, "panel_y":0, "label":"RPM" },
+
+		"4": {"panel_x":0, "panel_y":0, "label":"Bell" },
+
+		"2": {"panel_x":2, "panel_y":0, "label":"Main Power" },
+		"3": {"panel_x":3, "panel_y":0, "label":"Signal Light" }
+
+	}
+}
