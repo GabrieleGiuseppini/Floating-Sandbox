@@ -642,6 +642,7 @@ Render:
 			- Changes.txt: new ships
 			+ New Hesleden
 
+		+ "Get More Ships..." link
 		+ Redo elec template
 
 		- Release: the "Eternal Patrol" update 
@@ -655,11 +656,11 @@ Render:
 		- Bump-up version
 
 		- Merge llvm_fixes
-			- And verify performance, also of lightning
+			- And verify performance, also of lighting
 
 		- OpenGL:
-			- Clear stencil bit
-				- Actually: see if stencil is still needed
+			- Remove stencil from context requirements
+				- And check all references to "stencil"
 			- Try with depth size = 8 bits
 				- Test flames on many conn components
 

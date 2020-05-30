@@ -48,6 +48,7 @@ long const ID_MAIN_CANVAS = wxNewId();
 
 long const ID_LOAD_SHIP_MENUITEM = wxNewId();
 long const ID_RELOAD_LAST_SHIP_MENUITEM = wxNewId();
+long const ID_MORE_SHIPS_MENUITEM = wxNewId();
 long const ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
 long const ID_QUIT_MENUITEM = wxNewId();
 
@@ -236,6 +237,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     wxMenuItem * reloadLastShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_LAST_SHIP_MENUITEM, _("Reload Ship\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
     fileMenu->Append(reloadLastShipMenuItem);
     Connect(ID_RELOAD_LAST_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastShipMenuItemSelected);
+
+    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+
+    wxMenuItem * reloadShipsMenuItem = new wxMenuItem(fileMenu, ID_MORE_SHIPS_MENUITEM, _("Get More Ships..."));
+    fileMenu->Append(reloadShipsMenuItem);
+    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/ship-packs/"); }, ID_MORE_SHIPS_MENUITEM);
 
     fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
