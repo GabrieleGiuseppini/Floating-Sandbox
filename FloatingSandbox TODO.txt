@@ -638,10 +638,11 @@ Render:
 		+ Redo elec template
 		+ Test whole ship preview
 
-		- Build release
-		- Run final test
-			- Ship preview (with log)
-			- Version
+		+ Build release
+		+ Run final test
+			+ Ship preview (with log)
+			+ Version
+		- Build installer
 		- Send installer for testing
 
 		- Release: the "Eternal Patrol" update 
@@ -1670,9 +1671,7 @@ Render:
 
 - UI:
 	- ShipLoadDialog: ship preview database/cache (*)
-		- TODO: since we want errors also when there is no parsable .shp, change the below to work on enumerated file paths instead
 		- Prep:
-			- TODO: see if needed, because of the above
 			- ShipPreview: has path of preview image file ("preview image file path"), not preview image file itself
 				- Also exposes LoadPreviewImage() to load preview image on-demand
 			- ImageData::MakeCopy() -> unique_ptr
@@ -1742,32 +1741,33 @@ Render:
 						- delete old file, rename tmp file
 
 			- API:
-				- static factory (folder path) -> uq_ptr
+				- static factory (folder path) -> uq_ptr(self)
 					- enumerate ship files
 						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile 
 						  extension check
-						- for each ship file: 
-							- loads ShipPreview (which now is without image)
-					- sort ship preview vector by <ship name, filename>
+					- sort ship preview vector by <filename> // like now
 					- load existing database (PersistedPreviewImageDatabase::Load)
-					- passes vector<ShipPreview> to private cctor
-				- private cctor(vector<ShipPreview> &&, PersistedPreviewImageDatabase &&)
+					- passes vector<filepath> to private cctor
+				- private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
 					- stores both as const
-				- getter for (sorted) list of ShipPreview's
+				- getter for (sorted) list of filepath's
 				- StartPreviewImageEnumeration()
 					- Reset current index
-				- EnumeratedPreviewImage * GetCurrent()
-					- EnumeratedPreviewImage: one of PreviewImage (uq_ptr), Error (msg)
+				- EnumeratedPreview * GetCurrent()
+					- EnumeratedPreview: one of Preview+Image (uq_ptr), Error (msg)
 					- Algo:
-						- get last modified
+						- load ShipPreview (which now is without image)
+							- if error => mark new DB as deprecated; return error
+						- get last modified of preview image file
+							- if error => mark new DB as deprecated; return error
 						- if oldImageDatabase::Get(preview image filename, last modified):
 							- newImageDatabase::Add(preview image filename, last modified, nullptr)
-							- return preview image
+							- return preview + image
 						- else:
 							- Load image
-								- If error here: mark new DB as jinxed, won't commit
+								- if error => mark new DB as deprecated; return error
 							- newImageDatabase::Add(preview image filename, last modified, image::copy)
-							- return preview image
+							- return preview + image
 				- void Next()
 					- Increment current index
 				- Commit()
