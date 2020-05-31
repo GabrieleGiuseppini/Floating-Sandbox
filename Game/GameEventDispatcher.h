@@ -37,9 +37,9 @@ public:
         , mBombExplosionEvents()
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
-        , mLightFlickerEvents()
         , mWatertightDoorOpenedEvents()
         , mWatertightDoorClosedEvents()
+        , mLightFlickerEvents()
         // Sinks
         , mRenderSinks()
         , mLifecycleSinks()

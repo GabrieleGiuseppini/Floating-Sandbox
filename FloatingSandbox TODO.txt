@@ -277,6 +277,7 @@ Render:
 				- And check all references to "stencil"
 			- Try with depth size = 8 bits
 				- Test flames on many conn components
+			- Run w/OpenGL tracing to see if there's any errors
 
 		- Ship Preview Cache (*)
 
@@ -378,9 +379,7 @@ Render:
 		
 		- Attempt to use total point masses for springs (*)
 
-		- Cached quantities (*)
-
-		- Run w/OpenGL tracing to see if there's any errors
+		- Cached quantities (*)		
 
 		- Add more background music:
 			- Music:

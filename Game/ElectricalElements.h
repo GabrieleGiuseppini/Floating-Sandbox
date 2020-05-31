@@ -644,7 +644,7 @@ public:
      * Gets the spread coefficients for all lamps as a buffer; size is
      * BufferLampCount.
      */
-    float * restrict GetLampLightSpreadMaxDistanceBufferAsFloat()
+    float * GetLampLightSpreadMaxDistanceBufferAsFloat()
     {
         return mLampLightSpreadMaxDistanceBuffer.data();
     }

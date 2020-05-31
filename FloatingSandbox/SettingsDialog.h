@@ -262,7 +262,7 @@ private:
 
 	long GetSelectedPersistedSettingIndexFromCtrl() const;
 	void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
-	void LoadPersistedSettings(int index, bool withDefaults);
+	void LoadPersistedSettings(size_t index, bool withDefaults);
 	void ReconciliateLoadPersistedSettings();
 	void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
 	void ReconciliateSavePersistedSettings();

@@ -269,7 +269,7 @@ public:
         }
     }
 
-    Endpoints const * restrict GetEndpointsBuffer() const noexcept
+    Endpoints const * GetEndpointsBuffer() const noexcept
     {
         return mEndpointsBuffer.data();
     }
@@ -443,7 +443,7 @@ public:
         return mRestLengthBuffer[springElementIndex];
     }
 
-    float const * restrict GetRestLengthBuffer() const noexcept
+    float const * GetRestLengthBuffer() const noexcept
     {
         return mRestLengthBuffer.data();
     }
@@ -465,7 +465,7 @@ public:
         return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    Coefficients const * restrict GetCoefficientsBuffer() const noexcept
+    Coefficients const * GetCoefficientsBuffer() const noexcept
     {
         return mCoefficientsBuffer.data();
     }

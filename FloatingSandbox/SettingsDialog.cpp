@@ -660,7 +660,9 @@ void SettingsDialog::OnPersistedSettingsListCtrlSelected(wxListEvent & /*event*/
 
 void SettingsDialog::OnPersistedSettingsListCtrlActivated(wxListEvent & event)
 {
-	LoadPersistedSettings(event.GetIndex(), true);
+    assert(event.GetIndex() != wxNOT_FOUND);
+
+	LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
 }
 
 void SettingsDialog::OnApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
@@ -668,11 +670,11 @@ void SettingsDialog::OnApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(selectedIndex < mPersistedSettings.size());
+	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
 	if (selectedIndex != wxNOT_FOUND)
 	{
-		LoadPersistedSettings(selectedIndex, false);
+		LoadPersistedSettings(static_cast<size_t>(selectedIndex), false);
 	}
 }
 
@@ -681,11 +683,11 @@ void SettingsDialog::OnRevertToPersistedSettingsButton(wxCommandEvent & /*event*
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(selectedIndex < mPersistedSettings.size());
+	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
 	if (selectedIndex != wxNOT_FOUND)
 	{
-		LoadPersistedSettings(selectedIndex, true);
+		LoadPersistedSettings(static_cast<size_t>(selectedIndex), true);
 	}
 }
 
@@ -694,7 +696,7 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(selectedIndex < mPersistedSettings.size());
+	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
 	if (selectedIndex != wxNOT_FOUND)
@@ -722,7 +724,7 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
 	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(selectedIndex < mPersistedSettings.size());
+	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
 	if (selectedIndex != wxNOT_FOUND)
@@ -4500,11 +4502,11 @@ void SettingsDialog::InsertPersistedSettingInCtrl(
 	}
 }
 
-void SettingsDialog::LoadPersistedSettings(int index, bool withDefaults)
+void SettingsDialog::LoadPersistedSettings(size_t index, bool withDefaults)
 {
-	assert(index < static_cast<int>(mPersistedSettings.size()));
+	assert(index < mPersistedSettings.size());
 
-	if (index < static_cast<int>(mPersistedSettings.size()))
+	if (index < mPersistedSettings.size())
 	{
 		if (withDefaults)
 		{
@@ -4552,7 +4554,7 @@ void SettingsDialog::ReconciliateLoadPersistedSettings()
 {
 	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex == wxNOT_FOUND || selectedIndex < mPersistedSettings.size());
+	assert(selectedIndex == wxNOT_FOUND || static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
 	// Enable as long as there's a selection
 	mApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);

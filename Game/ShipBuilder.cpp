@@ -2337,7 +2337,7 @@ float ShipBuilder::CalculateVertexScore(VertexData const & vertexData)
         }
         else
         {
-            assert(vertexData.CachePosition < VertexCacheSize);
+            assert(static_cast<size_t>(vertexData.CachePosition) < VertexCacheSize);
 
             // Score vertices high for being high in the cache
             float const scaler = 1.0f / (VertexCacheSize - VerticesInElement);

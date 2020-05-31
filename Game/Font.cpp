@@ -144,7 +144,7 @@ Font Font::Load(std::filesystem::path const & filepath)
     int height = *(reinterpret_cast<int *>(header.get() + 6));
     ImageSize textureSize(width, height);
 
-    assert(fileSize - HeaderSize == 4 * textureSize.Width * textureSize.Height);
+    assert(fileSize - HeaderSize == static_cast<size_t>(4 * textureSize.Width * textureSize.Height));
 
     // Read cell size
     width = *(reinterpret_cast<int *>(header.get() + 10));
