@@ -638,9 +638,15 @@ Render:
 		+ Redo elec template
 		+ Test whole ship preview
 
+		- Build release
+		- Run final test
+			- Ship preview (with log)
+			- Version
 		- Send installer for testing
 
 		- Release: the "Eternal Patrol" update 
+
+		- Movie
 
 		- Blog:
 			- all new electrical elements
@@ -659,12 +665,14 @@ Render:
 			- Try with depth size = 8 bits
 				- Test flames on many conn components
 
+		- Ship Preview Cache (*)
+
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one
 				- Double-check FPS afterwards
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
-		- See timeBeginPeriod()
+		- See timeBeginPeriod() for vSync
 
 		- Parallelize OpenGL:
 			+ Start:
@@ -1661,29 +1669,109 @@ Render:
 		- How to Guide
 
 - UI:
-	- ShipLoadDialog: ship preview database/cache
+	- ShipLoadDialog: ship preview database/cache (*)
+		- TODO: since we want errors also when there is no parsable .shp, change the below to work on enumerated file paths instead
 		- Prep:
+			- TODO: see if needed, because of the above
 			- ShipPreview: has path of preview image file ("preview image file path"), not preview image file itself
 				- Also exposes LoadPreviewImage() to load preview image on-demand
+			- ImageData::MakeCopy() -> unique_ptr
 		- ShipPreviewDirectoryManager:
-			- API:
-				- static factory (folder path)
-					- enumerates ship files
-						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile
-					- passes their paths to cctor
-				- getter for (sorted) list of file paths
-				- StartPreviewEnumeration()
-					- Loads database here if it exists
-				- EnumeratedShipPreview * GetCurrent()
-					- EnumeratedShipPreview: one of Preview, Error
-					- Algo:
-						- Load ShipPreview (w/out image)
-						- If has database:
-							- Check last modified of its preview image file path against DB
-							- TODOHERE
+			- Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
+			  and NewPreviewImageDatabase to manage new DB
+				- Both derive from abstract PreviewImageDatabase w/definitions
+				- In PreviewImageDatabase.h
+				- PersistedPreviewImageDatabase: used to manage an existing DB
+					- Key is preview image file filename
+					- Value is:
+						- last modified
+						- offset & size
+					- static Load(dir path) -> ShipPreviewDatabase
+						- If no db file exists => constructed as empty (empty index map)
+						- open file as TODOstream
+						- Populate ordered map (index) from file index:
+							- key: preview image file filename
+							- value:
+								- last modified
+								- offset & size
+						- private cctor(ordered_map, stream)
+					- private cctor(ordered_map, stream): stores members
+					- Get(preview image file filename, last modified) -> uq_ptr<ImageData>
+						- Only if new
+						- If has data for it in map & last modified is valid: load from db;
+						  else: return null
+				- NewPreviewImageDatabase: used to manage a new DB
+					- Key is preview image file filename
+					- Value is:
+						- last modified
+						- uq_ptr<ImageData>
+					- public cctor(dir path): initializes empty index map (ordered map)
+						- stores path
+					- Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
+						- invoked always, even for unchanged preview images
+						- check if not already in map => error
+						- if not deprecated: store in index:
+							- key: preview image file filename
+							- value:
+								- last modified
+								- uq_ptr<Image> (nullptr if no change from old DB)
+					- SetDeprecated()
+						- Won't save, will save mem by not storing
+					- Commit(PersistedPreviewImageDatabase const & oldDb)
+						- if new is empty or (new is deprecated and old not empty) => nop (return)
+						- open tmp output file
+						- initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
+						- 1) Copy from old DB as long as possible:
+							- start_copy_offset = 0
+							- end_copy_offset = header size
+							- for each index position in both indices:
+								- if keys match and image data in new is null:
+									- copy (increment end_copy_offset)
+									- update new persisted index
+								- else: break
+							- if full match w/old one: return
+							- copy start_copy_offset->end_copy_offset
+						- 2) Save own
+							- for each index position in continuation of this::index:
+								- if uq_ptr<Image> is null:
+									- copy from old appending to file
+								- else:
+									- append image to file
+								- update new persisted index
+						- 3) Save new persisted index								
+						- delete old file, rename tmp file
 
+			- API:
+				- static factory (folder path) -> uq_ptr
+					- enumerate ship files
+						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile 
+						  extension check
+						- for each ship file: 
+							- loads ShipPreview (which now is without image)
+					- sort ship preview vector by <ship name, filename>
+					- load existing database (PersistedPreviewImageDatabase::Load)
+					- passes vector<ShipPreview> to private cctor
+				- private cctor(vector<ShipPreview> &&, PersistedPreviewImageDatabase &&)
+					- stores both as const
+				- getter for (sorted) list of ShipPreview's
+				- StartPreviewImageEnumeration()
+					- Reset current index
+				- EnumeratedPreviewImage * GetCurrent()
+					- EnumeratedPreviewImage: one of PreviewImage (uq_ptr), Error (msg)
+					- Algo:
+						- get last modified
+						- if oldImageDatabase::Get(preview image filename, last modified):
+							- newImageDatabase::Add(preview image filename, last modified, nullptr)
+							- return preview image
+						- else:
+							- Load image
+								- If error here: mark new DB as jinxed, won't commit
+							- newImageDatabase::Add(preview image filename, last modified, image::copy)
+							- return preview image
 				- void Next()
+					- Increment current index
 				- Commit()
+					- CachedPreviewImageDatabase::Commit()
 
 	- ShipLoadDialog: display also folders
 
