@@ -644,18 +644,17 @@ Render:
 			+ Version
 		+ Build installer
 		+ Test installer
-		- Send installer for testing
-
-		- Release: the "Eternal Patrol" update
-			- Make zip
-			- Github tag
+		+ Send installer for testing
+		= Release: the "Eternal Patrol" update
+			+ Make zip
+			- Github tag (w/zip)
 			- GameJolt
+				- package
+				- movie to youtube
+				- post
 			- changes.txt up to fs.com
-			- post
-			- last version @ fs.com
-
-		- Movie to youtube
-
+			- current version @ fs.com
+		
 		- Blog:
 			- all new electrical elements
 
@@ -666,6 +665,8 @@ Render:
 
 		- Merge llvm_fixes
 			- And verify performance, also of lighting
+
+		- Check new explosion
 
 		- OpenGL:
 			- Remove stencil from context requirements
@@ -709,22 +710,24 @@ Render:
 						- Here uploads take place of those buffers
 						  that were aggregated by RenderContext 
 						- This is the one that will be waited
-						  after the physics update
-						  
-			- Setters:
-				- Main thread: @ SetXYZ():
-					- Lock mSettingsMutex
-					- Set value
-						- So that getter finds same value
-					- Then set "mIsXXXDirty" flag
-					- Unlock mSettingsMutex
-				- Render thread: @ RenderStart:
-					- Lock mSettingsMutex
-					- Process all dirty flags & invoke "OnXXXUpdated" as appropriate
-						- And clear dirty flags
-					- Unlock mSettingsMutex
-			- Getters:
-				- Plain from main thread, no locks
+						  after the physics update						  
+				- Setters:
+					- Main thread: @ SetXYZ():
+						- Lock mSettingsMutex
+						- Set value
+							- So that getter finds same value
+						- Then set "mIsXXXDirty" flag
+						- Unlock mSettingsMutex
+					- Render thread: @ RenderStart:
+						- Lock mSettingsMutex
+						- Process all dirty flags & invoke "OnXXXUpdated" as appropriate
+							- And clear dirty flags
+						- Unlock mSettingsMutex
+				- Getters:
+					- Plain from main thread, no locks
+			- Impl:
+				- First: reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
+				  so that all updates come first, then all uploads come next, and finally all rendering happens
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
