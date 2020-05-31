@@ -642,12 +642,19 @@ Render:
 		+ Run final test
 			+ Ship preview (with log)
 			+ Version
-		- Build installer
+		+ Build installer
+		- Test installer
 		- Send installer for testing
 
-		- Release: the "Eternal Patrol" update 
+		- Release: the "Eternal Patrol" update
+			- Make zip
+			- Github tag
+			- GameJolt
+			- changes.txt up to fs.com
+			- post
+			- last version @ fs.com
 
-		- Movie
+		- Movie to youtube
 
 		- Blog:
 			- all new electrical elements
