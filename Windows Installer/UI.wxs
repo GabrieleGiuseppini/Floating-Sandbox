@@ -113,10 +113,10 @@
             <Dialog Id="FSProgressDlg" Width="370" Height="270" Title="[ACTION_TEXT_DOING] [ProductName]..." Modeless="yes">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
 
-                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] gets installed...">
+                <Control Id="TextInstalling" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ProductName] gets installed...be patient, this might take a few minutes.">
                     <Condition Action="show">NOT Installed AND NOT WIX_UPGRADE_DETECTED</Condition>
                 </Control>
-                <Control Id="TextUpgrading" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ShortApplicationName] gets upgraded to version [FloatingSandboxVersion]...">
+                <Control Id="TextUpgrading" Type="Text" X="20" Y="105" Width="330" Height="35" Hidden="yes" NoPrefix="yes" Text="Please wait while [ShortApplicationName] gets upgraded to version [FloatingSandboxVersion]...be patient, this might take a few minutes.">
                     <Condition Action="show">NOT Installed AND WIX_UPGRADE_DETECTED</Condition>
                 </Control>
 
