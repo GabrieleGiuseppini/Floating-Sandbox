@@ -246,414 +246,6 @@ Render:
 		- Try to change white BG to another color
 
 - Roadmap:
-
-		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
-
-		+ Branch
-		+ Bump up version
-
-		+ Remove "Ship Art" from About box
-		+ "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
-			+ No sound
-			+ Tell guy
-		+ Electrical panel layout: sort by instance ID first
-			+ Test with Post's ship
-		+ Ship json: flags to explicitly say whether it's HD and has power
-			+ Test HD
-			+ Test Electrical
-			+ Set to false for those ships that trick the user:
-				+ HMHS Britannic (Mini): no power
-				+ HMHS Ajax: no HD
-				+ HMHS Ficier: no HD
-				+ PM Goliath: no power
-				+ PM PacMaster: no HD
-				+ RMCV Siffiol: no both
-				+ SS Ariara: no both
-				+ SS Queen of Unova: no power
-				+ Tubon I: no hd
-		+ "ResourceLoader" -> "ResourceLocator"
-		+ Pinch tool (*)
-		+ Pumps (*)
-		+ Batisphere with pumps
-			+ Add 1000HP engine, both dirs
-			+ Lower dive pump
-			+ More pump power
-			+ changes.txt
-		+ Hide legacy_electrical materials from structural palette		
-		+ Drop air temperature with storm
-			+ By 15 degrees (local constexpr)
-			+ New storm parameter, with modulation
-			+ Use everywhere we use GameParameters::AirTemperature
-				+ ApplyWorldForces
-				+ Others
-		+ Robustness:
-			+ DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
-				+ Try myself
-				+ Flush log to disk on crash
-					+ Logger::FlushToFile(fs path)
-						+ Path at SysPaths class
-				+ changes.txt
-			+ Handle when error at default_ship on startup
-				+ Test before:
-					+ Broken json
-					+ Missing altogether
-				+ Impl:
-					+ MainFrame:
-						+ GameController::AddDefaultShip() 
-							+ If April 1st: call AddFallbackShip() instead
-						+ If error: 
-							+ Display msg
-							+ GameController::AddFallbackShip() 
-								+ Data/Misc/fallback_ship.png, new ResourceLocator method					
-				+ Test after:
-					+ Broken json
-					+ All fine
-					+ Special day
-			+ Catch corrupted settings jsons
-				+ Main settings:
-					+ Fuzzy-break them and see what happens at startup
-					+ Handle somehow
-					+ Test after
-				+ Persisted settings (user only):
-					+ Fuzzy-break them until SettingsWindows doesn't open
-					+ Handle somehow
-					+ Test after
-				+ Verify it may be saved again
-		+ Test About box in debug
-		+ Cloud speed: adjust for wind being 2 or 4
-			+ Close ticket then
-		+ Secret typing state machine
-		+ Flood doors (*)
-		+ Visual notification for Pinch tool: simply circle around point
-			+ Managed by points, somehow within "highlight" framework:
-				+ HightlightMode: enum at RenderContext
-					+ Name of new one: Circle
-				+ ShipRenderContext stores vertices in different groups, depending on highlight mode
-				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
-					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
-					+ New shader name: "ShipCircleHighlights"
-			+ Pinch tool: simply add to points
-			+ Points update
-			+ Shader
-		+ Mouse wheel issue:
-			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
-			+ Repro on my box: only after clicking on switchboard
-			+ Test wheel at LoggingDialog, LoadShipDialog
-			+ Fix with focus
-			+ Test that normal wheel in-game works
-			+ Test wheel at LoggingDialog, LoadShipDialog
-		+ Retrofit ships:
-			+ SS Californian
-				+ Nuke one "w/lights"?
-			+ Britannic
-				+ changes.txt
-			+ Goodyear
-			+ Hindenburg
-		+ See if may raise max # of explosions
-		+ Lower volume of engines
-		+ Try _Astyuu_'s ships
-			+ Said yes
-			+ Try new pack to see if he's fixed the ordering of the electrical panel on the IJN Akitsu Maru
-			+ Take latest IJN Akitsu Maru
-			+ changes.txt
-		+ Try new Hesleden
-			+ Ask him whistle and horn
-			+ Try to rewire
-			+ changes.txt
-			+ Take it
-		+ Do "Unsinkable" ship
-			+ Use texture from my own
-			+ Add ropes
-			+ Enlarge V water channels
-			+ changes.txt
-			+ Final test
-		+ Klaxon sound
-			+ Sounds:
-				+ Non-underwater: 36117 55069
-				+ Underwater
-			+ Material in json
-			+ Add to Red October
-				+ Also add pumps & engine to it
-			+ changes.txt
-			+ Material template
-			+ Materials' guide		
-		+ "Auto-Zoom at Ship Load":
-			+ By GameController @ AddShip
-				+ Only when changing ship
-			+ Uses ViewModel::CalculateZoomForWorldWidth(.): calcs zoom required to fit that world width in screen
-				+ Add (world) margin
-				- See Boeing
-			+ Then: if calculated zoom requires zoom out: use it; 
-				else: if calculated zoom requires zoom in and more than 1.0 (i.e. more zoom in than): set to 1.0; else: leave as-is
-			+ UIPreferences - with storage @ GameController
-		+ Music cleanup:
-			+ Ti direi quindi di eliminare sicuramente sinkingship_2.ogg (piano) e sinkingship_3.ogg (violino).
-			+ Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
-			Per quanto riguarda le altre:
-			+ sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
-			+ sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
-			+ sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
-		+ Commit & Merge
-		+ Send for testing
-		+ Bump-up version
-		+ Post roadmap
-		+ make gbenchmark optional
-		+ Multiple instance ID error: say where they both are
-			+ Test
-		+ See "invalid extension" error message
-			+ Test
-		+ See if may get rid of ImageFileTools::Load...UpperLeft
-			+ ShipBuilder
-			+ OceanFloor
-			+ ShipAnalyzer
-			+ Nuke from ImageFileTools
-			+ Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
-			  ImageFileTools::LoadXYZ without "LowerLeft"
-			  + Don't forget ShipAnalyzer
-		+ Materials:
-			+ Add "Ignition" material: just like heating element, but way faster
-				+ "Heating Element HP/LP"
-				+ Raise heat generated by heating element - test w/those two ships
-				+ Send beta to John Smith
-			+ Lower melting temperature of Lego
-			+ Redo both templates
-			+ changes.txt
-		+ Auto-Texturizer
-			! Spec: new ShipTexturizer class, owned by GameController
-				- Created at GameController create time, and kept forever
-					- Maintains cache
-				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
-				- Also holds auto-texturization mode setting, see below
-				- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
-				  texture; two modes:
-					- "FlatStructure": builds texture using structural materials' RenderColor (as opposed to color key like now)
-					- "MaterialTextures": using materials' "bump maps"
-						- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
-						- Textures/Materials folder contains textures
-						- Structural material has new mandatory "texture_name" string arg
-							- Material DB <-> actual textures check: done by GameController at its Create() time,
-							  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
-					- Setting storage is @ ShipTexturizer, brokered by GameController
-				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder					
-				! Edge smoothing is already done by means of tessellation
-			+ ShipAutoTexturizationMode At GameTypes
-			+ ResourceLocator::GetMaterialTexturesFolderPath()
-			+ Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
-			+ ShipDefinition::TextureLayerImage is now optional
-				= Copy structure->texture code to ShipTexturizer		
-			+ Path:
-				+ GameController::AddShip:
-					+ Load Definition
-					+ World->AddShip(definition, ..., renderContext)
-						+ ShipBuilder::Create -> [ship, texture image]
-						+ RenderContext::AddShip(texture image)
-							+ Validate texture size
-			+ GameController creates instance of ShipTexturizer at Create time
-				+ Simple member
-				+ Then invokes ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
-			+ ShipTexturizer instance is passed by GameController to ShipBuilder (via World)
-			+ ShipBuilder uses ShipTexturizer to create - and return - texture
-				+ Args: 
-					+ ShipBuildTypes.h:
-						+ Definition (using) of ShipBuildPointIndexMatrix
-						+ ShipBuildPoint
-				+ First experiment: current (legacy) structure texture
-					+ Simple Nx magnify
-				+ Invoke from ShipBuilder
-			+ StructuralMaterial has new mandatory "texture_name" string arg
-				+ For now just optional
-			+ Do texturizations
-				+ FlatStructure:
-				+ MaterialTextures:
-					+ MaterialTextureMagnificationFactor:
-						+ Getter and setter
-						+ Upon setting: store mMaterialTextureWorldToPixelConversionFactor = 1/.
-					+ Do bilinear and multiply
-					+ ShipTexturizer's cache:
-						+ Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
-						+ Cache usage counts are reset at beginning of each new texturization - but textures are not purged
-					+ Perf:
-						+ Start: Heat Generation Test: 998/1050ms
-						+ Try converting material texture to floats first
-							+ New ImageData instantiation: vec3f
-							+ ImageTools: conversion
-							+ Do at load time and store in cache
-						+ Factor out WorldW,Y and keep adding
-						+ Heat Generation Test: 962/1032ms
-						+ Verify Cartman
-						+ Now: 962-997, roundf: 18.3%, fmodf: 17.09%
-						+ Optimize roundf, fmod
-						+ Now: 180-205
-			+ I/GameController settings: ShipAutoTexturizationMode & MaterialTextureMagnification
-				+ UIPreferencesManager
-				+ PreferencesDialog
-				+ Test:
-					+ Saves
-					+ Loads
-					+ Reconciliation
-					+ Magnification range & formula
-			+ Test "special multiply" blend mode
-			+ Do textures for all materials
-				+ metal_riveted_1 (Steel, Iron) x 2 (non-hull, hull (small))
-				+ metal_bulkheads_1 (Titanium)
-				+ metal_riveted_2 (Aluminium)
-				+ wood_planks_1 (Non-hull)
-				+ wood_studded_1 (Hull)
-				+ concrete_1/2
-				+ glass_1
-				+ cloth_1 
-				+ paper
-				+ Re-check all so far				
-				+ cardboard
-				+ carbon				
-				+ double-bottom others
-				+ rubber
-				+ lego
-				+ fiberglass
-				+ double-bottom wood				
-			+ Deal with unset StructuralMaterial' "texture_name"
-				+ Use 'none'
-			+ Implement ShipTexturizer::VerifyMaterialsDatabase
-			+ Script to validate materials
-				+ texture_name
-				+ render_color==key_color
-				+ Also run ship verification script
-			+ Test transparency setting
-			+ Finalize:
-				+ GameTypes
-					+ ShipAutoTexturizationSettings
-					+ Use at ShipTexturizer as storage
-					+ Use at UIPreferencesManager 
-				+ ShipDefinition/File has optional "auto_texturization" struct				
-				+ ShipTexturizer has new boolean setting: ForceSettingsOverShip
-				+ This optional<AutoTexturizationMode> is passed to ShipTexturizer, which decides what to do
-				+ Dialog:
-					+ Transparency setting (and move to sliders now)
-					+ Force checkbox
-				+ Test:
-					+ Saves settings
-					+ Loads settings
-					+ Defaults apply to png and shps without auto_texturization
-					+ Ship's auto_texturization is honored when different than defaults
-						+ Just mode - and verify defaults for other two
-						+ Mode and other two
-					+ Forcing works
-			+ Default ship auto-texturization: ON
-			+ Tooltips for auto-texturization:
-				+ Add "...when ships don't have their own texture layer."
-				+ Add "Changes are only visible after a ship is reloaded."/"next ship load".
-				+ Also for strength: "not for rigidity"
-				+ Also for rot: "...Set to zero to disable rotting altogether"
-					+ Underwater constant is set to zero if acceler8r is zero
-					+ Verify
-			+ Perf:
-				+ Smaller ships take longer
-					+ Cap magnification factor and recalc texture size
-			+ Tests:
-				+ Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues: 2012 Ark
-			+ Remove cache clearing for testing
-			+ merge
-			+ changes.txt
-		+ Send for testing
-		+ Clouds bug
-			+ Test again
-			+ changes.txt
-		+ Remove discord url's from About box
-		+ Rename menus: "Simulation Settings" X 2 & "Game Preferences"
-		+ Offset sinking water with Points::GetTotalFactoryWetPoints()
-			+ Calc'd by Points at Add()
-			+ Exposed as getter
-			+ Used at sinking detection
-			+ Test
-				+ Ball of water
-				+ 3 balls
-		+ Non-instanced water-sensing switches
-			+ Code: treat water-sensing switches differently
-			+ Add material to json
-			+ Test:
-				+ Instanced
-					+ Toggle
-					+ Disable, enable
-				+ Non-instanced
-					+ Toggle
-					+ Disable, enable
-			+ changes.txt
-			+ redo template
-		+ Diesel engine
-			+ Got new sounds from John Smith, check them out
-			+ Add engine type to code
-			+ Do electrical material in json
-			+ Add material to a ship
-			+ Redo electrical template
-			+ Update materials' guide
-		+ Rebuild with latest changes
-		+ Import other changes:
-			+ MainFrame: 
-				+ MainFrame style:  wxDEFAULT_FRAME_STYLE | wxMAXIMIZE,
-				+ Panel & Canvas size: wxDefaultSize
-				+ mMainFrameSize->"mMainPanelSizer"
-				+ mMainPanel->Layout(); // after  mMainPanel->SetSizer(mMainPanelSizer);
-				+ pass canvas size to rendercontext
-				+ PRE:
-					17:26:31.138270:ShipTexturizer: completed auto-texturization: materialTextureMagnification=1 structureSize=203x52 textureSize=4060x1040 magFactor=20 time=237792us
-					17:26:31.138270:Created ship: W=203, H=52, 5231/9328buf points, 19932 springs, 9819 triangles, 6 electrical elements.
-					17:26:31.300279:Layout: decoratedW=0, decoratedH=0, W=0, H=0
-					17:26:31.301279:OnMainGLCanvasResize: 1350x668
-					17:26:31.819288:Post-Initialize took 6.79314s
-					17:26:32.159295:OnMainGLCanvasResize: 1366x684
-					17:26:32.163295:OnMainGLCanvasResize: 1360x740
-				+ POST:
-					18:23:54.581699:ShipTexturizer: completed auto-texturization: materialTextureMagnification=1 structureSize=203x52 textureSize=4060x1040 magFactor=20 time=222195us
-					18:23:54.581699:Created ship: W=203, H=52, 5231/9328buf points, 19932 springs, 9819 triangles, 6 electrical elements.
-					18:23:54.729707:Layout: decoratedW=0, decoratedH=0, W=0, H=0
-					18:23:54.733708:OnMainGLCanvasResize: 1350x668
-					18:23:55.243715:Post-Initialize took 6.46163s
-					18:23:55.405719:OnMainGLCanvasResize: 1360x740=
-				+ Test:
-					+ Ship w/out electrical panel
-					+ Ship with electrical panel
-		+ Fix issue with pick
-		+ Undo (some of the) .shp changes
-		+ Try Flugzeugdampfer_I (_Astyuu_)
-			+ Ask for an update, with nicer panel and more powerful engine
-			+ Check updated zip: unzipped at C:\Users\Neurodancer\Desktop\Ships contributions TODO\_ASTYuu_'s\DKM_Flugzeugdampfer
-			+ All good, take 1; ask if will add new materials
-			+ changes.txt
-			+ Ship verify
-		+ Test smaller PickNPull coefficient
-		+ Make ball of lego
-		+ Send for testing
-		+ Bump-up version
-		+ Do post with auto-texturization screenshots
-			+ And link to TinCan's video
-		+ Take Fox Assor's ships
-		+ changes.txt
-		+ Take new sleeping sun from Officer TinCan
-		+ Enable Git LFS
-		+ Ships:
-			+ Nomadavid's
-			+ Changes.txt: new ships
-
-		+ "Get More Ships..." link
-		+ Redo elec template
-		+ Test whole ship preview
-
-		+ Build release
-		+ Run final test
-			+ Ship preview (with log)
-			+ Version
-		+ Build installer
-		+ Test installer
-		+ Send installer for testing
-		= Release: the "Eternal Patrol" update
-			+ Make zip
-			- Github tag (w/zip)
-			- GameJolt
-				- package
-				- movie to youtube
-				- post
-			- changes.txt up to fs.com
-			- current version @ fs.com
 		
 		- Blog:
 			- all new electrical elements
@@ -662,6 +254,18 @@ Render:
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
 		- Bump-up version
+
+		- Feedback:
+			- It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
+			- Plus 1: The terrain tool seems to be broken for some setting presets. 
+				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
+				- GameController::AdjustTerrain returns bool; do different notif's depending on it
+					- Sound: Error
+					- Red cursor
+			- Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
+			- Plus 2b: You can no longer increase/decrease sliders using arrow keys.
+
+		- ARM OpenGL issue
 
 		- Merge llvm_fixes
 			- And verify performance, also of lighting
@@ -1727,8 +1331,9 @@ Render:
 					- SetDeprecated()
 						- Won't save, will save mem by not storing
 					- Commit(PersistedPreviewImageDatabase const & oldDb)
+						! All exceptions here are silently caught and commit is (cleanly) aborted
 						- if new is empty or (new is deprecated and old not empty) => nop (return)
-						- open tmp output file
+						- open tmp output file for w; truncate
 						- initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
 						- 1) Copy from old DB as long as possible:
 							- start_copy_offset = 0
@@ -9350,5 +8955,414 @@ IF WX:
 				+ Test 1.14
 			+ Nuke /Install under /build
 			+ Commit & push
+	+ 1.15.0
+		+ Branch
+		+ Bump up version
+
+		+ Remove "Ship Art" from About box
+		+ "Can you make ocean floor detail 's min back to 0? It's hard to get flat ocean land now with the min at 1."
+			+ No sound
+			+ Tell guy
+		+ Electrical panel layout: sort by instance ID first
+			+ Test with Post's ship
+		+ Ship json: flags to explicitly say whether it's HD and has power
+			+ Test HD
+			+ Test Electrical
+			+ Set to false for those ships that trick the user:
+				+ HMHS Britannic (Mini): no power
+				+ HMHS Ajax: no HD
+				+ HMHS Ficier: no HD
+				+ PM Goliath: no power
+				+ PM PacMaster: no HD
+				+ RMCV Siffiol: no both
+				+ SS Ariara: no both
+				+ SS Queen of Unova: no power
+				+ Tubon I: no hd
+		+ "ResourceLoader" -> "ResourceLocator"
+		+ Pinch tool (*)
+		+ Pumps (*)
+		+ Batisphere with pumps
+			+ Add 1000HP engine, both dirs
+			+ Lower dive pump
+			+ More pump power
+			+ changes.txt
+		+ Hide legacy_electrical materials from structural palette		
+		+ Drop air temperature with storm
+			+ By 15 degrees (local constexpr)
+			+ New storm parameter, with modulation
+			+ Use everywhere we use GameParameters::AirTemperature
+				+ ApplyWorldForces
+				+ Others
+		+ Robustness:
+			+ DKuz's issue: trap error when ShipLoadDialog starts and finds file with invalid char ("Liberte'" issue)
+				+ Try myself
+				+ Flush log to disk on crash
+					+ Logger::FlushToFile(fs path)
+						+ Path at SysPaths class
+				+ changes.txt
+			+ Handle when error at default_ship on startup
+				+ Test before:
+					+ Broken json
+					+ Missing altogether
+				+ Impl:
+					+ MainFrame:
+						+ GameController::AddDefaultShip() 
+							+ If April 1st: call AddFallbackShip() instead
+						+ If error: 
+							+ Display msg
+							+ GameController::AddFallbackShip() 
+								+ Data/Misc/fallback_ship.png, new ResourceLocator method					
+				+ Test after:
+					+ Broken json
+					+ All fine
+					+ Special day
+			+ Catch corrupted settings jsons
+				+ Main settings:
+					+ Fuzzy-break them and see what happens at startup
+					+ Handle somehow
+					+ Test after
+				+ Persisted settings (user only):
+					+ Fuzzy-break them until SettingsWindows doesn't open
+					+ Handle somehow
+					+ Test after
+				+ Verify it may be saved again
+		+ Test About box in debug
+		+ Cloud speed: adjust for wind being 2 or 4
+			+ Close ticket then
+		+ Secret typing state machine
+		+ Flood doors (*)
+		+ Visual notification for Pinch tool: simply circle around point
+			+ Managed by points, somehow within "highlight" framework:
+				+ HightlightMode: enum at RenderContext
+					+ Name of new one: Circle
+				+ ShipRenderContext stores vertices in different groups, depending on highlight mode
+				+ ShipRenderContext::RenderHighlights() does all groups, each with own shader
+					+ Rename shader (file & enums) from "ShipHighlights" to "ShipElectricalElementHighlights"
+					+ New shader name: "ShipCircleHighlights"
+			+ Pinch tool: simply add to points
+			+ Points update
+			+ Shader
+		+ Mouse wheel issue:
+			! Issue: wheel event is captured by SwitchboardPanel::mSwitchPanel (i.e. wxScrolled<wxPanel>) and explicitly blocked
+			+ Repro on my box: only after clicking on switchboard
+			+ Test wheel at LoggingDialog, LoadShipDialog
+			+ Fix with focus
+			+ Test that normal wheel in-game works
+			+ Test wheel at LoggingDialog, LoadShipDialog
+		+ Retrofit ships:
+			+ SS Californian
+				+ Nuke one "w/lights"?
+			+ Britannic
+				+ changes.txt
+			+ Goodyear
+			+ Hindenburg
+		+ See if may raise max # of explosions
+		+ Lower volume of engines
+		+ Try _Astyuu_'s ships
+			+ Said yes
+			+ Try new pack to see if he's fixed the ordering of the electrical panel on the IJN Akitsu Maru
+			+ Take latest IJN Akitsu Maru
+			+ changes.txt
+		+ Try new Hesleden
+			+ Ask him whistle and horn
+			+ Try to rewire
+			+ changes.txt
+			+ Take it
+		+ Do "Unsinkable" ship
+			+ Use texture from my own
+			+ Add ropes
+			+ Enlarge V water channels
+			+ changes.txt
+			+ Final test
+		+ Klaxon sound
+			+ Sounds:
+				+ Non-underwater: 36117 55069
+				+ Underwater
+			+ Material in json
+			+ Add to Red October
+				+ Also add pumps & engine to it
+			+ changes.txt
+			+ Material template
+			+ Materials' guide		
+		+ "Auto-Zoom at Ship Load":
+			+ By GameController @ AddShip
+				+ Only when changing ship
+			+ Uses ViewModel::CalculateZoomForWorldWidth(.): calcs zoom required to fit that world width in screen
+				+ Add (world) margin
+				- See Boeing
+			+ Then: if calculated zoom requires zoom out: use it; 
+				else: if calculated zoom requires zoom in and more than 1.0 (i.e. more zoom in than): set to 1.0; else: leave as-is
+			+ UIPreferences - with storage @ GameController
+		+ Music cleanup:
+			+ Ti direi quindi di eliminare sicuramente sinkingship_2.ogg (piano) e sinkingship_3.ogg (violino).
+			+ Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
+			Per quanto riguarda le altre:
+			+ sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
+			+ sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
+			+ sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
+		+ Commit & Merge
+		+ Send for testing
+		+ Bump-up version
+		+ Post roadmap
+		+ make gbenchmark optional
+		+ Multiple instance ID error: say where they both are
+			+ Test
+		+ See "invalid extension" error message
+			+ Test
+		+ See if may get rid of ImageFileTools::Load...UpperLeft
+			+ ShipBuilder
+			+ OceanFloor
+			+ ShipAnalyzer
+			+ Nuke from ImageFileTools
+			+ Add comment at top of class on all methods using a LowerLeft origin, and rename all remaining 
+			  ImageFileTools::LoadXYZ without "LowerLeft"
+			  + Don't forget ShipAnalyzer
+		+ Materials:
+			+ Add "Ignition" material: just like heating element, but way faster
+				+ "Heating Element HP/LP"
+				+ Raise heat generated by heating element - test w/those two ships
+				+ Send beta to John Smith
+			+ Lower melting temperature of Lego
+			+ Redo both templates
+			+ changes.txt
+		+ Auto-Texturizer
+			! Spec: new ShipTexturizer class, owned by GameController
+				- Created at GameController create time, and kept forever
+					- Maintains cache
+				- Also at create time does MaterialDB <-> actual textures check, brokered by GameController (see below)
+				- Also holds auto-texturization mode setting, see below
+				- Auto-Texturization mode (exposed @ SettingsDialog::Rendering), dictates what to do when ship doesn't come with a
+				  texture; two modes:
+					- "FlatStructure": builds texture using structural materials' RenderColor (as opposed to color key like now)
+					- "MaterialTextures": using materials' "bump maps"
+						- Textures are semi-transparent "bump maps" that are drawn on matte structural material color
+						- Textures/Materials folder contains textures
+						- Structural material has new mandatory "texture_name" string arg
+							- Material DB <-> actual textures check: done by GameController at its Create() time,
+							  invoking ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
+					- Setting storage is @ ShipTexturizer, brokered by GameController
+				- Both texturizations implemented in ShipTexturizer class as invoked by ShipBuilder					
+				! Edge smoothing is already done by means of tessellation
+			+ ShipAutoTexturizationMode At GameTypes
+			+ ResourceLocator::GetMaterialTexturesFolderPath()
+			+ Nuke TextureOrigin @ ShipDefinition & Ship/RenderContext
+			+ ShipDefinition::TextureLayerImage is now optional
+				= Copy structure->texture code to ShipTexturizer		
+			+ Path:
+				+ GameController::AddShip:
+					+ Load Definition
+					+ World->AddShip(definition, ..., renderContext)
+						+ ShipBuilder::Create -> [ship, texture image]
+						+ RenderContext::AddShip(texture image)
+							+ Validate texture size
+			+ GameController creates instance of ShipTexturizer at Create time
+				+ Simple member
+				+ Then invokes ShipTexturizer::VerifyMaterialsDatabase(MaterialsDatabase const &)
+			+ ShipTexturizer instance is passed by GameController to ShipBuilder (via World)
+			+ ShipBuilder uses ShipTexturizer to create - and return - texture
+				+ Args: 
+					+ ShipBuildTypes.h:
+						+ Definition (using) of ShipBuildPointIndexMatrix
+						+ ShipBuildPoint
+				+ First experiment: current (legacy) structure texture
+					+ Simple Nx magnify
+				+ Invoke from ShipBuilder
+			+ StructuralMaterial has new mandatory "texture_name" string arg
+				+ For now just optional
+			+ Do texturizations
+				+ FlatStructure:
+				+ MaterialTextures:
+					+ MaterialTextureMagnificationFactor:
+						+ Getter and setter
+						+ Upon setting: store mMaterialTextureWorldToPixelConversionFactor = 1/.
+					+ Do bilinear and multiply
+					+ ShipTexturizer's cache:
+						+ Has LRU cache of textures, maintaining count of accesses and sorting+purging with H and L watermarks
+						+ Cache usage counts are reset at beginning of each new texturization - but textures are not purged
+					+ Perf:
+						+ Start: Heat Generation Test: 998/1050ms
+						+ Try converting material texture to floats first
+							+ New ImageData instantiation: vec3f
+							+ ImageTools: conversion
+							+ Do at load time and store in cache
+						+ Factor out WorldW,Y and keep adding
+						+ Heat Generation Test: 962/1032ms
+						+ Verify Cartman
+						+ Now: 962-997, roundf: 18.3%, fmodf: 17.09%
+						+ Optimize roundf, fmod
+						+ Now: 180-205
+			+ I/GameController settings: ShipAutoTexturizationMode & MaterialTextureMagnification
+				+ UIPreferencesManager
+				+ PreferencesDialog
+				+ Test:
+					+ Saves
+					+ Loads
+					+ Reconciliation
+					+ Magnification range & formula
+			+ Test "special multiply" blend mode
+			+ Do textures for all materials
+				+ metal_riveted_1 (Steel, Iron) x 2 (non-hull, hull (small))
+				+ metal_bulkheads_1 (Titanium)
+				+ metal_riveted_2 (Aluminium)
+				+ wood_planks_1 (Non-hull)
+				+ wood_studded_1 (Hull)
+				+ concrete_1/2
+				+ glass_1
+				+ cloth_1 
+				+ paper
+				+ Re-check all so far				
+				+ cardboard
+				+ carbon				
+				+ double-bottom others
+				+ rubber
+				+ lego
+				+ fiberglass
+				+ double-bottom wood				
+			+ Deal with unset StructuralMaterial' "texture_name"
+				+ Use 'none'
+			+ Implement ShipTexturizer::VerifyMaterialsDatabase
+			+ Script to validate materials
+				+ texture_name
+				+ render_color==key_color
+				+ Also run ship verification script
+			+ Test transparency setting
+			+ Finalize:
+				+ GameTypes
+					+ ShipAutoTexturizationSettings
+					+ Use at ShipTexturizer as storage
+					+ Use at UIPreferencesManager 
+				+ ShipDefinition/File has optional "auto_texturization" struct				
+				+ ShipTexturizer has new boolean setting: ForceSettingsOverShip
+				+ This optional<AutoTexturizationMode> is passed to ShipTexturizer, which decides what to do
+				+ Dialog:
+					+ Transparency setting (and move to sliders now)
+					+ Force checkbox
+				+ Test:
+					+ Saves settings
+					+ Loads settings
+					+ Defaults apply to png and shps without auto_texturization
+					+ Ship's auto_texturization is honored when different than defaults
+						+ Just mode - and verify defaults for other two
+						+ Mode and other two
+					+ Forcing works
+			+ Default ship auto-texturization: ON
+			+ Tooltips for auto-texturization:
+				+ Add "...when ships don't have their own texture layer."
+				+ Add "Changes are only visible after a ship is reloaded."/"next ship load".
+				+ Also for strength: "not for rigidity"
+				+ Also for rot: "...Set to zero to disable rotting altogether"
+					+ Underwater constant is set to zero if acceler8r is zero
+					+ Verify
+			+ Perf:
+				+ Smaller ships take longer
+					+ Cap magnification factor and recalc texture size
+			+ Tests:
+				+ Ship with own texture too large than OpenGL's limits: verify we still display error and everything continues: 2012 Ark
+			+ Remove cache clearing for testing
+			+ merge
+			+ changes.txt
+		+ Send for testing
+		+ Clouds bug
+			+ Test again
+			+ changes.txt
+		+ Remove discord url's from About box
+		+ Rename menus: "Simulation Settings" X 2 & "Game Preferences"
+		+ Offset sinking water with Points::GetTotalFactoryWetPoints()
+			+ Calc'd by Points at Add()
+			+ Exposed as getter
+			+ Used at sinking detection
+			+ Test
+				+ Ball of water
+				+ 3 balls
+		+ Non-instanced water-sensing switches
+			+ Code: treat water-sensing switches differently
+			+ Add material to json
+			+ Test:
+				+ Instanced
+					+ Toggle
+					+ Disable, enable
+				+ Non-instanced
+					+ Toggle
+					+ Disable, enable
+			+ changes.txt
+			+ redo template
+		+ Diesel engine
+			+ Got new sounds from John Smith, check them out
+			+ Add engine type to code
+			+ Do electrical material in json
+			+ Add material to a ship
+			+ Redo electrical template
+			+ Update materials' guide
+		+ Rebuild with latest changes
+		+ Import other changes:
+			+ MainFrame: 
+				+ MainFrame style:  wxDEFAULT_FRAME_STYLE | wxMAXIMIZE,
+				+ Panel & Canvas size: wxDefaultSize
+				+ mMainFrameSize->"mMainPanelSizer"
+				+ mMainPanel->Layout(); // after  mMainPanel->SetSizer(mMainPanelSizer);
+				+ pass canvas size to rendercontext
+				+ PRE:
+					17:26:31.138270:ShipTexturizer: completed auto-texturization: materialTextureMagnification=1 structureSize=203x52 textureSize=4060x1040 magFactor=20 time=237792us
+					17:26:31.138270:Created ship: W=203, H=52, 5231/9328buf points, 19932 springs, 9819 triangles, 6 electrical elements.
+					17:26:31.300279:Layout: decoratedW=0, decoratedH=0, W=0, H=0
+					17:26:31.301279:OnMainGLCanvasResize: 1350x668
+					17:26:31.819288:Post-Initialize took 6.79314s
+					17:26:32.159295:OnMainGLCanvasResize: 1366x684
+					17:26:32.163295:OnMainGLCanvasResize: 1360x740
+				+ POST:
+					18:23:54.581699:ShipTexturizer: completed auto-texturization: materialTextureMagnification=1 structureSize=203x52 textureSize=4060x1040 magFactor=20 time=222195us
+					18:23:54.581699:Created ship: W=203, H=52, 5231/9328buf points, 19932 springs, 9819 triangles, 6 electrical elements.
+					18:23:54.729707:Layout: decoratedW=0, decoratedH=0, W=0, H=0
+					18:23:54.733708:OnMainGLCanvasResize: 1350x668
+					18:23:55.243715:Post-Initialize took 6.46163s
+					18:23:55.405719:OnMainGLCanvasResize: 1360x740=
+				+ Test:
+					+ Ship w/out electrical panel
+					+ Ship with electrical panel
+		+ Fix issue with pick
+		+ Undo (some of the) .shp changes
+		+ Try Flugzeugdampfer_I (_Astyuu_)
+			+ Ask for an update, with nicer panel and more powerful engine
+			+ Check updated zip: unzipped at C:\Users\Neurodancer\Desktop\Ships contributions TODO\_ASTYuu_'s\DKM_Flugzeugdampfer
+			+ All good, take 1; ask if will add new materials
+			+ changes.txt
+			+ Ship verify
+		+ Test smaller PickNPull coefficient
+		+ Make ball of lego
+		+ Send for testing
+		+ Bump-up version
+		+ Do post with auto-texturization screenshots
+			+ And link to TinCan's video
+		+ Take Fox Assor's ships
+		+ changes.txt
+		+ Take new sleeping sun from Officer TinCan
+		+ Enable Git LFS
+		+ Ships:
+			+ Nomadavid's
+			+ Changes.txt: new ships
+
+		+ "Get More Ships..." link
+		+ Redo elec template
+		+ Test whole ship preview
+
+		+ Build release
+		+ Run final test
+			+ Ship preview (with log)
+			+ Version
+		+ Build installer
+		+ Test installer
+		+ Send installer for testing
+		+ Release: the "Eternal Patrol" update
+			+ Make zip
+			+ Github tag (w/zip)
+			+ GameJolt
+				+ upload package x 2
+				+ movie up to youtube
+				+ publish release on gamejolt
+				+ publish youtube movie
+				+ post (w/link to youtube)
+			+ changes.txt up to fs.com
+			+ current version @ fs.com
+
 
 
