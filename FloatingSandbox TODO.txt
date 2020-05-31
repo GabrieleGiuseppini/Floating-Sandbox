@@ -253,10 +253,17 @@ Render:
 
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
-		- Bump-up version
+		+ Bump-up version
+		= Merge llvm_fixes
+			- And verify performance, also of lighting
 
 		- Feedback:
 			- It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
+				- Verify 
+				- Register for mouse wheel on wxScrolled itself, and forward event to main frame
+				- Test:
+					- Verify fix
+					- Verify scrollbar
 			- Plus 1: The terrain tool seems to be broken for some setting presets. 
 				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
 				- GameController::AdjustTerrain returns bool; do different notif's depending on it
@@ -264,11 +271,17 @@ Render:
 					- Red cursor
 			- Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
 			- Plus 2b: You can no longer increase/decrease sliders using arrow keys.
+				- 1) Re-add char hook to mainframe (panel?)
+				- 2) Re-instate hook handler 
+				- 3) MainApp: don't forward to main frame
+				- Test:
+					- Secret typing
+					- Arrows @ Game (& +/-, PgUp/PgDown)
+					- Arrows on two dialogs
+					- Shortcuts of electrical panel, and key up @ push switch
+					- query
 
 		- ARM OpenGL issue
-
-		- Merge llvm_fixes
-			- And verify performance, also of lighting
 
 		- Check new explosion
 
@@ -277,7 +290,6 @@ Render:
 				- And check all references to "stencil"
 			- Try with depth size = 8 bits
 				- Test flames on many conn components
-			- Run w/OpenGL tracing to see if there's any errors
 
 		- Ship Preview Cache (*)
 
@@ -379,7 +391,9 @@ Render:
 		
 		- Attempt to use total point masses for springs (*)
 
-		- Cached quantities (*)		
+		- Cached quantities (*)
+
+		- Run w/OpenGL tracing to see if there's any errors
 
 		- Add more background music:
 			- Music:
@@ -1292,7 +1306,7 @@ Render:
 			- Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
 				- Both derive from abstract PreviewImageDatabase w/definitions
-				- In PreviewImageDatabase.h
+				- In PreviewImageDatabase.cpp/.h
 				- PersistedPreviewImageDatabase: used to manage an existing DB
 					- Key is preview image file filename
 					- Value is:
