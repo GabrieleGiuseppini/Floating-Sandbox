@@ -1,4 +1,4 @@
-TODO
+1.15.1
 - Fixed issue with mouse wheel/zoom stopping working - this time for real!
 - Fixed issue with arrow keys not working anymore on settings or ship explorer
 - More intuitive feedback warning the user that the Terrain Adjust tool doesn't work when Ocean Floor Detail is set to zero

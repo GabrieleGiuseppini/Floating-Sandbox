@@ -292,15 +292,19 @@ Render:
 					+ B
 					+ query
 
-		- Release
-			- Make zip
-			- Github tag (w/zip)
+		= Release
+			+ Make zip
+			- Build & test installer
+			- Github tag (w/out zip)
 			- GameJolt
 				- upload package x 2 & release
 				- post
 			- changes.txt up to fs.com
 			- current version @ fs.com
 
+		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
+
+		- Bump up version
 
 
 		- ARM OpenGL issue
@@ -314,6 +318,7 @@ Render:
 				- Test flames on many conn components
 
 		- Ship Preview Cache (*)
+		- Arrows on ShipPreview window
 
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one
