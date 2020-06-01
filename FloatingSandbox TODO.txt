@@ -250,74 +250,19 @@ Render:
 		- Blog:
 			- all new electrical elements
 
-		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
-
-		+ Bump-up version
-		+ Merge llvm_fixes
-			+ And verify performance, also of lighting
-		+ Feedback:
-			+ It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
-				+ Verify 
-				X Register for mouse wheel on SwitchPanel itself, and forward event to main frame
-				+ Give back focus to canvas when l-clicking on it
-					+ At electrical panel disappearing: lose focus
-				+ Set focus on canvas at startup
-				+ Try to redo by avoiding focus altogether
-				+ Test:
-					+ Verify re-layout at panel coming,disappearing,docking,undocking 
-					+ Verify fix
-						+ Basic
-						+ Disappearing panel when it has focus
-					+ HintPanel
-					+ Verify scrollbar in elec panel works
-				+ changes.txt
-			+ Plus 1: The terrain tool seems to be broken for some setting presets. 
-				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
-				+ GameController::AdjustTerrain returns bool; do different notif's depending on it
-					+ Sound: Error
-					+ Red cursor
-			+ Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
-				! Plus 2b: You can no longer increase/decrease sliders using arrow keys.
-				+ 1) Re-add char hook to mainframe (panel?)
-				+ 2) Re-instate hook handler 
-				+ 3) MainApp: don't forward to main frame
-				+ 4) Re-hyde bubble tool
-				+ Redo 'B'
-				+ Test:
-					+ Secret typing
-					+ Arrows @ Game (& +/-, PgUp/PgDown)
-					+ Arrows on two dialogs
-					+ Shortcuts of electrical panel, and key up @ push switch
-					+ B
-					+ query
-
-		= Release
-			+ Make zip
-			+ Build & test installer
-			- Github tag (w/out zip)
-			- GameJolt
-				- upload package x 2 & release
-				- post
-			- changes.txt up to fs.com
-			- current version @ fs.com
-
-		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
-
-		- Bump up version
-
-
-		- ARM OpenGL issue
-
-		- Check new explosion
+		+ Bump up version
+		+ Cleanup plan
 
 		- OpenGL:
 			- Remove stencil from context requirements
 				- And check all references to "stencil"
-			- Try with depth size = 8 bits
-				- Test flames on many conn components
+			- Run w/OpenGL tracing to see if there's any errors
+
+		- ARM OpenGL issue
+			- See what happens when showing MainFrame before GameController is created
 
 		- Ship Preview Cache (*)
-		- Arrows on ShipPreview window
+		- Arrow keys on ShipPreview window
 
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one
@@ -372,6 +317,10 @@ Render:
 				- First: reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
 				  so that all updates come first, then all uploads come next, and finally all rendering happens
 
+		- Frontier (*)
+
+
+
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
 			  need to have a way to change layer, which would however require a different rendering batch (because
@@ -379,6 +328,8 @@ Render:
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
+		
+		- Check new explosion
 
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
@@ -418,8 +369,6 @@ Render:
 		- Attempt to use total point masses for springs (*)
 
 		- Cached quantities (*)
-
-		- Run w/OpenGL tracing to see if there's any errors
 
 		- Add more background music:
 			- Music:
@@ -461,11 +410,7 @@ Render:
 		
 		- Continuous Auto-focus (*)
 
-	- 1.15.0		
-
 		- Spring relaxation with intrinsics
-
-		- Frontier (*)
 
 - Ship making:
 	# Credit names:
@@ -9402,6 +9347,54 @@ IF WX:
 				+ post (w/link to youtube)
 			+ changes.txt up to fs.com
 			+ current version @ fs.com
+	+ 1.15.1
+		+ Bump-up version
+		+ Merge llvm_fixes
+			+ And verify performance, also of lighting
+		+ Feedback:
+			+ It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
+				+ Verify 
+				X Register for mouse wheel on SwitchPanel itself, and forward event to main frame
+				+ Give back focus to canvas when l-clicking on it
+					+ At electrical panel disappearing: lose focus
+				+ Set focus on canvas at startup
+				+ Try to redo by avoiding focus altogether
+				+ Test:
+					+ Verify re-layout at panel coming,disappearing,docking,undocking 
+					+ Verify fix
+						+ Basic
+						+ Disappearing panel when it has focus
+					+ HintPanel
+					+ Verify scrollbar in elec panel works
+				+ changes.txt
+			+ Plus 1: The terrain tool seems to be broken for some setting presets. 
+				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
+				+ GameController::AdjustTerrain returns bool; do different notif's depending on it
+					+ Sound: Error
+					+ Red cursor
+			+ Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
+				! Plus 2b: You can no longer increase/decrease sliders using arrow keys.
+				+ 1) Re-add char hook to mainframe (panel?)
+				+ 2) Re-instate hook handler 
+				+ 3) MainApp: don't forward to main frame
+				+ 4) Re-hyde bubble tool
+				+ Redo 'B'
+				+ Test:
+					+ Secret typing
+					+ Arrows @ Game (& +/-, PgUp/PgDown)
+					+ Arrows on two dialogs
+					+ Shortcuts of electrical panel, and key up @ push switch
+					+ B
+					+ query
+		+ Release
+			+ Make zip
+			+ Build & test installer
+			+ Github tag (w/out zip)
+			+ GameJolt
+				+ upload package x 2 & release
+				+ post
+			+ changes.txt up to fs.com
+
 
 
 
