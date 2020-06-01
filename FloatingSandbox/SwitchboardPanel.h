@@ -26,6 +26,7 @@
 #include <wx/timer.h>
 #include <wx/wx.h>
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -43,7 +44,7 @@ public:
 
     static std::unique_ptr<SwitchboardPanel> Create(
         wxWindow * parent,
-        wxWindow * parentLayoutWindow,
+        std::function<void(bool canHaveFocus)> onRelayout,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -164,7 +165,7 @@ private:
 
     SwitchboardPanel(
         wxWindow * parent,
-        wxWindow * parentLayoutWindow,
+        std::function<void(bool canHaveFocus)> onRelayout,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -189,8 +190,6 @@ private:
     void ShowDockCheckbox(bool doShow);
 
     void InstallMouseTracking(bool isActive);
-
-    void LayoutParent();
 
     void SetBackgroundBitmapFromCombo(int selection);
 
@@ -283,11 +282,11 @@ private:
 
 private:
 
+    std::function<void(bool canHaveFocus)> const mOnRelayout;
+
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
     std::shared_ptr<UIPreferencesManager> const mUIPreferencesManager;
-
-    wxWindow * const mParentLayoutWindow;
 
     //
     // Bitmaps
@@ -341,13 +340,6 @@ public:
 
     SwitchPanel(wxWindow * parent)
         : wxScrolled<wxPanel>(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL)
-    {}
-
-    virtual bool AcceptsFocus() const override
     {
-        // We do not want focus on this window as it steals mouse wheel events from the main window.
-        // All we process anyway are key events, which are explicitly forwarded to us by our
-        // parent, and mouse events originating on us.
-        return false;
     }
 };

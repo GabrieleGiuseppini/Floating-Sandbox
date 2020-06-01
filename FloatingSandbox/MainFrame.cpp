@@ -835,7 +835,19 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
-        mMainPanel,
+        [this](bool canAcceptFocus)
+        {
+            // Make sure our canvas catches mouse events, if the panel
+            // doesn't want them
+            if (!canAcceptFocus
+                && !mMainGLCanvas->HasFocus())
+            {
+                mMainGLCanvas->SetFocus();
+            }
+
+            // Layout
+            mMainPanel->Layout();
+        },
         mGameController,
         mSoundController,
         mUIPreferencesManager,
@@ -1193,6 +1205,14 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 
 void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
 {
+    // First of all, set focus on the main frame - we want
+    // to receive all events for us
+    if (!mMainGLCanvas->HasFocus())
+    {
+        mMainGLCanvas->SetFocus();
+    }
+
+    // Tell tool controller
     assert(!!mToolController);
     mToolController->OnLeftMouseDown();
 

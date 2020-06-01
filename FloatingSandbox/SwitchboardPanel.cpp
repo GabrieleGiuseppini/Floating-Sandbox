@@ -26,7 +26,7 @@ static constexpr int MaxKeyboardShortcuts = 20;
 
 std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parent,
-    wxWindow * parentLayoutWindow,
+    std::function<void(bool canHaveFocus)> onRelayout,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -36,7 +36,7 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     return std::unique_ptr<SwitchboardPanel>(
         new SwitchboardPanel(
             parent,
-            parentLayoutWindow,
+            std::move(onRelayout),
             std::move(gameController),
             std::move(soundController),
             std::move(uiPreferencesManager),
@@ -46,7 +46,7 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
 
 SwitchboardPanel::SwitchboardPanel(
     wxWindow * parent,
-    wxWindow * parentLayoutWindow,
+    std::function<void(bool canHaveFocus)> onRelayout,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -62,10 +62,10 @@ SwitchboardPanel::SwitchboardPanel(
     , mKeyboardShortcutToElementId()
     , mCurrentKeyDownElementId()
     //
+    , mOnRelayout(std::move(onRelayout))
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
     , mUIPreferencesManager(std::move(uiPreferencesManager))
-    , mParentLayoutWindow(parentLayoutWindow)
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
@@ -1078,12 +1078,17 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Decide panel visibility
     //
 
+    bool canHaveFocus;
+
     if (layoutElements.empty())
     {
         // No elements
 
         // Hide
         HideFully();
+
+        // Give mouse events up
+        canHaveFocus = false;
     }
     else
     {
@@ -1092,10 +1097,16 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         if (mUIPreferencesManager->GetAutoShowSwitchboard())
         {
             ShowFullyDocked();
+
+            // We want mouse events
+            canHaveFocus = true;
         }
         else
         {
             ShowPartially();
+
+            // Give mouse events up
+            canHaveFocus = false;
         }
     }
 
@@ -1103,14 +1114,14 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     Thaw();
 
     // Re-layout from parent
-    LayoutParent();
+    mOnRelayout(canHaveFocus);
 
     // If scrollbar appears, add spacing
     if (mSwitchPanel->HasScrollbar(wxHORIZONTAL))
     {
         mSwitchPanelVSizer->AddSpacer(10);
         mSwitchPanelVSizer->SetSizeHints(mSwitchPanel);
-        LayoutParent();
+        mOnRelayout(canHaveFocus);
     }
 }
 
@@ -1418,11 +1429,6 @@ void SwitchboardPanel::InstallMouseTracking(bool isActive)
     }
 }
 
-void SwitchboardPanel::LayoutParent()
-{
-    mParentLayoutWindow->Layout();
-}
-
 void SwitchboardPanel::SetBackgroundBitmapFromCombo(int selection)
 {
     assert(static_cast<unsigned int>(selection) < mBackgroundBitmapComboBox->GetCount());
@@ -1457,7 +1463,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         ShowFullyDocked();
 
         // Re-layout from parent
-        LayoutParent();
+        mOnRelayout(true);
 
         // Play sound
         mSoundController->PlayElectricalPanelDockSound(false);
@@ -1471,7 +1477,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         ShowFullyFloating();
 
         // Re-layout from parent
-        LayoutParent();
+        mOnRelayout(false);
 
         // Play sound
         mSoundController->PlayElectricalPanelDockSound(true);
@@ -1489,7 +1495,7 @@ void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
         ShowFullyFloating();
 
         // Re-layout from parent
-        LayoutParent();
+        mOnRelayout(true);
 
         // Play sound
         mSoundController->PlayElectricalPanelOpenSound(false);
@@ -1507,7 +1513,7 @@ void SwitchboardPanel::OnLeaveWindow()
         ShowPartially();
 
         // Re-layout from parent
-        LayoutParent();
+        mOnRelayout(false);
 
         // Play sound
         mSoundController->PlayElectricalPanelOpenSound(true);
