@@ -146,7 +146,8 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnMainPanelKeyDown, this); // Just for arrow keys
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -342,9 +343,11 @@ MainFrame::MainFrame(wxApp * mainApp)
     mToolsMenu->Append(pinMenuItem);
     Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
 
+    /* Easter Egg
     wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles\tB"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(injectAirBubblesMenuItem);
     Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
+    */
 
     wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry\tF"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(floodHoseMenuItem);
@@ -620,6 +623,18 @@ bool MainFrame::ProcessKeyDown(
             mGameController->Pan(vec2f(0.0f, mUIPreferencesManager->GetPanIncrement()));
             return true;
         }
+    }
+    else if (keyCode == 'B')
+    {
+        // Air Bubbles tool
+
+        assert(!!mToolController);
+        mToolController->SetTool(ToolType::InjectAirBubbles);
+
+        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
+        // around this, but this is an Easter Egg after all....
+
+        return true;
     }
     else if (keyCode == '/')
     {
@@ -1021,6 +1036,12 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
     // Close frame
     Close();
+}
+
+void MainFrame::OnMainPanelKeyDown(wxKeyEvent & event)
+{
+    if (!ProcessKeyDown(event.GetKeyCode(), event.GetModifiers()))
+        event.Skip();
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)

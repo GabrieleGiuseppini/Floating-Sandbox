@@ -255,8 +255,7 @@ Render:
 		+ Bump-up version
 		+ Merge llvm_fixes
 			+ And verify performance, also of lighting
-
-		= Feedback:
+		+ Feedback:
 			+ It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
 				+ Verify 
 				X Register for mouse wheel on SwitchPanel itself, and forward event to main frame
@@ -278,20 +277,31 @@ Render:
 				+ GameController::AdjustTerrain returns bool; do different notif's depending on it
 					+ Sound: Error
 					+ Red cursor
-			- Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
-			- Plus 2b: You can no longer increase/decrease sliders using arrow keys.
-				- 1) Re-add char hook to mainframe (panel?)
-				- 2) Re-instate hook handler 
-				- 3) MainApp: don't forward to main frame
-				- 4) Re-hyde bubble tool
-				- Test:
-					- Secret typing
-					- Arrows @ Game (& +/-, PgUp/PgDown)
-					- Arrows on two dialogs
-					- Shortcuts of electrical panel, and key up @ push switch
-					- query
+			+ Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
+				! Plus 2b: You can no longer increase/decrease sliders using arrow keys.
+				+ 1) Re-add char hook to mainframe (panel?)
+				+ 2) Re-instate hook handler 
+				+ 3) MainApp: don't forward to main frame
+				+ 4) Re-hyde bubble tool
+				+ Redo 'B'
+				+ Test:
+					+ Secret typing
+					+ Arrows @ Game (& +/-, PgUp/PgDown)
+					+ Arrows on two dialogs
+					+ Shortcuts of electrical panel, and key up @ push switch
+					+ B
+					+ query
 
 		- Release
+			- Make zip
+			- Github tag (w/zip)
+			- GameJolt
+				- upload package x 2 & release
+				- post
+			- changes.txt up to fs.com
+			- current version @ fs.com
+
+
 
 		- ARM OpenGL issue
 

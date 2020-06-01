@@ -133,6 +133,7 @@ private:
     void OnPostInitializeTrigger(wxTimerEvent & event);
     void OnMainFrameClose(wxCloseEvent & event);
     void OnQuit(wxCommandEvent & event);
+    void OnMainPanelKeyDown(wxKeyEvent & event);
     void OnGameTimerTrigger(wxTimerEvent & event);
     void OnLowFrequencyTimerTrigger(wxTimerEvent & event);
     void OnCheckUpdatesTimerTrigger(wxTimerEvent & event);
