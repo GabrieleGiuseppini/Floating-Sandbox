@@ -270,7 +270,6 @@ Render:
 						+ Disappearing panel when it has focus
 					+ HintPanel
 					+ Verify scrollbar in elec panel works
-
 				+ changes.txt
 			+ Plus 1: The terrain tool seems to be broken for some setting presets. 
 				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
@@ -294,7 +293,7 @@ Render:
 
 		= Release
 			+ Make zip
-			- Build & test installer
+			+ Build & test installer
 			- Github tag (w/out zip)
 			- GameJolt
 				- upload package x 2 & release
