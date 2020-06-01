@@ -26,7 +26,7 @@ static constexpr int MaxKeyboardShortcuts = 20;
 
 std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     wxWindow * parent,
-    std::function<void(bool canHaveFocus)> onRelayout,
+    std::function<void()> onRelayout,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -46,7 +46,7 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
 
 SwitchboardPanel::SwitchboardPanel(
     wxWindow * parent,
-    std::function<void(bool canHaveFocus)> onRelayout,
+    std::function<void()> onRelayout,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -72,7 +72,7 @@ SwitchboardPanel::SwitchboardPanel(
     float constexpr TotalProgressSteps = 9.0f;
     float ProgressSteps = 0.0;
 
-    wxPanel::Create(
+    UnFocusablePanel::Create(
         parent,
         wxID_ANY,
         wxDefaultPosition,
@@ -1078,17 +1078,12 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     // Decide panel visibility
     //
 
-    bool canHaveFocus;
-
     if (layoutElements.empty())
     {
         // No elements
 
         // Hide
         HideFully();
-
-        // Give mouse events up
-        canHaveFocus = false;
     }
     else
     {
@@ -1097,16 +1092,10 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         if (mUIPreferencesManager->GetAutoShowSwitchboard())
         {
             ShowFullyDocked();
-
-            // We want mouse events
-            canHaveFocus = true;
         }
         else
         {
             ShowPartially();
-
-            // Give mouse events up
-            canHaveFocus = false;
         }
     }
 
@@ -1114,14 +1103,14 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     Thaw();
 
     // Re-layout from parent
-    mOnRelayout(canHaveFocus);
+    mOnRelayout();
 
     // If scrollbar appears, add spacing
     if (mSwitchPanel->HasScrollbar(wxHORIZONTAL))
     {
         mSwitchPanelVSizer->AddSpacer(10);
         mSwitchPanelVSizer->SetSizeHints(mSwitchPanel);
-        mOnRelayout(canHaveFocus);
+        mOnRelayout();
     }
 }
 
@@ -1323,7 +1312,7 @@ void SwitchboardPanel::MakeSwitchPanel()
     mSwitchPanelVSizer->Add(mSwitchPanelElementSizer, 0, wxALIGN_TOP, 0);
 
     // Create (scrollable) panel for switches
-    mSwitchPanel = new SwitchPanel(this);
+    mSwitchPanel = new UnFocusableScrollablePanel(this);
     mSwitchPanel->SetScrollRate(5, 0);
     mSwitchPanel->FitInside();
     mSwitchPanel->SetSizerAndFit(mSwitchPanelVSizer);
@@ -1463,7 +1452,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         ShowFullyDocked();
 
         // Re-layout from parent
-        mOnRelayout(true);
+        mOnRelayout();
 
         // Play sound
         mSoundController->PlayElectricalPanelDockSound(false);
@@ -1477,7 +1466,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         ShowFullyFloating();
 
         // Re-layout from parent
-        mOnRelayout(false);
+        mOnRelayout();
 
         // Play sound
         mSoundController->PlayElectricalPanelDockSound(true);
@@ -1495,7 +1484,7 @@ void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
         ShowFullyFloating();
 
         // Re-layout from parent
-        mOnRelayout(true);
+        mOnRelayout();
 
         // Play sound
         mSoundController->PlayElectricalPanelOpenSound(false);
@@ -1513,7 +1502,7 @@ void SwitchboardPanel::OnLeaveWindow()
         ShowPartially();
 
         // Re-layout from parent
-        mOnRelayout(false);
+        mOnRelayout();
 
         // Play sound
         mSoundController->PlayElectricalPanelOpenSound(true);

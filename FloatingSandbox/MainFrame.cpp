@@ -835,16 +835,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mElectricalPanel = SwitchboardPanel::Create(
         mMainPanel,
-        [this](bool canAcceptFocus)
+        [this]()
         {
-            // Make sure our canvas catches mouse events, if the panel
-            // doesn't want them
-            if (!canAcceptFocus
-                && !mMainGLCanvas->HasFocus())
-            {
-                mMainGLCanvas->SetFocus();
-            }
-
             // Layout
             mMainPanel->Layout();
         },
@@ -959,7 +951,15 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     splash->Close();
 
+
+    //
+    // Finalize frame
+    //
+
     UpdateFrameTitle();
+
+    // Set focus on canvas, so it starts getting mouse events
+    mMainGLCanvas->SetFocus();
 
     // Log post-initialize duration
     auto const postInitializeEndTimestamp = std::chrono::steady_clock::now();
@@ -1205,8 +1205,8 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 
 void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
 {
-    // First of all, set focus on the main frame - we want
-    // to receive all events for us
+    // First of all, set focus on the canvas if it has lost it - we want
+    // it to receive all mouse events
     if (!mMainGLCanvas->HasFocus())
     {
         mMainGLCanvas->SetFocus();

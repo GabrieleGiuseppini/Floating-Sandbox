@@ -10,7 +10,9 @@ set  (UI_CONTROLS_SOURCES
 	LayoutHelper.h
 	ScalarTimeSeriesProbeControl.cpp
 	ScalarTimeSeriesProbeControl.h	
-	SliderControl.h	
+	SliderControl.h
+	UnFocusablePanel.h
+	UnFocusableScrollablePanel.h
 )
 
 source_group(" " FILES ${UI_CONTROLS_SOURCES})

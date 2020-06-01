@@ -1,3 +1,6 @@
+TODO
+- Fixed issue with mouse wheel/zoom stopping working - this time for real!
+
 1.15.0.3
 - Added automatic texturization: ships that do not have a high-definition texture image of their own now get, by default, an automatically-generated high-definition texture computed using the individual particles' materials
 	- Floating Sandbox purists may always turn this new feature off under "Game Preferences" -> "Ships"

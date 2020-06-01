@@ -10,6 +10,8 @@
 
 #include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ElectricalElementControl.h>
+#include <UIControls/UnfocusablePanel.h>
+#include <UIControls/UnFocusableScrollablePanel.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
@@ -22,7 +24,6 @@
 #include <wx/custombgwin.h>
 #include <wx/gbsizer.h>
 #include <wx/popupwin.h>
-#include <wx/scrolwin.h>
 #include <wx/timer.h>
 #include <wx/wx.h>
 
@@ -36,7 +37,7 @@
 class SwitchPanel;
 
 class SwitchboardPanel
-    : public wxCustomBackgroundWindow<wxPanel>
+    : public wxCustomBackgroundWindow<UnFocusablePanel>
     , public ILifecycleGameEventHandler
     , public IElectricalElementGameEventHandler
 {
@@ -44,7 +45,7 @@ public:
 
     static std::unique_ptr<SwitchboardPanel> Create(
         wxWindow * parent,
-        std::function<void(bool canHaveFocus)> onRelayout,
+        std::function<void()> onRelayout,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -165,7 +166,7 @@ private:
 
     SwitchboardPanel(
         wxWindow * parent,
-        std::function<void(bool canHaveFocus)> onRelayout,
+        std::function<void()> onRelayout,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
@@ -228,7 +229,7 @@ private:
 
     wxPanel * mHintPanel;
 
-    SwitchPanel * mSwitchPanel;
+    UnFocusableScrollablePanel * mSwitchPanel;
     wxBoxSizer * mSwitchPanelVSizer;
     wxGridBagSizer * mSwitchPanelElementSizer;
 
@@ -282,7 +283,7 @@ private:
 
 private:
 
-    std::function<void(bool canHaveFocus)> const mOnRelayout;
+    std::function<void()> const mOnRelayout;
 
     std::shared_ptr<IGameController> const mGameController;
     std::shared_ptr<SoundController> const mSoundController;
@@ -329,17 +330,4 @@ private:
     std::vector<wxBitmap> mEngineControllerHandBitmaps;
 
     wxSize mMinBitmapSize;
-};
-
-/*
- * Scrollable panel that contains switches.
- */
-class SwitchPanel : public wxScrolled<wxPanel>
-{
-public:
-
-    SwitchPanel(wxWindow * parent)
-        : wxScrolled<wxPanel>(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL)
-    {
-    }
 };
