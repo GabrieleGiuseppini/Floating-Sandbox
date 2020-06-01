@@ -499,7 +499,7 @@ void World::AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates)
         mCurrentSimulationTime);
 }
 
-bool World::AdjustOceanFloorTo(
+std::optional<bool> World::AdjustOceanFloorTo(
     float x1,
     float targetY1,
     float x2,

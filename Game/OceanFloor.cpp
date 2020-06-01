@@ -126,7 +126,7 @@ void OceanFloor::Upload(
     renderContext.UploadLandEnd();
 }
 
-bool OceanFloor::AdjustTo(
+std::optional<bool> OceanFloor::AdjustTo(
     float x1,
     float targetY1,
     float x2,
@@ -135,7 +135,7 @@ bool OceanFloor::AdjustTo(
     if (mCurrentOceanFloorDetailAmplification == 0.0f)
     {
         // Nothing to do
-        return false;
+        return std::nullopt;
     }
 
     //

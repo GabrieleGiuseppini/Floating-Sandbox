@@ -149,6 +149,8 @@ public:
 
     void PlayTickSound();
 
+    void PlayErrorSound();
+
     //
     // Updating
     //
@@ -437,6 +439,7 @@ private:
             case SoundType::ThanosSnap:
             case SoundType::Scrub:
             case SoundType::Snapshot:
+            case SoundType::Error:
                 return 2;
             default:
                 return 15;

@@ -97,7 +97,10 @@ enum class SoundType : uint32_t
     Scrub,
     RepairStructure,
     ThanosSnap,
-    WaveMaker
+    WaveMaker,
+
+    // UI
+    Error
 };
 
 SoundType StrToSoundType(std::string const & str);

@@ -14,6 +14,7 @@
 #include <GameCore/UniqueBuffer.h>
 
 #include <memory>
+#include <optional>
 
 namespace Physics
 {
@@ -39,7 +40,7 @@ public:
 
 public:
 
-    bool AdjustTo(
+    std::optional<bool> AdjustTo(
         float x1,
         float targetY1,
         float x2,

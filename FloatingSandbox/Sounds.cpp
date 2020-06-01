@@ -147,6 +147,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ThanosSnap;
     else if (Utils::CaseInsensitiveEquals(str, "WaveMaker"))
         return SoundType::WaveMaker;
+    else if (Utils::CaseInsensitiveEquals(str, "Error"))
+        return SoundType::Error;
     else
         throw GameException("Unrecognized SoundType \"" + str + "\"");
 }

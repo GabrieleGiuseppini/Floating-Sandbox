@@ -254,10 +254,10 @@ Render:
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
 		+ Bump-up version
-		= Merge llvm_fixes
-			- And verify performance, also of lighting
+		+ Merge llvm_fixes
+			+ And verify performance, also of lighting
 
-		- Feedback:
+		= Feedback:
 			+ It seems the mouse wheel glitch still occurs; But only if you click on the panel itself, not the elements on them. 
 				+ Verify 
 				X Register for mouse wheel on SwitchPanel itself, and forward event to main frame
@@ -274,16 +274,17 @@ Render:
 					+ Verify scrollbar in elec panel works
 
 				+ changes.txt
-			- Plus 1: The terrain tool seems to be broken for some setting presets. 
+			= Plus 1: The terrain tool seems to be broken for some setting presets. 
 				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
-				- GameController::AdjustTerrain returns bool; do different notif's depending on it
-					- Sound: Error
+				- TODOHERE: GameController::AdjustTerrain returns bool; do different notif's depending on it
+					= Sound: Error
 					- Red cursor
 			- Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
 			- Plus 2b: You can no longer increase/decrease sliders using arrow keys.
 				- 1) Re-add char hook to mainframe (panel?)
 				- 2) Re-instate hook handler 
 				- 3) MainApp: don't forward to main frame
+				- 4) Re-hyde bubble tool
 				- Test:
 					- Secret typing
 					- Arrows @ Game (& +/-, PgUp/PgDown)

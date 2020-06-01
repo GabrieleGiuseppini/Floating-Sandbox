@@ -442,7 +442,8 @@ SoundController::SoundController(
                 || soundType == SoundType::GlassTick
                 || soundType == SoundType::EngineTelegraph
                 || soundType == SoundType::WatertightDoorClosed
-                || soundType == SoundType::WatertightDoorOpened)
+                || soundType == SoundType::WatertightDoorOpened
+                || soundType == SoundType::Error)
         {
             //
             // - one-shot sound
@@ -1111,6 +1112,14 @@ void SoundController::PlayTickSound()
     PlayOneShotMultipleChoiceSound(
         SoundType::GlassTick,
         100.0f,
+        true);
+}
+
+void SoundController::PlayErrorSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Error,
+        50.0f,
         true);
 }
 

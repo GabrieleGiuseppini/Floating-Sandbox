@@ -214,7 +214,7 @@ public:
 
     void AdjustOceanSurfaceTo(std::optional<vec2f> const & worldCoordinates);
 
-    bool AdjustOceanFloorTo(
+    std::optional<bool> AdjustOceanFloorTo(
         float x1,
         float targetY1,
         float x2,

@@ -1042,7 +1042,7 @@ void GameController::AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoo
     mWorld->AdjustOceanSurfaceTo(worldCoordinates);
 }
 
-bool GameController::AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates)
+std::optional<bool> GameController::AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);

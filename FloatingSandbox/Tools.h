@@ -1860,13 +1860,22 @@ public:
             if (!mCurrentTrajectoryPreviousPosition)
                 mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
 
-            bool isAdjusted = mGameController->AdjustOceanFloorTo(
+            auto isAdjusted = mGameController->AdjustOceanFloorTo(
                 *mCurrentTrajectoryPreviousPosition,
                 inputState.MousePosition);
 
-            if (isAdjusted)
+            if (isAdjusted.has_value())
             {
-                mSoundController->PlayTerrainAdjustSound();
+                if (*isAdjusted)
+                {
+                    mSoundController->PlayTerrainAdjustSound();
+                    // TODO: cursor
+                }
+            }
+            else
+            {
+                mSoundController->PlayErrorSound();
+                // TODO: cursor
             }
 
             mCurrentTrajectoryPreviousPosition = inputState.MousePosition;

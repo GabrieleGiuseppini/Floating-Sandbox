@@ -1854,7 +1854,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     SliderWidth,
                     -1,
                     "Ocean Floor Detail",
-                    "Adjusts the contrast of the user-drawn ocean floor terrain",
+                    "Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to zero disables the ability to adjust the ocean floor.",
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);

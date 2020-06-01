@@ -676,7 +676,7 @@ bool MainFrame::ProcessKeyUp(
 
 void MainFrame::OnSecretTypingOpenDebugWindow()
 {
-    LogMessage("TODOHERE: MainFrame::OnSecretTypingOpenDebugWindow");
+    LogMessage("MainFrame::OnSecretTypingOpenDebugWindow");
 }
 
 void MainFrame::OnSecretTypingLoadFallbackShip()

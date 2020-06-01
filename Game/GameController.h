@@ -185,7 +185,7 @@ public:
     void DetonateRCBombs() override;
     void DetonateAntiMatterBombs() override;
     void AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates) override;
-    bool AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
+    std::optional<bool> AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ScrubThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(vec2f const & screenCoordinates) override;
     std::optional<ElementId> GetNearestPointAt(vec2f const & screenCoordinates) const override;
