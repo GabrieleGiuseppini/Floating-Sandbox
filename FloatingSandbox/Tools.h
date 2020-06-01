@@ -1839,12 +1839,15 @@ public:
     virtual void Initialize(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
+        {
             mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+            SetCurrentCursor(&mDownCursorImage);
+        }
         else
+        {
             mCurrentTrajectoryPreviousPosition.reset();
-
-        // Set cursor
-        SetCurrentCursor();
+            SetCurrentCursor(&mUpCursorImage);
+        }
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
@@ -1853,8 +1856,6 @@ public:
 
     virtual void UpdateSimulation(InputState const & inputState) override
     {
-        bool wasEngaged = !!mCurrentTrajectoryPreviousPosition;
-
         if (inputState.IsLeftMouseDown)
         {
             if (!mCurrentTrajectoryPreviousPosition)
@@ -1866,31 +1867,29 @@ public:
 
             if (isAdjusted.has_value())
             {
+                // Adjusted, eventually idempotent
                 if (*isAdjusted)
                 {
                     mSoundController->PlayTerrainAdjustSound();
-                    // TODO: cursor
                 }
+
+                SetCurrentCursor(&mDownCursorImage);
             }
             else
             {
+                // No adjustment
                 mSoundController->PlayErrorSound();
-                // TODO: cursor
+                SetCurrentCursor(&mErrorCursorImage);
             }
 
+            // Remember this coordinate as the starting point of the
+            // next stride
             mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
         }
         else
         {
             mCurrentTrajectoryPreviousPosition.reset();
-        }
-
-        if (!!mCurrentTrajectoryPreviousPosition != wasEngaged)
-        {
-            // State change
-
-            // Update cursor
-            SetCurrentCursor();
+            SetCurrentCursor(&mUpCursorImage);
         }
     }
 
@@ -1902,17 +1901,23 @@ public:
 
 private:
 
-    void SetCurrentCursor()
+    void SetCurrentCursor(wxImage const * cursor)
     {
-        mToolCursorManager.SetToolCursor(!!mCurrentTrajectoryPreviousPosition ? mDownCursorImage : mUpCursorImage);
+        if (cursor != mCurrentCursor)
+        {
+            mToolCursorManager.SetToolCursor(*cursor);
+            mCurrentCursor = cursor;
+        }
     }
 
     // Our state
     std::optional<vec2f> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
+    wxImage const * mCurrentCursor; // To track cursor changes
     wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
+    wxImage const mErrorCursorImage;
 };
 
 class ScrubTool final : public Tool

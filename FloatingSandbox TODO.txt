@@ -250,7 +250,6 @@ Render:
 		- Blog:
 			- all new electrical elements
 
-
 		X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-X*-
 
 		+ Bump-up version
@@ -274,11 +273,11 @@ Render:
 					+ Verify scrollbar in elec panel works
 
 				+ changes.txt
-			= Plus 1: The terrain tool seems to be broken for some setting presets. 
+			+ Plus 1: The terrain tool seems to be broken for some setting presets. 
 				! It seems to break if I set Ocean Floor Bumpiness and Ocean Floor Detail to both be 0. 
-				- TODOHERE: GameController::AdjustTerrain returns bool; do different notif's depending on it
-					= Sound: Error
-					- Red cursor
+				+ GameController::AdjustTerrain returns bool; do different notif's depending on it
+					+ Sound: Error
+					+ Red cursor
 			- Plus 2a: You can no longer navigate the ship explorer (folders) using arrow keys. (make the directory separator movable) 
 			- Plus 2b: You can no longer increase/decrease sliders using arrow keys.
 				- 1) Re-add char hook to mainframe (panel?)
@@ -291,6 +290,8 @@ Render:
 					- Arrows on two dialogs
 					- Shortcuts of electrical panel, and key up @ push switch
 					- query
+
+		- Release
 
 		- ARM OpenGL issue
 

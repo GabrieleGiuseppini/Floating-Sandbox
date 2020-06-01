@@ -474,8 +474,10 @@ TerrainAdjustTool::TerrainAdjustTool(
         std::move(gameController),
         std::move(soundController))
     , mCurrentTrajectoryPreviousPosition()
+    , mCurrentCursor(nullptr)
     , mUpCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_down", 15, 15, resourceLocator))
+    , mErrorCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_error", 15, 15, resourceLocator))
 {
 }
 

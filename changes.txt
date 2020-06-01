@@ -1,5 +1,6 @@
 TODO
 - Fixed issue with mouse wheel/zoom stopping working - this time for real!
+- More intuitive feedback warning the user that the Terrain Adjust tool doesn't work when Ocean Floor Detail is set to zero
 
 1.15.0.3
 - Added automatic texturization: ships that do not have a high-definition texture image of their own now get, by default, an automatically-generated high-definition texture computed using the individual particles' materials
