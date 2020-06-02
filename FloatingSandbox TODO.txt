@@ -1268,21 +1268,26 @@ Render:
 		- How to Guide
 
 - UI:
-	- ShipLoadDialog: ship preview database/cache (*)
-		- Prep:
-			- ShipPreview: has path of preview image file ("preview image file path"), not preview image file itself
-				- Also exposes LoadPreviewImage() to load preview image on-demand
-			- ImageData::MakeCopy() -> unique_ptr
+	= ShipLoadDialog: ship preview database/cache (*)
+		= Prep:
+			- ShipDefinitionFile:
+				- Load(png V shp)
+				- IsShipDefinitionFile(png V shp)
+			- ShipPreview:
+				- Load: based off ShipDefinitionFile::Load implementation
+				- Has path of preview image file ("preview image file path"), not preview image file itself
+					- Also exposes LoadPreviewImage() to load preview image on-demand
+			+ ImageData::MakeCopy() -> unique_ptr
 		- ShipPreviewDirectoryManager:
 			- Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
-				- Both derive from abstract PreviewImageDatabase w/definitions
-				- In PreviewImageDatabase.cpp/.h
+				+ Both derive from abstract PreviewImageDatabase w/definitions
+				+ In PreviewImageDatabase.cpp/.h
 				- PersistedPreviewImageDatabase: used to manage an existing DB
-					- Key is preview image file filename
-					- Value is:
-						- last modified
-						- offset & size
+					+ Key is preview image file filename
+					+ Value is:
+						+ last modified
+						+ offset & size
 					- static Load(dir path) -> ShipPreviewDatabase
 						- If no db file exists => constructed as empty (empty index map)
 						- open file as TODOstream
@@ -1298,12 +1303,11 @@ Render:
 						- If has data for it in map & last modified is valid: load from db;
 						  else: return null
 				- NewPreviewImageDatabase: used to manage a new DB
-					- Key is preview image file filename
-					- Value is:
-						- last modified
-						- uq_ptr<ImageData>
-					- public cctor(dir path): initializes empty index map (ordered map)
-						- stores path
+					+ Key is preview image file filename
+					+ Value is:
+						+ last modified
+						+ uq_ptr<ImageData>
+					+ public cctor(): initializes empty index map (ordered map)
 					- Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
 						- invoked always, even for unchanged preview images
 						- check if not already in map => error
@@ -1312,12 +1316,13 @@ Render:
 							- value:
 								- last modified
 								- uq_ptr<Image> (nullptr if no change from old DB)
-					- SetDeprecated()
+					- Deprecate()
 						- Won't save, will save mem by not storing
-					- Commit(PersistedPreviewImageDatabase const & oldDb)
+					- Commit(dir path, PersistedPreviewImageDatabase const & oldDb)
 						! All exceptions here are silently caught and commit is (cleanly) aborted
 						- if new is empty or (new is deprecated and old not empty) => nop (return)
-						- open tmp output file for w; truncate
+						- TODO: min # of entries, if TODO: old
+						- TODO: on-demand: open tmp output file for w; truncate
 						- initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
 						- 1) Copy from old DB as long as possible:
 							- start_copy_offset = 0
@@ -1340,6 +1345,8 @@ Render:
 						- delete old file, rename tmp file
 
 			- API:
+				- TODOHERE: redo without second iteration, and no need to store filepaths
+					- they are enum'd on the fly at ::Enumerate (rename for getter)
 				- static factory (folder path) -> uq_ptr(self)
 					- enumerate ship files
 						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile 
@@ -1347,9 +1354,10 @@ Render:
 					- sort ship preview vector by <filename> // like now
 					- load existing database (PersistedPreviewImageDatabase::Load)
 					- passes vector<filepath> to private cctor
-				- private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
-					- stores both as const
-				- getter for (sorted) list of filepath's
+				+ private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
+					+ stores both as const
+				= TODO: rename: getter for (sorted) list of filepath's
+				- TODO: iterator?
 				- StartPreviewImageEnumeration()
 					- Reset current index
 				- EnumeratedPreview * GetCurrent()

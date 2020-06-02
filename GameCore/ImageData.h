@@ -9,6 +9,7 @@
 #include "ImageSize.h"
 #include "Vectors.h"
 
+#include <cstring>
 #include <memory>
 
 template <typename TColor>
@@ -44,6 +45,16 @@ public:
         : Size(other.Size)
         , Data(std::move(other.Data))
     {
+    }
+
+    std::unique_ptr<ImageData> MakeCopy() const
+    {
+        auto newData = std::make_unique<color_type[]>(Size.GetPixelCount());
+        std::memcpy(newData.get(), Data.get(), static_cast<size_t>(Size.GetPixelCount()) * sizeof(color_type));
+
+        return std::make_unique<ImageData>(
+            Size,
+            std::move(newData));
     }
 };
 

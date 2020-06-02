@@ -34,6 +34,10 @@ set  (GAME_SOURCES
 	ShipMetadata.h
 	ShipPreview.cpp
 	ShipPreview.h
+	ShipPreviewDirectoryManager.cpp
+	ShipPreviewDirectoryManager.h
+	ShipPreviewImageDatabase.cpp
+	ShipPreviewImageDatabase.h
 	ShipTexturizer.cpp
 	ShipTexturizer.h
 	TextLayer.cpp
