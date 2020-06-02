@@ -19,7 +19,7 @@
 #include <string>
 
 /*
- * The content of a ship definition file (.shp).
+ * A ship definition as extracted from its file (.shp or .png).
  */
 struct ShipDefinitionFile
 {
@@ -38,19 +38,19 @@ public:
     bool const DoHideElectricalsInPreview;
     bool const DoHideHDInPreview;
 
-    // The ship's metadata
     ShipMetadata const Metadata;
+
+public:
 
     static ShipDefinitionFile Load(std::filesystem::path definitionFilePath);
 
-    static ShipDefinitionFile Create(
-        picojson::object const & definitionJson,
-        std::string const & defaultShipName);
-
     static bool IsShipDefinitionFile(std::filesystem::path const & filepath)
     {
-        return Utils::ToLower(filepath.extension().string()) == ".shp";
+        return Utils::CaseInsensitiveEquals(filepath.extension().string(), ".shp")
+            || Utils::CaseInsensitiveEquals(filepath.extension().string(), ".png");
     }
+
+private:
 
     ShipDefinitionFile(
         std::filesystem::path const & structuralLayerImageFilePath,

@@ -331,7 +331,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 auto & infoTile = mInfoTiles[message->GetShipIndex()];
 
-                infoTile.Bitmap = MakeBitmap(message->GetShipPreview());
+                infoTile.Bitmap = MakeBitmap(message->GetShipPreviewImage());
                 infoTile.IsHD = message->GetShipPreview().IsHD;
                 infoTile.HasElectricals = message->GetShipPreview().HasElectricals;
 
@@ -446,11 +446,11 @@ void ShipPreviewWindow::Choose(size_t infoTileIndex)
     ProcessWindowEvent(event);
 }
 
-wxBitmap ShipPreviewWindow::MakeBitmap(ShipPreview const & shipPreview) const
+wxBitmap ShipPreviewWindow::MakeBitmap(RgbaImageData const & shipPreviewImage) const
 {
     try
     {
-        return WxHelpers::MakeBitmap(shipPreview.PreviewImage);
+        return WxHelpers::MakeBitmap(shipPreviewImage);
     }
     catch (...)
     {
@@ -830,7 +830,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                 auto const entryFilepath = entryIt.path();
 
                 if (std::filesystem::is_regular_file(entryFilepath)
-                    && (entryFilepath.extension().string() == ".png" || ShipDefinitionFile::IsShipDefinitionFile(entryFilepath)))
+                    && ShipDefinitionFile::IsShipDefinitionFile(entryFilepath))
                 {
                     // Make sure the filename may be converted to the local codepage
                     // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
@@ -888,9 +888,10 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
             LogMessage("PreviewThread::ScanDirectory(): loading preview for \"", shipFilepaths[iShip].filename().string(), "\"...");
 
             // Load preview
-            auto shipPreview = ShipPreview::Load(
-                shipFilepaths[iShip],
-                ImageSize(PreviewImageWidth, PreviewImageHeight));
+            auto shipPreview = ShipPreview::Load(shipFilepaths[iShip]);
+
+            // Load preview image
+            auto shipPreviewImage = shipPreview.LoadPreviewImage(ImageSize(PreviewImageWidth, PreviewImageHeight));
 
             LogMessage("PreviewThread::ScanDirectory(): ...preview loaded.");
 
@@ -898,7 +899,8 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
             QueueThreadToPanelMessage(
                 ThreadToPanelMessage::MakePreviewReadyMessage(
                     iShip,
-                    std::move(shipPreview)));
+                    std::move(shipPreview),
+                    std::move(shipPreviewImage)));
 
             // Take it easy a bit
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

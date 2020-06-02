@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -219,7 +220,7 @@ private:
 
     void Choose(size_t infoTileIndex);
 
-    wxBitmap MakeBitmap(ShipPreview const & shipPreview) const;
+    wxBitmap MakeBitmap(RgbaImageData const & shipPreviewImage) const;
 
     void RecalculateGeometry(
         wxSize clientSize,
@@ -409,11 +410,13 @@ private:
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
             size_t shipIndex,
-            std::unique_ptr<ShipPreview> shipPreview)
+            ShipPreview && shipPreview,
+            RgbaImageData && shipPreviewImage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewReady));
             msg->mShipIndex = shipIndex;
-            msg->mShipPreview = std::move(shipPreview);
+            msg->mShipPreview.emplace(std::move(shipPreview));
+            msg->mShipPreviewImage.emplace(std::move(shipPreviewImage));
             return msg;
         }
 
@@ -469,6 +472,11 @@ private:
             return *mShipPreview;
         }
 
+        RgbaImageData const & GetShipPreviewImage()
+        {
+            return *mShipPreviewImage;
+        }
+
     private:
 
         ThreadToPanelMessage(MessageType messageType)
@@ -478,6 +486,7 @@ private:
             , mErrorMessage()
             , mShipIndex()
             , mShipPreview()
+            , mShipPreviewImage()
         {}
 
         MessageType mMessageType;
@@ -486,7 +495,8 @@ private:
         std::vector<std::filesystem::path> mScannedShipFilepaths;
         std::string mErrorMessage;
         std::optional<size_t> mShipIndex;
-        std::unique_ptr<ShipPreview> mShipPreview;
+        std::optional<ShipPreview> mShipPreview;
+        std::optional<RgbaImageData> mShipPreviewImage;
     };
 
     void QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message);

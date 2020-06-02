@@ -1269,16 +1269,16 @@ Render:
 
 - UI:
 	= ShipLoadDialog: ship preview database/cache (*)
-		= Prep:
-			- ShipDefinitionFile:
-				- Load(png V shp)
-				- IsShipDefinitionFile(png V shp)
-			- ShipPreview:
-				- Load: based off ShipDefinitionFile::Load implementation
-				- Has path of preview image file ("preview image file path"), not preview image file itself
-					- Also exposes LoadPreviewImage() to load preview image on-demand
+		+ Prep:
+			+ ShipDefinitionFile:
+				+ Load(png V shp)
+				+ IsShipDefinitionFile(png V shp)
+			+ ShipPreview:
+				+ Load: based off ShipDefinitionFile::Load implementation
+				+ Has path of preview image file ("preview image file path"), not preview image file itself
+					+ Also exposes LoadPreviewImage() to load preview image on-demand
 			+ ImageData::MakeCopy() -> unique_ptr
-		- ShipPreviewDirectoryManager:
+		= ShipPreviewDirectoryManager:
 			- Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
 				+ Both derive from abstract PreviewImageDatabase w/definitions
@@ -1377,7 +1377,7 @@ Render:
 							- return preview + image
 				- void Next()
 					- Increment current index
-				- Commit()
+				- Commit() // called only when thread completes enumeration
 					- CachedPreviewImageDatabase::Commit()
 
 	- ShipLoadDialog: display also folders

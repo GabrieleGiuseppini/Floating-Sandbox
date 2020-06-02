@@ -12,107 +12,56 @@
 
 ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
 {
-    std::filesystem::path absoluteStructuralLayerImageFilePath;
+    // Load definition
+    auto sdf = ShipDefinitionFile::Load(filepath);
+
+    //
+    // Load images
+    //
+
+    ImageData structuralImage = ImageFileTools::LoadImageRgb(sdf.StructuralLayerImageFilePath);
+
     std::optional<RgbImageData> ropesLayerImage;
+    if (sdf.RopesLayerImageFilePath.has_value())
+    {
+        try
+        {
+            ropesLayerImage.emplace(
+                ImageFileTools::LoadImageRgb(*sdf.RopesLayerImageFilePath));
+        }
+        catch (GameException const & gex)
+        {
+            throw GameException("Error loading rope layer image: " + std::string(gex.what()));
+        }
+    }
+
     std::optional<RgbImageData> electricalLayerImage;
+    if (sdf.ElectricalLayerImageFilePath.has_value())
+    {
+        try
+        {
+            electricalLayerImage.emplace(
+                ImageFileTools::LoadImageRgb(*sdf.ElectricalLayerImageFilePath));
+        }
+        catch (GameException const & gex)
+        {
+            throw GameException("Error loading electrical layer image: " + std::string(gex.what()));
+        }
+    }
+
     std::optional<RgbaImageData> textureLayerImage;
-    std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings;
-    std::vector<std::string> electricalElementLabels;
-    std::optional<ShipMetadata> shipMetadata;
-
-    if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
+    if (sdf.TextureLayerImageFilePath.has_value())
     {
-        std::filesystem::path const basePath = filepath.parent_path();
-
-        //
-        // Load full definition
-        //
-
-        ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
-
-        //
-        // Make structure layer image path absolute
-        //
-
-        absoluteStructuralLayerImageFilePath =
-            basePath / sdf.StructuralLayerImageFilePath;
-
-        //
-        // Load ropes layer image
-        //
-
-        if (!!sdf.RopesLayerImageFilePath)
+        try
         {
-            try
-            {
-                ropesLayerImage.emplace(
-                    ImageFileTools::LoadImageRgb(basePath / *sdf.RopesLayerImageFilePath));
-            }
-            catch (GameException const & gex)
-            {
-                throw GameException("Error loading rope layer image: " + std::string(gex.what()));
-            }
+            textureLayerImage.emplace(
+                ImageFileTools::LoadImageRgba(*sdf.TextureLayerImageFilePath));
         }
-
-        //
-        // Load electrical layer image
-        //
-
-        if (!!sdf.ElectricalLayerImageFilePath)
+        catch (GameException const & gex)
         {
-            try
-            {
-                electricalLayerImage.emplace(
-                    ImageFileTools::LoadImageRgb(basePath / *sdf.ElectricalLayerImageFilePath));
-            }
-            catch (GameException const & gex)
-            {
-                throw GameException("Error loading electrical layer image: " + std::string(gex.what()));
-            }
+            throw GameException("Error loading texture layer image: " + std::string(gex.what()));
         }
-
-        //
-        // Load texture layer image
-        //
-
-        if (!!sdf.TextureLayerImageFilePath)
-        {
-            try
-            {
-                textureLayerImage.emplace(
-                    ImageFileTools::LoadImageRgba(basePath / *sdf.TextureLayerImageFilePath));
-            }
-            catch (GameException const & gex)
-            {
-                throw GameException("Error loading texture layer image: " + std::string(gex.what()));
-            }
-        }
-
-        //
-        // Other members
-        //
-
-        autoTexturizationSettings = sdf.AutoTexturizationSettings;
-        shipMetadata.emplace(sdf.Metadata);
     }
-    else
-    {
-        //
-        // Assume it's just a structural image
-        //
-
-        absoluteStructuralLayerImageFilePath = filepath;
-
-        shipMetadata.emplace(filepath.stem().string());
-    }
-
-    assert(!!shipMetadata);
-
-    //
-    // Load structural layer image
-    //
-
-    ImageData structuralImage = ImageFileTools::LoadImageRgb(absoluteStructuralLayerImageFilePath);
 
     //
     // Create definition
@@ -123,6 +72,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         std::move(ropesLayerImage),
         std::move(electricalLayerImage),
         std::move(textureLayerImage),
-        std::move(autoTexturizationSettings),
-        *shipMetadata);
+        std::move(sdf.AutoTexturizationSettings),
+        sdf.Metadata);
 }

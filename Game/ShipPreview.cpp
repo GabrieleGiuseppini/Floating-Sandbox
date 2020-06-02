@@ -12,81 +12,52 @@
 
 #include <cassert>
 
-std::unique_ptr<ShipPreview> ShipPreview::Load(
-    std::filesystem::path const & filepath,
-    ImageSize const & maxSize)
+ShipPreview ShipPreview::Load(std::filesystem::path const & filepath)
 {
+    //
+    // Load definition and create preview from it
+    //
+
+    ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
+
     std::filesystem::path previewImageFilePath;
-    std::optional<ImageSize> originalSize;
-    std::optional<ShipMetadata> shipMetadata;
     bool isHD = false;
     bool hasElectricals = false;
 
-    if (ShipDefinitionFile::IsShipDefinitionFile(filepath))
+    if (sdf.TextureLayerImageFilePath.has_value())
     {
-        //
-        // Load definition
-        //
+        // Use the ship's texture as its preview
+        previewImageFilePath = *sdf.TextureLayerImageFilePath;
 
-        ShipDefinitionFile sdf = ShipDefinitionFile::Load(filepath);
-
-        std::filesystem::path basePath = filepath.parent_path();
-
-        if (!!sdf.TextureLayerImageFilePath)
-        {
-            // Use texture for preview
-            previewImageFilePath = basePath  / *sdf.TextureLayerImageFilePath;
-
-            // Categorize as HD, unless instructed not to do so
-            if (!sdf.DoHideHDInPreview)
-                isHD = true;
-        }
-        else
-        {
-            // Use structural image for preview
-            previewImageFilePath = basePath / sdf.StructuralLayerImageFilePath;
-        }
-
-        // Original size is from structure anyway
-        originalSize = ImageFileTools::GetImageSize(basePath / sdf.StructuralLayerImageFilePath);
-
-        shipMetadata.emplace(sdf.Metadata);
-
-        // Check whether it has electricals, unless instructed not to do so
-        if (!sdf.DoHideElectricalsInPreview)
-            hasElectricals = sdf.ElectricalLayerImageFilePath.has_value();
+        // Categorize as HD, unless instructed not to do so
+        if (!sdf.DoHideHDInPreview)
+            isHD = true;
     }
     else
     {
-        //
-        // Assume it's just a structural image
-        //
-
-        previewImageFilePath = filepath;
-
-        originalSize = ImageFileTools::GetImageSize(filepath);
-
-        shipMetadata.emplace(std::filesystem::path(filepath).stem().string());
+        // Preview is from structural image
+        previewImageFilePath = sdf.StructuralLayerImageFilePath;
     }
 
-    assert(!!originalSize);
-    assert(!!shipMetadata);
+    // Check whether it has electricals, unless instructed not to do so
+    if (!sdf.DoHideElectricalsInPreview)
+        hasElectricals = sdf.ElectricalLayerImageFilePath.has_value();
 
-    //
-    // Load preview image and trim it
-    //
-
-    auto previewImage = ImageFileTools::LoadImageRgbaAndResize(
+    return ShipPreview(
         previewImageFilePath,
+        ImageFileTools::GetImageSize(sdf.StructuralLayerImageFilePath), // Ship size is from structural image
+        sdf.Metadata,
+        isHD,
+        hasElectricals);
+}
+
+RgbaImageData ShipPreview::LoadPreviewImage(ImageSize const & maxSize) const
+{
+    // Load
+    auto previewImage = ImageFileTools::LoadImageRgbaAndResize(
+        PreviewImageFilePath,
         maxSize);
 
-    auto trimmedPreviewImage = ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
-
-    return std::unique_ptr<ShipPreview>(
-        new ShipPreview(
-            std::move(trimmedPreviewImage),
-            std::move(*originalSize),
-            *shipMetadata,
-            isHD,
-            hasElectricals));
+    // Trim
+    return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
 }

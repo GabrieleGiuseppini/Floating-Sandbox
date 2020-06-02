@@ -8,6 +8,7 @@
 std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create(std::filesystem::path const & directoryPath)
 {
     // TODO
+    return nullptr;
 }
 
 void ShipPreviewDirectoryManager::Commit()

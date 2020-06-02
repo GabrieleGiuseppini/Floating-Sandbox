@@ -8,12 +8,8 @@
 #include "ShipMetadata.h"
 
 #include <GameCore/ImageData.h>
-#include <GameCore/Vectors.h>
 
 #include <filesystem>
-#include <memory>
-#include <optional>
-#include <string>
 
 /*
 * A partial ship definition, suitable for a preview of the ship.
@@ -22,27 +18,27 @@ struct ShipPreview
 {
 public:
 
-    RgbaImageData PreviewImage;
+    std::filesystem::path PreviewImageFilePath;
     ImageSize OriginalSize;
     ShipMetadata Metadata;
     bool IsHD;
     bool HasElectricals;
 
-    static std::unique_ptr<ShipPreview> Load(
-        std::filesystem::path const & filepath,
-        ImageSize const & maxSize);
+    static ShipPreview Load(std::filesystem::path const & filepath);
+
+    RgbaImageData LoadPreviewImage(ImageSize const & maxSize) const;
 
 private:
 
     ShipPreview(
-        RgbaImageData previewImage,
-        ImageSize originalSize,
-        ShipMetadata metadata,
+        std::filesystem::path const & previewImageFilePath,
+        ImageSize const & originalSize,
+        ShipMetadata const & metadata,
         bool isHD,
         bool hasElectricals)
-        : PreviewImage(std::move(previewImage))
-        , OriginalSize(std::move(originalSize))
-        , Metadata(std::move(metadata))
+        : PreviewImageFilePath(previewImageFilePath)
+        , OriginalSize(originalSize)
+        , Metadata(metadata)
         , IsHD(isHD)
         , HasElectricals(hasElectricals)
     {
