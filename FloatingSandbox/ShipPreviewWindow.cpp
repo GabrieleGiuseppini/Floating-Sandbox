@@ -857,6 +857,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     std::move(shipPreview),
                     std::move(shipPreviewImage)));
 
+            // TODOTEST
             // Take it easy a bit
             //std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }

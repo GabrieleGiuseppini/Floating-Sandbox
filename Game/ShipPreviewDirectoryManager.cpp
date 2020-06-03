@@ -77,8 +77,36 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     auto const previewImageFileLastModified = mFileSystem->GetLastModifiedTime(shipPreview.PreviewImageFilePath);
 
     // See if this preview file may be served by old database
-    // TODOHERE
-    return shipPreview.LoadPreviewImage(maxImageSize);
+    auto oldDbPreviewImage = mOldDatabase.TryGetPreviewImage(shipPreview.PreviewImageFilePath, previewImageFileLastModified);
+    if (oldDbPreviewImage.has_value())
+    {
+        // Compatible with old DB
+        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): serving from persisted DB");
+
+        // Tell new DB that this preview comes from old DB
+        mNewDatabase.Add(
+            shipPreview.PreviewImageFilePath,
+            previewImageFileLastModified,
+            nullptr);
+
+        return std::move(*oldDbPreviewImage);
+    }
+    else
+    {
+        // Needs to be loaded from scratch
+        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): can't serve from persisted DB; loading...");
+
+        // Load preview image
+        RgbaImageData previewImage = shipPreview.LoadPreviewImage(maxImageSize);
+
+        // Add to new DB
+        mNewDatabase.Add(
+            shipPreview.PreviewImageFilePath,
+            previewImageFileLastModified,
+            previewImage.MakeCopy());
+
+        return std::move(previewImage);
+    }
 }
 
 void ShipPreviewDirectoryManager::Commit(bool isVisitCompleted)

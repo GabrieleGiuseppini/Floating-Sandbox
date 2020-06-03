@@ -44,6 +44,23 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
     }
 }
 
+std::optional<RgbaImageData> PersistedShipPreviewImageDatabase::TryGetPreviewImage(
+    std::filesystem::path const & previewImageFilePath,
+    std::filesystem::file_time_type lastModifiedTime)
+{
+    // See if may serve from cache
+    auto const it = mIndex.find(previewImageFilePath);
+    if (it != mIndex.end()
+        && lastModifiedTime <= it->second.LastModified)
+    {
+        // TODOHERE
+        return std::nullopt;
+    }
+
+    // No luck
+    return std::nullopt;
+}
+
 void PersistedShipPreviewImageDatabase::Close()
 {
     // TODOHERE

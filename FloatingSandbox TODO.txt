@@ -1297,25 +1297,24 @@ Render:
 								- last modified
 								- offset & size
 						+ private cctor(ordered_map, stream)
-					- private cctor(ordered_map, stream): stores members
-					- Get(preview image file filename, last modified) -> uq_ptr<ImageData>
-						- Only if new
+					+ private cctor(ordered_map, stream): stores members
+					= Get(preview image file filename, last modified) -> uq_ptr<ImageData>
 						- If has data for it in map & last modified is valid: load from db;
 						  else: return null
-				- NewPreviewImageDatabase: used to manage a new DB
+				= NewPreviewImageDatabase: used to manage a new DB
 					+ Key is preview image file filename
 					+ Value is:
 						+ last modified
 						+ uq_ptr<ImageData>
 					+ public cctor(): initializes empty index map (ordered map)
-					- Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
+					+ Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
 						! invoked always, even for unchanged preview images
 						+ check if not already in map => error
-						- if not deprecated: store in index:
-							- key: preview image file filename
-							- value:
-								- last modified
-								- uq_ptr<Image> (nullptr if no change from old DB)
+						+ if not deprecated: store in index:
+							+ key: preview image file filename
+							+ value:
+								+ last modified
+								+ uq_ptr<Image> (nullptr if no change from old DB)
 					- Deprecate()
 						- Won't save, and will save mem by not storing
 						- TODO: needed?
@@ -1352,18 +1351,18 @@ Render:
 				+ private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
 					+ stores both as const
 				+ Enumerate: makes (sorted) list of filepath's
-				- LoadPreviewImage(ship preview) -> image
-					- Algo:
-						- get last modified of preview image file
+				+ LoadPreviewImage(ship preview) -> image
+					= Algo:
+						+ get last modified of preview image file
 							- if error => mark new DB as deprecated; return error
-						- if oldImageDatabase::Get(preview image filename, last modified):
-							- newImageDatabase::Add(preview image filename, last modified, nullptr)
-							- return image
-						- else:
-							- Load image
+						+ if oldImageDatabase::Get(preview image filename, last modified):
+							+ newImageDatabase::Add(preview image filename, last modified, nullptr)
+							+ return image
+						+ else:
+							+ Load image
 								- if error => mark new DB as deprecated; return error
-							- newImageDatabase::Add(preview image filename, last modified, image::copy)
-							- return image
+							+ newImageDatabase::Add(preview image filename, last modified, image::copy)
+							+ return image
 				+ Commit(isCompleted)
 					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
 					+ Close old DB

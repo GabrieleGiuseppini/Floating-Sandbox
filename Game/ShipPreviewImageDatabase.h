@@ -12,6 +12,7 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <optional>
 
 class ShipPreviewImageDatabase
 {
@@ -26,6 +27,10 @@ public:
     static PersistedShipPreviewImageDatabase Load(
         std::filesystem::path const & databaseFilePath,
         std::shared_ptr<IFileSystem> fileSystem);
+
+    std::optional<RgbaImageData> TryGetPreviewImage(
+        std::filesystem::path const & previewImageFilePath,
+        std::filesystem::file_time_type lastModifiedTime);
 
     void Close();
 
