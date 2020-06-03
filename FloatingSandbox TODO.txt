@@ -1279,24 +1279,24 @@ Render:
 					+ Also exposes LoadPreviewImage() to load preview image on-demand
 			+ ImageData::MakeCopy() -> unique_ptr
 		= ShipPreviewDirectoryManager:
-			- Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
+			= Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
 				+ Both derive from abstract PreviewImageDatabase w/definitions
 				+ In PreviewImageDatabase.cpp/.h
-				- PersistedPreviewImageDatabase: used to manage an existing DB
+				= PersistedPreviewImageDatabase: used to manage an existing DB
 					+ Key is preview image file filename
 					+ Value is:
 						+ last modified
 						+ offset & size
-					- static Load(dir path) -> ShipPreviewDatabase
-						- If no db file exists => constructed as empty (empty index map)
-						- open file as TODOstream
+					= static Load(db filename) -> ShipPreviewDatabase
+						+ If no db file exists => constructed as empty (empty index map)
+						+ open file 
 						- Populate ordered map (index) from file index:
 							- key: preview image file filename
 							- value:
 								- last modified
 								- offset & size
-						- private cctor(ordered_map, stream)
+						+ private cctor(ordered_map, stream)
 					- private cctor(ordered_map, stream): stores members
 					- Get(preview image file filename, last modified) -> uq_ptr<ImageData>
 						- Only if new
@@ -1309,17 +1309,19 @@ Render:
 						+ uq_ptr<ImageData>
 					+ public cctor(): initializes empty index map (ordered map)
 					- Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
-						- invoked always, even for unchanged preview images
-						- check if not already in map => error
+						! invoked always, even for unchanged preview images
+						+ check if not already in map => error
 						- if not deprecated: store in index:
 							- key: preview image file filename
 							- value:
 								- last modified
 								- uq_ptr<Image> (nullptr if no change from old DB)
 					- Deprecate()
-						- Won't save, will save mem by not storing
-					- Commit(dir path, PersistedPreviewImageDatabase const & oldDb)
+						- Won't save, and will save mem by not storing
+						- TODO: needed?
+					- Commit(db filename, PersistedPreviewImageDatabase const & oldDb, isNewCompleted)
 						! All exceptions here are silently caught and commit is (cleanly) aborted
+						- TODOHERE: invariant => merge?
 						- if new is empty or (new is deprecated and old not empty) => nop (return)
 						- TODO: min # of entries, if TODO: old
 						- TODO: on-demand: open tmp output file for w; truncate
@@ -1341,44 +1343,31 @@ Render:
 								- else:
 									- append image to file
 								- update new persisted index
-						- 3) Save new persisted index								
-						- delete old file, rename tmp file
+						- 3) Save new persisted index	
 
-			- API:
-				- TODOHERE: redo without second iteration, and no need to store filepaths
-					- they are enum'd on the fly at ::Enumerate (rename for getter)
-				- static factory (folder path) -> uq_ptr(self)
-					- enumerate ship files
-						- ShipDefinition: export IsShipFile(.) for .png and for ShipDefinitionFile::IsShipDefinitionFile 
-						  extension check
-					- sort ship preview vector by <filename> // like now
-					- load existing database (PersistedPreviewImageDatabase::Load)
-					- passes vector<filepath> to private cctor
+			+ API:
+				+ static factory (folder path) -> uq_ptr(self)
+					+ load existing database (PersistedPreviewImageDatabase::Load)
+					+ passes db to private cctor
 				+ private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
 					+ stores both as const
-				= TODO: rename: getter for (sorted) list of filepath's
-				- TODO: iterator?
-				- StartPreviewImageEnumeration()
-					- Reset current index
-				- EnumeratedPreview * GetCurrent()
-					- EnumeratedPreview: one of Preview+Image (uq_ptr), Error (msg)
+				+ Enumerate: makes (sorted) list of filepath's
+				- LoadPreviewImage(ship preview) -> image
 					- Algo:
-						- load ShipPreview (which now is without image)
-							- if error => mark new DB as deprecated; return error
 						- get last modified of preview image file
 							- if error => mark new DB as deprecated; return error
 						- if oldImageDatabase::Get(preview image filename, last modified):
 							- newImageDatabase::Add(preview image filename, last modified, nullptr)
-							- return preview + image
+							- return image
 						- else:
 							- Load image
 								- if error => mark new DB as deprecated; return error
 							- newImageDatabase::Add(preview image filename, last modified, image::copy)
-							- return preview + image
-				- void Next()
-					- Increment current index
-				- Commit() // called only when thread completes enumeration
-					- CachedPreviewImageDatabase::Commit()
+							- return image
+				+ Commit(isCompleted)
+					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
+					+ Close old DB
+					+ delete old file, rename tmp file
 
 	- ShipLoadDialog: display also folders
 

@@ -8,7 +8,7 @@
 #include "WxHelpers.h"
 
 #include <Game/ImageFileTools.h>
-#include <Game/ShipDefinitionFile.h>
+#include <Game/ShipPreviewDirectoryManager.h>
 
 #include <GameCore/GameException.h>
 #include <GameCore/ImageTools.h>
@@ -808,90 +808,45 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
 {
     LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), "): processing...");
 
+    auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(directoryPath);
 
     //
-    // Get listings and fire event
+    // Get list of ship files and fire event
     //
 
-    LogMessage("PreviewThread::ScanDirectory(): scanning directory...");
+    std::vector<std::filesystem::path> shipFilePaths = previewDirectoryManager->EnumerateShipFilePaths();
 
-    std::vector<std::filesystem::path> shipFilepaths;
-
-    try
-    {
-        auto directoryIterator = std::filesystem::directory_iterator(
-            directoryPath,
-            std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink);
-
-        for (auto const & entryIt : directoryIterator)
-        {
-            try
-            {
-                auto const entryFilepath = entryIt.path();
-
-                if (std::filesystem::is_regular_file(entryFilepath)
-                    && ShipDefinitionFile::IsShipDefinitionFile(entryFilepath))
-                {
-                    // Make sure the filename may be converted to the local codepage
-                    // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
-                    std::string _ = entryFilepath.filename().string();
-                    (void)_;
-
-                    // If we're here, the filename may be converted safely...
-                    // ...store the file path
-                    shipFilepaths.push_back(entryFilepath);
-                }
-            }
-            catch (std::exception const & ex)
-            {
-                LogMessage("PreviewThread::ScanDirectory(): ...ignoring an entry due to error: ", ex.what());
-
-                // Ignore this file
-            }
-        }
-    }
-    catch (...)
-    { /* interrupt scan here */ }
-
-    LogMessage("PreviewThread::ScanDirectory(): ...directory scanned.");
-
-    // Sort by filename
-    std::sort(
-        shipFilepaths.begin(),
-        shipFilepaths.end(),
-        [](auto const & a, auto const & b) -> bool
-        {
-            return a.filename().compare(b.filename()) < 0;
-        });
-
-    // Notify
     QueueThreadToPanelMessage(
         ThreadToPanelMessage::MakeDirScanCompletedMessage(
-            shipFilepaths));
+            shipFilePaths));
 
 
     //
     // Process all files and create previews
     //
 
-    for (size_t iShip = 0; iShip < shipFilepaths.size(); ++iShip)
+    for (size_t iShip = 0; iShip < shipFilePaths.size(); ++iShip)
     {
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
         {
             LogMessage("PreviewThread::ScanDirectory(): interrupted, exiting");
+
+            // Commit - with a partial visit
+            previewDirectoryManager->Commit(false);
+
             return;
         }
 
         try
         {
-            LogMessage("PreviewThread::ScanDirectory(): loading preview for \"", shipFilepaths[iShip].filename().string(), "\"...");
+            LogMessage("PreviewThread::ScanDirectory(): loading preview for \"", shipFilePaths[iShip].filename().string(), "\"...");
 
             // Load preview
-            auto shipPreview = ShipPreview::Load(shipFilepaths[iShip]);
+            auto shipPreview = ShipPreview::Load(shipFilePaths[iShip]);
 
             // Load preview image
-            auto shipPreviewImage = shipPreview.LoadPreviewImage(ImageSize(PreviewImageWidth, PreviewImageHeight));
+            auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreview, PreviewImageSize);
 
             LogMessage("PreviewThread::ScanDirectory(): ...preview loaded.");
 
@@ -903,7 +858,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     std::move(shipPreviewImage)));
 
             // Take it easy a bit
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         catch (std::exception const & ex)
         {
@@ -916,6 +871,8 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     ex.what()));
 
             LogMessage("PreviewThread::ScanDirectory(): ...error notified.");
+
+            // Keep going
         }
     }
 
@@ -927,6 +884,12 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
     QueueThreadToPanelMessage(
         ThreadToPanelMessage::MakePreviewCompletedMessage(
             directoryPath));
+
+    //
+    // Commit - with a full visit
+    //
+
+    previewDirectoryManager->Commit(true);
 
     LogMessage("PreviewThread::ScanDirectory(): ...preview completed.");
 }

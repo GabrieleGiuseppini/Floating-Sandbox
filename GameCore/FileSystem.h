@@ -26,6 +26,11 @@ struct IFileSystem
     virtual bool Exists(std::filesystem::path const & path) = 0;
 
     /*
+     * Gets the last-modified timestamp of a file.
+     */
+    virtual std::filesystem::file_time_type GetLastModifiedTime(std::filesystem::path const & path) = 0;
+
+    /*
      * Creates a directory if it doesn't exist already.
      */
     virtual void EnsureDirectoryExists(std::filesystem::path const & directoryPath) = 0;
@@ -51,6 +56,13 @@ struct IFileSystem
      * Deletes a file.
      */
     virtual void DeleteFile(std::filesystem::path const & filePath) = 0;
+
+    /*
+     * Renames a file.
+     */
+    virtual void RenameFile(
+        std::filesystem::path const & oldFilePath,
+        std::filesystem::path const & newFilePath) = 0;
 };
 
 /*
@@ -66,6 +78,11 @@ public:
     bool Exists(std::filesystem::path const & path) override
     {
         return std::filesystem::exists(path);
+    }
+
+    std::filesystem::file_time_type GetLastModifiedTime(std::filesystem::path const & path) override
+    {
+        return std::filesystem::last_write_time(path);
     }
 
     void EnsureDirectoryExists(std::filesystem::path const & directoryPath) override
@@ -106,16 +123,16 @@ public:
     {
         std::vector<std::filesystem::path> filePaths;
 
-		// Be robust to users messing up
-		if (std::filesystem::exists(directoryPath)
-			&& std::filesystem::is_directory(directoryPath))
-		{
+        // Be robust to users messing up
+        if (std::filesystem::exists(directoryPath)
+            && std::filesystem::is_directory(directoryPath))
+        {
             auto directoryIterator = std::filesystem::directory_iterator(
                 directoryPath,
                 std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink);
 
-			for (auto const & entryIt : directoryIterator)
-			{
+            for (auto const & entryIt : directoryIterator)
+            {
                 try
                 {
                     auto const entryFilepath = entryIt.path();
@@ -136,8 +153,8 @@ public:
 
                     // Ignore this file
                 }
-			}
-		}
+            }
+        }
 
         return filePaths;
     }
@@ -145,5 +162,12 @@ public:
     virtual void DeleteFile(std::filesystem::path const & filePath) override
     {
         std::filesystem::remove(filePath);
+    }
+
+    virtual void RenameFile(
+        std::filesystem::path const & oldFilePath,
+        std::filesystem::path const & newFilePath) override
+    {
+        std::filesystem::rename(oldFilePath, newFilePath);
     }
 };

@@ -9,6 +9,7 @@
 #include "ShipPreview.h"
 #include "ShipPreviewImageDatabase.h"
 
+#include <GameCore/FileSystem.h>
 #include <GameCore/ImageData.h>
 
 #include <filesystem>
@@ -20,31 +21,43 @@ class ShipPreviewDirectoryManager final
 {
 public:
 
-    static std::unique_ptr<ShipPreviewDirectoryManager> Create(std::filesystem::path const & directoryPath);
+    static std::unique_ptr<ShipPreviewDirectoryManager> Create(
+        std::filesystem::path const & directoryPath);
 
-    std::vector<std::filesystem::path> const & GetShipFilePaths() const
-    {
-        return mShipFilePaths;
-    }
+    static std::unique_ptr<ShipPreviewDirectoryManager> Create(
+        std::filesystem::path const & directoryPath,
+        std::shared_ptr<IFileSystem> fileSystem);
 
-    void Commit();
+    /*
+     * Gets a list of all files in this directory that are ships. The files
+     * are sorted by filename.
+     */
+    std::vector<std::filesystem::path> EnumerateShipFilePaths() const;
+
+    RgbaImageData LoadPreviewImage(
+        ShipPreview const & shipPreview,
+        ImageSize const & maxImageSize);
+
+    void Commit(bool isVisitCompleted);
 
 private:
 
     ShipPreviewDirectoryManager(
         std::filesystem::path const & directoryPath,
-        std::vector<std::filesystem::path> && shipFilePaths,
+        std::shared_ptr<IFileSystem> fileSystem,
         PersistedShipPreviewImageDatabase && oldDatabase)
         : mDirectoryPath(directoryPath)
-        , mShipFilePaths(std::move(shipFilePaths))
+        , mFileSystem(fileSystem)
         , mOldDatabase(std::move(oldDatabase))
-        , mNewDatabase()
+        , mNewDatabase(fileSystem)
     {}
 
 private:
 
     std::filesystem::path const mDirectoryPath;
-    std::vector<std::filesystem::path> const mShipFilePaths; // Sorted by filename
-    PersistedShipPreviewImageDatabase const mOldDatabase;
+
+    std::shared_ptr<IFileSystem> mFileSystem;
+
+    PersistedShipPreviewImageDatabase mOldDatabase;
     NewShipPreviewImageDatabase mNewDatabase;
 };

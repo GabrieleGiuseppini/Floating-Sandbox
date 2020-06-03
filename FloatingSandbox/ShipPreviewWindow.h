@@ -139,6 +139,7 @@ public:
 
     static int constexpr PreviewImageWidth = 200;
     static int constexpr PreviewImageHeight = 150;
+    static ImageSize constexpr PreviewImageSize = ImageSize(PreviewImageWidth, PreviewImageHeight);
 
     static int constexpr PreviewImageBottomMargin = 9;
 
