@@ -73,19 +73,21 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     ShipPreview const & shipPreview,
     ImageSize const & maxImageSize)
 {
+    auto const previewImageFilename = shipPreview.PreviewImageFilePath.filename();
+
     // Get last-modified of preview image file
     auto const previewImageFileLastModified = mFileSystem->GetLastModifiedTime(shipPreview.PreviewImageFilePath);
 
     // See if this preview file may be served by old database
-    auto oldDbPreviewImage = mOldDatabase.TryGetPreviewImage(shipPreview.PreviewImageFilePath, previewImageFileLastModified);
+    auto oldDbPreviewImage = mOldDatabase.TryGetPreviewImage(previewImageFilename, previewImageFileLastModified);
     if (oldDbPreviewImage.has_value())
     {
         // Compatible with old DB
-        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): serving from persisted DB");
+        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): serving '", previewImageFilename.string(), "' from persisted DB");
 
         // Tell new DB that this preview comes from old DB
         mNewDatabase.Add(
-            shipPreview.PreviewImageFilePath,
+            previewImageFilename,
             previewImageFileLastModified,
             nullptr);
 
@@ -94,14 +96,14 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     else
     {
         // Needs to be loaded from scratch
-        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): can't serve from persisted DB; loading...");
+        LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): can't serve '", previewImageFilename.string(), "' from persisted DB; loading...");
 
         // Load preview image
         RgbaImageData previewImage = shipPreview.LoadPreviewImage(maxImageSize);
 
         // Add to new DB
         mNewDatabase.Add(
-            shipPreview.PreviewImageFilePath,
+            previewImageFilename,
             previewImageFileLastModified,
             previewImage.MakeCopy());
 
@@ -113,24 +115,24 @@ void ShipPreviewDirectoryManager::Commit(bool isVisitCompleted)
 {
     LogMessage("ShipPreviewDirectoryManager::Commit(", isVisitCompleted ? "true" : "false", "): started...");
 
-    auto const newDatabaseTemporaryFilePath = (mDirectoryPath / DatabaseFileName).replace_extension("tmp");
+    auto const newDatabaseFilePath = mDirectoryPath / DatabaseFileName;
+    auto const newDatabaseTemporaryFilePath = std::filesystem::path(newDatabaseFilePath).replace_extension("tmp");
 
-    // 1) Commit new database
-    bool hasFileBeenCreated = mNewDatabase.Commit(
+    // Commit new database
+    bool const hasFileBeenCreated = mNewDatabase.Commit(
         newDatabaseTemporaryFilePath,
         mOldDatabase,
         isVisitCompleted);
 
-    // 2) Close old database
+    // Close old database
     mOldDatabase.Close();
 
-    // 3) Swap temp file
     if (hasFileBeenCreated)
     {
+        // Swap temp file
+
         try
         {
-            auto const newDatabaseFilePath = mDirectoryPath / DatabaseFileName;
-
             // Delete old database file
             mFileSystem->DeleteFile(newDatabaseFilePath);
 
@@ -140,6 +142,15 @@ void ShipPreviewDirectoryManager::Commit(bool isVisitCompleted)
         catch (std::exception const & exc)
         {
             LogMessage("ShipPreviewDirectoryManager::Commit(): error: ", exc.what());
+        }
+    }
+    else
+    {
+        // Delete database if there's nothing in this folder for it
+        if (mNewDatabase.IsEmpty()
+            && isVisitCompleted)
+        {
+            mFileSystem->DeleteFile(newDatabaseFilePath);
         }
     }
 

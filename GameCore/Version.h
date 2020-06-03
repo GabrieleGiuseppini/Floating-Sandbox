@@ -38,6 +38,8 @@ inline std::string ApplicationName = APPLICATION_NAME;
 
 //////////////////////////////////////////////////////////////
 
+#pragma pack(push)
+
 class Version
 {
 public:
@@ -157,3 +159,5 @@ private:
     int mPatch;
     int mBuild;
 };
+
+#pragma pack(pop)

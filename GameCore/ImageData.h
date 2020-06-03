@@ -47,6 +47,11 @@ public:
     {
     }
 
+    size_t GetByteSize() const
+    {
+        return static_cast<size_t>(Size.GetPixelCount()) * sizeof(color_type);
+    }
+
     std::unique_ptr<ImageData> MakeCopy() const
     {
         auto newData = std::make_unique<color_type[]>(Size.GetPixelCount());

@@ -197,7 +197,7 @@ public:
         wxWindow* parent,
         ResourceLocator const & resourceLocator);
 
-	virtual ~ShipPreviewWindow();
+    virtual ~ShipPreviewWindow();
 
     void OnOpen();
     void OnClose();

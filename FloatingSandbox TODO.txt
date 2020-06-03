@@ -1278,6 +1278,8 @@ Render:
 				+ Has path of preview image file ("preview image file path"), not preview image file itself
 					+ Also exposes LoadPreviewImage() to load preview image on-demand
 			+ ImageData::MakeCopy() -> unique_ptr
+		- Cleanup:
+			- Base DB class: primitives for de/serializing RgbaImageData
 		= ShipPreviewDirectoryManager:
 			= Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
@@ -1320,29 +1322,29 @@ Render:
 						- TODO: needed?
 					- Commit(db filename, PersistedPreviewImageDatabase const & oldDb, isNewCompleted)
 						! All exceptions here are silently caught and commit is (cleanly) aborted
-						- TODOHERE: invariant => merge?
 						- if new is empty or (new is deprecated and old not empty) => nop (return)
-						- TODO: min # of entries, if TODO: old
-						- TODO: on-demand: open tmp output file for w; truncate
-						- initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
-						- 1) Copy from old DB as long as possible:
-							- start_copy_offset = 0
-							- end_copy_offset = header size
-							- for each index position in both indices:
-								- if keys match and image data in new is null:
-									- copy (increment end_copy_offset)
-									- update new persisted index
-								- else: break
-							- if full match w/old one: return
+						+ Enforce min # of entries, if completed						
+						+ initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
+						= 1) Copy from old DB as long as possible:
+							+ start_copy_offset = 0
+							+ end_copy_offset = header size
+							+ for each index position in both indices:
+								+ if keys match and image data in new is null:
+									+ copy (increment end_copy_offset)
+									+ update new persisted index
+								+ else: break
+							+ if full match w/old one: return
 							- copy start_copy_offset->end_copy_offset
-						- 2) Save own
-							- for each index position in continuation of this::index:
-								- if uq_ptr<Image> is null:
-									- copy from old appending to file
-								- else:
-									- append image to file
-								- update new persisted index
-						- 3) Save new persisted index	
+						+ open tmp output file for w; truncate
+						+ 2) Save own
+							+ for each index position in continuation of this::index:
+								+ if uq_ptr<Image> is null:
+									+ copy from old appending to file
+									+ update new persisted index
+								+ else:
+									+ append image to file
+									+ update new persisted index
+						= 3) Save new persisted index	
 
 			+ API:
 				+ static factory (folder path) -> uq_ptr(self)
