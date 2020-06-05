@@ -49,14 +49,28 @@ void ShipPreviewImageDatabase::SerializeIndexEntry(
         filenameString.size());
 }
 
-void ShipPreviewImageDatabase::DeserializeIndexEntry(
+size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     ByteBuffer const & buffer,
+    size_t bufferIndex,
     std::filesystem::path & filename,
     std::filesystem::file_time_type & lastModified,
     std::istream::pos_type & position,
     size_t & size)
 {
+    DatabaseStructure::IndexEntry const * const indexEntry =
+        reinterpret_cast<DatabaseStructure::IndexEntry const *>(&(buffer[bufferIndex]));
 
+    lastModified = indexEntry->LastModified;
+    position = indexEntry->Position;
+    size = indexEntry->Size;
+
+    std::string filenameString = std::string(
+        &(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)]),
+        indexEntry->FilenameLength);
+
+    filename = std::filesystem::path(filenameString);
+
+    return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry->FilenameLength;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,9 +89,99 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
         {
             // Open file
             databaseFileStream = fileSystem->OpenInputStream(databaseFilePath);
+            databaseFileStream->exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
 
-            // Populate index
-            // TODOHERE
+            // Load and check header
+            {
+                DatabaseStructure::FileHeader header(Version::Zero());
+                databaseFileStream->read(reinterpret_cast<char *>(&header), sizeof(DatabaseStructure::FileHeader));
+
+                if (!databaseFileStream->good()
+                    || 0 != strncmp(header.Title.data(), DatabaseStructure::FileHeader::StockTitle.data(), header.Title.size()))
+                {
+                    throw std::exception("Database file is not recognized");
+                }
+
+                if (header.GameVersion > Version::CurrentVersion())
+                {
+                    throw std::exception("Database file was generated on a more recent version of the simulator");
+                }
+
+                if (header.SizeOfInt != sizeof(int))
+                {
+                    throw std::exception("Database file was generated on a different platform");
+                }
+            }
+
+            // Read and populate index
+            {
+                // Move to beginning of tail
+                databaseFileStream->seekg(-static_cast<std::streampos>(sizeof(DatabaseStructure::FileTrailer)), std::ios_base::end);
+
+                // Save end index position
+                auto const endIndexPosition = databaseFileStream->tellg();
+
+                // Read tail
+                DatabaseStructure::FileTrailer trailer(0);
+                databaseFileStream->read(reinterpret_cast<char *>(&trailer), sizeof(DatabaseStructure::FileTrailer));
+
+                // Save total file size
+                auto const totalFileSize = databaseFileStream->tellg();
+
+                // Check tail
+                if (trailer.IndexOffset >= totalFileSize
+                    || 0 != strncmp(trailer.Title.data(), DatabaseStructure::FileTrailer::StockTitle.data(), trailer.Title.size()))
+                {
+                    throw std::exception("Database file was not properly closed");
+                }
+
+                // Move to beginning of index
+                databaseFileStream->seekg(trailer.IndexOffset, std::ios_base::beg);
+
+                // Load index
+                {
+                    size_t const indexSize = endIndexPosition - trailer.IndexOffset;
+
+                    // Alloc buffer
+                    std::vector<char> indexBuffer(indexSize);
+
+                    // Read whole index
+                    databaseFileStream->read(indexBuffer.data(), indexBuffer.size());
+
+                    // Deserialize entries
+                    for (size_t indexOffset = 0; indexOffset != indexSize; /* incremented in loop */)
+                    {
+                        if (indexOffset > indexSize)
+                        {
+                            throw std::exception("Out-of-sync while deserializing index");
+                        }
+
+                        std::filesystem::path filename;
+                        std::filesystem::file_time_type lastModified;
+                        std::istream::pos_type position;
+                        size_t size;
+
+                        indexOffset = DeserializeIndexEntry(
+                            indexBuffer,
+                            indexOffset,
+                            filename,
+                            lastModified,
+                            position,
+                            size);
+
+                        auto [it, isInserted] = index.try_emplace(
+                            filename,
+                            lastModified,
+                            position,
+                            size);
+
+                        if (!isInserted)
+                        {
+                            throw std::exception("Index is inconsistent");
+                        }
+                    }
+                }
+            }
         }
         else
         {
@@ -145,6 +249,8 @@ bool NewShipPreviewImageDatabase::Commit(
     PersistedShipPreviewImageDatabase const & oldDatabase,
     bool isVisitCompleted) const
 {
+    static size_t constexpr MinShipsForDatabase = 10;
+
     // Do not create a database for just a few ships
     if (oldDatabase.mIndex.empty()
         && mIndex.size() < MinShipsForDatabase)
@@ -167,14 +273,20 @@ bool NewShipPreviewImageDatabase::Commit(
     assert(isVisitCompleted || mIndex.size() > oldDatabase.mIndex.size());
 
     //
-    //
+    // Prepare new index
     //
 
-    std::map<std::filesystem::path, PersistedShipPreviewImageDatabase::PreviewImageInfo> newPersistedIndex;
+    // Prepare buffer
+    size_t const newIndexEstimatedSize = EstimatedIndexEntrySize * mIndex.size();
+    ByteBuffer newIndexBuffer;
+    newIndexBuffer.reserve(newIndexEstimatedSize);
 
     //
     // Calculate longest possible streak of preview image data that
     // may be copied from old DB
+    //
+    // Here we optimize for a slowly-growing database that ultimately
+    // covers an entire directory.
     //
 
     size_t const copyStartOffset = sizeof(DatabaseStructure::FileHeader);
@@ -194,9 +306,12 @@ bool NewShipPreviewImageDatabase::Commit(
             copyEndOffset += oldDbIt->second.Size;
 
             // Add entry to new index
-            newPersistedIndex.emplace(
+            SerializeIndexEntry(
+                newIndexBuffer,
                 oldDbIt->first,
-                oldDbIt->second);
+                oldDbIt->second.LastModified,
+                oldDbIt->second.Position,
+                oldDbIt->second.Size);
         }
         else
         {
@@ -225,7 +340,7 @@ bool NewShipPreviewImageDatabase::Commit(
 
     DatabaseStructure::FileHeader header(Version::CurrentVersion());
 
-    AppendFromData(
+    WriteFromData(
         *outputStream,
         reinterpret_cast<char *>(&header),
         sizeof(DatabaseStructure::FileHeader));
@@ -238,7 +353,7 @@ bool NewShipPreviewImageDatabase::Commit(
     {
         assert(!!oldDatabase.mDatabaseFileStream);
 
-        AppendFromOldDatabase(
+        WriteFromOldDatabase(
             *outputStream,
             *oldDatabase.mDatabaseFileStream,
             copyStartOffset,
@@ -265,17 +380,19 @@ bool NewShipPreviewImageDatabase::Commit(
 
             assert(!!oldDatabase.mDatabaseFileStream);
 
-            AppendFromOldDatabase(
+            WriteFromOldDatabase(
                 *outputStream,
                 *oldDatabase.mDatabaseFileStream,
                 oldEntry->second.Position,
                 oldEntry->second.Size);
 
             // Add entry to new index
-            newPersistedIndex.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(newDbIt->first),
-                std::forward_as_tuple(newDbIt->second.LastModified, currentOffset, oldEntry->second.Size));
+            SerializeIndexEntry(
+                newIndexBuffer,
+                newDbIt->first,
+                newDbIt->second.LastModified,
+                currentOffset,
+                oldEntry->second.Size);
 
             // Advance offset
             currentOffset += oldEntry->second.Size;
@@ -289,16 +406,18 @@ bool NewShipPreviewImageDatabase::Commit(
 
             auto const previewImageByteSize = newDbIt->second.PreviewImage->GetByteSize();
 
-            AppendFromData(
+            WriteFromData(
                 *outputStream,
                 reinterpret_cast<char *>(newDbIt->second.PreviewImage->Data.get()),
                 previewImageByteSize);
 
             // Add entry to new index
-            newPersistedIndex.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(newDbIt->first),
-                std::forward_as_tuple(newDbIt->second.LastModified, currentOffset, previewImageByteSize));
+            SerializeIndexEntry(
+                newIndexBuffer,
+                newDbIt->first,
+                newDbIt->second.LastModified,
+                currentOffset,
+                previewImageByteSize);
 
             // Advance offset
             currentOffset += previewImageByteSize;
@@ -309,30 +428,15 @@ bool NewShipPreviewImageDatabase::Commit(
     // 4) Save index
     //
 
-    // Save index offset for later
+    // Save index start offset for later
     size_t const indexOffset = currentOffset;
 
-    // Prepare data buffer
-    mDataBuffer.clear();
-
-    // Serialize all entries to buffer
-    for (auto const entry : newPersistedIndex)
-    {
-        SerializeIndexEntry(
-            mDataBuffer,
-            entry.first,
-            entry.second.LastModified,
-            entry.second.Position,
-            entry.second.Size);
-    }
-
-    // Append buffer
-    AppendFromData(
+    WriteFromData(
         *outputStream,
-        mDataBuffer.data(),
-        mDataBuffer.size());
+        newIndexBuffer.data(),
+        newIndexBuffer.size());
 
-    currentOffset += mDataBuffer.size();
+    currentOffset += newIndexBuffer.size();
 
     //
     // 5) Append tail
@@ -340,7 +444,7 @@ bool NewShipPreviewImageDatabase::Commit(
 
     DatabaseStructure::FileTrailer trailer(indexOffset);
 
-    AppendFromData(
+    WriteFromData(
         *outputStream,
         reinterpret_cast<char *>(&trailer),
         sizeof(DatabaseStructure::FileTrailer));
@@ -351,7 +455,7 @@ bool NewShipPreviewImageDatabase::Commit(
     return true;
 }
 
-void NewShipPreviewImageDatabase::AppendFromOldDatabase(
+void NewShipPreviewImageDatabase::WriteFromOldDatabase(
     std::ostream & newDatabaseFile,
     std::istream & oldDatabaseFile,
     std::istream::pos_type startOffset,
@@ -359,20 +463,19 @@ void NewShipPreviewImageDatabase::AppendFromOldDatabase(
 {
     size_t constexpr BlockSize = 4 * 1024 * 1024;
 
-    if (mDataBuffer.size() < BlockSize)
-        mDataBuffer.resize(BlockSize);
+    std::vector<char> copyBuffer(BlockSize);
 
     oldDatabaseFile.seekg(startOffset);
 
     for (size_t copied = 0; copied < size; copied += BlockSize)
     {
         auto const toCopy = (size - copied) >= BlockSize ? BlockSize : (size - copied);
-        oldDatabaseFile.read(mDataBuffer.data(), toCopy);
-        newDatabaseFile.write(mDataBuffer.data(), toCopy);
+        oldDatabaseFile.read(copyBuffer.data(), toCopy);
+        newDatabaseFile.write(copyBuffer.data(), toCopy);
     }
 }
 
-void NewShipPreviewImageDatabase::AppendFromData(
+void NewShipPreviewImageDatabase::WriteFromData(
     std::ostream & newDatabaseFile,
     char const * data,
     size_t size) const

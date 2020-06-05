@@ -10,6 +10,7 @@
 #include <GameCore/Log.h>
 
 #include <algorithm>
+#include <chrono>
 
 static std::filesystem::path const DatabaseFileName = ".floatingsandbox_shipdb";
 
@@ -115,6 +116,8 @@ void ShipPreviewDirectoryManager::Commit(bool isVisitCompleted)
 {
     LogMessage("ShipPreviewDirectoryManager::Commit(", isVisitCompleted ? "true" : "false", "): started...");
 
+    auto const startTime = std::chrono::steady_clock::now();
+
     auto const newDatabaseFilePath = mDirectoryPath / DatabaseFileName;
     auto const newDatabaseTemporaryFilePath = std::filesystem::path(newDatabaseFilePath).replace_extension("tmp");
 
@@ -154,5 +157,8 @@ void ShipPreviewDirectoryManager::Commit(bool isVisitCompleted)
         }
     }
 
-    LogMessage("ShipPreviewDirectoryManager::Commit(): ...completed.");
+    auto const endTime = std::chrono::steady_clock::now();
+
+    LogMessage("ShipPreviewDirectoryManager::Commit(): ...completed (",
+        std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count(), "us)");
 }

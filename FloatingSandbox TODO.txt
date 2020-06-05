@@ -1278,7 +1278,11 @@ Render:
 				+ Has path of preview image file ("preview image file path"), not preview image file itself
 					+ Also exposes LoadPreviewImage() to load preview image on-demand
 			+ ImageData::MakeCopy() -> unique_ptr
-		- Cleanup:
+		= Cleanup:
+			+ Also version check @ header
+			+ Min files is 10
+			+ Header: also store sizeof(int) & check at load
+			+ Comment on initial streak - what optimizes
 			- Base DB class: primitives for de/serializing RgbaImageData
 		= ShipPreviewDirectoryManager:
 			= Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
@@ -1369,6 +1373,8 @@ Render:
 					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
 					+ Close old DB
 					+ delete old file, rename tmp file
+		- Unit tests
+		- Text serch also on year, author
 
 	- ShipLoadDialog: display also folders
 
@@ -1383,9 +1389,6 @@ Render:
 
 - Sounds:
 
-	- Sounds playable by user via key
-		- Bell, horn, etc.
-		- Office TimCan provides the sounds
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 		- Ships could also come with their own sounds; if not, default seounds are provided

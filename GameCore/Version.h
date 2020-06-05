@@ -53,6 +53,15 @@ public:
             APPLICATION_VERSION_BUILD);
     }
 
+    static Version Zero()
+    {
+        return Version(
+            0,
+            0,
+            0,
+            0);
+    }
+
     Version(
         int major,
         int minor,

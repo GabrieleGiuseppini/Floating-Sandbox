@@ -35,9 +35,11 @@ protected:
 
             std::array<char, 32> Title;
             Version GameVersion;
+            size_t SizeOfInt;
 
             FileHeader(Version gameVersion)
                 : GameVersion(gameVersion)
+                , SizeOfInt(sizeof(int))
             {
                 std::memcpy(Title.data(), StockTitle.data(), Title.size());
             }
@@ -67,6 +69,8 @@ protected:
         };
     };
 
+    static constexpr size_t EstimatedIndexEntrySize = sizeof(DatabaseStructure) + 40;
+
     using ByteBuffer = std::vector<char>;
 
     static void SerializeIndexEntry(
@@ -76,15 +80,17 @@ protected:
         std::istream::pos_type position,
         size_t size);
 
-    static void DeserializeIndexEntry(
+    static size_t DeserializeIndexEntry(
         ByteBuffer const & buffer,
+        size_t bufferIndex,
         std::filesystem::path & filename,
         std::filesystem::file_time_type & lastModified,
         std::istream::pos_type & position,
         size_t & size);
 
-    // Greedy buffer for copying data
-    mutable std::vector<char> mDataBuffer;
+    static void SerializePreviewImage(
+        std::ostream & outputFile,
+        RgbaImageData const & previewImage);
 };
 
 #pragma pack(pop)
@@ -181,20 +187,18 @@ public:
 
 private:
 
-    void AppendFromOldDatabase(
+    void WriteFromOldDatabase(
         std::ostream & newDatabaseFile,
         std::istream & oldDatabaseFile,
         std::istream::pos_type startOffset,
         size_t size) const;
 
-    void AppendFromData(
+    void WriteFromData(
         std::ostream & newDatabaseFile,
         char const * data,
         size_t size) const;
 
 private:
-
-    static size_t constexpr MinShipsForDatabase = 5;
 
     std::shared_ptr<IFileSystem> mFileSystem;
 
