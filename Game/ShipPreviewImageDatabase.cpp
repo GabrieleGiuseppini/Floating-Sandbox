@@ -33,6 +33,12 @@ void ShipPreviewImageDatabase::SerializeIndexEntry(
 
     size_t const totalIndexEntrySize = sizeof(DatabaseStructure::IndexEntry) + filenameString.size();
 
+    LogMessage("TODOHERE: sizeof(IndexEntry)=", sizeof(DatabaseStructure::IndexEntry),
+        " file_time_type=", sizeof(std::filesystem::file_time_type),
+        " pos_type=", sizeof(std::istream::pos_type),
+        " size_t=", sizeof(size_t),
+        " StringSizeType=", sizeof(StringSizeType));
+
     size_t const initialBufferSize = buffer.size();
     buffer.resize(initialBufferSize + totalIndexEntrySize);
 

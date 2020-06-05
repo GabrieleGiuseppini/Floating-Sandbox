@@ -253,6 +253,9 @@ Render:
 		+ Bump up version
 		+ Cleanup plan
 
+		- #pragma pack(push, 1) // @ all instances
+			- See perf afterwards
+
 		- OpenGL:
 			- Remove stencil from context requirements
 				- And check all references to "stencil"

@@ -19,8 +19,6 @@
 #include <optional>
 #include <vector>
 
-#pragma pack(push)
-
 class ShipPreviewImageDatabase
 {
 protected:
@@ -29,6 +27,7 @@ protected:
 
     struct DatabaseStructure
     {
+#pragma pack(push, 1)
         struct FileHeader
         {
             static std::array<char, 32> constexpr StockTitle{ 'F', 'L', 'O', 'A', 'T', 'I', 'N', 'G', ' ', 'S', 'A', 'N', 'D', 'B', 'O', 'X', ' ', 'S', 'H', 'I', 'P', ' ', 'P', 'R', 'E', 'V', 'I', 'E', 'W', ' ', 'D', 'B' };
@@ -67,6 +66,7 @@ protected:
                 std::memcpy(Title.data(), StockTitle.data(), Title.size());
             }
         };
+#pragma pack(pop)
     };
 
     static constexpr size_t EstimatedIndexEntrySize = sizeof(DatabaseStructure) + 40;
@@ -92,8 +92,6 @@ protected:
         std::ostream & outputFile,
         RgbaImageData const & previewImage);
 };
-
-#pragma pack(pop)
 
 class PersistedShipPreviewImageDatabase final : ShipPreviewImageDatabase
 {
