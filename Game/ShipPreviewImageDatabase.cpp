@@ -295,13 +295,12 @@ void NewShipPreviewImageDatabase::Add(
 bool NewShipPreviewImageDatabase::Commit(
     std::filesystem::path const & databaseFilePath,
     PersistedShipPreviewImageDatabase const & oldDatabase,
-    bool isVisitCompleted) const
+    bool isVisitCompleted,
+    size_t minShipsForDatabase) const
 {
-    static size_t constexpr MinShipsForDatabase = 10;
-
     // Do not create a database for just a few ships
     if (oldDatabase.mIndex.empty()
-        && mIndex.size() < MinShipsForDatabase)
+        && mIndex.size() < minShipsForDatabase)
     {
         return false;
     }

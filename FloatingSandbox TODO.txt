@@ -1374,7 +1374,10 @@ Render:
 					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
 					+ Close old DB
 					+ delete old file, rename tmp file
-		- Unit tests
+		= Unit tests
+			- Do mem stream seek
+				- Reimplement mem stream rewind
+				- Unit tests			
 		- changes.txt
 
 	- ShipLoadDialog: display also folders

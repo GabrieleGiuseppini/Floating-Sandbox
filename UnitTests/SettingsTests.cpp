@@ -408,10 +408,10 @@ TEST(SettingsTests, Storage_DeleteDeletesAllStreamsAndSettings)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
 
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.settings.json"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.foo bar.dat"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Namez.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name.settings.json");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name.foo bar.dat");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Namez.yulp.abracadabra");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name.yulp.abracadabra");
 
     SettingsStorage storage(
         TestRootSystemDirectory,
@@ -433,14 +433,14 @@ TEST(SettingsTests, Storage_ListSettings)
     std::string const testJson1 = R"({"version":"1.2.3.4","description":"This is a description","settings":{}})";
     std::string const testJson2 = R"({"version":"1.2.3.4","description":"","settings":{}})";
 
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson2);
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.foo bar.dat"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Hidden Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Super Settings.settings.json"] = std::make_shared<memory_streambuf>(testJson1);
-    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Settings.settings.json"] = std::make_shared<memory_streambuf>(testJson2);
-    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
-    testFileSystem->GetFileMap()[TestRootSystemDirectory / "System Hidden Settings.yulp.abracadabra"] = std::make_shared<memory_streambuf>();
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 1.settings.json", testJson2);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 1.foo bar.dat");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Hidden Settings.yulp.abracadabra");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name.yulp.abracadabra");
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Super Settings.settings.json", testJson1);
+    testFileSystem->PrepareTestFile(TestRootSystemDirectory / "System Settings.settings.json", testJson2);
+    testFileSystem->PrepareTestFile(TestRootSystemDirectory / "System Settings.yulp.abracadabra");
+    testFileSystem->PrepareTestFile(TestRootSystemDirectory / "System Hidden Settings.yulp.abracadabra");
 
     SettingsStorage storage(
         TestRootSystemDirectory,
@@ -515,9 +515,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
 
     ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1u);
 
-    std::string jsonSettingsContent = std::string(
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
+    std::string jsonSettingsContent = testFileSystem->GetTestFileContent(expectedJsonSettingsFilePath);
 
     auto settingsRootValue = Utils::ParseJSONString(jsonSettingsContent);
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
@@ -569,9 +567,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
 
     ASSERT_EQ(testFileSystem->GetFileMap().count(expectedCustomTypeSettingsFilePath), 1u);
 
-    std::string customSettingContent = std::string(
-        testFileSystem->GetFileMap()[expectedCustomTypeSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedCustomTypeSettingsFilePath]->size());
+    std::string customSettingContent = testFileSystem->GetTestFileContent(expectedCustomTypeSettingsFilePath);
 
     EXPECT_EQ(std::string("Bar:123"), customSettingContent);
 }
@@ -615,9 +611,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     EXPECT_EQ(testFileSystem->GetFileMap().size(), 1u);
     ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1u);
 
-    std::string settingsContent = std::string(
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
+    std::string settingsContent = testFileSystem->GetTestFileContent(expectedJsonSettingsFilePath);
 
     auto settingsRootValue = Utils::ParseJSONString(settingsContent);
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
@@ -682,9 +676,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
 
     ASSERT_EQ(testFileSystem->GetFileMap().count(expectedJsonSettingsFilePath), 1u);
 
-    std::string jsonSettingsContent = std::string(
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->data(),
-        testFileSystem->GetFileMap()[expectedJsonSettingsFilePath]->size());
+    std::string jsonSettingsContent = testFileSystem->GetTestFileContent(expectedJsonSettingsFilePath);
 
     auto settingsRootValue = Utils::ParseJSONString(jsonSettingsContent);
     ASSERT_TRUE(settingsRootValue.is<picojson::object>());
@@ -1401,8 +1393,8 @@ TEST(SettingsTests, BaseSettingsManager_ListPersistedSettings)
 
     std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
 
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 1.settings.json", testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 2.settings.json", testJson);
 
     TestSettingsManager sm(testFileSystem);
 
@@ -1470,9 +1462,9 @@ TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings)
     //
 
     std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 3.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 1.settings.json", testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 2.settings.json", testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 3.settings.json", testJson);
 
     TestSettingsManager sm(testFileSystem);
 
@@ -1523,8 +1515,8 @@ TEST(SettingsTests, BaseSettingsManager_E2E_DeletePersistedSettings_All)
     //
 
     std::string const testJson = R"({"version":"1.2.3.4","description":"","settings":{}})";
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 1.settings.json"] = std::make_shared<memory_streambuf>(testJson);
-    testFileSystem->GetFileMap()[TestRootUserDirectory / "Test Name 2.settings.json"] = std::make_shared<memory_streambuf>(testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 1.settings.json", testJson);
+    testFileSystem->PrepareTestFile(TestRootUserDirectory / "Test Name 2.settings.json", testJson);
 
     TestSettingsManager sm(testFileSystem);
 

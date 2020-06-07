@@ -170,6 +170,11 @@ private:
 
     // Key is filename
     std::map<std::filesystem::path, PreviewImageInfo> mIndex;
+
+private:
+
+    friend class ShipPreviewImageDatabaseTests_Commit_CompleteVisit_NoOldDatabase_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_CompleteVisit_NoOldDatabase_NoDbIfLessThanMinimumShips_Test;
 };
 
 class NewShipPreviewImageDatabase final : ShipPreviewImageDatabase
@@ -198,7 +203,8 @@ public:
     bool Commit(
         std::filesystem::path const & databaseFilePath,
         PersistedShipPreviewImageDatabase const & oldDatabase,
-        bool isVisitCompleted) const;
+        bool isVisitCompleted,
+        size_t minShipsForDatabase = 10) const;
 
 private:
 

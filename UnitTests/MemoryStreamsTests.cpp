@@ -149,6 +149,61 @@ TEST(MemoryStreamsTests, BackingInputStream_rewind)
     EXPECT_FALSE(is.eof());
 }
 
+TEST(MemoryStreamsTests, BackingInputStream_seek)
+{
+    memory_streambuf ms("hello");
+
+    std::istream is(&ms);
+
+    EXPECT_EQ(0, is.tellg());
+
+    char localBuf[5];
+    is.read(localBuf, 5);
+
+    EXPECT_EQ(5, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+    EXPECT_EQ(5, is.tellg());
+
+    is.seekg(2, std::ios_base::beg);
+    EXPECT_EQ(2, is.tellg());
+    is.read(localBuf, 3);
+
+    EXPECT_EQ(3, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+    EXPECT_EQ('l', localBuf[0]);
+    EXPECT_EQ('l', localBuf[1]);
+    EXPECT_EQ('o', localBuf[2]);
+    EXPECT_EQ(5, is.tellg());
+
+    is.seekg(1, std::ios_base::beg);
+    is.seekg(2, std::ios_base::cur);
+    EXPECT_EQ(3, is.tellg());
+    is.read(localBuf, 2);
+
+    EXPECT_EQ(2, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+    EXPECT_EQ('l', localBuf[0]);
+    EXPECT_EQ('o', localBuf[1]);
+
+    is.seekg(-2, std::ios_base::end);
+    EXPECT_EQ(3, is.tellg());
+    is.read(localBuf, 2);
+
+    EXPECT_EQ(2, is.gcount());
+    EXPECT_FALSE(is.fail());
+    EXPECT_FALSE(is.bad());
+    EXPECT_FALSE(is.eof());
+    EXPECT_EQ('l', localBuf[0]);
+    EXPECT_EQ('o', localBuf[1]);
+    EXPECT_EQ(5, is.tellg());
+}
+
 TEST(MemoryStreamsTests, BackingInputStream_get)
 {
     unsigned char initData[] = { 0x00, 0x7f, 0x80, 0x81, 0xff };
