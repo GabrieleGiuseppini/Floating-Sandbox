@@ -77,6 +77,36 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry->FilenameLength;
 }
 
+size_t ShipPreviewImageDatabase::SerializePreviewImage(
+    std::ostream & outputFile,
+    RgbaImageData const & previewImage)
+{
+    auto const previewImageByteSize = previewImage.GetByteSize();
+
+    outputFile.write(
+        reinterpret_cast<char *>(previewImage.Data.get()),
+        previewImageByteSize);
+
+    return previewImageByteSize;
+}
+
+RgbaImageData ShipPreviewImageDatabase::DeserializePreviewImage(
+    std::istream & inputFile,
+    size_t size,
+    ImageSize dimensions)
+{
+    // Alloc buffer
+    std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(size);
+
+    // Read
+    inputFile.read(reinterpret_cast<char *>(buffer.get()), size);
+
+    // Make image
+    return RgbaImageData(
+        dimensions,
+        std::move(buffer));
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
@@ -222,20 +252,15 @@ std::optional<RgbaImageData> PersistedShipPreviewImageDatabase::TryGetPreviewIma
         // Load preview from DB
         //
 
-        // Alloc buffer
-        std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(it->second.Size);
-
         // Position
         assert(!!mDatabaseFileStream);
         mDatabaseFileStream->seekg(it->second.Position);
 
         // Read
-        mDatabaseFileStream->read(reinterpret_cast<char *>(buffer.get()), it->second.Size);
-
-        // Make image
-        return RgbaImageData(
-            it->second.Dimensions,
-            std::move(buffer));
+        return DeserializePreviewImage(
+            *mDatabaseFileStream,
+            it->second.Size,
+            it->second.Dimensions);
     }
 
     // No luck
@@ -341,15 +366,14 @@ bool NewShipPreviewImageDatabase::Commit(
         [&]() -> void
         {
             assert(newDbIt != mIndex.cend());
+            assert(!!newDbIt->second.PreviewImage);
 
             LogMessage("NewShipPreviewImageDatabase::Commit(): saving new preview image data for '", newDbIt->first.string(), "'...");
 
-            auto const previewImageByteSize = newDbIt->second.PreviewImage->GetByteSize();
-
-            WriteFromData(
+            // Serialize preview image
+            auto const previewImageByteSize = SerializePreviewImage(
                 getOutputStream(),
-                reinterpret_cast<char *>(newDbIt->second.PreviewImage->Data.get()),
-                previewImageByteSize);
+                *(newDbIt->second.PreviewImage));
 
             // Add entry to new index
             SerializeIndexEntry(

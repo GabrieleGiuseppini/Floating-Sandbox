@@ -97,9 +97,14 @@ protected:
         size_t & size,
         ImageSize & dimensions);
 
-    static void SerializePreviewImage(
+    static size_t SerializePreviewImage(
         std::ostream & outputFile,
         RgbaImageData const & previewImage);
+
+    static RgbaImageData DeserializePreviewImage(
+        std::istream & inputFile,
+        size_t size,
+        ImageSize dimensions);
 };
 
 class PersistedShipPreviewImageDatabase final : ShipPreviewImageDatabase
