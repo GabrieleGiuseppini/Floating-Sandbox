@@ -255,8 +255,8 @@ Render:
 
 		= Load ship dialog:
 			= Ship Preview Cache (*)
-			- Arrow keys on ShipPreview window
-			- Text serch also on year, author
+			+ Arrow keys on ShipPreview window
+			+ Text serch also on year, author
 
 		- #pragma pack(push, 1) // @ all instances
 			- See perf afterwards
@@ -1289,8 +1289,8 @@ Render:
 			+ Header: also store sizeof(int) & check at load
 			+ Comment on initial streak - what optimizes
 			+ Base DB class: primitives for de/serializing RgbaImageData
-		= ShipPreviewDirectoryManager:
-			= Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
+		+ ShipPreviewDirectoryManager:
+			+ Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
 			  and NewPreviewImageDatabase to manage new DB
 				+ Both derive from abstract PreviewImageDatabase w/definitions
 				+ In PreviewImageDatabase.cpp/.h
@@ -1299,7 +1299,7 @@ Render:
 					+ Value is:
 						+ last modified
 						+ offset & size
-					+static Load(db filename) -> ShipPreviewDatabase
+					+ static Load(db filename) -> ShipPreviewDatabase
 						+ If no db file exists => constructed as empty (empty index map)
 						+ open file 
 						+ Populate ordered map (index) from file index:
@@ -1312,7 +1312,7 @@ Render:
 					+ Get(preview image file filename, last modified) -> uq_ptr<ImageData>
 						+ If has data for it in map & last modified is valid: load from db;
 						  else: return null
-				= NewPreviewImageDatabase: used to manage a new DB
+				+ NewPreviewImageDatabase: used to manage a new DB
 					+ Key is preview image file filename
 					+ Value is:
 						+ last modified
@@ -1375,6 +1375,7 @@ Render:
 					+ Close old DB
 					+ delete old file, rename tmp file
 		- Unit tests
+		- changes.txt
 
 	- ShipLoadDialog: display also folders
 

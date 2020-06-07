@@ -213,6 +213,7 @@ private:
     void OnResized(wxSizeEvent & event);
     void OnMouseSingleClick(wxMouseEvent & event);
     void OnMouseDoubleClick(wxMouseEvent & event);
+    void OnKeyDown(wxKeyEvent & event);
     void OnPollQueueTimer(wxTimerEvent & event);
 
 private:
@@ -228,6 +229,8 @@ private:
         int nPreviews);
 
     size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
+
+    void EnsureTileIsVisible(size_t infoTileIndex);
 
     wxRect GetVisibleRectVirtual() const;
 

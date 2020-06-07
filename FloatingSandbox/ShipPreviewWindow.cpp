@@ -25,7 +25,9 @@ ShipPreviewWindow::ShipPreviewWindow(
         wxID_ANY,
         wxDefaultPosition,
         wxDefaultSize,
-        wxBORDER_SIMPLE | wxVSCROLL)
+        wxBORDER_SIMPLE | wxVSCROLL
+        | wxWANTS_CHARS // To catch ENTER key
+        )
     , mClientSize(0, 0)
     , mVirtualHeight(0)
     , mCols(0)
@@ -73,6 +75,9 @@ ShipPreviewWindow::ShipPreviewWindow(
     Bind(wxEVT_LEFT_DOWN, &ShipPreviewWindow::OnMouseSingleClick, this);
     Bind(wxEVT_LEFT_DCLICK, &ShipPreviewWindow::OnMouseDoubleClick, this);
 
+    // Register key events
+    Bind(wxEVT_KEY_DOWN, &ShipPreviewWindow::OnKeyDown, this);
+
     // Setup poll queue timer
     mPollQueueTimer = std::make_unique<wxTimer>(this, wxID_ANY);
     Bind(wxEVT_TIMER, &ShipPreviewWindow::OnPollQueueTimer, this, mPollQueueTimer->GetId());
@@ -100,7 +105,7 @@ void ShipPreviewWindow::OnOpen()
     mPreviewThread = std::thread(&ShipPreviewWindow::RunPreviewThread, this);
 
     // Start queue poll timer
-    mPollQueueTimer->Start(50, false);
+    mPollQueueTimer->Start(25, false);
 }
 
 void ShipPreviewWindow::OnClose()
@@ -181,20 +186,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
         // Scroll to the item if it's not fully visible
         //
 
-        assert(*foundShipIndex < mInfoTiles.size());
-
-        wxRect visibleRectVirtual = GetVisibleRectVirtual();
-        if (!visibleRectVirtual.Contains(mInfoTiles[*foundShipIndex].RectVirtual))
-        {
-            int xUnit, yUnit;
-            GetScrollPixelsPerUnit(&xUnit, &yUnit);
-            if (yUnit != 0)
-            {
-                this->Scroll(
-                    -1,
-                    mInfoTiles[*foundShipIndex].RectVirtual.GetTop() / yUnit);
-            }
-        }
+        EnsureTileIsVisible(*foundShipIndex);
 
         //
         // Select item
@@ -256,6 +248,49 @@ void ShipPreviewWindow::OnMouseDoubleClick(wxMouseEvent & event)
     if (selectedInfoTileIndex < mInfoTiles.size())
     {
         Choose(selectedInfoTileIndex);
+    }
+}
+
+void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
+{
+    if (!mSelectedInfoTileIndex.has_value())
+    {
+        event.Skip();
+        return;
+    }
+
+    int deltaElement = 0;
+
+    auto const keyCode = event.GetKeyCode();
+    if (keyCode == WXK_LEFT)
+        deltaElement = -1;
+    else if (keyCode == WXK_RIGHT)
+        deltaElement = 1;
+    else if (keyCode == WXK_UP)
+        deltaElement = -mCols;
+    else if (keyCode == WXK_DOWN)
+        deltaElement = mCols;
+    else if (keyCode == WXK_RETURN)
+    {
+        Choose(*mSelectedInfoTileIndex);
+        return;
+    }
+    else
+    {
+        event.Skip();
+        return;
+    }
+
+    if (deltaElement != 0)
+    {
+        int const newIndex = static_cast<int>(*mSelectedInfoTileIndex) + deltaElement;
+        if (newIndex >= 0 && newIndex < mInfoTiles.size())
+        {
+            Select(static_cast<size_t>(newIndex));
+
+            // Move into view if needed
+            EnsureTileIsVisible(newIndex);
+        }
     }
 }
 
@@ -355,12 +390,25 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 infoTile.Metadata.emplace(message->GetShipPreview().Metadata);
 
+                // Add ship name to search map
+                infoTile.SearchStrings.push_back(
+                    Utils::ToLower(
+                        message->GetShipPreview().Metadata.ShipName));
+
                 // Add author to search map
                 if (!!message->GetShipPreview().Metadata.Author)
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
                             *(message->GetShipPreview().Metadata.Author)));
+                }
+
+                // Add ship year to search map
+                if (!!message->GetShipPreview().Metadata.YearBuilt)
+                {
+                    infoTile.SearchStrings.push_back(
+                        Utils::ToLower(
+                            *(message->GetShipPreview().Metadata.YearBuilt)));
                 }
 
                 // Remember we need to refresh now
@@ -516,6 +564,24 @@ size_t ShipPreviewWindow::MapMousePositionToInfoTile(wxPoint const & mousePositi
     int r = virtualMouse.y / RowHeight;
 
     return static_cast<size_t>(c + r * mCols);
+}
+
+void ShipPreviewWindow::EnsureTileIsVisible(size_t infoTileIndex)
+{
+    assert(infoTileIndex < mInfoTiles.size());
+
+    wxRect visibleRectVirtual = GetVisibleRectVirtual();
+    if (!visibleRectVirtual.Contains(mInfoTiles[infoTileIndex].RectVirtual))
+    {
+        int xUnit, yUnit;
+        GetScrollPixelsPerUnit(&xUnit, &yUnit);
+        if (yUnit != 0)
+        {
+            this->Scroll(
+                -1,
+                mInfoTiles[infoTileIndex].RectVirtual.GetTop() / yUnit);
+        }
+    }
 }
 
 wxRect ShipPreviewWindow::GetVisibleRectVirtual() const
@@ -840,15 +906,11 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
 
         try
         {
-            LogMessage("PreviewThread::ScanDirectory(): loading preview for \"", shipFilePaths[iShip].filename().string(), "\"...");
-
             // Load preview
             auto shipPreview = ShipPreview::Load(shipFilePaths[iShip]);
 
             // Load preview image
             auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreview, PreviewImageSize);
-
-            LogMessage("PreviewThread::ScanDirectory(): ...preview loaded.");
 
             // Notify
             QueueThreadToPanelMessage(
@@ -857,7 +919,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     std::move(shipPreview),
                     std::move(shipPreviewImage)));
 
-            // TODOTEST
+            // Removed with ship preview database
             // Take it easy a bit
             //std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
