@@ -49,8 +49,13 @@ protected:
             std::filesystem::file_time_type LastModified;
             std::istream::pos_type Position;
             size_t Size;
+            ImageSize Dimensions;
             StringSizeType FilenameLength;
             // Filename chars follow
+
+            IndexEntry()
+                : Dimensions(0, 0)
+            {}
         };
 
         struct FileTrailer
@@ -67,6 +72,8 @@ protected:
             }
         };
 #pragma pack(pop)
+
+        static size_t constexpr PreviewImageStartOffset = sizeof(DatabaseStructure::FileHeader);
     };
 
     static constexpr size_t EstimatedIndexEntrySize = sizeof(DatabaseStructure) + 40;
@@ -78,7 +85,8 @@ protected:
         std::filesystem::path const & filename,
         std::filesystem::file_time_type lastModified,
         std::istream::pos_type position,
-        size_t size);
+        size_t size,
+        ImageSize dimensions);
 
     static size_t DeserializeIndexEntry(
         ByteBuffer const & buffer,
@@ -86,7 +94,8 @@ protected:
         std::filesystem::path & filename,
         std::filesystem::file_time_type & lastModified,
         std::istream::pos_type & position,
-        size_t & size);
+        size_t & size,
+        ImageSize & dimensions);
 
     static void SerializePreviewImage(
         std::ostream & outputFile,
@@ -140,14 +149,17 @@ private:
         std::filesystem::file_time_type LastModified;
         std::istream::pos_type Position;
         size_t Size;
+        ImageSize Dimensions;
 
         PreviewImageInfo(
             std::filesystem::file_time_type lastModified,
             std::istream::pos_type position,
-            size_t size)
+            size_t size,
+            ImageSize dimensions)
             : LastModified(lastModified)
             , Position(position)
             , Size(size)
+            , Dimensions(dimensions)
         {}
     };
 

@@ -16,7 +16,8 @@ void ShipPreviewImageDatabase::SerializeIndexEntry(
     std::filesystem::path const & filename,
     std::filesystem::file_time_type lastModified,
     std::istream::pos_type position,
-    size_t size)
+    size_t size,
+    ImageSize dimensions)
 {
     auto const filenameString = filename.string();
     if (filenameString.size() > std::numeric_limits<StringSizeType>::max())
@@ -29,15 +30,10 @@ void ShipPreviewImageDatabase::SerializeIndexEntry(
     indexEntry.LastModified = lastModified;
     indexEntry.Position = position;
     indexEntry.Size = size;
+    indexEntry.Dimensions = dimensions;
     indexEntry.FilenameLength = static_cast<StringSizeType>(filenameString.size());
 
     size_t const totalIndexEntrySize = sizeof(DatabaseStructure::IndexEntry) + filenameString.size();
-
-    LogMessage("TODOHERE: sizeof(IndexEntry)=", sizeof(DatabaseStructure::IndexEntry),
-        " file_time_type=", sizeof(std::filesystem::file_time_type),
-        " pos_type=", sizeof(std::istream::pos_type),
-        " size_t=", sizeof(size_t),
-        " StringSizeType=", sizeof(StringSizeType));
 
     size_t const initialBufferSize = buffer.size();
     buffer.resize(initialBufferSize + totalIndexEntrySize);
@@ -61,7 +57,8 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     std::filesystem::path & filename,
     std::filesystem::file_time_type & lastModified,
     std::istream::pos_type & position,
-    size_t & size)
+    size_t & size,
+    ImageSize & dimensions)
 {
     DatabaseStructure::IndexEntry const * const indexEntry =
         reinterpret_cast<DatabaseStructure::IndexEntry const *>(&(buffer[bufferIndex]));
@@ -69,6 +66,7 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     lastModified = indexEntry->LastModified;
     position = indexEntry->Position;
     size = indexEntry->Size;
+    dimensions = indexEntry->Dimensions;
 
     std::string filenameString = std::string(
         &(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)]),
@@ -166,6 +164,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                         std::filesystem::file_time_type lastModified;
                         std::istream::pos_type position;
                         size_t size;
+                        ImageSize dimensions(0, 0);
 
                         indexOffset = DeserializeIndexEntry(
                             indexBuffer,
@@ -173,13 +172,15 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                             filename,
                             lastModified,
                             position,
-                            size);
+                            size,
+                            dimensions);
 
                         auto [it, isInserted] = index.try_emplace(
                             filename,
                             lastModified,
                             position,
-                            size);
+                            size,
+                            dimensions);
 
                         if (!isInserted)
                         {
@@ -217,8 +218,24 @@ std::optional<RgbaImageData> PersistedShipPreviewImageDatabase::TryGetPreviewIma
     if (it != mIndex.end()
         && lastModifiedTime <= it->second.LastModified)
     {
-        // TODOHERE
-        return std::nullopt;
+        //
+        // Load preview from DB
+        //
+
+        // Alloc buffer
+        std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(it->second.Size);
+
+        // Position
+        assert(!!mDatabaseFileStream);
+        mDatabaseFileStream->seekg(it->second.Position);
+
+        // Read
+        mDatabaseFileStream->read(reinterpret_cast<char *>(buffer.get()), it->second.Size);
+
+        // Make image
+        return RgbaImageData(
+            it->second.Dimensions,
+            std::move(buffer));
     }
 
     // No luck
@@ -278,142 +295,59 @@ bool NewShipPreviewImageDatabase::Commit(
     // in the old database
     assert(isVisitCompleted || mIndex.size() > oldDatabase.mIndex.size());
 
-    //
-    // Prepare new index
-    //
-
-    // Prepare buffer
+    // Prepare buffer for new index
     size_t const newIndexEstimatedSize = EstimatedIndexEntrySize * mIndex.size();
     ByteBuffer newIndexBuffer;
     newIndexBuffer.reserve(newIndexEstimatedSize);
 
     //
-    // Calculate longest possible streak of preview image data that
-    // may be copied from old DB
-    //
-    // Here we optimize for a slowly-growing database that ultimately
-    // covers an entire directory.
+    // Prepare output stream
     //
 
-    size_t const copyStartOffset = sizeof(DatabaseStructure::FileHeader);
-    size_t copyEndOffset = copyStartOffset;
+    std::shared_ptr<std::ostream> outputStream;
 
-    auto oldDbIt = oldDatabase.mIndex.cbegin();
+    auto const getOutputStream =
+        [&]() -> std::ostream &
+        {
+            if (!outputStream)
+            {
+                // Open file
+
+                outputStream = mFileSystem->OpenOutputStream(databaseFilePath);
+
+                // Write header
+
+                DatabaseStructure::FileHeader header(Version::CurrentVersion());
+
+                WriteFromData(
+                    *outputStream,
+                    reinterpret_cast<char *>(&header),
+                    sizeof(DatabaseStructure::FileHeader));
+            }
+
+            return *outputStream;
+        };
+
+    //
+    // 1) Process new index elements vs old index elements
+    //
+
+    size_t currentNewDbPreviewImageOffset = DatabaseStructure::PreviewImageStartOffset;
+
     auto newDbIt = mIndex.cbegin();
+    auto oldDbIt = oldDatabase.mIndex.cbegin();
 
-    for (; oldDbIt != oldDatabase.mIndex.cend() && newDbIt != mIndex.cend(); ++oldDbIt, ++newDbIt)
-    {
-        if (oldDbIt->first == newDbIt->first    // Entry is for same preview file in both DBs
-            && !(newDbIt->second.PreviewImage)) // New DB has no new info for this entry
+    auto saveNewEntry =
+        [&]() -> void
         {
-            LogMessage("NewShipPreviewImageDatabase::Commit(): copying old preview image data for '", oldDbIt->first.string(), "' (coalescing)...");
-
-            // Extend copy
-            copyEndOffset += oldDbIt->second.Size;
-
-            // Add entry to new index
-            SerializeIndexEntry(
-                newIndexBuffer,
-                oldDbIt->first,
-                oldDbIt->second.LastModified,
-                oldDbIt->second.Position,
-                oldDbIt->second.Size);
-        }
-        else
-        {
-            // Stop with copying
-            break;
-        }
-    }
-
-    if (oldDbIt == oldDatabase.mIndex.cend() && newDbIt == mIndex.cend())
-    {
-        // New DB is exactly like old DB...
-        // ...nothing to commit
-        LogMessage("NewShipPreviewImageDatabase::Commit(): new DB matches old DB, nothing to commit");
-        return false;
-    }
-
-    //
-    // Save database
-    //
-
-    std::shared_ptr<std::ostream> outputStream = mFileSystem->OpenOutputStream(databaseFilePath);
-
-    //
-    // 1) Write header
-    //
-
-    DatabaseStructure::FileHeader header(Version::CurrentVersion());
-
-    WriteFromData(
-        *outputStream,
-        reinterpret_cast<char *>(&header),
-        sizeof(DatabaseStructure::FileHeader));
-
-    //
-    // 2) Copy preview images from old DB
-    //
-
-    if (copyEndOffset > copyStartOffset)
-    {
-        assert(!!oldDatabase.mDatabaseFileStream);
-
-        WriteFromOldDatabase(
-            *outputStream,
-            *oldDatabase.mDatabaseFileStream,
-            copyStartOffset,
-            copyEndOffset - copyStartOffset);
-    }
-
-    //
-    // 3) Copy/Write all remaining preview images
-    //
-
-    size_t currentOffset = copyEndOffset;
-
-    for (; newDbIt != mIndex.cend(); ++newDbIt)
-    {
-        if (!newDbIt->second.PreviewImage)
-        {
-            // No new preview image data for this entry...
-            // ...copy from old
-
-            LogMessage("NewShipPreviewImageDatabase::Commit(): copying old preview image data for '", newDbIt->first.string(), "'...");
-
-            auto const & oldEntry = oldDatabase.mIndex.find(newDbIt->first);
-            assert(oldEntry != oldDatabase.mIndex.end());
-
-            assert(!!oldDatabase.mDatabaseFileStream);
-
-            WriteFromOldDatabase(
-                *outputStream,
-                *oldDatabase.mDatabaseFileStream,
-                oldEntry->second.Position,
-                oldEntry->second.Size);
-
-            // Add entry to new index
-            SerializeIndexEntry(
-                newIndexBuffer,
-                newDbIt->first,
-                newDbIt->second.LastModified,
-                currentOffset,
-                oldEntry->second.Size);
-
-            // Advance offset
-            currentOffset += oldEntry->second.Size;
-        }
-        else
-        {
-            // There is new preview image data for this entry...
-            // ...save it
+            assert(newDbIt != mIndex.cend());
 
             LogMessage("NewShipPreviewImageDatabase::Commit(): saving new preview image data for '", newDbIt->first.string(), "'...");
 
             auto const previewImageByteSize = newDbIt->second.PreviewImage->GetByteSize();
 
             WriteFromData(
-                *outputStream,
+                getOutputStream(),
                 reinterpret_cast<char *>(newDbIt->second.PreviewImage->Data.get()),
                 previewImageByteSize);
 
@@ -422,36 +356,136 @@ bool NewShipPreviewImageDatabase::Commit(
                 newIndexBuffer,
                 newDbIt->first,
                 newDbIt->second.LastModified,
-                currentOffset,
-                previewImageByteSize);
+                currentNewDbPreviewImageOffset,
+                previewImageByteSize,
+                newDbIt->second.PreviewImage->Size);
 
-            // Advance offset
-            currentOffset += previewImageByteSize;
+            // Advance preview image offset
+            currentNewDbPreviewImageOffset += previewImageByteSize;
+        };
+
+    while (newDbIt != mIndex.cend() && oldDbIt != oldDatabase.mIndex.cend())
+    {
+        //
+        // Catch-up old to new
+        //
+
+        while (oldDbIt != oldDatabase.mIndex.cend()
+            && oldDbIt->first < newDbIt->first)
+        {
+            ++oldDbIt;
         }
+
+        if (oldDbIt == oldDatabase.mIndex.cend())
+            break; // No more reason to continue here; may jump to streaming new
+
+        //
+        // Calc longest streak of old preview images
+        //
+
+        std::streampos copyOldDbStartOffset = oldDbIt->second.Position;
+        std::streampos copyOldDbEndOffset = copyOldDbStartOffset;
+
+        for (; oldDbIt != oldDatabase.mIndex.cend() && newDbIt != mIndex.cend(); ++oldDbIt, ++newDbIt)
+        {
+            if (oldDbIt->first == newDbIt->first    // Entry is for same preview file in both DBs
+                && !(newDbIt->second.PreviewImage)) // New DB has no new info for this entry
+            {
+                LogMessage("NewShipPreviewImageDatabase::Commit(): copying old preview image data for '", oldDbIt->first.string(), "' (coalescing)...");
+
+                // Extend copy
+                copyOldDbEndOffset += oldDbIt->second.Size;
+
+                // Add entry to new index
+                SerializeIndexEntry(
+                    newIndexBuffer,
+                    oldDbIt->first,
+                    oldDbIt->second.LastModified,
+                    currentNewDbPreviewImageOffset,
+                    oldDbIt->second.Size,
+                    oldDbIt->second.Dimensions);
+
+                // Update next offset in preview image section of new db
+                currentNewDbPreviewImageOffset += oldDbIt->second.Size;
+            }
+            else
+            {
+                // Stop with copying
+                break;
+            }
+        }
+
+        if (oldDbIt == oldDatabase.mIndex.cend() && newDbIt == mIndex.cend()
+            && copyOldDbStartOffset == static_cast<std::streampos>(DatabaseStructure::PreviewImageStartOffset))
+        {
+            // New DB is exactly like old DB...
+            // ...nothing to commit
+            LogMessage("NewShipPreviewImageDatabase::Commit(): new DB matches old DB, nothing to commit");
+            return false;
+        }
+
+        //
+        // Copy preview images from old DB
+        //
+
+        if (copyOldDbEndOffset > copyOldDbStartOffset)
+        {
+            assert(!!oldDatabase.mDatabaseFileStream);
+
+            WriteFromOldDatabase(
+                getOutputStream(),
+                *oldDatabase.mDatabaseFileStream,
+                copyOldDbStartOffset,
+                copyOldDbEndOffset - copyOldDbStartOffset);
+
+            // No need to advance preview image offset in new db,
+            // we've been updating it all the time
+        }
+
+        //
+        // Save this single new entry
+        //
+
+        if (newDbIt == mIndex.cend())
+            break;
+
+        saveNewEntry();
+
+        // Advance new
+        ++newDbIt;
     }
 
     //
-    // 4) Save index
+    // 2) Serialize all remaining new entries to file
+    //
+
+    for (; newDbIt != mIndex.cend(); ++newDbIt)
+    {
+        assert(!!newDbIt->second.PreviewImage); // Or else we'd have still entries from the old DB
+
+        saveNewEntry();
+    }
+
+    //
+    // 3) Save index
     //
 
     // Save index start offset for later
-    size_t const indexOffset = currentOffset;
+    size_t const newDbIndexStartOffset = currentNewDbPreviewImageOffset;
 
     WriteFromData(
-        *outputStream,
+        getOutputStream(),
         newIndexBuffer.data(),
         newIndexBuffer.size());
 
-    currentOffset += newIndexBuffer.size();
-
     //
-    // 5) Append tail
+    // 4) Append tail
     //
 
-    DatabaseStructure::FileTrailer trailer(indexOffset);
+    DatabaseStructure::FileTrailer trailer(newDbIndexStartOffset);
 
     WriteFromData(
-        *outputStream,
+        getOutputStream(),
         reinterpret_cast<char *>(&trailer),
         sizeof(DatabaseStructure::FileTrailer));
 
