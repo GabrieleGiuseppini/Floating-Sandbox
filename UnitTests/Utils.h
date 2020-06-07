@@ -15,7 +15,7 @@ public:
 
     struct FileInfo
     {
-        std::shared_ptr<memory_streambuf> FileStream;
+        std::shared_ptr<memory_streambuf> StreamBuf;
         std::filesystem::file_time_type LastModified;
     };
 
@@ -36,7 +36,7 @@ public:
         std::filesystem::file_time_type lastModified = std::filesystem::file_time_type::clock::now())
     {
         auto & fileInfoEntry = mFileMap[testFilePath];
-        fileInfoEntry.FileStream = std::make_shared<memory_streambuf>(content);
+        fileInfoEntry.StreamBuf = std::make_shared<memory_streambuf>(content);
         fileInfoEntry.LastModified = lastModified;
     }
 
@@ -48,14 +48,14 @@ public:
             throw std::logic_error("File path '" + testFilePath.string() + "' does not exist in test file system");
         }
 
-        if (!it->second.FileStream)
+        if (!it->second.StreamBuf)
         {
             throw std::logic_error("GetTestFileContents() invoked for file with no stream: " + testFilePath.string());
         }
 
         return std::string(
-            it->second.FileStream->data(),
-            it->second.FileStream->size());
+            it->second.StreamBuf->data(),
+            it->second.StreamBuf->size());
     }
 
     ///////////////////////////////////////////////////////////
@@ -89,8 +89,8 @@ public:
         auto it = mFileMap.find(filePath);
         if (it != mFileMap.end())
         {
-            it->second.FileStream->rewind();
-            return std::make_shared<std::istream>(it->second.FileStream.get());
+            it->second.StreamBuf->rewind();
+            return std::make_shared<std::istream>(it->second.StreamBuf.get());
         }
         else
         {
@@ -101,7 +101,7 @@ public:
     std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) override
     {
         auto streamBuf = std::make_shared<memory_streambuf>();
-        mFileMap[filePath].FileStream = streamBuf;
+        mFileMap[filePath].StreamBuf = streamBuf;
         mFileMap[filePath].LastModified = std::filesystem::file_time_type::clock::now();
 
         return std::make_shared<std::ostream>(streamBuf.get());
