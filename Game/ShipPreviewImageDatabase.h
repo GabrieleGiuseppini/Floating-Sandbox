@@ -115,6 +115,13 @@ public:
         std::filesystem::path const & databaseFilePath,
         std::shared_ptr<IFileSystem> fileSystem);
 
+    // Makes for an empty DB
+    PersistedShipPreviewImageDatabase(std::shared_ptr<IFileSystem> && mFileSystem)
+        : mFileSystem(std::move(mFileSystem))
+        , mDatabaseFileStream()
+        , mIndex()
+    {}
+
     std::optional<RgbaImageData> TryGetPreviewImage(
         std::filesystem::path const & previewImageFilename,
         std::filesystem::file_time_type lastModifiedTime);
@@ -124,13 +131,6 @@ public:
 private:
 
     struct PreviewImageInfo;
-
-    // Makes for an empty DB
-    PersistedShipPreviewImageDatabase(std::shared_ptr<IFileSystem> && mFileSystem)
-        : mFileSystem(std::move(mFileSystem))
-        , mDatabaseFileStream()
-        , mIndex()
-    {}
 
     PersistedShipPreviewImageDatabase(
         std::shared_ptr<std::istream> && databaseFileStream,
@@ -175,6 +175,14 @@ private:
 
     friend class ShipPreviewImageDatabaseTests_Commit_CompleteVisit_NoOldDatabase_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_CompleteVisit_NoOldDatabase_NoDbIfLessThanMinimumShips_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewSmallerThanOld_CompleteVisit_Shrinks_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewSmallerThanOld_IncompleteVisit_DoesNotShrink_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_AtBeginning_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_AtBeginning_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_InMiddle_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_InMiddle_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_AtEnd_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_AtEnd_Test;
 };
 
 class NewShipPreviewImageDatabase final : ShipPreviewImageDatabase

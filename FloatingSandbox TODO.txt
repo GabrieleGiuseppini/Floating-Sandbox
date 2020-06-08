@@ -269,6 +269,14 @@ Render:
 		- ARM OpenGL issue
 			- See what happens when showing MainFrame before GameController is created
 
+		- SettingsDialog: move ship render mode to Debug
+		- Sparkles growingand then shrinking
+		- Water bubbles:
+			- Bigger as goes up
+			- Sound (*)
+			- Dynamics: improvement: damp velocities?
+
+
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one
 				- Double-check FPS afterwards
@@ -1404,8 +1412,8 @@ Render:
 		- Morse code: text-to-morse encoder would be cool
 			- Default "S.O.S.", also customizable via ship property
 
-	- Do air bubbles sounds, very low volume
-		- At creation and at expiry
+	- Do air bubbles sounds, very low volume (*)
+		- At creation and at expiry - TBD: just at expiry
 		- New events at IGameEventHandler
 			- Dispatcher aggregates with counter
 			- Ship takes shared_ptr<Dispatcher> now, for perf
