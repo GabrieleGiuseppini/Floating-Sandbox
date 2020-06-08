@@ -393,8 +393,7 @@ bool NewShipPreviewImageDatabase::Commit(
         // Catch-up old to new
         //
 
-        while (oldDbIt != oldDatabase.mIndex.cend()
-            && oldDbIt->first < newDbIt->first)
+        while (oldDbIt != oldDatabase.mIndex.cend() && oldDbIt->first < newDbIt->first)
         {
             ++oldDbIt;
         }
@@ -439,6 +438,7 @@ bool NewShipPreviewImageDatabase::Commit(
         }
 
         if (oldDbIt == oldDatabase.mIndex.cend() && newDbIt == mIndex.cend()
+            && mIndex.size() == oldDatabase.mIndex.size()
             && copyOldDbStartOffset == static_cast<std::streampos>(DatabaseStructure::PreviewImageStartOffset))
         {
             // New DB is exactly like old DB...

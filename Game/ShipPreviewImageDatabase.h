@@ -177,12 +177,14 @@ private:
     friend class ShipPreviewImageDatabaseTests_Commit_CompleteVisit_NoOldDatabase_NoDbIfLessThanMinimumShips_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewSmallerThanOld_CompleteVisit_Shrinks_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewSmallerThanOld_IncompleteVisit_DoesNotShrink_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_OverwritesAll_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_AtBeginning_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_AtBeginning_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_InMiddle_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_InMiddle_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds1_AtEnd_Test;
     friend class ShipPreviewImageDatabaseTests_Commit_NewAdds2_AtEnd_Test;
+    friend class ShipPreviewImageDatabaseTests_Commit_NewOverwrites1_Test;
 };
 
 class NewShipPreviewImageDatabase final : ShipPreviewImageDatabase

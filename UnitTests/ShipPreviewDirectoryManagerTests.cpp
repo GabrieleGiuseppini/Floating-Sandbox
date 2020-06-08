@@ -288,6 +288,81 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewSmallerThanOld_IncompleteVisit_D
     EXPECT_EQ(0u, verifyDb.mIndex.size());
 }
 
+TEST_F(ShipPreviewImageDatabaseTests, Commit_OverwritesAll)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    //
+    // Make old DB
+    //
+
+    auto oldDb = MakeOldDb(
+        {
+            "preview_d",
+            "preview_m",
+            "preview_s"
+        },
+        "foo1",
+        testFileSystem);
+
+    //
+    // Make new DB
+    //
+
+    auto newDb = NewShipPreviewImageDatabase(testFileSystem);
+
+    newDb.Add(
+        "preview_d",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        std::make_unique<RgbaImageData>(MakePreviewImage(20)));
+
+    newDb.Add(
+        "preview_m",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        std::make_unique<RgbaImageData>(MakePreviewImage(21)));
+
+    newDb.Add(
+        "preview_s",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        std::make_unique<RgbaImageData>(MakePreviewImage(22)));
+
+    //
+    // Commit
+    //
+
+    auto const newDbFilename = "bar";
+
+    bool const isCreated = newDb.Commit(
+        newDbFilename,
+        oldDb,
+        true,
+        1);
+
+    ASSERT_TRUE(isCreated);
+
+    //
+    // Verify new DB file created
+    //
+
+    PersistedShipPreviewImageDatabase verifyDb = PersistedShipPreviewImageDatabase::Load(
+        newDbFilename,
+        testFileSystem);
+
+    EXPECT_EQ(3u, verifyDb.mIndex.size());
+
+    auto verifyIndexIt = verifyDb.mIndex.cbegin();
+    EXPECT_EQ("preview_d", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(20, 20), verifyIndexIt->second.Dimensions);
+
+    ++verifyIndexIt;
+    EXPECT_EQ("preview_m", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(21, 21), verifyIndexIt->second.Dimensions);
+
+    ++verifyIndexIt;
+    EXPECT_EQ("preview_s", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(22, 22), verifyIndexIt->second.Dimensions);
+}
+
 TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds1_AtBeginning)
 {
     auto testFileSystem = std::make_shared<TestFileSystem>();
@@ -314,17 +389,17 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds1_AtBeginning)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_a",
@@ -398,7 +473,7 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds2_AtBeginning)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_b",
@@ -408,12 +483,12 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds2_AtBeginning)
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_a",
@@ -491,17 +566,17 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds1_InMiddle)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_f",
@@ -575,17 +650,17 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds2_InMiddle)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_f",
@@ -668,17 +743,17 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds1_AtEnd)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_t",
@@ -757,17 +832,17 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds2_AtEnd)
     newDb.Add(
         "preview_d",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(1)));
+        nullptr);
 
     newDb.Add(
         "preview_m",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(2)));
+        nullptr);
 
     newDb.Add(
         "preview_s",
         std::filesystem::file_time_type::min() + std::chrono::seconds(10),
-        std::make_unique<RgbaImageData>(MakePreviewImage(3)));
+        nullptr);
 
     newDb.Add(
         "preview_t",
@@ -817,4 +892,79 @@ TEST_F(ShipPreviewImageDatabaseTests, Commit_NewAdds2_AtEnd)
     ++verifyIndexIt;
     EXPECT_EQ("preview_z", verifyIndexIt->first.string());
     EXPECT_EQ(ImageSize(5, 5), verifyIndexIt->second.Dimensions);
+}
+
+TEST_F(ShipPreviewImageDatabaseTests, Commit_NewOverwrites1)
+{
+    auto testFileSystem = std::make_shared<TestFileSystem>();
+
+    //
+    // Make old DB
+    //
+
+    auto oldDb = MakeOldDb(
+        {
+            "preview_d",
+            "preview_m",
+            "preview_s"
+        },
+        "foo1",
+        testFileSystem);
+
+    //
+    // Make new DB
+    //
+
+    auto newDb = NewShipPreviewImageDatabase(testFileSystem);
+
+    newDb.Add(
+        "preview_d",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        nullptr);
+
+    newDb.Add(
+        "preview_m",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        std::make_unique<RgbaImageData>(MakePreviewImage(5)));
+
+    newDb.Add(
+        "preview_s",
+        std::filesystem::file_time_type::min() + std::chrono::seconds(10),
+        nullptr);
+
+    //
+    // Commit
+    //
+
+    auto const newDbFilename = "bar";
+
+    bool const isCreated = newDb.Commit(
+        newDbFilename,
+        oldDb,
+        true,
+        1);
+
+    ASSERT_TRUE(isCreated);
+
+    //
+    // Verify new DB file created
+    //
+
+    PersistedShipPreviewImageDatabase verifyDb = PersistedShipPreviewImageDatabase::Load(
+        newDbFilename,
+        testFileSystem);
+
+    EXPECT_EQ(3u, verifyDb.mIndex.size());
+
+    auto verifyIndexIt = verifyDb.mIndex.cbegin();
+    EXPECT_EQ("preview_d", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(1, 1), verifyIndexIt->second.Dimensions);
+
+    ++verifyIndexIt;
+    EXPECT_EQ("preview_m", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(5, 5), verifyIndexIt->second.Dimensions);
+
+    ++verifyIndexIt;
+    EXPECT_EQ("preview_s", verifyIndexIt->first.string());
+    EXPECT_EQ(ImageSize(3, 3), verifyIndexIt->second.Dimensions);
 }
