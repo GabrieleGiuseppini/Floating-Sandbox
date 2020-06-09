@@ -13,7 +13,7 @@
 #include <ostream>
 #include <string>
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 struct rgbColor
 {
@@ -109,7 +109,7 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, rgbCo
     return os;
 }
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 struct rgbaColor
 {

@@ -162,7 +162,7 @@ public:
      */
     union LeakingComposite
     {
-#pragma pack(push)
+#pragma pack(push, 1)
         struct LeakingSourcesType
         {
             float StructuralLeak; // 0.0 or 1.0

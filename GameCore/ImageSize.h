@@ -11,7 +11,8 @@
 #include <sstream>
 #include <string>
 
-#pragma pack(push)
+#pragma pack(push, 1)
+
 struct ImageSize
 {
 public:
@@ -96,6 +97,7 @@ public:
         return ss.str();
     }
 };
+
 #pragma pack(pop)
 
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, ImageSize const & is)

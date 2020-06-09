@@ -13,7 +13,7 @@
 #include <ostream>
 #include <string>
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 struct vec2f
 {
@@ -244,7 +244,7 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec2
     return os;
 }
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 struct vec3f
 {
@@ -423,7 +423,7 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, vec3f
     return os;
 }
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 struct vec4f
 {

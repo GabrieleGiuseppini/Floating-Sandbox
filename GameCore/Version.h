@@ -38,7 +38,7 @@ inline std::string ApplicationName = APPLICATION_NAME;
 
 //////////////////////////////////////////////////////////////
 
-#pragma pack(push)
+#pragma pack(push, 1)
 
 class Version
 {

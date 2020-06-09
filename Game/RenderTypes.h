@@ -16,7 +16,7 @@ namespace Render {
 /*
  * Describes a vertex of a text quad, with all the information necessary to the shader.
  */
-#pragma pack(push)
+#pragma pack(push, 1)
 struct TextQuadVertex
 {
     float positionNdcX;
