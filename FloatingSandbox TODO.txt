@@ -253,8 +253,8 @@ Render:
 		+ Bump up version
 		+ Cleanup plan
 
-		= Load ship dialog:
-			= Ship Preview Cache (*)
+		+ Load ship dialog:
+			+ Ship Preview Cache (*)
 			+ Arrow keys on ShipPreview window
 			+ Text serch also on year, author
 
@@ -274,7 +274,7 @@ Render:
 		- Water bubbles:
 			- Bigger as goes up
 			- Sound (*)
-			- Dynamics: improvement: damp velocities?
+			- Waves at explosion
 
 
 		- MacOS:
@@ -1281,109 +1281,6 @@ Render:
 		- How to Guide
 
 - UI:
-	= ShipLoadDialog: ship preview database/cache (*)
-		+ Prep:
-			+ ShipDefinitionFile:
-				+ Load(png V shp)
-				+ IsShipDefinitionFile(png V shp)
-			+ ShipPreview:
-				+ Load: based off ShipDefinitionFile::Load implementation
-				+ Has path of preview image file ("preview image file path"), not preview image file itself
-					+ Also exposes LoadPreviewImage() to load preview image on-demand
-			+ ImageData::MakeCopy() -> unique_ptr
-		+ Cleanup:
-			+ Also version check @ header
-			+ Min files is 10
-			+ Header: also store sizeof(int) & check at load
-			+ Comment on initial streak - what optimizes
-			+ Base DB class: primitives for de/serializing RgbaImageData
-		+ ShipPreviewDirectoryManager:
-			+ Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
-			  and NewPreviewImageDatabase to manage new DB
-				+ Both derive from abstract PreviewImageDatabase w/definitions
-				+ In PreviewImageDatabase.cpp/.h
-				+ PersistedPreviewImageDatabase: used to manage an existing DB
-					+ Key is preview image file filename
-					+ Value is:
-						+ last modified
-						+ offset & size
-					+ static Load(db filename) -> ShipPreviewDatabase
-						+ If no db file exists => constructed as empty (empty index map)
-						+ open file 
-						+ Populate ordered map (index) from file index:
-							+ key: preview image file filename
-							+ value:
-								+ last modified
-								+ offset & size
-						+ private cctor(ordered_map, stream)
-					+ private cctor(ordered_map, stream): stores members
-					+ Get(preview image file filename, last modified) -> uq_ptr<ImageData>
-						+ If has data for it in map & last modified is valid: load from db;
-						  else: return null
-				+ NewPreviewImageDatabase: used to manage a new DB
-					+ Key is preview image file filename
-					+ Value is:
-						+ last modified
-						+ uq_ptr<ImageData>
-					+ public cctor(): initializes empty index map (ordered map)
-					+ Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
-						! invoked always, even for unchanged preview images
-						+ check if not already in map => error
-						+ if not deprecated: store in index:
-							+ key: preview image file filename
-							+ value:
-								+ last modified
-								+ uq_ptr<Image> (nullptr if no change from old DB)
-					+ Commit(db filename, PersistedPreviewImageDatabase const & oldDb, isNewCompleted)
-						! All exceptions here are silently caught and commit is (cleanly) aborted
-						+ if new is empty or (new is deprecated and old not empty) => nop (return)
-						+ Enforce min # of entries, if completed						
-						+ initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
-						+ 1) Copy from old DB as long as possible:
-							+ start_copy_offset = 0
-							+ end_copy_offset = header size
-							+ for each index position in both indices:
-								+ if keys match and image data in new is null:
-									+ copy (increment end_copy_offset)
-									+ update new persisted index
-								+ else: break
-							+ if full match w/old one: return
-							+ copy start_copy_offset->end_copy_offset
-						+ open tmp output file for w; truncate
-						+ 2) Save own
-							+ for each index position in continuation of this::index:
-								+ if uq_ptr<Image> is null:
-									+ copy from old appending to file
-									+ update new persisted index
-								+ else:
-									+ append image to file
-									+ update new persisted index
-						+ 3) Save new persisted index	
-			+ API:
-				+ static factory (folder path) -> uq_ptr(self)
-					+ load existing database (PersistedPreviewImageDatabase::Load)
-					+ passes db to private cctor
-				+ private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
-					+ stores both as const
-				+ Enumerate: makes (sorted) list of filepath's
-				+ LoadPreviewImage(ship preview) -> image
-					+ Algo:
-						+ get last modified of preview image file
-							- if error => mark new DB as deprecated; return error
-						+ if oldImageDatabase::Get(preview image filename, last modified):
-							+ newImageDatabase::Add(preview image filename, last modified, nullptr)
-							+ return image
-						+ else:
-							+ Load image
-								- if error => mark new DB as deprecated; return error
-							+ newImageDatabase::Add(preview image filename, last modified, image::copy)
-							+ return image
-				+ Commit(isCompleted)
-					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
-					+ Close old DB
-					+ delete old file, rename tmp file
-		= Unit tests
-		- changes.txt
 
 	- ShipLoadDialog: display also folders
 
@@ -2908,6 +2805,114 @@ IF WX:
 				+ Rename in *find*
 		+ Run unit tests in debug
 	+ Save ocean floor terrain and load it at startup
+	+ ShipLoadDialog: ship preview database/cache
+		+ Prep:
+			+ ShipDefinitionFile:
+				+ Load(png V shp)
+				+ IsShipDefinitionFile(png V shp)
+			+ ShipPreview:
+				+ Load: based off ShipDefinitionFile::Load implementation
+				+ Has path of preview image file ("preview image file path"), not preview image file itself
+					+ Also exposes LoadPreviewImage() to load preview image on-demand
+			+ ImageData::MakeCopy() -> unique_ptr
+		+ Cleanup:
+			+ Also version check @ header
+			+ Min files is 10
+			+ Header: also store sizeof(int) & check at load
+			+ Comment on initial streak - what optimizes
+			+ Base DB class: primitives for de/serializing RgbaImageData
+		+ ShipPreviewDirectoryManager:
+			+ Has PersistedPreviewImageDatabase to manage loaded DB (evt empty),
+			  and NewPreviewImageDatabase to manage new DB
+				+ Both derive from abstract PreviewImageDatabase w/definitions
+				+ In PreviewImageDatabase.cpp/.h
+				+ PersistedPreviewImageDatabase: used to manage an existing DB
+					+ Key is preview image file filename
+					+ Value is:
+						+ last modified
+						+ offset & size
+					+ static Load(db filename) -> ShipPreviewDatabase
+						+ If no db file exists => constructed as empty (empty index map)
+						+ open file 
+						+ Populate ordered map (index) from file index:
+							+ key: preview image file filename
+							+ value:
+								+ last modified
+								+ offset & size
+						+ private cctor(ordered_map, stream)
+					+ private cctor(ordered_map, stream): stores members
+					+ Get(preview image file filename, last modified) -> uq_ptr<ImageData>
+						+ If has data for it in map & last modified is valid: load from db;
+						  else: return null
+				+ NewPreviewImageDatabase: used to manage a new DB
+					+ Key is preview image file filename
+					+ Value is:
+						+ last modified
+						+ uq_ptr<ImageData>
+					+ public cctor(): initializes empty index map (ordered map)
+					+ Add(preview image file filename, last modified, uq_ptr<ImageData> (nullptr if no change from old DB))
+						! invoked always, even for unchanged preview images
+						+ check if not already in map => error
+						+ if not deprecated: store in index:
+							+ key: preview image file filename
+							+ value:
+								+ last modified
+								+ uq_ptr<Image> (nullptr if no change from old DB)
+					+ Commit(db filename, PersistedPreviewImageDatabase const & oldDb, isNewCompleted)
+						! All exceptions here are silently caught and commit is (cleanly) aborted
+						+ if new is empty or (new is deprecated and old not empty) => nop (return)
+						+ Enforce min # of entries, if completed						
+						+ initialize empty "new persisted index" (same index as PersistedPreviewImageDatabase, they're friends)
+						+ 1) Copy from old DB as long as possible:
+							+ start_copy_offset = 0
+							+ end_copy_offset = header size
+							+ for each index position in both indices:
+								+ if keys match and image data in new is null:
+									+ copy (increment end_copy_offset)
+									+ update new persisted index
+								+ else: break
+							+ if full match w/old one: return
+							+ copy start_copy_offset->end_copy_offset
+						+ open tmp output file for w; truncate
+						+ 2) Save own
+							+ for each index position in continuation of this::index:
+								+ if uq_ptr<Image> is null:
+									+ copy from old appending to file
+									+ update new persisted index
+								+ else:
+									+ append image to file
+									+ update new persisted index
+						+ 3) Save new persisted index	
+			+ API:
+				+ static factory (folder path) -> uq_ptr(self)
+					+ load existing database (PersistedPreviewImageDatabase::Load)
+					+ passes db to private cctor
+				+ private cctor(vector<filepath> &&, PersistedPreviewImageDatabase &&)
+					+ stores both as const
+				+ Enumerate: makes (sorted) list of filepath's
+				+ LoadPreviewImage(ship preview) -> image
+					+ Algo:
+						+ get last modified of preview image file
+							- if error => mark new DB as deprecated; return error
+						+ if oldImageDatabase::Get(preview image filename, last modified):
+							+ newImageDatabase::Add(preview image filename, last modified, nullptr)
+							+ return image
+						+ else:
+							+ Load image
+								- if error => mark new DB as deprecated; return error
+							+ newImageDatabase::Add(preview image filename, last modified, image::copy)
+							+ return image
+				+ Commit(isCompleted)
+					+ CachedPreviewImageDatabase::Commit(..., isCompleted)
+					+ Close old DB
+					+ delete old file, rename tmp file
+		+ Unit tests
+		+ changes.txt
+		+ Manual & perf test
+			+ Full
+			+ Half
+			+ Broken ship
+			+ Repaired ship
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)

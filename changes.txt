@@ -1,3 +1,7 @@
+TODO
+- Improved performance of Ship Explorer window when loading often from the same folder
+- ...and a few more small improvements here and there
+
 1.15.1.1
 - Fixed issue with mouse wheel/zoom stopping working - this time for real!
 - Fixed issue with arrow keys not working anymore on settings or ship explorer
