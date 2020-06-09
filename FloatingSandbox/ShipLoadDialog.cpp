@@ -40,8 +40,6 @@ ShipLoadDialog::ShipLoadDialog(
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-
-
     //
     // Directory tree and preview
     //
@@ -51,34 +49,39 @@ ShipLoadDialog::ShipLoadDialog(
 
 
         // Directory tree
+        {
+            assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
 
-        assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
+            LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
 
-        mDirCtrl = new wxGenericDirCtrl(
-            this,
-            wxID_ANY,
-            mUIPreferencesManager->GetShipLoadDirectories().front().string(),
-            wxDefaultPosition,
-            wxSize(MinDirCtrlWidth, 500),
-            wxDIRCTRL_DIR_ONLY);
+            mDirCtrl = new wxGenericDirCtrl(
+                this,
+                wxID_ANY,
+                mUIPreferencesManager->GetShipLoadDirectories().front().string(),
+                wxDefaultPosition,
+                wxSize(MinDirCtrlWidth, 500),
+                wxDIRCTRL_DIR_ONLY);
 
-        mDirCtrl->ShowHidden(true); // When installing per-user, the Ships folder is under AppData, which is hidden
-        mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
-        mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
+            LogMessage("ShipLoadDialog::cctor(): ...wxGenericDirCtrl created.");
 
-        hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);
+            mDirCtrl->ShowHidden(true); // When installing per-user, the Ships folder is under AppData, which is hidden
+            mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
+            mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
+
+            hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);
+        }
 
 
         // Preview
+        {
+            mShipPreviewWindow = new ShipPreviewWindow(this, resourceLocator);
 
-        mShipPreviewWindow = new ShipPreviewWindow(this, resourceLocator);
+            mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
+            mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+            mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
-        mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
-        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-        mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
-
-        hSizer1->Add(mShipPreviewWindow, 1, wxALIGN_TOP | wxEXPAND);
-
+            hSizer1->Add(mShipPreviewWindow, 1, wxALIGN_TOP | wxEXPAND);
+        }
 
         vSizer->Add(hSizer1, 1, wxEXPAND);
     }

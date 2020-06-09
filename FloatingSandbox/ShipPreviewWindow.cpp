@@ -101,6 +101,7 @@ void ShipPreviewWindow::OnOpen()
     mThreadToPanelMessageQueue.clear(); // You never know there's another path that leads to Open() without going through Close()
 
     // Start thread
+    LogMessage("ShipPreviewWindow::OnOpen: Starting thread");
     assert(!mPreviewThread.joinable());
     mPreviewThread = std::thread(&ShipPreviewWindow::RunPreviewThread, this);
 
@@ -886,7 +887,6 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
         ThreadToPanelMessage::MakeDirScanCompletedMessage(
             shipFilePaths));
 
-
     //
     // Process all files and create previews
     //
@@ -920,8 +920,8 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     std::move(shipPreviewImage)));
 
             // Removed with ship preview database
-            // Take it easy a bit
-            //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            //// Take it easy a bit
+            ////std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         catch (std::exception const & ex)
         {

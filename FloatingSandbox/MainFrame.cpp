@@ -1308,6 +1308,8 @@ void MainFrame::OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event
 
 void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
+    LogMessage("MainFrame::OnLoadShipMenuItemSelected: Enter");
+
     SetPaused(true);
 
     // See if we need to create the ShipLoad dialog

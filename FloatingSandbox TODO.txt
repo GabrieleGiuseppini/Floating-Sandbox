@@ -258,8 +258,8 @@ Render:
 			+ Arrow keys on ShipPreview window
 			+ Text serch also on year, author
 
-		- #pragma pack(push, 1) // @ all instances
-			- See perf afterwards
+		+ #pragma pack(push, 1) // @ all instances
+			+ See perf afterwards
 
 		- OpenGL:
 			- Remove stencil from context requirements
@@ -270,7 +270,7 @@ Render:
 			- See what happens when showing MainFrame before GameController is created
 
 		- SettingsDialog: move ship render mode to Debug
-		- Sparkles growingand then shrinking
+		- Sparkles growing and then shrinking
 		- Water bubbles:
 			- Bigger as goes up
 			- Sound (*)
