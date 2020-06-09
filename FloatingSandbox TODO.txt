@@ -247,8 +247,8 @@ Render:
 
 - Roadmap:
 		
-		- Blog:
-			- all new electrical elements
+		+ Blog:
+			+ all new electrical elements
 
 		+ Bump up version
 		+ Cleanup plan
@@ -970,6 +970,7 @@ Render:
 - Dynamics:
 
 	- New structural materials:
+		- Helium: ~like Hydrogen, but not combusting
 		- Sodium: explodes when particle's water > threshold
 			- At points' low-freq combustion update				  
 		- "Lightning rod" material
