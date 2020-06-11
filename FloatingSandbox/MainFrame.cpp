@@ -163,7 +163,6 @@ MainFrame::MainFrame(wxApp * mainApp)
         WX_GL_RGBA,
         WX_GL_DOUBLEBUFFER,
         WX_GL_DEPTH_SIZE,      16,
-        WX_GL_STENCIL_SIZE,    1,
 
         // Cannot specify CORE_PROFILE or else wx tries OpenGL 3.0 and fails if it's not supported
         //WX_GL_CORE_PROFILE,
