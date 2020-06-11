@@ -866,12 +866,7 @@ void RenderContext::AddShip(
     // Validate ship
     //
 
-    // Check texture against max texture size
-    if (texture.Size.Width > GameOpenGL::MaxTextureSize
-        || texture.Size.Height > GameOpenGL::MaxTextureSize)
-    {
-        throw GameException("We are sorry, but this ship's texture image is too large for your graphics driver");
-    }
+    ValidateShipTexture(texture);
 
     //
     // Add ship
