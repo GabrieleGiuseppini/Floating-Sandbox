@@ -5,8 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 #include <GameCore/PrecalculatedFunction.h>
 
@@ -1722,11 +1721,16 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
+                float constexpr ScaleMax = 0.3f;
+                float constexpr ScaleMin = 0.1f;
+                float const scale =
+                    ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY));
+
                 renderContext.UploadShipAirBubble(
                     shipId,
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
-                    0.3f, // Scale, magic number
+                    scale,
                     std::min(1.0f, state.CurrentDeltaY / 4.0f)); // Alpha
 
                 break;

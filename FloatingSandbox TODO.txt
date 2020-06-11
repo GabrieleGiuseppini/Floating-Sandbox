@@ -261,9 +261,9 @@ Render:
 		+ #pragma pack(push, 1) // @ all instances
 			+ See perf afterwards
 
-		- OpenGL:
-			- Remove stencil from context requirements
-				- And check all references to "stencil"
+		= OpenGL:
+			+ Remove stencil from context requirements
+				+ And check all references to "stencil"
 			- Run w/OpenGL tracing to see if there's any errors
 
 		- ARM OpenGL issue
@@ -271,8 +271,8 @@ Render:
 
 		- SettingsDialog: move ship render mode to Debug
 		- Sparkles growing and then shrinking
-		- Water bubbles:
-			- Bigger as goes up
+		= Water bubbles:
+			+ Bigger as goes up
 			- Sound (*)
 			- Waves at explosion
 
