@@ -1284,6 +1284,18 @@ void Points::UpdateEphemeralParticles(
                             mPositionBuffer[pointIndex].x += vortexValue - state.LastVortexValue;
 
                             state.LastVortexValue = vortexValue;
+
+                            //
+                            // Displace ocean surface, if surfacing
+                            //
+
+                            float constexpr SurfaceOffset = 0.5f; // Magic number
+                            if (deltaY < SurfaceOffset)
+                            {
+                                mParentWorld.DisplaceOceanSurfaceAt(
+                                    position.x,
+                                    (SurfaceOffset - deltaY) / 2.0f);
+                            }
                         }
                     }
 

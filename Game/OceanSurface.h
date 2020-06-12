@@ -67,6 +67,10 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
+    void DisplaceAt(
+        float x,
+        float yOffset);
+
     void ApplyThanosSnap(
         float leftFrontX,
         float rightFrontX);

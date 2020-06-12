@@ -359,6 +359,16 @@ void OceanSurface::AdjustTo(
     }
 }
 
+void OceanSurface::DisplaceAt(
+    float x,
+    float yOffset)
+{
+    // TODO: move to header file
+
+    auto const sampleIndex = ToSampleIndex(x);
+    mHeightField[sampleIndex] += yOffset / SWEHeightFieldAmplification;
+}
+
 void OceanSurface::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX)

@@ -273,8 +273,9 @@ Render:
 		- Sparkles growing and then shrinking
 		= Water bubbles:
 			+ Bigger as goes up
+			+ Waves at surfacing
 			- Sound (*)
-			- Waves at explosion
+			
 
 
 		- MacOS:

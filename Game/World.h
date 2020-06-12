@@ -62,6 +62,13 @@ public:
         return mOceanSurface.GetHeightAt(x);
     }
 
+    inline void DisplaceOceanSurfaceAt(
+        float x,
+        float yOffset)
+    {
+        mOceanSurface.DisplaceAt(x, yOffset);
+    }
+
     inline bool IsUnderwater(vec2f const & position) const
     {
         return position.y < GetOceanSurfaceHeightAt(position.x);
