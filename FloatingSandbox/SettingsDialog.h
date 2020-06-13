@@ -42,10 +42,8 @@ public:
 
 private:
 
-    void OnUltraViolentCheckBoxClick(wxCommandEvent & event);
     void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
     void OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event);
-    void OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event);
     void OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event);
 
     void OnModulateWindCheckBoxClick(wxCommandEvent & event);
@@ -58,7 +56,6 @@ private:
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
     void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
-    void OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
     void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
 
@@ -165,11 +162,12 @@ private:
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mUltraViolentCheckBox;
+    wxCheckBox * mGenerateAirBubblesCheckBox;
+    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
+    SliderControl<float> * mAirBubbleDensitySlider;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
-    wxCheckBox * mGenerateAirBubblesCheckBox;
     wxCheckBox * mGenerateEngineWakeCheckBox;
-    SliderControl<float> * mAirBubbleDensitySlider;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
     SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
 

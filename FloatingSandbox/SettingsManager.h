@@ -19,6 +19,8 @@ enum class GameSettings : size_t
     SpringStrengthAdjustment,
     GlobalDampingAdjustment,
     RotAcceler8r,
+
+    // Water
     WaterDensityAdjustment,
     WaterDragAdjustment,
     WaterIntakeAdjustment,
@@ -53,7 +55,13 @@ enum class GameSettings : size_t
     CombustionHeatAdjustment,
     HeatBlasterHeatFlow,
     HeatBlasterRadius,
+
+    // Electricals
+    LuminiscenceAdjustment,
+    LightSpreadAdjustment,
     ElectricalElementHeatProducedAdjustment,
+    EngineThrustAdjustment,
+    WaterPumpPowerAdjustment,
 
     // Misc
     OceanFloorTerrain, // 30
@@ -70,8 +78,6 @@ enum class GameSettings : size_t
     AntiMatterBombImplosionStrength,
     FloodRadius,
     FloodQuantity,
-    LuminiscenceAdjustment,
-    LightSpreadAdjustment,
     UltraViolentMode,
     DoGenerateDebris,
     SmokeEmissionDensityAdjustment,
@@ -79,11 +85,10 @@ enum class GameSettings : size_t
     DoGenerateSparklesForCuts,
     DoGenerateAirBubbles,
     AirBubblesDensity,
+    DoDisplaceOceanSurfaceAtAirBubblesSurfacing,
     DoGenerateEngineWakeParticles,
     NumberOfStars,
     NumberOfClouds,
-    EngineThrustAdjustment,
-    WaterPumpPowerAdjustment,
 
     // Render
     FlatSkyColor,

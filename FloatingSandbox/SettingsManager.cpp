@@ -46,6 +46,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, SpringStrengthAdjustment);
     ADD_GC_SETTING(float, GlobalDampingAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
+
+    // Water
     ADD_GC_SETTING(float, WaterDensityAdjustment);
     ADD_GC_SETTING(float, WaterDragAdjustment);
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
@@ -80,7 +82,13 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, CombustionHeatAdjustment);
     ADD_GC_SETTING(float, HeatBlasterHeatFlow);
     ADD_GC_SETTING(float, HeatBlasterRadius);
+
+    // Electricals
+    ADD_GC_SETTING(float, LuminiscenceAdjustment);
+    ADD_GC_SETTING(float, LightSpreadAdjustment);
     ADD_GC_SETTING(float, ElectricalElementHeatProducedAdjustment);
+    ADD_GC_SETTING(float, EngineThrustAdjustment);
+    ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
@@ -97,8 +105,6 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, AntiMatterBombImplosionStrength);
     ADD_GC_SETTING(float, FloodRadius);
     ADD_GC_SETTING(float, FloodQuantity);
-    ADD_GC_SETTING(float, LuminiscenceAdjustment);
-    ADD_GC_SETTING(float, LightSpreadAdjustment);
     ADD_GC_SETTING(bool, UltraViolentMode);
     ADD_GC_SETTING(bool, DoGenerateDebris);
     ADD_GC_SETTING(float, SmokeEmissionDensityAdjustment);
@@ -106,11 +112,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoGenerateSparklesForCuts);
     ADD_GC_SETTING(bool, DoGenerateAirBubbles);
     ADD_GC_SETTING(float, AirBubblesDensity);
+    ADD_GC_SETTING(bool, DoDisplaceOceanSurfaceAtAirBubblesSurfacing);
     ADD_GC_SETTING(bool, DoGenerateEngineWakeParticles);
     ADD_GC_SETTING(unsigned int, NumberOfStars);
     ADD_GC_SETTING(unsigned int, NumberOfClouds);
-    ADD_GC_SETTING(float, EngineThrustAdjustment);
-    ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
 
     // Render
     ADD_GC_SETTING(rgbColor, FlatSkyColor);

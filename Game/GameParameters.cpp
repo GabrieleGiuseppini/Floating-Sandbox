@@ -26,6 +26,7 @@ GameParameters::GameParameters()
     , DoGenerateSparklesForCuts(true)
     , DoGenerateAirBubbles(true)
     , CumulatedIntakenWaterThresholdForAirBubbles(8.0f)
+    , DoDisplaceOceanSurfaceAtAirBubblesSurfacing(true)
     , DoGenerateEngineWakeParticles(true)
     // Wind
     , DoModulateWind(true)
@@ -58,15 +59,19 @@ GameParameters::GameParameters()
     , CombustionHeatAdjustment(1.0f)
     , HeatBlasterHeatFlow(2000.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
     , HeatBlasterRadius(8.0f)
+    // Electricals
+    , LuminiscenceAdjustment(1.0f)
+    , LightSpreadAdjustment(1.0f)
     , ElectricalElementHeatProducedAdjustment(1.0f)
+    , DoShowElectricalNotifications(true)
+    , EngineThrustAdjustment(1.0f)
+    , WaterPumpPowerAdjustment(1.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)
     , OceanFloorElasticity(0.75f)
     , OceanFloorFriction(0.25f)
-    , LuminiscenceAdjustment(1.0f)
-    , LightSpreadAdjustment(1.0f)
     , NumberOfStars(1536)
     , NumberOfClouds(48)
     // Interactions
@@ -86,8 +91,5 @@ GameParameters::GameParameters()
     , ScrubRadius(5.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
-    , DoShowElectricalNotifications(true)
-    , EngineThrustAdjustment(1.0f)
-    , WaterPumpPowerAdjustment(1.0f)
 {
 }

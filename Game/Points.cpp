@@ -1229,6 +1229,11 @@ void Points::UpdateEphemeralParticles(
         GameParameters::AirMass
         / gameParameters.SimulationStepTimeDuration<float>;
 
+    // Ocean surface displacement at bubbles surfacing
+    float const oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset =
+        (gameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing ? 1.0f : 0.0f)
+        * 0.5f; // Magic number
+
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
         auto const ephemeralType = GetEphemeralType(pointIndex);
@@ -1289,12 +1294,11 @@ void Points::UpdateEphemeralParticles(
                             // Displace ocean surface, if surfacing
                             //
 
-                            float constexpr SurfaceOffset = 0.5f; // Magic number
-                            if (deltaY < SurfaceOffset)
+                            if (deltaY < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     position.x,
-                                    (SurfaceOffset - deltaY) / 2.0f);
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 2.0f);
                             }
                         }
                     }

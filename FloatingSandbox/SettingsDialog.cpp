@@ -315,12 +315,6 @@ void SettingsDialog::Open()
     this->Show();
 }
 
-void SettingsDialog::OnUltraViolentCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
 void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & event)
 {
 	mLiveSettings.SetValue(GameSettings::DoGenerateDebris, event.IsChecked());
@@ -331,14 +325,6 @@ void SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & eve
 {
 	mLiveSettings.SetValue(GameSettings::DoGenerateSparklesForCuts, event.IsChecked());
     OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnGenerateAirBubblesCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::DoGenerateAirBubbles, event.IsChecked());
-    OnLiveSettingsChanged();
-
-    mAirBubbleDensitySlider->Enable(event.IsChecked());
 }
 
 void SettingsDialog::OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event)
@@ -432,12 +418,6 @@ void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & event)
 		rgbColor(color.Red(), color.Green(), color.Blue()));
 
 	OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnSeeShipThroughOceanCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
-    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
@@ -2763,7 +2743,13 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 {
                     mUltraViolentCheckBox = new wxCheckBox(toolsBox, wxID_ANY, _("Ultra-Violent Mode"));
                     mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
-					mUltraViolentCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnUltraViolentCheckBoxClick, this);
+                    mUltraViolentCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALIGN_LEFT, 0);
 
@@ -2792,6 +2778,87 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     }
 
     //
+    // Air Bubbles
+    //
+
+    {
+        wxStaticBox * airBubblesBox = new wxStaticBox(panel, wxID_ANY, _("Air Bubbles"));
+
+        wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        airBubblesBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxBoxSizer * airBubblesSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Generate Air Bubbles
+            {
+                mGenerateAirBubblesCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, _("Generate Air Bubbles"));
+                mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
+                mGenerateAirBubblesCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoGenerateAirBubbles, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Enable(event.IsChecked());
+                        mAirBubbleDensitySlider->Enable(event.IsChecked());
+                    });
+
+                airBubblesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            airBubblesSizer->AddSpacer(5);
+
+            // Displace ocean surface at air bubble surfacing
+            {
+                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, _("Generate Waves"));
+                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetToolTip("Enables or disables generation of waves when air bubbles surface above water.");
+                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                airBubblesSizer->Add(mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            // Air Bubbles Density
+            {
+                mAirBubbleDensitySlider = new SliderControl<float>(
+                    airBubblesBox,
+                    SliderWidth,
+                    -1,
+                    "Air Bubbles Density",
+                    "The density of air bubbles generated when water enters a ship.",
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirBubblesDensity(),
+                        mGameControllerSettingsOptions->GetMaxAirBubblesDensity()));
+
+                airBubblesSizer->Add(mAirBubbleDensitySlider, 1, wxEXPAND, 0);
+            }
+
+            airBubblesBoxSizer->Add(airBubblesSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        airBubblesBox->SetSizerAndFit(airBubblesBoxSizer);
+
+        gridSizer->Add(
+            airBubblesBox,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
     // Side-Effects
     //
 
@@ -2802,96 +2869,47 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         sideEffectsBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * sideEffectsSizer = new wxGridBagSizer(0, 0);
+            wxBoxSizer * sideEffectsCheckboxSizer = new wxBoxSizer(wxVERTICAL);
 
-            // Air Bubbles
             {
-                wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
+                mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Debris"));
+                mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
+                mGenerateDebrisCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateDebrisCheckBoxClick, this);
 
-                // Generate Air Bubbles
-                {
-                    mGenerateAirBubblesCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Air Bubbles"));
-                    mGenerateAirBubblesCheckBox->SetToolTip("Enables or disables generation of air bubbles when water enters a physical body.");
-					mGenerateAirBubblesCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateAirBubblesCheckBoxClick, this);
-
-                    airBubblesBoxSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALIGN_LEFT, 0);
-                }
-
-                // Air Bubbles Density
-                {
-                    mAirBubbleDensitySlider = new SliderControl<float>(
-                        sideEffectsBox,
-                        SliderWidth,
-                        -1,
-                        "Air Bubbles Density",
-                        "The density of air bubbles generated when water enters a ship.",
-                        [this](float value)
-                        {
-                            this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
-                            this->OnLiveSettingsChanged();
-                        },
-                        std::make_unique<LinearSliderCore>(
-                            mGameControllerSettingsOptions->GetMinAirBubblesDensity(),
-                            mGameControllerSettingsOptions->GetMaxAirBubblesDensity()));
-
-                    airBubblesBoxSizer->Add(mAirBubbleDensitySlider, 1, wxEXPAND, 0);
-                }
-
-                sideEffectsSizer->Add(
-                    airBubblesBoxSizer,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
+                sideEffectsCheckboxSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
-            // Checkboxes
+            sideEffectsCheckboxSizer->AddSpacer(5);
+
             {
-                wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
+                mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
+                mGenerateSparklesForCutsCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
+                mGenerateSparklesForCutsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick, this);
 
-                {
-                    mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Debris"));
-                    mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
-					mGenerateDebrisCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateDebrisCheckBoxClick, this);
-
-                    checkboxesSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
-
-                    checkboxesSizer->AddSpacer(5);
-
-                    mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
-					mGenerateSparklesForCutsCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
-					mGenerateSparklesForCutsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick, this);
-
-                    checkboxesSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
-
-                    checkboxesSizer->AddSpacer(5);
-
-                    mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
-                    mGenerateEngineWakeCheckBox->SetToolTip("Enables or disables generation of wakes when engines are running underwater.");
-                    mGenerateEngineWakeCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateEngineWakeCheckBoxClick, this);
-
-                    checkboxesSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALIGN_LEFT, 0);
-
-                    checkboxesSizer->AddStretchSpacer(1);
-                }
-
-                sideEffectsSizer->Add(
-                    checkboxesSizer,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
+                sideEffectsCheckboxSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
-            sideEffectsBoxSizer->Add(sideEffectsSizer, 0, wxALL, StaticBoxInsetMargin);
+            sideEffectsCheckboxSizer->AddSpacer(5);
+
+            {
+                mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
+                mGenerateEngineWakeCheckBox->SetToolTip("Enables or disables generation of wakes when engines are running underwater.");
+                mGenerateEngineWakeCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateEngineWakeCheckBoxClick, this);
+
+                sideEffectsCheckboxSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            sideEffectsCheckboxSizer->AddStretchSpacer(1);
+
+            sideEffectsBoxSizer->Add(sideEffectsCheckboxSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         sideEffectsBox->SetSizerAndFit(sideEffectsBoxSizer);
 
         gridSizer->Add(
             sideEffectsBox,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -3078,7 +3096,12 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mSeeShipThroughOceanCheckBox = new wxCheckBox(oceanBox, wxID_ANY,
                     _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize);
                 mSeeShipThroughOceanCheckBox->SetToolTip("Shows the ship either behind the sea water or in front of it.");
-                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,&SettingsDialog::OnSeeShipThroughOceanCheckBoxClick, this);
+                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 oceanSizer->Add(
                     mSeeShipThroughOceanCheckBox,
@@ -4197,14 +4220,17 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
-    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
-
-    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
-
     mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing));
+    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
+
+    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
 

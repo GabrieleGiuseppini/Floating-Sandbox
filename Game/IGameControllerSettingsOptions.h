@@ -42,6 +42,8 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinRotAcceler8r() const = 0;
 	virtual float GetMaxRotAcceler8r() const = 0;
 
+	// Water
+
 	virtual float GetMinWaterDensityAdjustment() const = 0;
 	virtual float GetMaxWaterDensityAdjustment() const = 0;
 
@@ -51,11 +53,13 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinWaterIntakeAdjustment() const = 0;
 	virtual float GetMaxWaterIntakeAdjustment() const = 0;
 
+	virtual float GetMinWaterDiffusionSpeedAdjustment() const = 0;
+	virtual float GetMaxWaterDiffusionSpeedAdjustment() const = 0;
+
 	virtual float GetMinWaterCrazyness() const = 0;
 	virtual float GetMaxWaterCrazyness() const = 0;
 
-	virtual float GetMinWaterDiffusionSpeedAdjustment() const = 0;
-	virtual float GetMaxWaterDiffusionSpeedAdjustment() const = 0;
+	// Ephemeral Particles
 
     virtual float GetMinSmokeEmissionDensityAdjustment() const = 0;
     virtual float GetMaxSmokeEmissionDensityAdjustment() const = 0;
@@ -133,8 +137,22 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinHeatBlasterRadius() const = 0;
 	virtual float GetMaxHeatBlasterRadius() const = 0;
 
+	// Electricals
+
+	virtual float GetMinLuminiscenceAdjustment() const = 0;
+	virtual float GetMaxLuminiscenceAdjustment() const = 0;
+
+	virtual float GetMinLightSpreadAdjustment() const = 0;
+	virtual float GetMaxLightSpreadAdjustment() const = 0;
+
 	virtual float GetMinElectricalElementHeatProducedAdjustment() const = 0;
 	virtual float GetMaxElectricalElementHeatProducedAdjustment() const = 0;
+
+	virtual float GetMinEngineThrustAdjustment() const = 0;
+	virtual float GetMaxEngineThrustAdjustment() const = 0;
+
+	virtual float GetMinWaterPumpPowerAdjustment() const = 0;
+	virtual float GetMaxWaterPumpPowerAdjustment() const = 0;
 
 	// Misc
 
@@ -180,12 +198,6 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinFloodQuantity() const = 0;
 	virtual float GetMaxFloodQuantity() const = 0;
 
-	virtual float GetMinLuminiscenceAdjustment() const = 0;
-	virtual float GetMaxLuminiscenceAdjustment() const = 0;
-
-	virtual float GetMinLightSpreadAdjustment() const = 0;
-	virtual float GetMaxLightSpreadAdjustment() const = 0;
-
 	virtual float GetMinAirBubblesDensity() const = 0;
 	virtual float GetMaxAirBubblesDensity() const = 0;
 
@@ -194,12 +206,6 @@ struct IGameControllerSettingsOptions
 
 	virtual unsigned int GetMinNumberOfClouds() const = 0;
 	virtual unsigned int GetMaxNumberOfClouds() const = 0;
-
-    virtual float GetMinEngineThrustAdjustment() const = 0;
-    virtual float GetMaxEngineThrustAdjustment() const = 0;
-
-    virtual float GetMinWaterPumpPowerAdjustment() const = 0;
-    virtual float GetMaxWaterPumpPowerAdjustment() const = 0;
 
 	//
 	// Render parameters

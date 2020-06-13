@@ -43,6 +43,8 @@ struct IGameControllerSettings
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 
+    // Water
+
     virtual float GetWaterDensityAdjustment() const = 0;
     virtual void SetWaterDensityAdjustment(float value) = 0;
 
@@ -52,11 +54,13 @@ struct IGameControllerSettings
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
 
+    virtual float GetWaterDiffusionSpeedAdjustment() const = 0;
+    virtual void SetWaterDiffusionSpeedAdjustment(float value) = 0;
+
     virtual float GetWaterCrazyness() const = 0;
     virtual void SetWaterCrazyness(float value) = 0;
 
-    virtual float GetWaterDiffusionSpeedAdjustment() const = 0;
-    virtual void SetWaterDiffusionSpeedAdjustment(float value) = 0;
+    // Ephemeral Particles
 
     virtual float GetSmokeEmissionDensityAdjustment() const = 0;
     virtual void SetSmokeEmissionDensityAdjustment(float value) = 0;
@@ -140,8 +144,22 @@ struct IGameControllerSettings
     virtual float GetHeatBlasterRadius() const = 0;
     virtual void SetHeatBlasterRadius(float value) = 0;
 
+    // Electricals
+
+    virtual float GetLuminiscenceAdjustment() const = 0;
+    virtual void SetLuminiscenceAdjustment(float value) = 0;
+
+    virtual float GetLightSpreadAdjustment() const = 0;
+    virtual void SetLightSpreadAdjustment(float value) = 0;
+
     virtual float GetElectricalElementHeatProducedAdjustment() const = 0;
     virtual void SetElectricalElementHeatProducedAdjustment(float value) = 0;
+
+    virtual float GetEngineThrustAdjustment() const = 0;
+    virtual void SetEngineThrustAdjustment(float value) = 0;
+
+    virtual float GetWaterPumpPowerAdjustment() const = 0;
+    virtual void SetWaterPumpPowerAdjustment(float value) = 0;
 
     // Misc
 
@@ -192,12 +210,6 @@ struct IGameControllerSettings
     virtual float GetFloodQuantity() const = 0;
     virtual void SetFloodQuantity(float value) = 0;
 
-    virtual float GetLuminiscenceAdjustment() const = 0;
-    virtual void SetLuminiscenceAdjustment(float value) = 0;
-
-    virtual float GetLightSpreadAdjustment() const = 0;
-    virtual void SetLightSpreadAdjustment(float value) = 0;
-
     virtual bool GetUltraViolentMode() const = 0;
     virtual void SetUltraViolentMode(bool value) = 0;
 
@@ -213,6 +225,9 @@ struct IGameControllerSettings
     virtual float GetAirBubblesDensity() const = 0;
     virtual void SetAirBubblesDensity(float value) = 0;
 
+    virtual bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const = 0;
+    virtual void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) = 0;
+
     virtual bool GetDoGenerateEngineWakeParticles() const = 0;
     virtual void SetDoGenerateEngineWakeParticles(bool value) = 0;
 
@@ -221,12 +236,6 @@ struct IGameControllerSettings
 
     virtual unsigned int GetNumberOfClouds() const = 0;
     virtual void SetNumberOfClouds(unsigned int value) = 0;
-
-    virtual float GetEngineThrustAdjustment() const = 0;
-    virtual void SetEngineThrustAdjustment(float value) = 0;
-
-    virtual float GetWaterPumpPowerAdjustment() const = 0;
-    virtual void SetWaterPumpPowerAdjustment(float value) = 0;
 
     //
     // Render parameters

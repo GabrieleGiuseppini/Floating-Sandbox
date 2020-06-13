@@ -193,6 +193,8 @@ struct GameParameters
     static float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds
     static float constexpr MaxAirBubblesVortexPeriod = 7.5f; // seconds
 
+    bool DoDisplaceOceanSurfaceAtAirBubblesSurfacing;
+
     bool DoGenerateEngineWakeParticles;
 
     // Wind
@@ -329,9 +331,29 @@ struct GameParameters
     static float constexpr MinHeatBlasterRadius = 1.0f;
     static float constexpr MaxHeatBlasterRadius = 100.0f;
 
+    // Electricals
+
+    float LuminiscenceAdjustment;
+    static float constexpr MinLuminiscenceAdjustment = 0.0f;
+    static float constexpr MaxLuminiscenceAdjustment = 4.0f;
+
+    float LightSpreadAdjustment;
+    static float constexpr MinLightSpreadAdjustment = 0.0f;
+    static float constexpr MaxLightSpreadAdjustment = 10.0f;
+
     float ElectricalElementHeatProducedAdjustment;
     static float constexpr MinElectricalElementHeatProducedAdjustment = 0.0f;
     static float constexpr MaxElectricalElementHeatProducedAdjustment = 1000.0f;
+
+    bool DoShowElectricalNotifications;
+
+    float EngineThrustAdjustment;
+    static float constexpr MinEngineThrustAdjustment = 0.1f;
+    static float constexpr MaxEngineThrustAdjustment = 10.0f;
+
+    float WaterPumpPowerAdjustment;
+    static float constexpr MinWaterPumpPowerAdjustment = 0.1f;
+    static float constexpr MaxWaterPumpPowerAdjustment = 20.0f;
 
     // Misc
 
@@ -359,14 +381,6 @@ struct GameParameters
     float OceanFloorFriction;
     static float constexpr MinOceanFloorFriction = 0.05f;
     static float constexpr MaxOceanFloorFriction = 1.0f;
-
-    float LuminiscenceAdjustment;
-    static float constexpr MinLuminiscenceAdjustment = 0.0f;
-    static float constexpr MaxLuminiscenceAdjustment = 4.0f;
-
-    float LightSpreadAdjustment;
-    static float constexpr MinLightSpreadAdjustment = 0.0f;
-    static float constexpr MaxLightSpreadAdjustment = 10.0f;
 
     unsigned int NumberOfStars;
     static constexpr unsigned int MinNumberOfStars = 0;
@@ -435,16 +449,6 @@ struct GameParameters
     bool IsUltraViolentMode;
 
     float MoveToolInertia;
-
-    bool DoShowElectricalNotifications;
-
-    float EngineThrustAdjustment;
-    static float constexpr MinEngineThrustAdjustment = 0.1f;
-    static float constexpr MaxEngineThrustAdjustment = 10.0f;
-
-    float WaterPumpPowerAdjustment;
-    static float constexpr MinWaterPumpPowerAdjustment = 0.1f;
-    static float constexpr MaxWaterPumpPowerAdjustment = 20.0f;
 
     //
     // Limits

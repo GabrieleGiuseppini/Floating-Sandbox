@@ -541,6 +541,9 @@ public:
     float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
     float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
+    bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const override { return mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing; }
+    void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) override { mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing = value; }
+
     bool GetDoGenerateEngineWakeParticles() const override { return mGameParameters.DoGenerateEngineWakeParticles; }
     void SetDoGenerateEngineWakeParticles(bool value) override { mGameParameters.DoGenerateEngineWakeParticles = value; }
 
