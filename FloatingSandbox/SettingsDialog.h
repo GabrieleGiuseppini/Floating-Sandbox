@@ -161,13 +161,13 @@ private:
     SliderControl<float> * mFloodQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
-    wxCheckBox * mUltraViolentCheckBox;
     wxCheckBox * mGenerateAirBubblesCheckBox;
     wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
     SliderControl<float> * mAirBubbleDensitySlider;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
     wxCheckBox * mGenerateEngineWakeCheckBox;
+    wxCheckBox * mUltraViolentCheckBox;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
     SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
 

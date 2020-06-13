@@ -266,22 +266,19 @@ Render:
 				+ And check all references to "stencil"
 			- Run w/OpenGL tracing to see if there's any errors
 
-		- ARM OpenGL issue
-			- See what happens when showing MainFrame before GameController is created
-
 		- SettingsDialog: move ship render mode to Debug
 			- As new "Ship Render Mode" radio option
 			- Also see lambdas at checkboxes
 		- Sparkles growing and then shrinking
 		= Water bubbles:
 			+ Bigger as goes up
-			= Waves at surfacing
+			+ Waves at surfacing
 				+ Boolean flag => Points::m (or local?) AirBubblesOceanSurfaceDisplacementSurfaceOffsetThreshold = 0.5/0.0
-				= SettingsDialog - also do above
-			- Sound (*)
-			
-		- GameParams: make Electricals section
+				+ SettingsDialog
+			- Sound (*)		
 
+		- ARM OpenGL issue
+			- See what happens when showing MainFrame before GameController is created
 
 		- MacOS:
 			- MainFrame: all timers: timeout not zero, but one

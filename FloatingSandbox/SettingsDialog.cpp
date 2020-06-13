@@ -2535,6 +2535,12 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(0, 0);
 
+            toolsSizer->AddGrowableRow(1, 1);
+
+            //
+            // Row 1
+            //
+
             // Destroy Radius
             {
                 mDestroyRadiusSlider = new SliderControl<float>(
@@ -2636,6 +2642,10 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            //
+            // Row 3
+            //
+
             // Flood Radius
             {
                 mFloodRadiusSlider = new SliderControl<float>(
@@ -2655,7 +2665,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mFloodRadiusSlider,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2680,7 +2690,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mFloodQuantitySlider,
-                    wxGBPosition(1, 1),
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2705,7 +2715,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mRepairRadiusSlider,
-                    wxGBPosition(1, 2),
+                    wxGBPosition(2, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2730,35 +2740,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
                 toolsSizer->Add(
                     mRepairSpeedAdjustmentSlider,
-                    wxGBPosition(1, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            // Checkboxes
-            {
-                wxBoxSizer* checkboxesSizer = new wxBoxSizer(wxVERTICAL);
-
-                {
-                    mUltraViolentCheckBox = new wxCheckBox(toolsBox, wxID_ANY, _("Ultra-Violent Mode"));
-                    mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
-                    mUltraViolentCheckBox->Bind(
-                        wxEVT_COMMAND_CHECKBOX_CLICKED,
-                        [this](wxCommandEvent & event)
-                        {
-                            mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
-                            OnLiveSettingsChanged();
-                        });
-
-                    checkboxesSizer->Add(mUltraViolentCheckBox, 0, wxALIGN_LEFT, 0);
-
-                    checkboxesSizer->AddStretchSpacer(1);
-                }
-
-                toolsSizer->Add(
-                    checkboxesSizer,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(2, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2897,6 +2879,22 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 mGenerateEngineWakeCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateEngineWakeCheckBoxClick, this);
 
                 sideEffectsCheckboxSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            sideEffectsCheckboxSizer->AddSpacer(40);
+
+            {
+                mUltraViolentCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Ultra-Violent Mode"));
+                mUltraViolentCheckBox->SetToolTip("Enables or disables amplification of tool forces and inflicted damages.");
+                mUltraViolentCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sideEffectsCheckboxSizer->Add(mUltraViolentCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
             sideEffectsCheckboxSizer->AddStretchSpacer(1);
@@ -4218,8 +4216,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
 
-    mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
-
     mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
     mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing));
@@ -4233,6 +4229,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
+
+    mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
     mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
 
