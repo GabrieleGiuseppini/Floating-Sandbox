@@ -38,41 +38,41 @@ static int constexpr CellBorder = 8;
 
 namespace /* anonymous */ {
 
-	struct PersistedSettingsComparer
-	{
-		bool operator()(PersistedSettingsMetadata const & m1, PersistedSettingsMetadata const & m2)
-		{
-			// m1 < m2
-			// Rules:
-			// - All user first, system next
-			// - Among user, LastModified is last
+    struct PersistedSettingsComparer
+    {
+        bool operator()(PersistedSettingsMetadata const & m1, PersistedSettingsMetadata const & m2)
+        {
+            // m1 < m2
+            // Rules:
+            // - All user first, system next
+            // - Among user, LastModified is last
 
-			if (m1.Key.StorageType != m2.Key.StorageType)
-				return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
+            if (m1.Key.StorageType != m2.Key.StorageType)
+                return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
 
-			assert(m1.Key.StorageType == m2.Key.StorageType);
+            assert(m1.Key.StorageType == m2.Key.StorageType);
 
-			if (m1.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey())
-				return m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey();
+            if (m1.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey())
+                return m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey();
 
-			return m1.Key.Name < m2.Key.Name;
-		}
-	};
+            return m1.Key.Name < m2.Key.Name;
+        }
+    };
 
 }
 
 SettingsDialog::SettingsDialog(
     wxWindow* parent,
     std::shared_ptr<SettingsManager> settingsManager,
-	std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
+    std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
     ResourceLocator const & resourceLocator)
     : mParent(parent)
     , mSettingsManager(std::move(settingsManager))
-	, mGameControllerSettingsOptions(std::move(gameControllerSettingsOptions))
+    , mGameControllerSettingsOptions(std::move(gameControllerSettingsOptions))
     // State
     , mLiveSettings(mSettingsManager->MakeSettings())
     , mCheckpointSettings(mSettingsManager->MakeSettings())
-	, mPersistedSettings()
+    , mPersistedSettings()
 {
     Create(
         mParent,
@@ -81,7 +81,7 @@ SettingsDialog::SettingsDialog(
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
-			| /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
+            | /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
         _T("Settings Window"));
 
     this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
@@ -91,16 +91,16 @@ SettingsDialog::SettingsDialog(
     SetIcon(wxICON(BBB_SHIP_ICON));
 
 
-	//
-	// Populate and sort persisted settings
-	//
+    //
+    // Populate and sort persisted settings
+    //
 
-	mPersistedSettings = mSettingsManager->ListPersistedSettings();
-	PersistedSettingsComparer cmp;
-	std::sort(
-		mPersistedSettings.begin(),
-		mPersistedSettings.end(),
-		cmp);
+    mPersistedSettings = mSettingsManager->ListPersistedSettings();
+    PersistedSettingsComparer cmp;
+    std::sort(
+        mPersistedSettings.begin(),
+        mPersistedSettings.end(),
+        cmp);
 
 
     //
@@ -205,15 +205,15 @@ SettingsDialog::SettingsDialog(
     notebook->AddPage(soundAndAdvancedPanel, "Sound and Advanced Settings");
 
 
-	//
-	// Settings Management
-	//
+    //
+    // Settings Management
+    //
 
-	wxPanel * settingsManagementPanel = new wxPanel(notebook);
+    wxPanel * settingsManagementPanel = new wxPanel(notebook);
 
-	PopulateSettingsManagementPanel(settingsManagementPanel);
+    PopulateSettingsManagementPanel(settingsManagementPanel);
 
-	notebook->AddPage(settingsManagementPanel, "Settings Management");
+    notebook->AddPage(settingsManagementPanel, "Settings Management");
 
 
 
@@ -229,29 +229,29 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
-		mRevertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
-		mRevertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
-		mRevertToDefaultsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
-		buttonsSizer->Add(mRevertToDefaultsButton, 0, 0, 0);
+        mRevertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
+        mRevertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
+        mRevertToDefaultsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
+        buttonsSizer->Add(mRevertToDefaultsButton, 0, 0, 0);
 
-		buttonsSizer->AddStretchSpacer(1);
+        buttonsSizer->AddStretchSpacer(1);
 
         mOkButton = new wxButton(this, wxID_ANY, "OK");
-		mOkButton->SetToolTip("Closes the window keeping all changes.");
+        mOkButton->SetToolTip("Closes the window keeping all changes.");
         mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
         buttonsSizer->Add(mOkButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
-		mCancelButton->SetToolTip("Reverts all changes effected since the window was last opened, and closes the window.");
+        mCancelButton->SetToolTip("Reverts all changes effected since the window was last opened, and closes the window.");
         mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
         buttonsSizer->Add(mCancelButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
         mUndoButton = new wxButton(this, wxID_ANY, "Undo");
-		mUndoButton->SetToolTip("Reverts all changes effected since the window was last opened.");
+        mUndoButton->SetToolTip("Reverts all changes effected since the window was last opened.");
         mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
         buttonsSizer->Add(mUndoButton, 0, 0, 0);
 
@@ -295,16 +295,16 @@ void SettingsDialog::Open()
     mCheckpointSettings = mLiveSettings;
 
     // Populate controls with live settings
-	SyncControlsWithSettings(mLiveSettings);
+    SyncControlsWithSettings(mLiveSettings);
 
     // Remember that the user hasn't changed anything yet in this session
     mHasBeenDirtyInCurrentSession = false;
 
-	// Enable Revert to Defaults button only if settings are different than defaults
-	mAreSettingsDirtyWrtDefaults = (mLiveSettings != mSettingsManager->GetDefaults());
+    // Enable Revert to Defaults button only if settings are different than defaults
+    mAreSettingsDirtyWrtDefaults = (mLiveSettings != mSettingsManager->GetDefaults());
 
-	// Reconcile controls wrt dirty state
-	ReconcileDirtyState();
+    // Reconcile controls wrt dirty state
+    ReconcileDirtyState();
 
 
     //
@@ -315,143 +315,97 @@ void SettingsDialog::Open()
     this->Show();
 }
 
-void SettingsDialog::OnGenerateDebrisCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::DoGenerateDebris, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::DoGenerateSparklesForCuts, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event)
-{
-    mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnModulateWindCheckBoxClick(wxCommandEvent & event)
-{
-    mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());
-    OnLiveSettingsChanged();
-
-    mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
-}
-
 void SettingsDialog::OnRestoreDefaultTerrainButton(wxCommandEvent & /*event*/)
 {
-	mLiveSettings.ClearAllDirty();
+    mLiveSettings.ClearAllDirty();
 
-	mLiveSettings.SetValue<OceanFloorTerrain>(
-		GameSettings::OceanFloorTerrain,
-		mSettingsManager->GetDefaults().GetValue<OceanFloorTerrain>(GameSettings::OceanFloorTerrain));
+    mLiveSettings.SetValue<OceanFloorTerrain>(
+        GameSettings::OceanFloorTerrain,
+        mSettingsManager->GetDefaults().GetValue<OceanFloorTerrain>(GameSettings::OceanFloorTerrain));
 
-	OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnDoRainWithStormCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
-	OnLiveSettingsChanged();
-
-    mRainFloodAdjustmentSlider->Enable(event.IsChecked());
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-	if (mTextureOceanRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Texture);
-	}
-	else if (mDepthOceanRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Depth);
-	}
-	else
-	{
-		assert(mFlatOceanRenderModeRadioButton->GetValue());
-		mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Flat);
-	}
+    if (mTextureOceanRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Texture);
+    }
+    else if (mDepthOceanRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Depth);
+    }
+    else
+    {
+        assert(mFlatOceanRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Flat);
+    }
 
-	OnLiveSettingsChanged();
+    OnLiveSettingsChanged();
 
     ReconciliateOceanRenderModeSettings();
 }
 
-void SettingsDialog::OnTextureOceanChanged(wxCommandEvent & /*event*/)
-{
-	mLiveSettings.SetValue(GameSettings::TextureOceanTextureIndex, static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
-    OnLiveSettingsChanged();
-}
-
 void SettingsDialog::OnDepthOceanColorStartChanged(wxColourPickerEvent & event)
 {
-	auto color = event.GetColour();
+    auto color = event.GetColour();
 
-	mLiveSettings.SetValue(
-		GameSettings::DepthOceanColorStart,
-		rgbColor(color.Red(), color.Green(), color.Blue()));
+    mLiveSettings.SetValue(
+        GameSettings::DepthOceanColorStart,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
 
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDepthOceanColorEndChanged(wxColourPickerEvent & event)
 {
-	auto color = event.GetColour();
+    auto color = event.GetColour();
 
-	mLiveSettings.SetValue(
-		GameSettings::DepthOceanColorEnd,
-		rgbColor(color.Red(), color.Green(), color.Blue()));
+    mLiveSettings.SetValue(
+        GameSettings::DepthOceanColorEnd,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
 
-	OnLiveSettingsChanged();
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatOceanColorChanged(wxColourPickerEvent & event)
 {
-	auto color = event.GetColour();
+    auto color = event.GetColour();
 
-	mLiveSettings.SetValue(
-		GameSettings::FlatOceanColor,
-		rgbColor(color.Red(), color.Green(), color.Blue()));
+    mLiveSettings.SetValue(
+        GameSettings::FlatOceanColor,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
 
-	OnLiveSettingsChanged();
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-	if (mTextureLandRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Texture);
-	}
-	else
-	{
-		assert(mFlatLandRenderModeRadioButton->GetValue());
-		mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Flat);
-	}
+    if (mTextureLandRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Texture);
+    }
+    else
+    {
+        assert(mFlatLandRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Flat);
+    }
 
     ReconciliateLandRenderModeSettings();
 
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnTextureLandChanged(wxCommandEvent & /*event*/)
-{
-	mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
-    OnLiveSettingsChanged();
-}
-
 void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & event)
 {
-	auto color = event.GetColour();
+    auto color = event.GetColour();
 
-	mLiveSettings.SetValue(
-		GameSettings::FlatLandColor,
-		rgbColor(color.Red(), color.Green(), color.Blue()));
+    mLiveSettings.SetValue(
+        GameSettings::FlatLandColor,
+        rgbColor(color.Red(), color.Green(), color.Blue()));
 
-	OnLiveSettingsChanged();
+    OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnFlatSkyColorChanged(wxColourPickerEvent & event)
@@ -489,383 +443,347 @@ void SettingsDialog::OnDefaultWaterColorChanged(wxColourPickerEvent & event)
 
 void SettingsDialog::OnShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-	if (mTextureShipRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Texture);
-	}
-	else
-	{
-		assert(mStructureShipRenderModeRadioButton->GetValue());
-		mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Structure);
-	}
+    if (mTextureShipRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Texture);
+    }
+    else
+    {
+        assert(mStructureShipRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Structure);
+    }
 
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnShowStressCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::DrawHeatOverlay, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::DrawHeatBlasterFlame, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
-	if (mMode1ShipFlameRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode1);
-	}
-	else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
-	{
-		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode2);
-	}
+    if (mMode1ShipFlameRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode1);
+    }
+    else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode2);
+    }
     else if (mMode3ShipFlameRenderModeRadioButton->GetValue())
     {
         mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode3);
     }
-	else
-	{
-		assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
-		mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::NoDraw);
-	}
+    else
+    {
+        assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::NoDraw);
+    }
 
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
-	auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
-	if (0 == selectedDebugShipRenderMode)
-	{
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::None);
-	}
-	else if (1 == selectedDebugShipRenderMode)
-	{
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Wireframe);
-	}
-	else if (2 == selectedDebugShipRenderMode)
-	{
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Points);
-	}
-	else if (3 == selectedDebugShipRenderMode)
-	{
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Springs);
-	}
-	else if (4 == selectedDebugShipRenderMode)
-	{
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::EdgeSprings);
-	}
-	else
-	{
-		assert(5 == selectedDebugShipRenderMode);
-		mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
-	}
+    auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
+    if (0 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::None);
+    }
+    else if (1 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Wireframe);
+    }
+    else if (2 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Points);
+    }
+    else if (3 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Springs);
+    }
+    else if (4 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::EdgeSprings);
+    }
+    else
+    {
+        assert(5 == selectedDebugShipRenderMode);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
+    }
 
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
-	auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
-	switch (selectedVectorFieldRenderMode)
-	{
-		case 0:
-		{
-			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::None);
-			break;
-		}
+    auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
+    switch (selectedVectorFieldRenderMode)
+    {
+        case 0:
+        {
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::None);
+            break;
+        }
 
-		case 1:
-		{
-			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointVelocity);
-			break;
-		}
+        case 1:
+        {
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointVelocity);
+            break;
+        }
 
-		case 2:
-		{
-			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointForce);
-			break;
-		}
+        case 2:
+        {
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointForce);
+            break;
+        }
 
-		case 3:
-		{
-			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterVelocity);
-			break;
-		}
+        case 3:
+        {
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterVelocity);
+            break;
+        }
 
-		default:
-		{
-			assert(4 == selectedVectorFieldRenderMode);
-			mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterMomentum);
-			break;
-		}
-	}
+        default:
+        {
+            assert(4 == selectedVectorFieldRenderMode);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterMomentum);
+            break;
+        }
+    }
 
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::PlayBreakSounds, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::PlayStressSounds, event.IsChecked());
-    OnLiveSettingsChanged();
-}
-
-void SettingsDialog::OnPlayWindSoundCheckBoxClick(wxCommandEvent & event)
-{
-	mLiveSettings.SetValue(GameSettings::PlayWindSound, event.IsChecked());
     OnLiveSettingsChanged();
 }
 
 void SettingsDialog::OnPersistedSettingsListCtrlSelected(wxListEvent & /*event*/)
 {
-	ReconciliateLoadPersistedSettings();
+    ReconciliateLoadPersistedSettings();
 }
 
 void SettingsDialog::OnPersistedSettingsListCtrlActivated(wxListEvent & event)
 {
     assert(event.GetIndex() != wxNOT_FOUND);
 
-	LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
+    LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
 }
 
 void SettingsDialog::OnApplyPersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+    auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+    assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+    assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
-	if (selectedIndex != wxNOT_FOUND)
-	{
-		LoadPersistedSettings(static_cast<size_t>(selectedIndex), false);
-	}
+    if (selectedIndex != wxNOT_FOUND)
+    {
+        LoadPersistedSettings(static_cast<size_t>(selectedIndex), false);
+    }
 }
 
 void SettingsDialog::OnRevertToPersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+    auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+    assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+    assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
-	if (selectedIndex != wxNOT_FOUND)
-	{
-		LoadPersistedSettings(static_cast<size_t>(selectedIndex), true);
-	}
+    if (selectedIndex != wxNOT_FOUND)
+    {
+        LoadPersistedSettings(static_cast<size_t>(selectedIndex), true);
+    }
 }
 
 void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+    auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
-	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+    assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+    assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+    assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
-	if (selectedIndex != wxNOT_FOUND)
-	{
-		auto const & metadata = mPersistedSettings[selectedIndex];
+    if (selectedIndex != wxNOT_FOUND)
+    {
+        auto const & metadata = mPersistedSettings[selectedIndex];
 
-		auto result = wxMessageBox(
-			"Are you sure you want to replace settings \"" + metadata.Key.Name + "\" with the current settings?",
-			"Warning",
-			wxCANCEL | wxOK);
+        auto result = wxMessageBox(
+            "Are you sure you want to replace settings \"" + metadata.Key.Name + "\" with the current settings?",
+            "Warning",
+            wxCANCEL | wxOK);
 
-		if (result == wxOK)
-		{
-			// Save
-			SavePersistedSettings(metadata);
+        if (result == wxOK)
+        {
+            // Save
+            SavePersistedSettings(metadata);
 
-			// Reconciliate load UI
-			ReconciliateLoadPersistedSettings();
-		}
-	}
+            // Reconciliate load UI
+            ReconciliateLoadPersistedSettings();
+        }
+    }
 }
 
 void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
 {
-	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+    auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
-	assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
-	assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+    assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+    assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+    assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
 
-	if (selectedIndex != wxNOT_FOUND)
-	{
-		auto const & metadata = mPersistedSettings[selectedIndex];
+    if (selectedIndex != wxNOT_FOUND)
+    {
+        auto const & metadata = mPersistedSettings[selectedIndex];
 
-		// Ask user whether they're sure
-		auto result = wxMessageBox(
-			"Are you sure you want to delete settings \"" + metadata.Key.Name + "\"?",
-			"Warning",
-			wxCANCEL | wxOK);
+        // Ask user whether they're sure
+        auto result = wxMessageBox(
+            "Are you sure you want to delete settings \"" + metadata.Key.Name + "\"?",
+            "Warning",
+            wxCANCEL | wxOK);
 
-		if (result == wxOK)
-		{
-			try
-			{
-				// Delete
-				mSettingsManager->DeletePersistedSettings(metadata.Key);
-			}
-			catch (std::runtime_error const & ex)
-			{
-				OnPersistenceError(std::string("Error deleting settings: ") + ex.what());
-				return;
-			}
+        if (result == wxOK)
+        {
+            try
+            {
+                // Delete
+                mSettingsManager->DeletePersistedSettings(metadata.Key);
+            }
+            catch (std::runtime_error const & ex)
+            {
+                OnPersistenceError(std::string("Error deleting settings: ") + ex.what());
+                return;
+            }
 
-			// Remove from list box
-			mPersistedSettingsListCtrl->DeleteItem(selectedIndex);
+            // Remove from list box
+            mPersistedSettingsListCtrl->DeleteItem(selectedIndex);
 
-			// Remove from mPersistedSettings
-			mPersistedSettings.erase(mPersistedSettings.cbegin() + selectedIndex);
+            // Remove from mPersistedSettings
+            mPersistedSettings.erase(mPersistedSettings.cbegin() + selectedIndex);
 
-			// Reconciliate with UI
-			ReconciliateLoadPersistedSettings();
-		}
-	}
+            // Reconciliate with UI
+            ReconciliateLoadPersistedSettings();
+        }
+    }
 }
 
 void SettingsDialog::OnSaveSettingsTextEdited(wxCommandEvent & /*event*/)
 {
-	ReconciliateSavePersistedSettings();
+    ReconciliateSavePersistedSettings();
 }
 
 void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
 {
-	assert(!mSaveSettingsNameTextCtrl->IsEmpty()); // Guaranteed by UI
+    assert(!mSaveSettingsNameTextCtrl->IsEmpty()); // Guaranteed by UI
 
-	if (mSaveSettingsNameTextCtrl->IsEmpty())
-		return;
+    if (mSaveSettingsNameTextCtrl->IsEmpty())
+        return;
 
-	auto settingsMetadata = PersistedSettingsMetadata(
-		PersistedSettingsKey(
-			mSaveSettingsNameTextCtrl->GetValue().ToStdString(),
-			PersistedSettingsStorageTypes::User),
-		mSaveSettingsDescriptionTextCtrl->GetValue().ToStdString());
+    auto settingsMetadata = PersistedSettingsMetadata(
+        PersistedSettingsKey(
+            mSaveSettingsNameTextCtrl->GetValue().ToStdString(),
+            PersistedSettingsStorageTypes::User),
+        mSaveSettingsDescriptionTextCtrl->GetValue().ToStdString());
 
 
-	//
-	// Check if settings with this name already exist
-	//
+    //
+    // Check if settings with this name already exist
+    //
 
-	{
-		auto it = std::find_if(
-			mPersistedSettings.cbegin(),
-			mPersistedSettings.cend(),
-			[&settingsMetadata](auto const & sm)
-			{
-				return sm.Key == settingsMetadata.Key;
-			});
+    {
+        auto it = std::find_if(
+            mPersistedSettings.cbegin(),
+            mPersistedSettings.cend(),
+            [&settingsMetadata](auto const & sm)
+            {
+                return sm.Key == settingsMetadata.Key;
+            });
 
-		if (it != mPersistedSettings.cend())
-		{
-			// Ask user if sure
-			auto result = wxMessageBox(
-				"Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
-				"Warning",
-				wxCANCEL | wxOK);
+        if (it != mPersistedSettings.cend())
+        {
+            // Ask user if sure
+            auto result = wxMessageBox(
+                "Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
+                "Warning",
+                wxCANCEL | wxOK);
 
-			if (result == wxCANCEL)
-			{
-				// Abort
-				return;
-			}
-		}
-	}
+            if (result == wxCANCEL)
+            {
+                // Abort
+                return;
+            }
+        }
+    }
 
-	//
-	// Save settings
-	//
+    //
+    // Save settings
+    //
 
-	// Save
-	SavePersistedSettings(settingsMetadata);
+    // Save
+    SavePersistedSettings(settingsMetadata);
 
-	// Find index for insertion
-	PersistedSettingsComparer cmp;
-	auto const it = std::lower_bound(
-		mPersistedSettings.begin(),
-		mPersistedSettings.end(),
-		settingsMetadata,
-		cmp);
+    // Find index for insertion
+    PersistedSettingsComparer cmp;
+    auto const it = std::lower_bound(
+        mPersistedSettings.begin(),
+        mPersistedSettings.end(),
+        settingsMetadata,
+        cmp);
 
-	if (it != mPersistedSettings.end()
-		&& it->Key == settingsMetadata.Key)
-	{
-		// It's a replace
+    if (it != mPersistedSettings.end()
+        && it->Key == settingsMetadata.Key)
+    {
+        // It's a replace
 
-		// Replace in persisted settings
-		it->Description = settingsMetadata.Description;
-	}
-	else
-	{
-		// It's an insert
+        // Replace in persisted settings
+        it->Description = settingsMetadata.Description;
+    }
+    else
+    {
+        // It's an insert
 
-		auto const insertIdx = std::distance(mPersistedSettings.begin(), it);
+        auto const insertIdx = std::distance(mPersistedSettings.begin(), it);
 
-		// Insert into persisted settings
-		mPersistedSettings.insert(it, settingsMetadata);
+        // Insert into persisted settings
+        mPersistedSettings.insert(it, settingsMetadata);
 
-		// Insert in list control
-		InsertPersistedSettingInCtrl(insertIdx, settingsMetadata.Key);
-	}
+        // Insert in list control
+        InsertPersistedSettingInCtrl(insertIdx, settingsMetadata.Key);
+    }
 
-	// Reconciliate load UI
-	ReconciliateLoadPersistedSettings();
+    // Reconciliate load UI
+    ReconciliateLoadPersistedSettings();
 
-	// Clear name and description
-	mSaveSettingsNameTextCtrl->Clear();
-	mSaveSettingsDescriptionTextCtrl->Clear();
+    // Clear name and description
+    mSaveSettingsNameTextCtrl->Clear();
+    mSaveSettingsDescriptionTextCtrl->Clear();
 
-	// Reconciliate save UI
-	ReconciliateSavePersistedSettings();
+    // Reconciliate save UI
+    ReconciliateSavePersistedSettings();
 }
 
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
 {
-	//
-	// Enforce default settings
-	//
+    //
+    // Enforce default settings
+    //
 
-	mLiveSettings = mSettingsManager->GetDefaults();
+    mLiveSettings = mSettingsManager->GetDefaults();
 
-	// Do not update checkpoint, allow user to revert to it
+    // Do not update checkpoint, allow user to revert to it
 
-	// Enforce everything as a safety net, immediately
-	mLiveSettings.MarkAllAsDirty();
-	mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
+    // Enforce everything as a safety net, immediately
+    mLiveSettings.MarkAllAsDirty();
+    mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
 
-	// We are back in sync
-	mLiveSettings.ClearAllDirty();
+    // We are back in sync
+    mLiveSettings.ClearAllDirty();
 
-	assert(mSettingsManager->Pull() == mLiveSettings);
+    assert(mSettingsManager->Pull() == mLiveSettings);
 
-	// Re-populate controls with new values
-	SyncControlsWithSettings(mLiveSettings);
+    // Re-populate controls with new values
+    SyncControlsWithSettings(mLiveSettings);
 
-	// Remember user has made changes wrt checkpoint
-	mHasBeenDirtyInCurrentSession = true;
+    // Remember user has made changes wrt checkpoint
+    mHasBeenDirtyInCurrentSession = true;
 
-	// Remember we are clean now wrt defaults
-	mAreSettingsDirtyWrtDefaults = false;
+    // Remember we are clean now wrt defaults
+    mAreSettingsDirtyWrtDefaults = false;
 
-	ReconcileDirtyState();
+    ReconcileDirtyState();
 }
 
 void SettingsDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -890,7 +808,7 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
     mLiveSettings = mCheckpointSettings;
 
     // Just enforce anything in the checkpoint that is different than the current settings,
-	// immediately
+    // immediately
     mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
     mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
 
@@ -899,7 +817,7 @@ void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
     assert(mSettingsManager->Pull() == mCheckpointSettings);
 
     // Re-populate controls with new values
-	SyncControlsWithSettings(mLiveSettings);
+    SyncControlsWithSettings(mLiveSettings);
 
     // Remember we are clean now
     mHasBeenDirtyInCurrentSession = false;
@@ -926,7 +844,7 @@ void SettingsDialog::DoCancel()
         mLiveSettings = mCheckpointSettings;
 
         // Just enforce anything in the checkpoint that is different than the current settings,
-		// immediately
+        // immediately
         mLiveSettings.SetDirtyWithDiff(mSettingsManager->Pull());
         mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
     }
@@ -995,7 +913,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Strength Adjust",
                     "Adjusts the breaking point of springs under stress. Has no effect on the rigidity of a ship.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1125,7 +1043,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Light Spread Adjust",
                     "Adjusts how wide light emitted by luminiscent materials spreads out.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1176,7 +1094,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Density Adjust",
                     "Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1201,7 +1119,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Drag Adjust",
                     "Adjusts the drag force exerted by sea water on physical bodies.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1227,14 +1145,14 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Intake Adjust",
                     "Adjusts the speed with which sea water enters or leaves a physical body.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinWaterIntakeAdjustment(),
-						1.0f,
+                        1.0f,
                         mGameControllerSettingsOptions->GetMaxWaterIntakeAdjustment()));
 
                 fluidsSizer->Add(
@@ -1253,7 +1171,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Crazyness",
                     "Adjusts how \"splashy\" water flows inside a physical body.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
                         this->OnLiveSettingsChanged();
@@ -1278,7 +1196,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderHeight,
                     "Water Diffusion Speed",
                     "Adjusts the speed with which water propagates within a physical body.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDiffusionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1339,7 +1257,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Thermal Conductivity Adjust",
                     "Adjusts the speed with which heat propagates along materials.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1365,7 +1283,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Heat Dissipation Adjust",
                     "Adjusts the speed with which materials dissipate or accumulate heat to or from air and water.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1391,7 +1309,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Burning Point Adjust",
                     "Adjusts the temperature at which materials ignite.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::IgnitionTemperatureAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1417,7 +1335,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Melting Point Adjust",
                     "Adjusts the temperature at which materials melt.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MeltingTemperatureAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1443,7 +1361,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Combustion Speed Adjust",
                     "Adjusts the rate with which materials consume when burning.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionSpeedAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1469,7 +1387,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     SliderHeight,
                     "Combustion Heat Adjust",
                     "Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles.",
-					[this](float value)
+                    [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionHeatAdjustment, value);
                         this->OnLiveSettingsChanged();
@@ -1757,9 +1675,9 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
-	//
-	// Row 1
-	//
+    //
+    // Row 1
+    //
 
     //
     // Ocean
@@ -1774,7 +1692,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
         {
             wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
 
-			oceanSizer->AddGrowableRow(0, 1); // Slider above button
+            oceanSizer->AddGrowableRow(0, 1); // Slider above button
 
             // Ocean Depth
             {
@@ -1853,19 +1771,19 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     CellBorder);
             }
 
-			// Restore Ocean Floor Terrain
-			{
-				wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, "Restore Default Terrain");
-				restoreDefaultTerrainButton->SetToolTip("Reverts the user-drawn ocean floor terrain to the default terrain.");
-				restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
+            // Restore Ocean Floor Terrain
+            {
+                wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, "Restore Default Terrain");
+                restoreDefaultTerrainButton->SetToolTip("Reverts the user-drawn ocean floor terrain to the default terrain.");
+                restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
 
-				oceanSizer->Add(
-					restoreDefaultTerrainButton,
-					wxGBPosition(1, 2),
-					wxGBSpan(1, 1),
-					wxEXPAND | wxALL,
-					CellBorder);
-			}
+                oceanSizer->Add(
+                    restoreDefaultTerrainButton,
+                    wxGBPosition(1, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
 
             // Ocean Floor Elasticity
             {
@@ -2008,22 +1926,22 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
             CellBorder);
     }
 
-	//
-	// Row 2
-	//
+    //
+    // Row 2
+    //
 
-	//
-	// Storms
-	//
+    //
+    // Storms
+    //
 
-	{
-		wxStaticBox * stormBox = new wxStaticBox(panel, wxID_ANY, _("Storms"));
+    {
+        wxStaticBox * stormBox = new wxStaticBox(panel, wxID_ANY, _("Storms"));
 
-		wxBoxSizer * stormBoxSizer = new wxBoxSizer(wxVERTICAL);
-		stormBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * stormBoxSizer = new wxBoxSizer(wxVERTICAL);
+        stormBoxSizer->AddSpacer(StaticBoxTopMargin);
 
-		{
-			wxGridBagSizer * stormSizer = new wxGridBagSizer(0, 0);
+        {
+            wxGridBagSizer * stormSizer = new wxGridBagSizer(0, 0);
 
             stormSizer->AddGrowableRow(1, 1); // Slider below checkbox
 
@@ -2057,7 +1975,15 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
             {
                 mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Span Rain Checkbox"));
                 mDoRainWithStormCheckBox->SetToolTip("Enables or disables generation of rain during a storm.");
-                mDoRainWithStormCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDoRainWithStormCheckBoxClick, this);
+                mDoRainWithStormCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mRainFloodAdjustmentSlider->Enable(event.IsChecked());
+                    });
 
                 stormSizer->Add(
                     mDoRainWithStormCheckBox,
@@ -2143,18 +2069,18 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     CellBorder);
             }
 
-			stormBoxSizer->Add(stormSizer, 0, wxALL, StaticBoxInsetMargin);
-		}
+            stormBoxSizer->Add(stormSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
 
-		stormBox->SetSizerAndFit(stormBoxSizer);
+        stormBox->SetSizerAndFit(stormBoxSizer);
 
-		gridSizer->Add(
-			stormBox,
-			wxGBPosition(1, 0),
-			wxGBSpan(1, 4),
-			wxEXPAND | wxALL,
-			CellBorder);
-	}
+        gridSizer->Add(
+            stormBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 4),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     //
     // Sky
@@ -2287,7 +2213,15 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                 {
                     mModulateWindCheckBox = new wxCheckBox(windBox, wxID_ANY, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Modulate Wind Checkbox"));
                     mModulateWindCheckBox->SetToolTip("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts.");
-					mModulateWindCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnModulateWindCheckBoxClick, this);
+                    mModulateWindCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());
+                            OnLiveSettingsChanged();
+
+                            mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
+                        });
 
                     windModulationBoxSizer->Add(mModulateWindCheckBox, 0, wxALIGN_LEFT, 0);
                 }
@@ -2856,7 +2790,13 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             {
                 mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Debris"));
                 mGenerateDebrisCheckBox->SetToolTip("Enables or disables generation of debris when using destructive tools.");
-                mGenerateDebrisCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateDebrisCheckBoxClick, this);
+                mGenerateDebrisCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoGenerateDebris, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 sideEffectsCheckboxSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
             }
@@ -2866,7 +2806,13 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             {
                 mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
                 mGenerateSparklesForCutsCheckBox->SetToolTip("Enables or disables generation of sparkles when using the saw tool on metal.");
-                mGenerateSparklesForCutsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateSparklesForCutsCheckBoxClick, this);
+                mGenerateSparklesForCutsCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoGenerateSparklesForCuts, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 sideEffectsCheckboxSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
             }
@@ -2876,7 +2822,13 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             {
                 mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
                 mGenerateEngineWakeCheckBox->SetToolTip("Enables or disables generation of wakes when engines are running underwater.");
-                mGenerateEngineWakeCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnGenerateEngineWakeCheckBoxClick, this);
+                mGenerateEngineWakeCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 sideEffectsCheckboxSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALIGN_LEFT, 0);
             }
@@ -3039,7 +2991,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             WxHelpers::MakeBitmap(entry.second));
                     }
                     mTextureOceanComboBox->SetToolTip("Sets the texture to use for the ocean.");
-                    mTextureOceanComboBox->Bind(wxEVT_COMBOBOX, &SettingsDialog::OnTextureOceanChanged, this);
+                    mTextureOceanComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureOceanTextureIndex, static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
                     oceanRenderModeBoxSizer2->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL | wxEXPAND, 0);
 
                     //
@@ -3208,7 +3166,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             WxHelpers::MakeBitmap(entry.second));
                     }
                     mTextureLandComboBox->SetToolTip("Sets the texture to use for the ocean floor.");
-                    mTextureLandComboBox->Bind(wxEVT_COMBOBOX, &SettingsDialog::OnTextureLandChanged, this);
+                    mTextureLandComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
                     landRenderModeBoxSizer2->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
 
                     mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Flat"),
@@ -3337,7 +3301,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mDrawHeatOverlayCheckBox = new wxCheckBox(heatBox, wxID_ANY,
                     _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
                 mDrawHeatOverlayCheckBox->SetToolTip("Renders heat over ships.");
-                mDrawHeatOverlayCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatOverlayCheckBoxClick, this);
+                mDrawHeatOverlayCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DrawHeatOverlay, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 renderSizer->Add(
                     mDrawHeatOverlayCheckBox,
@@ -3400,7 +3370,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mDrawHeatBlasterFlameCheckBox = new wxCheckBox(heatBox, wxID_ANY,
                     _("Draw HeatBlaster Flame"), wxDefaultPosition, wxDefaultSize);
                 mDrawHeatBlasterFlameCheckBox->SetToolTip("Renders flames out of the HeatBlaster tool.");
-                mDrawHeatBlasterFlameCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnDrawHeatBlasterFlameCheckBoxClick, this);
+                mDrawHeatBlasterFlameCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DrawHeatBlasterFlame, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 renderSizer->Add(
                     mDrawHeatBlasterFlameCheckBox,
@@ -3525,7 +3501,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mShowStressCheckBox = new wxCheckBox(shipBox, wxID_ANY,
                     _("Show Stress"), wxDefaultPosition, wxDefaultSize);
                 mShowStressCheckBox->SetToolTip("Enables or disables highlighting of the springs that are under heavy stress and close to rupture.");
-                mShowStressCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnShowStressCheckBoxClick, this);
+                mShowStressCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
 
                 shipSizer->Add(
                     mShowStressCheckBox,
@@ -3721,7 +3703,13 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 {
                     mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY, _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Break Sounds Checkbox"));
                     mPlayBreakSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials break.");
-                    mPlayBreakSoundsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayBreakSoundsCheckBoxClick, this);
+                    mPlayBreakSoundsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayBreakSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayBreakSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
                 }
@@ -3729,7 +3717,13 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 {
                     mPlayStressSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY, _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Stress Sounds Checkbox"));
                     mPlayStressSoundsCheckBox->SetToolTip("Enables or disables the generation of sounds when materials are under stress.");
-                    mPlayStressSoundsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayStressSoundsCheckBoxClick, this);
+                    mPlayStressSoundsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayStressSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
                 }
@@ -3737,7 +3731,13 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 {
                     mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY, _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("Play Wind Sound Checkbox"));
                     mPlayWindSoundCheckBox->SetToolTip("Enables or disables the generation of wind sounds.");
-                    mPlayWindSoundCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &SettingsDialog::OnPlayWindSoundCheckBoxClick, this);
+                    mPlayWindSoundCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayWindSound, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
                 }
@@ -3895,215 +3895,215 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 {
-	wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
-	//
-	// Load settings
-	//
+    //
+    // Load settings
+    //
 
-	{
-		wxStaticBox * loadSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Load Settings"));
+    {
+        wxStaticBox * loadSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Load Settings"));
 
-		wxBoxSizer * loadSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
-		loadSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * loadSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
+        loadSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
 
-		{
-			wxBoxSizer * loadSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
+        {
+            wxBoxSizer * loadSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-			// Col 1
+            // Col 1
 
-			{
-				mPersistedSettingsListCtrl = new wxListCtrl(
-					loadSettingsBox,
-					wxID_ANY,
-					wxDefaultPosition,
-					wxSize(250, 370),
-					wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+            {
+                mPersistedSettingsListCtrl = new wxListCtrl(
+                    loadSettingsBox,
+                    wxID_ANY,
+                    wxDefaultPosition,
+                    wxSize(250, 370),
+                    wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
 
-				mPersistedSettingsListCtrl->AppendColumn(
-					"",
-					wxLIST_FORMAT_LEFT,
-					wxLIST_AUTOSIZE_USEHEADER);
+                mPersistedSettingsListCtrl->AppendColumn(
+                    "",
+                    wxLIST_FORMAT_LEFT,
+                    wxLIST_AUTOSIZE_USEHEADER);
 
-				for (size_t p = 0; p < mPersistedSettings.size(); ++p)
-				{
-					InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
-				}
+                for (size_t p = 0; p < mPersistedSettings.size(); ++p)
+                {
+                    InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
+                }
 
-				if (!mPersistedSettings.empty())
-				{
-					// Select first item
-					mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
-				}
+                if (!mPersistedSettings.empty())
+                {
+                    // Select first item
+                    mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+                }
 
-				mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_SELECTED, &SettingsDialog::OnPersistedSettingsListCtrlSelected, this);
-				mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SettingsDialog::OnPersistedSettingsListCtrlActivated, this);
+                mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_SELECTED, &SettingsDialog::OnPersistedSettingsListCtrlSelected, this);
+                mPersistedSettingsListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SettingsDialog::OnPersistedSettingsListCtrlActivated, this);
 
-				loadSettingsBoxHSizer->Add(mPersistedSettingsListCtrl, 0, wxALL | wxEXPAND, 5);
-			}
+                loadSettingsBoxHSizer->Add(mPersistedSettingsListCtrl, 0, wxALL | wxEXPAND, 5);
+            }
 
-			// Col 2
+            // Col 2
 
-			{
-				wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
+            {
+                wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
 
-				{
-					auto label = new wxStaticText(loadSettingsBox, wxID_ANY, "Description:");
+                {
+                    auto label = new wxStaticText(loadSettingsBox, wxID_ANY, "Description:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+                }
 
-				{
-					mPersistedSettingsDescriptionTextCtrl = new wxTextCtrl(
-						loadSettingsBox,
-						wxID_ANY,
-						_(""),
-						wxDefaultPosition,
-						wxSize(250, 120),
-						wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
+                {
+                    mPersistedSettingsDescriptionTextCtrl = new wxTextCtrl(
+                        loadSettingsBox,
+                        wxID_ANY,
+                        _(""),
+                        wxDefaultPosition,
+                        wxSize(250, 120),
+                        wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
 
-					col2BoxSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
+                }
 
-				{
-					mApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Apply Saved Settings");
-					mApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them on top of the current settings.");
-					mApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnApplyPersistedSettingsButton, this);
+                {
+                    mApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Apply Saved Settings");
+                    mApplyPersistedSettingsButton->SetToolTip("Loads the selected settings and applies them on top of the current settings.");
+                    mApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnApplyPersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    col2BoxSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-					mRevertToPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Revert to Saved Settings");
-					mRevertToPersistedSettingsButton->SetToolTip("Reverts all settings to the selected settings.");
-					mRevertToPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToPersistedSettingsButton, this);
+                    mRevertToPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Revert to Saved Settings");
+                    mRevertToPersistedSettingsButton->SetToolTip("Reverts all settings to the selected settings.");
+                    mRevertToPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToPersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    col2BoxSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-					mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace Saved Settings with Current");
-					mReplacePersistedSettingsButton->SetToolTip("Overwrites the selected settings with the current settings.");
-					mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
+                    mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Replace Saved Settings with Current");
+                    mReplacePersistedSettingsButton->SetToolTip("Overwrites the selected settings with the current settings.");
+                    mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-					mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Saved Settings");
-					mDeletePersistedSettingsButton->SetToolTip("Deletes the selected settings.");
-					mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
+                    mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, "Delete Saved Settings");
+                    mDeletePersistedSettingsButton->SetToolTip("Deletes the selected settings.");
+                    mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
 
-					col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                }
 
-				loadSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
-			}
+                loadSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
+            }
 
-			loadSettingsBoxVSizer->Add(loadSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
-		}
+            loadSettingsBoxVSizer->Add(loadSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
 
-		loadSettingsBox->SetSizerAndFit(loadSettingsBoxVSizer);
+        loadSettingsBox->SetSizerAndFit(loadSettingsBoxVSizer);
 
-		gridSizer->Add(
-			loadSettingsBox,
-			wxGBPosition(0, 0),
-			wxGBSpan(2, 1),
-			wxEXPAND | wxALL,
-			CellBorder);
+        gridSizer->Add(
+            loadSettingsBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(2, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
 
-		ReconciliateLoadPersistedSettings();
-	}
+        ReconciliateLoadPersistedSettings();
+    }
 
-	//
-	// Save settings
-	//
+    //
+    // Save settings
+    //
 
-	{
-		wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Save Settings"));
+    {
+        wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Save Settings"));
 
-		wxBoxSizer * saveSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
-		saveSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * saveSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
+        saveSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
 
-		{
-			wxBoxSizer * saveSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
+        {
+            wxBoxSizer * saveSettingsBoxHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-			{
-				wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
+            {
+                wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
 
-				{
-					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Name:");
+                {
+                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Name:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+                }
 
-				{
-					wxTextValidator validator(wxFILTER_INCLUDE_CHAR_LIST);
-					validator.SetCharIncludes(
-						"abcdefghijklmnopqrstuvwxyz"
-						"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-						"0123456789"
-						" "
-						"_-");
-					validator.SuppressBellOnError();
+                {
+                    wxTextValidator validator(wxFILTER_INCLUDE_CHAR_LIST);
+                    validator.SetCharIncludes(
+                        "abcdefghijklmnopqrstuvwxyz"
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                        "0123456789"
+                        " "
+                        "_-");
+                    validator.SuppressBellOnError();
 
-					mSaveSettingsNameTextCtrl = new wxTextCtrl(
-						saveSettingsBox,
-						wxID_ANY,
-						_(""),
-						wxDefaultPosition,
-						wxDefaultSize,
-						0,
-						validator);
+                    mSaveSettingsNameTextCtrl = new wxTextCtrl(
+                        saveSettingsBox,
+                        wxID_ANY,
+                        _(""),
+                        wxDefaultPosition,
+                        wxDefaultSize,
+                        0,
+                        validator);
 
-					mSaveSettingsNameTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
+                    mSaveSettingsNameTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
 
-					col2BoxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND, 5);
+                }
 
-				{
-					auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Description:");
+                {
+                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, "Description:");
 
-					col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+                }
 
-				{
-					mSaveSettingsDescriptionTextCtrl = new wxTextCtrl(
-						saveSettingsBox,
-						wxID_ANY,
-						_(""),
-						wxDefaultPosition,
-						wxSize(250, 120),
-						wxTE_MULTILINE | wxTE_WORDWRAP);
+                {
+                    mSaveSettingsDescriptionTextCtrl = new wxTextCtrl(
+                        saveSettingsBox,
+                        wxID_ANY,
+                        _(""),
+                        wxDefaultPosition,
+                        wxSize(250, 120),
+                        wxTE_MULTILINE | wxTE_WORDWRAP);
 
-					mSaveSettingsDescriptionTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
+                    mSaveSettingsDescriptionTextCtrl->Bind(wxEVT_TEXT, &SettingsDialog::OnSaveSettingsTextEdited, this);
 
-					col2BoxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
+                }
 
-				{
-					mSaveSettingsButton = new wxButton(saveSettingsBox, wxID_ANY, "Save Current Settings");
-					mSaveSettingsButton->SetToolTip("Saves the current settings using the specified name.");
-					mSaveSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnSaveSettingsButton, this);
+                {
+                    mSaveSettingsButton = new wxButton(saveSettingsBox, wxID_ANY, "Save Current Settings");
+                    mSaveSettingsButton->SetToolTip("Saves the current settings using the specified name.");
+                    mSaveSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnSaveSettingsButton, this);
 
-					col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
-				}
+                    col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
+                }
 
-				saveSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
-			}
+                saveSettingsBoxHSizer->Add(col2BoxSizer, 0, 0, 0);
+            }
 
-			saveSettingsBoxVSizer->Add(saveSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
-		}
+            saveSettingsBoxVSizer->Add(saveSettingsBoxHSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
 
-		saveSettingsBox->SetSizerAndFit(saveSettingsBoxVSizer);
+        saveSettingsBox->SetSizerAndFit(saveSettingsBoxVSizer);
 
-		gridSizer->Add(
-			saveSettingsBox,
-			wxGBPosition(0, 1),
-			wxGBSpan(1, 1),
-			wxEXPAND | wxALL,
-			CellBorder);
+        gridSizer->Add(
+            saveSettingsBox,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
 
-		ReconciliateSavePersistedSettings();
-	}
+        ReconciliateSavePersistedSettings();
+    }
 
-	// Finalize panel
+    // Finalize panel
 
-	panel->SetSizerAndFit(gridSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
@@ -4169,17 +4169,17 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
     mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
 
-	mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
-	mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
+    mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
     mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
     mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-	mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
-	mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
+    mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
+    mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
 
     mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
     mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
 
-	// Wind and Waves
+    // Wind and Waves
 
     mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
 
@@ -4487,10 +4487,10 @@ void SettingsDialog::OnLiveSettingsChanged()
     // We're back in sync
     mLiveSettings.ClearAllDirty();
 
-	// Remember that we have changed since we were opened
-	mHasBeenDirtyInCurrentSession = true;
-	mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
-	ReconcileDirtyState();
+    // Remember that we have changed since we were opened
+    mHasBeenDirtyInCurrentSession = true;
+    mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
+    ReconcileDirtyState();
 }
 
 void SettingsDialog::ReconcileDirtyState()
@@ -4499,148 +4499,148 @@ void SettingsDialog::ReconcileDirtyState()
     // Update buttons' state based on dirty state
     //
 
-	mRevertToDefaultsButton->Enable(mAreSettingsDirtyWrtDefaults);
+    mRevertToDefaultsButton->Enable(mAreSettingsDirtyWrtDefaults);
     mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
 }
 
 long SettingsDialog::GetSelectedPersistedSettingIndexFromCtrl() const
 {
-	return mPersistedSettingsListCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    return mPersistedSettingsListCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
 void SettingsDialog::InsertPersistedSettingInCtrl(
-	int index,
-	PersistedSettingsKey const & psKey)
+    int index,
+    PersistedSettingsKey const & psKey)
 {
-	mPersistedSettingsListCtrl->InsertItem(
-		index,
-		psKey.Name);
+    mPersistedSettingsListCtrl->InsertItem(
+        index,
+        psKey.Name);
 
-	if (psKey.StorageType == PersistedSettingsStorageTypes::System
-		|| psKey == PersistedSettingsKey::MakeLastModifiedSettingsKey())
-	{
-		// Make it bold
-		auto font = mPersistedSettingsListCtrl->GetItemFont(index);
-		font.SetWeight(wxFONTWEIGHT_BOLD);
-		mPersistedSettingsListCtrl->SetItemFont(index, font);
-	}
+    if (psKey.StorageType == PersistedSettingsStorageTypes::System
+        || psKey == PersistedSettingsKey::MakeLastModifiedSettingsKey())
+    {
+        // Make it bold
+        auto font = mPersistedSettingsListCtrl->GetItemFont(index);
+        font.SetWeight(wxFONTWEIGHT_BOLD);
+        mPersistedSettingsListCtrl->SetItemFont(index, font);
+    }
 }
 
 void SettingsDialog::LoadPersistedSettings(size_t index, bool withDefaults)
 {
-	assert(index < mPersistedSettings.size());
+    assert(index < mPersistedSettings.size());
 
-	if (index < mPersistedSettings.size())
-	{
-		if (withDefaults)
-		{
-			//
-			// Apply loaded settings to {Defaults}
-			//
+    if (index < mPersistedSettings.size())
+    {
+        if (withDefaults)
+        {
+            //
+            // Apply loaded settings to {Defaults}
+            //
 
-			mLiveSettings = mSettingsManager->GetDefaults();
+            mLiveSettings = mSettingsManager->GetDefaults();
 
-			mSettingsManager->LoadPersistedSettings(
-				mPersistedSettings[index].Key,
-				mLiveSettings);
+            mSettingsManager->LoadPersistedSettings(
+                mPersistedSettings[index].Key,
+                mLiveSettings);
 
-			// Make sure we enforce everything
-			mLiveSettings.MarkAllAsDirty();
-		}
-		else
-		{
-			//
-			// Apply loaded settings to {Current}
-			//
+            // Make sure we enforce everything
+            mLiveSettings.MarkAllAsDirty();
+        }
+        else
+        {
+            //
+            // Apply loaded settings to {Current}
+            //
 
-			mSettingsManager->LoadPersistedSettings(
-				mPersistedSettings[index].Key,
-				mLiveSettings);
-		}
+            mSettingsManager->LoadPersistedSettings(
+                mPersistedSettings[index].Key,
+                mLiveSettings);
+        }
 
-		// Enforce, immediate
-		mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
+        // Enforce, immediate
+        mSettingsManager->EnforceDirtySettingsImmediate(mLiveSettings);
 
-		// We're back in sync
-		mLiveSettings.ClearAllDirty();
+        // We're back in sync
+        mLiveSettings.ClearAllDirty();
 
-		// Remember that we have changed since we were opened
-		mHasBeenDirtyInCurrentSession = true;
-		mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
-		ReconcileDirtyState();
+        // Remember that we have changed since we were opened
+        mHasBeenDirtyInCurrentSession = true;
+        mAreSettingsDirtyWrtDefaults = true; // Best effort, assume each change deviates from defaults
+        ReconcileDirtyState();
 
-		// Re-populate controls
-		SyncControlsWithSettings(mLiveSettings);
-	}
+        // Re-populate controls
+        SyncControlsWithSettings(mLiveSettings);
+    }
 }
 
 void SettingsDialog::ReconciliateLoadPersistedSettings()
 {
-	auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+    auto selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
 
-	assert(selectedIndex == wxNOT_FOUND || static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+    assert(selectedIndex == wxNOT_FOUND || static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
 
-	// Enable as long as there's a selection
-	mApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
-	mRevertToPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
+    // Enable as long as there's a selection
+    mApplyPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
+    mRevertToPersistedSettingsButton->Enable(selectedIndex != wxNOT_FOUND);
 
-	// Enable as long as there's a selection for a user setting that's not the "last-modified" setting
-	mReplacePersistedSettingsButton->Enable(
-		selectedIndex != wxNOT_FOUND
-		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
-		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
+    // Enable as long as there's a selection for a user setting that's not the "last-modified" setting
+    mReplacePersistedSettingsButton->Enable(
+        selectedIndex != wxNOT_FOUND
+        && mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
+        && mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
 
-	// Enable as long as there's a selection for a user setting that's not the "last-modified" setting
-	mDeletePersistedSettingsButton->Enable(
-		selectedIndex != wxNOT_FOUND
-		&& mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
-		&& mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
+    // Enable as long as there's a selection for a user setting that's not the "last-modified" setting
+    mDeletePersistedSettingsButton->Enable(
+        selectedIndex != wxNOT_FOUND
+        && mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User
+        && mPersistedSettings[selectedIndex].Key != PersistedSettingsKey::MakeLastModifiedSettingsKey());
 
-	if (selectedIndex != wxNOT_FOUND)
-	{
-		// Set description content
-		mPersistedSettingsDescriptionTextCtrl->SetValue(mPersistedSettings[selectedIndex].Description);
-	}
-	else
-	{
-		// Clear description content
-		mPersistedSettingsDescriptionTextCtrl->Clear();
-	}
+    if (selectedIndex != wxNOT_FOUND)
+    {
+        // Set description content
+        mPersistedSettingsDescriptionTextCtrl->SetValue(mPersistedSettings[selectedIndex].Description);
+    }
+    else
+    {
+        // Clear description content
+        mPersistedSettingsDescriptionTextCtrl->Clear();
+    }
 }
 
 void SettingsDialog::SavePersistedSettings(PersistedSettingsMetadata const & metadata)
 {
-	// Only save settings different than default
-	mLiveSettings.SetDirtyWithDiff(mSettingsManager->GetDefaults());
+    // Only save settings different than default
+    mLiveSettings.SetDirtyWithDiff(mSettingsManager->GetDefaults());
 
-	// Save settings
-	try
-	{
-		// Save dirty settings
-		mSettingsManager->SaveDirtySettings(
-			metadata.Key.Name,
-			metadata.Description,
-			mLiveSettings);
-	}
-	catch (std::runtime_error const & ex)
-	{
-		OnPersistenceError(std::string("Error saving settings: ") + ex.what());
-		return;
-	}
+    // Save settings
+    try
+    {
+        // Save dirty settings
+        mSettingsManager->SaveDirtySettings(
+            metadata.Key.Name,
+            metadata.Description,
+            mLiveSettings);
+    }
+    catch (std::runtime_error const & ex)
+    {
+        OnPersistenceError(std::string("Error saving settings: ") + ex.what());
+        return;
+    }
 
-	// We are in sync (well, we were even before saving)
-	mLiveSettings.ClearAllDirty();
+    // We are in sync (well, we were even before saving)
+    mLiveSettings.ClearAllDirty();
 }
 
 void SettingsDialog::ReconciliateSavePersistedSettings()
 {
-	// Enable save button if we have name and description
-	mSaveSettingsButton->Enable(
-		!mSaveSettingsNameTextCtrl->IsEmpty()
-		&& !mSaveSettingsDescriptionTextCtrl->IsEmpty());
+    // Enable save button if we have name and description
+    mSaveSettingsButton->Enable(
+        !mSaveSettingsNameTextCtrl->IsEmpty()
+        && !mSaveSettingsDescriptionTextCtrl->IsEmpty());
 }
 
 void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
 {
-	wxMessageBox(errorMessage, wxT("Error"), wxICON_ERROR);
+    wxMessageBox(errorMessage, wxT("Error"), wxICON_ERROR);
 }

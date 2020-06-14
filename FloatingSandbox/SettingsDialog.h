@@ -42,25 +42,14 @@ public:
 
 private:
 
-    void OnGenerateDebrisCheckBoxClick(wxCommandEvent & event);
-    void OnGenerateSparklesForCutsCheckBoxClick(wxCommandEvent & event);
-    void OnGenerateEngineWakeCheckBoxClick(wxCommandEvent & event);
-
-    void OnModulateWindCheckBoxClick(wxCommandEvent & event);
-
 	void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
-	void OnDoRainWithStormCheckBoxClick(wxCommandEvent & event);
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnTextureOceanChanged(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
     void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
-    void OnDrawHeatOverlayCheckBoxClick(wxCommandEvent & event);
-    void OnDrawHeatBlasterFlameCheckBoxClick(wxCommandEvent & event);
 
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnTextureLandChanged(wxCommandEvent & event);
     void OnFlatLandColorChanged(wxColourPickerEvent & event);
     void OnFlatSkyColorChanged(wxColourPickerEvent & event);
 
@@ -68,14 +57,9 @@ private:
     void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
 
     void OnShipRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnShowStressCheckBoxClick(wxCommandEvent & event);
     void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
-
-    void OnPlayBreakSoundsCheckBoxClick(wxCommandEvent & event);
-    void OnPlayStressSoundsCheckBoxClick(wxCommandEvent & event);
-    void OnPlayWindSoundCheckBoxClick(wxCommandEvent & event);
 
 	void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
 	void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
