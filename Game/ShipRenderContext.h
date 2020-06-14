@@ -52,7 +52,6 @@ public:
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
-        ShipRenderMode shipRenderMode,
         DebugShipRenderMode debugShipRenderMode,
         VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
@@ -113,11 +112,6 @@ public:
 
         // React
         OnWaterLevelOfDetailUpdated();
-    }
-
-    void SetShipRenderMode(ShipRenderMode shipRenderMode)
-    {
-        mShipRenderMode = shipRenderMode;
     }
 
     void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
@@ -1258,7 +1252,6 @@ private:
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
-    ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     bool mShowStressedSprings;

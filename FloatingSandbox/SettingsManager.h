@@ -99,7 +99,6 @@ enum class GameSettings : size_t
     WaterContrast,
     WaterLevelOfDetail,
     ShowShipThroughOcean,
-    ShipRenderMode,
     DebugShipRenderMode,
     OceanRenderMode,
     TextureOceanTextureIndex,

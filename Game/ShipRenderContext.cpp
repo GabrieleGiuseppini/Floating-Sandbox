@@ -37,7 +37,6 @@ ShipRenderContext::ShipRenderContext(
     vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
-    ShipRenderMode shipRenderMode,
     DebugShipRenderMode debugShipRenderMode,
     VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings,
@@ -122,7 +121,6 @@ ShipRenderContext::ShipRenderContext(
     , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
-    , mShipRenderMode(shipRenderMode)
     , mDebugShipRenderMode(debugShipRenderMode)
     , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
@@ -1694,6 +1692,7 @@ void ShipRenderContext::RenderEnd()
 
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
             || mDebugShipRenderMode == DebugShipRenderMode::Decay
+            || mDebugShipRenderMode == DebugShipRenderMode::Structure
             || mDebugShipRenderMode == DebugShipRenderMode::None)
         {
             if (mDebugShipRenderMode == DebugShipRenderMode::Decay)
@@ -1703,7 +1702,7 @@ void ShipRenderContext::RenderEnd()
             }
             else
             {
-                if (mShipRenderMode == ShipRenderMode::Texture)
+                if (mDebugShipRenderMode == DebugShipRenderMode::None)
                 {
                     // Use texture program
                     if (mDrawHeatOverlay)
@@ -1746,13 +1745,14 @@ void ShipRenderContext::RenderEnd()
 
 
         //
-        // Draw ropes, unless it's a debug mode
+        // Draw ropes, unless it's a debug mode that doesn't want them
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be uploaded
         // as springs.
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::None)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Structure
+            || mDebugShipRenderMode == DebugShipRenderMode::None)
         {
             if (mDrawHeatOverlay)
                 mShaderManager.ActivateProgram<ProgramType::ShipRopesWithTemperature>();
@@ -1777,18 +1777,18 @@ void ShipRenderContext::RenderEnd()
         // We draw springs when:
         // - DebugRenderMode is springs|edgeSprings, in which case we use colors - so to show
         //   structural springs -, or
-        // - RenderMode is structure (so to draw 1D chains), in which case we use colors, or
-        // - RenderMode is texture (so to draw 1D chains), in which case we use texture iff it is present
+        // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
+        // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
 
         if (mDebugShipRenderMode == DebugShipRenderMode::Springs
             || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
-            || (mDebugShipRenderMode == DebugShipRenderMode::None
-                && (mShipRenderMode == ShipRenderMode::Structure || mShipRenderMode == ShipRenderMode::Texture)))
+            || mDebugShipRenderMode == DebugShipRenderMode::Structure
+            || mDebugShipRenderMode == DebugShipRenderMode::None)
         {
-            if (mDebugShipRenderMode == DebugShipRenderMode::None && mShipRenderMode == ShipRenderMode::Texture)
+            if (mDebugShipRenderMode == DebugShipRenderMode::None)
             {
                 // Use texture program
                 if (mDrawHeatOverlay)
@@ -1851,8 +1851,9 @@ void ShipRenderContext::RenderEnd()
         // Draw points (orphaned/all non-ephemerals, and ephemerals)
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::None
-            || mDebugShipRenderMode == DebugShipRenderMode::Points)
+        if (mDebugShipRenderMode == DebugShipRenderMode::Points
+            || mDebugShipRenderMode == DebugShipRenderMode::Structure
+            || mDebugShipRenderMode == DebugShipRenderMode::None)
         {
             auto const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
 

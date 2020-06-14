@@ -602,9 +602,6 @@ public:
     bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    ShipRenderMode GetShipRenderMode() const override { return mRenderContext->GetShipRenderMode(); }
-    void SetShipRenderMode(ShipRenderMode shipRenderMode) override { mRenderContext->SetShipRenderMode(shipRenderMode); }
-
     DebugShipRenderMode GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
     void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 

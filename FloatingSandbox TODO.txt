@@ -266,9 +266,9 @@ Render:
 				+ And check all references to "stencil"
 			- Run w/OpenGL tracing to see if there's any errors
 
-		- SettingsDialog: move ship render mode to Debug
-			- As new "Ship Render Mode" radio option
-				- If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
+		+ SettingsDialog: move ship render mode to Debug
+			+ As new "Ship Render Mode" radio option
+				+ If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
 					+ See if e.g. we do "springs only" with both nowadays: NO, only with "structure (color)"
 			+ Use lambdas at checkboxes
 		+ Sparkles:

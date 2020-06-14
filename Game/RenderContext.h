@@ -407,18 +407,6 @@ public:
     static constexpr float MinWaterLevelOfDetail = 0.0f;
     static constexpr float MaxWaterLevelOfDetail = 1.0f;
 
-    ShipRenderMode GetShipRenderMode() const
-    {
-        return mShipRenderMode;
-    }
-
-    void SetShipRenderMode(ShipRenderMode shipRenderMode)
-    {
-        mShipRenderMode = shipRenderMode;
-
-        OnShipRenderModeUpdated();
-    }
-
     DebugShipRenderMode GetDebugShipRenderMode() const
     {
         return mDebugShipRenderMode;
@@ -1647,7 +1635,6 @@ private:
     void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
-    void OnShipRenderModeUpdated();
     void OnDebugShipRenderModeUpdated();
     void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
@@ -1964,7 +1951,6 @@ private:
     bool mShowShipThroughOcean;
     float mWaterContrast;
     float mWaterLevelOfDetail;
-    ShipRenderMode mShipRenderMode;
     DebugShipRenderMode mDebugShipRenderMode;
     VectorFieldRenderMode mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;

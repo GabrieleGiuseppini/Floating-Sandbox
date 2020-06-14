@@ -441,21 +441,6 @@ void SettingsDialog::OnDefaultWaterColorChanged(wxColourPickerEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnShipRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
-    if (mTextureShipRenderModeRadioButton->GetValue())
-    {
-        mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Texture);
-    }
-    else
-    {
-        assert(mStructureShipRenderModeRadioButton->GetValue());
-        mLiveSettings.SetValue(GameSettings::ShipRenderMode, ShipRenderMode::Structure);
-    }
-
-    OnLiveSettingsChanged();
-}
-
 void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     if (mMode1ShipFlameRenderModeRadioButton->GetValue())
@@ -502,10 +487,14 @@ void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
     {
         mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::EdgeSprings);
     }
+    else if(5 == selectedDebugShipRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
+    }
     else
     {
-        assert(5 == selectedDebugShipRenderMode);
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
+        assert(6 == selectedDebugShipRenderMode);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Structure);
     }
 
     OnLiveSettingsChanged();
@@ -3458,43 +3447,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         shipBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * shipSizer = new wxGridBagSizer(0, 0);
-
-            // Ship Render Mode
-            {
-                wxStaticBox * shipRenderModeBox = new wxStaticBox(shipBox, wxID_ANY, _("Draw Mode"));
-
-                wxBoxSizer * shipRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-                shipRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
-
-                {
-                    wxFlexGridSizer* shipRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
-                    shipRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
-
-                    mTextureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Texture"),
-                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureShipRenderModeRadioButton->SetToolTip("Draws the ship using its texture image.");
-                    mTextureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipRenderModeRadioButtonClick, this);
-                    shipRenderModeBoxSizer2->Add(mTextureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    mStructureShipRenderModeRadioButton = new wxRadioButton(shipRenderModeBox, wxID_ANY, _("Structure"),
-                        wxDefaultPosition, wxDefaultSize);
-                    mStructureShipRenderModeRadioButton->SetToolTip("Draws the ship using its structure.");
-                    mStructureShipRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipRenderModeRadioButtonClick, this);
-                    shipRenderModeBoxSizer2->Add(mStructureShipRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    shipRenderModeBoxSizer1->Add(shipRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
-                }
-
-                shipRenderModeBox->SetSizerAndFit(shipRenderModeBoxSizer1);
-
-                shipSizer->Add(
-                    shipRenderModeBox,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorder);
-            }
+            wxBoxSizer * shipSizer = new wxBoxSizer(wxVERTICAL);
 
             // Show Stress
             {
@@ -3509,12 +3462,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         OnLiveSettingsChanged();
                     });
 
-                shipSizer->Add(
-                    mShowStressCheckBox,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorder);
+                shipSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
             }
 
             shipBoxSizer1->Add(shipSizer, 0, wxALL, StaticBoxInsetMargin);
@@ -3839,7 +3787,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                         _("Draw Only Points"),
                         _("Draw Only Springs"),
                         _("Draw Only Edge Springs"),
-                        _("Draw Decay")
+                        _("Draw Decay"),
+                        _("Draw Structure")
                     };
 
                     mDebugShipRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -4305,22 +4254,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
     mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
-    auto shipRenderMode = settings.GetValue<ShipRenderMode>(GameSettings::ShipRenderMode);
-    switch (shipRenderMode)
-    {
-        case ShipRenderMode::Texture:
-        {
-            mTextureShipRenderModeRadioButton->SetValue(true);
-            break;
-        }
-
-        case ShipRenderMode::Structure:
-        {
-            mStructureShipRenderModeRadioButton->SetValue(true);
-            break;
-        }
-    }
-
     mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
 
     auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
@@ -4423,6 +4356,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         case DebugShipRenderMode::Decay:
         {
             mDebugShipRenderModeRadioBox->SetSelection(5);
+            break;
+        }
+
+        case DebugShipRenderMode::Structure:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(6);
             break;
         }
     }

@@ -270,9 +270,6 @@ struct IGameControllerSettings
     virtual bool GetShowShipThroughOcean() const = 0;
     virtual void SetShowShipThroughOcean(bool value) = 0;
 
-    virtual ShipRenderMode GetShipRenderMode() const = 0;
-    virtual void SetShipRenderMode(ShipRenderMode shipRenderMode) = 0;
-
     virtual DebugShipRenderMode GetDebugShipRenderMode() const = 0;
     virtual void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) = 0;
 

@@ -421,15 +421,6 @@ enum class HighlightMode : size_t
 };
 
 /*
- * The different ways in which ships may be rendered.
- */
-enum class ShipRenderMode
-{
-    Structure,
-    Texture
-};
-
-/*
  * The debug ways in which ships may be rendered.
  */
 enum class DebugShipRenderMode
@@ -439,7 +430,8 @@ enum class DebugShipRenderMode
     Points,
     Springs,
     EdgeSprings,
-    Decay
+    Decay,
+    Structure
 };
 
 /*

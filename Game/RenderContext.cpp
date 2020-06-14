@@ -110,7 +110,6 @@ RenderContext::RenderContext(
     , mShowShipThroughOcean(false)
     , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
-    , mShipRenderMode(ShipRenderMode::Texture)
     , mDebugShipRenderMode(DebugShipRenderMode::None)
     , mVectorFieldRenderMode(VectorFieldRenderMode::None)
     , mVectorFieldLengthMultiplier(1.0f)
@@ -810,7 +809,6 @@ RenderContext::RenderContext(
     OnDefaultWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
-    OnShipRenderModeUpdated();
     OnDebugShipRenderModeUpdated();
     OnVectorFieldRenderModeUpdated();
     OnShowStressedSpringsUpdated();
@@ -900,7 +898,6 @@ void RenderContext::AddShip(
             CalculateWaterColor(),
             mWaterContrast,
             mWaterLevelOfDetail,
-            mShipRenderMode,
             mDebugShipRenderMode,
             mVectorFieldRenderMode,
             mShowStressedSprings,
@@ -1900,16 +1897,6 @@ void RenderContext::OnWaterLevelOfDetailUpdated()
     for (auto & s : mShips)
     {
         s->SetWaterLevelThreshold(mWaterLevelOfDetail);
-    }
-}
-
-void RenderContext::OnShipRenderModeUpdated()
-{
-    // Set parameter in all ships
-
-    for (auto & s : mShips)
-    {
-        s->SetShipRenderMode(mShipRenderMode);
     }
 }
 

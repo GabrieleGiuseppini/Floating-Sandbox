@@ -56,7 +56,6 @@ private:
     void OnFlatOceanColorChanged(wxColourPickerEvent & event);
     void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
 
-    void OnShipRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
@@ -171,8 +170,6 @@ private:
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;
-    wxRadioButton * mTextureShipRenderModeRadioButton;
-    wxRadioButton * mStructureShipRenderModeRadioButton;
     wxCheckBox* mShowStressCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxColourPickerCtrl * mDefaultWaterColorPicker;

@@ -126,7 +126,6 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterContrast);
     ADD_GC_SETTING(float, WaterLevelOfDetail);
     ADD_GC_SETTING(bool, ShowShipThroughOcean);
-    ADD_GC_SETTING(ShipRenderMode, ShipRenderMode);
     ADD_GC_SETTING(DebugShipRenderMode, DebugShipRenderMode);
     ADD_GC_SETTING(OceanRenderMode, OceanRenderMode);
     ADD_GC_SETTING(size_t, TextureOceanTextureIndex);
