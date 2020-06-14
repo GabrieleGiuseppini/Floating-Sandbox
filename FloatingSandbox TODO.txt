@@ -271,7 +271,8 @@ Render:
 				- If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
 					+ See if e.g. we do "springs only" with both nowadays: NO, only with "structure (color)"
 			+ Use lambdas at checkboxes
-		- Sparkles growing and then shrinking
+		+ Sparkles:
+			+ Growing and then shrinking
 		= Water bubbles:
 			+ Bigger as goes up
 			+ Waves at surfacing
