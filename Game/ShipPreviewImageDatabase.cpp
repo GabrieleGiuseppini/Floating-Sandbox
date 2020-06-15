@@ -288,7 +288,7 @@ void NewShipPreviewImageDatabase::Add(
     // Make sure not already in map
     if (!isInserted)
     {
-        throw GameException("Preview for '" + previewImageFilename.string() + "' is already present in database");
+        LogMessage("NewShipPreviewImageDatabase::Add: preview for '", previewImageFilename.string(), "' is already present in database");
     }
 }
 
