@@ -13,8 +13,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Break;
     else if (Utils::CaseInsensitiveEquals(str, "Destroy"))
         return SoundType::Destroy;
-	else if (Utils::CaseInsensitiveEquals(str, "LightningHit"))
-		return SoundType::LightningHit;
+    else if (Utils::CaseInsensitiveEquals(str, "LightningHit"))
+        return SoundType::LightningHit;
     else if (Utils::CaseInsensitiveEquals(str, "RepairSpring"))
         return SoundType::RepairSpring;
     else if (Utils::CaseInsensitiveEquals(str, "RepairTriangle"))
@@ -91,18 +91,20 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::WaterRush;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
         return SoundType::WaterSplash;
+    else if (Utils::CaseInsensitiveEquals(str, "AirBubblesSurface"))
+        return SoundType::AirBubblesSurface;
     else if (Utils::CaseInsensitiveEquals(str, "Wave"))
         return SoundType::Wave;
     else if (Utils::CaseInsensitiveEquals(str, "Wind"))
         return SoundType::Wind;
     else if (Utils::CaseInsensitiveEquals(str, "WindGust"))
         return SoundType::WindGust;
-	else if (Utils::CaseInsensitiveEquals(str, "Rain"))
-		return SoundType::Rain;
-	else if (Utils::CaseInsensitiveEquals(str, "Thunder"))
-		return SoundType::Thunder;
-	else if (Utils::CaseInsensitiveEquals(str, "Lightning"))
-		return SoundType::Lightning;
+    else if (Utils::CaseInsensitiveEquals(str, "Rain"))
+        return SoundType::Rain;
+    else if (Utils::CaseInsensitiveEquals(str, "Thunder"))
+        return SoundType::Thunder;
+    else if (Utils::CaseInsensitiveEquals(str, "Lightning"))
+        return SoundType::Lightning;
     else if (Utils::CaseInsensitiveEquals(str, "FireBurning"))
         return SoundType::FireBurning;
     else if (Utils::CaseInsensitiveEquals(str, "FireSizzling"))

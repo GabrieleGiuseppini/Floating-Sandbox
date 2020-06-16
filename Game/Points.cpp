@@ -1299,6 +1299,8 @@ void Points::UpdateEphemeralParticles(
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     position.x,
                                     (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 2.0f);
+
+                                mGameEventHandler->OnAirBubbleSurfaced(1);
                             }
                         }
                     }

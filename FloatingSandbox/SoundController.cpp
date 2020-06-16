@@ -43,7 +43,7 @@ SoundController::SoundController(
     , mWindVolumeRunningAverage()
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
-	, mMOneShotMultipleChoiceSounds()
+    , mMOneShotMultipleChoiceSounds()
     , mDslUOneShotMultipleChoiceSounds()
     , mUOneShotMultipleChoiceSounds()
     , mOneShotMultipleChoiceSounds()
@@ -64,8 +64,9 @@ SoundController::SoundController(
     , mWaveMakerSound()
     , mWaterRushSound()
     , mWaterSplashSound()
+    , mAirBubblesSurfacingSound(0.23f, 0.12f)
     , mWindSound()
-	, mRainSound()
+    , mRainSound()
     , mFireBurningSound()
     , mTimerBombSlowFuseSound()
     , mTimerBombFastFuseSound()
@@ -86,7 +87,6 @@ SoundController::SoundController(
 
         // Notify progress
         progressCallback(static_cast<float>(i + 1) / static_cast<float>(soundNames.size()), "Loading sounds...");
-
 
         //
         // Load sound buffer
@@ -258,6 +258,13 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
+        else if (soundType == SoundType::AirBubblesSurface)
+        {
+            mAirBubblesSurfacingSound.Initialize(
+                std::move(soundBuffer),
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+        }
         else if (soundType == SoundType::Wind)
         {
             mWindSound.Initialize(
@@ -266,14 +273,14 @@ SoundController::SoundController(
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
-		else if (soundType == SoundType::Rain)
-		{
-			mRainSound.Initialize(
-				std::move(soundBuffer),
-				100.0f,
-				mMasterEffectsVolume,
-				mMasterEffectsMuted);
-		}
+        else if (soundType == SoundType::Rain)
+        {
+            mRainSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+        }
         else if (soundType == SoundType::FireBurning)
         {
             mFireBurningSound.Initialize(
@@ -313,10 +320,10 @@ SoundController::SoundController(
                 resourceLocator.GetSoundFilepath(soundName));
         }
         else if (soundType == SoundType::Break
-				|| soundType == SoundType::Destroy
-				|| soundType == SoundType::Stress
+                || soundType == SoundType::Destroy
+                || soundType == SoundType::Stress
                 || soundType == SoundType::RepairSpring
-				|| soundType == SoundType::RepairTriangle)
+                || soundType == SoundType::RepairTriangle)
         {
             //
             // MSU sound
@@ -423,8 +430,8 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
-				|| soundType == SoundType::Thunder
-				|| soundType == SoundType::Lightning
+                || soundType == SoundType::Thunder
+                || soundType == SoundType::Lightning
                 || soundType == SoundType::FireSizzling
                 || soundType == SoundType::TsunamiTriggered
                 || soundType == SoundType::AntiMatterBombPreImplosion
@@ -706,8 +713,9 @@ void SoundController::SetPaused(bool isPaused)
 
     mWaterRushSound.SetPaused(isPaused);
     mWaterSplashSound.SetPaused(isPaused);
+    mAirBubblesSurfacingSound.SetPaused(isPaused);
     mWindSound.SetPaused(isPaused);
-	mRainSound.SetPaused(isPaused);
+    mRainSound.SetPaused(isPaused);
     mFireBurningSound.SetPaused(isPaused);
     mTimerBombSlowFuseSound.SetPaused(isPaused);
     mTimerBombFastFuseSound.SetPaused(isPaused);
@@ -741,8 +749,9 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
+    mAirBubblesSurfacingSound.SetMasterVolume(mMasterEffectsVolume);
     mWindSound.SetMasterVolume(mMasterEffectsVolume);
-	mRainSound.SetMasterVolume(mMasterEffectsVolume);
+    mRainSound.SetMasterVolume(mMasterEffectsVolume);
     mFireBurningSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombSlowFuseSound.SetMasterVolume(mMasterEffectsVolume);
     mTimerBombFastFuseSound.SetMasterVolume(mMasterEffectsVolume);
@@ -774,8 +783,9 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
+    mAirBubblesSurfacingSound.SetMuted(mMasterEffectsMuted);
     mWindSound.SetMuted(mMasterEffectsMuted);
-	mRainSound.SetMuted(mMasterEffectsMuted);
+    mRainSound.SetMuted(mMasterEffectsMuted);
     mFireBurningSound.SetMuted(mMasterEffectsMuted);
     mTimerBombSlowFuseSound.SetMuted(mMasterEffectsMuted);
     mTimerBombFastFuseSound.SetMuted(mMasterEffectsMuted);
@@ -1125,8 +1135,9 @@ void SoundController::PlayErrorSound()
 
 void SoundController::UpdateSimulation()
 {
-    mFireBurningSound.UpdateSimulation();
     mWaveMakerSound.UpdateSimulation();
+    mAirBubblesSurfacingSound.UpdateSimulation();
+    mFireBurningSound.UpdateSimulation();
 
     // Silence the inertial sounds - this will basically be a nop in case
     // they've just been started or will be started really soon
@@ -1174,8 +1185,9 @@ void SoundController::Reset()
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();
+    mAirBubblesSurfacingSound.Reset();
     mWindSound.Reset();
-	mRainSound.Reset();
+    mRainSound.Reset();
     mFireBurningSound.Reset();
     mTimerBombSlowFuseSound.Reset();
     mTimerBombFastFuseSound.Reset();
@@ -1213,14 +1225,14 @@ void SoundController::OnDestroy(
 
 void SoundController::OnLightningHit(StructuralMaterial const & structuralMaterial)
 {
-	if (!!(structuralMaterial.MaterialSound))
-	{
-		PlayMOneShotMultipleChoiceSound(
-			SoundType::LightningHit,
-			*(structuralMaterial.MaterialSound),
-			70.0f,
-			true);
-	}
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        PlayMOneShotMultipleChoiceSound(
+            SoundType::LightningHit,
+            *(structuralMaterial.MaterialSound),
+            70.0f,
+            true);
+    }
 }
 
 void SoundController::OnSpringRepaired(
@@ -1358,7 +1370,7 @@ void SoundController::OnWaterTaken(float waterTaken)
     // 50 * (-1 / 2.4^(0.3 * x) + 1)
     float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.3f * std::abs(waterTaken))) + 1.f);
 
-	// Starts automatically if volume greater than zero
+    // Starts automatically if volume greater than zero
     mWaterRushSound.SetVolume(rushVolume);
 }
 
@@ -1400,8 +1412,15 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // 12 * (-1 / 1.3^(0.01*x) + 1)
     float const splashVolume = 12.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
 
-	// Starts automatically if volume greater than zero
+    // Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);
+}
+
+void SoundController::OnAirBubbleSurfaced(unsigned int size)
+{
+    auto const volume = std::min(100.0f, static_cast<float>(size) * 20.0f);
+
+    mAirBubblesSurfacingSound.Pulse(volume);
 }
 
 void SoundController::OnWindSpeedUpdated(
@@ -1463,24 +1482,24 @@ void SoundController::OnWindSpeedUpdated(
 
 void SoundController::OnRainUpdated(float density)
 {
-	// Set the volume - starts automatically if greater than zero
-	mRainSound.SetVolume(density / 0.4f * 100.0f);
+    // Set the volume - starts automatically if greater than zero
+    mRainSound.SetVolume(density / 0.4f * 100.0f);
 }
 
 void SoundController::OnThunder()
 {
-	PlayOneShotMultipleChoiceSound(
-		SoundType::Thunder,
-		100.0f,
-		true);
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Thunder,
+        100.0f,
+        true);
 }
 
 void SoundController::OnLightning()
 {
-	PlayOneShotMultipleChoiceSound(
-		SoundType::Lightning,
-		100.0f,
-		true);
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Lightning,
+        100.0f,
+        true);
 }
 
 void SoundController::OnLightFlicker(
@@ -1858,7 +1877,6 @@ void SoundController::OnWatertightDoorClosed(
         true);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(
@@ -1938,38 +1956,38 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
 }
 
 void SoundController::PlayMOneShotMultipleChoiceSound(
-	SoundType soundType,
-	StructuralMaterial::MaterialSoundType materialSound,
-	float volume,
-	bool isInterruptible)
+    SoundType soundType,
+    StructuralMaterial::MaterialSoundType materialSound,
+    float volume,
+    bool isInterruptible)
 {
-	LogDebug("MSound: <",
-		static_cast<int>(soundType),
-		",",
-		static_cast<int>(materialSound),
-		">");
+    LogDebug("MSound: <",
+        static_cast<int>(soundType),
+        ",",
+        static_cast<int>(materialSound),
+        ">");
 
-	//
-	// Find vector
-	//
+    //
+    // Find vector
+    //
 
-	auto it = mMOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound));
-	if (it == mMOneShotMultipleChoiceSounds.end())
-	{
-		// No luck
-		return;
-	}
+    auto it = mMOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound));
+    if (it == mMOneShotMultipleChoiceSounds.end())
+    {
+        // No luck
+        return;
+    }
 
 
-	//
-	// Play sound
-	//
+    //
+    // Play sound
+    //
 
-	ChooseAndPlayOneShotMultipleChoiceSound(
-		soundType,
-		it->second,
-		volume,
-		isInterruptible);
+    ChooseAndPlayOneShotMultipleChoiceSound(
+        soundType,
+        it->second,
+        volume,
+        isInterruptible);
 }
 
 void SoundController::PlayDslUOneShotMultipleChoiceSound(

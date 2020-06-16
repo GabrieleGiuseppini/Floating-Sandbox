@@ -252,20 +252,16 @@ Render:
 
 		+ Bump up version
 		+ Cleanup plan
-
 		+ Load ship dialog:
 			+ Ship Preview Cache (*)
 			+ Arrow keys on ShipPreview window
 			+ Text serch also on year, author
-
 		+ #pragma pack(push, 1) // @ all instances
 			+ See perf afterwards
-
-		= OpenGL:
+		+ OpenGL:
 			+ Remove stencil from context requirements
 				+ And check all references to "stencil"
-			- Run w/OpenGL tracing to see if there's any errors
-
+			+ Run w/OpenGL tracing to see if there's any errors
 		+ SettingsDialog: move ship render mode to Debug
 			+ As new "Ship Render Mode" radio option
 				+ If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
@@ -273,22 +269,23 @@ Render:
 			+ Use lambdas at checkboxes
 		+ Sparkles:
 			+ Growing and then shrinking
-		= Water bubbles:
+		+ Water bubbles:
 			+ Bigger as goes up
 			+ Waves at surfacing
 				+ Boolean flag => Points::m (or local?) AirBubblesOceanSurfaceDisplacementSurfaceOffsetThreshold = 0.5/0.0
 				+ SettingsDialog
-			- Sound (*)		
+			+ Sound
 
 		- ARM OpenGL issue
-			- See what happens when showing MainFrame before GameController is created
+			- See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
+			- Figure out how to tell platform
+			- #ifdef that platform, show before RenderContext created
 
-		- MacOS:
-			- MainFrame: all timers: timeout not zero, but one
-				- Double-check FPS afterwards
+		- MacOS zero timeout issue:
+			- Calc millis for 1000/20 frames/sec and sleep by that
+				- Verify no FPS changes afterwards
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
-		- See timeBeginPeriod() for vSync
 
 		- Parallelize OpenGL:
 			+ Start:
@@ -833,6 +830,8 @@ Render:
 
 - Gfx optimizations:
 
+	- See timeBeginPeriod() for vSync
+
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering)
 		- If fine:
 			- Do stars once and for all
@@ -983,6 +982,8 @@ Render:
 			- Has precedence when looking for candidates @ Lightning strike
 
 	- New electrical materials: 
+		- Non-Instanced Water Tight Doors (see if possible)
+		- Non-Instanced Water In/Out Pumps (see if possible)
 		- Clamp
 			- When powered, destroys point (and of course its springs)
 			- Make ship with lifeboats, using multiple clamps to keep it
@@ -1302,10 +1303,15 @@ Render:
 
 - Sounds:
 
+	= Do air bubbles sounds, very low volume (*)
+		+ At expiry
+		+ New events at IGameEventHandler
+			+ Dispatcher aggregates with counter
+			+ Ship takes shared_ptr<Dispatcher> now, for perf
+
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
 		- Ships could also come with their own sounds; if not, default seounds are provided
-
 
 	- Sounds that play before ship starts sinking
 		- SOS, bell, sailor screaming, etc.
@@ -1316,19 +1322,13 @@ Render:
 		- Morse code: text-to-morse encoder would be cool
 			- Default "S.O.S.", also customizable via ship property
 
-	- Do air bubbles sounds, very low volume (*)
-		- At creation and at expiry - TBD: just at expiry
-		- New events at IGameEventHandler
-			- Dispatcher aggregates with counter
-			- Ship takes shared_ptr<Dispatcher> now, for perf
-
 	- New sounds:
 		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
 		- ShipSoundsForFS (in Scratch)
 
-	- Volume of effects should depend on distance/zoom
-
-	- Global mute setting
+	- Sound space:
+		- Volume of effects should depend on distance/zoom
+		- Position of effects (L/R) should depend on world position re: camera
 
 -Probing:
 	- IProbe:

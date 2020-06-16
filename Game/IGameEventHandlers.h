@@ -392,6 +392,11 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnAirBubbleSurfaced(unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnSilenceStarted()
     {
         // Default-implemented

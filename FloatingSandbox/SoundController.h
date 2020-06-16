@@ -228,6 +228,8 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override;
 
+    virtual void OnAirBubbleSurfaced(unsigned int size) override;
+
     virtual void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
@@ -517,6 +519,7 @@ private:
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
+    ContinuousPulsedSound mAirBubblesSurfacingSound;
     ContinuousSingleChoiceSound mWindSound;
 	ContinuousSingleChoiceSound mRainSound;
     ContinuousSingleChoiceSound mFireBurningSound;

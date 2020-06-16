@@ -21,25 +21,26 @@ class GameEventDispatcher final
     , public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
     , public IStatisticsGameEventHandler
-	, public IAtmosphereGameEventHandler
+    , public IAtmosphereGameEventHandler
     , public IElectricalElementGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
 
     GameEventDispatcher()
-        : mSpringRepairedEvents()
-        , mTriangleRepairedEvents()
-        , mStressEvents()
+        : mStressEvents()
         , mBreakEvents()
         , mCombustionExplosionEvents()
         , mLightningHitEvents()
+        , mLightFlickerEvents()
+        , mSpringRepairedEvents()
+        , mTriangleRepairedEvents()
+        , mAirBubbleSurfacedEvents(0u)
         , mBombExplosionEvents()
         , mRCBombPingEvents()
         , mTimerBombDefusedEvents()
         , mWatertightDoorOpenedEvents()
         , mWatertightDoorClosedEvents()
-        , mLightFlickerEvents()
         // Sinks
         , mRenderSinks()
         , mLifecycleSinks()
@@ -47,7 +48,7 @@ public:
         , mWavePhenomenaSinks()
         , mCombustionSinks()
         , mStatisticsSinks()
-		, mAtmosphereSinks()
+        , mAtmosphereSinks()
         , mElectricalElementSinks()
         , mGenericSinks()
     {
@@ -215,78 +216,74 @@ public:
         }
     }
 
-	//
-	// Atmosphere
-	//
+    //
+    // Atmosphere
+    //
 
-	virtual void OnStormBegin() override
-	{
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnStormBegin();
-		}
-	}
+    virtual void OnStormBegin() override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnStormBegin();
+        }
+    }
 
-	virtual void OnStormEnd() override
-	{
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnStormEnd();
-		}
-	}
+    virtual void OnStormEnd() override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnStormEnd();
+        }
+    }
 
-	virtual void OnWindSpeedUpdated(
-		float const zeroSpeedMagnitude,
-		float const baseSpeedMagnitude,
-		float const baseAndStormSpeedMagnitude,
-		float const preMaxSpeedMagnitude,
-		float const maxSpeedMagnitude,
-		vec2f const& windSpeed) override
-	{
-		// No need to aggregate this one
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnWindSpeedUpdated(
-				zeroSpeedMagnitude,
-				baseSpeedMagnitude,
-				baseAndStormSpeedMagnitude,
-				preMaxSpeedMagnitude,
-				maxSpeedMagnitude,
-				windSpeed);
-		}
-	}
+    virtual void OnWindSpeedUpdated(
+        float const zeroSpeedMagnitude,
+        float const baseSpeedMagnitude,
+        float const baseAndStormSpeedMagnitude,
+        float const preMaxSpeedMagnitude,
+        float const maxSpeedMagnitude,
+        vec2f const& windSpeed) override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnWindSpeedUpdated(
+                zeroSpeedMagnitude,
+                baseSpeedMagnitude,
+                baseAndStormSpeedMagnitude,
+                preMaxSpeedMagnitude,
+                maxSpeedMagnitude,
+                windSpeed);
+        }
+    }
 
-	virtual void OnRainUpdated(float const density) override
-	{
-		// No need to aggregate this one
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnRainUpdated(density);
-		}
-	}
+    virtual void OnRainUpdated(float const density) override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnRainUpdated(density);
+        }
+    }
 
-	virtual void OnThunder() override
-	{
-		// No need to aggregate this one
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnThunder();
-		}
-	}
+    virtual void OnThunder() override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnThunder();
+        }
+    }
 
-	virtual void OnLightning() override
-	{
-		// No need to aggregate this one
-		for (auto sink : mAtmosphereSinks)
-		{
-			sink->OnLightning();
-		}
-	}
+    virtual void OnLightning() override
+    {
+        for (auto sink : mAtmosphereSinks)
+        {
+            sink->OnLightning();
+        }
+    }
 
-	virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override
-	{
-		mLightningHitEvents[std::make_tuple(&structuralMaterial)] += 1;
-	}
+    virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override
+    {
+        mLightningHitEvents[std::make_tuple(&structuralMaterial)] += 1;
+    }
 
     //
     // Electrical elements
@@ -302,7 +299,6 @@ public:
 
     virtual void OnElectricalElementAnnouncementsBegin() override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnElectricalElementAnnouncementsBegin();
@@ -318,7 +314,6 @@ public:
     {
         LogMessage("OnSwitchCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnSwitchCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
@@ -334,7 +329,6 @@ public:
     {
         LogMessage("OnPowerProbeCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnPowerProbeCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
@@ -348,7 +342,6 @@ public:
     {
         LogMessage("OnEngineControllerCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnEngineControllerCreated(electricalElementId, instanceIndex, panelElementMetadata);
@@ -365,7 +358,6 @@ public:
     {
         LogMessage("OnEngineMonitorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): Thrust=", thrustMagnitude, " RPM=", rpm);
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, electricalMaterial, thrustMagnitude, rpm, panelElementMetadata);
@@ -381,7 +373,6 @@ public:
     {
         LogMessage("OnWaterPumpCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWaterPumpCreated(electricalElementId, instanceIndex, electricalMaterial, normalizedForce, panelElementMetadata);
@@ -397,7 +388,6 @@ public:
     {
         LogMessage("OnWatertightDoorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWatertightDoorCreated(electricalElementId, instanceIndex, electricalMaterial, isOpen, panelElementMetadata);
@@ -406,7 +396,6 @@ public:
 
     virtual void OnElectricalElementAnnouncementsEnd() override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnElectricalElementAnnouncementsEnd();
@@ -417,7 +406,6 @@ public:
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnSwitchEnabled(electricalElementId, isEnabled);
@@ -428,7 +416,6 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnSwitchToggled(electricalElementId, newState);
@@ -439,7 +426,6 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnPowerProbeToggled(electricalElementId, newState);
@@ -450,7 +436,6 @@ public:
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnEngineControllerEnabled(electricalElementId, isEnabled);
@@ -461,7 +446,6 @@ public:
         ElectricalElementId electricalElementId,
         int telegraphValue) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnEngineControllerUpdated(electricalElementId, telegraphValue);
@@ -473,7 +457,6 @@ public:
         float thrustMagnitude,
         float rpm) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnEngineMonitorUpdated(electricalElementId, thrustMagnitude, rpm);
@@ -486,7 +469,6 @@ public:
         bool isPlaying,
         bool isUnderwater) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnShipSoundUpdated(electricalElementId, electricalMaterial, isPlaying, isUnderwater);
@@ -497,7 +479,6 @@ public:
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWaterPumpEnabled(electricalElementId, isEnabled);
@@ -508,7 +489,6 @@ public:
         ElectricalElementId electricalElementId,
         float normalizedForce) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWaterPumpUpdated(electricalElementId, normalizedForce);
@@ -519,7 +499,6 @@ public:
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWatertightDoorEnabled(electricalElementId, isEnabled);
@@ -530,7 +509,6 @@ public:
         ElectricalElementId electricalElementId,
         bool isOpen) override
     {
-        // No need to aggregate this one
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWatertightDoorUpdated(electricalElementId, isOpen);
@@ -546,7 +524,6 @@ public:
         bool isUnderwater,
         unsigned int size) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnDestroy(structuralMaterial, isUnderwater, size);
@@ -573,7 +550,6 @@ public:
         bool isMetal,
         unsigned int size) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnSawed(isMetal, size);
@@ -584,7 +560,6 @@ public:
         bool isPinned,
         bool isUnderwater) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnPinToggled(isPinned, isUnderwater);
@@ -593,7 +568,6 @@ public:
 
     virtual void OnWaterTaken(float waterTaken) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnWaterTaken(waterTaken);
@@ -602,16 +576,19 @@ public:
 
     virtual void OnWaterSplashed(float waterSplashed) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnWaterSplashed(waterSplashed);
         }
     }
 
+    virtual void OnAirBubbleSurfaced(unsigned int size) override
+    {
+        mAirBubbleSurfacedEvents += size;
+    }
+
     virtual void OnSilenceStarted() override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnSilenceStarted();
@@ -620,7 +597,6 @@ public:
 
     virtual void OnSilenceLifted() override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnSilenceLifted();
@@ -631,7 +607,6 @@ public:
         std::string const & name,
         float value) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnCustomProbe(
@@ -640,16 +615,11 @@ public:
         }
     }
 
-    //
-    // Bombs
-    //
-
     virtual void OnBombPlaced(
         BombId bombId,
         BombType bombType,
         bool isUnderwater) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnBombPlaced(
@@ -664,7 +634,6 @@ public:
         BombType bombType,
         std::optional<bool> isUnderwater) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnBombRemoved(
@@ -693,7 +662,6 @@ public:
         BombId bombId,
         std::optional<bool> isFast) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnTimerBombFuse(
@@ -713,7 +681,6 @@ public:
         BombId bombId,
         bool isContained) override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombContained(
@@ -724,7 +691,6 @@ public:
 
     virtual void OnAntiMatterBombPreImploding() override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombPreImploding();
@@ -733,7 +699,6 @@ public:
 
     virtual void OnAntiMatterBombImploding() override
     {
-        // No need to aggregate this one
         for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombImploding();
@@ -791,15 +756,15 @@ public:
 
         mCombustionExplosionEvents.clear();
 
-		for (auto * sink : mAtmosphereSinks)
-		{
-			for (auto const & entry : mLightningHitEvents)
-			{
-				sink->OnLightningHit(*(std::get<0>(entry.first)));
-			}
-		}
+        for (auto * sink : mAtmosphereSinks)
+        {
+            for (auto const & entry : mLightningHitEvents)
+            {
+                sink->OnLightningHit(*(std::get<0>(entry.first)));
+            }
+        }
 
-		mLightningHitEvents.clear();
+        mLightningHitEvents.clear();
 
         for (auto * sink : mElectricalElementSinks)
         {
@@ -821,6 +786,11 @@ public:
             for (auto const & entry : mTriangleRepairedEvents)
             {
                 sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
+            }
+
+            if (mAirBubbleSurfacedEvents > 0)
+            {
+                sink->OnAirBubbleSurfaced(mAirBubbleSurfacedEvents);
             }
 
             for (auto const & entry : mBombExplosionEvents)
@@ -851,6 +821,7 @@ public:
 
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
+        mAirBubbleSurfacedEvents = 0u;
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
         mTimerBombDefusedEvents.clear();
@@ -888,10 +859,10 @@ public:
         mStatisticsSinks.push_back(sink);
     }
 
-	void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* sink)
-	{
-		mAtmosphereSinks.push_back(sink);
-	}
+    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* sink)
+    {
+        mAtmosphereSinks.push_back(sink);
+    }
 
     void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * sink)
     {
@@ -906,18 +877,19 @@ public:
 private:
 
     // The current events being aggregated
-    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
-    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mCombustionExplosionEvents;
-	unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
+    unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
+    unsigned int mAirBubbleSurfacedEvents;
     unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorOpenedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
-    unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
 
     // The registered sinks
     std::vector<IRenderGameEventHandler *> mRenderSinks;
@@ -926,7 +898,7 @@ private:
     std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;
     std::vector<ICombustionGameEventHandler *> mCombustionSinks;
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
-	std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
+    std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
     std::vector<IElectricalElementGameEventHandler *> mElectricalElementSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

@@ -31,7 +31,7 @@ enum class SoundType : uint32_t
 {
     Break = 0,
     Destroy,
-	LightningHit,
+    LightningHit,
     RepairSpring,
     RepairTriangle,
     Draw,
@@ -70,12 +70,13 @@ enum class SoundType : uint32_t
     ShipKlaxon1,
     WaterRush,
     WaterSplash,
+    AirBubblesSurface,
     Wave,
     Wind,
     WindGust,
-	Rain,
-	Thunder,
-	Lightning,
+    Rain,
+    Thunder,
+    Lightning,
     FireBurning,
     FireSizzling,
     CombustionExplosion,
@@ -452,15 +453,15 @@ struct ContinuousSound
         if (!!mSound)
         {
             mSound->setVolume(volume);
-			if (volume > 0.0f)
-			{
-				Start();
-			}
-			else
-			{
-				// Conserve resources
-				Stop();
-			}
+            if (volume > 0.0f)
+            {
+                Start();
+            }
+            else
+            {
+                // Conserve resources
+                Stop();
+            }
         }
     }
 
@@ -572,14 +573,14 @@ private:
  */
 struct ContinuousInertialSound
 {
-    ContinuousInertialSound(std::chrono::milliseconds inertiaDuration)
+    explicit ContinuousInertialSound(std::chrono::milliseconds inertiaDuration)
         : mContinuousSound()
         , mInertiaDuration(inertiaDuration)
         , mHearableLastTime()
     {
     }
 
-    explicit ContinuousInertialSound(
+    ContinuousInertialSound(
         std::chrono::milliseconds inertiaDuration,
         std::unique_ptr<sf::SoundBuffer> soundBuffer,
         float masterVolume,
@@ -677,6 +678,114 @@ private:
 
     std::chrono::milliseconds const mInertiaDuration;
     std::optional<GameWallClock::time_point> mHearableLastTime;
+};
+
+struct ContinuousPulsedSound
+{
+    ContinuousPulsedSound(
+        float riseCoefficient,
+        float decayCoefficient)
+        : mRiseCoefficient(riseCoefficient)
+        , mDecayCoefficient(decayCoefficient)
+        , mContinuousSound()
+        , mCurrentVolumeLevel(0.0f)
+        , mTargetVolumeLevel(0.0f)
+    {
+    }
+
+    void Initialize(
+        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        float masterVolume,
+        bool isMuted)
+    {
+        mContinuousSound.Initialize(
+            std::move(soundBuffer),
+            0.0f,
+            masterVolume,
+            isMuted);
+
+        Reset();
+    }
+
+    void Reset()
+    {
+        Stop();
+    }
+
+    void SetMasterVolume(float masterVolume)
+    {
+        mContinuousSound.SetMasterVolume(masterVolume);
+    }
+
+    void SetMuted(bool isMuted)
+    {
+        mContinuousSound.SetMuted(isMuted);
+    }
+
+    void SetPaused(bool isPaused)
+    {
+        mContinuousSound.SetPaused(isPaused); // Does not pause state machine
+    }
+
+    void Stop()
+    {
+        mContinuousSound.Stop();
+
+        mCurrentVolumeLevel = 0.0f;
+        mTargetVolumeLevel = 0.0f;
+    }
+
+    void Pulse(float newLevel)
+    {
+        mTargetVolumeLevel = newLevel;
+    }
+
+    void UpdateSimulation()
+    {
+        if (mTargetVolumeLevel > mCurrentVolumeLevel)
+        {
+            //
+            // Raise
+            //
+
+            mCurrentVolumeLevel += (mTargetVolumeLevel - mCurrentVolumeLevel) * mRiseCoefficient;
+            mContinuousSound.SetVolume(mCurrentVolumeLevel);
+
+            // See if needs to be started
+            if (mCurrentVolumeLevel > 0.0f)
+                mContinuousSound.Start();
+        }
+        else if (mCurrentVolumeLevel > mTargetVolumeLevel)
+        {
+            //
+            // Decay
+            //
+
+            mCurrentVolumeLevel += (mTargetVolumeLevel - mCurrentVolumeLevel) * mDecayCoefficient;
+            mContinuousSound.SetVolume(mCurrentVolumeLevel);
+
+            // See if needs to be stopped
+            if (mCurrentVolumeLevel < 0.01f)
+            {
+                mCurrentVolumeLevel = 0.0f;
+                mContinuousSound.Stop();
+            }
+        }
+
+        // Zero out target level for next iteration
+        mTargetVolumeLevel = 0.0f;
+    }
+
+private:
+
+    float const mRiseCoefficient;
+    float const mDecayCoefficient;
+
+    ContinuousSound mContinuousSound;
+
+    // State
+    float mCurrentVolumeLevel;
+    float mTargetVolumeLevel;
 };
 
 /*
