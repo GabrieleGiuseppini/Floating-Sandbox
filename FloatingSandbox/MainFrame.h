@@ -25,8 +25,10 @@
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
 
+#include "GLCanvas.h"   // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
+                        // so that wxGLCanvas ends up *not* including the system's OpenGL header
+
 #include <wx/frame.h>
-#include <wx/glcanvas.h>
 #include <wx/menu.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
@@ -76,7 +78,7 @@ private:
     // Canvas
     //
 
-    std::unique_ptr<wxGLCanvas> mMainGLCanvas;
+    std::unique_ptr<GLCanvas> mMainGLCanvas;
     std::unique_ptr<wxGLContext> mMainGLCanvasContext;
 
     //

@@ -151,37 +151,15 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
+    // TODOHERE
 
     //
     // Build main GL canvas and activate GL context
     //
 
-    // Note: Using the wxWidgets 3.1 style does not work on OpenGL 4 drivers; it forces a 1.1.0 context
-
-    int mainGLCanvasAttributes[] =
-    {
-        WX_GL_RGBA,
-        WX_GL_DOUBLEBUFFER,
-        WX_GL_DEPTH_SIZE,      16,
-
-        // Cannot specify CORE_PROFILE or else wx tries OpenGL 3.0 and fails if it's not supported
-        //WX_GL_CORE_PROFILE,
-
-        // Useless to specify version as Glad will always take the max
-        //WX_GL_MAJOR_VERSION,    GameOpenGL::MinOpenGLVersionMaj,
-        //WX_GL_MINOR_VERSION,    GameOpenGL::MinOpenGLVersionMin,
-
-        0, 0
-    };
-
-    mMainGLCanvas = std::make_unique<wxGLCanvas>(
+    mMainGLCanvas = std::make_unique<GLCanvas>(
         mMainPanel,
-        ID_MAIN_CANVAS,
-        mainGLCanvasAttributes,
-        wxDefaultPosition,
-        wxDefaultSize,
-        0L,
-        _T("Main GL Canvas"));
+        ID_MAIN_CANVAS);
 
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);

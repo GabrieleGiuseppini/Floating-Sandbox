@@ -11,6 +11,7 @@ set  (FLOATING_SANDBOX_SOURCES
 	CheckForUpdatesDialog.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
+	GLCanvas.h
 	HelpDialog.cpp
 	HelpDialog.h
 	LoggingDialog.cpp

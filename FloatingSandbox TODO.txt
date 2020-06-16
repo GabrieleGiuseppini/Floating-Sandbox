@@ -276,10 +276,16 @@ Render:
 				+ SettingsDialog
 			+ Sound
 
-		- ARM OpenGL issue
-			- See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
-			- Figure out how to tell platform
-			- #ifdef that platform, show before RenderContext created
+		= ARM OpenGL issue
+			+ See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
+			- Option 1:
+				- Figure out how to tell platform
+				- When #iffdef that platform, then show before RenderContext created
+			= Option 2:
+				- TODOHERE
+				- Cleanup:
+					- Make Splash's canvas inconspicuous
+
 
 		- MacOS zero timeout issue:
 			- Calc millis for 1000/20 frames/sec and sleep by that

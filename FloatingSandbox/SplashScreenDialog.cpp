@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "SplashScreenDialog.h"
 
+#include "GLCanvas.h"
+
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>
 #include <wx/sizer.h>
@@ -26,6 +28,17 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
 
     wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    //
+    // Create OpenGL canvas and context; we'll use this context
+    // as the main OpenGL context of the game
+    //
+
+    wxGLCanvas * glCanvas = new GLCanvas(this, wxID_ANY);
+    mainSizer->Add(glCanvas);
+
+    // Make context
+    mGLContext = std::make_shared<wxGLContext>(glCanvas);
 
 
     //

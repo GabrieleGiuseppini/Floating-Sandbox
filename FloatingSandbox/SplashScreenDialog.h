@@ -9,6 +9,7 @@
 
 #include <wx/frame.h>
 #include <wx/gauge.h>
+#include <wx/glcanvas.h>
 #include <wx/stattext.h>
 
 #include <memory>
@@ -22,12 +23,18 @@ public:
 
 	virtual ~SplashScreenDialog();
 
+    std::shared_ptr<wxGLContext> GetOpenGLContext() const
+    {
+        return mGLContext;
+    }
+
 	void UpdateProgress(
         float progress,
         std::string const & message);
 
 private:
 
+    std::shared_ptr<wxGLContext> mGLContext;
     wxGauge * mGauge;
     wxStaticText * mProgressText;
 };
