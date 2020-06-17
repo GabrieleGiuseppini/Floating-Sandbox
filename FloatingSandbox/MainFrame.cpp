@@ -151,10 +151,8 @@ MainFrame::MainFrame(wxApp * mainApp)
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
-    // TODOHERE
-
     //
-    // Build main GL canvas and activate GL context
+    // Build OpenGL canvas - this is where we render the game to
     //
 
     mMainGLCanvas = std::make_unique<GLCanvas>(
@@ -175,26 +173,6 @@ MainFrame::MainFrame(wxApp * mainApp)
         1,                  // Occupy all available vertical space
         wxEXPAND,           // Expand also horizontally
         0);                 // Border
-
-    // Take context for this canvas
-    mMainGLCanvasContext = std::make_unique<wxGLContext>(mMainGLCanvas.get());
-
-    // Activate context
-    mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
-
-
-    //
-    // Initialize OpenGL
-    //
-
-    try
-    {
-        GameOpenGL::InitOpenGL();
-    }
-    catch (std::exception const & e)
-    {
-        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
-    }
 
 
     //
@@ -692,6 +670,31 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
 
+    //
+    // Create OpenGL context, temporarily on the splash screen's canvas
+    //
+
+    mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
+
+    // Activate context on the splash window's canvas
+    mMainGLCanvasContext->SetCurrent(*splash->GetOpenGLCanvas());
+
+
+    //
+    // Initialize OpenGL
+    //
+
+    try
+    {
+        GameOpenGL::InitOpenGL();
+    }
+    catch (std::exception const & e)
+    {
+        // TODO: if stays here - in PostInitialize - convert to gfx error
+        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
+    }
+
+
 #ifdef _DEBUG
     // The guy is pesky while debugging
     splash->Hide();
@@ -912,6 +915,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     this->mMainApp->Yield();
 
+
     //
     // Start check update timer
     //
@@ -927,9 +931,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Close splash screen
     //
 
+    // Move OpenGL context to *our* canvas first
+    mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+
 #ifndef _DEBUG
 
-    // Make sure the splash screen shows for at least half a sec, or else it's weird
+    // Make sure the splash screen shows for at least half a sec, or else the
+    // last message is not visible
     auto start = std::chrono::steady_clock::now();
     auto end = std::chrono::steady_clock::now();
     while ((end - start) < std::chrono::milliseconds(500))

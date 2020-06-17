@@ -278,14 +278,13 @@ Render:
 
 		= ARM OpenGL issue
 			+ See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
-			- Option 1:
+			- Option 1: by preprocessor
 				- Figure out how to tell platform
 				- When #iffdef that platform, then show before RenderContext created
-			= Option 2:
-				- TODOHERE
+			= Option 2: context is bound early to a temporary canvas that is shown, and after initialization it is 
+			  bound to the actual game canvas
 				- Cleanup:
 					- Make Splash's canvas inconspicuous
-
 
 		- MacOS zero timeout issue:
 			- Calc millis for 1000/20 frames/sec and sleep by that

@@ -5,13 +5,15 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GLCanvas.h"
+
 #include <Game/ResourceLocator.h>
 
 #include <wx/frame.h>
 #include <wx/gauge.h>
-#include <wx/glcanvas.h>
 #include <wx/stattext.h>
 
+#include <cassert>
 #include <memory>
 #include <string>
 
@@ -23,9 +25,15 @@ public:
 
 	virtual ~SplashScreenDialog();
 
-    std::shared_ptr<wxGLContext> GetOpenGLContext() const
+    /*
+     * We also create and export a (temporary) OpenGL canvas,
+     * which may be used for binding an OpenGL context to while
+     * the main frame's canvas is still hiddden
+     */
+    GLCanvas * GetOpenGLCanvas() const
     {
-        return mGLContext;
+        assert(nullptr != mGLCanvas);
+        return mGLCanvas;
     }
 
 	void UpdateProgress(
@@ -34,7 +42,7 @@ public:
 
 private:
 
-    std::shared_ptr<wxGLContext> mGLContext;
+    GLCanvas * mGLCanvas;
     wxGauge * mGauge;
     wxStaticText * mProgressText;
 };
