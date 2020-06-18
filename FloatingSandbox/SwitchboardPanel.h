@@ -10,7 +10,7 @@
 
 #include <UIControls/BitmappedCheckbox.h>
 #include <UIControls/ElectricalElementControl.h>
-#include <UIControls/UnfocusablePanel.h>
+#include <UIControls/UnFocusablePanel.h>
 #include <UIControls/UnFocusableScrollablePanel.h>
 
 #include <Game/IGameController.h>
