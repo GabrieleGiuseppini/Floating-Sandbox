@@ -275,22 +275,23 @@ Render:
 				+ Boolean flag => Points::m (or local?) AirBubblesOceanSurfaceDisplacementSurfaceOffsetThreshold = 0.5/0.0
 				+ SettingsDialog
 			+ Sound
-
-		= ARM OpenGL issue
+		+ ARM OpenGL issue
 			+ See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
-			- Option 1: by preprocessor
-				- Figure out how to tell platform
-				- When #iffdef that platform, then show before RenderContext created
-			= Option 2: context is bound early to a temporary canvas that is shown, and after initialization it is 
+			+ Ccontext is bound early to a temporary canvas that is shown, and after initialization it is 
 			  bound to the actual game canvas
-				- Cleanup:
-					- Make Splash's canvas inconspicuous
+				+ See if need to SetCurrent again
+				+ See if new DC needs also to be visible
+					+ SplashDialog needs to become member; OnPaint checks for it and if so, 1) transfers, and 2) destroy
+					  mSplashDialog
+				+ Test:
+					+ Start w/elec panel
+					+ Force Paint - minimize+maximize, move, close dialog, etc.
+				+ Cleanup:
+					+ Make Splash's canvas inconspicuous
 
 		- MacOS zero timeout issue:
 			- Calc millis for 1000/20 frames/sec and sleep by that
 				- Verify no FPS changes afterwards
-
-		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
 		- Parallelize OpenGL:
 			+ Start:
@@ -341,6 +342,7 @@ Render:
 		- Frontier (*)
 
 
+		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;

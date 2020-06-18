@@ -8,7 +8,6 @@
 #include "CheckForUpdatesDialog.h"
 #include "NewVersionDisplayDialog.h"
 #include "ShipDescriptionDialog.h"
-#include "SplashScreenDialog.h"
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
@@ -159,6 +158,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         mMainPanel,
         ID_MAIN_CANVAS);
 
+    mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftUp, 0, this);
@@ -655,7 +655,6 @@ void MainFrame::OnSecretTypingLoadFallbackShip()
     mGameController->ResetAndLoadFallbackShip(*mResourceLocator);
 }
 
-
 //
 // App event handlers
 //
@@ -928,31 +927,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Close splash screen
-    //
-
-    // Move OpenGL context to *our* canvas first
-    mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
-
-#ifndef _DEBUG
-
-    // Make sure the splash screen shows for at least half a sec, or else the
-    // last message is not visible
-    auto start = std::chrono::steady_clock::now();
-    auto end = std::chrono::steady_clock::now();
-    while ((end - start) < std::chrono::milliseconds(500))
-    {
-        this->mMainApp->Yield();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        end = std::chrono::steady_clock::now();
-    }
-
-#endif
-
-    splash->Close();
-
-
-    //
     // Finalize frame
     //
 
@@ -965,11 +939,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     auto const postInitializeEndTimestamp = std::chrono::steady_clock::now();
     auto const elapsed = std::chrono::duration_cast<std::chrono::duration<float>>(postInitializeEndTimestamp - postInitializeStartTimestamp);
     LogMessage("Post-Initialize took ", elapsed.count(), "s");
-
-
-    //
-    // Start timers
-    //
 
 
     //
@@ -990,6 +959,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     Connect(ID_LOW_FREQUENCY_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnLowFrequencyTimerTrigger);
 
     StartLowFrequencyTimer();
+
+
+    //
+    // Signal the OnPaint event that it may transfer the canvas now
+    //
+
+    mSplashScreenDialog = std::move(splash);
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
@@ -1192,6 +1168,29 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 //
 // Main canvas event handlers
 //
+
+void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
+{
+    if (!!mSplashScreenDialog)
+    {
+        //
+        // Now that we (and our glCanvas) are visible, we may transfer
+        // the OpenGL context to the canvas and close the splash screen
+        //
+
+        // Move OpenGL context to *our* canvas
+        assert(!!mMainGLCanvas);
+        assert(!!mMainGLCanvasContext);
+        mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+
+        // Close splash screen
+        mSplashScreenDialog->Close();
+        mSplashScreenDialog->Destroy();
+        mSplashScreenDialog.reset();
+    }
+
+    event.Skip();
+}
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {

@@ -25,8 +25,8 @@
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
 
-#include "GLCanvas.h"   // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
-                        // so that wxGLCanvas ends up *not* including the system's OpenGL header
+#include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
+                                // so that wxGLCanvas ends up *not* including the system's OpenGL header
 
 #include <wx/frame.h>
 #include <wx/menu.h>
@@ -104,11 +104,11 @@ private:
     std::unique_ptr<EventTickerPanel> mEventTickerPanel;
     std::unique_ptr<SwitchboardPanel> mElectricalPanel;
 
-
     //
     // Dialogs
     //
 
+    std::unique_ptr<SplashScreenDialog> mSplashScreenDialog;
     std::unique_ptr<AboutDialog> mAboutDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
@@ -142,14 +142,15 @@ private:
     void OnIdle(wxIdleEvent & event);
 
     // Main GL canvas
-    void OnMainGLCanvasResize(wxSizeEvent& event);
-    void OnMainGLCanvasLeftDown(wxMouseEvent& event);
-    void OnMainGLCanvasLeftUp(wxMouseEvent& event);
-    void OnMainGLCanvasRightDown(wxMouseEvent& event);
-    void OnMainGLCanvasRightUp(wxMouseEvent& event);
-    void OnMainGLCanvasMouseMove(wxMouseEvent& event);
-    void OnMainGLCanvasMouseWheel(wxMouseEvent& event);
-    void OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent& event);
+    void OnMainGLCanvasPaint(wxPaintEvent & event);
+    void OnMainGLCanvasResize(wxSizeEvent & event);
+    void OnMainGLCanvasLeftDown(wxMouseEvent & event);
+    void OnMainGLCanvasLeftUp(wxMouseEvent & event);
+    void OnMainGLCanvasRightDown(wxMouseEvent & event);
+    void OnMainGLCanvasRightUp(wxMouseEvent & event);
+    void OnMainGLCanvasMouseMove(wxMouseEvent & event);
+    void OnMainGLCanvasMouseWheel(wxMouseEvent & event);
+    void OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
 
     // Menu
     void OnZoomInMenuItemSelected(wxCommandEvent & event);

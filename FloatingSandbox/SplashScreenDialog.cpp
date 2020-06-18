@@ -27,63 +27,75 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
     wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    //
-    // Create OpenGL canvas
-    //
-
-    mGLCanvas = new GLCanvas(this, wxID_ANY);
-    mainSizer->Add(mGLCanvas);
-
 
     //
     // Create Image
     //
 
-    wxBitmap* bmp = new wxBitmap(resourceLocator.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+    wxBitmap * bmp;
 
-    wxStaticBitmap * stBmp = new wxStaticBitmap(
-        this,
-        wxID_ANY,
-        *bmp);
+    {
+        bmp = new wxBitmap(resourceLocator.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
 
-    mainSizer->Add(stBmp, 0, wxALIGN_CENTER);
+        wxStaticBitmap * stBmp = new wxStaticBitmap(
+            this,
+            wxID_ANY,
+            *bmp);
 
-    mainSizer->AddSpacer(5);
+        mainSizer->Add(stBmp, 0, wxALIGN_CENTER);
+    }
+
+    mainSizer->AddSpacer(4);
+
+
+    //
+    // Create OpenGL canvas
+    //
+
+    {
+        mGLCanvas = new GLCanvas(this, wxID_ANY);
+
+        mainSizer->Add(mGLCanvas);
+    }
+
 
 
     //
     // Create Progress Bar
     //
 
-    mGauge = new wxGauge(
-        this,
-        wxID_ANY,
-        101,
-        wxDefaultPosition,
-        wxSize(bmp->GetWidth() - 20, 30),
-        wxGA_HORIZONTAL);
+    {
+        mGauge = new wxGauge(
+            this,
+            wxID_ANY,
+            101,
+            wxDefaultPosition,
+            wxSize(bmp->GetWidth() - 20, 30),
+            wxGA_HORIZONTAL);
 
-    mainSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
+        mainSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
+    }
 
+    mainSizer->AddSpacer(2);
 
 	//
 	// Create Text control
 	//
 
-    mProgressText = new wxStaticText(
-        this,
-        wxID_ANY,
-        wxEmptyString,
-        wxDefaultPosition,
-        wxSize(400, 20),
-        wxALIGN_CENTER | wxBORDER_NONE);
+    {
+        mProgressText = new wxStaticText(
+            this,
+            wxID_ANY,
+            wxEmptyString,
+            wxDefaultPosition,
+            wxSize(400, 20),
+            wxALIGN_CENTER | wxBORDER_NONE);
 
-	wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    mProgressText->SetFont(font);
+        wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+        mProgressText->SetFont(font);
 
-    mainSizer->AddSpacer(2);
-    mainSizer->Add(mProgressText, 0, wxALIGN_CENTER);
-
+        mainSizer->Add(mProgressText, 0, wxALIGN_CENTER);
+    }
 
     //
     // Finalize dialog
