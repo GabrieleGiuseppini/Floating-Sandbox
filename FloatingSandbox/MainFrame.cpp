@@ -532,7 +532,7 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mPostInitializeTimer = std::make_unique<wxTimer>(this, ID_POSTIINITIALIZE_TIMER);
     Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger);
-    mPostInitializeTimer->Start(0, true);
+    mPostInitializeTimer->Start(1, true);
 }
 
 MainFrame::~MainFrame()
@@ -1934,8 +1934,8 @@ void MainFrame::PostGameStepTimer()
     assert(!!mGameTimer);
 
     // On Windows the timer resolution is 15.something ms,
-    // so we use a delay of zero to shoot for a maximum of ~64 frames/sec
-    mGameTimer->Start(0, true);
+    // so we use a slightly smaller delay to shoot for a maximum of ~64 frames/sec
+    mGameTimer->Start(15, true);
 }
 
 void MainFrame::StartLowFrequencyTimer()

@@ -288,10 +288,9 @@ Render:
 					+ Force Paint - minimize+maximize, move, close dialog, etc.
 				+ Cleanup:
 					+ Make Splash's canvas inconspicuous
-
-		- MacOS zero timeout issue:
-			- Calc millis for 1000/20 frames/sec and sleep by that
-				- Verify no FPS changes afterwards
+		+ MacOS zero timeout issue:
+			+ Calc millis for 1000/20 frames/sec and sleep by that
+				+ Verify no FPS changes afterwards
 
 		- Parallelize OpenGL:
 			+ Start:
