@@ -45,7 +45,8 @@ void GameOpenGL::InitOpenGL()
             std::string("We are sorry, but this game requires at least OpenGL ")
             + std::to_string(MinOpenGLVersionMaj) + "." + std::to_string(MinOpenGLVersionMin)
             + ", while the version currently supported by your graphics driver is "
-            + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor));
+            + std::to_string(GLVersion.major) + "." + std::to_string(GLVersion.minor) + "."
+            + " Check whether a more recent driver is available for your system.");
     }
 
 

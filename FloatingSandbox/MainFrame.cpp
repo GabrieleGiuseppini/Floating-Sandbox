@@ -689,8 +689,11 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
     catch (std::exception const & e)
     {
-        // TODO: if stays here - in PostInitialize - convert to gfx error
-        throw std::runtime_error("Error during OpenGL initialization: " + std::string(e.what()));
+        splash.reset();
+
+        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
+
+        return;
     }
 
 
