@@ -335,8 +335,30 @@ Render:
 				- Getters:
 					- Plain from main thread, no locks
 			- Impl:
-				- First: reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
+				- Branch
+				- 1: Reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
 				  so that all updates come first, then all uploads come next, and finally all rendering happens
+					- Split again World and downstream as Update() and Render()
+						- GameController retains current API: RunGameIteration()
+						- GameController::RunGameIteration(): do same state machine invoking (optionally) Update() and (always) Render() 
+					- Add time measurements => Extended Status Text
+						- Render stats: split into upload_time (including driving loops) and render_time
+				- 2: Take masurements
+				- 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
+					- Intake ThreadTask (including unit tests)
+					- Temporarily maim World::Render() to do only Stars and Clouds
+					- Pass OpenGL context management lambdas to RenderContext::cctor (& upstream)
+						- Copy from SpringLab
+					- Implement RenderContext
+						- Copy from SpringLab
+						- Minimal getters and setters (zoom, camera)
+					- Take measurements
+				- 4: Continue RenderContext Implementation (2)
+					- World::Render(): re-enable Water and Land
+					- Implement RenderContext
+						- Other getters and setters
+					- Take measurements
+				- 5: Complete RenderContext Implementation (3)
 
 		- Frontier (*)
 

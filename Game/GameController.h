@@ -130,7 +130,7 @@ public:
     void RunGameIteration() override;
     void LowFrequencyUpdate() override;
 
-    void PulseUpdate() override
+    void PulseUpdateAtNextGameIteration() override
     {
         mIsPulseUpdateSet = true;
     }

@@ -1463,7 +1463,7 @@ void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
 
-    mGameController->PulseUpdate();
+    mGameController->PulseUpdateAtNextGameIteration();
 }
 
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
