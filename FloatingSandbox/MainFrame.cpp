@@ -237,13 +237,13 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause\tSpace"), _("Pause the game"), wxITEM_CHECK);
     controlsMenu->Append(mPauseMenuItem);
-    mPauseMenuItem->Check(false);
     Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
+    mPauseMenuItem->Check(false);
 
     mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
-    mStepMenuItem->Enable(false);
     controlsMenu->Append(mStepMenuItem);
     Connect(ID_STEP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnStepMenuItemSelected);
+    mStepMenuItem->Enable(false);
 
     controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
@@ -400,13 +400,13 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker\tCtrl+E"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowEventTickerMenuItem);
-    mShowEventTickerMenuItem->Check(false);
     Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
+    mShowEventTickerMenuItem->Check(false);
 
     mShowProbePanelMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_PROBE_PANEL_MENUITEM, _("Show Probe Panel\tCtrl+P"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowProbePanelMenuItem);
-    mShowProbePanelMenuItem->Check(false);
     Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
+    mShowProbePanelMenuItem->Check(false);
 
     mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mShowStatusTextMenuItem);
@@ -432,8 +432,8 @@ MainFrame::MainFrame(wxApp * mainApp)
 
     mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
     optionsMenu->Append(mMuteMenuItem);
-    mMuteMenuItem->Check(false);
     Connect(ID_MUTE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMuteMenuItemSelected);
+    mMuteMenuItem->Check(false);
 
     mainMenuBar->Append(optionsMenu, _("Options"));
 
