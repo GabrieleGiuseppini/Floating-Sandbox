@@ -1208,7 +1208,7 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
             event.GetSize().GetY());
     }
 
-	event.Skip();
+    event.Skip();
 }
 
 void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)

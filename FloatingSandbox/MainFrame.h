@@ -45,7 +45,7 @@
 class MainFrame
     : public wxFrame
     , public ILifecycleGameEventHandler
-	, public IAtmosphereGameEventHandler
+    , public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
 private:
@@ -91,7 +91,7 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
-	wxMenuItem * mTriggerStormMenuItem;
+    wxMenuItem * mTriggerStormMenuItem;
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -190,7 +190,7 @@ private:
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
-	void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
+    void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
@@ -214,7 +214,7 @@ private:
     void RegisterEventHandler(IGameController & gameController)
     {
         gameController.RegisterLifecycleEventHandler(this);
-		gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -239,15 +239,15 @@ private:
         UpdateFrameTitle();
     }
 
-	virtual void OnStormBegin() override
-	{
-		mTriggerStormMenuItem->Enable(false);
-	}
+    virtual void OnStormBegin() override
+    {
+        mTriggerStormMenuItem->Enable(false);
+    }
 
-	virtual void OnStormEnd() override
-	{
-		mTriggerStormMenuItem->Enable(true);
-	}
+    virtual void OnStormEnd() override
+    {
+        mTriggerStormMenuItem->Enable(true);
+    }
 
     virtual void OnBombPlaced(
         BombId /*bombId*/,
@@ -314,7 +314,7 @@ private:
 
     void SetPaused(bool isPaused);
 
-	void ReconcileWithUIPreferences();
+    void ReconcileWithUIPreferences();
 
 private:
 
