@@ -304,7 +304,8 @@ Render:
 				- Update & Render Game Loop:					
 					- Do all physics (World & Ship), without
 					  touching RenderContext
-					- Wait until everything rendered			- (nop if not rendering)
+					- Wait until everything rendered			
+						- RenderEnd()					- (nop if not rendering)
 												- render completes here
 												- SwapBuffers
 					- Upload all buffers (World & Ship)
@@ -347,7 +348,8 @@ Render:
 				- 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
 					- Intake ThreadTask (including unit tests)
 					- Temporarily maim World::Render() to do only Stars and Clouds
-					- Pass OpenGL context management lambdas to RenderContext::cctor (& upstream)
+					- MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
+						- "RebindContext" RenderContext & IGameController methods & param names, taking lambda
 						- Copy from SpringLab
 					- Implement RenderContext
 						- Copy from SpringLab
