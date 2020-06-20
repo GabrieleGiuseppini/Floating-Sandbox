@@ -292,7 +292,7 @@ Render:
 			+ Calc millis for 1000/20 frames/sec and sleep by that
 				+ Verify no FPS changes afterwards
 
-		- Parallelize OpenGL:
+		= Parallelize OpenGL:
 			+ Start:
 				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
 				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5)
@@ -346,8 +346,8 @@ Render:
 						- Render stats: split into upload_time (including driving loops) and render_time
 				- 2: Take masurements
 				- 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
-					= Intake ThreadTask
-						- Make unit tests
+					+ Intake ThreadTask
+						+ Make unit tests
 					- Temporarily maim World::Render() to do only Stars and Clouds
 					- MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
 						- "RebindContext" RenderContext & IGameController methods & param names, taking lambda

@@ -35,7 +35,7 @@ public:
     // we assume there won't be any Wait() calls after TaskThread has been destroyed,
     // then there's no need for instances of this class to outlive the TaskThread
     // instance that generated them.
-    struct TaskCompletionIndicator
+    struct _TaskCompletionIndicatorImpl
     {
     public:
 
@@ -65,7 +65,7 @@ public:
 
     private:
 
-        TaskCompletionIndicator(
+        _TaskCompletionIndicatorImpl(
             std::mutex & threadLock,
             std::condition_variable & threadSignal)
             : mIsTaskCompleted(false)
@@ -95,6 +95,8 @@ public:
         friend class TaskThread;
     };
 
+    using TaskCompletionIndicator = std::shared_ptr<_TaskCompletionIndicatorImpl>;
+
 public:
 
     TaskThread();
@@ -110,12 +112,12 @@ public:
      * Invoked on the main thread to queue a task that will run
      * on the task thread.
      */
-    std::shared_ptr<TaskCompletionIndicator> QueueTask(Task && task)
+    TaskCompletionIndicator QueueTask(Task && task)
     {
         std::unique_lock<std::mutex> lock(mThreadLock);
 
-        std::shared_ptr<TaskCompletionIndicator> taskCompletionIndicator = std::shared_ptr<TaskCompletionIndicator>(
-            new TaskCompletionIndicator(
+        auto taskCompletionIndicator = std::shared_ptr<_TaskCompletionIndicatorImpl>(
+            new _TaskCompletionIndicatorImpl(
                 mThreadLock,
                 mThreadSignal));
 
@@ -142,7 +144,7 @@ public:
      * Invoked on the main thread to place a synchronization point in the queue,
      * which may then be waited for to indicate that the queue has reached that point.
      */
-    std::shared_ptr<TaskCompletionIndicator> QueueSynhronizationPoint()
+    TaskCompletionIndicator QueueSynhronizationPoint()
     {
         return QueueTask([]() {});
     }
@@ -156,7 +158,7 @@ private:
     struct QueuedTask
     {
         Task TaskToRun;
-        std::shared_ptr<TaskCompletionIndicator> CompletionIndicator;
+        TaskCompletionIndicator CompletionIndicator;
 
         QueuedTask()
             : TaskToRun()
@@ -166,7 +168,7 @@ private:
 
         QueuedTask(
             Task && taskToRun,
-            std::shared_ptr<TaskCompletionIndicator> completionIndicator)
+            TaskCompletionIndicator completionIndicator)
             : TaskToRun(std::move(taskToRun))
             , CompletionIndicator(std::move(completionIndicator))
         {}
