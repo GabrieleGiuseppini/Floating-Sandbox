@@ -336,7 +336,7 @@ Render:
 				- Getters:
 					- Plain from main thread, no locks
 			- Impl:
-				- Branch
+				+ Branch
 				- 1: Reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
 				  so that all updates come first, then all uploads come next, and finally all rendering happens
 					- Split again World and downstream as Update() and Render()
@@ -346,7 +346,8 @@ Render:
 						- Render stats: split into upload_time (including driving loops) and render_time
 				- 2: Take masurements
 				- 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
-					- Intake ThreadTask (including unit tests)
+					= Intake ThreadTask
+						- Make unit tests
 					- Temporarily maim World::Render() to do only Stars and Clouds
 					- MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
 						- "RebindContext" RenderContext & IGameController methods & param names, taking lambda

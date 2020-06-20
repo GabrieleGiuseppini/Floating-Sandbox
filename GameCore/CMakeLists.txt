@@ -50,6 +50,8 @@ set  (SOURCES
 	Settings.cpp
 	Settings.h
 	SysSpecifics.h
+	TaskThread.cpp
+	TaskThread.h
 	TaskThreadPool.cpp
 	TaskThreadPool.h
 	TemporallyCoherentPriorityQueue.h
