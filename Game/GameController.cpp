@@ -90,8 +90,8 @@ GameController::GameController(
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Stats
-    , mRenderStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
-    , mRenderStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
+    , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
+    , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
     , mOriginTimestampGame(GameWallClock::GetInstance().Now())
     , mTotalPerfStats()
     , mLastPublishedTotalPerfStats()
@@ -395,29 +395,17 @@ RgbImageData GameController::TakeScreenshot()
 
 void GameController::RunGameIteration()
 {
-    float const now = GameWallClock::GetInstance().NowAsFloat();
-
     //
-    // Decide whether we are going to run a simulation update
+    // Initialize stats, if needed
     //
 
-    bool const doUpdate = ((!mIsPaused || mIsPulseUpdateSet) && !mIsMoveToolEngaged);
-
-    // Clear pulse
-    mIsPulseUpdateSet = false;
-
-
-    //
-    // Initialize render stats, if needed
-    //
-
-    if (mRenderStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
+    if (mStatsOriginTimestampReal == std::chrono::steady_clock::time_point::min())
     {
-        assert(mRenderStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
+        assert(mStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
 
         std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
-        mRenderStatsOriginTimestampReal = nowReal;
-        mRenderStatsLastTimestampReal = nowReal;
+        mStatsOriginTimestampReal = nowReal;
+        mStatsLastTimestampReal = nowReal;
 
         // In order to start from zero at first render, take global origin here
         mOriginTimestampGame = nowReal;
@@ -425,6 +413,156 @@ void GameController::RunGameIteration()
         // Render initial status text
         PublishStats(nowReal);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Update
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Decide whether we are going to run a simulation update
+    bool const doUpdate = ((!mIsPaused || mIsPulseUpdateSet) && !mIsMoveToolEngaged);
+
+    // Clear pulse
+    mIsPulseUpdateSet = false;
+
+    if (doUpdate)
+    {
+        auto const startTime = GameChronometer::now();
+
+        float const nowGame = GameWallClock::GetInstance().NowAsFloat();
+
+        // Tell RenderContext we're starting an upload
+        mRenderContext->UpdateStart();
+
+        //
+        // Update parameter smoothers
+        //
+
+        std::for_each(
+            mFloatParameterSmoothers.begin(),
+            mFloatParameterSmoothers.end(),
+            [nowGame](auto & ps)
+            {
+                ps.Update(nowGame);
+            });
+
+        //
+        // Update world
+        //
+
+        assert(!!mWorld);
+        mWorld->Update(
+            mGameParameters,
+            *mRenderContext,
+            mTotalPerfStats);
+
+        // Flush events
+        mGameEventDispatcher->Flush();
+
+        //
+        // Update misc
+        //
+
+        // Update state machines
+        UpdateStateMachines(mWorld->GetCurrentSimulationTime());
+
+        // Update text layer
+        assert(!!mTextLayer);
+        mTextLayer->Update(nowGame);
+
+        // Tell RenderContext we've finished an upload
+        mRenderContext->UpdateEnd();
+
+        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - startTime;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Render Upload
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Tell RenderContext we're starting a rendering cycle
+    mRenderContext->RenderStart();
+
+    {
+        auto const startTime = GameChronometer::now();
+
+        mRenderContext->RenderUploadStart();
+
+        //
+        // Upload world
+        //
+
+        assert(!!mWorld);
+        mWorld->RenderUpload(
+            mGameParameters,
+            *mRenderContext,
+            mTotalPerfStats);
+
+        //
+        // Upload HeatBlaster flame, if any
+        //
+
+        if (!!mHeatBlasterFlameToRender)
+        {
+            mRenderContext->UploadHeatBlasterFlame(
+                std::get<0>(*mHeatBlasterFlameToRender),
+                std::get<1>(*mHeatBlasterFlameToRender),
+                std::get<2>(*mHeatBlasterFlameToRender));
+
+            mHeatBlasterFlameToRender.reset();
+        }
+
+        //
+        // Upload fire extinguisher spray, if any
+        //
+
+        if (!!mFireExtinguisherSprayToRender)
+        {
+            mRenderContext->UploadFireExtinguisherSpray(
+                std::get<0>(*mFireExtinguisherSprayToRender),
+                std::get<1>(*mFireExtinguisherSprayToRender));
+
+            mFireExtinguisherSprayToRender.reset();
+        }
+
+        mRenderContext->RenderUploadEnd();
+
+        mTotalPerfStats.TotalRenderUploadDuration += GameChronometer::now() - startTime;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Render Draw
+    ////////////////////////////////////////////////////////////////////////////
+
+    {
+        auto const startTime = GameChronometer::now();
+
+        // Smooth render controls
+        // TODO: see if we need to do this for upload or only for render
+        float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
+        mZoomParameterSmoother->Update(nowReal);
+        mCameraWorldPositionParameterSmoother->Update(nowReal);
+
+        // Render
+        mRenderContext->RenderDraw();
+
+        // Flip the back buffer onto the screen
+        mSwapRenderBuffersFunction();
+
+        mTotalPerfStats.TotalRenderDrawDuration += GameChronometer::now() - startTime;
+    }
+
+    // Tell RenderContext we've finished a rendering cycle
+    mRenderContext->RenderEnd();
+
+    //
+    // Update stats
+    //
+
+    ++mTotalFrameCount;
+
+
+
+    /* TODOOLD
 
     //
     // Initialize rendering
@@ -546,18 +684,18 @@ void GameController::RunGameIteration()
     //
 
     ++mTotalFrameCount;
+    */
 }
 
 void GameController::LowFrequencyUpdate()
 {
-    std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point const nowReal = std::chrono::steady_clock::now();
 
     if (mSkippedFirstStatPublishes >= 1)
     {
         //
         // Publish stats
         //
-
 
         PublishStats(nowReal);
     }
@@ -567,7 +705,7 @@ void GameController::LowFrequencyUpdate()
         // Skip the first few publish as rates are too polluted
         //
 
-        mRenderStatsOriginTimestampReal = nowReal;
+        mStatsOriginTimestampReal = nowReal;
 
         mTotalPerfStats = PerfStats();
         mTotalFrameCount = 0u;
@@ -575,7 +713,7 @@ void GameController::LowFrequencyUpdate()
         ++mSkippedFirstStatPublishes;
     }
 
-    mRenderStatsLastTimestampReal = nowReal;
+    mStatsLastTimestampReal = nowReal;
 
     mLastPublishedTotalPerfStats = mTotalPerfStats;
     mLastPublishedTotalFrameCount = mTotalFrameCount;
@@ -1305,8 +1443,8 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     // Calculate fps
 
-    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsOriginTimestampReal);
-    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mRenderStatsLastTimestampReal);
+    auto totalElapsedReal = std::chrono::duration<float>(nowReal - mStatsOriginTimestampReal);
+    auto lastElapsedReal = std::chrono::duration<float>(nowReal - mStatsLastTimestampReal);
 
     float const totalFps =
         totalElapsedReal.count() != 0.0f

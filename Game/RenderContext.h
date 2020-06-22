@@ -544,15 +544,13 @@ public:
 
 public:
 
-    //////////////////////////////////////////////////////////////////
-    // Rendering
-    //////////////////////////////////////////////////////////////////
+    void UpdateStart();
+
+    void UpdateEnd();
 
     void RenderStart();
 
-    //
-    // Stars
-    //
+    void RenderUploadStart();
 
     void UploadStarsStart(size_t starCount);
 
@@ -569,15 +567,6 @@ public:
     }
 
     void UploadStarsEnd();
-
-    void RenderStars();
-
-    //
-    // Clouds
-    //
-
-    void RenderCloudsStart();
-
 
     inline void UploadStormAmbientDarkening(float darkening)
     {
@@ -596,7 +585,6 @@ public:
             OnRainDensityUpdated();
         }
     }
-
 
     void UploadLightningsStart(size_t lightningCount);
 
@@ -646,7 +634,6 @@ public:
     }
 
     void UploadLightningsEnd();
-
 
     void UploadCloudsStart(size_t cloudCount);
 
@@ -740,14 +727,6 @@ public:
 
     void UploadCloudsEnd();
 
-
-    void RenderCloudsEnd();
-
-
-    //
-    // Land
-    //
-
     void UploadLandStart(size_t slices);
 
     inline void UploadLand(
@@ -771,16 +750,9 @@ public:
         float yBottom = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
         landSegment.y2 = yBottom;
         landSegment.depth2 = -(yBottom - yLand); // Height of land
-   }
+    }
 
     void UploadLandEnd();
-
-    void RenderLand();
-
-
-    //
-    // Ocean
-    //
 
     void UploadOceanStart(size_t slices);
 
@@ -841,21 +813,6 @@ public:
 
     void UploadOceanEnd();
 
-    void RenderOceanOpaquely()
-    {
-        RenderOcean(true);
-    }
-
-    void RenderOceanTransparently()
-    {
-        RenderOcean(false);
-    }
-
-
-    //
-    // Crosses of light
-    //
-
     void UploadCrossOfLight(
         vec2f const & centerPosition,
         float progress)
@@ -894,10 +851,6 @@ public:
             centerPosition,
             progress);
     }
-
-    //
-    // HeatBlaster flame
-    //
 
     void UploadHeatBlasterFlame(
         vec2f const & centerPosition,
@@ -956,10 +909,6 @@ public:
         }
     }
 
-    //
-    // Fire extinguisher spray
-    //
-
     void UploadFireExtinguisherSpray(
         vec2f const & centerPosition,
         float radius)
@@ -1003,25 +952,18 @@ public:
         mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
     }
 
-    /////////////////////////////////////////////////////////////////////////
-    // Ships
-    /////////////////////////////////////////////////////////////////////////
+    void UploadShipsStart()
+    {
+    }
 
-    void RenderShipsStart();
-
-
-    void RenderShipStart(
+    void UploadShipStart(
         ShipId shipId,
         PlaneId maxMaxPlaneId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderStart(maxMaxPlaneId);
+        mShips[shipId]->UploadStart(maxMaxPlaneId);
     }
-
-    //
-    // Ship Points
-    //
 
     void UploadShipPointImmutableAttributes(
         ShipId shipId,
@@ -1118,10 +1060,6 @@ public:
             count);
     }
 
-    //
-    // Ship elements
-    //
-
     inline void UploadShipElementsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1204,10 +1142,6 @@ public:
         mShips[shipId]->UploadElementsEnd(doFinalizeEphemeralPoints);
     }
 
-    //
-    // Ship stressed springs
-    //
-
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1233,10 +1167,6 @@ public:
 
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
-
-    //
-    // Flames
-    //
 
     inline void UploadShipFlamesStart(
         ShipId shipId,
@@ -1275,10 +1205,6 @@ public:
         mShips[shipId]->UploadFlamesEnd();
     }
 
-    //
-    // Explosions
-    //
-
     inline void UploadShipExplosion(
         ShipId shipId,
         PlaneId planeId,
@@ -1298,10 +1224,6 @@ public:
             personalitySeed,
             progress);
     }
-
-    //
-    // Sparkles
-    //
 
     inline void UploadShipSparklesStart(ShipId shipId)
     {
@@ -1332,10 +1254,6 @@ public:
 
         mShips[shipId]->UploadSparklesEnd();
     }
-
-    //
-    // Air bubbles and generic textures
-    //
 
     inline void UploadShipAirBubble(
         ShipId shipId,
@@ -1429,10 +1347,6 @@ public:
             alpha);
     }
 
-    //
-    // Ephemeral points
-    //
-
     inline void UploadShipElementEphemeralPointsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1457,10 +1371,6 @@ public:
         mShips[shipId]->UploadElementEphemeralPointsEnd();
     }
 
-    //
-    // Highlights
-    //
-
     inline void UploadShipHighlight(
         ShipId shipId,
         HighlightMode highlightMode,
@@ -1480,10 +1390,6 @@ public:
             color,
             progress);
     }
-
-    //
-    // Vectors
-    //
 
     void UploadShipVectors(
         ShipId shipId,
@@ -1505,21 +1411,19 @@ public:
             color);
     }
 
-
-
-    void RenderShipEnd(ShipId shipId)
+    void UploadShipEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderEnd();
+        mShips[shipId]->UploadEnd();
     }
 
-    void RenderShipsEnd();
+    void UploadShipsEnd()
+    {}
 
+    void RenderUploadEnd();
 
-    //
-    // Final
-    //
+    void RenderDraw();
 
     void RenderEnd();
 
@@ -1612,8 +1516,10 @@ private:
 
 private:
 
+    void RenderStars();
+    void RenderClouds();
     void RenderOcean(bool opaquely);
-
+    void RenderOceanFloor();
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();

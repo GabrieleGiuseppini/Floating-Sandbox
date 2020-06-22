@@ -947,19 +947,23 @@ RgbImageData RenderContext::TakeScreenshot()
 
 //////////////////////////////////////////////////////////////////////////////////
 
+void RenderContext::UpdateStart()
+{
+}
+
+void RenderContext::UpdateEnd()
+{
+    // NOP
+}
+
 void RenderContext::RenderStart()
 {
-    // Set polygon mode
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // Reset stats
+    mRenderStatistics.Reset();
+}
 
-    // Clear canvas - and depth buffer
-    vec3f const clearColor = mFlatSkyColor.toVec3f() * mEffectiveAmbientLightIntensity;
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+void RenderContext::RenderUploadStart()
+{
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
@@ -968,9 +972,6 @@ void RenderContext::RenderStart()
 
     // Reset fire extinguisher spray, it's uploaded as needed
     mFireExtinguisherSprayShaderToRender.reset();
-
-    // Reset stats
-    mRenderStatistics.Reset();
 }
 
 void RenderContext::UploadStarsStart(size_t starCount)
@@ -1006,25 +1007,6 @@ void RenderContext::UploadStarsEnd()
     glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void RenderContext::RenderStars()
-{
-    if (!mStarVertexBuffer.empty())
-    {
-        glBindVertexArray(*mStarVAO);
-
-        mShaderManager->ActivateProgram<ProgramType::Stars>();
-
-        glPointSize(0.5f);
-
-        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
-        CheckOpenGLError();
-    }
-}
-
-void RenderContext::RenderCloudsStart()
-{
 }
 
 void RenderContext::UploadLightningsStart(size_t lightningCount)
@@ -1115,7 +1097,182 @@ void RenderContext::UploadCloudsEnd()
     }
 }
 
-void RenderContext::RenderCloudsEnd()
+void RenderContext::UploadLandStart(size_t slices)
+{
+    //
+    // Prepare land segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+
+    if (slices + 1 != mLandSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mLandSegmentBufferAllocatedSize = slices + 1;
+    }
+
+    mLandSegmentBuffer.map(slices + 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::UploadLandEnd()
+{
+    //
+    // Upload land segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+
+    mLandSegmentBuffer.unmap();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::UploadOceanStart(size_t slices)
+{
+    //
+    // Prepare ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    if (slices + 1 != mOceanSegmentBufferAllocatedSize)
+    {
+        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mOceanSegmentBufferAllocatedSize = slices + 1;
+    }
+
+    mOceanSegmentBuffer.map(slices + 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::UploadOceanEnd()
+{
+    //
+    // Upload ocean segment buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+
+    mOceanSegmentBuffer.unmap();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RenderContext::RenderUploadEnd()
+{
+}
+
+void RenderContext::RenderDraw()
+{
+    //
+    // Initialize
+    //
+
+    // Set polygon mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // Clear canvas - and depth buffer
+    vec3f const clearColor = mFlatSkyColor.toVec3f() * mEffectiveAmbientLightIntensity;
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Debug mode
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    //
+    // World
+    //
+
+    RenderStars();
+
+    RenderClouds();
+
+    // Render ocean opaquely, over sky
+    RenderOcean(true);
+
+    glEnable(GL_DEPTH_TEST); // Required by ships
+
+    for (auto const & ship : mShips)
+    {
+        ship->Draw();
+    }
+
+    glDisable(GL_DEPTH_TEST);
+
+    if (!mShowShipThroughOcean)
+    {
+        // Render ocean transparently, over ship
+        RenderOcean(false);
+    }
+
+    //
+    // Misc
+    //
+
+    RenderOceanFloor();
+
+    if (!mCrossOfLightVertexBuffer.empty())
+    {
+        RenderCrossesOfLight();
+    }
+
+    if (!!mHeatBlasterFlameShaderToRender)
+    {
+        RenderHeatBlasterFlame();
+    }
+
+    if (!!mFireExtinguisherSprayShaderToRender)
+    {
+        RenderFireExtinguisherSpray();
+    }
+
+    if (mForegroundLightningVertexCount > 0)
+    {
+        RenderForegroundLightnings();
+    }
+
+    if (mCurrentRainDensity != 0.0f)
+    {
+        RenderRain();
+    }
+
+    RenderWorldBorder();
+
+    mTextRenderContext->Render();
+}
+
+void RenderContext::RenderEnd()
+{
+    // Flush all pending commands (but not the GPU buffer)
+    GameOpenGL::Flush();
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void RenderContext::RenderStars()
+{
+    if (!mStarVertexBuffer.empty())
+    {
+        glBindVertexArray(*mStarVAO);
+
+        mShaderManager->ActivateProgram<ProgramType::Stars>();
+
+        glPointSize(0.5f);
+
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
+        CheckOpenGLError();
+    }
+}
+
+void RenderContext::RenderClouds()
 {
     ////////////////////////////////////////////////////
     // Draw background clouds, iff there are background lightnings
@@ -1179,101 +1336,6 @@ void RenderContext::RenderCloudsEnd()
     glBindVertexArray(0);
 }
 
-void RenderContext::UploadLandStart(size_t slices)
-{
-    //
-    // Prepare land segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    if (slices + 1 != mLandSegmentBufferAllocatedSize)
-    {
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-
-        mLandSegmentBufferAllocatedSize = slices + 1;
-    }
-
-    mLandSegmentBuffer.map(slices + 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void RenderContext::UploadLandEnd()
-{
-    //
-    // Upload land segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    mLandSegmentBuffer.unmap();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void RenderContext::RenderLand()
-{
-    glBindVertexArray(*mLandVAO);
-
-    switch (mLandRenderMode)
-    {
-        case LandRenderMode::Flat:
-        {
-            mShaderManager->ActivateProgram<ProgramType::LandFlat>();
-            break;
-        }
-
-        case LandRenderMode::Texture:
-        {
-            mShaderManager->ActivateProgram<ProgramType::LandTexture>();
-            break;
-        }
-    }
-
-    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-        glLineWidth(0.1f);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
-
-    glBindVertexArray(0);
-}
-
-void RenderContext::UploadOceanStart(size_t slices)
-{
-    //
-    // Prepare ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    if (slices + 1 != mOceanSegmentBufferAllocatedSize)
-    {
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-
-        mOceanSegmentBufferAllocatedSize = slices + 1;
-    }
-
-    mOceanSegmentBuffer.map(slices + 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void RenderContext::UploadOceanEnd()
-{
-    //
-    // Upload ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    mOceanSegmentBuffer.unmap();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void RenderContext::RenderOcean(bool opaquely)
 {
     float const transparency = opaquely ? 0.0f : mOceanTransparency;
@@ -1318,61 +1380,32 @@ void RenderContext::RenderOcean(bool opaquely)
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderShipsStart()
+void RenderContext::RenderOceanFloor()
 {
-    // Enable depth test, required by ships
-    glEnable(GL_DEPTH_TEST);
+    glBindVertexArray(*mLandVAO);
+
+    switch (mLandRenderMode)
+    {
+    case LandRenderMode::Flat:
+    {
+        mShaderManager->ActivateProgram<ProgramType::LandFlat>();
+        break;
+    }
+
+    case LandRenderMode::Texture:
+    {
+        mShaderManager->ActivateProgram<ProgramType::LandTexture>();
+        break;
+    }
+    }
+
+    if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+        glLineWidth(0.1f);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
+
+    glBindVertexArray(0);
 }
-
-void RenderContext::RenderShipsEnd()
-{
-    // Disable depth test
-    glDisable(GL_DEPTH_TEST);
-}
-
-void RenderContext::RenderEnd()
-{
-    // Render crosses of light
-    if (!mCrossOfLightVertexBuffer.empty())
-    {
-        RenderCrossesOfLight();
-    }
-
-    // Render HeatBlaster flames
-    if (!!mHeatBlasterFlameShaderToRender)
-    {
-        RenderHeatBlasterFlame();
-    }
-
-    // Render fire extinguisher spray
-    if (!!mFireExtinguisherSprayShaderToRender)
-    {
-        RenderFireExtinguisherSpray();
-    }
-
-    // Render foreground lightnings
-    if (mForegroundLightningVertexCount > 0)
-    {
-        RenderForegroundLightnings();
-    }
-
-    // Render rain
-    if (mCurrentRainDensity != 0.0f)
-    {
-        RenderRain();
-    }
-
-    // Render world end
-    RenderWorldBorder();
-
-    // Render text
-    mTextRenderContext->Render();
-
-    // Flush all pending commands (but not the GPU buffer)
-    GameOpenGL::Flush();
-}
-
-////////////////////////////////////////////////////////////////////////////////////
 
 void RenderContext::RenderCrossesOfLight()
 {

@@ -301,7 +301,7 @@ Render:
 			- Spec:
 				- Rendering runs entirely on separate thread
 					- Context & SwapBuffers needs to made current in this thread
-				- Update & Render Game Loop:					
+				- [OBSOLETE] Update & Render Game Loop:						
 					- Do all physics (World & Ship), without
 					  touching RenderContext
 					- Wait until everything rendered			
@@ -335,16 +335,32 @@ Render:
 						- Unlock mSettingsMutex
 				- Getters:
 					- Plain from main thread, no locks
-			- Impl:
+			+ Impl:
 				+ Branch
-				- 1: Reorder calls at GameController::UpdateAndRender (and @ RenderContext/ShipRenderContext) 
-				  so that all updates come first, then all uploads come next, and finally all rendering happens
-					- Split again World and downstream as Update() and Render()
-						- GameController retains current API: RunGameIteration()
-						- GameController::RunGameIteration(): do same state machine invoking (optionally) Update() and (always) Render() 
-					- Add time measurements => Extended Status Text
-						- Render stats: split into upload_time (including driving loops) and render_time
-				- 2: Take masurements
+				+ 0: Take measurements: UPL=30 R=13
+				= 1: Split whole chain as Update(), RenderUpload(), and RenderDraw()
+					= GameController retains current API: RunGameIteration() // Do same state machine, invoking (optionally) Update() and (always) RenderUpload() 
+						- RenderContext::UpdateStart()
+							- Wait for RenderUploadEnd // CPU buffers are then free to be used
+						+--- World, etc. Update()
+						- RenderContext::UpdateEnd()
+							- Nop
+						- RenderContext::RenderStart()
+							- Cleanup an eventual pending RenderUploadEnd - may be left behind if this cycle did not
+							  do an Update
+						- RenderContext::RenderUploadStart()
+							- Wait for RenderDraw // GPU buffers are then free to be used
+						+--- World, etc. RenderUpload()
+						- RenderContext::RenderUploadEnd()
+							- Store TaskCompletionIndicator as RenderUploadEnd
+						- RenderContext::RenderDraw()							
+							------------------- Do all rendering, including SwapBuffers
+							- Store TaskCompletionIndicator as RenderDraw
+						- RenderContext::RenderEnd()
+							- Nop					
+					+ Add time measurements => Extended Status Text
+						+ Render stats: split into upload_time (including driving loops) and draw_time
+				+ 2: Take measurements UPL=22.3 UPD=0.34 DRW=10.45
 				- 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
 					+ Intake ThreadTask
 						+ Make unit tests
@@ -355,6 +371,7 @@ Render:
 					- Implement RenderContext
 						- Copy from SpringLab
 						- Minimal getters and setters (zoom, camera)
+						- All sync points from above
 					- Take measurements
 				- 4: Continue RenderContext Implementation (2)
 					- World::Render(): re-enable Water and Land
@@ -362,6 +379,13 @@ Render:
 						- Other getters and setters
 					- Take measurements
 				- 5: Complete RenderContext Implementation (3)
+
+				- Cleanup:
+					- GameController: see if we need to do render control smoothing before RenderUpload(),
+					  or if instead it's enough to do that before RenderDraw()
+					- TextLayer & TextContext: split update & render into update, upload, & render
+					- Remove PerfStats' obsolete members
+					- See to cleanup GameController::PerfStats state machine
 
 		- Frontier (*)
 

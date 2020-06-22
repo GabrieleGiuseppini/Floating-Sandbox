@@ -62,7 +62,7 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext const & renderContext);
 
-    void Render(
+    void RenderUpload(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext);
 

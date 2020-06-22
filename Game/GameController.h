@@ -781,8 +781,8 @@ private:
     // Stats
     //
 
-    std::chrono::steady_clock::time_point mRenderStatsOriginTimestampReal;
-    std::chrono::steady_clock::time_point mRenderStatsLastTimestampReal;
+    std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
+    std::chrono::steady_clock::time_point mStatsLastTimestampReal;
     GameWallClock::time_point mOriginTimestampGame;
     PerfStats mTotalPerfStats;
     PerfStats mLastPublishedTotalPerfStats;

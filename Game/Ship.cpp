@@ -491,7 +491,7 @@ void Ship::Update(
 #endif
 }
 
-void Ship::Render(
+void Ship::RenderUpload(
     GameParameters const & /*gameParameters*/,
     Render::RenderContext & renderContext)
 {
@@ -506,10 +506,10 @@ void Ship::Render(
 
 
     //
-    // Initialize render
+    // Initialize upload
     //
 
-    renderContext.RenderShipStart(
+    renderContext.UploadShipStart(
         mId,
         mMaxMaxPlaneId);
 
@@ -660,10 +660,10 @@ void Ship::Render(
 
 
     //
-    // Finalize render
+    // Finalize upload
     //
 
-    renderContext.RenderShipEnd(mId);
+    renderContext.UploadShipEnd(mId);
 
 
     //

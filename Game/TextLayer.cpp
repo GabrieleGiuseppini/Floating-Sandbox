@@ -95,17 +95,21 @@ void TextLayer::SetStatusTexts(
             ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
             : 0.0f;
 
-        float const lastRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+        float const lastRenderUploadDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderUploadDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
             : 0.0f;
 
-        float const lastSwapRenderBuffersDuration = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalSwapRenderBuffersDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
+		float const avgRenderUploadDurationMillisecondsPerFrame = totalFrameCount != 0
+			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalRenderUploadDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
+			: 0.0f;
 
-        float const lastShipsRenderDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalShipsRenderDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
+		float const lastRenderDrawDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
+			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderDrawDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
+			: 0.0f;
+
+		float const avgRenderDrawDurationMillisecondsPerFrame = totalFrameCount != 0
+			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalRenderDrawDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
+			: 0.0f;
 
         std::ostringstream ss;
 
@@ -113,10 +117,10 @@ void TextLayer::SetStatusTexts(
 
         ss << std::fixed
             << std::setprecision(2)
-            << "U:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS)"
-            << " R:(" << lastRenderDurationMillisecondsPerFrame << "MS"
-            << std::setprecision(1)
-            << " SWP:" << lastSwapRenderBuffersDuration << " SH:" << lastShipsRenderDurationMillisecondsPerFrame << ")";
+            << "UPD:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS)"
+			<< "UPL:" << avgRenderUploadDurationMillisecondsPerFrame << "MS" << " (" << lastRenderUploadDurationMillisecondsPerFrame << "MS)"
+			<< "DRW:" << avgRenderDrawDurationMillisecondsPerFrame << "MS" << " (" << lastRenderDrawDurationMillisecondsPerFrame << "MS)"
+			;
 
 		mStatusTextLines[1].Text = ss.str();
 		mStatusTextLines[1].IsTextDirty = true;

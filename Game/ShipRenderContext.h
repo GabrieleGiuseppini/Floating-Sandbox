@@ -157,7 +157,7 @@ public:
 
 public:
 
-    void RenderStart(PlaneId maxMaxPlaneId);
+    void UploadStart(PlaneId maxMaxPlaneId);
 
     //
     // Points
@@ -830,11 +830,9 @@ public:
         float lengthAdjustment,
         vec4f const & color);
 
+    void UploadEnd();
 
-
-
-    void RenderEnd();
-
+    void Draw();
 
 private:
 
@@ -938,15 +936,6 @@ private:
 
 private:
 
-    void UpdateOrthoMatrices();
-    void OnEffectiveAmbientLightIntensityUpdated();
-    void OnLampLightColorUpdated();
-    void OnWaterColorUpdated();
-    void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();
-    void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameSizeAdjustmentUpdated();
-
     template<ProgramType ShaderProgram>
     void RenderFlames(
         size_t startFlameIndex,
@@ -958,13 +947,21 @@ private:
     void RenderHighlights();
     void RenderVectorArrows();
 
+    void UpdateOrthoMatrices();
+    void OnEffectiveAmbientLightIntensityUpdated();
+    void OnLampLightColorUpdated();
+    void OnWaterColorUpdated();
+    void OnWaterContrastUpdated();
+    void OnWaterLevelOfDetailUpdated();
+    void OnHeatOverlayTransparencyUpdated();
+    void OnShipFlameSizeAdjustmentUpdated();
+
 private:
 
     ShipId const mShipId;
     size_t mShipCount;
     size_t const mPointCount;
     PlaneId mMaxMaxPlaneId;
-
 
     //
     // Types
