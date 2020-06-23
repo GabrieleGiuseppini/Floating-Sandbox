@@ -46,6 +46,8 @@ public:
 
     RenderContext(
         ImageSize const & initialCanvasSize,
+        std::function<void()> makeRenderContextCurrentFunction,
+        std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
@@ -62,7 +64,6 @@ public:
     {
         return mTextRenderContext;
     }
-
 
     //
     // World and view properties
@@ -504,7 +505,6 @@ public:
     static constexpr float MinShipFlameSizeAdjustment = 0.1f;
     static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
 
-
     //
     // Screen <-> World transformations
     //
@@ -519,7 +519,6 @@ public:
         return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
     }
 
-
     //
     // Statistics
     //
@@ -530,6 +529,8 @@ public:
     }
 
 public:
+
+    void RebindContext(std::function<void()> rebindContextFunction);
 
     void Reset();
 
@@ -550,7 +551,7 @@ public:
 
     void RenderStart();
 
-    void RenderUploadStart();
+    void UploadStart();
 
     void UploadStarsStart(size_t starCount);
 
@@ -1421,9 +1422,9 @@ public:
     void UploadShipsEnd()
     {}
 
-    void RenderUploadEnd();
+    void UploadEnd();
 
-    void RenderDraw();
+    void Draw();
 
     void RenderEnd();
 
@@ -1822,6 +1823,12 @@ private:
     std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
 
 private:
+
+    //
+    // Rendering externals
+    //
+
+    std::function<void()> const mSwapRenderBuffersFunction;
 
     //
     // Managers

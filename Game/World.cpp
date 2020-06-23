@@ -717,10 +717,12 @@ void World::RenderUpload(
 {
     mStars.Upload(renderContext);
 
-    mStorm.Upload(renderContext);
+    // TODOTEST
+    //mStorm.Upload(renderContext);
 
     mClouds.Upload(renderContext);
 
+    /* TODOTEST
     mOceanFloor.Upload(gameParameters, renderContext);
 
     mOceanSurface.Upload(gameParameters, renderContext);
@@ -738,6 +740,7 @@ void World::RenderUpload(
 
         renderContext.UploadShipsEnd();
     }
+    */
 }
 
 }

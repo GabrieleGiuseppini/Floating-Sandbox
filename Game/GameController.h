@@ -54,6 +54,7 @@ public:
 
     static std::unique_ptr<GameController> Create(
         ImageSize const & initialCanvasSize,
+        std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
@@ -117,6 +118,8 @@ public:
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
+
+    void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
     ShipMetadata ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
@@ -672,7 +675,6 @@ private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
-        std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<TextLayer> textLayer,
         MaterialDatabase materialDatabase,
@@ -746,7 +748,6 @@ private:
     //
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
-    std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     std::shared_ptr<TextLayer> mTextLayer;
     ShipTexturizer mShipTexturizer;

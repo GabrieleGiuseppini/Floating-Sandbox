@@ -13,8 +13,6 @@
 
 #include <Game/ImageFileTools.h>
 
-#include <GameOpenGL/GameOpenGL.h>
-
 #include <GameCore/GameException.h>
 #include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
@@ -667,35 +665,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create splash screen
     //
 
-    std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
+    std::shared_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
 
     //
     // Create OpenGL context, temporarily on the splash screen's canvas
     //
 
     mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
-
-    // Activate context on the splash window's canvas
-    mMainGLCanvasContext->SetCurrent(*splash->GetOpenGLCanvas());
-
-
-    //
-    // Initialize OpenGL
-    //
-
-    try
-    {
-        GameOpenGL::InitOpenGL();
-    }
-    catch (std::exception const & e)
-    {
-        splash.reset();
-
-        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
-
-        return;
-    }
-
 
 #ifdef _DEBUG
     // The guy is pesky while debugging
@@ -715,13 +691,18 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             ImageSize(
                 mMainGLCanvas->GetSize().GetWidth(),
                 mMainGLCanvas->GetSize().GetHeight()),
+            [this, splash]() // Allow deferred execution
+            {
+                mMainGLCanvasContext->SetCurrent(*(splash->GetOpenGLCanvas()));
+
+            },
             [this]()
             {
                 assert(!!mMainGLCanvas);
                 mMainGLCanvas->SwapBuffers();
             },
             *mResourceLocator,
-            [&splash, this](float progress, std::string const & message)
+            [this, &splash](float progress, std::string const & message)
             {
                 // 0.0 -> 0.5
                 splash->UpdateProgress(progress / 2.0f, message);
@@ -1184,7 +1165,12 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
         // Move OpenGL context to *our* canvas
         assert(!!mMainGLCanvas);
         assert(!!mMainGLCanvasContext);
-        mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+        assert(!!mGameController);
+        mGameController->RebindOpenGLContext(
+            [this]()
+            {
+                mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+            });
 
         // Close splash screen
         mSplashScreenDialog->Close();

@@ -14,6 +14,7 @@
 
 std::unique_ptr<GameController> GameController::Create(
     ImageSize const & initialCanvasSize,
+    std::function<void()> makeRenderContextCurrentFunction,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -27,6 +28,8 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         initialCanvasSize,
+        std::move(makeRenderContextCurrentFunction),
+        std::move(swapRenderBuffersFunction),
         resourceLocator,
         gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
@@ -44,7 +47,6 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
-            std::move(swapRenderBuffersFunction),
             std::move(gameEventDispatcher),
             std::move(textLayer),
             std::move(materialDatabase),
@@ -53,7 +55,6 @@ std::unique_ptr<GameController> GameController::Create(
 
 GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
-    std::function<void()> swapRenderBuffersFunction,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<TextLayer> textLayer,
     MaterialDatabase materialDatabase,
@@ -75,7 +76,6 @@ GameController::GameController(
     , mDoAutoZoomOnShipLoad(true)
     // Doers
     , mRenderContext(std::move(renderContext))
-    , mSwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mTextLayer(std::move(textLayer))
     , mShipTexturizer(resourceLocator)
@@ -229,6 +229,12 @@ GameController::GameController(
             return this->mRenderContext->ClampCameraWorldPosition(value);
         },
         ControlParameterSmoothingTrajectoryTime);
+}
+
+void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunction)
+{
+    assert(!!mRenderContext);
+    mRenderContext->RebindContext(std::move(rebindContextFunction));
 }
 
 ShipMetadata GameController::ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator)
@@ -479,13 +485,13 @@ void GameController::RunGameIteration()
     // Render Upload
     ////////////////////////////////////////////////////////////////////////////
 
-    // Tell RenderContext we're starting a rendering cycle
+    // Tell RenderContext we're starting a new rendering cycle
     mRenderContext->RenderStart();
 
     {
         auto const startTime = GameChronometer::now();
 
-        mRenderContext->RenderUploadStart();
+        mRenderContext->UploadStart();
 
         //
         // Upload world
@@ -524,7 +530,7 @@ void GameController::RunGameIteration()
             mFireExtinguisherSprayToRender.reset();
         }
 
-        mRenderContext->RenderUploadEnd();
+        mRenderContext->UploadEnd();
 
         mTotalPerfStats.TotalRenderUploadDuration += GameChronometer::now() - startTime;
     }
@@ -537,16 +543,13 @@ void GameController::RunGameIteration()
         auto const startTime = GameChronometer::now();
 
         // Smooth render controls
-        // TODO: see if we need to do this for upload or only for render
+        // TODO: see if we need to do this also for upload, or whether only for render is ok
         float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
         mZoomParameterSmoother->Update(nowReal);
         mCameraWorldPositionParameterSmoother->Update(nowReal);
 
         // Render
-        mRenderContext->RenderDraw();
-
-        // Flip the back buffer onto the screen
-        mSwapRenderBuffersFunction();
+        mRenderContext->Draw();
 
         mTotalPerfStats.TotalRenderDrawDuration += GameChronometer::now() - startTime;
     }
@@ -559,132 +562,6 @@ void GameController::RunGameIteration()
     //
 
     ++mTotalFrameCount;
-
-
-
-    /* TODOOLD
-
-    //
-    // Initialize rendering
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-        // Flip the (previous) back buffer onto the screen
-        mSwapRenderBuffersFunction();
-
-        mTotalPerfStats.TotalSwapRenderBuffersDuration += GameChronometer::now() - renderStartTime;
-
-        // Smooth render controls
-        float const realWallClockNow = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
-        mZoomParameterSmoother->Update(realWallClockNow);
-        mCameraWorldPositionParameterSmoother->Update(realWallClockNow);
-
-        //
-        // Start rendering
-        //
-
-        mRenderContext->RenderStart();
-
-        mTotalPerfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
-    }
-
-    //
-    // Update parameter smoothers
-    //
-
-    if (doUpdate)
-    {
-        auto const updateStartTime = GameChronometer::now();
-
-        std::for_each(
-            mFloatParameterSmoothers.begin(),
-            mFloatParameterSmoothers.end(),
-            [now](auto & ps)
-            {
-                ps.Update(now);
-            });
-
-        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
-    }
-
-    //
-    // Update and render world
-    //
-
-    assert(!!mWorld);
-    mWorld->UpdateAndRender(
-        mGameParameters,
-        *mRenderContext,
-        doUpdate,
-        mTotalPerfStats);
-
-    //
-    // Finalize update
-    //
-
-    if (doUpdate)
-    {
-        auto const updateStartTime = GameChronometer::now();
-
-        // Flush events
-        mGameEventDispatcher->Flush();
-
-        // Update state machines
-        UpdateStateMachines(mWorld->GetCurrentSimulationTime());
-
-        // Update text layer
-        assert(!!mTextLayer);
-        mTextLayer->Update(now);
-
-        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
-    }
-
-    //
-    // Finalize Rendering
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-        // Render HeatBlaster flame, if any
-        if (!!mHeatBlasterFlameToRender)
-        {
-            mRenderContext->UploadHeatBlasterFlame(
-                std::get<0>(*mHeatBlasterFlameToRender),
-                std::get<1>(*mHeatBlasterFlameToRender),
-                std::get<2>(*mHeatBlasterFlameToRender));
-
-            mHeatBlasterFlameToRender.reset();
-        }
-
-        // Render fire extinguisher spray, if any
-        if (!!mFireExtinguisherSprayToRender)
-        {
-            mRenderContext->UploadFireExtinguisherSpray(
-                std::get<0>(*mFireExtinguisherSprayToRender),
-                std::get<1>(*mFireExtinguisherSprayToRender));
-
-            mFireExtinguisherSprayToRender.reset();
-        }
-
-        //
-        // Finish rendering
-        //
-
-        mRenderContext->RenderEnd();
-
-        mTotalPerfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
-    }
-
-
-    //
-    // Update stats
-    //
-
-    ++mTotalFrameCount;
-    */
 }
 
 void GameController::LowFrequencyUpdate()

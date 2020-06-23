@@ -108,7 +108,7 @@ private:
     // Dialogs
     //
 
-    std::unique_ptr<SplashScreenDialog> mSplashScreenDialog;
+    std::shared_ptr<SplashScreenDialog> mSplashScreenDialog;
     std::unique_ptr<AboutDialog> mAboutDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;

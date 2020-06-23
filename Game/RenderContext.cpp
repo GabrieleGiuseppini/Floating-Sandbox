@@ -20,6 +20,8 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
     ImageSize const & initialCanvasSize,
+    std::function<void()> makeRenderContextCurrentFunction,
+    std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
@@ -84,6 +86,8 @@ RenderContext::RenderContext(
     , mHeatBlasterFlameShaderToRender()
     // Fire extinguisher
     , mFireExtinguisherSprayShaderToRender()
+    // Rendering externals
+    , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     // Managers
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mShaderManager()
@@ -143,20 +147,26 @@ RenderContext::RenderContext(
 
 
     //
+    // Initialize OpenGL
+    //
+
+    // Make render context current
+    makeRenderContextCurrentFunction();
+
+    // Initialize OpenGL
+    GameOpenGL::InitOpenGL();
+
+    // Initialize the shared texture unit once and for all
+    mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
+
+
+    //
     // Load shader manager
     //
 
     progressCallback(0.0f, "Loading shaders...");
 
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
-
-
-    //
-    // Initialize OpenGL
-    //
-
-    // Initialize the shared texture unit once and for all
-    mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
 
 
     //
@@ -839,6 +849,11 @@ RenderContext::~RenderContext()
 
 //////////////////////////////////////////////////////////////////////////////////
 
+void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
+{
+    rebindContextFunction();
+}
+
 void RenderContext::Reset()
 {
     // Clear ships
@@ -962,7 +977,7 @@ void RenderContext::RenderStart()
     mRenderStatistics.Reset();
 }
 
-void RenderContext::RenderUploadStart()
+void RenderContext::UploadStart()
 {
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
@@ -1165,11 +1180,11 @@ void RenderContext::UploadOceanEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderContext::RenderUploadEnd()
+void RenderContext::UploadEnd()
 {
 }
 
-void RenderContext::RenderDraw()
+void RenderContext::Draw()
 {
     //
     // Initialize
@@ -1195,6 +1210,7 @@ void RenderContext::RenderDraw()
 
     RenderClouds();
 
+    /* TODOTEST
     // Render ocean opaquely, over sky
     RenderOcean(true);
 
@@ -1247,6 +1263,10 @@ void RenderContext::RenderDraw()
     RenderWorldBorder();
 
     mTextRenderContext->Render();
+    */
+
+    // Flip the back buffer onto the screen
+    mSwapRenderBuffersFunction();
 }
 
 void RenderContext::RenderEnd()
