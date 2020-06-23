@@ -64,7 +64,7 @@ TEST(TaskThreadTests, QueueSynchronizationPoint)
             isDone = true;
         });
 
-    auto tc = t.QueueSynhronizationPoint();
+    auto tc = t.QueueSynchronizationPoint();
     tc->Wait();
 
     EXPECT_TRUE(isDone);

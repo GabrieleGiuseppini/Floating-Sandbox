@@ -144,7 +144,7 @@ public:
      * Invoked on the main thread to place a synchronization point in the queue,
      * which may then be waited for to indicate that the queue has reached that point.
      */
-    TaskCompletionIndicator QueueSynhronizationPoint()
+    TaskCompletionIndicator QueueSynchronizationPoint()
     {
         return QueueTask([]() {});
     }

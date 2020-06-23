@@ -29,11 +29,13 @@
 #include <GameCore/ImageSize.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/SysSpecifics.h>
+#include <GameCore/TaskThread.h>
 #include <GameCore/Vectors.h>
 
 #include <array>
 #include <cassert>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -81,9 +83,10 @@ public:
 
     float const & SetZoom(float zoom)
     {
-        float const & newZoom = mViewModel.SetZoom(zoom);
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
 
-        OnViewModelUpdated();
+        float const & newZoom = mViewModel.SetZoom(zoom);
+        mIsViewModelDirty = true;
 
         return newZoom;
     }
@@ -100,9 +103,10 @@ public:
 
     vec2f const & SetCameraWorldPosition(vec2f const & pos)
     {
-        vec2f const & newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
 
-        OnViewModelUpdated();
+        vec2f const & newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
+        mIsViewModelDirty = true;
 
         return newCameraWorldPosition;
     }
@@ -119,27 +123,27 @@ public:
 
     void SetCanvasSize(int width, int height)
     {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
         mViewModel.SetCanvasSize(width, height);
-
-        glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
-
-        mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
-
-        OnViewModelUpdated();
+        mIsViewModelDirty = true;
+        mIsCanvasSizeDirty = true;
     }
 
     void SetPixelOffset(float x, float y)
     {
-        mViewModel.SetPixelOffset(x, y);
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
 
-        OnViewModelUpdated();
+        mViewModel.SetPixelOffset(x, y);
+        mIsViewModelDirty = true;
     }
 
     void ResetPixelOffset()
     {
-        mViewModel.ResetPixelOffset();
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
 
-        OnViewModelUpdated();
+        mViewModel.ResetPixelOffset();
+        mIsViewModelDirty = true;
     }
 
     float GetVisibleWorldWidth() const
@@ -1528,7 +1532,9 @@ private:
     void RenderRain();
     void RenderWorldBorder();
 
+    void ProcessSettingChanges();
     void OnViewModelUpdated();
+    void OnCanvasSizeUpdated();
     void OnEffectiveAmbientLightIntensityUpdated();
     void OnRainDensityUpdated();
     void OnOceanTransparencyUpdated();
@@ -1537,7 +1543,7 @@ private:
     void OnOceanTextureIndexUpdated();
     void OnLandRenderParametersUpdated();
     void OnLandTextureIndexUpdated();
-
+    // Ship
     void OnFlatLampLightColorUpdated();
     void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
@@ -1843,6 +1849,8 @@ private:
     //
 
     ViewModel mViewModel;
+    bool mIsViewModelDirty;
+    bool mIsCanvasSizeDirty;
 
     rgbColor mFlatSkyColor;
     float mAmbientLightIntensity;
@@ -1858,7 +1866,7 @@ private:
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
     size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
-
+    // Ship
     rgbColor mFlatLampLightColor;
     rgbColor mDefaultWaterColor;
     bool mShowShipThroughOcean;
@@ -1872,6 +1880,23 @@ private:
     float mHeatOverlayTransparency;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
+
+    //
+    // Render Thread
+    //
+
+    // The thread running all of our OpenGL calls
+    TaskThread mRenderThread;
+
+    // The asynchronous rendering tasks from the previous iteration,
+    // which we have to wait for before proceeding further
+    TaskThread::TaskCompletionIndicator mLastRenderUploadEndCompletionIndicator;
+    TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
+
+    // Lock guarding:
+    // - changes to a setting and its dirty indicator
+    // - consumption of that setting
+    std::mutex mSettingsMutex;
 
     //
     // Statistics

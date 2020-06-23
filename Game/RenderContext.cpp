@@ -94,6 +94,8 @@ RenderContext::RenderContext(
     , mTextRenderContext()
     // Render parameters
     , mViewModel(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
+    , mIsViewModelDirty(false)
+    , mIsCanvasSizeDirty(false)
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
     , mAmbientLightIntensity(1.0f)
     , mOceanTransparency(0.8125f)
@@ -122,6 +124,11 @@ RenderContext::RenderContext(
     , mHeatOverlayTransparency(0.1875f)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     , mShipFlameSizeAdjustment(1.0f)
+    // Thread
+    , mRenderThread()
+    , mLastRenderUploadEndCompletionIndicator()
+    , mLastRenderDrawCompletionIndicator()
+    , mSettingsMutex()
     // Statistics
     , mRenderStatistics()
 {
@@ -805,6 +812,7 @@ RenderContext::RenderContext(
     //
 
     OnViewModelUpdated();
+    OnCanvasSizeUpdated();
 
     OnEffectiveAmbientLightIntensityUpdated();
     OnRainDensityUpdated();
@@ -964,6 +972,13 @@ RgbImageData RenderContext::TakeScreenshot()
 
 void RenderContext::UpdateStart()
 {
+    // If there's a pending RenderUploadEnd, wait for it so we
+    // know that CPU buffers are free to be used
+    if (!!mLastRenderUploadEndCompletionIndicator)
+    {
+        mLastRenderUploadEndCompletionIndicator->Wait();
+        mLastRenderUploadEndCompletionIndicator.reset();
+    }
 }
 
 void RenderContext::UpdateEnd()
@@ -973,12 +988,24 @@ void RenderContext::UpdateEnd()
 
 void RenderContext::RenderStart()
 {
+    // Cleanup an eventual pending RenderUploadEnd - may be left behind if
+    // this cycle did not do an Update
+    mLastRenderUploadEndCompletionIndicator.reset();
+
     // Reset stats
     mRenderStatistics.Reset();
 }
 
 void RenderContext::UploadStart()
 {
+    // Wait for an eventual pending RenderDraw, so that we know
+    // GPU buffers are free to be used
+    if (!!mLastRenderDrawCompletionIndicator)
+    {
+        mLastRenderDrawCompletionIndicator->Wait();
+        mLastRenderDrawCompletionIndicator.reset();
+    }
+
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
@@ -1182,6 +1209,10 @@ void RenderContext::UploadOceanEnd()
 
 void RenderContext::UploadEnd()
 {
+    // Queue an indicator here, so we may wait for it
+    // when we want to touch CPU buffers again
+    assert(!mLastRenderUploadEndCompletionIndicator);
+    mLastRenderUploadEndCompletionIndicator = mRenderThread.QueueSynchronizationPoint();
 }
 
 void RenderContext::Draw()
@@ -1189,6 +1220,9 @@ void RenderContext::Draw()
     //
     // Initialize
     //
+
+    // Process setting changes
+    ProcessSettingChanges();
 
     // Set polygon mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -1267,12 +1301,16 @@ void RenderContext::Draw()
 
     // Flip the back buffer onto the screen
     mSwapRenderBuffersFunction();
+
+    // Queue an indicator here, so we may wait for it
+    // when we want to touch GPU buffers again
+    assert(!mLastRenderDrawCompletionIndicator);
+    mLastRenderDrawCompletionIndicator = mRenderThread.QueueSynchronizationPoint();
 }
 
 void RenderContext::RenderEnd()
 {
-    // Flush all pending commands (but not the GPU buffer)
-    GameOpenGL::Flush();
+    // NOP
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1581,6 +1619,23 @@ void RenderContext::RenderWorldBorder()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+void RenderContext::ProcessSettingChanges()
+{
+    std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
+    if (mIsViewModelDirty)
+    {
+        OnViewModelUpdated();
+        mIsViewModelDirty = false;
+    }
+
+    if (mIsCanvasSizeDirty)
+    {
+        OnCanvasSizeUpdated();
+        mIsCanvasSizeDirty = false;
+    }
+}
+
 void RenderContext::OnViewModelUpdated()
 {
     //
@@ -1656,6 +1711,12 @@ void RenderContext::OnViewModelUpdated()
     //
 
     UpdateWorldBorder();
+}
+
+void RenderContext::OnCanvasSizeUpdated()
+{
+    glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
+    mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 }
 
 void RenderContext::OnEffectiveAmbientLightIntensityUpdated()

@@ -335,29 +335,29 @@ Render:
 						- Unlock mSettingsMutex
 				- Getters:
 					- Plain from main thread, no locks
-			+ Impl:
+			= Impl:
 				+ Branch
 				+ 0: Take measurements: UPL=30 R=13
-				= 1: Split whole chain as Update(), RenderUpload(), and RenderDraw()
-					= GameController retains current API: RunGameIteration() // Do same state machine, invoking (optionally) Update() and (always) RenderUpload() 
-						- RenderContext::UpdateStart()
-							- Wait for RenderUploadEnd // CPU buffers are then free to be used
+				+ 1: Split whole chain as Update(), RenderUpload(), and RenderDraw()
+					+ GameController retains current API: RunGameIteration() // Do same state machine, invoking (optionally) Update() and (always) RenderUpload() 
+						+ RenderContext::UpdateStart()
+							+ Wait for RenderUploadEnd // CPU buffers are then free to be used
 						+--- World, etc. Update()
-						- RenderContext::UpdateEnd()
-							- Nop
-						- RenderContext::RenderStart()
-							- Cleanup an eventual pending RenderUploadEnd - may be left behind if this cycle did not
+						+ RenderContext::UpdateEnd()
+							+ Nop
+						+ RenderContext::RenderStart()
+							+ Cleanup an eventual pending RenderUploadEnd - may be left behind if this cycle did not
 							  do an Update
-						- RenderContext::RenderUploadStart()
-							- Wait for RenderDraw // GPU buffers are then free to be used
+						+ RenderContext::RenderUploadStart()
+							+ Wait for RenderDraw // GPU buffers are then free to be used
 						+--- World, etc. RenderUpload()
-						- RenderContext::RenderUploadEnd()
-							- Store TaskCompletionIndicator as RenderUploadEnd
-						- RenderContext::RenderDraw()							
-							------------------- Do all rendering, including SwapBuffers
-							- Store TaskCompletionIndicator as RenderDraw
-						- RenderContext::RenderEnd()
-							- Nop					
+						+ RenderContext::RenderUploadEnd()
+							+ Store TaskCompletionIndicator as RenderUploadEnd
+						+ RenderContext::RenderDraw()							
+							+------------------ Do all rendering, including SwapBuffers
+							+ Store TaskCompletionIndicator as RenderDraw
+						+ RenderContext::RenderEnd()
+							+ Nop					
 					+ Add time measurements => Extended Status Text
 						+ Render stats: split into upload_time (including driving loops) and draw_time
 				+ 2: Take measurements UPL=22.3 UPD=0.34 DRW=10.45
@@ -365,18 +365,22 @@ Render:
 					+ Intake ThreadTask
 						+ Make unit tests
 					+ Temporarily maim World::RenderUpload() and RenderContext::Draw() to do only Stars and Clouds
-					= MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
+					+ MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
 						+ MainFrame: no more making context current, & call RebindContext @ second bind
 						+ "RebindContext" RenderContext & IGameController methods & param names, taking lambda
 							+ Call it from MainFrame
 						+ Invoke them @ RenderContext
 							+ Figure when to do initial bind, from SpringLab
 						+ RebindContext
-						- Test						
-					- Implement multi-threaded RenderContext
-						- Copy from SpringLab
-						- Minimal getters and setters (zoom, camera)
-						- All sync points from above
+						+ Test						
+					= Implement multi-threaded RenderContext
+						- RenderContext::cttor() (copy from SpringLab)
+						- RenderContext::needed uploads (copy from SpringLab)
+						- RenderContext::Draw()
+						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
+						+ All sync points from above
+						- Test
+							- Verify exceptions during RenderContext::cctor are rethrown
 					- Do TextRenderContext
 						- TextLayer & TextContext: split update & render into update, upload, & render
 					- Take measurements
