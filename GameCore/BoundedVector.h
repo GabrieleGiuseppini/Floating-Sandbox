@@ -81,8 +81,12 @@ public:
 
     inline void reset(size_t maxSize)
     {
-        mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
-        mAllocatedSize = maxSize;
+        if (maxSize != mAllocatedSize)
+        {
+            mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
+            mAllocatedSize = maxSize;
+        }
+
         mSize = 0u;
     }
 

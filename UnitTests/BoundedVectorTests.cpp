@@ -94,7 +94,45 @@ TEST(BoundedVectorTests, EmplaceBack)
     EXPECT_FALSE(vec.empty());
 }
 
-TEST(BoundedVectorTests, Reset)
+TEST(BoundedVectorTests, Reset_EqualSize)
+{
+    BoundedVector<int> vec(3);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+    vec.emplace_back(69);
+
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+
+    vec.reset(3);
+
+    EXPECT_EQ(0u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_TRUE(vec.empty());
+}
+
+TEST(BoundedVectorTests, Reset_Smaller)
+{
+    BoundedVector<int> vec(3);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+    vec.emplace_back(69);
+
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+
+    vec.reset(2);
+
+    EXPECT_EQ(0u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_TRUE(vec.empty());
+}
+
+TEST(BoundedVectorTests, Reset_Larger)
 {
     BoundedVector<int> vec(2);
 

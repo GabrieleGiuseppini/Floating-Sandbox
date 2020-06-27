@@ -1521,8 +1521,13 @@ private:
 
 private:
 
+    void InitializeBuffersAndVAOs();
+    void InitializeTextures(
+        ResourceLocator const & resourceLocator,
+        ProgressCallback const & progressCallback);
+
     void RenderStars();
-    void RenderClouds();
+    void RenderCloudsAndBackgroundLightnings();
     void RenderOcean(bool opaquely);
     void RenderOceanFloor();
     void RenderCrossesOfLight();
@@ -1725,15 +1730,20 @@ private:
     //
 
     BoundedVector<StarVertex> mStarVertexBuffer;
+    bool mIsStarVertexBufferDirty;
     GameOpenGLVBO mStarVBO;
+    size_t mStarVBOAllocatedVertexSize;
 
     GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
     size_t mBackgroundLightningVertexCount;
     size_t mForegroundLightningVertexCount;
     GameOpenGLVBO mLightningVBO;
 
-    GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
+    // TODOOLD
+    //GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
+    BoundedVector<CloudVertex> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
+    size_t mCloudVBOAllocatedVertexSize;
 
     GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
     size_t mLandSegmentBufferAllocatedSize;

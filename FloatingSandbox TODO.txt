@@ -374,30 +374,42 @@ Render:
 						+ RebindContext
 						+ Test						
 					= Implement multi-threaded RenderContext
-						- RenderContext::cttor() (copy from SpringLab)
-						- RenderContext::needed uploads (copy from SpringLab)
-						- RenderContext::Draw()
+						+ RenderContext::cttor() (copy from SpringLab)
+						= RenderContext::needed uploads (copy from SpringLab)
+							+ Stars
+							+ Clouds
+							- Break RenderContext progress into smaller chunks for each progress report
+						+ RenderContext::Draw()
 						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
 						+ All sync points from above
 						- Test
 							- Verify exceptions during RenderContext::cctor are rethrown
+						- Add measurement of 2 wait times
 					- Do TextRenderContext
 						- TextLayer & TextContext: split update & render into update, upload, & render
 					- Take measurements
 				- 4: Continue RenderContext Implementation (2)
 					- World::RenderUpload() and RenderContext::Draw(): re-enable Water and Land
 					- Implement RenderContext
+						- Try other strategy for setters (queued and waited), see if stutters
 						- Other getters and setters
+						- See stuttering
 					- Take measurements
 				- 5: Complete RenderContext Implementation (3)
-
+					- AddShip: queued and waited (does OpenGL)
+					- Reset: queued and waited (ShipRenderContext destructor might do OpenGL)
+					- Screenshot: queued and waited, like SpringLab
+					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
 				- Cleanup:
 					- GameController: see if we need to do render control smoothing before RenderUpload(),
 					  or if instead it's enough to do that before RenderDraw()					
 					- Remove PerfStats' obsolete members
 					- See to cleanup GameController::PerfStats state machine
+					- Do APITrace, including shutdown
 
 		- GameController: just one special day?
+
+		- Remove CTRL+M shortcut for mute?
 
 		- Frontier (*)
 
