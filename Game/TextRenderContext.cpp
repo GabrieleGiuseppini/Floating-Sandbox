@@ -12,8 +12,7 @@ TextRenderContext::TextRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
     int canvasHeight,
-    float effectiveAmbientLightIntensity,
-    ProgressCallback const & progressCallback)
+    float effectiveAmbientLightIntensity)
     : mShaderManager(shaderManager)
     , mScreenToNdcX(2.0f / static_cast<float>(canvasWidth))
     , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
@@ -28,14 +27,9 @@ TextRenderContext::TextRenderContext(
     // Load fonts
     //
 
-    progressCallback(0.0f, "Loading fonts...");
-
     std::vector<Font> fonts = Font::LoadAll(
         resourceLocator,
-        [&progressCallback](float progress, std::string const & /*message*/)
-        {
-            progressCallback(progress, "Loading fonts...");
-        });
+        [](float, std::string const &) {});
 
 
     //

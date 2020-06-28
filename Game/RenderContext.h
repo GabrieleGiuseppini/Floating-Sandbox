@@ -1522,9 +1522,7 @@ private:
 private:
 
     void InitializeBuffersAndVAOs();
-    void InitializeTextures(
-        ResourceLocator const & resourceLocator,
-        ProgressCallback const & progressCallback);
+    void InitializeTextures(ResourceLocator const & resourceLocator);
 
     void RenderStars();
     void RenderCloudsAndBackgroundLightnings();

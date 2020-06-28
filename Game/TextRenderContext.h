@@ -12,7 +12,6 @@
 #include <GameOpenGL/ShaderManager.h>
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/ProgressCallback.h>
 
 #include <algorithm>
 #include <array>
@@ -40,8 +39,7 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         int canvasWidth,
         int canvasHeight,
-        float effectiveAmbientLightIntensity,
-        ProgressCallback const & progressCallback);
+        float effectiveAmbientLightIntensity);
 
     void UpdateCanvasSize(int width, int height)
     {

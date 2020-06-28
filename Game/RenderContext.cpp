@@ -16,24 +16,6 @@
 
 namespace Render {
 
-static constexpr float CloudAtlasProgressSteps = 10.0f;
-static constexpr float OceanProgressSteps = 10.0f;
-static constexpr float LandProgressSteps = 10.0f;
-static constexpr float GenericLinearTextureAtlasProgressSteps = 2.0f;
-static constexpr float GenericMipMappedTextureAtlasProgressSteps = 10.0f;
-static constexpr float ExplosionAtlasProgressSteps = 10.0f;
-
-static constexpr float TotalProgressSteps =
-    1.0f // Shaders
-    + 1.0f // TextRenderContext
-    + CloudAtlasProgressSteps
-    + OceanProgressSteps
-    + LandProgressSteps
-    + GenericLinearTextureAtlasProgressSteps
-    + GenericMipMappedTextureAtlasProgressSteps
-    + ExplosionAtlasProgressSteps
-    + 2.0f; // Noise
-
 ImageSize constexpr ThumbnailSize(32, 32);
 
 RenderContext::RenderContext(
@@ -153,12 +135,11 @@ RenderContext::RenderContext(
     // Statistics
     , mRenderStatistics()
 {
+    progressCallback(0.0f, "Initializing OpenGL...");
+
     mRenderThread.RunSynchronously(
         [&]()
         {
-            GLuint tmpGLuint;
-
-
             //
             // Initialize OpenGL
             //
@@ -171,17 +152,25 @@ RenderContext::RenderContext(
 
             // Initialize the shared texture unit once and for all
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
+        });
 
+    progressCallback(0.1f, "Loading shaders...");
 
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             //
             // Load shader manager
             //
 
-            progressCallback(0.0f, "Loading shaders...");
-
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
+        });
 
+    progressCallback(0.3f, "Loading fonts...");
 
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             //
             // Initialize text render context
             //
@@ -191,27 +180,38 @@ RenderContext::RenderContext(
                 *(mShaderManager.get()),
                 mViewModel.GetCanvasWidth(),
                 mViewModel.GetCanvasHeight(),
-                mAmbientLightIntensity,
-                [&progressCallback](float progress, std::string const & message)
-                {
-                    progressCallback((1.0f + progress) / TotalProgressSteps, message);
-                });
+                mAmbientLightIntensity);
+        });
 
+    progressCallback(0.4f, "Initializing buffers...");
 
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             //
             // Initialize buffers and VAOs
             //
 
             InitializeBuffersAndVAOs();
+        });
 
+    progressCallback(0.5f, "Initializing textures...");
 
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             //
             // Initialize textures
             //
 
-            InitializeTextures(resourceLocator, progressCallback);
+            InitializeTextures(resourceLocator);
+        });
 
+    progressCallback(0.9f, "Initializing settings...");
 
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             //
             // Initialize global OpenGL settings
             //
@@ -266,14 +266,9 @@ RenderContext::RenderContext(
             //
 
             glFinish();
-
-
-            //
-            // Notify progress
-            //
-
-            progressCallback(1.0f, "Loading textures...");
         });
+
+    progressCallback(1.0f, "Initializing settings...");
 }
 
 RenderContext::~RenderContext()
@@ -293,7 +288,7 @@ RenderContext::~RenderContext()
 
 void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
 {
-    rebindContextFunction();
+    mRenderThread.RunSynchronously(std::move(rebindContextFunction));
 }
 
 void RenderContext::Reset()
@@ -327,6 +322,7 @@ void RenderContext::AddShip(
     // Add ship
     //
 
+    /* TODOTEST
     assert(shipId == mShips.size());
 
     size_t const newShipCount = mShips.size() + 1;
@@ -362,6 +358,7 @@ void RenderContext::AddShip(
             mHeatOverlayTransparency,
             mShipFlameRenderMode,
             mShipFlameSizeAdjustment));
+    */
 }
 
 RgbImageData RenderContext::TakeScreenshot()
@@ -520,7 +517,7 @@ void RenderContext::UploadCloudsStart(size_t cloudCount)
     // Clouds are not sticky: we upload them at each frame
     //
 
-    mStarVertexBuffer.reset(6 * cloudCount);
+    mCloudVertexBuffer.reset(6 * cloudCount);
 }
 
 void RenderContext::UploadCloudsEnd()
@@ -942,9 +939,7 @@ void RenderContext::InitializeBuffersAndVAOs()
     glBindVertexArray(0);
 }
 
-void RenderContext::InitializeTextures(
-    ResourceLocator const & resourceLocator,
-    ProgressCallback const & progressCallback)
+void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
 {
     GLuint tmpGLuint;
 
@@ -960,10 +955,7 @@ void RenderContext::InitializeTextures(
     auto cloudTextureAtlas = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlas(
         cloudTextureDatabase,
         AtlasOptions::None,
-        [&progressCallback](float progress, std::string const &)
-        {
-            progressCallback((2.0f + progress * CloudAtlasProgressSteps) / TotalProgressSteps, "Loading cloud textures...");
-        });
+        [](float, std::string const &) {});
 
     LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size.ToString());
 
@@ -1024,9 +1016,6 @@ void RenderContext::InitializeTextures(
         mOceanAvailableThumbnails.emplace_back(
             tfs.Metadata.FrameName,
             std::move(textureThumbnail));
-
-        float progress = static_cast<float>(i + 1) / static_cast<float>(mOceanTextureFrameSpecifications.size());
-        progressCallback((2.0f + CloudAtlasProgressSteps + progress * OceanProgressSteps) / TotalProgressSteps, "Loading world textures...");
     }
 
     // Land
@@ -1047,9 +1036,6 @@ void RenderContext::InitializeTextures(
         mLandAvailableThumbnails.emplace_back(
             tfs.Metadata.FrameName,
             std::move(textureThumbnail));
-
-        float progress = static_cast<float>(i + 1) / static_cast<float>(mLandTextureFrameSpecifications.size());
-        progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + progress * LandProgressSteps) / TotalProgressSteps, "Loading world textures...");
     }
 
 
@@ -1065,10 +1051,7 @@ void RenderContext::InitializeTextures(
     auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
         genericLinearTextureDatabase,
         AtlasOptions::None,
-        [&progressCallback](float progress, std::string const & /*message*/)
-        {
-            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + progress * GenericLinearTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
-        });
+        [](float, std::string const &) {});
 
     LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
 
@@ -1154,10 +1137,7 @@ void RenderContext::InitializeTextures(
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
         genericMipMappedTextureDatabase,
         AtlasOptions::None,
-        [&progressCallback](float progress, std::string const & /*message*/)
-        {
-            progressCallback((2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps + progress * GenericMipMappedTextureAtlasProgressSteps) / TotalProgressSteps, "Loading generic textures...");
-        });
+        [](float, std::string const &) {});
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
 
@@ -1199,18 +1179,10 @@ void RenderContext::InitializeTextures(
     // Initialize explosions texture atlas
     //
 
-    progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
-            + GenericMipMappedTextureAtlasProgressSteps + 0.0f) / TotalProgressSteps, "Loading explosion textures...");
-
     // Load atlas
     TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
         ExplosionTextureDatabaseTraits::DatabaseName,
         resourceLocator.GetTexturesRootFolderPath());
-
-    progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
-            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps) / TotalProgressSteps, "Loading explosion textures...");
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
 
@@ -1264,10 +1236,6 @@ void RenderContext::InitializeTextures(
         0,
         GL_LINEAR);
 
-    progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
-            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 1.0f) / TotalProgressSteps, "Loading noise textures...");
-
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
     CheckOpenGLError();
@@ -1294,10 +1262,6 @@ void RenderContext::InitializeTextures(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         1,
         GL_LINEAR);
-
-    progressCallback(
-        (2.0f + CloudAtlasProgressSteps + OceanProgressSteps + LandProgressSteps + GenericLinearTextureAtlasProgressSteps
-            + GenericMipMappedTextureAtlasProgressSteps + ExplosionAtlasProgressSteps + 2.0f) / TotalProgressSteps, "Loading noise textures...");
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
@@ -1334,7 +1298,7 @@ void RenderContext::RenderStars()
         }
         else
         {
-            // Same size, upload VBO buffer
+            // No size change, just upload VBO buffer
             glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
             CheckOpenGLError();
         }
@@ -1374,14 +1338,14 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
     if (mCloudVBOAllocatedVertexSize != mCloudVertexBuffer.size())
     {
         // Re-allocate VBO buffer and upload
-        glBufferData(GL_ARRAY_BUFFER, mCloudVertexBuffer.size() * sizeof(CloudVertex), nullptr, GL_STREAM_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data(), GL_STREAM_DRAW);
         CheckOpenGLError();
 
         mCloudVBOAllocatedVertexSize = mCloudVertexBuffer.size();
     }
     else
     {
-        // No size change, upload VBO buffer
+        // No size change, just upload VBO buffer
         glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudVertexBuffer.size() * sizeof(StarVertex), mCloudVertexBuffer.data());
         CheckOpenGLError();
     }
