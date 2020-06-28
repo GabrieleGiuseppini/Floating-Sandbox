@@ -16,9 +16,11 @@ struct PerfStats
 
     // Render-Upload
     GameChronometer::duration TotalRenderUploadDuration;
+    GameChronometer::duration TotalWaitForRenderUploadDuration;
 
     // Render-Draw
     GameChronometer::duration TotalRenderDrawDuration;
+    GameChronometer::duration TotalWaitForRenderDrawDuration;
 
     // TODOOLD
     // Render
@@ -29,21 +31,28 @@ struct PerfStats
     GameChronometer::duration TotalShipsRenderDuration;
 
     PerfStats()
-        //
-        : TotalUpdateDuration(0)
-        , TotalOceanSurfaceUpdateDuration(0)
-        , TotalShipsUpdateDuration(0)
-        //
-        , TotalRenderUploadDuration(0)
-        //
-        , TotalRenderDrawDuration(0)
-        // TODOOLD
-        , TotalRenderDuration(0)
-        , TotalSwapRenderBuffersDuration(0)
-        , TotalCloudRenderDuration(0)
-        , TotalOceanFloorRenderDuration(0)
-        , TotalShipsRenderDuration(0)
     {
+        Reset();
+    }
+
+    void Reset()
+    {
+        TotalUpdateDuration = GameChronometer::duration::zero();
+        TotalOceanSurfaceUpdateDuration = GameChronometer::duration::zero();
+        TotalShipsUpdateDuration = GameChronometer::duration::zero();
+
+        TotalRenderUploadDuration = GameChronometer::duration::zero();
+        TotalWaitForRenderUploadDuration = GameChronometer::duration::zero();
+
+        TotalRenderDrawDuration = GameChronometer::duration::zero();
+        TotalWaitForRenderDrawDuration = GameChronometer::duration::zero();
+
+        // TODOOLD
+        TotalRenderDuration = GameChronometer::duration::zero();
+        TotalSwapRenderBuffersDuration = GameChronometer::duration::zero();
+        TotalCloudRenderDuration = GameChronometer::duration::zero();
+        TotalOceanFloorRenderDuration = GameChronometer::duration::zero();
+        TotalShipsRenderDuration = GameChronometer::duration::zero();
     }
 
     PerfStats & operator=(PerfStats const & other) = default;
@@ -58,8 +67,10 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
     perfStats.TotalShipsUpdateDuration = lhs.TotalShipsUpdateDuration - rhs.TotalShipsUpdateDuration;
 
     perfStats.TotalRenderUploadDuration = lhs.TotalRenderUploadDuration - rhs.TotalRenderUploadDuration;
+    perfStats.TotalWaitForRenderUploadDuration = lhs.TotalWaitForRenderUploadDuration - rhs.TotalWaitForRenderUploadDuration;
 
     perfStats.TotalRenderDrawDuration = lhs.TotalRenderDrawDuration - rhs.TotalRenderDrawDuration;
+    perfStats.TotalWaitForRenderDrawDuration = lhs.TotalWaitForRenderDrawDuration - rhs.TotalWaitForRenderDrawDuration;
 
     // TODOOLD
     perfStats.TotalRenderDuration = lhs.TotalRenderDuration - rhs.TotalRenderDuration;

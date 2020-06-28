@@ -7,6 +7,7 @@
 
 #include <Game/ImageFileTools.h>
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageTools.h>
@@ -22,6 +23,7 @@ RenderContext::RenderContext(
     ImageSize const & initialCanvasSize,
     std::function<void()> makeRenderContextCurrentFunction,
     std::function<void()> swapRenderBuffersFunction,
+    PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
@@ -133,6 +135,7 @@ RenderContext::RenderContext(
     , mLastRenderDrawCompletionIndicator()
     , mSettingsMutex()
     // Statistics
+    , mPerfStats(perfStats)
     , mRenderStatistics()
 {
     progressCallback(0.0f, "Initializing OpenGL...");
@@ -195,7 +198,7 @@ RenderContext::RenderContext(
             InitializeBuffersAndVAOs();
         });
 
-    progressCallback(0.5f, "Initializing textures...");
+    progressCallback(0.5f, "Loading cloud texture atlas...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -204,7 +207,43 @@ RenderContext::RenderContext(
             // Initialize textures
             //
 
-            InitializeTextures(resourceLocator);
+            InitializeCloudTextures(resourceLocator);
+        });
+
+    progressCallback(0.6f, "Loading world textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            //
+            // Initialize textures
+            //
+
+            InitializeWorldTextures(resourceLocator);
+        });
+
+    progressCallback(0.7f, "Loading generic textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            //
+            // Initialize textures
+            //
+
+            InitializeGenericTextures(resourceLocator);
+        });
+
+    progressCallback(0.8f, "Loading explosion textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            //
+            // Initialize textures
+            //
+
+            InitializeExplosionTextures(resourceLocator);
         });
 
     progressCallback(0.9f, "Initializing settings...");
@@ -407,8 +446,12 @@ void RenderContext::UpdateStart()
     // know that CPU buffers are free to be used
     if (!!mLastRenderUploadEndCompletionIndicator)
     {
+        auto const waitStart = GameChronometer::now();
+
         mLastRenderUploadEndCompletionIndicator->Wait();
         mLastRenderUploadEndCompletionIndicator.reset();
+
+        mPerfStats.TotalWaitForRenderUploadDuration += GameChronometer::now() - waitStart;
     }
 }
 
@@ -435,8 +478,12 @@ void RenderContext::UploadStart()
     // GPU buffers are free to be used
     if (!!mLastRenderDrawCompletionIndicator)
     {
+        auto const waitStart = GameChronometer::now();
+
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
+
+        mPerfStats.TotalWaitForRenderDrawDuration += GameChronometer::now() - waitStart;
     }
 
     // Reset crosses of light, they are uploaded as needed
@@ -939,14 +986,8 @@ void RenderContext::InitializeBuffersAndVAOs()
     glBindVertexArray(0);
 }
 
-void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
+void RenderContext::InitializeCloudTextures(ResourceLocator const & resourceLocator)
 {
-    GLuint tmpGLuint;
-
-    //
-    // Initialize cloud texture atlas
-    //
-
     // Load texture database
     auto cloudTextureDatabase = TextureDatabase<Render::CloudTextureDatabaseTraits>::Load(
         resourceLocator.GetTexturesRootFolderPath());
@@ -962,6 +1003,7 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
     mShaderManager->ActivateTexture<ProgramParameterType::CloudsAtlasTexture>();
 
     // Create OpenGL handle
+    GLuint tmpGLuint;
     glGenTextures(1, &tmpGLuint);
     mCloudTextureAtlasOpenGLHandle = tmpGLuint;
 
@@ -988,12 +1030,10 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
     // Set texture in shader
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
     mShaderManager->SetTextureParameters<ProgramType::Clouds>();
+}
 
-
-    //
-    // Initialize world textures
-    //
-
+void RenderContext::InitializeWorldTextures(ResourceLocator const & resourceLocator)
+{
     // Load texture database
     auto worldTextureDatabase = TextureDatabase<Render::WorldTextureDatabaseTraits>::Load(
         resourceLocator.GetTexturesRootFolderPath());
@@ -1037,8 +1077,10 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
             tfs.Metadata.FrameName,
             std::move(textureThumbnail));
     }
+}
 
-
+void RenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)
+{
     //
     // Create generic linear texture atlas
     //
@@ -1059,6 +1101,7 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
     mShaderManager->ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
 
     // Create texture OpenGL handle
+    GLuint tmpGLuint;
     glGenTextures(1, &tmpGLuint);
     mGenericLinearTextureAtlasOpenGLHandle = tmpGLuint;
 
@@ -1176,50 +1219,6 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
 
 
     //
-    // Initialize explosions texture atlas
-    //
-
-    // Load atlas
-    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
-        ExplosionTextureDatabaseTraits::DatabaseName,
-        resourceLocator.GetTexturesRootFolderPath());
-
-    LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
-
-    // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
-
-    // Create OpenGL handle
-    glGenTextures(1, &tmpGLuint);
-    mExplosionTextureAtlasOpenGLHandle = tmpGLuint;
-
-    // Bind texture atlas
-    glBindTexture(GL_TEXTURE_2D, *mExplosionTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
-
-    // Set repeat mode - we want to clamp, to leverage the fact that
-    // all frames are perfectly transparent at the edges
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckOpenGLError();
-
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Store metadata
-    mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<ExplosionTextureGroups>>(explosionTextureAtlas.Metadata);
-
-    // Set texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::ShipExplosions>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipExplosions>();
-
-
-    //
     // Initialize noise textures
     //
 
@@ -1276,6 +1275,49 @@ void RenderContext::InitializeTextures(ResourceLocator const & resourceLocator)
     mShaderManager->SetTextureParameters<ProgramType::FireExtinguisherSpray>();
     mShaderManager->ActivateProgram<ProgramType::Lightning>();
     mShaderManager->SetTextureParameters<ProgramType::Lightning>();
+}
+
+void RenderContext::InitializeExplosionTextures(ResourceLocator const & resourceLocator)
+{
+    // Load atlas
+    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
+        ExplosionTextureDatabaseTraits::DatabaseName,
+        resourceLocator.GetTexturesRootFolderPath());
+
+    LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
+
+    // Activate texture
+    mShaderManager->ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mExplosionTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture atlas
+    glBindTexture(GL_TEXTURE_2D, *mExplosionTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
+
+    // Set repeat mode - we want to clamp, to leverage the fact that
+    // all frames are perfectly transparent at the edges
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Store metadata
+    mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<ExplosionTextureGroups>>(explosionTextureAtlas.Metadata);
+
+    // Set texture in shaders
+    mShaderManager->ActivateProgram<ProgramType::ShipExplosions>();
+    mShaderManager->SetTextureParameters<ProgramType::ShipExplosions>();
 }
 
 void RenderContext::RenderStars()
@@ -1346,7 +1388,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
     else
     {
         // No size change, just upload VBO buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudVertexBuffer.size() * sizeof(StarVertex), mCloudVertexBuffer.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data());
         CheckOpenGLError();
     }
 

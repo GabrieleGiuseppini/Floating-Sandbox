@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameEventDispatcher.h"
+#include "PerfStats.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
@@ -50,6 +51,7 @@ public:
         ImageSize const & initialCanvasSize,
         std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction,
+        PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
@@ -1522,7 +1524,10 @@ private:
 private:
 
     void InitializeBuffersAndVAOs();
-    void InitializeTextures(ResourceLocator const & resourceLocator);
+    void InitializeCloudTextures(ResourceLocator const & resourceLocator);
+    void InitializeWorldTextures(ResourceLocator const & resourceLocator);
+    void InitializeGenericTextures(ResourceLocator const & resourceLocator);
+    void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
 
     void RenderStars();
     void RenderCloudsAndBackgroundLightnings();
@@ -1910,6 +1915,7 @@ private:
     // Statistics
     //
 
+    PerfStats & mPerfStats;
     RenderStatistics mRenderStatistics;
 };
 

@@ -676,7 +676,7 @@ private:
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::unique_ptr<TextLayer> textLayer,
+        std::unique_ptr<PerfStats> perfStats,
         MaterialDatabase materialDatabase,
         ResourceLocator const & resourceLocator);
 
@@ -785,7 +785,7 @@ private:
     std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
     std::chrono::steady_clock::time_point mStatsLastTimestampReal;
     GameWallClock::time_point mOriginTimestampGame;
-    PerfStats mTotalPerfStats;
+    std::unique_ptr<PerfStats> mTotalPerfStats;
     PerfStats mLastPublishedTotalPerfStats;
     uint64_t mTotalFrameCount;
     uint64_t mLastPublishedTotalFrameCount;

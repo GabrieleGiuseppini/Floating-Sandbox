@@ -22,23 +22,24 @@ std::unique_ptr<GameController> GameController::Create(
     // Load materials
     MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
-    // Create game dispatcher
+    // Create game event dispatcher
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
+
+    // Create perf stats
+    std::unique_ptr<PerfStats> perfStats = std::make_unique<PerfStats>();
 
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         initialCanvasSize,
         std::move(makeRenderContextCurrentFunction),
         std::move(swapRenderBuffersFunction),
+        *perfStats,
         resourceLocator,
         gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
         });
-
-    // Create text layer
-    std::unique_ptr<TextLayer> textLayer = std::make_unique<TextLayer>(renderContext->GetTextRenderContext());
 
     //
     // Create controller
@@ -48,7 +49,7 @@ std::unique_ptr<GameController> GameController::Create(
         new GameController(
             std::move(renderContext),
             std::move(gameEventDispatcher),
-            std::move(textLayer),
+            std::move(perfStats),
             std::move(materialDatabase),
             resourceLocator));
 }
@@ -56,7 +57,7 @@ std::unique_ptr<GameController> GameController::Create(
 GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::unique_ptr<TextLayer> textLayer,
+    std::unique_ptr<PerfStats> perfStats,
     MaterialDatabase materialDatabase,
     ResourceLocator const & resourceLocator)
     // State machines
@@ -77,7 +78,7 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mTextLayer(std::move(textLayer))
+    , mTextLayer(new TextLayer(mRenderContext->GetTextRenderContext()))
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilepath()),
@@ -93,7 +94,7 @@ GameController::GameController(
     , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
     , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
     , mOriginTimestampGame(GameWallClock::GetInstance().Now())
-    , mTotalPerfStats()
+    , mTotalPerfStats(std::move(perfStats))
     , mLastPublishedTotalPerfStats()
     , mTotalFrameCount(0u)
     , mLastPublishedTotalFrameCount(0u)
@@ -459,7 +460,7 @@ void GameController::RunGameIteration()
         mWorld->Update(
             mGameParameters,
             *mRenderContext,
-            mTotalPerfStats);
+            *mTotalPerfStats);
 
         // Flush events
         mGameEventDispatcher->Flush();
@@ -478,7 +479,7 @@ void GameController::RunGameIteration()
         // Tell RenderContext we've finished an upload
         mRenderContext->UpdateEnd();
 
-        mTotalPerfStats.TotalUpdateDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalUpdateDuration += GameChronometer::now() - startTime;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -501,7 +502,7 @@ void GameController::RunGameIteration()
         mWorld->RenderUpload(
             mGameParameters,
             *mRenderContext,
-            mTotalPerfStats);
+            *mTotalPerfStats);
 
         //
         // Upload HeatBlaster flame, if any
@@ -532,7 +533,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->UploadEnd();
 
-        mTotalPerfStats.TotalRenderUploadDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalRenderUploadDuration += GameChronometer::now() - startTime;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -552,7 +553,7 @@ void GameController::RunGameIteration()
         // Render
         mRenderContext->Draw();
 
-        mTotalPerfStats.TotalRenderDrawDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalRenderDrawDuration += GameChronometer::now() - startTime;
     }
 
     // Tell RenderContext we've finished a rendering cycle
@@ -580,12 +581,12 @@ void GameController::LowFrequencyUpdate()
     else
     {
         //
-        // Skip the first few publish as rates are too polluted
+        // Skip the first few publishes, as rates would be too polluted
         //
 
         mStatsOriginTimestampReal = nowReal;
 
-        mTotalPerfStats = PerfStats();
+        mTotalPerfStats->Reset();
         mTotalFrameCount = 0u;
 
         ++mSkippedFirstStatPublishes;
@@ -593,7 +594,7 @@ void GameController::LowFrequencyUpdate()
 
     mStatsLastTimestampReal = nowReal;
 
-    mLastPublishedTotalPerfStats = mTotalPerfStats;
+    mLastPublishedTotalPerfStats = *mTotalPerfStats;
     mLastPublishedTotalFrameCount = mTotalFrameCount;
 }
 
@@ -1316,7 +1317,7 @@ void GameController::OnShipAdded(
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 {
-    PerfStats const lastDeltaPerfStats = mTotalPerfStats - mLastPublishedTotalPerfStats;
+    PerfStats const lastDeltaPerfStats = *mTotalPerfStats - mLastPublishedTotalPerfStats;
     uint64_t const lastDeltaFrameCount = mTotalFrameCount - mLastPublishedTotalFrameCount;
 
     // Calculate fps
@@ -1354,7 +1355,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         lastFps,
         totalFps,
         lastDeltaPerfStats,
-        mTotalPerfStats,
+        *mTotalPerfStats,
         lastDeltaFrameCount,
         mTotalFrameCount,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),

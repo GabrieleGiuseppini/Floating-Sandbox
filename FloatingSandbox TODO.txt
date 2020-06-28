@@ -373,29 +373,29 @@ Render:
 							+ Figure when to do initial bind, from SpringLab
 						+ RebindContext
 						+ Test						
-					= Implement multi-threaded RenderContext
+					+ Implement multi-threaded RenderContext
 						+ RenderContext::cttor() (copy from SpringLab)
-						= RenderContext::needed uploads (copy from SpringLab)
+						+ RenderContext::needed uploads (copy from SpringLab)
 							+ Stars
 							+ Clouds
-							= Break RenderContext progress into smaller chunks for each progress report
-								- Furhter break textures' initializations
+							+ Break RenderContext progress into smaller chunks for each progress report
+								+ Furhter break textures' initializations
 						+ RenderContext::Draw()
 						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
 						+ All sync points from above
-						- Test
-							- Verify exceptions during RenderContext::cctor are rethrown
-						- Add measurement of 2 wait times
+						+ Add measurement of 2 wait times
 					- Do TextRenderContext
-						- TextLayer & TextContext: split update & render into update, upload, & render
+						- TextLayer & TextContext: split update & render into Update, RenderUpload, & RenderDraw
+						- Write also 2 wait durations in extended status text
 					- Take measurements
+					- Test
+						- Verify exceptions during RenderContext::cctor are rethrown
 				- 4: Continue RenderContext Implementation (2)
 					- World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
 					- Implement RenderContext
 						- Try other strategy for setters (queued and waited), see if stutters
 						- Other getters and setters
 						- See stuttering
-					- Upload
 					- Take measurements
 				- 5: Continue RenderContext Implementation (3)					
 					- Storm
@@ -410,8 +410,8 @@ Render:
 					- Screenshot: queued and waited, like SpringLab
 					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
 				- Cleanup:
-					- GameController: see if we need to do render control smoothing before RenderUpload(),
-					  or if instead it's enough to do that before RenderDraw()					
+					- GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
+					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					- Remove PerfStats' obsolete members
 					- See to cleanup GameController::PerfStats state machine
 					- Do APITrace, including shutdown
