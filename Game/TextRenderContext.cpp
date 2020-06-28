@@ -129,7 +129,7 @@ void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
         lighteningStrength);
 }
 
-void TextRenderContext::Render()
+void TextRenderContext::RenderDraw()
 {
 	if (mAreLinesDirty)
 	{

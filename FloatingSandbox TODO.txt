@@ -384,18 +384,29 @@ Render:
 						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
 						+ All sync points from above
 						+ Add measurement of 2 wait times
-					- Do TextRenderContext
-						- TextLayer & TextContext: split update & render into Update, RenderUpload, & RenderDraw
-						- Write also 2 wait durations in extended status text
+					= Do TextRenderContext
+						+ TextLayer & TextContext: 
+							+ Split update & render into Update & RenderDraw
+							+ TextLayer only touches TextRenderContext::mLines @ TextLayer::Update(), not earlier
+								+ @ TextLayer::StatusText: like now, but not touching TextRenderContext::mLines
+								+ @ TextLayer::AddEphemeralTextLine: buffer lines
+								+ @ TextLayer::Update: collect all dirtinesses/buffered and send them to TextRenderContext::mLines
+								+ @ TextRenderContext::RenderDraw: mLines -> VBOs, draw 
+						- Redo logic: TBD
+						+ Print also 2 wait durations in extended status text
 					- Take measurements
 					- Test
-						- Verify exceptions during RenderContext::cctor are rethrown
+						- Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
+				- Investigate why wait times are > 0
 				- 4: Continue RenderContext Implementation (2)
 					- World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
 					- Implement RenderContext
 						- Try other strategy for setters (queued and waited), see if stutters
 						- Other getters and setters
 						- See stuttering
+					- More setters:
+						- EffectiveAmbientLightIntensity
+							- Also at TextRenderContext
 					- Take measurements
 				- 5: Continue RenderContext Implementation (3)					
 					- Storm

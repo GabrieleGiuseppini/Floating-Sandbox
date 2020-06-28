@@ -443,7 +443,7 @@ RgbImageData RenderContext::TakeScreenshot()
 void RenderContext::UpdateStart()
 {
     // If there's a pending RenderUploadEnd, wait for it so we
-    // know that CPU buffers are free to be used
+    // know that CPU buffers are safe to be used
     if (!!mLastRenderUploadEndCompletionIndicator)
     {
         auto const waitStart = GameChronometer::now();
@@ -737,9 +737,9 @@ void RenderContext::Draw()
             }
 
             RenderWorldBorder();
-
-            mTextRenderContext->Render();
             */
+
+            mTextRenderContext->RenderDraw();
 
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();

@@ -410,7 +410,8 @@ void GameController::RunGameIteration()
     {
         assert(mStatsLastTimestampReal == std::chrono::steady_clock::time_point::min());
 
-        std::chrono::steady_clock::time_point nowReal = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::time_point const nowReal = std::chrono::steady_clock::now();
+
         mStatsOriginTimestampReal = nowReal;
         mStatsLastTimestampReal = nowReal;
 
@@ -545,7 +546,7 @@ void GameController::RunGameIteration()
 
         // Smooth render controls
         // TODO: see if we need to do this also for upload, or whether only for render is ok;
-        // i.e. whether upload needs the new viewmodel paramater values
+        // i.e. whether upload needs the new viewmodel parameter values
         float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
         mZoomParameterSmoother->Update(nowReal);
         mCameraWorldPositionParameterSmoother->Update(nowReal);

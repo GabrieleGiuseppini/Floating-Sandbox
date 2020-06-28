@@ -52,8 +52,6 @@ private:
 
 	struct StatusTextLine;
 
-    void UpdateStatusTexts();
-
 	void UpdateStatusTextLine(
 		StatusTextLine & line,
 		bool isEnabled,
@@ -88,7 +86,7 @@ private:
 		{}
 	};
 
-	std::array<StatusTextLine, 3> mStatusTextLines;
+	std::array<StatusTextLine, 4> mStatusTextLines;
 
 	bool mAreStatusTextLinePositionsDirty;
 
@@ -99,6 +97,7 @@ private:
 	struct EphemeralTextLine
 	{
 		RenderedTextHandle Handle;
+		std::string Text;
 		std::chrono::duration<float> Lifetime;
 
 		enum class StateType
@@ -114,9 +113,10 @@ private:
 		float CurrentStateStartTimestamp;
 
 		EphemeralTextLine(
-			RenderedTextHandle handle,
+			std::string const & text,
 			std::chrono::duration<float> const lifetime)
-			: Handle(handle)
+			: Handle(NoneRenderedTextHandle)
+			, Text(text)
 			, Lifetime(lifetime)
 			, State(StateType::Initial)
 			, CurrentStateStartTimestamp(0.0f)

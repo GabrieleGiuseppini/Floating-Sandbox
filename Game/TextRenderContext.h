@@ -125,6 +125,7 @@ public:
 
 		(*it)->Alpha = alpha;
 
+		/* TODOOLD
 		// Optimization: update alpha's in-place, but only if so far we don't
 		// need to re-generate all vertex buffers
 		if (!mAreLinesDirty)
@@ -140,6 +141,10 @@ public:
 			// Remember this font's vertex buffers are dirty now
 			fontRenderContext.SetVertexBufferDirty(true);
 		}
+		*/
+
+		// Remember we're dirty now
+		mAreLinesDirty = true;
 	}
 
 	void UpdateTextLine(
@@ -157,6 +162,7 @@ public:
 
 		assert(it != mLines.end());
 
+		/* TODOOLD
 		if (!mAreLinesDirty)
 		{
 			// Optimization: update offsets and alpha's in-place
@@ -177,9 +183,13 @@ public:
 			// Remember this font's vertex buffers are dirty now
 			fontRenderContext.SetVertexBufferDirty(true);
 		}
+		*/
 
 		(*it)->ScreenOffset = screenOffset;
 		(*it)->Alpha = alpha;
+
+		// Remember we're dirty now
+		mAreLinesDirty = true;
 	}
 
 	void ClearTextLine(RenderedTextHandle lineHandle)
@@ -204,7 +214,7 @@ public:
 	// Rendering
 	//
 
-    void Render();
+    void RenderDraw();
 
 private:
 

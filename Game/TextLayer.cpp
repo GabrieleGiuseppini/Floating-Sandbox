@@ -31,9 +31,6 @@ void TextLayer::SetStatusTextEnabled(bool isEnabled)
 
 	// Positions need to be recalculated
 	mAreStatusTextLinePositionsDirty = true;
-
-    // Update immediately
-    UpdateStatusTexts();
 }
 
 void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
@@ -42,9 +39,6 @@ void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
 
 	// Positions need to be recalculated
 	mAreStatusTextLinePositionsDirty = true;
-
-    // Update immediately
-    UpdateStatusTexts();
 }
 
 void TextLayer::SetStatusTexts(
@@ -111,200 +105,231 @@ void TextLayer::SetStatusTexts(
 			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalRenderDrawDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
 			: 0.0f;
 
+		float const avgWaitForRenderUploadDurationMillisecondsPerFrame = totalFrameCount != 0
+			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalWaitForRenderUploadDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
+			: 0.0f;
+
+		float const avgWaitForRenderDrawDurationMillisecondsPerFrame = totalFrameCount != 0
+			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalWaitForRenderDrawDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
+			: 0.0f;
+
         std::ostringstream ss;
 
-        ss.fill('0');
+		{
+			ss.fill('0');
 
-        ss << std::fixed
-            << std::setprecision(2)
-            << "UPD:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS)"
-			<< "UPL:" << avgRenderUploadDurationMillisecondsPerFrame << "MS" << " (" << lastRenderUploadDurationMillisecondsPerFrame << "MS)"
-			<< "DRW:" << avgRenderDrawDurationMillisecondsPerFrame << "MS" << " (" << lastRenderDrawDurationMillisecondsPerFrame << "MS)"
-			;
+			ss << std::fixed
+				<< std::setprecision(2)
+				<< "UPD:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS) "
+				<< "UPL:" << avgRenderUploadDurationMillisecondsPerFrame << "MS" << " (" << lastRenderUploadDurationMillisecondsPerFrame << "MS) "
+				<< "DRW:" << avgRenderDrawDurationMillisecondsPerFrame << "MS" << " (" << lastRenderDrawDurationMillisecondsPerFrame << "MS)"
+				;
 
-		mStatusTextLines[1].Text = ss.str();
-		mStatusTextLines[1].IsTextDirty = true;
+			mStatusTextLines[1].Text = ss.str();
+			mStatusTextLines[1].IsTextDirty = true;
+		}
+
+		ss.str("");
+
+		{
+			ss.fill('0');
+
+			ss << std::fixed
+				<< std::setprecision(2)
+				<< "WAIT(UPD:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS" << " DRW:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS)"
+				;
+
+			mStatusTextLines[2].Text = ss.str();
+			mStatusTextLines[2].IsTextDirty = true;
+		}
 
         ss.str("");
 
-        ss  << "PNT:" << renderStatistics.LastRenderedShipPoints
-            << " RPS:" << renderStatistics.LastRenderedShipRopes
-            << " SPR:" << renderStatistics.LastRenderedShipSprings
-            << " TRI:" << renderStatistics.LastRenderedShipTriangles
-            << " PLN:" << renderStatistics.LastRenderedShipPlanes
-            << " GENTEX:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
-            << " FLM:" << renderStatistics.LastRenderedShipFlames;
+		{
+			ss << "PNT:" << renderStatistics.LastRenderedShipPoints
+				<< " RPS:" << renderStatistics.LastRenderedShipRopes
+				<< " SPR:" << renderStatistics.LastRenderedShipSprings
+				<< " TRI:" << renderStatistics.LastRenderedShipTriangles
+				<< " PLN:" << renderStatistics.LastRenderedShipPlanes
+				<< " GENTEX:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
+				<< " FLM:" << renderStatistics.LastRenderedShipFlames;
 
-        ss << std::fixed << std::setprecision(2)
-            << " ZM:" << zoom
-            << " CAM:" << camera.x << ", " << camera.y;
+			ss << std::fixed << std::setprecision(2)
+				<< " ZM:" << zoom
+				<< " CAM:" << camera.x << ", " << camera.y;
 
-		mStatusTextLines[2].Text = ss.str();
-		mStatusTextLines[2].IsTextDirty = true;
+			mStatusTextLines[3].Text = ss.str();
+			mStatusTextLines[3].IsTextDirty = true;
+		}
     }
-
-    // Update immediately
-    UpdateStatusTexts();
 }
 
 void TextLayer::AddEphemeralTextLine(
 	std::string const & text,
 	std::chrono::duration<float> lifetime)
 {
-	// Create text
-	auto handle = mTextRenderContext->AddTextLine(
-		text,
-		TextPositionType::TopRight,
-		vec2f::zero(), // for now
-		0.0f, // for now
-		FontType::GameText);
-
 	// Store ephemeral line
-	mEphemeralTextLines.emplace_back(
-		handle,
-		lifetime);
+	mEphemeralTextLines.emplace_back(text, lifetime);
 }
 
 void TextLayer::Update(float now)
 {
+	// This method is invoked after guaranteeing that there is
+	// no pending RenderUpload, hence all the TextRenderContext
+	// CPU buffers are now safe to be used
+
 	//
 	// Status text
 	//
 
-    UpdateStatusTexts();
+	{
+		int ordinal = 0;
+
+		UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+
+		for (size_t i = 1; i < mStatusTextLines.size(); ++i)
+		{
+			UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
+		}
+
+		mAreStatusTextLinePositionsDirty = false;
+	}
 
 
 	//
 	// Ephemeral lines
 	//
 
-	// 1) Trim first lines if we've got too many
-	while (mEphemeralTextLines.size() > 8)
 	{
-		assert(mEphemeralTextLines.front().Handle != NoneRenderedTextHandle);
-		mTextRenderContext->ClearTextLine(mEphemeralTextLines.front().Handle);
-		mEphemeralTextLines.pop_front();
+		// 1) Trim initial lines if we've got too many
+		while (mEphemeralTextLines.size() > 8)
+		{
+			if (mEphemeralTextLines.front().Handle != NoneRenderedTextHandle)
+			{
+				mTextRenderContext->ClearTextLine(mEphemeralTextLines.front().Handle);
+			}
+
+			mEphemeralTextLines.pop_front();
+		}
+
+		// 2) Update state of remaining ones
+		vec2f screenOffset; // Cumulative vertical offset
+		float const lineHeight = static_cast<float>(mTextRenderContext->GetLineScreenHeight(FontType::GameText));
+		for (auto it = mEphemeralTextLines.begin(); it != mEphemeralTextLines.end(); )
+		{
+			bool doDeleteLine = false;
+
+			switch (it->State)
+			{
+				case EphemeralTextLine::StateType::Initial:
+				{
+					// Create text handle
+					assert(it->Handle == NoneRenderedTextHandle);
+					it->Handle = mTextRenderContext->AddTextLine(
+						it->Text,
+						TextPositionType::TopRight,
+						vec2f::zero(), // for now
+						0.0f, // for now
+						FontType::GameText);
+
+					// Initialize fade-in
+					it->State = EphemeralTextLine::StateType::FadingIn;
+					it->CurrentStateStartTimestamp = now;
+
+					[[fallthrough]];
+				}
+
+				case EphemeralTextLine::StateType::FadingIn:
+				{
+					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+					// Update text
+					assert(it->Handle != NoneRenderedTextHandle);
+					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, std::min(1.0f, progress));
+
+					// See if time to transition
+					if (progress >= 1.0f)
+					{
+						it->State = EphemeralTextLine::StateType::Displaying;
+						it->CurrentStateStartTimestamp = now;
+					}
+
+					// Update offset of next line
+					screenOffset.y += lineHeight;
+
+					break;
+				}
+
+				case EphemeralTextLine::StateType::Displaying:
+				{
+					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
+
+					// Update text
+					assert(it->Handle != NoneRenderedTextHandle);
+					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f);
+
+					// See if time to transition
+					if (progress >= 1.0f)
+					{
+						it->State = EphemeralTextLine::StateType::FadingOut;
+						it->CurrentStateStartTimestamp = now;
+					}
+
+					// Update offset of next line
+					screenOffset.y += lineHeight;
+
+					break;
+				}
+
+				case EphemeralTextLine::StateType::FadingOut:
+				{
+					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+					// Update text
+					assert(it->Handle != NoneRenderedTextHandle);
+					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f - std::min(1.0f, progress));
+
+					// See if time to transition
+					if (progress >= 1.0f)
+					{
+						it->State = EphemeralTextLine::StateType::Disappearing;
+						it->CurrentStateStartTimestamp = now;
+					}
+
+					// Update offset of next line
+					screenOffset.y += lineHeight;
+
+					break;
+				}
+
+				case EphemeralTextLine::StateType::Disappearing:
+				{
+					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+
+					// See if time to turn off
+					if (progress >= 1.0f)
+					{
+						doDeleteLine = true;
+					}
+
+					// Update offset of next line
+					screenOffset.y += lineHeight * (1.0f - std::min(1.0f, progress));
+
+					break;
+				}
+			}
+
+			// Advance
+			if (doDeleteLine)
+			{
+				it = mEphemeralTextLines.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
 	}
-
-	// 2) Update state of remaining ones
-	vec2f screenOffset; // Cumulative vertical offset
-	float const lineHeight = static_cast<float>(mTextRenderContext->GetLineScreenHeight(FontType::GameText));
-	for (auto it = mEphemeralTextLines.begin(); it != mEphemeralTextLines.end(); )
-	{
-		bool doDeleteLine = false;
-
-		switch (it->State)
-		{
-			case EphemeralTextLine::StateType::Initial:
-			{
-				// Initialize fade-in
-				it->State = EphemeralTextLine::StateType::FadingIn;
-				it->CurrentStateStartTimestamp = now;
-
-				[[fallthrough]];
-			}
-
-			case EphemeralTextLine::StateType::FadingIn:
-			{
-				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-				// Update text
-				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, std::min(1.0f, progress));
-
-				// See if time to transition
-				if (progress >= 1.0f)
-				{
-					it->State = EphemeralTextLine::StateType::Displaying;
-					it->CurrentStateStartTimestamp = now;
-				}
-
-				// Update offset of next line
-				screenOffset.y += lineHeight;
-
-				break;
-			}
-
-			case EphemeralTextLine::StateType::Displaying:
-			{
-				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
-
-				// Update text
-				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f);
-
-				// See if time to transition
-				if (progress >= 1.0f)
-				{
-					it->State = EphemeralTextLine::StateType::FadingOut;
-					it->CurrentStateStartTimestamp = now;
-				}
-
-				// Update offset of next line
-				screenOffset.y += lineHeight;
-
-				break;
-			}
-
-			case EphemeralTextLine::StateType::FadingOut:
-			{
-				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-				// Update text
-				mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f - std::min(1.0f, progress));
-
-				// See if time to transition
-				if (progress >= 1.0f)
-				{
-					it->State = EphemeralTextLine::StateType::Disappearing;
-					it->CurrentStateStartTimestamp = now;
-				}
-
-				// Update offset of next line
-				screenOffset.y += lineHeight;
-
-				break;
-			}
-
-			case EphemeralTextLine::StateType::Disappearing:
-			{
-				auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-				// See if time to turn off
-				if (progress >= 1.0f)
-				{
-					doDeleteLine = true;
-				}
-
-				// Update offset of next line
-				screenOffset.y += lineHeight * (1.0f - std::min(1.0f, progress));
-
-				break;
-			}
-		}
-
-		// Advance
-		if (doDeleteLine)
-		{
-			it = mEphemeralTextLines.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
-}
-
-void TextLayer::UpdateStatusTexts()
-{
-    int ordinal = 0;
-
-    UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-
-    for (size_t i = 1; i <= 2; ++i)
-    {
-        UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-    }
-
-    mAreStatusTextLinePositionsDirty = false;
 }
 
 void TextLayer::UpdateStatusTextLine(
