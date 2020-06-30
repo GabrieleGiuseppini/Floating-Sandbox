@@ -96,7 +96,7 @@ RenderContext::RenderContext(
     // Managers
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mShaderManager()
-    , mTextRenderContext()
+    , mNotificationRenderContext()
     // Render parameters
     , mViewModel(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
     , mIsViewModelDirty(false)
@@ -175,10 +175,10 @@ RenderContext::RenderContext(
         [&]()
         {
             //
-            // Initialize text render context
+            // Initialize notification render context
             //
 
-            mTextRenderContext = std::make_shared<TextRenderContext>(
+            mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
                 resourceLocator,
                 *(mShaderManager.get()),
                 mViewModel.GetCanvasWidth(),
@@ -739,7 +739,7 @@ void RenderContext::Draw()
             RenderWorldBorder();
             */
 
-            mTextRenderContext->RenderDraw();
+            mNotificationRenderContext->Draw();
 
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();
@@ -1779,7 +1779,7 @@ void RenderContext::OnViewModelUpdated()
 void RenderContext::OnCanvasSizeUpdated()
 {
     glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
-    mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
+    mNotificationRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 }
 
 void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
@@ -1835,8 +1835,8 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
         ship->SetEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
     }
 
-    // Update text context
-    mTextRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
+    // Update notification context
+    mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
 
     // Notify
     mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);

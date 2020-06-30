@@ -78,7 +78,7 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mTextLayer(new TextLayer(mRenderContext->GetTextRenderContext()))
+    , mNotificationLayer(mGameParameters.IsUltraViolentMode)
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilepath()),
@@ -473,9 +473,8 @@ void GameController::RunGameIteration()
         // Update state machines
         UpdateStateMachines(mWorld->GetCurrentSimulationTime());
 
-        // Update text layer
-        assert(!!mTextLayer);
-        mTextLayer->Update(nowGame);
+        // Update notification layer
+        mNotificationLayer.Update(nowGame);
 
         // Tell RenderContext we've finished an upload
         mRenderContext->UpdateEnd();
@@ -531,6 +530,12 @@ void GameController::RunGameIteration()
 
             mFireExtinguisherSprayToRender.reset();
         }
+
+        //
+        // Upload notification layer
+        //
+
+        mNotificationLayer.RenderUpload(*mRenderContext);
 
         mRenderContext->UploadEnd();
 
@@ -619,32 +624,27 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::DisplaySettingsLoadedNotification()
 {
-    assert(!!mTextLayer);
-    mTextLayer->AddEphemeralTextLine("SETTINGS LOADED");
+    mNotificationLayer.AddEphemeralTextLine("SETTINGS LOADED");
 }
 
 bool GameController::GetShowStatusText() const
 {
-    assert(!!mTextLayer);
-    return mTextLayer->IsStatusTextEnabled();
+    return mNotificationLayer.IsStatusTextEnabled();
 }
 
 void GameController::SetShowStatusText(bool value)
 {
-    assert(!!mTextLayer);
-    mTextLayer->SetStatusTextEnabled(value);
+    mNotificationLayer.SetStatusTextEnabled(value);
 }
 
 bool GameController::GetShowExtendedStatusText() const
 {
-    assert(!!mTextLayer);
-    return mTextLayer->IsExtendedStatusTextEnabled();
+    return mNotificationLayer.IsExtendedStatusTextEnabled();
 }
 
 void GameController::SetShowExtendedStatusText(bool value)
 {
-    assert(!!mTextLayer);
-    mTextLayer->SetExtendedStatusTextEnabled(value);
+    mNotificationLayer.SetExtendedStatusTextEnabled(value);
 }
 
 float GameController::GetCurrentSimulationTime() const
@@ -1246,7 +1246,7 @@ void GameController::OnTsunami(float x)
 
 void GameController::OnShipRepaired(ShipId /*shipId*/)
 {
-    mTextLayer->AddEphemeralTextLine("SHIP REPAIRED!");
+    mNotificationLayer.AddEphemeralTextLine("SHIP REPAIRED!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1257,8 +1257,11 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     assert(!!mWorld);
     mWorld = std::move(newWorld);
 
-    // Reset state
+    // Reset state machines
     ResetStateMachines();
+
+    // Reset notification layer
+    mNotificationLayer.Reset();
 
     // Reset rendering engine
     assert(!!mRenderContext);
@@ -1351,8 +1354,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
     mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
 
     // Update status text
-    assert(!!mTextLayer);
-    mTextLayer->SetStatusTexts(
+    mNotificationLayer.SetStatusTexts(
         lastFps,
         totalFps,
         lastDeltaPerfStats,
@@ -1375,7 +1377,6 @@ void GameController::DisplayInertialVelocity(float inertialVelocityMagnitude)
             << inertialVelocityMagnitude
             << " M/SEC";
 
-        assert(!!mTextLayer);
-        mTextLayer->AddEphemeralTextLine(ss.str());
+        mNotificationLayer.AddEphemeralTextLine(ss.str());
     }
 }

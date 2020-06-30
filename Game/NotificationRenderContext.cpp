@@ -3,11 +3,11 @@
 * Created:              2018-10-13
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TextRenderContext.h"
+#include "NotificationRenderContext.h"
 
 namespace Render {
 
-TextRenderContext::TextRenderContext(
+NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     int canvasWidth,
@@ -18,9 +18,6 @@ TextRenderContext::TextRenderContext(
     , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
     , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
 	//
-	, mLines()
-	, mLastRenderedTextHandle(0)
-	, mAreLinesDirty(false)
     , mFontRenderContexts()
 {
     //
@@ -117,7 +114,7 @@ TextRenderContext::TextRenderContext(
     UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
 }
 
-void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
+void NotificationRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
 {
     mEffectiveAmbientLightIntensity = intensity;
 
@@ -129,121 +126,8 @@ void TextRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
         lighteningStrength);
 }
 
-void TextRenderContext::RenderDraw()
+void NotificationRenderContext::Draw()
 {
-	if (mAreLinesDirty)
-	{
-		//
-		// Rebuild all vertex buffers
-		//
-
-		// Cleanup
-		for (auto & context : mFontRenderContexts)
-		{
-			context.GetVertexBuffer().clear();
-		}
-
-		// Process all lines
-		for (size_t l = 0; l < mLines.size(); ++l)
-		{
-			auto & line = *(mLines[l]);
-
-			//
-			// Create vertices for this line
-			//
-
-			FontRenderContext & fontRenderContext = mFontRenderContexts[static_cast<size_t>(line.Font)];
-			FontMetadata const & fontMetadata = fontRenderContext.GetFontMetadata();
-
-			//
-			// Calculate line position in NDC coordinates
-			//
-
-			float constexpr MarginScreen = 10.0f;
-			float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
-
-			vec2f linePositionNdc( // Top-left of quads
-				line.ScreenOffset.x * mScreenToNdcX,
-				-line.ScreenOffset.y * mScreenToNdcY);
-
-			switch (line.Anchor)
-			{
-				case TextPositionType::BottomLeft:
-				{
-					linePositionNdc += vec2f(
-						-1.f + MarginScreen * mScreenToNdcX,
-						-1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
-
-					break;
-				}
-
-				case TextPositionType::BottomRight:
-				{
-					auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-						line.Text.c_str(),
-						line.Text.length());
-
-					linePositionNdc += vec2f(
-						1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-						-1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
-
-					break;
-				}
-
-				case TextPositionType::TopLeft:
-				{
-					linePositionNdc += vec2f(
-						-1.f + MarginScreen * mScreenToNdcX,
-						1.f - MarginTopScreen * mScreenToNdcY);
-
-					break;
-				}
-
-				case TextPositionType::TopRight:
-				{
-					auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-						line.Text.c_str(),
-						line.Text.length());
-
-					linePositionNdc += vec2f(
-						1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-						1.f - MarginTopScreen * mScreenToNdcY);
-
-					break;
-				}
-			}
-
-
-			//
-			// Emit quads for this line
-			//
-
-			// Remember position of this line in the vertex buffer
-			line.FontVertexBufferIndexStart = fontRenderContext.GetVertexBuffer().size();
-
-			// Emit
-			line.FontVertexBufferCount = fontMetadata.EmitQuadVertices(
-				line.Text.c_str(),
-				line.Text.length(),
-				linePositionNdc,
-				line.Alpha,
-				mScreenToNdcX,
-				mScreenToNdcY,
-				fontRenderContext.GetVertexBuffer());
-
-
-			//
-			// Remember that this font's render context vertex buffers are dirty now
-			//
-
-			fontRenderContext.SetVertexBufferDirty(true);
-		}
-
-		// Remember lines are not dirty anymore
-		mAreLinesDirty = false;
-	}
-
-
     //
     // Render all fonts
     //

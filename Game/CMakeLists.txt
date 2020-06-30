@@ -19,6 +19,8 @@ set  (GAME_SOURCES
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.h
+	NotificationLayer.cpp
+	NotificationLayer.h
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
 	PerfStats.h
@@ -39,9 +41,7 @@ set  (GAME_SOURCES
 	ShipPreviewImageDatabase.cpp
 	ShipPreviewImageDatabase.h
 	ShipTexturizer.cpp
-	ShipTexturizer.h
-	TextLayer.cpp
-	TextLayer.h)
+	ShipTexturizer.h)
 
 set  (PHYSICS_SOURCES
 	AntiMatterBomb.h
@@ -91,6 +91,8 @@ set  (PHYSICS_SOURCES
 set  (RENDER_SOURCES
 	Font.cpp
 	Font.h
+	NotificationRenderContext.cpp
+	NotificationRenderContext.h
 	RenderContext.cpp
 	RenderContext.h
 	RenderTypes.h
@@ -98,8 +100,6 @@ set  (RENDER_SOURCES
 	ShaderTypes.h
 	ShipRenderContext.cpp
 	ShipRenderContext.h
-	TextRenderContext.cpp
-	TextRenderContext.h
 	TextureTypes.h
 	TextureAtlas.cpp
 	TextureAtlas.h

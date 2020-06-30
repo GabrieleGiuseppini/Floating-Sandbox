@@ -3,7 +3,7 @@
 * Created:              2019-10-23
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TextLayer.h"
+#include "NotificationLayer.h"
 
 #include <GameCore/GameWallClock.h>
 
@@ -13,35 +13,38 @@
 
 using namespace std::literals::chrono_literals;
 
-TextLayer::TextLayer(std::shared_ptr<Render::TextRenderContext> textRenderContext)
-    : mTextRenderContext(std::move(textRenderContext))
-	// StatusText state
-	, mIsStatusTextEnabled(true)
+NotificationLayer::NotificationLayer(bool isUltraViolentMode)
+    : // StatusText
+	  mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
-	, mAreStatusTextLinePositionsDirty(false)
 	// Ephemeral text
 	, mEphemeralTextLines()
+	// Ultra-Violent Mode
+	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
+	// State
+	, mIsTextDirty(true)
+	, mIsUltraViolentModeIndicatorDirty(true)
 {
 }
 
-void TextLayer::SetStatusTextEnabled(bool isEnabled)
+void NotificationLayer::SetStatusTextEnabled(bool isEnabled)
 {
 	mIsStatusTextEnabled = isEnabled;
 
-	// Positions need to be recalculated
-	mAreStatusTextLinePositionsDirty = true;
+	// Text needs to be re-uploaded
+	mIsTextDirty = true;
 }
 
-void TextLayer::SetExtendedStatusTextEnabled(bool isEnabled)
+void NotificationLayer::SetExtendedStatusTextEnabled(bool isEnabled)
 {
 	mIsExtendedStatusTextEnabled = isEnabled;
 
-	// Positions need to be recalculated
-	mAreStatusTextLinePositionsDirty = true;
+	// Text needs to be re-uploaded
+	mIsTextDirty = true;
 }
 
-void TextLayer::SetStatusTexts(
+void NotificationLayer::SetStatusTexts(
     float immediateFps,
     float averageFps,
     PerfStats const & lastDeltaPerfStats,
@@ -75,8 +78,10 @@ void TextLayer::SetStatusTexts(
         if (isPaused)
             ss << " (PAUSED)";
 
-		mStatusTextLines[0].Text = ss.str();
-		mStatusTextLines[0].IsTextDirty = true;
+		mStatusTextLines[0] = ss.str();
+
+		// Text needs to be re-uploaded
+		mIsTextDirty = true;
     }
 
     if (mIsExtendedStatusTextEnabled)
@@ -125,8 +130,7 @@ void TextLayer::SetStatusTexts(
 				<< "DRW:" << avgRenderDrawDurationMillisecondsPerFrame << "MS" << " (" << lastRenderDrawDurationMillisecondsPerFrame << "MS)"
 				;
 
-			mStatusTextLines[1].Text = ss.str();
-			mStatusTextLines[1].IsTextDirty = true;
+			mStatusTextLines[1] = ss.str();
 		}
 
 		ss.str("");
@@ -139,8 +143,7 @@ void TextLayer::SetStatusTexts(
 				<< "WAIT(UPD:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS" << " DRW:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS)"
 				;
 
-			mStatusTextLines[2].Text = ss.str();
-			mStatusTextLines[2].IsTextDirty = true;
+			mStatusTextLines[2] = ss.str();
 		}
 
         ss.str("");
@@ -158,63 +161,63 @@ void TextLayer::SetStatusTexts(
 				<< " ZM:" << zoom
 				<< " CAM:" << camera.x << ", " << camera.y;
 
-			mStatusTextLines[3].Text = ss.str();
-			mStatusTextLines[3].IsTextDirty = true;
+			mStatusTextLines[3] = ss.str();
 		}
+
+		// Text needs to be re-uploaded
+		mIsTextDirty = true;
     }
 }
 
-void TextLayer::AddEphemeralTextLine(
+void NotificationLayer::AddEphemeralTextLine(
 	std::string const & text,
 	std::chrono::duration<float> lifetime)
 {
 	// Store ephemeral line
 	mEphemeralTextLines.emplace_back(text, lifetime);
+
+	// Text needs to be re-uploaded
+	mIsTextDirty = true;
 }
 
-void TextLayer::Update(float now)
+void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
+{
+	mIsUltraViolentModeIndicatorOn = isUltraViolentMode;
+
+	// Indicator needs to be re-uploaded
+	mIsUltraViolentModeIndicatorDirty = true;
+}
+
+void NotificationLayer::Reset()
+{
+	// Nuke all ephemeral lines
+	mEphemeralTextLines.clear();
+
+	// Text needs to be re-uploaded
+	mIsTextDirty = true;
+}
+
+void NotificationLayer::Update(float now)
 {
 	// This method is invoked after guaranteeing that there is
-	// no pending RenderUpload, hence all the TextRenderContext
-	// CPU buffers are now safe to be used
+	// no pending RenderUpload, hence all the NotificationRenderContext
+	// CPU buffers are now safe to be changed
 
 	//
-	// Status text
-	//
-
-	{
-		int ordinal = 0;
-
-		UpdateStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-
-		for (size_t i = 1; i < mStatusTextLines.size(); ++i)
-		{
-			UpdateStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, mAreStatusTextLinePositionsDirty, ordinal);
-		}
-
-		mAreStatusTextLinePositionsDirty = false;
-	}
-
-
-	//
-	// Ephemeral lines
+	// Update ephemeral lines
 	//
 
 	{
 		// 1) Trim initial lines if we've got too many
 		while (mEphemeralTextLines.size() > 8)
 		{
-			if (mEphemeralTextLines.front().Handle != NoneRenderedTextHandle)
-			{
-				mTextRenderContext->ClearTextLine(mEphemeralTextLines.front().Handle);
-			}
-
 			mEphemeralTextLines.pop_front();
+
+			// Text needs to be re-uploaded
+			mIsTextDirty = true;
 		}
 
 		// 2) Update state of remaining ones
-		vec2f screenOffset; // Cumulative vertical offset
-		float const lineHeight = static_cast<float>(mTextRenderContext->GetLineScreenHeight(FontType::GameText));
 		for (auto it = mEphemeralTextLines.begin(); it != mEphemeralTextLines.end(); )
 		{
 			bool doDeleteLine = false;
@@ -223,15 +226,6 @@ void TextLayer::Update(float now)
 			{
 				case EphemeralTextLine::StateType::Initial:
 				{
-					// Create text handle
-					assert(it->Handle == NoneRenderedTextHandle);
-					it->Handle = mTextRenderContext->AddTextLine(
-						it->Text,
-						TextPositionType::TopRight,
-						vec2f::zero(), // for now
-						0.0f, // for now
-						FontType::GameText);
-
 					// Initialize fade-in
 					it->State = EphemeralTextLine::StateType::FadingIn;
 					it->CurrentStateStartTimestamp = now;
@@ -241,79 +235,67 @@ void TextLayer::Update(float now)
 
 				case EphemeralTextLine::StateType::FadingIn:
 				{
-					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-					// Update text
-					assert(it->Handle != NoneRenderedTextHandle);
-					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, std::min(1.0f, progress));
+					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
 
 					// See if time to transition
-					if (progress >= 1.0f)
+					if (it->CurrentStateProgress >= 1.0f)
 					{
 						it->State = EphemeralTextLine::StateType::Displaying;
 						it->CurrentStateStartTimestamp = now;
+						it->CurrentStateProgress = 0.0f;
 					}
 
-					// Update offset of next line
-					screenOffset.y += lineHeight;
+					// Text needs to be re-uploaded (for alpha)
+					mIsTextDirty = true;
 
 					break;
 				}
 
 				case EphemeralTextLine::StateType::Displaying:
 				{
-					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
-
-					// Update text
-					assert(it->Handle != NoneRenderedTextHandle);
-					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f);
+					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
 
 					// See if time to transition
-					if (progress >= 1.0f)
+					if (it->CurrentStateProgress >= 1.0f)
 					{
 						it->State = EphemeralTextLine::StateType::FadingOut;
 						it->CurrentStateStartTimestamp = now;
+						it->CurrentStateProgress = 0.0f;
 					}
-
-					// Update offset of next line
-					screenOffset.y += lineHeight;
 
 					break;
 				}
 
 				case EphemeralTextLine::StateType::FadingOut:
 				{
-					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-					// Update text
-					assert(it->Handle != NoneRenderedTextHandle);
-					mTextRenderContext->UpdateTextLine(it->Handle, screenOffset, 1.0f - std::min(1.0f, progress));
+					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
 
 					// See if time to transition
-					if (progress >= 1.0f)
+					if (it->CurrentStateProgress >= 1.0f)
 					{
 						it->State = EphemeralTextLine::StateType::Disappearing;
 						it->CurrentStateStartTimestamp = now;
+						it->CurrentStateProgress = 0.0f;
 					}
 
-					// Update offset of next line
-					screenOffset.y += lineHeight;
+					// Text needs to be re-uploaded (for alpha)
+					mIsTextDirty = true;
 
 					break;
 				}
 
 				case EphemeralTextLine::StateType::Disappearing:
 				{
-					auto const progress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
+					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
 
 					// See if time to turn off
-					if (progress >= 1.0f)
+					if (it->CurrentStateProgress >= 1.0f)
 					{
 						doDeleteLine = true;
 					}
 
-					// Update offset of next line
-					screenOffset.y += lineHeight * (1.0f - std::min(1.0f, progress));
+					// Text needs to be re-uploaded (for vertical offset)
+					mIsTextDirty = true;
 
 					break;
 				}
@@ -323,6 +305,9 @@ void TextLayer::Update(float now)
 			if (doDeleteLine)
 			{
 				it = mEphemeralTextLines.erase(it);
+
+				// Text needs to be re-uploaded
+				mIsTextDirty = true;
 			}
 			else
 			{
@@ -332,61 +317,135 @@ void TextLayer::Update(float now)
 	}
 }
 
-void TextLayer::UpdateStatusTextLine(
-	StatusTextLine & line,
-	bool isEnabled,
-	bool arePositionsDirty,
-	int & ordinal)
+void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 {
-	// Check whether we need to flip the state of the status text
+	//
+	// Upload text, if needed
+	//
+
+	if (mIsTextDirty)
+	{
+		// Tell render context we're starting with text
+		renderContext.UploadNotificationTextStart();
+
+		//
+		// Upload status text
+		//
+
+		{
+			int effectiveOrdinal = 0;
+
+			UploadStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, effectiveOrdinal, renderContext);
+
+			for (size_t i = 1; i < mStatusTextLines.size(); ++i)
+			{
+				UploadStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, effectiveOrdinal, renderContext);
+			}
+		}
+
+		//
+		// Ephemeral lines
+		//
+
+		{
+			vec2f screenOffset = vec2f::zero(); // Cumulative vertical offset
+			for (auto const & etl : mEphemeralTextLines)
+			{
+				switch (etl.State)
+				{
+					case EphemeralTextLine::StateType::FadingIn:
+					{
+						// Upload text
+						renderContext.UploadNotificationTextLine(
+							etl.Text,
+							TextPositionType::TopRight,
+							screenOffset,
+							std::min(1.0f, etl.CurrentStateProgress),
+							FontType::GameText);
+
+						// Update offset of next line
+						screenOffset.y += 1.0f;
+
+						break;
+					}
+
+					case EphemeralTextLine::StateType::Displaying:
+					{
+						// Upload text
+						renderContext.UploadNotificationTextLine(
+							etl.Text,
+							TextPositionType::TopRight,
+							screenOffset,
+							1.0f,
+							FontType::GameText);
+
+						// Update offset of next line
+						screenOffset.y += 1.0f;
+
+						break;
+					}
+
+					case EphemeralTextLine::StateType::FadingOut:
+					{
+						// Upload text
+						renderContext.UploadNotificationTextLine(
+							etl.Text,
+							TextPositionType::TopRight,
+							screenOffset,
+							1.0f - std::min(1.0f, etl.CurrentStateProgress),
+							FontType::GameText);
+
+						// Update offset of next line
+						screenOffset.y += 1.0f;
+
+						break;
+					}
+
+					case EphemeralTextLine::StateType::Disappearing:
+					{
+						// Update offset of next line
+						screenOffset.y += (1.0f - std::min(1.0f, etl.CurrentStateProgress));
+
+						break;
+					}
+
+					default:
+					{
+						// Do not upload
+					}
+				}
+			}
+		}
+
+		// No more dirty
+		mIsTextDirty = false;
+
+		// Tell render context we're done with text
+		renderContext.UploadNotificationTextEnd();
+	}
+}
+
+void NotificationLayer::UploadStatusTextLine(
+	std::string & line,
+	bool isEnabled,
+	int & effectiveOrdinal,
+	Render::RenderContext & renderContext)
+{
 	if (isEnabled)
 	{
 		//
-		// This line is enabled
+		// This line is enabled, upload it
 		//
 
-		vec2f offset(
+		vec2f screenOffset(
 			0.0f,
-			static_cast<float>(ordinal++) * mTextRenderContext->GetLineScreenHeight(FontType::StatusText));
+			static_cast<float>(effectiveOrdinal++));
 
-		if (NoneRenderedTextHandle == line.Handle)
-		{
-			// Create status text
-			line.Handle = mTextRenderContext->AddTextLine(
-				line.Text,
-				TextPositionType::TopLeft,
-				offset,
-				1.0f,
-				FontType::StatusText);
-
-			line.IsTextDirty = false;
-		}
-		else if (line.IsTextDirty || arePositionsDirty)
-		{
-			// Update status text
-			mTextRenderContext->UpdateTextLine(
-				line.Handle,
-				line.Text,
-				offset);
-
-			line.IsTextDirty = false;
-		}
-	}
-	else
-	{
-		//
-		// This line is not enabled
-		//
-
-		if (NoneRenderedTextHandle != line.Handle)
-		{
-			// Turn off line altogether
-			mTextRenderContext->ClearTextLine(line.Handle);
-			line.Handle = NoneRenderedTextHandle;
-
-			// Initialize text
-			line.Text = "";
-			line.IsTextDirty = false;
-		}
+		renderContext.UploadNotificationTextLine(
+			line,
+			TextPositionType::TopLeft,
+			screenOffset,
+			1.0f,
+			FontType::StatusText);
 	}
 }

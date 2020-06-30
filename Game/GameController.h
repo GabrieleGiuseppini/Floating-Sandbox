@@ -12,13 +12,13 @@
 #include "IGameControllerSettingsOptions.h"
 #include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
+#include "NotificationLayer.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
 #include "ShipTexturizer.h"
-#include "TextLayer.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameChronometer.h>
@@ -528,7 +528,7 @@ public:
     float GetMaxLightSpreadAdjustment() const override { return GameParameters::MaxLightSpreadAdjustment; }
 
     bool GetUltraViolentMode() const override { return mGameParameters.IsUltraViolentMode; }
-    void SetUltraViolentMode(bool value) override { mGameParameters.IsUltraViolentMode = value; }
+    void SetUltraViolentMode(bool value) override { mGameParameters.IsUltraViolentMode = value; mNotificationLayer.SetUltraViolentModeIndicator(value); }
 
     bool GetDoGenerateDebris() const override { return mGameParameters.DoGenerateDebris; }
     void SetDoGenerateDebris(bool value) override { mGameParameters.DoGenerateDebris = value; }
@@ -749,7 +749,7 @@ private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-    std::shared_ptr<TextLayer> mTextLayer;
+    NotificationLayer mNotificationLayer;
     ShipTexturizer mShipTexturizer;
 
 

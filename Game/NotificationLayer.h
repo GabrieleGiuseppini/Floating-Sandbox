@@ -6,22 +6,21 @@
 #pragma once
 
 #include "PerfStats.h"
-#include "TextRenderContext.h"
+#include "RenderContext.h"
 
 #include <GameCore/GameTypes.h>
 
 #include <array>
 #include <chrono>
 #include <deque>
-#include <memory>
 #include <string>
 #include <vector>
 
-class TextLayer
+class NotificationLayer
 {
 public:
 
-	TextLayer(std::shared_ptr<Render::TextRenderContext> textRenderContext);
+	NotificationLayer(bool isUltraViolentMode);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -46,21 +45,23 @@ public:
 		std::string const & text,
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
+	void SetUltraViolentModeIndicator(bool isUltraViolentMode);
+
+	void Reset();
+
     void Update(float now);
 
+	void RenderUpload(Render::RenderContext & renderContext);
+
 private:
 
-	struct StatusTextLine;
-
-	void UpdateStatusTextLine(
-		StatusTextLine & line,
+	void UploadStatusTextLine(
+		std::string & line,
 		bool isEnabled,
-		bool arePositionsDirty,
-		int & ordinal);
+		int & effectiveOrdinal,
+		Render::RenderContext & renderContext);
 
 private:
-
-	std::shared_ptr<Render::TextRenderContext> mTextRenderContext;
 
 	//
 	// Status text
@@ -68,27 +69,7 @@ private:
 
     bool mIsStatusTextEnabled;
     bool mIsExtendedStatusTextEnabled;
-
-	struct StatusTextLine
-	{
-		RenderedTextHandle Handle;
-		std::string Text;
-		bool IsTextDirty;
-
-		StatusTextLine()
-			: StatusTextLine("")
-		{}
-
-		StatusTextLine(std::string text)
-			: Handle(NoneRenderedTextHandle)
-			, Text(text)
-			, IsTextDirty(true) // Start dirty
-		{}
-	};
-
-	std::array<StatusTextLine, 4> mStatusTextLines;
-
-	bool mAreStatusTextLinePositionsDirty;
+	std::array<std::string, 4> mStatusTextLines;
 
 	//
 	// Ephemeral text
@@ -96,7 +77,6 @@ private:
 
 	struct EphemeralTextLine
 	{
-		RenderedTextHandle Handle;
 		std::string Text;
 		std::chrono::duration<float> Lifetime;
 
@@ -111,20 +91,34 @@ private:
 
 		StateType State;
 		float CurrentStateStartTimestamp;
+		float CurrentStateProgress;
 
 		EphemeralTextLine(
 			std::string const & text,
 			std::chrono::duration<float> const lifetime)
-			: Handle(NoneRenderedTextHandle)
-			, Text(text)
+			: Text(text)
 			, Lifetime(lifetime)
 			, State(StateType::Initial)
 			, CurrentStateStartTimestamp(0.0f)
+			, CurrentStateProgress(0.0f)
 		{}
 
 		EphemeralTextLine(EphemeralTextLine && other) = default;
 		EphemeralTextLine & operator=(EphemeralTextLine && other) = default;
 	};
 
-	std::deque<EphemeralTextLine> mEphemeralTextLines;
+	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
+
+	//
+	// Ultra-Violent Mode Indicator
+	//
+
+	bool mIsUltraViolentModeIndicatorOn;
+
+	//
+	// State
+	//
+
+	bool mIsTextDirty;
+	bool mIsUltraViolentModeIndicatorDirty;
 };

@@ -360,7 +360,7 @@ Render:
 							+ Nop					
 					+ Add time measurements => Extended Status Text
 						+ Render stats: split into upload_time (including driving loops) and draw_time
-				+ 2: Take measurements UPL=22.3 UPD=0.34 DRW=10.45
+				+ 2: Take measurements UPD=22.3 UPL=0.34 DRW=10.45
 				= 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
 					+ Intake ThreadTask
 						+ Make unit tests
@@ -392,12 +392,21 @@ Render:
 								+ @ TextLayer::AddEphemeralTextLine: buffer lines
 								+ @ TextLayer::Update: collect all dirtinesses/buffered and send them to TextRenderContext::mLines
 								+ @ TextRenderContext::RenderDraw: mLines -> VBOs, draw 
-						- Redo logic: TBD
+						= Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
+							+ Redo
+							- See if NotificationRenderContext should move to pixel space instead of NDC - if not, have
+							  to force a NotificationLayer upload upon canvas size change
+								- New shader: textSC (screen coordinates)
+								- See if still need UpdateCanvasSize
+								- See if still need NDC conversion factor members
+							- Test:
+								+ Reset during ephemeral lines
 						+ Print also 2 wait durations in extended status text
 					- Take measurements
 					- Test
 						- Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
-				- Investigate why wait times are > 0
+				- Check on other laptops
+					- Verify wait times ~= 0
 				- 4: Continue RenderContext Implementation (2)
 					- World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
 					- Implement RenderContext
@@ -426,6 +435,8 @@ Render:
 					- Remove PerfStats' obsolete members
 					- See to cleanup GameController::PerfStats state machine
 					- Do APITrace, including shutdown
+					- Do NotificationRenderContext::UltraViolentModeIndicator
+						- In generic non-mipmapped atlas, passed by RenderContext to NotificationRenderContext
 
 		- GameController: just one special day?
 
@@ -1167,11 +1178,12 @@ Render:
 		- Better after electrical "expansion"
 
 	- Lights/materials breaking under pressure (*)
+		! Unrelated to pressure crush (*) with frontier
 		- Idea:
 			- All structural materials have max pressure delta after which they break, with some randomness
 			- ...but only glass, lights, and may be a few others have reasonable values - others are basically indestructible, and they
 			  will destroy with the "other" external pressure work which is tied with frontier			 
-		- Impl:
+		- Impl: 
 			- Better done after cached quantities - underwater depth (*)
 			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
 				- Only non-leaking points (broken edge of glass ball should not break again)
@@ -1334,14 +1346,17 @@ Render:
 						  take that frontierId
 						- TODO
 	
-	- Pressure implosions(*)
-		- Spec:
-			- External water pressure should inflict stress on springs
-			- Have to visit frontier points and, if underwater, do force perpendicular towards interior
-				- How to deal with counter-pressure from inside though?
-					- One idea: each connected component remember whether it's leaking, and only CC's without
-					  any leaking would be subject to pressure
-			- Need own sounds
+	- Pressure implosions / pressure crush (*)
+		! Requires frontier
+		- Better done after cached quantities - underwater depth (*)
+		- Idea:
+			- For each point on frontier (ext and int) that is not leaking:
+				- Calc pressure delta between current water at point and external Y
+				- Do force (inward or outward) proportional to delta
+		- TODO: what was this?
+			- How to deal with counter-pressure from inside though?
+				- One idea: each connected component remembers whether it's leaking, and only CC's without
+				  any leaking would be subject to pressure
 
 	- Punch tool: interacts with frontier, just like a punch
 		- Requires frontier work first
@@ -1401,12 +1416,6 @@ Render:
 		- Need "view selector": Alphabetically (like now), Most Recent (the new one)
 
 - Sounds:
-
-	= Do air bubbles sounds, very low volume (*)
-		+ At expiry
-		+ New events at IGameEventHandler
-			+ Dispatcher aggregates with counter
-			+ Ship takes shared_ptr<Dispatcher> now, for perf
 
 	- Ship may come with custom sound(s) for horns
 		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
@@ -7075,6 +7084,11 @@ IF WX:
 		+ OnSawed is invoked with Type and size - size=0 means nothing
 		+ Event handler sets continuous sound's volume up/down (when size=0), and eventually starts it
 		+ Stopping continuous saw sound also sets volume of these two to zero
+	+ Do air bubbles sounds, very low volume
+		+ At expiry
+		+ New events at IGameEventHandler
+			+ Dispatcher aggregates with counter
+			+ Ship takes shared_ptr<Dispatcher> now, for perf
 
 + Put credits
 	+ Splash: https://www.artstation.com/stukata/profile, contact the guy

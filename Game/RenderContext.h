@@ -6,12 +6,12 @@
 #pragma once
 
 #include "GameEventDispatcher.h"
+#include "NotificationRenderContext.h"
 #include "PerfStats.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
 #include "ShipRenderContext.h"
-#include "TextRenderContext.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
 #include "UploadedTextureManager.h"
@@ -59,15 +59,6 @@ public:
     ~RenderContext();
 
 public:
-
-    //
-    // Components
-    //
-
-    std::shared_ptr<TextRenderContext> GetTextRenderContext() const
-    {
-        return mTextRenderContext;
-    }
 
     //
     // World and view properties
@@ -1428,6 +1419,31 @@ public:
     void UploadShipsEnd()
     {}
 
+    void UploadNotificationTextStart()
+    {
+        mNotificationRenderContext->UploadTextStart();
+    }
+
+    void UploadNotificationTextLine(
+        std::string const & text,
+        TextPositionType anchor,
+        vec2f const & screenOffset,
+        float alpha,
+        FontType font)
+    {
+        mNotificationRenderContext->UploadTextLine(
+            text,
+            anchor,
+            screenOffset,
+            alpha,
+            font);
+    }
+
+    void UploadNotificationTextEnd()
+    {
+        mNotificationRenderContext->UploadTextEnd();
+    }
+
     void UploadEnd();
 
     void Draw();
@@ -1855,7 +1871,7 @@ private:
 
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::shared_ptr<TextRenderContext> mTextRenderContext;
+    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
     //
     // The current render parameters

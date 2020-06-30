@@ -30,6 +30,14 @@ class FontMetadata
 {
 public:
 
+    /*
+     * Returns the width - in screen coordinates, i.e. pixels - of this font.
+     */
+    inline int GetCharScreenWidth() const
+    {
+        return mCellSize.Width;
+    }
+
 	/*
 	 * Returns the height - in screen coordinates, i.e. pixels - of this font.
 	 */

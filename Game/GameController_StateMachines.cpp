@@ -15,7 +15,7 @@ struct GameController::TsunamiNotificationStateMachine
 {
     TsunamiNotificationStateMachine(
 		std::shared_ptr<Render::RenderContext> renderContext,
-		std::shared_ptr<TextLayer> textLayer);
+		NotificationLayer & notificationLayer);
 
     ~TsunamiNotificationStateMachine();
 
@@ -27,7 +27,7 @@ struct GameController::TsunamiNotificationStateMachine
 private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
-	std::shared_ptr<TextLayer> mTextLayer;
+    NotificationLayer & mNotificationLayer;
 
     enum class StateType
     {
@@ -48,9 +48,9 @@ void GameController::TsunamiNotificationStateMachineDeleter::operator()(TsunamiN
 
 GameController::TsunamiNotificationStateMachine::TsunamiNotificationStateMachine(
     std::shared_ptr<Render::RenderContext> renderContext,
-	std::shared_ptr<TextLayer> textLayer)
+    NotificationLayer & notificationLayer)
     : mRenderContext(std::move(renderContext))
-	, mTextLayer(std::move(textLayer))
+	, mNotificationLayer(notificationLayer)
     , mCurrentState(StateType::RumblingFadeIn)
     , mCurrentStateStartTime(GameWallClock::GetInstance().NowAsFloat())
 {
@@ -98,7 +98,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             if (progress >= 1.0f)
             {
 				// Send warning
-				mTextLayer->AddEphemeralTextLine("TSUNAMI WARNING!", 5s);
+				mNotificationLayer.AddEphemeralTextLine("TSUNAMI WARNING!", 5s);
 
 				// Transition
                 mCurrentState = StateType::Rumbling2;
@@ -156,7 +156,7 @@ void GameController::StartTsunamiNotificationStateMachine(float x)
     mTsunamiNotificationStateMachine.reset(
 		new TsunamiNotificationStateMachine(
 			mRenderContext,
-			mTextLayer));
+			mNotificationLayer));
 }
 
 ////////////////////////////////////////////////////////////////////////
