@@ -1419,29 +1419,29 @@ public:
     void UploadShipsEnd()
     {}
 
-    void UploadNotificationTextStart()
+    void UploadNotificationTextStart(FontType fontType)
     {
-        mNotificationRenderContext->UploadTextStart();
+        mNotificationRenderContext->UploadTextStart(fontType);
     }
 
     void UploadNotificationTextLine(
+        FontType font,
         std::string const & text,
         TextPositionType anchor,
         vec2f const & screenOffset,
-        float alpha,
-        FontType font)
+        float alpha)
     {
         mNotificationRenderContext->UploadTextLine(
+            font,
             text,
             anchor,
             screenOffset,
-            alpha,
-            font);
+            alpha);
     }
 
-    void UploadNotificationTextEnd()
+    void UploadNotificationTextEnd(FontType fontType)
     {
-        mNotificationRenderContext->UploadTextEnd();
+        mNotificationRenderContext->UploadTextEnd(fontType);
     }
 
     void UploadEnd();

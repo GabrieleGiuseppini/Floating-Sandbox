@@ -562,9 +562,3 @@ enum class TextPositionType
     BottomLeft,
     BottomRight
 };
-
-/*
- * The handle to "sticky" rendered text.
- */
-using RenderedTextHandle = uint32_t;
-static constexpr RenderedTextHandle NoneRenderedTextHandle = std::numeric_limits<RenderedTextHandle>::max();

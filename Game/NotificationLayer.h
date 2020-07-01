@@ -119,6 +119,7 @@ private:
 	// State
 	//
 
-	bool mIsTextDirty;
+	bool mIsStatusTextDirty;
+	bool mIsGameTextDirty;
 	bool mIsUltraViolentModeIndicatorDirty;
 };

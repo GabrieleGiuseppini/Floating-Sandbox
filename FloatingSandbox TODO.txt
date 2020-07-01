@@ -384,7 +384,7 @@ Render:
 						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
 						+ All sync points from above
 						+ Add measurement of 2 wait times
-					= Do TextRenderContext
+					+ Do TextRenderContext
 						+ TextLayer & TextContext: 
 							+ Split update & render into Update & RenderDraw
 							+ TextLayer only touches TextRenderContext::mLines @ TextLayer::Update(), not earlier
@@ -392,21 +392,18 @@ Render:
 								+ @ TextLayer::AddEphemeralTextLine: buffer lines
 								+ @ TextLayer::Update: collect all dirtinesses/buffered and send them to TextRenderContext::mLines
 								+ @ TextRenderContext::RenderDraw: mLines -> VBOs, draw 
-						= Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
+						+ Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
 							+ Do
 							+ Undo changes for NDC
 							+ Make sure vertex buffers are recalc'd immediately upon canvas size change
-							- NotifLayer: separate uploads (& dirtyness) by font
-							- Try ephemeral text scrolling up halfway through fade-out
-							- Test:
-								- Canvas resize
+							+ NotifLayer: separate uploads (& dirtyness) by font
+							+ Test:
+								+ Canvas resize
 								+ Reset during ephemeral lines
 						+ Print also 2 wait durations in extended status text
 					- Take measurements
 					- Test
 						- Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
-				- Check on other laptops
-					- Verify wait times ~= 0
 				- 4: Continue RenderContext Implementation (2)
 					- World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
 					- More setters:
@@ -414,6 +411,8 @@ Render:
 						- EffectiveAmbientLightIntensity
 							- Also at NotificationRenderContext
 					- Take measurements
+				- Check on other laptops
+					- Verify wait times ~= 0
 				- 4b: More setters
 					- Try other strategy for setters (queued and waited), see if stutters
 					- Other getters and setters

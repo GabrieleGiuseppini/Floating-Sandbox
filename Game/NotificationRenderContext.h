@@ -61,22 +61,20 @@ public:
 
 public:
 
-	void UploadTextStart()
+	void UploadTextStart(FontType fontType)
 	{
-		// Cleanup line buffers
-		for (auto & fc : mFontRenderContexts)
-		{
-			fc.GetTextLines().clear();
-			fc.SetLineDataDirty(true);
-		}
+		// Cleanup line buffers for this font
+		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(fontType)];
+		fontRenderContext.GetTextLines().clear();
+		fontRenderContext.SetLineDataDirty(true);
 	}
 
 	void UploadTextLine(
+		FontType font,
 		std::string const & text,
 		TextPositionType anchor,
 		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
-		float alpha,
-		FontType font)
+		float alpha)
 	{
 		//
 		// Store line data
@@ -94,7 +92,7 @@ public:
 		fontRenderContext.SetLineDataDirty(true);
 	}
 
-	void UploadTextEnd()
+	void UploadTextEnd(FontType /*fontType*/)
 	{
 		// Nop
 	}

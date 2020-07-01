@@ -219,43 +219,43 @@ void NotificationRenderContext::RenderText()
 {
     bool isFirst = true;
 
-    for (auto & context : mFontRenderContexts)
+    for (auto & fontRenderContext : mFontRenderContexts)
     {
+        auto const & vertexBuffer = fontRenderContext.GetVertexBuffer();
+
         //
         // Re-generate and upload vertex buffer if dirty
         //
 
-        if (context.IsLineDataDirty())
+        if (fontRenderContext.IsLineDataDirty())
         {
             //
             // Generate vertices
             //
 
-            GenerateTextVertices(context);
+            GenerateTextVertices(fontRenderContext);
 
             //
             // Upload buffer
             //
 
-            glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());
+            glBindBuffer(GL_ARRAY_BUFFER, fontRenderContext.GetVerticesVBOHandle());
 
             glBufferData(
                 GL_ARRAY_BUFFER,
-                context.GetVertexBuffer().size() * sizeof(TextQuadVertex),
-                context.GetVertexBuffer().data(),
+                vertexBuffer.size() * sizeof(TextQuadVertex),
+                vertexBuffer.data(),
                 GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            context.SetLineDataDirty(false);
+            fontRenderContext.SetLineDataDirty(false);
         }
 
         //
         // Render
         //
-
-        auto const & vertexBuffer = context.GetVertexBuffer();
 
         if (!vertexBuffer.empty())
         {
@@ -263,7 +263,7 @@ void NotificationRenderContext::RenderText()
             // Render the vertices for this font
             //
 
-            glBindVertexArray(context.GetVAOHandle());
+            glBindVertexArray(fontRenderContext.GetVAOHandle());
 
             if (isFirst)
             {
@@ -276,8 +276,8 @@ void NotificationRenderContext::RenderText()
                 isFirst = false;
             }
 
-            // Bind texture
-            glBindTexture(GL_TEXTURE_2D, context.GetFontTextureHandle());
+            // Bind font texture
+            glBindTexture(GL_TEXTURE_2D, fontRenderContext.GetFontTextureHandle());
             CheckOpenGLError();
 
             // Draw vertices
