@@ -26,6 +26,11 @@ namespace Render
  * This class implements the machinery for rendering UI notifications.
  *
  * The class is fully owned by the RenderContext class.
+ *
+ * The geometry produced by this class is highly dependent on the screen
+ * (canvas) size; for this reason, this context has to remember enough data
+ * about the primitives it renders so to be able to re-calculate vertex
+ * buffers when the screen size changes.
  */
 class NotificationRenderContext
 {
@@ -40,14 +45,16 @@ public:
 
     void UpdateCanvasSize(int width, int height)
     {
+		// Recalculate screen -> NDC conversion factors
         mScreenToNdcX = 2.0f / static_cast<float>(width);
         mScreenToNdcY = 2.0f / static_cast<float>(height);
 
-		LogMessage("TODOTEST: NotificationRenderContext::UpdateCanvasSize(", width, ",", height, ") => ",
-			"mScreenToNdcX=", mScreenToNdcX, ", mScreenToNdcY=", mScreenToNdcY);
-
-		// We now rely on uploaders to re-upload their data that
-		// is canvas size-dependent
+		// Make sure we re-calculate (and re-upload) all vertices
+		// at the next iteration
+		for (auto & fc : mFontRenderContexts)
+		{
+			fc.SetLineDataDirty(true);
+		}
     }
 
     void UpdateEffectiveAmbientLightIntensity(float effectiveAmbientLightIntensity);
@@ -56,11 +63,11 @@ public:
 
 	void UploadTextStart()
 	{
-		// Cleanup
+		// Cleanup line buffers
 		for (auto & fc : mFontRenderContexts)
 		{
-			fc.GetVertexBuffer().clear();
-			fc.SetVertexBufferDirty(true);
+			fc.GetTextLines().clear();
+			fc.SetLineDataDirty(true);
 		}
 	}
 
@@ -71,94 +78,20 @@ public:
 		float alpha,
 		FontType font)
 	{
-		LogMessage("TODOTEST: NotificationRenderContext::UploadTextLine(", text, "), mScreenToNdcX=", mScreenToNdcX,
-			", mScreenToNdcY=", mScreenToNdcY);
-
 		//
-		// Create vertices for this line
+		// Store line data
 		//
 
-		FontRenderContext & fontRenderContext = mFontRenderContexts[static_cast<size_t>(font)];
-		FontMetadata const & fontMetadata = fontRenderContext.GetFontMetadata();
+		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(font)];
 
-		//
-		// Calculate line position in NDC coordinates
-		//
+		fontRenderContext.GetTextLines().emplace_back(
+			text,
+			anchor,
+			screenOffset,
+			alpha);
 
-		float constexpr MarginScreen = 10.0f;
-		float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
-
-		vec2f linePositionNdc( // Top-left of quads
-			screenOffset.x * mScreenToNdcX * static_cast<float>(fontMetadata.GetCharScreenWidth()),
-			-screenOffset.y * mScreenToNdcY * static_cast<float>(fontMetadata.GetLineScreenHeight()));
-
-		switch (anchor)
-		{
-			case TextPositionType::BottomLeft:
-			{
-				linePositionNdc += vec2f(
-					-1.f + MarginScreen * mScreenToNdcX,
-					-1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
-
-				break;
-			}
-
-			case TextPositionType::BottomRight:
-			{
-				auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-					text.c_str(),
-					text.length());
-
-				linePositionNdc += vec2f(
-					1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-					-1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
-
-				break;
-			}
-
-			case TextPositionType::TopLeft:
-			{
-				linePositionNdc += vec2f(
-					-1.f + MarginScreen * mScreenToNdcX,
-					1.f - MarginTopScreen * mScreenToNdcY);
-
-				break;
-			}
-
-			case TextPositionType::TopRight:
-			{
-				auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-					text.c_str(),
-					text.length());
-
-				linePositionNdc += vec2f(
-					1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-					1.f - MarginTopScreen * mScreenToNdcY);
-
-				break;
-			}
-		}
-
-
-		//
-		// Emit quads for this line
-		//
-
-		fontMetadata.EmitQuadVertices(
-			text.c_str(),
-			text.length(),
-			linePositionNdc,
-			alpha,
-			mScreenToNdcX,
-			mScreenToNdcY,
-			fontRenderContext.GetVertexBuffer());
-
-
-		//
-		// Remember that this font's render context vertex buffers are dirty now
-		//
-
-		fontRenderContext.SetVertexBufferDirty(true);
+		// Remember this font's vertices need to be re-generated and re-uploaded
+		fontRenderContext.SetLineDataDirty(true);
 	}
 
 	void UploadTextEnd()
@@ -167,6 +100,14 @@ public:
 	}
 
 	void Draw();
+
+private:
+
+	class FontRenderContext;
+
+	void GenerateTextVertices(FontRenderContext & context);
+
+	void RenderText();
 
 private:
 
@@ -180,13 +121,32 @@ private:
 private:
 
     //
-    // Text render machinery
+    // Text machinery
     //
+
+	struct TextLine
+	{
+		std::string Text;
+		TextPositionType Anchor;
+		vec2f ScreenOffset; // In font cell-size fraction (0.0 -> 1.0)
+		float Alpha;
+
+		TextLine(
+			std::string const & text,
+			TextPositionType anchor,
+			vec2f const & screenOffset,
+			float alpha)
+			: Text(text)
+			, Anchor(anchor)
+			, ScreenOffset(screenOffset)
+			, Alpha(alpha)
+		{}
+	};
 
     // Render state, grouped by font.
 	//
-	// This is ultimately where all the render-level information is stored;
-	// we have N VBO buffers, one for each font.
+	// This is ultimately where all the primitive-level and render-level
+	// information - grouped by font - is stored.
     class FontRenderContext
     {
     public:
@@ -200,9 +160,12 @@ private:
             , mFontTextureHandle(fontTextureHandle)
             , mVertexBufferVBOHandle(vertexBufferVBOHandle)
             , mVAOHandle(vaoHandle)
-			, mIsVertexBufferDirty(false)
+			, mTextLines()
+			, mVertexBuffer()
+			, mIsLineDataDirty(false)
         {}
 
+		/* TODO: needed?
 		FontRenderContext(FontRenderContext && other) noexcept
             : mFontMetadata(std::move(other.mFontMetadata))
             , mFontTextureHandle(std::move(other.mFontTextureHandle))
@@ -210,6 +173,7 @@ private:
             , mVAOHandle(std::move(other.mVAOHandle))
 			, mIsVertexBufferDirty(other.mIsVertexBufferDirty)
         {}
+		*/
 
         inline FontMetadata const & GetFontMetadata() const
         {
@@ -231,6 +195,16 @@ private:
             return *mVAOHandle;
         }
 
+		inline std::vector<TextLine> const & GetTextLines() const
+		{
+			return mTextLines;
+		}
+
+		inline std::vector<TextLine> & GetTextLines()
+		{
+			return mTextLines;
+		}
+
         inline std::vector<TextQuadVertex> const & GetVertexBuffer() const
         {
             return mVertexBuffer;
@@ -241,28 +215,30 @@ private:
             return mVertexBuffer;
         }
 
-		bool IsVertexBufferDirty() const
+		bool IsLineDataDirty() const
 		{
-			return mIsVertexBufferDirty;
+			return mIsLineDataDirty;
 		}
 
-		void SetVertexBufferDirty(bool isDirty)
+		void SetLineDataDirty(bool isDirty)
 		{
-			mIsVertexBufferDirty = isDirty;
+			mIsLineDataDirty = isDirty;
 		}
 
     private:
+
         FontMetadata mFontMetadata;
         GameOpenGLTexture mFontTextureHandle;
         GameOpenGLVBO mVertexBufferVBOHandle;
         GameOpenGLVAO mVAOHandle;
 
+		std::vector<TextLine> mTextLines;
         std::vector<TextQuadVertex> mVertexBuffer;
 
-		// Flag tracking whether or not this font's vertex
-		// data is dirty; when it is, we'll re-upload the
-		// vertex data
-		bool mIsVertexBufferDirty;
+		// Flag tracking whether or not this font's line
+		// data is dirty; when it is, we'll re-build and
+		// re-upload the vertex data
+		bool mIsLineDataDirty;
     };
 
     std::vector<FontRenderContext> mFontRenderContexts;

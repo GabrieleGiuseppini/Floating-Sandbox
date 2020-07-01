@@ -28,15 +28,6 @@ NotificationLayer::NotificationLayer(bool isUltraViolentMode)
 {
 }
 
-void NotificationLayer::SetCanvasSize(int width, int height)
-{
-	LogMessage("TODOTEST: NotificationLayer::SetCanvasSize(", width, ",", height, ")");
-
-	// Force re-upload of everything that is screen-size dependent
-	mIsTextDirty = true;
-	mIsUltraViolentModeIndicatorDirty = true;
-}
-
 void NotificationLayer::SetStatusTextEnabled(bool isEnabled)
 {
 	mIsStatusTextEnabled = isEnabled;

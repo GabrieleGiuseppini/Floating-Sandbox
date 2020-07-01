@@ -128,39 +128,134 @@ void NotificationRenderContext::UpdateEffectiveAmbientLightIntensity(float inten
 
 void NotificationRenderContext::Draw()
 {
-    //
-    // Render all fonts
-    //
+    RenderText();
+}
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context)
+{
+    FontMetadata const & fontMetadata = context.GetFontMetadata();
+
+    context.GetVertexBuffer().clear();
+
+    for (auto const & textLine : context.GetTextLines())
+    {
+        //
+        // Calculate line position in NDC coordinates
+        //
+
+        float constexpr MarginScreen = 10.0f;
+        float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
+
+        vec2f linePositionNdc( // Top-left of quads
+            textLine.ScreenOffset.x * mScreenToNdcX * static_cast<float>(fontMetadata.GetCharScreenWidth()),
+            -textLine.ScreenOffset.y * mScreenToNdcY * static_cast<float>(fontMetadata.GetLineScreenHeight()));
+
+        switch (textLine.Anchor)
+        {
+            case TextPositionType::BottomLeft:
+            {
+                linePositionNdc += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
+
+                break;
+            }
+
+            case TextPositionType::BottomRight:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
+
+                break;
+            }
+
+            case TextPositionType::TopLeft:
+            {
+                linePositionNdc += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+
+            case TextPositionType::TopRight:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+        }
+
+
+        //
+        // Emit quads for this line
+        //
+
+        fontMetadata.EmitQuadVertices(
+            textLine.Text.c_str(),
+            textLine.Text.length(),
+            linePositionNdc,
+            textLine.Alpha,
+            mScreenToNdcX,
+            mScreenToNdcY,
+            context.GetVertexBuffer());
+    }
+}
+
+void NotificationRenderContext::RenderText()
+{
     bool isFirst = true;
 
     for (auto & context : mFontRenderContexts)
     {
-		auto const & vertexBuffer = context.GetVertexBuffer();
+        //
+        // Re-generate and upload vertex buffer if dirty
+        //
 
-		//
-		// Re-upload vertex buffer if dirty
-		//
+        if (context.IsLineDataDirty())
+        {
+            //
+            // Generate vertices
+            //
 
-		if (context.IsVertexBufferDirty())
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());
+            GenerateTextVertices(context);
 
-			glBufferData(
-				GL_ARRAY_BUFFER,
-				vertexBuffer.size() * sizeof(TextQuadVertex),
-				vertexBuffer.data(),
-				GL_DYNAMIC_DRAW);
-			CheckOpenGLError();
+            //
+            // Upload buffer
+            //
 
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, context.GetVerticesVBOHandle());
 
-			context.SetVertexBufferDirty(false);
-		}
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                context.GetVertexBuffer().size() * sizeof(TextQuadVertex),
+                context.GetVertexBuffer().data(),
+                GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
 
-		//
-		// Render
-		//
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            context.SetLineDataDirty(false);
+        }
+
+        //
+        // Render
+        //
+
+        auto const & vertexBuffer = context.GetVertexBuffer();
 
         if (!vertexBuffer.empty())
         {

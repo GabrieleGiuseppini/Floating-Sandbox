@@ -22,8 +22,6 @@ public:
 
 	NotificationLayer(bool isUltraViolentMode);
 
-	void SetCanvasSize(int width, int height);
-
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
 

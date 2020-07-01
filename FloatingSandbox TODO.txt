@@ -395,7 +395,7 @@ Render:
 						= Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
 							+ Do
 							+ Undo changes for NDC
-							= OnCanvasSize: GameController->NotifLayer, which marks everything as dirty
+							+ Make sure vertex buffers are recalc'd immediately upon canvas size change
 							- NotifLayer: separate uploads (& dirtyness) by font
 							- Try ephemeral text scrolling up halfway through fade-out
 							- Test:
@@ -442,10 +442,11 @@ Render:
 
 		- GameController: just one special day?
 
+		- Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
+
 		- Remove CTRL+M shortcut for mute?
 
 		- Frontier (*)
-
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 

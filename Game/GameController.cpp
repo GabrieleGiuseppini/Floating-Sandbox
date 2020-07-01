@@ -1169,13 +1169,8 @@ void GameController::SetEngineControllerState(
 
 void GameController::SetCanvasSize(int width, int height)
 {
-    LogMessage("TODOTEST: GameController::SetCanvasSize(", width, ",", height, ")");
-
     // Tell RenderContext
     mRenderContext->SetCanvasSize(width, height);
-
-    // Tell NotificationLayer
-    mNotificationLayer.SetCanvasSize(width, height);
 
     // Pickup eventual changes to view model properties
     mZoomParameterSmoother->SetValueImmediate(mRenderContext->GetZoom());

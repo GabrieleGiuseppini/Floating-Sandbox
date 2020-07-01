@@ -116,8 +116,6 @@ public:
 
     void SetCanvasSize(int width, int height)
     {
-        LogMessage("TODOTEST: RenderContext::SetCanvasSize(", width, ",", height, ")");
-
         std::lock_guard<std::mutex> const lock(mSettingsMutex);
 
         mViewModel.SetCanvasSize(width, height);
