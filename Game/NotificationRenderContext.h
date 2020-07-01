@@ -43,11 +43,11 @@ public:
         mScreenToNdcX = 2.0f / static_cast<float>(width);
         mScreenToNdcY = 2.0f / static_cast<float>(height);
 
-        // Re-create vertices next time
-		for (auto & fc : mFontRenderContexts)
-		{
-			fc.SetVertexBufferDirty(true);
-		}
+		LogMessage("TODOTEST: NotificationRenderContext::UpdateCanvasSize(", width, ",", height, ") => ",
+			"mScreenToNdcX=", mScreenToNdcX, ", mScreenToNdcY=", mScreenToNdcY);
+
+		// We now rely on uploaders to re-upload their data that
+		// is canvas size-dependent
     }
 
     void UpdateEffectiveAmbientLightIntensity(float effectiveAmbientLightIntensity);
@@ -60,6 +60,7 @@ public:
 		for (auto & fc : mFontRenderContexts)
 		{
 			fc.GetVertexBuffer().clear();
+			fc.SetVertexBufferDirty(true);
 		}
 	}
 
@@ -70,6 +71,9 @@ public:
 		float alpha,
 		FontType font)
 	{
+		LogMessage("TODOTEST: NotificationRenderContext::UploadTextLine(", text, "), mScreenToNdcX=", mScreenToNdcX,
+			", mScreenToNdcY=", mScreenToNdcY);
+
 		//
 		// Create vertices for this line
 		//

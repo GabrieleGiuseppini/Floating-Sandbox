@@ -1778,6 +1778,8 @@ void RenderContext::OnViewModelUpdated()
 
 void RenderContext::OnCanvasSizeUpdated()
 {
+    LogMessage("TODOTEST: RenderContext::OnCanvasSizeUpdated(", mViewModel.GetCanvasWidth(), ",", mViewModel.GetCanvasHeight(),
+        ")");
     glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
     mNotificationRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 }
