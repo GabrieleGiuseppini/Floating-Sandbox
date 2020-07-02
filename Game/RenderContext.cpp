@@ -29,7 +29,7 @@ RenderContext::RenderContext(
     ProgressCallback const & progressCallback)
     // Buffers
     : mStarVertexBuffer()
-    , mIsStarVertexBufferDirty(false)
+    , mIsStarVertexBufferDirty(true)
     , mStarVBO()
     , mStarVBOAllocatedVertexSize(0u)
     , mLightningVertexBuffer()
@@ -40,11 +40,11 @@ RenderContext::RenderContext(
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
     , mLandSegmentBuffer()
-    , mLandSegmentBufferAllocatedSize(0u)
-    , mLandVBO()
+    , mLandSegmentVBO()
+    , mLandSegmentVBOAllocatedVertexSize(0u)
     , mOceanSegmentBuffer()
-    , mOceanSegmentBufferAllocatedSize(0u)
-    , mOceanVBO()
+    , mOceanSegmentVBO()
+    , mOceanSegmentVBOAllocatedVertexSize(0u)
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
     , mHeatBlasterFlameVBO()
@@ -556,69 +556,29 @@ void RenderContext::UploadCloudsEnd()
 void RenderContext::UploadLandStart(size_t slices)
 {
     //
-    // Prepare land segment buffer
+    // Last segments are not sticky: we upload them at each frame
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    if (slices + 1 != mLandSegmentBufferAllocatedSize)
-    {
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(LandSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-
-        mLandSegmentBufferAllocatedSize = slices + 1;
-    }
-
-    mLandSegmentBuffer.map(slices + 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    mLandSegmentBuffer.reset(slices + 1);
 }
 
 void RenderContext::UploadLandEnd()
 {
-    //
-    // Upload land segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
-
-    mLandSegmentBuffer.unmap();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void RenderContext::UploadOceanStart(size_t slices)
 {
     //
-    // Prepare ocean segment buffer
+    // Ocean segments are not sticky: we upload them at each frame
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    if (slices + 1 != mOceanSegmentBufferAllocatedSize)
-    {
-        glBufferData(GL_ARRAY_BUFFER, (slices + 1) * sizeof(OceanSegment), nullptr, GL_STREAM_DRAW);
-        CheckOpenGLError();
-
-        mOceanSegmentBufferAllocatedSize = slices + 1;
-    }
-
-    mOceanSegmentBuffer.map(slices + 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    mOceanSegmentBuffer.reset(6 * slices + 1);
 }
 
 void RenderContext::UploadOceanEnd()
 {
-    //
-    // Upload ocean segment buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
-
-    mOceanSegmentBuffer.unmap();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void RenderContext::UploadEnd()
@@ -667,10 +627,10 @@ void RenderContext::Draw()
 
             RenderCloudsAndBackgroundLightnings();
 
-            /* TODOTEST
             // Render ocean opaquely, over sky
             RenderOcean(true);
 
+            /* TODOTEST
             glEnable(GL_DEPTH_TEST); // Required by ships
 
             for (auto const & ship : mShips)
@@ -679,6 +639,7 @@ void RenderContext::Draw()
             }
 
             glDisable(GL_DEPTH_TEST);
+            */
 
             if (!mShowShipThroughOcean)
             {
@@ -692,6 +653,7 @@ void RenderContext::Draw()
 
             RenderOceanFloor();
 
+            /* TODOTEST
             if (!mCrossOfLightVertexBuffer.empty())
             {
                 RenderCrossesOfLight();
@@ -747,8 +709,8 @@ void RenderContext::InitializeBuffersAndVAOs()
     mStarVBO = vbos[0];
     mLightningVBO = vbos[1];
     mCloudVBO = vbos[2];
-    mLandVBO = vbos[3];
-    mOceanVBO = vbos[4];
+    mLandSegmentVBO = vbos[3];
+    mOceanSegmentVBO = vbos[4];
     mCrossOfLightVBO = vbos[5];
     mHeatBlasterFlameVBO = vbos[6];
     mFireExtinguisherSprayVBO = vbos[7];
@@ -828,7 +790,7 @@ void RenderContext::InitializeBuffersAndVAOs()
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mLandVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Land));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Land), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     CheckOpenGLError();
@@ -847,7 +809,7 @@ void RenderContext::InitializeBuffersAndVAOs()
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mOceanVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanSegmentVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Ocean));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Ocean), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void *)0);
     CheckOpenGLError();
@@ -1440,6 +1402,33 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
 
 void RenderContext::RenderOcean(bool opaquely)
 {
+    //
+    // Buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mOceanSegmentVBO);
+
+    if (mOceanSegmentVBOAllocatedVertexSize != mOceanSegmentBuffer.size())
+    {
+        // Re-allocate VBO buffer and upload
+        glBufferData(GL_ARRAY_BUFFER, mOceanSegmentBuffer.size() * sizeof(OceanSegment), mOceanSegmentBuffer.data(), GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mOceanSegmentVBOAllocatedVertexSize = mOceanSegmentBuffer.size();
+    }
+    else
+    {
+        // No size change, just upload VBO buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mOceanSegmentBuffer.size() * sizeof(OceanSegment), mOceanSegmentBuffer.data());
+        CheckOpenGLError();
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Render
+    //
+
     float const transparency = opaquely ? 0.0f : mOceanTransparency;
 
     glBindVertexArray(*mOceanVAO);
@@ -1484,21 +1473,48 @@ void RenderContext::RenderOcean(bool opaquely)
 
 void RenderContext::RenderOceanFloor()
 {
+    //
+    // Buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
+
+    if (mLandSegmentVBOAllocatedVertexSize != mLandSegmentBuffer.size())
+    {
+        // Re-allocate VBO buffer and upload
+        glBufferData(GL_ARRAY_BUFFER, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data(), GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mLandSegmentVBOAllocatedVertexSize = mLandSegmentBuffer.size();
+    }
+    else
+    {
+        // No size change, just upload VBO buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mLandSegmentBuffer.size() * sizeof(LandSegment), mLandSegmentBuffer.data());
+        CheckOpenGLError();
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Render
+    //
+
     glBindVertexArray(*mLandVAO);
 
     switch (mLandRenderMode)
     {
-    case LandRenderMode::Flat:
-    {
-        mShaderManager->ActivateProgram<ProgramType::LandFlat>();
-        break;
-    }
+        case LandRenderMode::Flat:
+        {
+            mShaderManager->ActivateProgram<ProgramType::LandFlat>();
+            break;
+        }
 
-    case LandRenderMode::Texture:
-    {
-        mShaderManager->ActivateProgram<ProgramType::LandTexture>();
-        break;
-    }
+        case LandRenderMode::Texture:
+        {
+            mShaderManager->ActivateProgram<ProgramType::LandTexture>();
+            break;
+        }
     }
 
     if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)

@@ -404,8 +404,9 @@ Render:
 					+ Take measurements: UPL=0.16 DRW=1.60 W(UPL=0.09 DRW=0.09)
 					+ Test
 						+ Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
-				- 4: Continue RenderContext Implementation (2)
-					- World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
+				= 4: Continue RenderContext Implementation (2)
+					= World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
+					- Check numbers, especially for land
 					- Test setters for ViewModel
 					- Try other strategy for setters (queued and waited), see if stutters
 					- More setters:

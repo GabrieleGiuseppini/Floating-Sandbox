@@ -1785,13 +1785,13 @@ private:
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
 
-    GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
-    size_t mLandSegmentBufferAllocatedSize;
-    GameOpenGLVBO mLandVBO;
+    BoundedVector<LandSegment> mLandSegmentBuffer;
+    GameOpenGLVBO mLandSegmentVBO;
+    size_t mLandSegmentVBOAllocatedVertexSize;
 
-    GameOpenGLMappedBuffer<OceanSegment, GL_ARRAY_BUFFER> mOceanSegmentBuffer;
-    size_t mOceanSegmentBufferAllocatedSize;
-    GameOpenGLVBO mOceanVBO;
+    BoundedVector<OceanSegment> mOceanSegmentBuffer;
+    GameOpenGLVBO mOceanSegmentVBO;
+    size_t mOceanSegmentVBOAllocatedVertexSize;
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;

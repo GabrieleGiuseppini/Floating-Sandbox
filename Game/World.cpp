@@ -722,10 +722,11 @@ void World::RenderUpload(
 
     mClouds.Upload(renderContext);
 
-    /* TODOTEST
     mOceanFloor.Upload(gameParameters, renderContext);
 
     mOceanSurface.Upload(gameParameters, renderContext);
+
+    /* TODOTEST
 
     // Ships
     {

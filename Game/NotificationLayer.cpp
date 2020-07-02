@@ -141,7 +141,7 @@ void NotificationLayer::SetStatusTexts(
 
 			ss << std::fixed
 				<< std::setprecision(2)
-				<< "WAIT(UPD:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS" << " DRW:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS)"
+				<< "WAIT(UPD:" << avgWaitForRenderUploadDurationMillisecondsPerFrame << "MS" << " DRW:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS)"
 				;
 
 			mStatusTextLines[2] = ss.str();
