@@ -8,6 +8,8 @@
 #include "Font.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
+#include "TextureAtlas.h"
+#include "TextureTypes.h"
 
 #include <GameOpenGL/ShaderManager.h>
 
@@ -39,6 +41,7 @@ public:
 	NotificationRenderContext(
         ResourceLocator const & resourceLocator,
         ShaderManager<ShaderManagerTraits> & shaderManager,
+		TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         int canvasWidth,
         int canvasHeight,
         float effectiveAmbientLightIntensity);
@@ -61,18 +64,23 @@ public:
 
 public:
 
-	void UploadTextStart(FontType fontType)
+	void UploadTextNotificationStart(FontType fontType)
 	{
+		//
+		// Text notifications are sticky: we upload them once in a while and
+		// continue drawing the same buffer
+		//
+
 		// Cleanup line buffers for this font
 		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(fontType)];
 		fontRenderContext.GetTextLines().clear();
 		fontRenderContext.SetLineDataDirty(true);
 	}
 
-	void UploadTextLine(
+	void UploadTextNotificationLine(
 		FontType font,
 		std::string const & text,
-		TextPositionType anchor,
+		AnchorPositionType anchor,
 		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
 		float alpha)
 	{
@@ -87,12 +95,32 @@ public:
 			anchor,
 			screenOffset,
 			alpha);
-
-		// Remember this font's vertices need to be re-generated and re-uploaded
-		fontRenderContext.SetLineDataDirty(true);
 	}
 
-	void UploadTextEnd(FontType /*fontType*/)
+	void UploadTextNotificationEnd(FontType /*fontType*/)
+	{
+		// Nop
+	}
+
+	void UploadTextureNotificationStart()
+	{
+		//
+		// Texture notifications are sticky: we upload them once in a while and
+		// continue drawing the same buffer
+		//
+
+		// Cleanup buffer
+		mTextureNotificationVertexBuffer.clear();
+		mIsTextureNotificationVertexBufferDirty = true;
+	}
+
+    void UploadTextureNotification(
+        TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+		AnchorPositionType anchor,
+        vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
+        float alpha);
+
+	void UploadTextureNotificationEnd()
 	{
 		// Nop
 	}
@@ -105,7 +133,9 @@ private:
 
 	void GenerateTextVertices(FontRenderContext & context);
 
-	void RenderText();
+	void RenderTextNotifications();
+
+	void RenderTextureNotifications();
 
 private:
 
@@ -125,13 +155,13 @@ private:
 	struct TextLine
 	{
 		std::string Text;
-		TextPositionType Anchor;
+		AnchorPositionType Anchor;
 		vec2f ScreenOffset; // In font cell-size fraction (0.0 -> 1.0)
 		float Alpha;
 
 		TextLine(
 			std::string const & text,
-			TextPositionType anchor,
+			AnchorPositionType anchor,
 			vec2f const & screenOffset,
 			float alpha)
 			: Text(text)
@@ -162,16 +192,6 @@ private:
 			, mVertexBuffer()
 			, mIsLineDataDirty(false)
         {}
-
-		/* TODO: needed?
-		FontRenderContext(FontRenderContext && other) noexcept
-            : mFontMetadata(std::move(other.mFontMetadata))
-            , mFontTextureHandle(std::move(other.mFontTextureHandle))
-            , mVertexBufferVBOHandle(std::move(other.mVertexBufferVBOHandle))
-            , mVAOHandle(std::move(other.mVAOHandle))
-			, mIsVertexBufferDirty(other.mIsVertexBufferDirty)
-        {}
-		*/
 
         inline FontMetadata const & GetFontMetadata() const
         {
@@ -240,6 +260,35 @@ private:
     };
 
     std::vector<FontRenderContext> mFontRenderContexts;
+
+	//
+	// Texture machinery
+	//
+
+	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+
+#pragma pack(push, 1)
+	struct TextureNotificationVertex
+	{
+        vec2f vertexPositionNDC;
+        vec2f textureCoordinate;
+        float alpha;
+
+		TextureNotificationVertex(
+            vec2f const & _vertexPositionNDC,
+            vec2f const & _textureCoordinate,
+            float _alpha)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, textureCoordinate(_textureCoordinate)
+			, alpha(_alpha)
+		{}
+	};
+#pragma pack(pop)
+
+	GameOpenGLVAO mTextureNotificationVAO;
+	std::vector<TextureNotificationVertex> mTextureNotificationVertexBuffer;
+	bool mIsTextureNotificationVertexBufferDirty;
+	GameOpenGLVBO mTextureNotificationVBO;
 };
 
 }

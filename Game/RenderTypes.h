@@ -14,6 +14,18 @@ namespace Render {
 //
 
 /*
+ * The different fonts available.
+ */
+enum class FontType
+{
+    // Indices must match suffix of filename
+    StatusText = 0,
+    GameText = 1,
+
+    _Last = GameText
+};
+
+/*
  * Describes a vertex of a text quad, with all the information necessary to the shader.
  */
 #pragma pack(push, 1)
@@ -70,6 +82,21 @@ struct RenderStatistics
         LastRenderedShipFlames = 0;
         LastRenderedShipGenericMipMappedTextures = 0;
     }
+};
+
+//
+// Misc
+//
+
+/*
+ * The positions at which UI elements may be amchored.
+ */
+enum class AnchorPositionType
+{
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight
 };
 
 }

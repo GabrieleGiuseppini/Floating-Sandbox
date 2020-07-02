@@ -147,6 +147,7 @@ struct GenericMipMappedTextureTextureDatabaseTraits
 enum class GenericLinearTextureGroups : uint16_t
 {
     Fire,
+    UVModeNotification,
     WorldBorder,
 
     _Last = WorldBorder
@@ -162,6 +163,8 @@ struct GenericLinearTextureTextureDatabaseTraits
     {
         if (Utils::CaseInsensitiveEquals(str, "Fire"))
             return TextureGroups::Fire;
+        else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))
+            return TextureGroups::UVModeNotification;
         else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
             return TextureGroups::WorldBorder;
         else

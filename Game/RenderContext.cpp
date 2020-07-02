@@ -169,7 +169,47 @@ RenderContext::RenderContext(
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
         });
 
-    progressCallback(0.3f, "Loading fonts...");
+    progressCallback(0.3f, "Initializing buffers...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            InitializeBuffersAndVAOs();
+        });
+
+    progressCallback(0.4f, "Loading cloud texture atlas...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            InitializeCloudTextures(resourceLocator);
+        });
+
+    progressCallback(0.5f, "Loading world textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            InitializeWorldTextures(resourceLocator);
+        });
+
+    progressCallback(0.6f, "Loading generic textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            InitializeGenericTextures(resourceLocator);
+        });
+
+    progressCallback(0.7f, "Loading explosion textures...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            InitializeExplosionTextures(resourceLocator);
+        });
+
+    progressCallback(0.8f, "Loading fonts...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -180,70 +220,11 @@ RenderContext::RenderContext(
 
             mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
                 resourceLocator,
-                *(mShaderManager.get()),
+                *mShaderManager,
+                *mGenericLinearTextureAtlasMetadata,
                 mViewModel.GetCanvasWidth(),
                 mViewModel.GetCanvasHeight(),
                 mAmbientLightIntensity);
-        });
-
-    progressCallback(0.4f, "Initializing buffers...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            //
-            // Initialize buffers and VAOs
-            //
-
-            InitializeBuffersAndVAOs();
-        });
-
-    progressCallback(0.5f, "Loading cloud texture atlas...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            //
-            // Initialize textures
-            //
-
-            InitializeCloudTextures(resourceLocator);
-        });
-
-    progressCallback(0.6f, "Loading world textures...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            //
-            // Initialize textures
-            //
-
-            InitializeWorldTextures(resourceLocator);
-        });
-
-    progressCallback(0.7f, "Loading generic textures...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            //
-            // Initialize textures
-            //
-
-            InitializeGenericTextures(resourceLocator);
-        });
-
-    progressCallback(0.8f, "Loading explosion textures...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            //
-            // Initialize textures
-            //
-
-            InitializeExplosionTextures(resourceLocator);
         });
 
     progressCallback(0.9f, "Initializing settings...");
@@ -1354,7 +1335,7 @@ void RenderContext::RenderStars()
     // Render
     //
 
-    if (mStarVBOAllocatedVertexSize > 0)
+    if (mStarVertexBuffer.size() > 0)
     {
         glBindVertexArray(*mStarVAO);
 
@@ -1362,7 +1343,7 @@ void RenderContext::RenderStars()
 
         glPointSize(0.5f);
 
-        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVBOAllocatedVertexSize));
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mStarVertexBuffer.size()));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1404,7 +1385,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
     GLsizei cloudsOverLightningVertexStart = 0;
 
     if (mBackgroundLightningVertexCount > 0
-        && mCloudVBOAllocatedVertexSize > 6 * CloudsOverLightnings)
+        && mCloudVertexBuffer.size() > 6 * CloudsOverLightnings)
     {
         glBindVertexArray(*mCloudVAO);
 
@@ -1413,7 +1394,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVBOAllocatedVertexSize) - (6 * CloudsOverLightnings);
+        cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
 
         glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
         CheckOpenGLError();
@@ -1439,7 +1420,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
     // Draw foreground clouds
     ////////////////////////////////////////////////////
 
-    if (mCloudVBOAllocatedVertexSize > static_cast<size_t>(cloudsOverLightningVertexStart))
+    if (mCloudVertexBuffer.size() > static_cast<size_t>(cloudsOverLightningVertexStart))
     {
         glBindVertexArray(*mCloudVAO);
 
@@ -1448,7 +1429,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings()
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
 
-        glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVBOAllocatedVertexSize) - cloudsOverLightningVertexStart);
+        glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVertexBuffer.size()) - cloudsOverLightningVertexStart);
         CheckOpenGLError();
     }
 

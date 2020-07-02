@@ -13,6 +13,18 @@
 },
 
 {
+	"groupName": "UVModeNotification",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"filename": "uv_mode_notification_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "WorldBorder",
 	"hasOwnAmbientLight": false,
 	"frames":[

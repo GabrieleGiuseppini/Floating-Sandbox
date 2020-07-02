@@ -7,9 +7,13 @@
 
 namespace Render {
 
+float constexpr MarginScreen = 10.0f;
+float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
+
 NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
+    TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
     int canvasWidth,
     int canvasHeight,
     float effectiveAmbientLightIntensity)
@@ -19,6 +23,12 @@ NotificationRenderContext::NotificationRenderContext(
     , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
 	//
     , mFontRenderContexts()
+    //
+    , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
+    , mTextureNotificationVAO()
+    , mTextureNotificationVertexBuffer()
+    , mIsTextureNotificationVertexBufferDirty(false)
+    , mTextureNotificationVBO()
 {
     //
     // Load fonts
@@ -30,14 +40,14 @@ NotificationRenderContext::NotificationRenderContext(
 
 
     //
-    // Initialize render machinery
+    // Initialize text notifications
     //
 
     mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
 
-    // Set hardcoded parameters
-    mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-    mShaderManager.SetTextureParameters<ProgramType::TextNDC>();
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::TextNotifications>();
+    mShaderManager.SetTextureParameters<ProgramType::TextNotifications>();
 
     // Initialize font render contexts
     for (Font & font : fonts)
@@ -87,10 +97,11 @@ NotificationRenderContext::NotificationRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVBOHandle);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
+        static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -108,6 +119,35 @@ NotificationRenderContext::NotificationRenderContext(
 
 
     //
+    // Initialize texture notifications
+    //
+
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+    mShaderManager.SetTextureParameters<ProgramType::TextureNotifications>();
+
+    // Initialize VAO
+    GLuint tmpGLuint;
+    glGenVertexArrays(1, &tmpGLuint);
+    mTextureNotificationVAO = tmpGLuint;
+
+    // Initialize VBO
+    glGenBuffers(1, &tmpGLuint);
+    mTextureNotificationVBO = tmpGLuint;
+
+    // Describe vertex attributes
+    glBindVertexArray(*mTextureNotificationVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
+    static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
+    CheckOpenGLError();
+    glBindVertexArray(0);
+
+
+    //
     // Update parameters
     //
 
@@ -120,15 +160,125 @@ void NotificationRenderContext::UpdateEffectiveAmbientLightIntensity(float inten
 
     float const lighteningStrength = Step(0.5f, 1.0f - mEffectiveAmbientLightIntensity);
 
-    // Set parameter
-    mShaderManager.ActivateProgram<ProgramType::TextNDC>();
-    mShaderManager.SetProgramParameter<ProgramType::TextNDC, ProgramParameterType::TextLighteningStrength>(
+    // Set parameter in all programs
+    mShaderManager.ActivateProgram<ProgramType::TextNotifications>();
+    mShaderManager.SetProgramParameter<ProgramType::TextNotifications, ProgramParameterType::TextLighteningStrength>(
         lighteningStrength);
+    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+    mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
+        lighteningStrength);
+}
+
+void NotificationRenderContext::UploadTextureNotification(
+    TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+    AnchorPositionType anchor,
+    vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
+    float alpha)
+{
+    //
+    // Populate the texture quad
+    //
+
+    TextureAtlasFrameMetadata<GenericLinearTextureGroups> const & frame =
+        mGenericLinearTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
+
+    ImageSize const & frameSize = frame.FrameMetadata.Size;
+
+    vec2f quadTopLeft( // Start with offset
+        screenOffset.x * static_cast<float>(frameSize.Width) * mScreenToNdcX,
+        -screenOffset.y * static_cast<float>(frameSize.Height) * mScreenToNdcY);
+
+    switch (anchor)
+    {
+        case AnchorPositionType::BottomLeft:
+        {
+            quadTopLeft += vec2f(
+                -1.f + MarginScreen * mScreenToNdcX,
+                -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+
+            break;
+        }
+
+        case AnchorPositionType::BottomRight:
+        {
+            quadTopLeft += vec2f(
+                1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
+                -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+
+            break;
+        }
+
+        case AnchorPositionType::TopLeft:
+        {
+            quadTopLeft += vec2f(
+                -1.f + MarginScreen * mScreenToNdcX,
+                1.f - MarginTopScreen * mScreenToNdcY);
+
+            break;
+        }
+
+        case AnchorPositionType::TopRight:
+        {
+            quadTopLeft += vec2f(
+                1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
+                1.f - MarginTopScreen * mScreenToNdcY);
+
+            break;
+        }
+    }
+
+    vec2f quadBottomRight = quadTopLeft + vec2f(
+        static_cast<float>(frameSize.Width) * mScreenToNdcX,
+        -static_cast<float>(frameSize.Height) * mScreenToNdcY);
+
+    // Append vertices - two triangles
+
+    // Triangle 1
+
+    // Top-left
+    mTextureNotificationVertexBuffer.emplace_back(
+        quadTopLeft,
+        vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+        alpha);
+
+    // Top-Right
+    mTextureNotificationVertexBuffer.emplace_back(
+        vec2f(quadBottomRight.x, quadTopLeft.y),
+        frame.TextureCoordinatesTopRight,
+        alpha);
+
+    // Bottom-left
+    mTextureNotificationVertexBuffer.emplace_back(
+        vec2f(quadTopLeft.x, quadBottomRight.y),
+        frame.TextureCoordinatesBottomLeft,
+        alpha);
+
+    // Triangle 2
+
+    // Top-Right
+    mTextureNotificationVertexBuffer.emplace_back(
+        vec2f(quadBottomRight.x, quadTopLeft.y),
+        frame.TextureCoordinatesTopRight,
+        alpha);
+
+    // Bottom-left
+    mTextureNotificationVertexBuffer.emplace_back(
+        vec2f(quadTopLeft.x, quadBottomRight.y),
+        frame.TextureCoordinatesBottomLeft,
+        alpha);
+
+    // Bottom-right
+    mTextureNotificationVertexBuffer.emplace_back(
+        quadBottomRight,
+        vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+        alpha);
 }
 
 void NotificationRenderContext::Draw()
 {
-    RenderText();
+    RenderTextNotifications();
+
+    RenderTextureNotifications();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,16 +295,13 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
         // Calculate line position in NDC coordinates
         //
 
-        float constexpr MarginScreen = 10.0f;
-        float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
-
-        vec2f linePositionNdc( // Top-left of quads
-            textLine.ScreenOffset.x * mScreenToNdcX * static_cast<float>(fontMetadata.GetCharScreenWidth()),
-            -textLine.ScreenOffset.y * mScreenToNdcY * static_cast<float>(fontMetadata.GetLineScreenHeight()));
+        vec2f linePositionNdc( // Top-left of quads; start with offset
+            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCharScreenWidth()) * mScreenToNdcX,
+            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetLineScreenHeight()) * mScreenToNdcY);
 
         switch (textLine.Anchor)
         {
-            case TextPositionType::BottomLeft:
+            case AnchorPositionType::BottomLeft:
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
@@ -163,7 +310,7 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
                 break;
             }
 
-            case TextPositionType::BottomRight:
+            case AnchorPositionType::BottomRight:
             {
                 auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                     textLine.Text.c_str(),
@@ -176,7 +323,7 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
                 break;
             }
 
-            case TextPositionType::TopLeft:
+            case AnchorPositionType::TopLeft:
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
@@ -185,7 +332,7 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
                 break;
             }
 
-            case TextPositionType::TopRight:
+            case AnchorPositionType::TopRight:
             {
                 auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                     textLine.Text.c_str(),
@@ -198,7 +345,6 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
                 break;
             }
         }
-
 
         //
         // Emit quads for this line
@@ -215,7 +361,7 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
     }
 }
 
-void NotificationRenderContext::RenderText()
+void NotificationRenderContext::RenderTextNotifications()
 {
     bool isFirst = true;
 
@@ -271,7 +417,7 @@ void NotificationRenderContext::RenderText()
                 mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
 
                 // Activate program (once for all fonts)
-                mShaderManager.ActivateProgram<ProgramType::TextNDC>();
+                mShaderManager.ActivateProgram<ProgramType::TextNotifications>();
 
                 isFirst = false;
             }
@@ -285,6 +431,47 @@ void NotificationRenderContext::RenderText()
 
             glBindVertexArray(0);
         }
+    }
+}
+
+void NotificationRenderContext::RenderTextureNotifications()
+{
+    //
+    // Re-upload vertex buffer if dirty
+    //
+
+    if (mIsTextureNotificationVertexBufferDirty)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
+
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            mTextureNotificationVertexBuffer.size() * sizeof(TextureNotificationVertex),
+            mTextureNotificationVertexBuffer.data(),
+            GL_STATIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsTextureNotificationVertexBufferDirty = false;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Render
+    //
+
+    if (mTextureNotificationVertexBuffer.size() > 0)
+    {
+        glBindVertexArray(*mTextureNotificationVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mTextureNotificationVertexBuffer.size()));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
     }
 }
 

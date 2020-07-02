@@ -1419,19 +1419,19 @@ public:
     void UploadShipsEnd()
     {}
 
-    void UploadNotificationTextStart(FontType fontType)
+    void UploadTextNotificationStart(FontType fontType)
     {
-        mNotificationRenderContext->UploadTextStart(fontType);
+        mNotificationRenderContext->UploadTextNotificationStart(fontType);
     }
 
-    void UploadNotificationTextLine(
+    void UploadTextNotificationLine(
         FontType font,
         std::string const & text,
-        TextPositionType anchor,
+        AnchorPositionType anchor,
         vec2f const & screenOffset,
         float alpha)
     {
-        mNotificationRenderContext->UploadTextLine(
+        mNotificationRenderContext->UploadTextNotificationLine(
             font,
             text,
             anchor,
@@ -1439,9 +1439,32 @@ public:
             alpha);
     }
 
-    void UploadNotificationTextEnd(FontType fontType)
+    void UploadTextNotificationEnd(FontType fontType)
     {
-        mNotificationRenderContext->UploadTextEnd(fontType);
+        mNotificationRenderContext->UploadTextNotificationEnd(fontType);
+    }
+
+    void UploadTextureNotificationStart()
+    {
+        mNotificationRenderContext->UploadTextureNotificationStart();
+    }
+
+    void UploadTextureNotification(
+        TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+        AnchorPositionType anchor,
+        vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
+        float alpha)
+    {
+        mNotificationRenderContext->UploadTextureNotification(
+            textureFrameId,
+            anchor,
+            screenOffset,
+            alpha);
+    }
+
+    void UploadTextureNotificationEnd()
+    {
+        mNotificationRenderContext->UploadTextureNotificationEnd();
     }
 
     void UploadEnd();
@@ -1758,8 +1781,6 @@ private:
     size_t mForegroundLightningVertexCount;
     GameOpenGLVBO mLightningVBO;
 
-    // TODOOLD
-    //GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
     BoundedVector<CloudVertex> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;

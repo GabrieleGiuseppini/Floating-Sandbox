@@ -539,26 +539,3 @@ namespace std {
     };
 
 }
-
-/*
- * The different fonts available.
- */
-enum class FontType
-{
-    // Indices must match suffix of filename
-    StatusText = 0,
-    GameText = 1,
-
-    _Last = GameText
-};
-
-/*
- * The positions at which text may be rendered.
- */
-enum class TextPositionType
-{
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight
-};

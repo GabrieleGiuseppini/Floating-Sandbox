@@ -319,12 +319,12 @@ void NotificationLayer::Update(float now)
 void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 {
 	//
-	// Upload status text
+	// Upload status text, if needed
 	//
 
 	if (mIsStatusTextDirty)
 	{
-		renderContext.UploadNotificationTextStart(FontType::StatusText);
+		renderContext.UploadTextNotificationStart(Render::FontType::StatusText);
 
 		int effectiveOrdinal = 0;
 
@@ -335,18 +335,18 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			UploadStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, effectiveOrdinal, renderContext);
 		}
 
-		renderContext.UploadNotificationTextEnd(FontType::StatusText);
+		renderContext.UploadTextNotificationEnd(Render::FontType::StatusText);
 
 		mIsStatusTextDirty = false;
 	}
 
 	//
-	// Ephemeral lines
+	// Upload ephemeral lines, if needed
 	//
 
 	if (mIsGameTextDirty)
 	{
-		renderContext.UploadNotificationTextStart(FontType::GameText);
+		renderContext.UploadTextNotificationStart(Render::FontType::GameText);
 
 		vec2f screenOffset = vec2f::zero(); // Cumulative vertical offset
 		for (auto const & etl : mEphemeralTextLines)
@@ -356,10 +356,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingIn:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
-						FontType::GameText,
+					renderContext.UploadTextNotificationLine(
+						Render::FontType::GameText,
 						etl.Text,
-						TextPositionType::TopRight,
+						Render::AnchorPositionType::TopRight,
 						screenOffset,
 						std::min(1.0f, etl.CurrentStateProgress));
 
@@ -372,10 +372,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::Displaying:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
-						FontType::GameText,
+					renderContext.UploadTextNotificationLine(
+						Render::FontType::GameText,
 						etl.Text,
-						TextPositionType::TopRight,
+						Render::AnchorPositionType::TopRight,
 						screenOffset,
 						1.0f);
 
@@ -388,10 +388,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingOut:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
-						FontType::GameText,
+					renderContext.UploadTextNotificationLine(
+						Render::FontType::GameText,
 						etl.Text,
-						TextPositionType::TopRight,
+						Render::AnchorPositionType::TopRight,
 						screenOffset,
 						1.0f - std::min(1.0f, etl.CurrentStateProgress));
 
@@ -416,9 +416,31 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			}
 		}
 
-		renderContext.UploadNotificationTextEnd(FontType::GameText);
+		renderContext.UploadTextNotificationEnd(Render::FontType::GameText);
 
 		mIsGameTextDirty = false;
+	}
+
+	//
+	// Upload ultra-violent mode indicator, if needed
+	//
+
+	if (mIsUltraViolentModeIndicatorDirty)
+	{
+		renderContext.UploadTextureNotificationStart();
+
+		if (mIsUltraViolentModeIndicatorOn)
+		{
+			renderContext.UploadTextureNotification(
+				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
+				Render::AnchorPositionType::BottomRight,
+				vec2f::zero(),
+				1.0f);
+		}
+
+		renderContext.UploadTextureNotificationEnd();
+
+		mIsUltraViolentModeIndicatorDirty = false;
 	}
 }
 
@@ -438,10 +460,10 @@ void NotificationLayer::UploadStatusTextLine(
 			0.0f,
 			static_cast<float>(effectiveOrdinal++));
 
-		renderContext.UploadNotificationTextLine(
-			FontType::StatusText,
+		renderContext.UploadTextNotificationLine(
+			Render::FontType::StatusText,
 			line,
-			TextPositionType::TopLeft,
+			Render::AnchorPositionType::TopLeft,
 			screenOffset,
 			1.0f);
 	}
