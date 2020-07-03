@@ -46,15 +46,18 @@ public:
          */
         void Wait()
         {
-            std::unique_lock<std::mutex> lock(mThreadLock);
+            if (!mIsTaskCompleted)
+            {
+                std::unique_lock<std::mutex> lock(mThreadLock);
 
-            // Wait for task completion
-            mThreadSignal.wait(
-                lock,
-                [this]
-                {
-                    return mIsTaskCompleted;
-                });
+                // Wait for task completion
+                mThreadSignal.wait(
+                    lock,
+                    [this]
+                    {
+                        return mIsTaskCompleted;
+                    });
+            }
 
             // Check if an exception was thrown
             if (!mExceptionMessage.empty())

@@ -33,8 +33,6 @@ public:
         float averageFps,
         PerfStats const & lastDeltaPerfStats,
         PerfStats const & totalPerfStats,
-        uint64_t lastDeltaFrameCount,
-        uint64_t totalFrameCount,
         std::chrono::duration<float> elapsedGameSeconds,
         bool isPaused,
         float zoom,

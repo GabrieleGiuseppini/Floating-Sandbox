@@ -50,8 +50,6 @@ void NotificationLayer::SetStatusTexts(
     float averageFps,
     PerfStats const & lastDeltaPerfStats,
     PerfStats const & totalPerfStats,
-    uint64_t lastDeltaFrameCount,
-    uint64_t totalFrameCount,
     std::chrono::duration<float> elapsedGameSeconds,
     bool isPaused,
     float zoom,
@@ -87,38 +85,6 @@ void NotificationLayer::SetStatusTexts(
 
     if (mIsExtendedStatusTextEnabled)
     {
-        float const lastUpdateDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
-
-        float const avgUpdateDurationMillisecondsPerFrame = totalFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalUpdateDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
-            : 0.0f;
-
-        float const lastRenderUploadDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-            ? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderUploadDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-            : 0.0f;
-
-		float const avgRenderUploadDurationMillisecondsPerFrame = totalFrameCount != 0
-			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalRenderUploadDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
-			: 0.0f;
-
-		float const lastRenderDrawDurationMillisecondsPerFrame = lastDeltaFrameCount != 0
-			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(lastDeltaPerfStats.TotalRenderDrawDuration).count()) / 1000.0f / static_cast<float>(lastDeltaFrameCount)
-			: 0.0f;
-
-		float const avgRenderDrawDurationMillisecondsPerFrame = totalFrameCount != 0
-			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalRenderDrawDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
-			: 0.0f;
-
-		float const avgWaitForRenderUploadDurationMillisecondsPerFrame = totalFrameCount != 0
-			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalWaitForRenderUploadDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
-			: 0.0f;
-
-		float const avgWaitForRenderDrawDurationMillisecondsPerFrame = totalFrameCount != 0
-			? static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(totalPerfStats.TotalWaitForRenderDrawDuration).count()) / 1000.0f / static_cast<float>(totalFrameCount)
-			: 0.0f;
-
         std::ostringstream ss;
 
 		{
@@ -126,9 +92,11 @@ void NotificationLayer::SetStatusTexts(
 
 			ss << std::fixed
 				<< std::setprecision(2)
-				<< "UPD:" << avgUpdateDurationMillisecondsPerFrame << "MS" << " (" << lastUpdateDurationMillisecondsPerFrame << "MS) "
-				<< "UPL:" << avgRenderUploadDurationMillisecondsPerFrame << "MS" << " (" << lastRenderUploadDurationMillisecondsPerFrame << "MS) "
-				<< "DRW:" << avgRenderDrawDurationMillisecondsPerFrame << "MS" << " (" << lastRenderDrawDurationMillisecondsPerFrame << "MS)"
+				<< "UPD:" << totalPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " (W=" << lastDeltaPerfStats.TotalWaitForRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
+				<< " " << lastDeltaPerfStats.TotalNetUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< " UPL:(W=" << lastDeltaPerfStats.TotalWaitForRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
+				<< " " << lastDeltaPerfStats.TotalNetRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				;
 
 			mStatusTextLines[1] = ss.str();
@@ -141,7 +109,11 @@ void NotificationLayer::SetStatusTexts(
 
 			ss << std::fixed
 				<< std::setprecision(2)
-				<< "WAIT(UPD:" << avgWaitForRenderUploadDurationMillisecondsPerFrame << "MS" << " DRW:" << avgWaitForRenderDrawDurationMillisecondsPerFrame << "MS)"
+				<< "RND:" << totalPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " (" << lastDeltaPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " CL=" << lastDeltaPerfStats.TotalCloudsRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " OS=" << lastDeltaPerfStats.TotalOceanSurfaceRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< " (MT=" << lastDeltaPerfStats.TotalMainThreadRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				;
 
 			mStatusTextLines[2] = ss.str();
@@ -155,7 +127,7 @@ void NotificationLayer::SetStatusTexts(
 				<< " SPR:" << renderStatistics.LastRenderedShipSprings
 				<< " TRI:" << renderStatistics.LastRenderedShipTriangles
 				<< " PLN:" << renderStatistics.LastRenderedShipPlanes
-				<< " GENTEX:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
+				<< " GTMM:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
 				<< " FLM:" << renderStatistics.LastRenderedShipFlames;
 
 			ss << std::fixed << std::setprecision(2)

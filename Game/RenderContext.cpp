@@ -432,7 +432,7 @@ void RenderContext::UpdateStart()
         mLastRenderUploadEndCompletionIndicator->Wait();
         mLastRenderUploadEndCompletionIndicator.reset();
 
-        mPerfStats.TotalWaitForRenderUploadDuration += GameChronometer::now() - waitStart;
+        mPerfStats.TotalWaitForRenderUploadDuration.Update(GameChronometer::now() - waitStart);
     }
 }
 
@@ -464,7 +464,7 @@ void RenderContext::UploadStart()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
 
-        mPerfStats.TotalWaitForRenderDrawDuration += GameChronometer::now() - waitStart;
+        mPerfStats.TotalWaitForRenderDrawDuration.Update(GameChronometer::now() - waitStart);
     }
 
     // Reset crosses of light, they are uploaded as needed
@@ -600,6 +600,8 @@ void RenderContext::Draw()
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
         [this]()
         {
+            auto const startTime = GameChronometer::now();
+
             //
             // Initialize
             //
@@ -625,10 +627,23 @@ void RenderContext::Draw()
 
             RenderStars();
 
-            RenderCloudsAndBackgroundLightnings();
+            {
+                auto const cloudsStartTime = GameChronometer::now();
+
+                RenderCloudsAndBackgroundLightnings();
+
+                mPerfStats.TotalCloudsRenderDrawDuration.Update(GameChronometer::now() - cloudsStartTime);
+            }
 
             // Render ocean opaquely, over sky
-            RenderOcean(true);
+            GameChronometer::duration firstOceanSurfaceDuration;
+            {
+                auto const oceanSurfaceStartTime = GameChronometer::now();
+
+                RenderOcean(true);
+
+                firstOceanSurfaceDuration = GameChronometer::now() - oceanSurfaceStartTime;
+            }
 
             /* TODOTEST
             glEnable(GL_DEPTH_TEST); // Required by ships
@@ -644,7 +659,13 @@ void RenderContext::Draw()
             if (!mShowShipThroughOcean)
             {
                 // Render ocean transparently, over ship
-                RenderOcean(false);
+                {
+                    auto const oceanSurfaceStartTime = GameChronometer::now();
+
+                    RenderOcean(false);
+
+                    mPerfStats.TotalOceanSurfaceRenderDrawDuration.Update(GameChronometer::now() - oceanSurfaceStartTime + firstOceanSurfaceDuration);
+                }
             }
 
             //
@@ -686,6 +707,8 @@ void RenderContext::Draw()
 
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();
+
+            mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
         });
 }
 

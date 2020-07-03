@@ -405,9 +405,12 @@ Render:
 					+ Test
 						+ Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
 				= 4: Continue RenderContext Implementation (2)
-					= World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
-					- Check numbers, especially for land
-					- Test setters for ViewModel
+					+ World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
+					= Redo measurements
+						+ Re-check NotificationLayer code and two waits
+						- Do other KPI: last update duration
+					+ Check numbers, especially for land
+					- Test setters for ViewModel (with "dirty" flag)
 					- Try other strategy for setters (queued and waited), see if stutters
 					- More setters:
 						- All ViewModel 
@@ -422,10 +425,11 @@ Render:
 					- Storm
 					- Rain
 					- Lightning
-					- Tools
 					- CrossesOfLight
+					- TBD: others?
 					- Upload & Render for all
-				- 6: Complete RenderContext Implementation (4): Ship2
+				- 6: Move FireExtinguisher and HeatBlasterFlame to NotificationLayer->NotificationRenderContext
+				- 7: Complete RenderContext Implementation (5): Ship
 					- AddShip: queued and waited (does OpenGL)
 					- Reset: queued and waited (ShipRenderContext destructor might do OpenGL)
 					- Screenshot: queued and waited, like SpringLab
@@ -441,6 +445,7 @@ Render:
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
 						+ NotifRenderContext has vector of notification textures vertices
 						- Redo icon with better spacing between U and bliksem
+						- Test ambient light darkening
 
 		- MAC: hide splash only on Windows
 

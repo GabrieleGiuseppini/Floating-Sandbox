@@ -436,10 +436,12 @@ void GameController::RunGameIteration()
     {
         auto const startTime = GameChronometer::now();
 
-        float const nowGame = GameWallClock::GetInstance().NowAsFloat();
-
         // Tell RenderContext we're starting an upload
         mRenderContext->UpdateStart();
+
+        auto const netStartTime = GameChronometer::now();
+
+        float const nowGame = GameWallClock::GetInstance().NowAsFloat();
 
         //
         // Update parameter smoothers
@@ -479,7 +481,8 @@ void GameController::RunGameIteration()
         // Tell RenderContext we've finished an upload
         mRenderContext->UpdateEnd();
 
-        mTotalPerfStats->TotalUpdateDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalNetUpdateDuration.Update(GameChronometer::now() - netStartTime);
+        mTotalPerfStats->TotalUpdateDuration.Update(GameChronometer::now() - startTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -490,9 +493,9 @@ void GameController::RunGameIteration()
     mRenderContext->RenderStart();
 
     {
-        auto const startTime = GameChronometer::now();
-
         mRenderContext->UploadStart();
+
+        auto const netStartTime = GameChronometer::now();
 
         //
         // Upload world
@@ -539,7 +542,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->UploadEnd();
 
-        mTotalPerfStats->TotalRenderUploadDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalNetRenderUploadDuration.Update(GameChronometer::now() - netStartTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -559,7 +562,7 @@ void GameController::RunGameIteration()
         // Render
         mRenderContext->Draw();
 
-        mTotalPerfStats->TotalRenderDrawDuration += GameChronometer::now() - startTime;
+        mTotalPerfStats->TotalMainThreadRenderDrawDuration.Update(GameChronometer::now() - startTime);
     }
 
     // Tell RenderContext we've finished a rendering cycle
@@ -1340,19 +1343,22 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         ? static_cast<float>(lastDeltaFrameCount) / lastElapsedReal.count()
         : 0.0f;
 
+    /* TODOOLD: replace with another kpi worth of probe panel
     // Calculate UR ratio
-
     float const lastURRatio = lastDeltaPerfStats.TotalRenderDuration.count() != 0
         ? static_cast<float>(lastDeltaPerfStats.TotalUpdateDuration.count()) / static_cast<float>(lastDeltaPerfStats.TotalRenderDuration.count())
         : 0.0f;
+        */
 
     // Publish frame rate
     assert(!!mGameEventDispatcher);
     mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
 
+    /* TODOOLD: replace with another kpi worth of probe panel
     // Publish UR ratio
     assert(!!mGameEventDispatcher);
     mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
+    */
 
     // Update status text
     mNotificationLayer.SetStatusTexts(
@@ -1360,8 +1366,6 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         totalFps,
         lastDeltaPerfStats,
         *mTotalPerfStats,
-        lastDeltaFrameCount,
-        mTotalFrameCount,
         std::chrono::duration<float>(GameWallClock::GetInstance().Now() - mOriginTimestampGame),
         mIsPaused,
         mRenderContext->GetZoom(),
