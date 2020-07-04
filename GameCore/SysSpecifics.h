@@ -15,6 +15,20 @@
 #include <cstdlib>
 #endif
 
+//
+// Architecture
+//
+
+#undef FS_ARM
+#undef FS_X86
+
+#if defined(__arm__) || defined(_ARM) || defined (_M_ARM) || defined(__arm) || defined(	__aarch64__)
+#define FS_ARM
+#else
+// At this moment we assume that non-ARM is Intel
+#define FS_X86
+#endif
+
 #define restrict __restrict
 
 template<typename T>
@@ -55,20 +69,16 @@ inline constexpr T ceil_square_power_of_two(T value)
 // Intrinsics
 ////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-<mmintrin.h>  MMX
-<xmmintrin.h> SSE
-<emmintrin.h> SSE2
-<pmmintrin.h> SSE3
-<tmmintrin.h> SSSE3
-<smmintrin.h> SSE4.1
-<nmmintrin.h> SSE4.2
-<ammintrin.h> SSE4A
-<wmmintrin.h> AES
-<immintrin.h> AVX, AVX2, FMA
-*/
-
-#include <pmmintrin.h>
+////<mmintrin.h>  MMX
+////<xmmintrin.h> SSE
+////<emmintrin.h> SSE2
+////<pmmintrin.h> SSE3
+////<tmmintrin.h> SSSE3
+////<smmintrin.h> SSE4.1
+////<nmmintrin.h> SSE4.2
+////<ammintrin.h> SSE4A
+////<wmmintrin.h> AES
+////<immintrin.h> AVX, AVX2, FMA
 
 /*
 // MSVC
@@ -80,6 +90,17 @@ inline constexpr T ceil_square_power_of_two(T value)
 // MAC
 #include <pmmintrin.h>
 */
+
+#if defined(FS_X86)
+#include <pmmintrin.h>
+#elif defined(FS_ARM)
+#define SIMDE_ENABLE_NATIVE_ALIASES
+#define SIMDE_ENABLE_OPENMP
+#include "simde/simde/x86/mmx.h"
+#include "simde/simde/x86/sse.h"
+#include "simde/simde/x86/sse2.h"
+#include "simde/simde/x86/sse3.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Alignment

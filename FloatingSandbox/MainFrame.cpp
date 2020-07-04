@@ -673,7 +673,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_WIN32)
     // The guy is pesky while debugging
     splash->Hide();
 #endif
