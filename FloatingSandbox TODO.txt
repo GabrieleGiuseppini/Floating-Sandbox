@@ -439,10 +439,10 @@ Render:
 					- Remove PerfStats' obsolete members
 					- See to cleanup GameController::PerfStats state machine
 					- Do APITrace, including shutdown
-					= Do NotificationRenderContext::UltraViolentModeIndicator
+					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
 						+ NotifRenderContext has vector of notification textures vertices
-						= Redo icon with better spacing between U and bliksem
+						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
 
 		- MAC: hide splash only on Windows
