@@ -260,6 +260,8 @@ RenderContext::RenderContext(
             OnCanvasSizeUpdated();
 
             OnEffectiveAmbientLightIntensityUpdated();
+            mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
+
             OnRainDensityUpdated();
             OnOceanTransparencyUpdated();
             OnOceanDarkeningRateUpdated();
@@ -302,6 +304,21 @@ RenderContext::~RenderContext()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+void RenderContext::SetAmbientLightIntensity(float intensity)
+{
+    mRenderThread.RunSynchronously(
+        [this, intensity]()
+        {
+            mAmbientLightIntensity = intensity;
+            OnEffectiveAmbientLightIntensityUpdated();
+        });
+
+    // Notify
+    mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
 }
 
 //////////////////////////////////////////////////////////////////////////////////

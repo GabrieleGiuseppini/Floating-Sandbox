@@ -198,12 +198,7 @@ public:
         return mAmbientLightIntensity;
     }
 
-    void SetAmbientLightIntensity(float intensity)
-    {
-        mAmbientLightIntensity = intensity;
-
-        OnEffectiveAmbientLightIntensityUpdated();
-    }
+    void SetAmbientLightIntensity(float intensity);
 
     float GetEffectiveAmbientLightIntensity() const
     {
