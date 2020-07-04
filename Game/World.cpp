@@ -717,8 +717,7 @@ void World::RenderUpload(
 {
     mStars.Upload(renderContext);
 
-    // TODOTEST
-    //mStorm.Upload(renderContext);
+    mStorm.Upload(renderContext);
 
     mClouds.Upload(renderContext);
 

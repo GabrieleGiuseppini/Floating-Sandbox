@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
 #include "NotificationRenderContext.h"
 #include "PerfStats.h"
 #include "RenderTypes.h"
@@ -53,7 +52,6 @@ public:
         std::function<void()> swapRenderBuffersFunction,
         PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
@@ -198,7 +196,14 @@ public:
         return mAmbientLightIntensity;
     }
 
-    void SetAmbientLightIntensity(float intensity);
+    void SetAmbientLightIntensity(float intensity)
+    {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
+        mAmbientLightIntensity = intensity;
+        mEffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
+        mIsEffectiveAmbientLightIntensityDirty = true;
+    }
 
     float GetEffectiveAmbientLightIntensity() const
     {
@@ -565,8 +570,11 @@ public:
     {
         if (darkening != mCurrentStormAmbientDarkening)
         {
+            std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
             mCurrentStormAmbientDarkening = darkening;
-            OnEffectiveAmbientLightIntensityUpdated();
+            mEffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
+            mIsEffectiveAmbientLightIntensityDirty = true;
         }
     }
 
@@ -574,8 +582,10 @@ public:
     {
         if (density != mCurrentRainDensity)
         {
+            std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
             mCurrentRainDensity = density;
-            OnRainDensityUpdated();
+            mIsRainDensityDirty = true;
         }
     }
 
@@ -1575,10 +1585,11 @@ private:
     void RenderWorldBorder();
 
     void ProcessSettingChanges();
-    void OnViewModelUpdated();
-    void OnCanvasSizeUpdated();
-    void OnEffectiveAmbientLightIntensityUpdated();
-    void OnRainDensityUpdated();
+    void ApplyViewModelChanges();
+    void ApplyCanvasSizeChanges();
+    void ApplyEffectiveAmbientLightIntensityChanges();
+    void ApplyRainDensityChanges();
+    // TODOOLD
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
     void OnOceanRenderParametersUpdated();
@@ -1598,11 +1609,29 @@ private:
     void OnShipFlameRenderModeUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
-    void UpdateWorldBorder();
+    void RecalculateWorldBorder();
+    float CalculateEffectiveAmbientLightIntensity() const;
     vec4f CalculateLampLightColor() const;
     vec4f CalculateWaterColor() const;
 
 private:
+
+    //
+    // Render Thread
+    //
+
+    // The thread running all of our OpenGL calls
+    TaskThread mRenderThread;
+
+    // The asynchronous rendering tasks from the previous iteration,
+    // which we have to wait for before proceeding further
+    TaskThread::TaskCompletionIndicator mLastRenderUploadEndCompletionIndicator;
+    TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
+
+    // Lock guarding:
+    // - changes to a setting and its dirty indicator
+    // - consumption of that setting
+    std::mutex mSettingsMutex;
 
     //
     // Types
@@ -1771,10 +1800,11 @@ private:
     GameOpenGLVBO mStarVBO;
     size_t mStarVBOAllocatedVertexSize;
 
-    GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
+    BoundedVector<LightningVertex> mLightningVertexBuffer;
     size_t mBackgroundLightningVertexCount;
     size_t mForegroundLightningVertexCount;
     GameOpenGLVBO mLightningVBO;
+    size_t mLightningVBOAllocatedVertexSize;
 
     BoundedVector<CloudVertex> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
@@ -1790,6 +1820,7 @@ private:
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
+    size_t mCrossOfLightVBOAllocatedVertexSize;
 
     std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
     GameOpenGLVBO mHeatBlasterFlameVBO;
@@ -1798,6 +1829,7 @@ private:
     GameOpenGLVBO mFireExtinguisherSprayVBO;
 
     GameOpenGLVBO mRainVBO;
+    bool mDoRenderRain;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
@@ -1834,8 +1866,6 @@ private:
     GameOpenGLTexture mLandTextureOpenGLHandle;
     size_t mLoadedLandTextureIndex;
 
-    bool mIsWorldBorderVisible;
-
     GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
 
@@ -1848,12 +1878,12 @@ private:
     UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
 
     //
-    // Misc Parameters
+    // Misc non-storage parameters
     //
 
     float mCurrentStormAmbientDarkening;
     float mCurrentRainDensity;
-    float mEffectiveAmbientLightIntensity;
+    bool mIsRainDensityDirty;
 
     //
     // Ships
@@ -1885,7 +1915,6 @@ private:
     // Managers
     //
 
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
@@ -1899,6 +1928,8 @@ private:
 
     rgbColor mFlatSkyColor;
     float mAmbientLightIntensity;
+    float mEffectiveAmbientLightIntensity;
+    bool mIsEffectiveAmbientLightIntensityDirty;
     float mOceanTransparency;
     float mOceanDarkeningRate;
     OceanRenderMode mOceanRenderMode;
@@ -1925,23 +1956,6 @@ private:
     float mHeatOverlayTransparency;
     ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
-
-    //
-    // Render Thread
-    //
-
-    // The thread running all of our OpenGL calls
-    TaskThread mRenderThread;
-
-    // The asynchronous rendering tasks from the previous iteration,
-    // which we have to wait for before proceeding further
-    TaskThread::TaskCompletionIndicator mLastRenderUploadEndCompletionIndicator;
-    TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
-
-    // Lock guarding:
-    // - changes to a setting and its dirty indicator
-    // - consumption of that setting
-    std::mutex mSettingsMutex;
 
     //
     // Statistics

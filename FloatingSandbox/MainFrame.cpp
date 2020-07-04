@@ -874,7 +874,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
-    mToolController->RegisterEventHandler(*mGameController);
 
 
     //

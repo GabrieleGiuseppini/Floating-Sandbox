@@ -25,10 +25,14 @@ RenderContext::RenderContext(
     std::function<void()> swapRenderBuffersFunction,
     PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     ProgressCallback const & progressCallback)
+    // Thread
+    : mRenderThread()
+    , mLastRenderUploadEndCompletionIndicator()
+    , mLastRenderDrawCompletionIndicator()
+    , mSettingsMutex()
     // Buffers
-    : mStarVertexBuffer()
+    , mStarVertexBuffer()
     , mIsStarVertexBufferDirty(true)
     , mStarVBO()
     , mStarVBOAllocatedVertexSize(0u)
@@ -36,6 +40,7 @@ RenderContext::RenderContext(
     , mBackgroundLightningVertexCount(0)
     , mForegroundLightningVertexCount(0)
     , mLightningVBO()
+    , mLightningVBOAllocatedVertexSize(0u)
     , mCloudVertexBuffer()
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
@@ -47,9 +52,11 @@ RenderContext::RenderContext(
     , mOceanSegmentVBOAllocatedVertexSize(0u)
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
+    , mCrossOfLightVBOAllocatedVertexSize(0u)
     , mHeatBlasterFlameVBO()
     , mFireExtinguisherSprayVBO()
     , mRainVBO()
+    , mDoRenderRain(false)
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -73,7 +80,6 @@ RenderContext::RenderContext(
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
-    , mIsWorldBorderVisible(false)
     , mGenericLinearTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata()
     , mGenericMipMappedTextureAtlasOpenGLHandle()
@@ -81,10 +87,10 @@ RenderContext::RenderContext(
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
     , mUploadedNoiseTexturesManager()
-    // Misc Parameters
+    // Misc non-storage parameters
     , mCurrentStormAmbientDarkening(1.0f)
     , mCurrentRainDensity(0.0f)
-    , mEffectiveAmbientLightIntensity(1.0f)
+    , mIsRainDensityDirty(true)
     // Ships
     , mShips()
     // HeatBlaster
@@ -94,15 +100,16 @@ RenderContext::RenderContext(
     // Rendering externals
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     // Managers
-    , mGameEventHandler(std::move(gameEventDispatcher))
     , mShaderManager()
     , mNotificationRenderContext()
     // Render parameters
     , mViewModel(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
-    , mIsViewModelDirty(false)
-    , mIsCanvasSizeDirty(false)
+    , mIsViewModelDirty(true)
+    , mIsCanvasSizeDirty(true)
     , mFlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
     , mAmbientLightIntensity(1.0f)
+    , mEffectiveAmbientLightIntensity(CalculateEffectiveAmbientLightIntensity())
+    , mIsEffectiveAmbientLightIntensityDirty(true)
     , mOceanTransparency(0.8125f)
     , mOceanDarkeningRate(0.356993f)
     , mOceanRenderMode(OceanRenderMode::Texture)
@@ -129,11 +136,6 @@ RenderContext::RenderContext(
     , mHeatOverlayTransparency(0.1875f)
     , mShipFlameRenderMode(ShipFlameRenderMode::Mode1)
     , mShipFlameSizeAdjustment(1.0f)
-    // Thread
-    , mRenderThread()
-    , mLastRenderUploadEndCompletionIndicator()
-    , mLastRenderDrawCompletionIndicator()
-    , mSettingsMutex()
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStatistics()
@@ -224,10 +226,10 @@ RenderContext::RenderContext(
                 *mGenericLinearTextureAtlasMetadata,
                 mViewModel.GetCanvasWidth(),
                 mViewModel.GetCanvasHeight(),
-                mAmbientLightIntensity);
+                mEffectiveAmbientLightIntensity);
         });
 
-    progressCallback(0.9f, "Initializing settings...");
+    progressCallback(0.9f, "Initializing graphics...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -256,13 +258,9 @@ RenderContext::RenderContext(
             // Update parameters
             //
 
-            OnViewModelUpdated();
-            OnCanvasSizeUpdated();
+            ProcessSettingChanges();
 
-            OnEffectiveAmbientLightIntensityUpdated();
-            mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
-
-            OnRainDensityUpdated();
+            // TODOOLD
             OnOceanTransparencyUpdated();
             OnOceanDarkeningRateUpdated();
             OnOceanRenderParametersUpdated();
@@ -304,21 +302,6 @@ RenderContext::~RenderContext()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
-void RenderContext::SetAmbientLightIntensity(float intensity)
-{
-    mRenderThread.RunSynchronously(
-        [this, intensity]()
-        {
-            mAmbientLightIntensity = intensity;
-            OnEffectiveAmbientLightIntensityUpdated();
-        });
-
-    // Notify
-    mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -513,28 +496,11 @@ void RenderContext::UploadStarsEnd()
 void RenderContext::UploadLightningsStart(size_t lightningCount)
 {
     //
-    // Prepare buffer
+    // Lightnings are not sticky: we upload them at each frame,
+    // though they will be empty for most of the time
     //
 
-    if (lightningCount > 0)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
-
-        auto const nVertices = 6 * lightningCount;
-        if (nVertices > mLightningVertexBuffer.max_size())
-        {
-            glBufferData(GL_ARRAY_BUFFER, nVertices * sizeof(LightningVertex), nullptr, GL_STREAM_DRAW);
-            CheckOpenGLError();
-        }
-
-        mLightningVertexBuffer.map_and_fill(nVertices);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-    else
-    {
-        mLightningVertexBuffer.reset();
-    }
+    mLightningVertexBuffer.reset_fill(6 * lightningCount);
 
     mBackgroundLightningVertexCount = 0;
     mForegroundLightningVertexCount = 0;
@@ -542,17 +508,35 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 
 void RenderContext::UploadLightningsEnd()
 {
-    if (mLightningVertexBuffer.size() > 0)
+    // If there has been a change, upload it now - asynchronously, on render thread - as
+    // this buffer is used by mulitple render steps and thus we don't have a single user
+    // who might upload it at the moment it's needed
+
+    if (mLightningVBOAllocatedVertexSize != mLightningVertexBuffer.size()
+        || mLightningVertexBuffer.size() > 0)
     {
-        //
-        // Upload lightning vertex buffer
-        //
+        mRenderThread.QueueTask(
+            [this]()
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
+                if (mLightningVBOAllocatedVertexSize != mLightningVertexBuffer.size())
+                {
+                    // Re-allocate VBO buffer and upload
+                    glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
+                    CheckOpenGLError();
 
-        mLightningVertexBuffer.unmap();
+                    mLightningVBOAllocatedVertexSize = mLightningVertexBuffer.size();
+                }
+                else
+                {
+                    // No size change, just upload VBO buffer
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data());
+                    CheckOpenGLError();
+                }
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            });
     }
 }
 
@@ -610,7 +594,7 @@ void RenderContext::Draw()
 {
     assert(!mLastRenderDrawCompletionIndicator);
 
-    // Render asynhronously
+    // Render asynchronously
     //
     // We will wait for this render to complete
     // when we want to touch GPU buffers again
@@ -623,7 +607,7 @@ void RenderContext::Draw()
             // Initialize
             //
 
-            // Process setting changes
+            // Process changes to settings
             ProcessSettingChanges();
 
             // Set polygon mode
@@ -644,23 +628,10 @@ void RenderContext::Draw()
 
             RenderStars();
 
-            {
-                auto const cloudsStartTime = GameChronometer::now();
-
-                RenderCloudsAndBackgroundLightnings();
-
-                mPerfStats.TotalCloudsRenderDrawDuration.Update(GameChronometer::now() - cloudsStartTime);
-            }
+            RenderCloudsAndBackgroundLightnings();
 
             // Render ocean opaquely, over sky
-            GameChronometer::duration firstOceanSurfaceDuration;
-            {
-                auto const oceanSurfaceStartTime = GameChronometer::now();
-
-                RenderOcean(true);
-
-                firstOceanSurfaceDuration = GameChronometer::now() - oceanSurfaceStartTime;
-            }
+            RenderOcean(true);
 
             /* TODOTEST
             glEnable(GL_DEPTH_TEST); // Required by ships
@@ -673,16 +644,10 @@ void RenderContext::Draw()
             glDisable(GL_DEPTH_TEST);
             */
 
+            // Render ocean transparently, over ship, unless disabled
             if (!mShowShipThroughOcean)
             {
-                // Render ocean transparently, over ship
-                {
-                    auto const oceanSurfaceStartTime = GameChronometer::now();
-
-                    RenderOcean(false);
-
-                    mPerfStats.TotalOceanSurfaceRenderDrawDuration.Update(GameChronometer::now() - oceanSurfaceStartTime + firstOceanSurfaceDuration);
-                }
+                RenderOcean(false);
             }
 
             //
@@ -691,11 +656,9 @@ void RenderContext::Draw()
 
             RenderOceanFloor();
 
+            RenderCrossesOfLight();
+
             /* TODOTEST
-            if (!mCrossOfLightVertexBuffer.empty())
-            {
-                RenderCrossesOfLight();
-            }
 
             if (!!mHeatBlasterFlameShaderToRender)
             {
@@ -706,19 +669,13 @@ void RenderContext::Draw()
             {
                 RenderFireExtinguisherSpray();
             }
+            */
 
-            if (mForegroundLightningVertexCount > 0)
-            {
-                RenderForegroundLightnings();
-            }
+            RenderForegroundLightnings();
 
-            if (mCurrentRainDensity != 0.0f)
-            {
-                RenderRain();
-            }
+            RenderRain();
 
             RenderWorldBorder();
-            */
 
             mNotificationRenderContext->Draw();
 
@@ -898,7 +855,7 @@ void RenderContext::InitializeBuffersAndVAOs()
 
 
     //
-    // Initialize fire extinguisher spray VAO
+    // Initialize Fire Extinguisher Spray VAO
     //
 
     glGenVertexArrays(1, &tmpGLuint);
@@ -1309,10 +1266,10 @@ void RenderContext::RenderStars()
     // Buffer
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
-
     if (mIsStarVertexBufferDirty)
     {
+        glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
+
         if (mStarVBOAllocatedVertexSize != mStarVertexBuffer.size())
         {
             // Re-allocate VBO buffer and upload
@@ -1329,9 +1286,9 @@ void RenderContext::RenderStars()
         }
 
         mIsStarVertexBufferDirty = false;
-    }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 
     //
     // Render
@@ -1567,31 +1524,45 @@ void RenderContext::RenderOceanFloor()
 
 void RenderContext::RenderCrossesOfLight()
 {
-    //
-    // Upload buffer
-    //
+    if (!mCrossOfLightVertexBuffer.empty())
+    {
+        //
+        // Buffer
+        //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(CrossOfLightVertex) * mCrossOfLightVertexBuffer.size(),
-        mCrossOfLightVertexBuffer.data(),
-        GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
+
+        if (mCrossOfLightVBOAllocatedVertexSize != mCrossOfLightVertexBuffer.size())
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mCrossOfLightVertexBuffer.size() * sizeof(CrossOfLightVertex), mCrossOfLightVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mCrossOfLightVBOAllocatedVertexSize = mCrossOfLightVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mCrossOfLightVertexBuffer.size() * sizeof(CrossOfLightVertex), mCrossOfLightVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    //
-    // Render
-    //
+        //
+        // Render
+        //
 
-    glBindVertexArray(*mCrossOfLightVAO);
+        glBindVertexArray(*mCrossOfLightVAO);
 
-    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
+        mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
 
-    assert((mCrossOfLightVertexBuffer.size() % 6) == 0);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
+        assert((mCrossOfLightVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderHeatBlasterFlame()
@@ -1669,38 +1640,44 @@ void RenderContext::RenderFireExtinguisherSpray()
 
 void RenderContext::RenderForegroundLightnings()
 {
-    assert(mForegroundLightningVertexCount > 0);
+    if (mForegroundLightningVertexCount > 0)
+    {
+        glBindVertexArray(*mLightningVAO);
 
-    glBindVertexArray(*mLightningVAO);
+        mShaderManager->ActivateProgram<ProgramType::Lightning>();
 
-    mShaderManager->ActivateProgram<ProgramType::Lightning>();
+        glDrawArrays(GL_TRIANGLES,
+            static_cast<GLsizei>(mLightningVertexBuffer.size() - mForegroundLightningVertexCount),
+            static_cast<GLsizei>(mForegroundLightningVertexCount));
+        CheckOpenGLError();
 
-    glDrawArrays(GL_TRIANGLES,
-        static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),
-        static_cast<GLsizei>(mForegroundLightningVertexCount));
-    CheckOpenGLError();
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderRain()
 {
-    glBindVertexArray(*mRainVAO);
+    if (mDoRenderRain)
+    {
+        glBindVertexArray(*mRainVAO);
 
-    mShaderManager->ActivateProgram(ProgramType::Rain);
+        mShaderManager->ActivateProgram(ProgramType::Rain);
 
-    // Set time parameter
-    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-        ProgramType::Rain,
-        GameWallClock::GetInstance().NowAsFloat());
+        // Set time parameter
+        mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+            ProgramType::Rain,
+            GameWallClock::GetInstance().NowAsFloat());
 
-    // Draw
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+        // Draw
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderWorldBorder()
 {
-    if (mIsWorldBorderVisible)
+    if (mWorldBorderVertexBuffer.size() > 0)
     {
         //
         // Render
@@ -1725,18 +1702,30 @@ void RenderContext::ProcessSettingChanges()
 
     if (mIsViewModelDirty)
     {
-        OnViewModelUpdated();
+        ApplyViewModelChanges();
         mIsViewModelDirty = false;
     }
 
     if (mIsCanvasSizeDirty)
     {
-        OnCanvasSizeUpdated();
+        ApplyCanvasSizeChanges();
         mIsCanvasSizeDirty = false;
+    }
+
+    if (mIsEffectiveAmbientLightIntensityDirty)
+    {
+        ApplyEffectiveAmbientLightIntensityChanges();
+        mIsEffectiveAmbientLightIntensityDirty = false;
+    }
+
+    if (mIsRainDensityDirty)
+    {
+        ApplyRainDensityChanges();
+        mIsRainDensityDirty = false;
     }
 }
 
-void RenderContext::OnViewModelUpdated()
+void RenderContext::ApplyViewModelChanges()
 {
     //
     // Update ortho matrix
@@ -1789,15 +1778,6 @@ void RenderContext::OnViewModelUpdated()
         globalOrthoMatrix);
 
     //
-    // Update canvas size
-    //
-
-    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
-    mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(mViewModel.GetCanvasWidth()),
-        static_cast<float>(mViewModel.GetCanvasHeight()));
-
-    //
     // Update all ships
     //
 
@@ -1807,23 +1787,29 @@ void RenderContext::OnViewModelUpdated()
     }
 
     //
-    // Update world border
+    // Recalculate world border
     //
 
-    UpdateWorldBorder();
+    RecalculateWorldBorder();
 }
 
-void RenderContext::OnCanvasSizeUpdated()
+void RenderContext::ApplyCanvasSizeChanges()
 {
+    // Set shader parameters
+    mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
+    mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
+        static_cast<float>(mViewModel.GetCanvasWidth()),
+        static_cast<float>(mViewModel.GetCanvasHeight()));
+
+    // Set viewport
     glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
+
+    // Propagate
     mNotificationRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
 }
 
-void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
+void RenderContext::ApplyEffectiveAmbientLightIntensityChanges()
 {
-    // Calculate effective ambient light intensity
-    mEffectiveAmbientLightIntensity = mAmbientLightIntensity * mCurrentStormAmbientDarkening;
-
     // Set parameters in all programs
 
     mShaderManager->ActivateProgram<ProgramType::Stars>();
@@ -1876,13 +1862,15 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
     mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
 }
 
-void RenderContext::OnRainDensityUpdated()
+void RenderContext::ApplyRainDensityChanges()
 {
-    // Set parameter in all programs
-
+    // Set parameter
     mShaderManager->ActivateProgram<ProgramType::Rain>();
     mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
         mCurrentRainDensity);
+
+    // Toggle rain rendering
+    mDoRenderRain = (mCurrentRainDensity != 0.0f);
 }
 
 void RenderContext::OnOceanTransparencyUpdated()
@@ -2175,7 +2163,7 @@ void RenderContext::OnShipFlameSizeAdjustmentUpdated()
 }
 
 template <typename TVertexBuffer>
-static void MakeQuad(
+static void EmplaceWorldBorderQuad(
     float x1,
     float y1,
     float tx1,
@@ -2194,7 +2182,7 @@ static void MakeQuad(
     buffer.emplace_back(x2, y2, tx2, ty2);
 }
 
-void RenderContext::UpdateWorldBorder()
+void RenderContext::RecalculateWorldBorder()
 {
     ImageSize const & worldBorderTextureSize =
         mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0)
@@ -2223,7 +2211,7 @@ void RenderContext::UpdateWorldBorder()
     // Left
     if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= mViewModel.GetVisibleWorldTopLeft().x)
     {
-        MakeQuad(
+        EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
@@ -2240,7 +2228,7 @@ void RenderContext::UpdateWorldBorder()
     // Right
     if (GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth <= mViewModel.GetVisibleWorldBottomRight().x)
     {
-        MakeQuad(
+        EmplaceWorldBorderQuad(
             // Top-left
             GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth,
             GameParameters::HalfMaxWorldHeight,
@@ -2257,7 +2245,7 @@ void RenderContext::UpdateWorldBorder()
     // Top
     if (GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight <= mViewModel.GetVisibleWorldTopLeft().y)
     {
-        MakeQuad(
+        EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
@@ -2274,7 +2262,7 @@ void RenderContext::UpdateWorldBorder()
     // Bottom
     if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight >= mViewModel.GetVisibleWorldBottomRight().y)
     {
-        MakeQuad(
+        EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight,
@@ -2303,15 +2291,12 @@ void RenderContext::UpdateWorldBorder()
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
 
-        // Remember we have to draw the world border
-        mIsWorldBorderVisible = true;
-    }
-    else
-    {
-        // No need to draw the world border
-        mIsWorldBorderVisible = false;
-    }
+float RenderContext::CalculateEffectiveAmbientLightIntensity() const
+{
+    return mAmbientLightIntensity * mCurrentStormAmbientDarkening;
 }
 
 vec4f RenderContext::CalculateLampLightColor() const

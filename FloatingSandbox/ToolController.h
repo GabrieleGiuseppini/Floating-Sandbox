@@ -9,7 +9,6 @@
 #include "Tools.h"
 
 #include <Game/IGameController.h>
-#include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
 
 #include <wx/frame.h>
@@ -20,8 +19,7 @@
 #include <vector>
 
 class ToolController final
-    : public IRenderGameEventHandler
-    , public IToolCursorManager
+    : public IToolCursorManager
 {
 public:
 
@@ -61,6 +59,15 @@ public:
 
     void UpdateSimulation()
     {
+        // See if effective ambient light has changed
+        auto const newEffectiveAmbientLightIntensity = mGameController->GetEffectiveAmbientLightIntensity();
+        if (newEffectiveAmbientLightIntensity != mCurrentEffectiveAmbientLightIntensity)
+        {
+            mCurrentEffectiveAmbientLightIntensity = newEffectiveAmbientLightIntensity;
+            InternalSetCurrentToolCursor();
+        }
+
+        // Update tools
         if (nullptr != mCurrentTool)
         {
             mCurrentTool->UpdateSimulation(mInputState);
@@ -95,17 +102,6 @@ public:
     void OnShiftKeyDown();
 
     void OnShiftKeyUp();
-
-    //
-    // Game event handlers
-    //
-
-    void RegisterEventHandler(IGameController & gameController)
-    {
-        gameController.RegisterRenderEventHandler(this);
-    }
-
-    virtual void OnEffectiveAmbientLightIntensityUpdated(float effectiveAmbientLightIntensity) override;
 
     //
     // IToolCursorHandler

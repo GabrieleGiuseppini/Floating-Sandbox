@@ -110,9 +110,7 @@ void NotificationLayer::SetStatusTexts(
 			ss << std::fixed
 				<< std::setprecision(2)
 				<< "RND:" << totalPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " (" << lastDeltaPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " CL=" << lastDeltaPerfStats.TotalCloudsRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " OS=" << lastDeltaPerfStats.TotalOceanSurfaceRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< " (" << lastDeltaPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				<< " (MT=" << lastDeltaPerfStats.TotalMainThreadRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				;
 

@@ -106,8 +106,6 @@ struct PerfStats
     // Render-Draw
     Ratio TotalMainThreadRenderDrawDuration;
     Ratio TotalRenderDrawDuration; // In render thread
-    Ratio TotalCloudsRenderDrawDuration; // In render thread
-    Ratio TotalOceanSurfaceRenderDrawDuration; // In render thread
 
     PerfStats()
     {
@@ -127,8 +125,6 @@ struct PerfStats
 
         TotalMainThreadRenderDrawDuration.Reset();
         TotalRenderDrawDuration.Reset();
-        TotalCloudsRenderDrawDuration.Reset();
-        TotalOceanSurfaceRenderDrawDuration.Reset();
     }
 
     PerfStats & operator=(PerfStats const & other) = default;
@@ -149,8 +145,6 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
 
     perfStats.TotalMainThreadRenderDrawDuration = lhs.TotalMainThreadRenderDrawDuration - rhs.TotalMainThreadRenderDrawDuration;
     perfStats.TotalRenderDrawDuration = lhs.TotalRenderDrawDuration - rhs.TotalRenderDrawDuration;
-    perfStats.TotalCloudsRenderDrawDuration = lhs.TotalCloudsRenderDrawDuration - rhs.TotalCloudsRenderDrawDuration;
-    perfStats.TotalOceanSurfaceRenderDrawDuration = lhs.TotalOceanSurfaceRenderDrawDuration - rhs.TotalOceanSurfaceRenderDrawDuration;
 
     return perfStats;
 }

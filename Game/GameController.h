@@ -65,12 +65,6 @@ public:
     // IGameController
     /////////////////////////////////////////////////////////
 
-    void RegisterRenderEventHandler(IRenderGameEventHandler * handler) override
-    {
-        assert(!!mGameEventDispatcher);
-        mGameEventDispatcher->RegisterRenderEventHandler(handler);
-    }
-
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
@@ -155,9 +149,10 @@ public:
     // World probing
     //
 
-    float GetCurrentSimulationTime() const override;
-    bool IsUnderwater(vec2f const & screenCoordinates) const override;
-    bool IsUnderwater(ElementId elementId) const override;
+    float GetCurrentSimulationTime() const override { return mWorld->GetCurrentSimulationTime(); }
+    float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
+    bool IsUnderwater(vec2f const & screenCoordinates) const override { return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates)); }
+    bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
 
     //
     // Interactions
@@ -579,8 +574,6 @@ public:
 
     float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
-
-    float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
 
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }

@@ -414,25 +414,38 @@ Render:
 					+ Try other strategy for setters (queued and waited), see if stutters
 						+ AmbientLight
 							+ Also at NotificationRenderContext
-				- Check on other laptops
-					- Verify wait times ~= 0
-					- Check stuttering
-				- 4b: All setters					
+				+ Check on other laptops
+					+ Verify wait times ~= 0
+					+ Check stuttering
+				= 4b: All setters					
+					+ Nuke GameDispatcher from RenderContext
+						+ ToolController::Update: gets effective ambient light intensity from GameController and,
+						  if different than mCurrent, acts on it
+					+ Improve "dirty flag" strategy
+					- Special strategy for "seldom" setters (e.g. ocean textures, sky color): 
+						- Queued and waited
 					- Other getters and setters
 				- 5: Continue RenderContext Implementation (3)					
-					- Storm
-					- Rain
-					- Lightning
-					- CrossesOfLight
-					- TBD: others?
-					- Upload & Render for all
+					+ Storm
+					+ Rain
+					+ Lightnings
+						! Always uploaded (like clouds), but most of the times empty
+					- Issue with cam moving
+						- See if it's smoother: test with immediate
+					= WorldBorder
+					! Upload & Render for all
 				- 6: Move FireExtinguisher and HeatBlasterFlame to NotificationLayer->NotificationRenderContext
-				- 7: Complete RenderContext Implementation (5): Ship
+				- 7: Continue RenderContext Implementation (5): Ship
 					- AddShip: queued and waited (does OpenGL)
+					= CrossesOfLight
+				- 8: Complete RenderContext Implementation (6)
 					- Reset: queued and waited (ShipRenderContext destructor might do OpenGL)
 					- Screenshot: queued and waited, like SpringLab
 					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
-						- Or, see if can run destructor explicitly
+						+ Make sure thread member is first, so its destructor gets called first
+						  waiting for pending operations
+						- Consider ThreadRenderContext uq_ptr member, containing all OpenGL members
+							- But see how to avoid having to always dereference the uq_ptr at Upload()'s
 				- Cleanup:
 					- GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					

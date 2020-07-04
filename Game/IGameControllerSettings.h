@@ -247,8 +247,6 @@ struct IGameControllerSettings
     virtual float GetAmbientLightIntensity() const = 0;
     virtual void SetAmbientLightIntensity(float value) = 0;
 
-    virtual float GetEffectiveAmbientLightIntensity() const = 0;
-
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;
 

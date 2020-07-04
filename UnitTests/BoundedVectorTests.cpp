@@ -94,6 +94,64 @@ TEST(BoundedVectorTests, EmplaceBack)
     EXPECT_FALSE(vec.empty());
 }
 
+TEST(BoundedVectorTests, EmplaceAt)
+{
+    struct Elem
+    {
+        int val1;
+        float val2;
+
+        Elem(
+            int _val1,
+            float _val2)
+            : val1(_val1)
+            , val2(_val2)
+        {}
+    };
+
+    BoundedVector<Elem> vec(2);
+
+    vec.reset_fill(2);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+
+    Elem & foo1 = vec.emplace_at(1, 4, 0.4f);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(4, vec[1].val1);
+    EXPECT_EQ(0.4f, vec[1].val2);
+    EXPECT_EQ(4, foo1.val1);
+    EXPECT_EQ(0.4f, foo1.val2);
+
+    Elem & foo2 = vec.emplace_at(0, 6, 0.6f);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(6, vec[0].val1);
+    EXPECT_EQ(0.6f, vec[0].val2);
+    EXPECT_EQ(4, vec[1].val1);
+    EXPECT_EQ(0.4f, vec[1].val2);
+    EXPECT_EQ(6, foo2.val1);
+    EXPECT_EQ(0.6f, foo2.val2);
+
+    Elem & foo3 = vec.emplace_at(1, 8, 0.8f);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(6, vec[0].val1);
+    EXPECT_EQ(0.6f, vec[0].val2);
+    EXPECT_EQ(8, vec[1].val1);
+    EXPECT_EQ(0.8f, vec[1].val2);
+    EXPECT_EQ(8, foo3.val1);
+    EXPECT_EQ(0.8f, foo3.val2);
+}
+
 TEST(BoundedVectorTests, Reset_EqualSize)
 {
     BoundedVector<int> vec(3);
@@ -196,6 +254,25 @@ TEST(BoundedVectorTests, ResetOnEmpty)
     EXPECT_EQ(0u, vec.size());
     EXPECT_EQ(3u, vec.max_size());
     EXPECT_TRUE(vec.empty());
+}
+
+TEST(BoundedVectorTests, ResetFill)
+{
+    BoundedVector<int> vec(2);
+
+    EXPECT_EQ(0u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_TRUE(vec.empty());
+
+    vec.reset_fill(1);
+    EXPECT_EQ(1u, vec.size());
+    EXPECT_EQ(1u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
+
+    vec.reset_fill(3);
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_FALSE(vec.empty());
 }
 
 TEST(BoundedVectorTests, Back)

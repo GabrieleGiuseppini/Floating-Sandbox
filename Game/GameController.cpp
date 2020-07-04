@@ -23,7 +23,7 @@ std::unique_ptr<GameController> GameController::Create(
     MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
     // Create game event dispatcher
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher = std::make_shared<GameEventDispatcher>();
+    auto gameEventDispatcher = std::make_shared<GameEventDispatcher>();
 
     // Create perf stats
     std::unique_ptr<PerfStats> perfStats = std::make_unique<PerfStats>();
@@ -35,7 +35,6 @@ std::unique_ptr<GameController> GameController::Create(
         std::move(swapRenderBuffersFunction),
         *perfStats,
         resourceLocator,
-        gameEventDispatcher,
         [&progressCallback](float progress, std::string const & message)
         {
             progressCallback(0.9f * progress, message);
@@ -648,21 +647,6 @@ bool GameController::GetShowExtendedStatusText() const
 void GameController::SetShowExtendedStatusText(bool value)
 {
     mNotificationLayer.SetExtendedStatusTextEnabled(value);
-}
-
-float GameController::GetCurrentSimulationTime() const
-{
-    return mWorld->GetCurrentSimulationTime();
-}
-
-bool GameController::IsUnderwater(vec2f const & screenCoordinates) const
-{
-    return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates));
-}
-
-bool GameController::IsUnderwater(ElementId elementId) const
-{
-    return mWorld->IsUnderwater(elementId);
 }
 
 void GameController::PickObjectToMove(

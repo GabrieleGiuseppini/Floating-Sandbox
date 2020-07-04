@@ -282,13 +282,6 @@ void ToolController::OnShiftKeyUp()
     }
 }
 
-void ToolController::OnEffectiveAmbientLightIntensityUpdated(float effectiveAmbientLightIntensity)
-{
-    mCurrentEffectiveAmbientLightIntensity = effectiveAmbientLightIntensity;
-
-    InternalSetCurrentToolCursor();
-}
-
 void ToolController::SetToolCursor(wxImage const & basisImage, float strength)
 {
     mCurrentToolCursor = ToolCursor(basisImage, strength);
