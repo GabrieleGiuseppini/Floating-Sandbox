@@ -1874,9 +1874,6 @@ void RenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
     // Update notification context
     mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
-
-    // Notify
-    mGameEventHandler->OnEffectiveAmbientLightIntensityUpdated(mEffectiveAmbientLightIntensity);
 }
 
 void RenderContext::OnRainDensityUpdated()
