@@ -123,8 +123,7 @@ struct IStatisticsGameEventHandler
         // Default-implemented
     }
 
-    virtual void OnUpdateToRenderRatioUpdated(
-        float /*immediateURRatio*/)
+    virtual void OnCurrentUpdateDurationUpdated(float /*currentUpdateDuration*/)
     {
         // Default-implemented
     }

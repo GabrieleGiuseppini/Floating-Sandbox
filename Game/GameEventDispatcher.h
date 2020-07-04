@@ -206,13 +206,11 @@ public:
         }
     }
 
-    virtual void OnUpdateToRenderRatioUpdated(
-        float immediateURRatio) override
+    virtual void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override
     {
         for (auto sink : mStatisticsSinks)
         {
-            sink->OnUpdateToRenderRatioUpdated(
-                immediateURRatio);
+            sink->OnCurrentUpdateDurationUpdated(currentUpdateDuration);
         }
     }
 

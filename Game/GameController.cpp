@@ -1343,22 +1343,13 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         ? static_cast<float>(lastDeltaFrameCount) / lastElapsedReal.count()
         : 0.0f;
 
-    /* TODOOLD: replace with another kpi worth of probe panel
-    // Calculate UR ratio
-    float const lastURRatio = lastDeltaPerfStats.TotalRenderDuration.count() != 0
-        ? static_cast<float>(lastDeltaPerfStats.TotalUpdateDuration.count()) / static_cast<float>(lastDeltaPerfStats.TotalRenderDuration.count())
-        : 0.0f;
-        */
-
     // Publish frame rate
     assert(!!mGameEventDispatcher);
     mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
 
-    /* TODOOLD: replace with another kpi worth of probe panel
-    // Publish UR ratio
+    // Publish update time
     assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnUpdateToRenderRatioUpdated(lastURRatio);
-    */
+    mGameEventDispatcher->OnCurrentUpdateDurationUpdated(lastDeltaPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>());
 
     // Update status text
     mNotificationLayer.SetStatusTexts(

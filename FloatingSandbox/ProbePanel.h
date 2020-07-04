@@ -68,8 +68,7 @@ public:
         float immediateFps,
         float averageFps) override;
 
-    virtual void OnUpdateToRenderRatioUpdated(
-        float immediateURRatio) override;
+    virtual void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override;
 
 private:
 
@@ -91,7 +90,7 @@ private:
     wxBoxSizer * mProbesSizer;
 
     std::unique_ptr<ScalarTimeSeriesProbeControl> mFrameRateProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl> mURRatioProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mCurrentUpdateDurationProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterTakenProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWindSpeedProbe;

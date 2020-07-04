@@ -8,6 +8,7 @@
 #include <wx/stattext.h>
 
 #include <cassert>
+#include <chrono>
 
 static constexpr int TopPadding = 2;
 static constexpr int ProbePadding = 10;
@@ -34,7 +35,7 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
     mFrameRateProbe = AddScalarTimeSeriesProbe("Frame Rate", 200);
-    mURRatioProbe = AddScalarTimeSeriesProbe("U/R Ratio", 200);
+    mCurrentUpdateDurationProbe = AddScalarTimeSeriesProbe("Update Time", 200);
 
     mWaterTakenProbe = AddScalarTimeSeriesProbe("Water Inflow", 120);
     mWaterSplashProbe = AddScalarTimeSeriesProbe("Water Splash", 200);
@@ -61,7 +62,7 @@ void ProbePanel::UpdateSimulation()
     if (IsActive())
     {
         mFrameRateProbe->UpdateSimulation();
-        mURRatioProbe->UpdateSimulation();
+        mCurrentUpdateDurationProbe->UpdateSimulation();
         mWaterTakenProbe->UpdateSimulation();
         mWaterSplashProbe->UpdateSimulation();
         mWindSpeedProbe->UpdateSimulation();
@@ -97,7 +98,7 @@ std::unique_ptr<ScalarTimeSeriesProbeControl> ProbePanel::AddScalarTimeSeriesPro
 void ProbePanel::OnGameReset()
 {
     mFrameRateProbe->Reset();
-    mURRatioProbe->Reset();
+    mCurrentUpdateDurationProbe->Reset();
     mWaterTakenProbe->Reset();
     mWaterSplashProbe->Reset();
     mWindSpeedProbe->Reset();
@@ -150,8 +151,7 @@ void ProbePanel::OnFrameRateUpdated(
     mFrameRateProbe->RegisterSample(immediateFps);
 }
 
-void ProbePanel::OnUpdateToRenderRatioUpdated(
-    float immediateURRatio)
+void ProbePanel::OnCurrentUpdateDurationUpdated(float currentUpdateDuration)
 {
-    mURRatioProbe->RegisterSample(immediateURRatio);
+    mCurrentUpdateDurationProbe->RegisterSample(currentUpdateDuration);
 }
