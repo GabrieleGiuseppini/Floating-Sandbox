@@ -417,15 +417,12 @@ Render:
 				+ Check on other laptops
 					+ Verify wait times ~= 0
 					+ Check stuttering
-				= 4b: All setters	
+				+ 4b: All setters	
 					+ Nuke GameDispatcher from RenderContext
 						+ ToolController::Update: gets effective ambient light intensity from GameController and,
 						  if different than mCurrent, acts on it
 					+ Improve "dirty flag" strategy
 					+ Flat sky color
-					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
-						- Queued and waited, or dirty flag covering a cluster of settings?
-					- Other getters and setters
 				+ 5: Continue RenderContext Implementation (3)					
 					+ Storm
 					+ Rain
@@ -436,16 +433,37 @@ Render:
 					+ FireExtinguisher, HeatBlasterFlame
 						+ Make sure GameController uploads them at RenderUpload() time
 					! Upload & Render for all
-				- 6: Continue RenderContext Implementation (4): Ship
-					- AddShip: queued and waited (does OpenGL)
+				= 6: Continue RenderContext Implementation (4): Ship
+					= Prep:
+						+ RenderContext: enable all
+							+ AddShip: queued and waited (does OpenGL)
+						+ World: enable all
+						+ Ship:
+							+ No uploads
+						+ ShipRenderContext:
+							+ No render
+						+ UploadShipStart, UploadShipEnd: comment out content
+					- Run APITrace
+					- Ship:						
+						- ShipRenderContext::UploadStart: ViewModel update for max plane ID: TODO
+						- Triangles
+						-
+					- Setters:
+					- Ship completion
+						- RenderContext::AddShip(): SetShipCounts: TODO (as above)
 					= CrossesOfLight
+				- 6b:
+					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
+						- Queued and waited, or dirty flag covering a cluster of settings?
+					- Other getters and setters
 				- 7: Complete RenderContext Implementation (5)
-					- Reset: queued and waited (ShipRenderContext destructor might do OpenGL)
+					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					- Screenshot: queued and waited, like SpringLab
 					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
 						+ Make sure thread member is first, so its destructor gets called first
 						  waiting for pending operations
-						- Consider ThreadRenderContext uq_ptr member, containing all OpenGL members
+						- Consider ThreadRenderContext uq_ptr member, containing all OpenGL members (and all
+						  members that pertain exclusively to the thread, e.g. allocated VBO sizes)
 							- But see how to avoid having to always dereference the uq_ptr at Upload()'s
 				- Cleanup:
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether

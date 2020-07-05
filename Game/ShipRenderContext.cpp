@@ -77,7 +77,7 @@ ShipRenderContext::ShipRenderContext(
     //
     , mAirBubbleVertexBuffer()
     , mGenericMipMappedTexturePlaneVertexBuffers()
-    , mGenericMipMappedTextureTotalPlaneVertexCount(0)
+    , mGenericMipMappedTextureTotalVertexCount(0)
     , mGenericMipMappedTextureVBO()
     , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
     //
@@ -503,8 +503,10 @@ void ShipRenderContext::OnViewModelUpdated()
 
 void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
+    /* TODOTEST
     //
-    // Reset flames, explosions, air bubbles, generic textures, highlights
+    // Reset flames, explosions, air bubbles, generic textures, highlights;
+    // they are all uploaded as needed
     //
 
     mFlameVertexBuffer.reset();
@@ -517,15 +519,16 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
     mAirBubbleVertexBuffer.map(mGenericMipMappedTextureVBOAllocatedVertexCount);
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     mGenericMipMappedTexturePlaneVertexBuffers.clear();
     mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericMipMappedTextureTotalPlaneVertexCount = 0;
+    mGenericMipMappedTextureTotalVertexCount = 0;
 
     for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
+    {
         mHighlightVertexBuffers[i].clear();
+    }
 
     //
     // Check if the max ever plane ID has changed
@@ -539,6 +542,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
         // Recalculate view model parameters
         OnViewModelUpdated();
     }
+    */
 }
 
 void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoordinates)
@@ -1002,10 +1006,14 @@ void ShipRenderContext::UploadVectors(
 
 void ShipRenderContext::UploadEnd()
 {
+    // Nop
 }
 
 void ShipRenderContext::Draw()
 {
+    // We've been invoked on the render thread
+
+    /* TODOTEST
     //
     // Render background flames
     //
@@ -1324,7 +1332,7 @@ void ShipRenderContext::Draw()
     {
         RenderVectorArrows();
     }
-
+    */
 
 
     //
@@ -1411,7 +1419,7 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
     //
 
     if (mAirBubbleVertexBuffer.size() > 0
-        || mGenericMipMappedTextureTotalPlaneVertexCount > 0)
+        || mGenericMipMappedTextureTotalVertexCount > 0)
     {
         glBindVertexArray(*mGenericMipMappedTextureVAO);
 
@@ -1443,19 +1451,19 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
         // Generic mipmapped textures
         //
 
-        if (mGenericMipMappedTextureTotalPlaneVertexCount > 0)
+        if (mGenericMipMappedTextureTotalVertexCount > 0)
         {
             //
             // Upload vertex buffers
             //
 
             // (Re-)Allocate vertex buffer, if needed
-            if (mGenericMipMappedTextureVBOAllocatedVertexCount < mGenericMipMappedTextureTotalPlaneVertexCount)
+            if (mGenericMipMappedTextureVBOAllocatedVertexCount < mGenericMipMappedTextureTotalVertexCount)
             {
-                mGenericMipMappedTextureVBOAllocatedVertexCount = mGenericMipMappedTextureTotalPlaneVertexCount;
-
                 glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
                 CheckOpenGLError();
+
+                mGenericMipMappedTextureVBOAllocatedVertexCount = mGenericMipMappedTextureTotalVertexCount;
             }
 
             // Map vertex buffer
@@ -1483,15 +1491,15 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
             // Render
             //
 
-            assert(0 == (mGenericMipMappedTextureTotalPlaneVertexCount % 6));
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericMipMappedTextureTotalPlaneVertexCount));
+            assert(0 == (mGenericMipMappedTextureTotalVertexCount % 6));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericMipMappedTextureTotalVertexCount));
 
 
             //
             // Update stats
             //
 
-            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalPlaneVertexCount / 6;
+            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalVertexCount / 6;
         }
 
         glBindVertexArray(0);

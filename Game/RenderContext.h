@@ -961,6 +961,7 @@ public:
 
     void UploadShipsStart()
     {
+        // Nop
     }
 
     void UploadShipStart(
@@ -1426,7 +1427,9 @@ public:
     }
 
     void UploadShipsEnd()
-    {}
+    {
+        // Nop
+    }
 
     void UploadTextNotificationStart(FontType fontType)
     {

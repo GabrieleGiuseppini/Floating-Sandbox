@@ -548,7 +548,7 @@ private:
 
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
-    std::optional<DebugShipRenderMode> mLastDebugShipRenderMode;
+    std::optional<DebugShipRenderMode> mLastUploadedDebugShipRenderMode;
 
     // Initial indices of the triangles for each plane ID;
     // last extra element contains total number of triangles

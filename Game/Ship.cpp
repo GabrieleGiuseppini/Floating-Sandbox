@@ -101,7 +101,7 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     // Render
-    , mLastDebugShipRenderMode()
+    , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
     , mWindSpeedMagnitudeToRender(0.0)
 {
@@ -504,7 +504,6 @@ void Ship::RenderUpload(
         RunConnectivityVisit();
     }
 
-
     //
     // Initialize upload
     //
@@ -513,6 +512,7 @@ void Ship::RenderUpload(
         mId,
         mMaxMaxPlaneId);
 
+    /* TODOTEST
 
     //
     // Upload points's attributes
@@ -528,8 +528,8 @@ void Ship::RenderUpload(
     //
 
     if (mIsStructureDirty
-        || !mLastDebugShipRenderMode
-        || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
+        || !mLastUploadedDebugShipRenderMode
+        || *mLastUploadedDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
         renderContext.UploadShipElementsStart(mId);
 
@@ -657,7 +657,7 @@ void Ship::RenderUpload(
     //
 
     UploadStateMachines(renderContext);
-
+    */
 
     //
     // Finalize upload
@@ -671,7 +671,7 @@ void Ship::RenderUpload(
     //
 
     mIsStructureDirty = false;
-    mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
+    mLastUploadedDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

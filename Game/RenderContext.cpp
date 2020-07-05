@@ -342,43 +342,47 @@ void RenderContext::AddShip(
     // Add ship
     //
 
-    /* TODOTEST
     assert(shipId == mShips.size());
 
     size_t const newShipCount = mShips.size() + 1;
 
+    /* TODOTEST
     // Tell all ships that there's a new ship
     for (auto & ship : mShips)
     {
         ship->SetShipCount(newShipCount);
     }
-
-    // Add the ship
-    mShips.emplace_back(
-        new ShipRenderContext(
-            shipId,
-            newShipCount,
-            pointCount,
-            std::move(texture),
-            *mShaderManager,
-            *mExplosionTextureAtlasMetadata,
-            *mGenericLinearTextureAtlasMetadata,
-            *mGenericMipMappedTextureAtlasMetadata,
-            mRenderStatistics,
-            mViewModel,
-            mEffectiveAmbientLightIntensity,
-            CalculateLampLightColor(),
-            CalculateWaterColor(),
-            mWaterContrast,
-            mWaterLevelOfDetail,
-            mDebugShipRenderMode,
-            mVectorFieldRenderMode,
-            mShowStressedSprings,
-            mDrawHeatOverlay,
-            mHeatOverlayTransparency,
-            mShipFlameRenderMode,
-            mShipFlameSizeAdjustment));
     */
+
+    // Add the ship - synchronously
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mShips.emplace_back(
+                new ShipRenderContext(
+                    shipId,
+                    newShipCount,
+                    pointCount,
+                    std::move(texture),
+                    *mShaderManager,
+                    *mExplosionTextureAtlasMetadata,
+                    *mGenericLinearTextureAtlasMetadata,
+                    *mGenericMipMappedTextureAtlasMetadata,
+                    mRenderStatistics,
+                    mViewModel,
+                    mEffectiveAmbientLightIntensity,
+                    CalculateLampLightColor(),
+                    CalculateWaterColor(),
+                    mWaterContrast,
+                    mWaterLevelOfDetail,
+                    mDebugShipRenderMode,
+                    mVectorFieldRenderMode,
+                    mShowStressedSprings,
+                    mDrawHeatOverlay,
+                    mHeatOverlayTransparency,
+                    mShipFlameRenderMode,
+                    mShipFlameSizeAdjustment));
+        });
 }
 
 RgbImageData RenderContext::TakeScreenshot()
@@ -637,7 +641,6 @@ void RenderContext::Draw()
             // Render ocean opaquely, over sky
             RenderOcean(true);
 
-            /* TODOTEST
             glEnable(GL_DEPTH_TEST); // Required by ships
 
             for (auto const & ship : mShips)
@@ -646,7 +649,6 @@ void RenderContext::Draw()
             }
 
             glDisable(GL_DEPTH_TEST);
-            */
 
             // Render ocean transparently, over ship, unless disabled
             if (!mShowShipThroughOcean)

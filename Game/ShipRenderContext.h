@@ -721,7 +721,7 @@ public:
             vertexBuffer);
 
         // Update total count of vertices
-        mGenericMipMappedTextureTotalPlaneVertexCount += 6;
+        mGenericMipMappedTextureTotalVertexCount += 6;
     }
 
     //
@@ -1171,7 +1171,7 @@ private:
 
     GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
     std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers;
-    size_t mGenericMipMappedTextureTotalPlaneVertexCount;
+    size_t mGenericMipMappedTextureTotalVertexCount;
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
 

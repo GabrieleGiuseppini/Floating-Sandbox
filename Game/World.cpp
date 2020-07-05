@@ -725,8 +725,6 @@ void World::RenderUpload(
 
     mOceanSurface.Upload(gameParameters, renderContext);
 
-    /* TODOTEST
-
     // Ships
     {
         renderContext.UploadShipsStart();
@@ -740,7 +738,6 @@ void World::RenderUpload(
 
         renderContext.UploadShipsEnd();
     }
-    */
 }
 
 }
