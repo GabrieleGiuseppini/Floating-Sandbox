@@ -417,13 +417,14 @@ Render:
 				+ Check on other laptops
 					+ Verify wait times ~= 0
 					+ Check stuttering
-				= 4b: All setters					
+				= 4b: All setters	
 					+ Nuke GameDispatcher from RenderContext
 						+ ToolController::Update: gets effective ambient light intensity from GameController and,
 						  if different than mCurrent, acts on it
 					+ Improve "dirty flag" strategy
-					- Special strategy for "seldom" setters (e.g. ocean textures, sky color): 
-						- Queued and waited
+					+ Flat sky color
+					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
+						- Queued and waited, or dirty flag covering a cluster of settings?
 					- Other getters and setters
 				+ 5: Continue RenderContext Implementation (3)					
 					+ Storm
@@ -432,13 +433,13 @@ Render:
 						! Always uploaded (like clouds), but most of the times empty
 					+ Issue with cam moving
 					+ WorldBorder
+					+ FireExtinguisher, HeatBlasterFlame
+						+ Make sure GameController uploads them at RenderUpload() time
 					! Upload & Render for all
-				- 6: Move FireExtinguisher and HeatBlasterFlame to NotificationLayer->NotificationRenderContext
-					- See what also from GameController needs to move to NotificationLayer for these two
-				- 7: Continue RenderContext Implementation (5): Ship
+				- 6: Continue RenderContext Implementation (4): Ship
 					- AddShip: queued and waited (does OpenGL)
 					= CrossesOfLight
-				- 8: Complete RenderContext Implementation (6)
+				- 7: Complete RenderContext Implementation (5)
 					- Reset: queued and waited (ShipRenderContext destructor might do OpenGL)
 					- Screenshot: queued and waited, like SpringLab
 					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships

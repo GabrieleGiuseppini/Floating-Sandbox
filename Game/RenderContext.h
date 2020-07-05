@@ -186,9 +186,12 @@ public:
 
     void SetFlatSkyColor(rgbColor const & color)
     {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
         mFlatSkyColor = color;
 
-        // No need to notify anyone
+        // No need to notify anyone, this is pickedup at buffer clear time
+        // on every frame
     }
 
     float GetAmbientLightIntensity() const
@@ -217,6 +220,7 @@ public:
 
     void SetOceanTransparency(float transparency)
     {
+        // TODOHERE
         mOceanTransparency = transparency;
 
         OnOceanTransparencyUpdated();

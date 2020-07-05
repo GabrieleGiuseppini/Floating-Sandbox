@@ -614,7 +614,11 @@ void RenderContext::Draw()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Clear canvas - and depth buffer
-            vec3f const clearColor = mFlatSkyColor.toVec3f() * mEffectiveAmbientLightIntensity;
+            vec3f clearColor;
+            {
+                std::lock_guard<std::mutex> const lock(mSettingsMutex);
+                clearColor = mFlatSkyColor.toVec3f() * mEffectiveAmbientLightIntensity;
+            }
             glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -658,18 +662,9 @@ void RenderContext::Draw()
 
             RenderCrossesOfLight();
 
-            /* TODOTEST
+            RenderHeatBlasterFlame();
 
-            if (!!mHeatBlasterFlameShaderToRender)
-            {
-                RenderHeatBlasterFlame();
-            }
-
-            if (!!mFireExtinguisherSprayShaderToRender)
-            {
-                RenderFireExtinguisherSpray();
-            }
-            */
+            RenderFireExtinguisherSpray();
 
             RenderForegroundLightnings();
 
@@ -1567,75 +1562,83 @@ void RenderContext::RenderCrossesOfLight()
 
 void RenderContext::RenderHeatBlasterFlame()
 {
-    //
-    // Upload buffer
-    //
+    if (!!mHeatBlasterFlameShaderToRender)
+    {
+        //
+        // Buffer
+        //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
-        mHeatBlasterFlameVertexBuffer.data(),
-        GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
 
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
+            mHeatBlasterFlameVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
 
-    //
-    // Render
-    //
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindVertexArray(*mHeatBlasterFlameVAO);
+        //
+        // Render
+        //
 
-    assert(!!mHeatBlasterFlameShaderToRender);
+        glBindVertexArray(*mHeatBlasterFlameVAO);
 
-    mShaderManager->ActivateProgram(*mHeatBlasterFlameShaderToRender);
+        assert(!!mHeatBlasterFlameShaderToRender);
 
-    // Set time parameter
-    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-        *mHeatBlasterFlameShaderToRender,
-        GameWallClock::GetInstance().NowAsFloat());
+        mShaderManager->ActivateProgram(*mHeatBlasterFlameShaderToRender);
 
-    assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
+        // Set time parameter
+        mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+            *mHeatBlasterFlameShaderToRender,
+            GameWallClock::GetInstance().NowAsFloat());
 
-    glBindVertexArray(0);
+        assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderFireExtinguisherSpray()
 {
-    //
-    // Upload buffer
-    //
+    if (!!mFireExtinguisherSprayShaderToRender)
+    {
+        //
+        // Buffer
+        //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
-    glBufferData(GL_ARRAY_BUFFER,
-        sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
-        mFireExtinguisherSprayVertexBuffer.data(),
-        GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
 
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
+            mFireExtinguisherSprayVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
 
-    //
-    // Render
-    //
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindVertexArray(*mFireExtinguisherSprayVAO);
+        //
+        // Render
+        //
 
-    assert(!!mFireExtinguisherSprayShaderToRender);
+        glBindVertexArray(*mFireExtinguisherSprayVAO);
 
-    mShaderManager->ActivateProgram(*mFireExtinguisherSprayShaderToRender);
+        assert(!!mFireExtinguisherSprayShaderToRender);
 
-    // Set time parameter
-    mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-        *mFireExtinguisherSprayShaderToRender,
-        GameWallClock::GetInstance().NowAsFloat());
+        mShaderManager->ActivateProgram(*mFireExtinguisherSprayShaderToRender);
 
-    // Draw
-    assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
+        // Set time parameter
+        mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
+            *mFireExtinguisherSprayShaderToRender,
+            GameWallClock::GetInstance().NowAsFloat());
 
-    glBindVertexArray(0);
+        // Draw
+        assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderForegroundLightnings()
