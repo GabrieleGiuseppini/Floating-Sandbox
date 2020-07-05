@@ -18,39 +18,6 @@ namespace Physics {
 template<typename T>
 T constexpr RenderSlices = 500;
 
-//
-// SWE Layer
-//
-
-// The rest height of the height field - indirectly determines velocity
-// of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
-// Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
-float constexpr SWEHeightFieldOffset = 50.0f;
-
-// The factor by which we amplify the height field perturbations;
-// higher values allow for smaller height field variations with the same visual height,
-// and smaller height field variations allow for greater stability
-float constexpr SWEHeightFieldAmplification = 50.0f;
-
-// The number of samples we raise with a state machine
-int32_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
-
-// The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-int32_t constexpr SWEWaveGenerationSamples = 1;
-
-// The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-int32_t constexpr SWEBoundaryConditionsSamples = 3;
-
-int32_t constexpr SWEOuterLayerSamples =
-    SWEWaveGenerationSamples
-    + SWEBoundaryConditionsSamples;
-
-// The total number of samples in the SWE buffers
-int32_t constexpr SWETotalSamples =
-    SWEOuterLayerSamples
-    + OceanSurface::SamplesCount
-    + SWEOuterLayerSamples;
-
 OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventHandler(std::move(gameEventDispatcher))
     , mSamples(new Sample[SamplesCount + 1])
@@ -357,16 +324,6 @@ void OceanSurface::AdjustTo(
         assert(!!mSWEInteractiveWaveStateMachine);
         mSWEInteractiveWaveStateMachine->Release(currentSimulationTime);
     }
-}
-
-void OceanSurface::DisplaceAt(
-    float x,
-    float yOffset)
-{
-    // TODO: move to header file
-
-    auto const sampleIndex = ToSampleIndex(x);
-    mHeightField[sampleIndex] += yOffset / SWEHeightFieldAmplification;
 }
 
 void OceanSurface::ApplyThanosSnap(

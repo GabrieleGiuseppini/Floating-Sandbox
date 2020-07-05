@@ -496,6 +496,15 @@ void GameController::RunGameIteration()
 
         auto const netStartTime = GameChronometer::now();
 
+        // Smooth render controls
+        // Note: some Upload()'s need to use ViewModel values, which have then to match the
+        // ViewModel values used by the subsequent render
+        {
+            float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
+            mZoomParameterSmoother->Update(nowReal);
+            mCameraWorldPositionParameterSmoother->Update(nowReal);
+        }
+
         //
         // Upload world
         //
@@ -550,13 +559,6 @@ void GameController::RunGameIteration()
 
     {
         auto const startTime = GameChronometer::now();
-
-        // Smooth render controls
-        // TODO: see if we need to do this also for upload, or whether only for render is ok;
-        // i.e. whether upload needs the new viewmodel parameter values
-        float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
-        mZoomParameterSmoother->Update(nowReal);
-        mCameraWorldPositionParameterSmoother->Update(nowReal);
 
         // Render
         mRenderContext->Draw();
