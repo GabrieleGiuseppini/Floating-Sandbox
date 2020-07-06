@@ -434,7 +434,7 @@ Render:
 						+ Make sure GameController uploads them at RenderUpload() time
 					! Upload & Render for all
 				= 6: Continue RenderContext Implementation (4): Ship
-					= Prep:
+					+ Prep:
 						+ RenderContext: enable all
 							+ AddShip: queued and waited (does OpenGL)
 						+ World: enable all
@@ -443,14 +443,19 @@ Render:
 						+ ShipRenderContext:
 							+ No render
 						+ UploadShipStart, UploadShipEnd: comment out content
-					- Run APITrace
-					- Ship:						
-						- ShipRenderContext::UploadStart: ViewModel update for max plane ID: TODO
-						- Triangles
-						-
+					+ Run APITrace
+					= Ship:			
+						+ ViewModel strategy: mAreOrthoMatricesDirty/ApplyOrthoMatricesChanges
+							+ UploadStart: ViewModel update for max plane ID
+							+ SetShipCount
+							+ OnViewModelUpdated
+						- UploadPointMutableAttributes: move group1 buffer uploading to beginning of Draw()
+						- UploadPointMutableAttributesEnd: move group2 buffer uploading to beginning of Draw()
+						- UploadPointColors: set dirty flag, and move (conditional) load to beginning of Draw()
+						- UploadPointTemperature: set dirty flag, and move (conditional) load to beginning of Draw()
+						- Triangles:
+							- UploadElementsEnd:
 					- Setters:
-					- Ship completion
-						- RenderContext::AddShip(): SetShipCounts: TODO (as above)
 					= CrossesOfLight
 				- 6b:
 					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 

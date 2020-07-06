@@ -48,6 +48,7 @@ ShipRenderContext::ShipRenderContext(
     , mShipCount(shipCount)
     , mPointCount(pointCount)
     , mMaxMaxPlaneId(0)
+    , mSettingsMutex()
     // Buffers
     , mPointAttributeGroup1Buffer()
     , mPointAttributeGroup1VBO()
@@ -116,6 +117,7 @@ ShipRenderContext::ShipRenderContext(
     , mShaderManager(shaderManager)
     // Parameters
     , mViewModel(viewModel)
+    , mIsViewModelDirty(true)
     , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
     , mLampLightColor(lampLightColor)
     , mWaterColor(waterColor)
@@ -475,11 +477,12 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Set parameters to initial values
+    // Update parameters
     //
 
-    OnViewModelUpdated();
+    ProcessSettingChanges();
 
+    // TODOOLD
     OnEffectiveAmbientLightIntensityUpdated();
     OnLampLightColorUpdated();
     OnWaterColorUpdated();
@@ -491,12 +494,6 @@ ShipRenderContext::ShipRenderContext(
 
 ShipRenderContext::~ShipRenderContext()
 {
-}
-
-void ShipRenderContext::OnViewModelUpdated()
-{
-    // Recalculate ortho matrices
-    UpdateOrthoMatrices();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -530,19 +527,22 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
         mHighlightVertexBuffers[i].clear();
     }
 
+    */
+
     //
     // Check if the max ever plane ID has changed
     //
 
     if (maxMaxPlaneId != mMaxMaxPlaneId)
     {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
         // Update value
         mMaxMaxPlaneId = maxMaxPlaneId;
 
-        // Recalculate view model parameters
-        OnViewModelUpdated();
+        // Remember to recalculate ortho matrices
+        mIsViewModelDirty = true;
     }
-    */
 }
 
 void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoordinates)
@@ -560,6 +560,7 @@ void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoor
 
 void ShipRenderContext::UploadPointMutableAttributesStart()
 {
+    // Nop
 }
 
 void ShipRenderContext::UploadPointMutableAttributes(
@@ -666,7 +667,7 @@ void ShipRenderContext::UploadElementsStart()
     // Empty all buffers - except triangles - as elements will be completely re-populated soon
     // (with a yet-unknown quantity of elements);
     //
-    // if the client does not upload new triangles, it means we have to reuse the last known set
+    // If the client does not upload new triangles, it means we have to reuse the last known set
 
     mPointElementBuffer.clear();
     mSpringElementBuffer.clear();
@@ -1012,6 +1013,9 @@ void ShipRenderContext::UploadEnd()
 void ShipRenderContext::Draw()
 {
     // We've been invoked on the render thread
+
+    // Process changes to settings
+    ProcessSettingChanges();
 
     /* TODOTEST
     //
@@ -1637,7 +1641,18 @@ void ShipRenderContext::RenderVectorArrows()
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::UpdateOrthoMatrices()
+void ShipRenderContext::ProcessSettingChanges()
+{
+    std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
+    if (mIsViewModelDirty)
+    {
+        ApplyViewModelChanges();
+        mIsViewModelDirty = false;
+    }
+}
+
+void ShipRenderContext::ApplyViewModelChanges()
 {
     //
     // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:

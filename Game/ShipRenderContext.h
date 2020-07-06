@@ -26,6 +26,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -64,14 +65,22 @@ public:
 
 public:
 
-    void OnViewModelUpdated();
+    void OnViewModelUpdated()
+    {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
+        // Remember to recalculate ortho matrices
+        mIsViewModelDirty = true;
+    }
 
     void SetShipCount(size_t shipCount)
     {
+        std::lock_guard<std::mutex> const lock(mSettingsMutex);
+
         mShipCount = shipCount;
 
-        // Recalculate ortho matrices
-        UpdateOrthoMatrices();
+        // Remember to recalculate ortho matrices
+        mIsViewModelDirty = true;
     }
 
     void SetEffectiveAmbientLightIntensity(float intensity)
@@ -947,7 +956,9 @@ private:
     void RenderHighlights();
     void RenderVectorArrows();
 
-    void UpdateOrthoMatrices();
+    void ProcessSettingChanges();
+    void ApplyViewModelChanges();
+    // TODOOLD
     void OnEffectiveAmbientLightIntensityUpdated();
     void OnLampLightColorUpdated();
     void OnWaterColorUpdated();
@@ -962,6 +973,11 @@ private:
     size_t mShipCount;
     size_t const mPointCount;
     PlaneId mMaxMaxPlaneId;
+
+    // Lock guarding:
+    // - changes to a setting and its dirty indicator
+    // - consumption of that setting
+    std::mutex mSettingsMutex;
 
     //
     // Types
@@ -1243,6 +1259,7 @@ private:
     //
 
     ViewModel const & mViewModel;
+    bool mIsViewModelDirty;
 
     float mEffectiveAmbientLightIntensity;
     vec4f mLampLightColor;

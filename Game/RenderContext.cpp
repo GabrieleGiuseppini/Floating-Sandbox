@@ -346,13 +346,11 @@ void RenderContext::AddShip(
 
     size_t const newShipCount = mShips.size() + 1;
 
-    /* TODOTEST
     // Tell all ships that there's a new ship
     for (auto & ship : mShips)
     {
         ship->SetShipCount(newShipCount);
     }
-    */
 
     // Add the ship - synchronously
     mRenderThread.RunSynchronously(
