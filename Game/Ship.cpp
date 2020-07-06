@@ -512,16 +512,13 @@ void Ship::RenderUpload(
         mId,
         mMaxMaxPlaneId);
 
-    /* TODOTEST
-
     //
-    // Upload points's attributes
+    // Upload points's immutable and mutable attributes
     //
 
     mPoints.UploadAttributes(
         mId,
         renderContext);
-
 
     //
     // Upload elements, if needed
@@ -543,7 +540,8 @@ void Ship::RenderUpload(
             renderContext);
 
         //
-        // Upload all the spring elements (including ropes)
+        // Upload spring elements (including ropes) (edge or all, depending
+        // on the debug render mode)
         //
 
         mSprings.UploadElements(
@@ -572,12 +570,10 @@ void Ship::RenderUpload(
             renderContext.UploadShipElementTrianglesEnd(mId);
         }
 
-        renderContext.UploadShipElementsEnd(
-            mId,
-            !mPoints.AreEphemeralPointsDirtyForRendering()); // Finalize ephemeral points only if there are no subsequent ephemeral point uploads
+        renderContext.UploadShipElementsEnd(mId);
     }
 
-
+    /* TODOTEST
     //
     // Upload stressed springs
     //

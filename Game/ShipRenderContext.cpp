@@ -94,7 +94,9 @@ ShipRenderContext::ShipRenderContext(
     , mSpringElementBuffer()
     , mRopeElementBuffer()
     , mTriangleElementBuffer()
+    , mAreElementBuffersDirty(true)
     , mElementVBO()
+    , mElementVBOAllocatedIndexSize(0u)
     , mPointElementVBOStartIndex(0)
     , mEphemeralPointElementVBOStartIndex(0)
     , mSpringElementVBOStartIndex(0)
@@ -547,8 +549,10 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 
 void ShipRenderContext::UploadPointImmutableAttributes(vec2f const * textureCoordinates)
 {
-    // Interleave texture coordinates into AttributeGroup1 buffer;
-    // wait to upload it until we also get positions
+    // Uploaded only once, but we treat them as if they could
+    // be uploaded any time
+
+    // Interleave texture coordinates into AttributeGroup1 buffer
     vec4f * restrict pDst = mPointAttributeGroup1Buffer.get();
     vec2f const * restrict pSrc = textureCoordinates;
     for (size_t i = 0; i < mPointCount; ++i)
@@ -569,6 +573,8 @@ void ShipRenderContext::UploadPointMutableAttributes(
     float const * water,
     size_t lightAndWaterCount)
 {
+    // Uploaded at each cycle
+
     // Interleave positions into AttributeGroup1 buffer
     vec4f * restrict pDst1 = mPointAttributeGroup1Buffer.get();
     vec2f const * restrict pSrc = position;
@@ -578,14 +584,7 @@ void ShipRenderContext::UploadPointMutableAttributes(
         pDst1[i].y = pSrc[i].y;
     }
 
-    // Upload AttributeGroup1 buffer
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup1Buffer.get());
-    CheckOpenGLError();
-
-    // Interleave light and water into AttributeGroup2 buffer;
-    // wait to upload it until we know whether the other attributes
-    // have been uploaded (or not)
+    // Interleave light and water into AttributeGroup2 buffer
     vec4f * restrict pDst2 = mPointAttributeGroup2Buffer.get();
     float const * restrict pSrc1 = light;
     float const * restrict pSrc2 = water;
@@ -594,8 +593,6 @@ void ShipRenderContext::UploadPointMutableAttributes(
         pDst2[i].x = pSrc1[i];
         pDst2[i].y = pSrc2[i];
     }
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ShipRenderContext::UploadPointMutableAttributesPlaneId(
@@ -603,7 +600,11 @@ void ShipRenderContext::UploadPointMutableAttributesPlaneId(
     size_t startDst,
     size_t count)
 {
+    // Uploaded sparingly, but we treat them as if they could
+    // be uploaded at any time
+
     // Interleave plane ID into AttributeGroup2 buffer
+    assert(startDst + count <= mPointCount);
     vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.get()[startDst]);
     float const * restrict pSrc = planeId;
     for (size_t i = 0; i < count; ++i)
@@ -615,7 +616,11 @@ void ShipRenderContext::UploadPointMutableAttributesDecay(
     size_t startDst,
     size_t count)
 {
+    // Uploaded sparingly, but we treat them as if they could
+    // be uploaded at any time
+
     // Interleave decay into AttributeGroup2 buffer
+    assert(startDst + count <= mPointCount);
     vec4f * restrict pDst = &(mPointAttributeGroup2Buffer.get()[startDst]);
     float const * restrict pSrc = decay;
     for (size_t i = 0; i < count; ++i)
@@ -624,12 +629,7 @@ void ShipRenderContext::UploadPointMutableAttributesDecay(
 
 void ShipRenderContext::UploadPointMutableAttributesEnd()
 {
-    // Upload attribute group buffers
-    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup2Buffer.get());
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void ShipRenderContext::UploadPointColors(
@@ -637,10 +637,18 @@ void ShipRenderContext::UploadPointColors(
     size_t startDst,
     size_t count)
 {
+    // Uploaded sparingly
+
+    // We've been invoked on the render thread
+
+    //
+    // Upload color range
+    //
+
     assert(startDst + count <= mPointCount);
 
-    // Upload color range
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
+
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(vec4f), count * sizeof(vec4f), color);
     CheckOpenGLError();
 
@@ -652,10 +660,18 @@ void ShipRenderContext::UploadPointTemperature(
     size_t startDst,
     size_t count)
 {
+    // Uploaded sparingly
+
+    // We've been invoked on the render thread
+
+    //
+    // Upload temperature range
+    //
+
     assert(startDst + count <= mPointCount);
 
-    // Upload temperature range
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
+
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), temperature);
     CheckOpenGLError();
 
@@ -664,6 +680,8 @@ void ShipRenderContext::UploadPointTemperature(
 
 void ShipRenderContext::UploadElementsStart()
 {
+    // Elements are uploaded sparingly
+
     // Empty all buffers - except triangles - as elements will be completely re-populated soon
     // (with a yet-unknown quantity of elements);
     //
@@ -673,6 +691,7 @@ void ShipRenderContext::UploadElementsStart()
     mSpringElementBuffer.clear();
     mRopeElementBuffer.clear();
     mStressedSpringElementBuffer.clear();
+    mAreElementBuffersDirty = true;
 }
 
 void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
@@ -688,73 +707,9 @@ void ShipRenderContext::UploadElementTrianglesEnd()
 {
 }
 
-void ShipRenderContext::UploadElementsEnd(bool doFinalizeEphemeralPoints)
+void ShipRenderContext::UploadElementsEnd()
 {
-    //
-    // Upload all elements to the VBO, remembering the starting VBO index
-    // of each element type
-    //
-
-    // Note: byte-granularity indices
-    mTriangleElementVBOStartIndex = 0;
-    mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
-    mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);
-    mPointElementVBOStartIndex = mSpringElementVBOStartIndex + mSpringElementBuffer.size() * sizeof(LineElement);
-    mEphemeralPointElementVBOStartIndex = mPointElementVBOStartIndex + mPointElementBuffer.size() * sizeof(PointElement);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
-
-    // Allocate whole buffer, including room for all possible ephemeral points
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mEphemeralPointElementVBOStartIndex + GameParameters::MaxEphemeralParticles * sizeof(PointElement),
-        nullptr,
-        GL_STATIC_DRAW);
-    CheckOpenGLError();
-
-    // Upload triangles
-    glBufferSubData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mTriangleElementVBOStartIndex,
-        mTriangleElementBuffer.size() * sizeof(TriangleElement),
-        mTriangleElementBuffer.data());
-
-    // Upload ropes
-    glBufferSubData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mRopeElementVBOStartIndex,
-        mRopeElementBuffer.size() * sizeof(LineElement),
-        mRopeElementBuffer.data());
-
-    // Upload springs
-    glBufferSubData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mSpringElementVBOStartIndex,
-        mSpringElementBuffer.size() * sizeof(LineElement),
-        mSpringElementBuffer.data());
-
-    // Upload points
-    glBufferSubData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mPointElementVBOStartIndex,
-        mPointElementBuffer.size() * sizeof(PointElement),
-        mPointElementBuffer.data());
-
-    // Upload the ephemeral points that we know about, provided
-    // that there aren't new ephemeral points coming; otherwise
-    // we'll upload these later
-    if (doFinalizeEphemeralPoints)
-    {
-        glBufferSubData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            mEphemeralPointElementVBOStartIndex,
-            mEphemeralPointElementBuffer.size() * sizeof(PointElement),
-            mEphemeralPointElementBuffer.data());
-    }
-
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void ShipRenderContext::UploadElementStressedSpringsStart()
@@ -913,26 +868,15 @@ void ShipRenderContext::UploadSparklesEnd()
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
+    // Client wants to upload a new set of ephemeral point elements
+
     // Empty buffer
     mEphemeralPointElementBuffer.clear();
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsEnd()
 {
-    //
-    // Upload ephemeral point elements to the end of the element VBO
-    //
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
-
-    glBufferSubData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mEphemeralPointElementVBOStartIndex,
-        mEphemeralPointElementBuffer.size() * sizeof(PointElement),
-        mEphemeralPointElementBuffer.data());
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void ShipRenderContext::UploadVectors(
@@ -1014,8 +958,105 @@ void ShipRenderContext::Draw()
 {
     // We've been invoked on the render thread
 
+    //
     // Process changes to settings
+    //
+
     ProcessSettingChanges();
+
+
+    //
+    // Upload Point AttributeGroup1 buffer
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup1Buffer.get());
+    CheckOpenGLError();
+
+
+    //
+    // Upload Point AttributeGroup2 buffer
+    //
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(vec4f), mPointAttributeGroup2Buffer.get());
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    //
+    // Upload element buffers, if needed
+    //
+
+    if (mAreElementBuffersDirty)
+    {
+        //
+        // Upload all elements to the VBO, remembering the starting VBO index
+        // of each element type which we'll need at primitives' render time
+        //
+
+        // Note: byte-granularity indices
+        mTriangleElementVBOStartIndex = 0;
+        mRopeElementVBOStartIndex = mTriangleElementVBOStartIndex + mTriangleElementBuffer.size() * sizeof(TriangleElement);
+        mSpringElementVBOStartIndex = mRopeElementVBOStartIndex + mRopeElementBuffer.size() * sizeof(LineElement);
+        mPointElementVBOStartIndex = mSpringElementVBOStartIndex + mSpringElementBuffer.size() * sizeof(LineElement);
+        mEphemeralPointElementVBOStartIndex = mPointElementVBOStartIndex + mPointElementBuffer.size() * sizeof(PointElement);
+        size_t requiredIndexSize = mEphemeralPointElementVBOStartIndex + mEphemeralPointElementBuffer.size() * sizeof(PointElement);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
+
+        if (mElementVBOAllocatedIndexSize != requiredIndexSize)
+        {
+            // Re-allocate VBO buffer
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, requiredIndexSize, nullptr, GL_STATIC_DRAW);
+            CheckOpenGLError();
+
+            mElementVBOAllocatedIndexSize = requiredIndexSize;
+        }
+
+        // Upload triangles
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mTriangleElementVBOStartIndex,
+            mTriangleElementBuffer.size() * sizeof(TriangleElement),
+            mTriangleElementBuffer.data());
+
+        // Upload ropes
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mRopeElementVBOStartIndex,
+            mRopeElementBuffer.size() * sizeof(LineElement),
+            mRopeElementBuffer.data());
+
+        // Upload springs
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mSpringElementVBOStartIndex,
+            mSpringElementBuffer.size() * sizeof(LineElement),
+            mSpringElementBuffer.data());
+
+        // Upload points
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mPointElementVBOStartIndex,
+            mPointElementBuffer.size() * sizeof(PointElement),
+            mPointElementBuffer.data());
+
+        // Upload ephemeral points
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            mEphemeralPointElementVBOStartIndex,
+            mEphemeralPointElementBuffer.size() * sizeof(PointElement),
+            mEphemeralPointElementBuffer.data());
+
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        mAreElementBuffersDirty = false;
+    }
 
     /* TODOTEST
     //
@@ -1040,7 +1081,7 @@ void ShipRenderContext::Draw()
             0,
             mFlameBackgroundCount);
     }
-
+    */
 
     //
     // Draw ship elements
@@ -1270,7 +1311,7 @@ void ShipRenderContext::Draw()
     }
 
 
-
+    /* TODOTEST
     //
     // Render foreground flames
     //

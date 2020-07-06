@@ -50,6 +50,9 @@ RenderContext::RenderContext(
     , mOceanSegmentBuffer()
     , mOceanSegmentVBO()
     , mOceanSegmentVBOAllocatedVertexSize(0u)
+    , mAMBombImplosionVertexBuffer()
+    , mAMBombImplosionVBO()
+    , mAMBombImplosionVBOAllocatedVertexSize(0u)
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
     , mCrossOfLightVBOAllocatedVertexSize(0u)
@@ -65,6 +68,7 @@ RenderContext::RenderContext(
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
+    , mAMBombImplosionVAO()
     , mCrossOfLightVAO()
     , mHeatBlasterFlameVAO()
     , mFireExtinguisherSprayVAO()
@@ -469,6 +473,9 @@ void RenderContext::UploadStart()
         mPerfStats.TotalWaitForRenderDrawDuration.Update(GameChronometer::now() - waitStart);
     }
 
+    // Reset AM bomb implosions, they are uploaded as needed
+    mAMBombImplosionVertexBuffer.clear();
+
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
 
@@ -660,6 +667,8 @@ void RenderContext::Draw()
 
             RenderOceanFloor();
 
+            RenderAMBombImplosions();
+
             RenderCrossesOfLight();
 
             RenderHeatBlasterFlame();
@@ -696,18 +705,19 @@ void RenderContext::InitializeBuffersAndVAOs()
     // Initialize buffers
     //
 
-    GLuint vbos[10];
-    glGenBuffers(10, vbos);
+    GLuint vbos[11];
+    glGenBuffers(11, vbos);
     mStarVBO = vbos[0];
     mLightningVBO = vbos[1];
     mCloudVBO = vbos[2];
     mLandSegmentVBO = vbos[3];
     mOceanSegmentVBO = vbos[4];
-    mCrossOfLightVBO = vbos[5];
-    mHeatBlasterFlameVBO = vbos[6];
-    mFireExtinguisherSprayVBO = vbos[7];
-    mRainVBO = vbos[8];
-    mWorldBorderVBO = vbos[9];
+    mAMBombImplosionVBO = vbos[5];
+    mCrossOfLightVBO = vbos[6];
+    mHeatBlasterFlameVBO = vbos[7];
+    mFireExtinguisherSprayVBO = vbos[8];
+    mRainVBO = vbos[9];
+    mWorldBorderVBO = vbos[10];
 
 
     //
@@ -804,6 +814,27 @@ void RenderContext::InitializeBuffersAndVAOs()
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanSegmentVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Ocean));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Ocean), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void *)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize AM Bomb Implosion VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mAMBombImplosionVAO = tmpGLuint;
+
+    glBindVertexArray(*mAMBombImplosionVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    glBindBuffer(GL_ARRAY_BUFFER, *mAMBombImplosionVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombImplosion1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombImplosion1), 4, GL_FLOAT, GL_FALSE, sizeof(AMBombImplosionVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombImplosion2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombImplosion2), 1, GL_FLOAT, GL_FALSE, sizeof(AMBombImplosionVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -1515,6 +1546,49 @@ void RenderContext::RenderOceanFloor()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void RenderContext::RenderAMBombImplosions()
+{
+    if (!mAMBombImplosionVertexBuffer.empty())
+    {
+        //
+        // Buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mAMBombImplosionVBO);
+
+        if (mAMBombImplosionVBOAllocatedVertexSize != mAMBombImplosionVertexBuffer.size())
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mAMBombImplosionVertexBuffer.size() * sizeof(AMBombImplosionVertex), mAMBombImplosionVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mAMBombImplosionVBOAllocatedVertexSize = mAMBombImplosionVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mAMBombImplosionVertexBuffer.size() * sizeof(AMBombImplosionVertex), mAMBombImplosionVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mAMBombImplosionVAO);
+
+        mShaderManager->ActivateProgram<ProgramType::AMBombImplosion>();
+
+        assert((mAMBombImplosionVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAMBombImplosionVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
 }
 
 void RenderContext::RenderCrossesOfLight()

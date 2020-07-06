@@ -449,14 +449,33 @@ Render:
 							+ UploadStart: ViewModel update for max plane ID
 							+ SetShipCount
 							+ OnViewModelUpdated
-						- UploadPointMutableAttributes: move group1 buffer uploading to beginning of Draw()
-						- UploadPointMutableAttributesEnd: move group2 buffer uploading to beginning of Draw()
-						- UploadPointColors: set dirty flag, and move (conditional) load to beginning of Draw()
-						- UploadPointTemperature: set dirty flag, and move (conditional) load to beginning of Draw()
-						- Triangles:
-							- UploadElementsEnd:
-					- Setters:
+						+ UploadPointMutableAttributes: move group1 buffer uploading to beginning of Draw()
+						+ UploadPointMutableAttributesEnd: move group2 buffer uploading to beginning of Draw()
+						+ UploadPointColors: asynchronous
+						+ UploadPointTemperature: asynchronous
+						+ Elements
+							+ UploadElementsEnd: set dirty flag, and move (conditional) load to beginning of Draw()
+								+ See if can avoid allocating buffer: use allocated VBO vertex buffer size
+								+ May get rid of "finalizeEphemerals" flag as we upload anyway at beginning of draw,
+								  well after ephemerals are (eventually) loaded
 					= CrossesOfLight
+						- Upload
+					= AMBombImplosion
+						- Upload
+							- Redo quad as with "radius"?
+						- Shader
+					- Test on other laptop
+					- Flames
+						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
+					- StressedSprings
+					- Sparkles
+					- Vectors
+						- mIsVectorArrowColorDirty, but NO Apply...Changes()
+						- Set color param in own Render method, if (mIsVectorArrowColorDirty)
+					- GenericMipMappedTextures, Explosions, Highlights: re-enable UploadStart, rest should be done
+					= ElementEphemeralPoints
+						- Need to enable upload at Points						
+					- Setters: TODO
 				- 6b:
 					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
 						- Queued and waited, or dirty flag covering a cluster of settings?
@@ -481,6 +500,8 @@ Render:
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
+
+		- Explosions: see with progress being sqrt
 
 		- SWE: see if should damp waves, now that we have bubble waves
 			- Ideally we only damp small waves, not big ones (e.g. Tsunami)

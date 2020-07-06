@@ -598,6 +598,7 @@ public:
         // Immutable render attributes
         , mColorBuffer(mBufferElementCount, shipPointCount, vec4f::zero())
         , mIsWholeColorBufferDirty(true)
+        , mIsEphemeralColorBufferDirty(true)
         , mTextureCoordinatesBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mIsTextureCoordinatesBufferDirty(true)
         //////////////////////////////////
@@ -839,11 +840,6 @@ public:
     void UploadVectors(
         ShipId shipId,
         Render::RenderContext & renderContext) const;
-
-    inline bool AreEphemeralPointsDirtyForRendering() const noexcept
-    {
-        return mAreEphemeralPointsDirtyForRendering;
-    }
 
     void UploadEphemeralParticles(
         ShipId shipId,
@@ -1914,7 +1910,8 @@ private:
     //
 
     Buffer<vec4f> mColorBuffer;
-    bool mutable mIsWholeColorBufferDirty;  // Whether or not is dirty since last render upload
+    bool mutable mIsWholeColorBufferDirty;  // Whether or not whole buffer is dirty since last render upload
+    bool mutable mIsEphemeralColorBufferDirty; // Whether or not ephemeral portion of buffer is dirty since last render upload
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 

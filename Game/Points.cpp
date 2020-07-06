@@ -187,6 +187,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::CreateEphemeralParticleDebris(
@@ -256,6 +257,7 @@ void Points::CreateEphemeralParticleDebris(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 
     // Remember that ephemeral points are dirty now
     mAreEphemeralPointsDirtyForRendering = true;
@@ -345,6 +347,7 @@ void Points::CreateEphemeralParticleSmoke(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -485,6 +488,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::Detach(
@@ -1329,6 +1333,7 @@ void Points::UpdateEphemeralParticles(
                             0.0f);
 
                         mColorBuffer[pointIndex].w = alpha;
+                        mIsEphemeralColorBufferDirty = true;
                     }
 
                     break;
@@ -1525,8 +1530,9 @@ void Points::UploadAttributes(
             mAllPointCount);
 
         mIsWholeColorBufferDirty = false;
+        mIsEphemeralColorBufferDirty = false;
     }
-    else
+    else if (mIsEphemeralColorBufferDirty)
     {
         // Only upload ephemeral particle portion
         renderContext.UploadShipPointColors(
@@ -1534,14 +1540,17 @@ void Points::UploadAttributes(
             &(mColorBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
             mEphemeralPointCount);
+
+        mIsEphemeralColorBufferDirty = false;
     }
 
     //
     // Upload mutable attributes
     //
 
-    // We only upload all points for the first upload; for subsequent uploads,
-    // depending on the buffer we only need to upload non-ephemeral points
+    // We only upload all points for the first upload, so that also ephemeral
+    // points have reasonable (default) values; for subsequent uploads,
+    // for some buffers we only need to upload non-ephemeral points
     size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
     renderContext.UploadShipPointMutableAttributesStart(shipId);

@@ -820,6 +820,45 @@ public:
 
     void UploadOceanEnd();
 
+    void UploadAMBombImplosion(
+        vec2f const & centerPosition,
+        float progress)
+    {
+        // Triangle 1
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
+            centerPosition,
+            progress);
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            mViewModel.GetVisibleWorldTopLeft(), // left, top
+            centerPosition,
+            progress);
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
+            centerPosition,
+            progress);
+
+        // Triangle 2
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            mViewModel.GetVisibleWorldTopLeft(), // left, top
+            centerPosition,
+            progress);
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
+            centerPosition,
+            progress);
+
+        mAMBombImplosionVertexBuffer.emplace_back(
+            vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
+            centerPosition,
+            progress);
+    }
+
     void UploadCrossOfLight(
         vec2f const & centerPosition,
         float progress)
@@ -1040,6 +1079,8 @@ public:
         mShips[shipId]->UploadPointMutableAttributesEnd();
     }
 
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
     void UploadShipPointColors(
         ShipId shipId,
         vec4f const * color,
@@ -1048,12 +1089,19 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointColors(
-            color,
-            startDst,
-            count);
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointColors(
+                    color,
+                    startDst,
+                    count);
+            });
     }
 
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
     void UploadShipPointTemperature(
         ShipId shipId,
         float const * temperature,
@@ -1062,10 +1110,15 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointTemperature(
-            temperature,
-            startDst,
-            count);
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointTemperature(
+                    temperature,
+                    startDst,
+                    count);
+            });
     }
 
     inline void UploadShipElementsStart(ShipId shipId)
@@ -1141,13 +1194,11 @@ public:
         mShips[shipId]->UploadElementTrianglesEnd();
     }
 
-    inline void UploadShipElementsEnd(
-        ShipId shipId,
-        bool doFinalizeEphemeralPoints)
+    inline void UploadShipElementsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsEnd(doFinalizeEphemeralPoints);
+        mShips[shipId]->UploadElementsEnd();
     }
 
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
@@ -1584,6 +1635,7 @@ private:
     void RenderCloudsAndBackgroundLightnings();
     void RenderOcean(bool opaquely);
     void RenderOceanFloor();
+    void RenderAMBombImplosions();
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();
@@ -1730,6 +1782,22 @@ private:
         float value2;
     };
 
+    struct AMBombImplosionVertex
+    {
+        vec2f vertex;
+        vec2f centerPosition;
+        float progress;
+
+        AMBombImplosionVertex(
+            vec2f _vertex,
+            vec2f _centerPosition,
+            float _progress)
+            : vertex(_vertex)
+            , centerPosition(_centerPosition)
+            , progress(_progress)
+        {}
+    };
+
     struct CrossOfLightVertex
     {
         vec2f vertex;
@@ -1825,6 +1893,10 @@ private:
     GameOpenGLVBO mOceanSegmentVBO;
     size_t mOceanSegmentVBOAllocatedVertexSize;
 
+    std::vector<AMBombImplosionVertex> mAMBombImplosionVertexBuffer;
+    GameOpenGLVBO mAMBombImplosionVBO;
+    size_t mAMBombImplosionVBOAllocatedVertexSize;
+
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
     size_t mCrossOfLightVBOAllocatedVertexSize;
@@ -1850,6 +1922,7 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mAMBombImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mFireExtinguisherSprayVAO;

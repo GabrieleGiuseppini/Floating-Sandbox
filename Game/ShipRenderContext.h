@@ -209,7 +209,7 @@ public:
     //
 
     /*
-     * Signals that all elements, except triangles, will be re-uploaded. If triangles have changed, they
+     * Signals that all elements, except may be triangles, will be re-uploaded. If triangles have changed, they
      * will also be uploaded; if they are not re-uploaded, then the last uploaded set is to be used.
      */
     void UploadElementsStart();
@@ -256,7 +256,7 @@ public:
 
     void UploadElementTrianglesEnd();
 
-    void UploadElementsEnd(bool doFinalizeEphemeralPoints);
+    void UploadElementsEnd();
 
     //
     // Stressed springs
@@ -1209,8 +1209,9 @@ private:
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     std::vector<TriangleElement> mTriangleElementBuffer;
-
+    bool mAreElementBuffersDirty;
     GameOpenGLVBO mElementVBO;
+    size_t mElementVBOAllocatedIndexSize;
 
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
