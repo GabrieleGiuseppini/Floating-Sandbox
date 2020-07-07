@@ -23,6 +23,7 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <memory>

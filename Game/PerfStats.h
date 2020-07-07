@@ -37,7 +37,7 @@ struct PerfStats
 
     public:
 
-        Ratio()
+        Ratio() noexcept
             : mRatio()
         {}
 
