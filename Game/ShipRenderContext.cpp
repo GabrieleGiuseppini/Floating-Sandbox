@@ -12,6 +12,7 @@
 #include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
 
+#include <algorithm>
 #include <cstring>
 
 namespace Render {
@@ -76,9 +77,8 @@ ShipRenderContext::ShipRenderContext(
     , mSparkleVertexBuffer()
     , mSparkleVertexVBO()
     //
-    , mAirBubbleVertexBuffer()
+    , mGenericMipMappedTextureAirBubbleVertexBuffer()
     , mGenericMipMappedTexturePlaneVertexBuffers()
-    , mGenericMipMappedTextureTotalVertexCount(0)
     , mGenericMipMappedTextureVBO()
     , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
     //
@@ -185,9 +185,6 @@ ShipRenderContext::ShipRenderContext(
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
     mGenericMipMappedTextureVBO = vbos[8];
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-    mGenericMipMappedTextureVBOAllocatedVertexCount = GameParameters::MaxEphemeralParticles * 6; // Initial guess, might get more
-    glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_STREAM_DRAW);
 
     mHighlightVertexVBO = vbos[9];
 
@@ -515,24 +512,22 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     mExplosionPlaneVertexBuffers.clear();
     mExplosionPlaneVertexBuffers.resize(maxMaxPlaneId + 1);
     mExplosionTotalPlaneVertexCount = 0;
+    */
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-    mAirBubbleVertexBuffer.map(mGenericMipMappedTextureVBOAllocatedVertexCount);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
+    // TODO: smarter way
     mGenericMipMappedTexturePlaneVertexBuffers.clear();
     mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mGenericMipMappedTextureTotalVertexCount = 0;
 
+    /* TODOTEST
     for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
     {
         mHighlightVertexBuffers[i].clear();
     }
-
     */
 
     //
-    // Check if the max ever plane ID has changed
+    // Check if the max max plane ID has changed
     //
 
     if (maxMaxPlaneId != mMaxMaxPlaneId)
@@ -1342,7 +1337,7 @@ void ShipRenderContext::Draw()
     //
 
     RenderSparkles();
-
+    */
 
 
     //
@@ -1352,7 +1347,7 @@ void ShipRenderContext::Draw()
     RenderGenericMipMappedTextures();
 
 
-
+    /* TODOTEST
     //
     // Render explosions
     //
@@ -1454,6 +1449,86 @@ void ShipRenderContext::RenderSparkles()
 
 void ShipRenderContext::RenderGenericMipMappedTextures()
 {
+    size_t const nonAirBubblesTotalVertexCount = std::accumulate(
+        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
+        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
+        size_t(0),
+        [](size_t const total, auto const & vec)
+        {
+            return total + vec.vertexBuffer.size();
+        });
+
+    size_t const totalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
+
+    if (totalVertexCount > 0)
+    {
+        //
+        // Buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
+
+        if (totalVertexCount > mGenericMipMappedTextureVBOAllocatedVertexCount)
+        {
+            // Re-allocate VBO buffer
+            glBufferData(GL_ARRAY_BUFFER, totalVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            mGenericMipMappedTextureVBOAllocatedVertexCount = totalVertexCount;
+        }
+
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+
+        // Upload air bubbles
+        if (!mGenericMipMappedTextureAirBubbleVertexBuffer.empty())
+        {
+            size_t const byteCopySize = mGenericMipMappedTextureAirBubbleVertexBuffer.size() * sizeof(GenericTextureVertex);
+            std::memcpy(mappedBuffer, mGenericMipMappedTextureAirBubbleVertexBuffer.data(), byteCopySize);
+            mappedBuffer += byteCopySize;
+        }
+
+        // Upload all planes of other textures
+        for (auto const & plane : mGenericMipMappedTexturePlaneVertexBuffers)
+        {
+            if (!plane.vertexBuffer.empty())
+            {
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(GenericTextureVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
+                mappedBuffer += byteCopySize;
+            }
+        }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mGenericMipMappedTextureVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        assert(0 == (totalVertexCount % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(totalVertexCount));
+
+        glBindVertexArray(0);
+
+        //
+        // Update stats
+        //
+
+        mRenderStatistics.LastRenderedShipGenericMipMappedTextures += totalVertexCount / 6; // # of quads
+    }
+
+    /* TODOOLD
     // Unmap generic texture VBO (which we have mapped regardless of whether or not there
     // are air bubbles)
     glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
@@ -1549,6 +1624,7 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
 
         glBindVertexArray(0);
     }
+    */
 }
 
 void ShipRenderContext::RenderExplosions()

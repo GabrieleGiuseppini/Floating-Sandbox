@@ -15,8 +15,8 @@ namespace Render {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "am_bomb_implosion")
-        return ProgramType::AMBombImplosion;
+    if (lstr == "am_bomb_preimplosion")
+        return ProgramType::AMBombPreImplosion;
     else if (lstr == "clouds")
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
@@ -109,8 +109,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
-    case ProgramType::AMBombImplosion:
-        return "AMBombImplosion";
+    case ProgramType::AMBombPreImplosion:
+        return "AMBombPreImplosion";
     case ProgramType::Clouds:
         return "Clouds";
     case ProgramType::CrossOfLight:
@@ -376,10 +376,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return VertexAttributeType::Ocean;
-    else if (Utils::CaseInsensitiveEquals(str, "AMBombImplosion1"))
-        return VertexAttributeType::AMBombImplosion1;
-    else if (Utils::CaseInsensitiveEquals(str, "AMBombImplosion2"))
-        return VertexAttributeType::AMBombImplosion2;
+    else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
+        return VertexAttributeType::AMBombPreImplosion1;
+    else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
+        return VertexAttributeType::AMBombPreImplosion2;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))

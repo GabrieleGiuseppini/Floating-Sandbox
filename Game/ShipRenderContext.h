@@ -642,7 +642,7 @@ public:
             scale,
             0.0f, // angle
             alpha,
-            mAirBubbleVertexBuffer);
+            mGenericMipMappedTextureAirBubbleVertexBuffer);
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
@@ -729,9 +729,6 @@ public:
             angleCw,
             alpha,
             vertexBuffer);
-
-        // Update total count of vertices
-        mGenericMipMappedTextureTotalVertexCount += 6;
     }
 
     //
@@ -1186,9 +1183,8 @@ private:
     std::vector<SparkleVertex> mSparkleVertexBuffer;
     GameOpenGLVBO mSparkleVertexVBO;
 
-    GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
-    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers;
-    size_t mGenericMipMappedTextureTotalVertexCount;
+    std::vector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
+    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
 

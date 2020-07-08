@@ -421,6 +421,7 @@ private:
     virtual void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
+        float radius,
         GameParameters const & gameParameters) override;
 
     virtual void DoAntiMatterBombImplosion(

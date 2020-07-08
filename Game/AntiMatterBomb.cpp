@@ -82,6 +82,7 @@ bool AntiMatterBomb::Update(
             mShipPhysicsHandler.DoAntiMatterBombPreimplosion(
                 GetPosition(),
                 0.0f,
+                CalculatePreImplosionRadius(0.0f),
                 gameParameters);
 
             // Notify
@@ -114,6 +115,7 @@ bool AntiMatterBomb::Update(
                 mShipPhysicsHandler.DoAntiMatterBombPreimplosion(
                     GetPosition(),
                     mCurrentStateProgress,
+                    CalculatePreImplosionRadius(mCurrentStateProgress),
                     gameParameters);
             }
             else
@@ -361,6 +363,12 @@ void AntiMatterBomb::Upload(
                 1.0f,
                 mCurrentCloudRotationAngle,
                 1.0f);
+
+            // Pre-implosion
+            renderContext.UploadAMBombPreImplosion(
+                GetPosition(),
+                mCurrentStateProgress,
+                CalculatePreImplosionRadius(mCurrentStateProgress));
 
             break;
         }

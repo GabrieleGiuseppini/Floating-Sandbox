@@ -601,7 +601,7 @@ void Ship::RenderUpload(
         mId,
         mWindSpeedMagnitudeToRender,
         renderContext);
-
+    */
 
     //
     // Upload bombs
@@ -610,7 +610,6 @@ void Ship::RenderUpload(
     mBombs.Upload(
         mId,
         renderContext);
-
 
     //
     // Upload pinned points
@@ -630,6 +629,7 @@ void Ship::RenderUpload(
         renderContext);
 
 
+    /* TODOTEST
     //
     // Upload highlights
     //
@@ -2832,6 +2832,7 @@ void Ship::StartExplosion(
 void Ship::DoAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
     float sequenceProgress,
+    float radius,
     GameParameters const & gameParameters)
 {
     float const strength =
@@ -2841,7 +2842,7 @@ void Ship::DoAntiMatterBombPreimplosion(
     // Apply the force field
     ApplyRadialSpaceWarpForceField(
         centerPosition,
-        7.0f + sequenceProgress * 100.0f,
+        radius,
         10.0f,
         strength);
 }

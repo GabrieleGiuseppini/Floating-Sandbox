@@ -18,7 +18,7 @@ namespace Render {
 
 enum class ProgramType
 {
-    AMBombImplosion = 0,
+    AMBombPreImplosion = 0,
     Clouds,
     CrossOfLight,
     FireExtinguisherSpray,
@@ -138,8 +138,8 @@ enum class VertexAttributeType : GLuint
 
     Ocean = 0,
 
-    AMBombImplosion1 = 0,
-    AMBombImplosion2 =1,
+    AMBombPreImplosion1 = 0,
+    AMBombPreImplosion2 =1,
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,

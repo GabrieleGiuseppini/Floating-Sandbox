@@ -1738,7 +1738,9 @@ void Points::UploadEphemeralParticles(
         renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
 
+    /* TODOTEST
     renderContext.UploadShipSparklesStart(shipId);
+    */
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
@@ -1808,12 +1810,14 @@ void Points::UploadEphemeralParticles(
                     -GetVelocity(pointIndex)
                     / GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
+                /* TODOTEST
                 renderContext.UploadShipSparkle(
                     shipId,
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     velocityVector,
                     mEphemeralParticleAttributes2Buffer[pointIndex].State.Sparkle.Progress);
+                */
 
                 break;
             }
@@ -1843,7 +1847,9 @@ void Points::UploadEphemeralParticles(
         }
     }
 
+    /* TODOTEST
     renderContext.UploadShipSparklesEnd(shipId);
+    */
 
     if (mAreEphemeralPointsDirtyForRendering)
     {

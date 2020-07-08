@@ -294,8 +294,8 @@ Render:
 
 		= Parallelize OpenGL:
 			+ Start:
-				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7)
-				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5)
+				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7) - 30.9 FPS
+				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
 				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
 				- Bazzico: TODO
 			- Spec:
@@ -444,7 +444,7 @@ Render:
 							+ No render
 						+ UploadShipStart, UploadShipEnd: comment out content
 					+ Run APITrace
-					= Ship:			
+					+ Ship:			
 						+ ViewModel strategy: mAreOrthoMatricesDirty/ApplyOrthoMatricesChanges
 							+ UploadStart: ViewModel update for max plane ID
 							+ SetShipCount
@@ -458,24 +458,26 @@ Render:
 								+ See if can avoid allocating buffer: use allocated VBO vertex buffer size
 								+ May get rid of "finalizeEphemerals" flag as we upload anyway at beginning of draw,
 								  well after ephemerals are (eventually) loaded
-					= CrossesOfLight
-						- Upload
+					+ GenericMipMappedTextures, AirBubbles
+					+ ElementEphemeralPoints
+					+ CrossesOfLight
+						+ Upload
 					= AMBombImplosion
-						- Upload
-							- Redo quad as with "radius"?
+						+ Upload
+							+ Redo quad as with "radius"?
+						= Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
 						- Shader
-					- Test on other laptop
 					- Flames
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
 					- StressedSprings
 					- Sparkles
+						- Need to enable upload at Points::UploadEphemeralParticles
 					- Vectors
 						- mIsVectorArrowColorDirty, but NO Apply...Changes()
 						- Set color param in own Render method, if (mIsVectorArrowColorDirty)
-					- GenericMipMappedTextures, Explosions, Highlights: re-enable UploadStart, rest should be done
-					= ElementEphemeralPoints
-						- Need to enable upload at Points						
+					- Explosions, Highlights: re-enable UploadStart, rest should be done
 					- Setters: TODO
+					- Fix render stats
 				- 6b:
 					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
 						- Queued and waited, or dirty flag covering a cluster of settings?

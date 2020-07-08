@@ -50,9 +50,9 @@ RenderContext::RenderContext(
     , mOceanSegmentBuffer()
     , mOceanSegmentVBO()
     , mOceanSegmentVBOAllocatedVertexSize(0u)
-    , mAMBombImplosionVertexBuffer()
-    , mAMBombImplosionVBO()
-    , mAMBombImplosionVBOAllocatedVertexSize(0u)
+    , mAMBombPreImplosionVertexBuffer()
+    , mAMBombPreImplosionVBO()
+    , mAMBombPreImplosionVBOAllocatedVertexSize(0u)
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
     , mCrossOfLightVBOAllocatedVertexSize(0u)
@@ -68,7 +68,7 @@ RenderContext::RenderContext(
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
-    , mAMBombImplosionVAO()
+    , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
     , mHeatBlasterFlameVAO()
     , mFireExtinguisherSprayVAO()
@@ -473,8 +473,8 @@ void RenderContext::UploadStart()
         mPerfStats.TotalWaitForRenderDrawDuration.Update(GameChronometer::now() - waitStart);
     }
 
-    // Reset AM bomb implosions, they are uploaded as needed
-    mAMBombImplosionVertexBuffer.clear();
+    // Reset AM bomb pre-implosions, they are uploaded as needed
+    mAMBombPreImplosionVertexBuffer.clear();
 
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
@@ -667,7 +667,7 @@ void RenderContext::Draw()
 
             RenderOceanFloor();
 
-            RenderAMBombImplosions();
+            RenderAMBombPreImplosions();
 
             RenderCrossesOfLight();
 
@@ -712,7 +712,7 @@ void RenderContext::InitializeBuffersAndVAOs()
     mCloudVBO = vbos[2];
     mLandSegmentVBO = vbos[3];
     mOceanSegmentVBO = vbos[4];
-    mAMBombImplosionVBO = vbos[5];
+    mAMBombPreImplosionVBO = vbos[5];
     mCrossOfLightVBO = vbos[6];
     mHeatBlasterFlameVBO = vbos[7];
     mFireExtinguisherSprayVBO = vbos[8];
@@ -824,17 +824,17 @@ void RenderContext::InitializeBuffersAndVAOs()
     //
 
     glGenVertexArrays(1, &tmpGLuint);
-    mAMBombImplosionVAO = tmpGLuint;
+    mAMBombPreImplosionVAO = tmpGLuint;
 
-    glBindVertexArray(*mAMBombImplosionVAO);
+    glBindVertexArray(*mAMBombPreImplosionVAO);
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mAMBombImplosionVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombImplosion1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombImplosion1), 4, GL_FLOAT, GL_FALSE, sizeof(AMBombImplosionVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombImplosion2));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombImplosion2), 1, GL_FLOAT, GL_FALSE, sizeof(AMBombImplosionVertex), (void *)(4 * sizeof(float)));
+    glBindBuffer(GL_ARRAY_BUFFER, *mAMBombPreImplosionVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombPreImplosion1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombPreImplosion1), 4, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AMBombPreImplosion2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AMBombPreImplosion2), 2, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -1548,28 +1548,28 @@ void RenderContext::RenderOceanFloor()
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderAMBombImplosions()
+void RenderContext::RenderAMBombPreImplosions()
 {
-    if (!mAMBombImplosionVertexBuffer.empty())
+    if (!mAMBombPreImplosionVertexBuffer.empty())
     {
         //
         // Buffer
         //
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mAMBombImplosionVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mAMBombPreImplosionVBO);
 
-        if (mAMBombImplosionVBOAllocatedVertexSize != mAMBombImplosionVertexBuffer.size())
+        if (mAMBombPreImplosionVBOAllocatedVertexSize != mAMBombPreImplosionVertexBuffer.size())
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mAMBombImplosionVertexBuffer.size() * sizeof(AMBombImplosionVertex), mAMBombImplosionVertexBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mAMBombPreImplosionVertexBuffer.size() * sizeof(AMBombPreImplosionVertex), mAMBombPreImplosionVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mAMBombImplosionVBOAllocatedVertexSize = mAMBombImplosionVertexBuffer.size();
+            mAMBombPreImplosionVBOAllocatedVertexSize = mAMBombPreImplosionVertexBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mAMBombImplosionVertexBuffer.size() * sizeof(AMBombImplosionVertex), mAMBombImplosionVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mAMBombPreImplosionVertexBuffer.size() * sizeof(AMBombPreImplosionVertex), mAMBombPreImplosionVertexBuffer.data());
             CheckOpenGLError();
         }
 
@@ -1580,12 +1580,12 @@ void RenderContext::RenderAMBombImplosions()
         // Render
         //
 
-        glBindVertexArray(*mAMBombImplosionVAO);
+        glBindVertexArray(*mAMBombPreImplosionVAO);
 
-        mShaderManager->ActivateProgram<ProgramType::AMBombImplosion>();
+        mShaderManager->ActivateProgram<ProgramType::AMBombPreImplosion>();
 
-        assert((mAMBombImplosionVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAMBombImplosionVertexBuffer.size()));
+        assert((mAMBombPreImplosionVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAMBombPreImplosionVertexBuffer.size()));
 
         glBindVertexArray(0);
     }
@@ -1805,7 +1805,7 @@ void RenderContext::ProcessSettingChanges()
 void RenderContext::ApplyViewModelChanges()
 {
     //
-    // Update ortho matrix
+    // Update ortho matrix in all programs
     //
 
     constexpr float ZFar = 1000.0f;
@@ -1832,6 +1832,10 @@ void RenderContext::ApplyViewModelChanges()
 
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::AMBombPreImplosion>();
+    mShaderManager->SetProgramParameter<ProgramType::AMBombPreImplosion, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();

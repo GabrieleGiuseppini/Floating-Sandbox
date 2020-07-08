@@ -820,43 +820,61 @@ public:
 
     void UploadOceanEnd();
 
-    void UploadAMBombImplosion(
+    void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
-        float progress)
+        float progress,
+        float radius)
     {
+        float const leftX = centerPosition.x - radius;
+        float const rightX = centerPosition.x + radius;
+        float const topY = centerPosition.y + radius;
+        float const bottomY = centerPosition.y - radius;
+
         // Triangle 1
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
+        // Left, bottom
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
             centerPosition,
-            progress);
+            progress,
+            radius);
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldTopLeft(), // left, top
+        // Left top
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
             centerPosition,
-            progress);
+            progress,
+            radius);
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
+        // Right bottom
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
             centerPosition,
-            progress);
+            progress,
+            radius);
 
         // Triangle 2
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldTopLeft(), // left, top
+        // Left top
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
             centerPosition,
-            progress);
+            progress,
+            radius);
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
+        // Right bottom
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
             centerPosition,
-            progress);
+            progress,
+            radius);
 
-        mAMBombImplosionVertexBuffer.emplace_back(
-            vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
+        // Right, top
+        mAMBombPreImplosionVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
             centerPosition,
-            progress);
+            progress,
+            radius);
     }
 
     void UploadCrossOfLight(
@@ -1635,7 +1653,7 @@ private:
     void RenderCloudsAndBackgroundLightnings();
     void RenderOcean(bool opaquely);
     void RenderOceanFloor();
-    void RenderAMBombImplosions();
+    void RenderAMBombPreImplosions();
     void RenderCrossesOfLight();
     void RenderHeatBlasterFlame();
     void RenderFireExtinguisherSpray();
@@ -1782,19 +1800,22 @@ private:
         float value2;
     };
 
-    struct AMBombImplosionVertex
+    struct AMBombPreImplosionVertex
     {
         vec2f vertex;
         vec2f centerPosition;
         float progress;
+        float radius;
 
-        AMBombImplosionVertex(
+        AMBombPreImplosionVertex(
             vec2f _vertex,
             vec2f _centerPosition,
-            float _progress)
+            float _progress,
+            float _radius)
             : vertex(_vertex)
             , centerPosition(_centerPosition)
             , progress(_progress)
+            , radius(_radius)
         {}
     };
 
@@ -1893,9 +1914,9 @@ private:
     GameOpenGLVBO mOceanSegmentVBO;
     size_t mOceanSegmentVBOAllocatedVertexSize;
 
-    std::vector<AMBombImplosionVertex> mAMBombImplosionVertexBuffer;
-    GameOpenGLVBO mAMBombImplosionVBO;
-    size_t mAMBombImplosionVBOAllocatedVertexSize;
+    std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
+    GameOpenGLVBO mAMBombPreImplosionVBO;
+    size_t mAMBombPreImplosionVBOAllocatedVertexSize;
 
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
@@ -1922,7 +1943,7 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
-    GameOpenGLVAO mAMBombImplosionVAO;
+    GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mHeatBlasterFlameVAO;
     GameOpenGLVAO mFireExtinguisherSprayVAO;

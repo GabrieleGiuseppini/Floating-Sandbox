@@ -75,6 +75,11 @@ public:
 
 private:
 
+    static inline float CalculatePreImplosionRadius(float progress)
+    {
+        return 7.0f + progress * 100.0f;
+    }
+
     ///////////////////////////////////////////////////////
     // State machine
     ///////////////////////////////////////////////////////
