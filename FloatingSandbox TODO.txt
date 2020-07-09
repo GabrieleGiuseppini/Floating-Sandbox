@@ -465,8 +465,11 @@ Render:
 					= AMBombImplosion
 						+ Upload
 							+ Redo quad as with "radius"?
-						= Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
-						- Shader
+						+ Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
+						= Longer pause between pre-implosion and implosion
+						+ Debug series of radii produced
+						+ Stronger implosion force
+						= Shader
 					- Flames
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
 					- StressedSprings
@@ -478,9 +481,12 @@ Render:
 					- Explosions, Highlights: re-enable UploadStart, rest should be done
 					- Setters: TODO
 					- Fix render stats
+						- RenderContext passes a new instance of PerfStats to all of Ship::Draw,
+						  and then stores in own member, of type std::atomic
 				- 6b:
-					- Special strategy for "seldom" setters (e.g. ocean textures, water color): 
-						- Queued and waited, or dirty flag covering a cluster of settings?
+					- Special strategy for "seldom" setters 
+						- Queued and waited for those that do OpenGL (including shader params) (e.g. ocean textures, water color)
+						- std::atomic and local copy for those used as switches (e.g. render modes)
 					- Other getters and setters
 				- 7: Complete RenderContext Implementation (5)
 					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
@@ -491,6 +497,8 @@ Render:
 						- Consider ThreadRenderContext uq_ptr member, containing all OpenGL members (and all
 						  members that pertain exclusively to the thread, e.g. allocated VBO sizes)
 							- But see how to avoid having to always dereference the uq_ptr at Upload()'s
+				- TaskThread optimization for single-core boxes
+					-Verify no ovearhead anymore
 				- Cleanup:
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					

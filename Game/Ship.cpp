@@ -2831,19 +2831,19 @@ void Ship::StartExplosion(
 
 void Ship::DoAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
-    float sequenceProgress,
+    float /*sequenceProgress*/,
     float radius,
     GameParameters const & gameParameters)
 {
     float const strength =
-        100000.0f
+        130000.0f // Magic number
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Apply the force field
     ApplyRadialSpaceWarpForceField(
         centerPosition,
         radius,
-        10.0f,
+        10.0f, // Thickness of radius, magic number
         strength);
 }
 

@@ -47,21 +47,17 @@ void main()
 
     if (d > 1.0f)
         discard;
-    /*
-    float progress = vertexProgress - 0.5; // (-0.5, 0.5]
+    
+    #define HaloWidth .012
 
-    // No rotation for the time being
-    // float angle = progress;
-
-    // Calculate fragment's coordinates in the NDC space
-    vec2 ndc = (gl_FragCoord.xy / paramViewportSize.xy) * 2.0 - vec2(1.0);
-
-    // Center and flip vertically
-    ndc = vec2(ndc.x - vertexCenterPosition.x, vertexCenterPosition.y - ndc.y);
-
-    // ------------------    
-    */
-
-    // TODOHERE
-    gl_FragColor = vec4(1.0, 1.0, 1.0, d);
+    float halo = 
+        smoothstep(1. - 3. * HaloWidth, 1. - HaloWidth, d)
+        - smoothstep(1. - HaloWidth / 2., 1., d);
+    halo *= .15;
+       
+    float waves = .05 * abs(sin((1. - d) * 24. * (1. + d)));
+    
+    float fadeout = 1. - smoothstep(.75, 1., vertexProgress);
+        
+    gl_FragColor = vec4(204./255., 239./255., 240./255., (halo + waves) * fadeout);
 }
