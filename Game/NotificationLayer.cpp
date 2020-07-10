@@ -54,7 +54,7 @@ void NotificationLayer::SetStatusTexts(
     bool isPaused,
     float zoom,
     vec2f const & camera,
-    Render::RenderStatistics const & renderStatistics)
+    Render::RenderStatistics renderStats)
 {
     int elapsedSecondsGameInt = static_cast<int>(roundf(elapsedGameSeconds.count()));
     int minutesGame = elapsedSecondsGameInt / 60;
@@ -120,13 +120,13 @@ void NotificationLayer::SetStatusTexts(
         ss.str("");
 
 		{
-			ss << "PNT:" << renderStatistics.LastRenderedShipPoints
-				<< " RPS:" << renderStatistics.LastRenderedShipRopes
-				<< " SPR:" << renderStatistics.LastRenderedShipSprings
-				<< " TRI:" << renderStatistics.LastRenderedShipTriangles
-				<< " PLN:" << renderStatistics.LastRenderedShipPlanes
-				<< " GTMM:" << renderStatistics.LastRenderedShipGenericMipMappedTextures
-				<< " FLM:" << renderStatistics.LastRenderedShipFlames;
+			ss << "PNT:" << renderStats.LastRenderedShipPoints
+				<< " RPS:" << renderStats.LastRenderedShipRopes
+				<< " SPR:" << renderStats.LastRenderedShipSprings
+				<< " TRI:" << renderStats.LastRenderedShipTriangles
+				<< " PLN:" << renderStats.LastRenderedShipPlanes
+				<< " GTMM:" << renderStats.LastRenderedShipGenericMipMappedTextures
+				<< " FLM:" << renderStats.LastRenderedShipFlames;
 
 			ss << std::fixed << std::setprecision(2)
 				<< " ZM:" << zoom

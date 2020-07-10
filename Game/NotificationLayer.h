@@ -37,7 +37,7 @@ public:
         bool isPaused,
         float zoom,
         vec2f const & camera,
-        Render::RenderStatistics const & renderStatistics);
+        Render::RenderStatistics renderStats);
 
 	void AddEphemeralTextLine(
 		std::string const & text,

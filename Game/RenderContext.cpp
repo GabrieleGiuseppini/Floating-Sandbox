@@ -142,7 +142,7 @@ RenderContext::RenderContext(
     , mShipFlameSizeAdjustment(1.0f)
     // Statistics
     , mPerfStats(perfStats)
-    , mRenderStatistics()
+    , mRenderStats()
 {
     progressCallback(0.0f, "Initializing OpenGL...");
 
@@ -277,7 +277,6 @@ RenderContext::RenderContext(
             OnWaterContrastUpdated();
             OnWaterLevelOfDetailUpdated();
             OnDebugShipRenderModeUpdated();
-            OnVectorFieldRenderModeUpdated();
             OnShowStressedSpringsUpdated();
             OnDrawHeatOverlayUpdated();
             OnHeatOverlayTransparencyUpdated();
@@ -370,7 +369,6 @@ void RenderContext::AddShip(
                     *mExplosionTextureAtlasMetadata,
                     *mGenericLinearTextureAtlasMetadata,
                     *mGenericMipMappedTextureAtlasMetadata,
-                    mRenderStatistics,
                     mViewModel,
                     mEffectiveAmbientLightIntensity,
                     CalculateLampLightColor(),
@@ -454,9 +452,6 @@ void RenderContext::RenderStart()
     // Cleanup an eventual pending RenderUploadEnd - may be left behind if
     // this cycle did not do an Update
     mLastRenderUploadEndCompletionIndicator.reset();
-
-    // Reset stats
-    mRenderStatistics.Reset();
 }
 
 void RenderContext::UploadStart()
@@ -612,6 +607,8 @@ void RenderContext::Draw()
         {
             auto const startTime = GameChronometer::now();
 
+            RenderStatistics renderStats;
+
             //
             // Initialize
             //
@@ -650,7 +647,7 @@ void RenderContext::Draw()
 
             for (auto const & ship : mShips)
             {
-                ship->Draw();
+                ship->Draw(renderStats);
             }
 
             glDisable(GL_DEPTH_TEST);
@@ -686,7 +683,9 @@ void RenderContext::Draw()
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();
 
+            // Update stats
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
+            mRenderStats.store(renderStats);
         });
 }
 
@@ -2186,15 +2185,6 @@ void RenderContext::OnDebugShipRenderModeUpdated()
     for (auto & s : mShips)
     {
         s->SetDebugShipRenderMode(mDebugShipRenderMode);
-    }
-}
-
-void RenderContext::OnVectorFieldRenderModeUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetVectorFieldRenderMode(mVectorFieldRenderMode);
     }
 }
 

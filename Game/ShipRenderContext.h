@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -47,7 +48,6 @@ public:
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-        RenderStatistics & renderStatistics,
         ViewModel const & viewModel,
         float effectiveAmbientLightIntensity,
         vec4f const & lampLightColor,
@@ -131,7 +131,7 @@ public:
 
     void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
     {
-        mVectorFieldRenderMode = vectorFieldRenderMode;
+        mVectorFieldRenderMode.store(vectorFieldRenderMode);
     }
 
     void SetShowStressedSprings(bool showStressedSprings)
@@ -540,8 +540,6 @@ public:
     // Sparkles
     //
 
-    void UploadSparklesStart();
-
     inline void UploadSparkle(
         PlaneId planeId,
         vec2f const & position,
@@ -619,8 +617,6 @@ public:
             velocityVector,
             vec2f(1.0f, 1.0f));
     }
-
-    void UploadSparklesEnd();
 
     //
     // Air bubbles and generic textures
@@ -839,7 +835,7 @@ public:
 
     void UploadEnd();
 
-    void Draw();
+    void Draw(RenderStatistics & renderStats);
 
 private:
 
@@ -946,10 +942,11 @@ private:
     template<ProgramType ShaderProgram>
     void RenderFlames(
         size_t startFlameIndex,
-        size_t flameCount);
+        size_t flameCount,
+        RenderStatistics & renderStats);
 
     void RenderSparkles();
-    void RenderGenericMipMappedTextures();
+    void RenderGenericMipMappedTextures(RenderStatistics & renderStats);
     void RenderExplosions();
     void RenderHighlights();
     void RenderVectorArrows();
@@ -1178,22 +1175,26 @@ private:
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
     size_t mExplosionTotalPlaneVertexCount;
     GameOpenGLVBO mExplosionVBO;
-    size_t mExplosionVBOAllocatedVertexCount;
+    size_t mExplosionVBOAllocatedVertexSize;
 
     std::vector<SparkleVertex> mSparkleVertexBuffer;
-    GameOpenGLVBO mSparkleVertexVBO;
+    GameOpenGLVBO mSparkleVBO;
+    size_t mSparkleVBOAllocatedVertexSize;
 
     std::vector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
     std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
     GameOpenGLVBO mGenericMipMappedTextureVBO;
-    size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
+    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;
 
     std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightMode::_Last) + 1> mHighlightVertexBuffers;
     GameOpenGLVBO mHighlightVertexVBO;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
+    bool mIsVectorArrowVertexBufferDirty;
     GameOpenGLVBO mVectorArrowVBO;
-    std::optional<vec4f> mVectorArrowColor;
+    size_t mVectorArrowVBOAllocatedVertexSize;
+    vec4f mVectorArrowColor;
+    bool mIsVectorArrowColorDirty;
 
     //
     // Element (index) buffers
@@ -1265,7 +1266,7 @@ private:
     float mWaterContrast;
     float mWaterLevelOfDetail;
     DebugShipRenderMode mDebugShipRenderMode;
-    VectorFieldRenderMode mVectorFieldRenderMode;
+    std::atomic<VectorFieldRenderMode> mVectorFieldRenderMode;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;
@@ -1273,13 +1274,6 @@ private:
     float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
-
-
-    //
-    // Statistics
-    //
-
-    RenderStatistics & mRenderStatistics;
 };
 
 }

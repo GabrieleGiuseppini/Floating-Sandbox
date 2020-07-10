@@ -31,7 +31,6 @@ ShipRenderContext::ShipRenderContext(
     TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
     TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-    RenderStatistics & renderStatistics,
     ViewModel const & viewModel,
     float effectiveAmbientLightIntensity,
     vec4f const & lampLightColor,
@@ -62,32 +61,36 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementVBO()
     //
     , mFlameVertexBuffer()
-    , mFlameVertexBufferAllocatedSize(0)
-    , mFlameBackgroundCount(0)
-    , mFlameForegroundCount(0)
+    , mFlameVertexBufferAllocatedSize(0u)
+    , mFlameBackgroundCount(0u)
+    , mFlameForegroundCount(0u)
     , mFlameVertexVBO()
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentWindSpeedMagnitudeAverage(-1.0f) // Make sure we update the param right away
     //
     , mExplosionPlaneVertexBuffers()
-    , mExplosionTotalPlaneVertexCount(0)
+    , mExplosionTotalPlaneVertexCount(0u)
     , mExplosionVBO()
-    , mExplosionVBOAllocatedVertexCount(0)
+    , mExplosionVBOAllocatedVertexSize(0u)
     //
     , mSparkleVertexBuffer()
-    , mSparkleVertexVBO()
+    , mSparkleVBO()
+    , mSparkleVBOAllocatedVertexSize(0u)
     //
     , mGenericMipMappedTextureAirBubbleVertexBuffer()
     , mGenericMipMappedTexturePlaneVertexBuffers()
     , mGenericMipMappedTextureVBO()
-    , mGenericMipMappedTextureVBOAllocatedVertexCount(0)
+    , mGenericMipMappedTextureVBOAllocatedVertexSize(0u)
     //
     , mHighlightVertexBuffers()
     , mHighlightVertexVBO()
     //
     , mVectorArrowVertexBuffer()
+    , mIsVectorArrowVertexBufferDirty(true)
     , mVectorArrowVBO()
-    , mVectorArrowColor()
+    , mVectorArrowVBOAllocatedVertexSize(0u)
+    , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
+    , mIsVectorArrowColorDirty(true)
     // Element (index) buffers
     , mPointElementBuffer()
     , mEphemeralPointElementBuffer()
@@ -134,8 +137,6 @@ ShipRenderContext::ShipRenderContext(
     , mShipFlameSizeAdjustment(shipFlameSizeAdjustment)
     , mHalfFlameQuadWidth(0.0f) // Will be calculated
     , mFlameQuadHeight(0.0f) // Will be calculated
-    // Statistics
-    , mRenderStatistics(renderStatistics)
 {
     GLuint tmpGLuint;
 
@@ -178,10 +179,10 @@ ShipRenderContext::ShipRenderContext(
 
     mExplosionVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
-    mExplosionVBOAllocatedVertexCount = 10 * 6; // Initial guess, might get more
-    glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
+    mExplosionVBOAllocatedVertexSize = 10 * 6; // Initial guess, might get more
+    glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexSize * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
 
-    mSparkleVertexVBO = vbos[7];
+    mSparkleVBO = vbos[7];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
     mGenericMipMappedTextureVBO = vbos[8];
@@ -316,7 +317,7 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(*mSparkleVAO);
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVBO);
         static_assert(sizeof(SparkleVertex) == (4 + 4) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sparkle1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle1), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)0);
@@ -501,7 +502,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
     /* TODOTEST
     //
-    // Reset flames, explosions, air bubbles, generic textures, highlights;
+    // Reset flames, explosions, sparkles, air bubbles, generic textures, highlights;
     // they are all uploaded as needed
     //
 
@@ -514,9 +515,15 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     mExplosionTotalPlaneVertexCount = 0;
     */
 
+    mSparkleVertexBuffer.clear();
+
     mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
-    // TODO: smarter way
-    mGenericMipMappedTexturePlaneVertexBuffers.clear();
+
+    size_t const clearCount = std::min(mGenericMipMappedTexturePlaneVertexBuffers.size(), static_cast<size_t>(maxMaxPlaneId) + 1u);
+    for (size_t i = 0; i < clearCount; ++i)
+    {
+        mGenericMipMappedTexturePlaneVertexBuffers[i].vertexBuffer.clear();
+    }
     mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
 
     /* TODOTEST
@@ -834,33 +841,6 @@ void ShipRenderContext::UploadFlamesEnd()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadSparklesStart()
-{
-    // Empty buffer
-    mSparkleVertexBuffer.clear();
-}
-
-void ShipRenderContext::UploadSparklesEnd()
-{
-    //
-    // Upload to VBO
-    //
-
-    if (!mSparkleVertexBuffer.empty())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
-
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            mSparkleVertexBuffer.size() * sizeof(SparkleVertex),
-            mSparkleVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-}
-
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
     // Client wants to upload a new set of ephemeral point elements
@@ -916,31 +896,13 @@ void ShipRenderContext::UploadVectors(
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeId[i]);
     }
 
+    mIsVectorArrowVertexBufferDirty = true;
 
-    //
-    // Upload buffer
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-    glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-    //
-    // Manage color
-    //
-
-    if (mVectorArrowColor != color)
+    if (color != mVectorArrowColor)
     {
-        mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(
-            color.x,
-            color.y,
-            color.z,
-            color.w);
-
         mVectorArrowColor = color;
+
+        mIsVectorArrowColorDirty = true;
     }
 }
 
@@ -949,7 +911,7 @@ void ShipRenderContext::UploadEnd()
     // Nop
 }
 
-void ShipRenderContext::Draw()
+void ShipRenderContext::Draw(RenderStatistics & renderStats)
 {
     // We've been invoked on the render thread
 
@@ -1158,7 +1120,7 @@ void ShipRenderContext::Draw()
                 (GLvoid *)mTriangleElementVBOStartIndex);
 
             // Update stats
-            mRenderStatistics.LastRenderedShipTriangles += mTriangleElementBuffer.size();
+            renderStats.LastRenderedShipTriangles += mTriangleElementBuffer.size();
         }
 
 
@@ -1193,7 +1155,7 @@ void ShipRenderContext::Draw()
                 (GLvoid *)mRopeElementVBOStartIndex);
 
             // Update stats
-            mRenderStatistics.LastRenderedShipRopes += mRopeElementBuffer.size();
+            renderStats.LastRenderedShipRopes += mRopeElementBuffer.size();
         }
 
 
@@ -1239,7 +1201,7 @@ void ShipRenderContext::Draw()
                 (GLvoid *)mSpringElementVBOStartIndex);
 
             // Update stats
-            mRenderStatistics.LastRenderedShipSprings += mSpringElementBuffer.size();
+            renderStats.LastRenderedShipSprings += mSpringElementBuffer.size();
         }
 
 
@@ -1298,7 +1260,7 @@ void ShipRenderContext::Draw()
                 (GLvoid *)mPointElementVBOStartIndex);
 
             // Update stats
-            mRenderStatistics.LastRenderedShipPoints += totalPoints;
+            renderStats.LastRenderedShipPoints += totalPoints;
         }
 
         // We are done with the ship VAO
@@ -1329,7 +1291,7 @@ void ShipRenderContext::Draw()
             mFlameBackgroundCount,
             mFlameForegroundCount);
     }
-
+    */
 
 
     //
@@ -1337,14 +1299,13 @@ void ShipRenderContext::Draw()
     //
 
     RenderSparkles();
-    */
 
 
     //
     // Render generic textures
     //
 
-    RenderGenericMipMappedTextures();
+    RenderGenericMipMappedTextures(renderStats);
 
 
     /* TODOTEST
@@ -1361,25 +1322,21 @@ void ShipRenderContext::Draw()
     //
 
     RenderHighlights();
-
-
-
-    //
-    // Render vectors, if we're asked to
-    //
-
-    if (mVectorFieldRenderMode != VectorFieldRenderMode::None)
-    {
-        RenderVectorArrows();
-    }
     */
+
+
+    //
+    // Render vectors
+    //
+
+    RenderVectorArrows();
 
 
     //
     // Update stats
     //
 
-    mRenderStatistics.LastRenderedShipPlanes += mMaxMaxPlaneId + 1;
+    renderStats.LastRenderedShipPlanes += mMaxMaxPlaneId + 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1387,7 +1344,8 @@ void ShipRenderContext::Draw()
 template<ProgramType ShaderProgram>
 void ShipRenderContext::RenderFlames(
     size_t startFlameIndex,
-    size_t flameCount)
+    size_t flameCount,
+    RenderStatistics & renderStats)
 {
     if (flameCount > 0
         && mShipFlameRenderMode != ShipFlameRenderMode::NoDraw)
@@ -1423,7 +1381,7 @@ void ShipRenderContext::RenderFlames(
         glBindVertexArray(0);
 
         // Update stats
-        mRenderStatistics.LastRenderedShipFlames += flameCount; // # of quads
+        renderStats.LastRenderedShipFlames += flameCount; // # of quads
     }
 }
 
@@ -1431,14 +1389,39 @@ void ShipRenderContext::RenderSparkles()
 {
     if (mSparkleVertexBuffer.size() > 0)
     {
+        //
+        // Upload buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVBO);
+
+        if (mSparkleVBOAllocatedVertexSize != mSparkleVertexBuffer.size())
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mSparkleVertexBuffer.size() * sizeof(SparkleVertex), mSparkleVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            mSparkleVBOAllocatedVertexSize = mSparkleVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mSparkleVertexBuffer.size() * sizeof(SparkleVertex), mSparkleVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Render
+        //
+
         glBindVertexArray(*mSparkleVAO);
 
         mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
 
         if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
             glLineWidth(0.1f);
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVertexVBO);
 
         assert(0 == (mSparkleVertexBuffer.size() % 6));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mSparkleVertexBuffer.size()));
@@ -1447,7 +1430,7 @@ void ShipRenderContext::RenderSparkles()
     }
 }
 
-void ShipRenderContext::RenderGenericMipMappedTextures()
+void ShipRenderContext::RenderGenericMipMappedTextures(RenderStatistics & renderStats)
 {
     size_t const nonAirBubblesTotalVertexCount = std::accumulate(
         mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
@@ -1468,13 +1451,13 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
 
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
 
-        if (totalVertexCount > mGenericMipMappedTextureVBOAllocatedVertexCount)
+        if (totalVertexCount > mGenericMipMappedTextureVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer
             glBufferData(GL_ARRAY_BUFFER, totalVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 
-            mGenericMipMappedTextureVBOAllocatedVertexCount = totalVertexCount;
+            mGenericMipMappedTextureVBOAllocatedVertexSize = totalVertexCount;
         }
 
         // Map vertex buffer
@@ -1525,106 +1508,8 @@ void ShipRenderContext::RenderGenericMipMappedTextures()
         // Update stats
         //
 
-        mRenderStatistics.LastRenderedShipGenericMipMappedTextures += totalVertexCount / 6; // # of quads
+        renderStats.LastRenderedShipGenericMipMappedTextures += totalVertexCount / 6; // # of quads
     }
-
-    /* TODOOLD
-    // Unmap generic texture VBO (which we have mapped regardless of whether or not there
-    // are air bubbles)
-    glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-    mAirBubbleVertexBuffer.unmap();
-
-    //
-    // Render
-    //
-
-    if (mAirBubbleVertexBuffer.size() > 0
-        || mGenericMipMappedTextureTotalVertexCount > 0)
-    {
-        glBindVertexArray(*mGenericMipMappedTextureVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
-
-        // Bind VBO (need to do this after VAO change)
-        glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
-
-
-        //
-        // Air bubbles
-        //
-
-        if (mAirBubbleVertexBuffer.size() > 0)
-        {
-            // Render
-            assert(0 == (mAirBubbleVertexBuffer.size() % 6));
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAirBubbleVertexBuffer.size()));
-
-            // Update stats
-            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mAirBubbleVertexBuffer.size() / 6; // # of quads
-        }
-
-
-        //
-        // Generic mipmapped textures
-        //
-
-        if (mGenericMipMappedTextureTotalVertexCount > 0)
-        {
-            //
-            // Upload vertex buffers
-            //
-
-            // (Re-)Allocate vertex buffer, if needed
-            if (mGenericMipMappedTextureVBOAllocatedVertexCount < mGenericMipMappedTextureTotalVertexCount)
-            {
-                glBufferData(GL_ARRAY_BUFFER, mGenericMipMappedTextureVBOAllocatedVertexCount * sizeof(GenericTextureVertex), nullptr, GL_DYNAMIC_DRAW);
-                CheckOpenGLError();
-
-                mGenericMipMappedTextureVBOAllocatedVertexCount = mGenericMipMappedTextureTotalVertexCount;
-            }
-
-            // Map vertex buffer
-            auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-            CheckOpenGLError();
-
-            // Copy all buffers
-            for (auto const & plane : mGenericMipMappedTexturePlaneVertexBuffers)
-            {
-                if (!plane.vertexBuffer.empty())
-                {
-                    size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(GenericTextureVertex);
-                    std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
-
-                    // Advance
-                    mappedBuffer += byteCopySize;
-                }
-            }
-
-            // Unmap vertex buffer
-            glUnmapBuffer(GL_ARRAY_BUFFER);
-
-
-            //
-            // Render
-            //
-
-            assert(0 == (mGenericMipMappedTextureTotalVertexCount % 6));
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericMipMappedTextureTotalVertexCount));
-
-
-            //
-            // Update stats
-            //
-
-            mRenderStatistics.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalVertexCount / 6;
-        }
-
-        glBindVertexArray(0);
-    }
-    */
 }
 
 void ShipRenderContext::RenderExplosions()
@@ -1645,11 +1530,11 @@ void ShipRenderContext::RenderExplosions()
         //
 
         // (Re-)Allocate vertex buffer, if needed
-        if (mExplosionVBOAllocatedVertexCount < mExplosionTotalPlaneVertexCount)
+        if (mExplosionVBOAllocatedVertexSize < mExplosionTotalPlaneVertexCount)
         {
-            mExplosionVBOAllocatedVertexCount = mExplosionTotalPlaneVertexCount;
+            mExplosionVBOAllocatedVertexSize = mExplosionTotalPlaneVertexCount;
 
-            glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mExplosionTotalPlaneVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
             CheckOpenGLError();
         }
 
@@ -1745,15 +1630,66 @@ void ShipRenderContext::RenderHighlights()
 
 void ShipRenderContext::RenderVectorArrows()
 {
-    glBindVertexArray(*mVectorArrowVAO);
+    VectorFieldRenderMode const vectorFieldRenderMode = mVectorFieldRenderMode.load();
 
-    mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
+    if (vectorFieldRenderMode != VectorFieldRenderMode::None
+        && !mVectorArrowVertexBuffer.empty())
+    {
+        if (mIsVectorArrowColorDirty)
+        {
+            mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
 
-    glLineWidth(0.5f);
+            mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(
+                mVectorArrowColor.x,
+                mVectorArrowColor.y,
+                mVectorArrowColor.z,
+                mVectorArrowColor.w);
 
-    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowVertexBuffer.size()));
+            mIsVectorArrowColorDirty = false;
+        }
 
-    glBindVertexArray(0);
+        //
+        // Buffer
+        //
+
+        if (mIsVectorArrowVertexBufferDirty)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+
+            if (mVectorArrowVBOAllocatedVertexSize != mVectorArrowVertexBuffer.size())
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
+
+                mVectorArrowVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data());
+                CheckOpenGLError();
+            }
+
+            mIsVectorArrowVertexBufferDirty = false;
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mVectorArrowVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
+
+        glLineWidth(0.5f);
+
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

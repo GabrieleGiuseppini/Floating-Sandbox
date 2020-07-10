@@ -1677,10 +1677,10 @@ void Points::UploadVectors(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    static constexpr vec4f VectorColor(0.5f, 0.1f, 0.f, 1.0f);
-
     if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointVelocity)
     {
+        static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1692,6 +1692,8 @@ void Points::UploadVectors(
     }
     else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointForce)
     {
+        static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1703,6 +1705,8 @@ void Points::UploadVectors(
     }
     else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)
     {
+        static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1714,6 +1718,8 @@ void Points::UploadVectors(
     }
     else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterMomentum)
     {
+        static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1737,10 +1743,6 @@ void Points::UploadEphemeralParticles(
     {
         renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
-
-    /* TODOTEST
-    renderContext.UploadShipSparklesStart(shipId);
-    */
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
@@ -1810,14 +1812,12 @@ void Points::UploadEphemeralParticles(
                     -GetVelocity(pointIndex)
                     / GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
-                /* TODOTEST
                 renderContext.UploadShipSparkle(
                     shipId,
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     velocityVector,
                     mEphemeralParticleAttributes2Buffer[pointIndex].State.Sparkle.Progress);
-                */
 
                 break;
             }
@@ -1846,10 +1846,6 @@ void Points::UploadEphemeralParticles(
             }
         }
     }
-
-    /* TODOTEST
-    renderContext.UploadShipSparklesEnd(shipId);
-    */
 
     if (mAreEphemeralPointsDirtyForRendering)
     {

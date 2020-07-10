@@ -33,6 +33,7 @@
 #include <GameCore/Vectors.h>
 
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -430,7 +431,10 @@ public:
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
 
-        OnVectorFieldRenderModeUpdated();
+        for (auto & s : mShips)
+        {
+            s->SetVectorFieldRenderMode(vectorFieldRenderMode);
+        }
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -524,9 +528,9 @@ public:
     // Statistics
     //
 
-    RenderStatistics const & GetStatistics() const
+    RenderStatistics GetStatistics() const
     {
-        return mRenderStatistics;
+        return mRenderStats.load();
     }
 
 public:
@@ -1302,13 +1306,6 @@ public:
             progress);
     }
 
-    inline void UploadShipSparklesStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadSparklesStart();
-    }
-
     inline void UploadShipSparkle(
         ShipId shipId,
         PlaneId planeId,
@@ -1323,13 +1320,6 @@ public:
             position,
             velocityVector,
             progress);
-    }
-
-    inline void UploadShipSparklesEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadSparklesEnd();
     }
 
     inline void UploadShipAirBubble(
@@ -2063,7 +2053,7 @@ private:
     //
 
     PerfStats & mPerfStats;
-    RenderStatistics mRenderStatistics;
+    std::atomic<RenderStatistics> mRenderStats;
 };
 
 }

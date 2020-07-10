@@ -637,7 +637,7 @@ void Ship::RenderUpload(
     mPoints.UploadHighlights(
         mId,
         renderContext);
-
+    */
 
     //
     // Upload vector fields
@@ -647,7 +647,7 @@ void Ship::RenderUpload(
         mId,
         renderContext);
 
-
+    /* TODOTEST
     //
     // Upload state machines
     //

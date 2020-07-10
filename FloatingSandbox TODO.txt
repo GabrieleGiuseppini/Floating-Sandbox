@@ -462,27 +462,33 @@ Render:
 					+ ElementEphemeralPoints
 					+ CrossesOfLight
 						+ Upload
-					= AMBombImplosion
+					+ AMBombImplosion
 						+ Upload
 							+ Redo quad as with "radius"?
 						+ Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
-						= Longer pause between pre-implosion and implosion
+						+ Longer pause between pre-implosion and implosion
 						+ Debug series of radii produced
 						+ Stronger implosion force
-						= Shader
+						+ Shader
+					+ Sparkles
+					= Vectors
+						+ VectorColor setter strategy:
+							+ mIsVectorArrowColorDirty, but NO Apply...Changes()
+							+ Set color param in own Render method, if (mIsVectorArrowColorDirty)
+						+ Use different vector colors
+						= See if vectors are reset when we stop uploading
+							- Do we need again Start/Stop?
+					- Explosions, Highlights: re-enable UploadStart, rest should be already done
 					- Flames
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
+							- Flame or just Wind?
 					- StressedSprings
-					- Sparkles
-						- Need to enable upload at Points::UploadEphemeralParticles
-					- Vectors
-						- mIsVectorArrowColorDirty, but NO Apply...Changes()
-						- Set color param in own Render method, if (mIsVectorArrowColorDirty)
-					- Explosions, Highlights: re-enable UploadStart, rest should be done
 					- Setters: TODO
-					- Fix render stats
-						- RenderContext passes a new instance of PerfStats to all of Ship::Draw,
+					= Fix render stats
+						+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
 						  and then stores in own member, of type std::atomic
+						+ @ Use: get local copy
+						- See why # of planes is sticky
 				- 6b:
 					- Special strategy for "seldom" setters 
 						- Queued and waited for those that do OpenGL (including shader params) (e.g. ocean textures, water color)
