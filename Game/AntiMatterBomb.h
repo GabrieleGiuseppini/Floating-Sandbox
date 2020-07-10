@@ -109,7 +109,7 @@ private:
 
     static constexpr auto ContainedCloudRevolutionSpeed = -2.0f * Pi<float> / std::chrono::duration<float>(2.0f).count();
     static constexpr auto PreImplosionInterval = 600ms;
-    static constexpr auto PreImplosionToImplosionPauseInterval = 1250ms;
+    static constexpr auto PreImplosionToImplosionPauseInterval = 2000ms;
     static constexpr auto ImplosionInterval = 16000ms;
     static constexpr auto ImplosionCloudRevolutionSpeed = 2.0f * Pi<float> / std::chrono::duration<float>(0.5f).count();
     static constexpr auto PreExplosionInterval = 1000ms;

@@ -130,15 +130,6 @@ bool AntiMatterBomb::Update(
                 mCurrentStateStartTimePoint = currentWallClockTime;
                 mCurrentStateProgress = 0.0f;
 
-                // Invoke handler
-                mShipPhysicsHandler.DoAntiMatterBombImplosion(
-                    GetPosition(),
-                    0.0f,
-                    gameParameters);
-
-                // Notify
-                mGameEventHandler->OnAntiMatterBombImploding();
-
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + PreImplosionToImplosionPauseInterval;
             }
