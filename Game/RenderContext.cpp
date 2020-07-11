@@ -376,7 +376,6 @@ void RenderContext::AddShip(
                     mWaterContrast,
                     mWaterLevelOfDetail,
                     mDebugShipRenderMode,
-                    mVectorFieldRenderMode,
                     mShowStressedSprings,
                     mDrawHeatOverlay,
                     mHeatOverlayTransparency,

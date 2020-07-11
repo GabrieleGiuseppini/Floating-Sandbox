@@ -471,13 +471,12 @@ Render:
 						+ Stronger implosion force
 						+ Shader
 					+ Sparkles
-					= Vectors
+					+ Vectors
 						+ VectorColor setter strategy:
 							+ mIsVectorArrowColorDirty, but NO Apply...Changes()
 							+ Set color param in own Render method, if (mIsVectorArrowColorDirty)
 						+ Use different vector colors
-						= See if vectors are reset when we stop uploading
-							- Do we need again Start/Stop?
+						+ See if vectors are reset when we stop uploading
 					- Explosions, Highlights: re-enable UploadStart, rest should be already done
 					- Flames
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
@@ -488,7 +487,6 @@ Render:
 						+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
 						  and then stores in own member, of type std::atomic
 						+ @ Use: get local copy
-						- See why # of planes is sticky
 				- 6b:
 					- Special strategy for "seldom" setters 
 						- Queued and waited for those that do OpenGL (including shader params) (e.g. ocean textures, water color)
@@ -504,7 +502,7 @@ Render:
 						  members that pertain exclusively to the thread, e.g. allocated VBO sizes)
 							- But see how to avoid having to always dereference the uq_ptr at Upload()'s
 				- TaskThread optimization for single-core boxes
-					-Verify no ovearhead anymore
+					- Verify no ovearhead anymore
 				- Cleanup:
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					

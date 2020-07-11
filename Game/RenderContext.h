@@ -431,10 +431,7 @@ public:
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
 
-        for (auto & s : mShips)
-        {
-            s->SetVectorFieldRenderMode(vectorFieldRenderMode);
-        }
+        // Nothing else to do, this is purely storage for the setting
     }
 
     float GetVectorFieldLengthMultiplier() const

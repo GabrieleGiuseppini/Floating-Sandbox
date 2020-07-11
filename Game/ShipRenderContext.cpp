@@ -38,7 +38,6 @@ ShipRenderContext::ShipRenderContext(
     float waterContrast,
     float waterLevelOfDetail,
     DebugShipRenderMode debugShipRenderMode,
-    VectorFieldRenderMode vectorFieldRenderMode,
     bool showStressedSprings,
     bool drawHeatOverlay,
     float heatOverlayTransparency,
@@ -86,7 +85,6 @@ ShipRenderContext::ShipRenderContext(
     , mHighlightVertexVBO()
     //
     , mVectorArrowVertexBuffer()
-    , mIsVectorArrowVertexBufferDirty(true)
     , mVectorArrowVBO()
     , mVectorArrowVBOAllocatedVertexSize(0u)
     , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
@@ -129,7 +127,6 @@ ShipRenderContext::ShipRenderContext(
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
     , mDebugShipRenderMode(debugShipRenderMode)
-    , mVectorFieldRenderMode(vectorFieldRenderMode)
     , mShowStressedSprings(showStressedSprings)
     , mDrawHeatOverlay(drawHeatOverlay)
     , mHeatOverlayTransparency(heatOverlayTransparency)
@@ -502,7 +499,8 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
     /* TODOTEST
     //
-    // Reset flames, explosions, sparkles, air bubbles, generic textures, highlights;
+    // Reset flames, explosions, sparkles, air bubbles, generic textures, highlights,
+    // vector arrows;
     // they are all uploaded as needed
     //
 
@@ -532,6 +530,8 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
         mHighlightVertexBuffers[i].clear();
     }
     */
+
+    mVectorArrowVertexBuffer.clear();
 
     //
     // Check if the max max plane ID has changed
@@ -875,7 +875,6 @@ void ShipRenderContext::UploadVectors(
     // Create buffer with endpoint positions of each segment of each arrow
     //
 
-    mVectorArrowVertexBuffer.clear();
     mVectorArrowVertexBuffer.reserve(count * 3 * 2);
 
     for (size_t i = 0; i < count; ++i)
@@ -895,8 +894,6 @@ void ShipRenderContext::UploadVectors(
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeId[i]);
     }
-
-    mIsVectorArrowVertexBufferDirty = true;
 
     if (color != mVectorArrowColor)
     {
@@ -1630,10 +1627,7 @@ void ShipRenderContext::RenderHighlights()
 
 void ShipRenderContext::RenderVectorArrows()
 {
-    VectorFieldRenderMode const vectorFieldRenderMode = mVectorFieldRenderMode.load();
-
-    if (vectorFieldRenderMode != VectorFieldRenderMode::None
-        && !mVectorArrowVertexBuffer.empty())
+    if (!mVectorArrowVertexBuffer.empty())
     {
         if (mIsVectorArrowColorDirty)
         {
@@ -1652,29 +1646,24 @@ void ShipRenderContext::RenderVectorArrows()
         // Buffer
         //
 
-        if (mIsVectorArrowVertexBufferDirty)
+        glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+
+        if (mVectorArrowVBOAllocatedVertexSize != mVectorArrowVertexBuffer.size())
         {
-            glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
 
-            if (mVectorArrowVBOAllocatedVertexSize != mVectorArrowVertexBuffer.size())
-            {
-                // Re-allocate VBO buffer and upload
-                glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
-                CheckOpenGLError();
-
-                mVectorArrowVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
-            }
-            else
-            {
-                // No size change, just upload VBO buffer
-                glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data());
-                CheckOpenGLError();
-            }
-
-            mIsVectorArrowVertexBufferDirty = false;
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            mVectorArrowVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
         }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         //
         // Render

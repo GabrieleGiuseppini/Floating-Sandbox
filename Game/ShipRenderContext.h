@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -55,7 +54,6 @@ public:
         float waterContrast,
         float waterLevelOfDetail,
         DebugShipRenderMode debugShipRenderMode,
-        VectorFieldRenderMode vectorFieldRenderMode,
         bool showStressedSprings,
         bool drawHeatOverlay,
         float heatOverlayTransparency,
@@ -127,11 +125,6 @@ public:
     void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
     {
         mDebugShipRenderMode = debugShipRenderMode;
-    }
-
-    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
-    {
-        mVectorFieldRenderMode.store(vectorFieldRenderMode);
     }
 
     void SetShowStressedSprings(bool showStressedSprings)
@@ -967,7 +960,7 @@ private:
     ShipId const mShipId;
     size_t mShipCount;
     size_t const mPointCount;
-    PlaneId mMaxMaxPlaneId;
+    PlaneId mMaxMaxPlaneId; // Make plane ID ever
 
     // Lock guarding:
     // - changes to a setting and its dirty indicator
@@ -1190,7 +1183,6 @@ private:
     GameOpenGLVBO mHighlightVertexVBO;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
-    bool mIsVectorArrowVertexBufferDirty;
     GameOpenGLVBO mVectorArrowVBO;
     size_t mVectorArrowVBOAllocatedVertexSize;
     vec4f mVectorArrowColor;
@@ -1266,7 +1258,6 @@ private:
     float mWaterContrast;
     float mWaterLevelOfDetail;
     DebugShipRenderMode mDebugShipRenderMode;
-    std::atomic<VectorFieldRenderMode> mVectorFieldRenderMode;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;
