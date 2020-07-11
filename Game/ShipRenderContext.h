@@ -524,9 +524,6 @@ public:
             angleCcw,
             explosionIndex,
             progress);
-
-        // Update total count of vertices
-        mExplosionTotalPlaneVertexCount += 6;
     }
 
     //
@@ -1166,7 +1163,6 @@ private:
     float mCurrentWindSpeedMagnitudeAverage;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
-    size_t mExplosionTotalPlaneVertexCount;
     GameOpenGLVBO mExplosionVBO;
     size_t mExplosionVBOAllocatedVertexSize;
 
@@ -1180,7 +1176,8 @@ private:
     size_t mGenericMipMappedTextureVBOAllocatedVertexSize;
 
     std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightMode::_Last) + 1> mHighlightVertexBuffers;
-    GameOpenGLVBO mHighlightVertexVBO;
+    GameOpenGLVBO mHighlightVBO;
+    size_t mHighlightVBOAllocatedVertexSize;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;

@@ -619,7 +619,6 @@ void Ship::RenderUpload(
         mId,
         renderContext);
 
-
     //
     // Upload ephemeral points and textures
     //
@@ -628,8 +627,6 @@ void Ship::RenderUpload(
         mId,
         renderContext);
 
-
-    /* TODOTEST
     //
     // Upload highlights
     //
@@ -637,7 +634,6 @@ void Ship::RenderUpload(
     mPoints.UploadHighlights(
         mId,
         renderContext);
-    */
 
     //
     // Upload vector fields
@@ -647,20 +643,18 @@ void Ship::RenderUpload(
         mId,
         renderContext);
 
-    /* TODOTEST
     //
     // Upload state machines
     //
 
     UploadStateMachines(renderContext);
-    */
+
 
     //
     // Finalize upload
     //
 
     renderContext.UploadShipEnd(mId);
-
 
     //
     // Reset render state

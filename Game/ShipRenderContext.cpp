@@ -68,7 +68,6 @@ ShipRenderContext::ShipRenderContext(
     , mCurrentWindSpeedMagnitudeAverage(-1.0f) // Make sure we update the param right away
     //
     , mExplosionPlaneVertexBuffers()
-    , mExplosionTotalPlaneVertexCount(0u)
     , mExplosionVBO()
     , mExplosionVBOAllocatedVertexSize(0u)
     //
@@ -82,7 +81,8 @@ ShipRenderContext::ShipRenderContext(
     , mGenericMipMappedTextureVBOAllocatedVertexSize(0u)
     //
     , mHighlightVertexBuffers()
-    , mHighlightVertexVBO()
+    , mHighlightVBO()
+    , mHighlightVBOAllocatedVertexSize(0u)
     //
     , mVectorArrowVertexBuffer()
     , mVectorArrowVBO()
@@ -175,16 +175,13 @@ ShipRenderContext::ShipRenderContext(
     mFlameVertexVBO = vbos[5];
 
     mExplosionVBO = vbos[6];
-    glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
-    mExplosionVBOAllocatedVertexSize = 10 * 6; // Initial guess, might get more
-    glBufferData(GL_ARRAY_BUFFER, mExplosionVBOAllocatedVertexSize * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
 
     mSparkleVBO = vbos[7];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
     mGenericMipMappedTextureVBO = vbos[8];
 
-    mHighlightVertexVBO = vbos[9];
+    mHighlightVBO = vbos[9];
 
     mVectorArrowVBO = vbos[10];
 
@@ -362,7 +359,7 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(*mHighlightVAO);
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVBO);
         static_assert(sizeof(HighlightVertex) == (2 + 2 + 3 + 1 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Highlight1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((0) * sizeof(float)));
@@ -507,29 +504,45 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     mFlameVertexBuffer.reset();
     mFlameBackgroundCount = 0u;
     mFlameForegroundCount = 0u;
-
-    mExplosionPlaneVertexBuffers.clear();
-    mExplosionPlaneVertexBuffers.resize(maxMaxPlaneId + 1);
-    mExplosionTotalPlaneVertexCount = 0;
     */
+
+    {
+        size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
+        assert(mExplosionPlaneVertexBuffers.size() <= newSize);
+
+        size_t const clearCount = mExplosionPlaneVertexBuffers.size();
+        for (size_t i = 0; i < clearCount; ++i)
+        {
+            mExplosionPlaneVertexBuffers[i].vertexBuffer.clear();
+        }
+
+        if (newSize != mExplosionPlaneVertexBuffers.size())
+            mExplosionPlaneVertexBuffers.resize(newSize);
+    }
+
 
     mSparkleVertexBuffer.clear();
 
-    mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
-
-    size_t const clearCount = std::min(mGenericMipMappedTexturePlaneVertexBuffers.size(), static_cast<size_t>(maxMaxPlaneId) + 1u);
-    for (size_t i = 0; i < clearCount; ++i)
     {
-        mGenericMipMappedTexturePlaneVertexBuffers[i].vertexBuffer.clear();
-    }
-    mGenericMipMappedTexturePlaneVertexBuffers.resize(maxMaxPlaneId + 1);
+        mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
 
-    /* TODOTEST
+        size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
+        assert(mGenericMipMappedTexturePlaneVertexBuffers.size() <= newSize);
+
+        size_t const clearCount = mGenericMipMappedTexturePlaneVertexBuffers.size();
+        for (size_t i = 0; i < clearCount; ++i)
+        {
+            mGenericMipMappedTexturePlaneVertexBuffers[i].vertexBuffer.clear();
+        }
+
+        if (newSize != mGenericMipMappedTexturePlaneVertexBuffers.size())
+            mGenericMipMappedTexturePlaneVertexBuffers.resize(newSize);
+    }
+
     for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
     {
         mHighlightVertexBuffers[i].clear();
     }
-    */
 
     mVectorArrowVertexBuffer.clear();
 
@@ -1305,7 +1318,6 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
     RenderGenericMipMappedTextures(renderStats);
 
 
-    /* TODOTEST
     //
     // Render explosions
     //
@@ -1313,13 +1325,11 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
     RenderExplosions();
 
 
-
     //
     // Render highlights
     //
 
     RenderHighlights();
-    */
 
 
     //
@@ -1511,6 +1521,70 @@ void ShipRenderContext::RenderGenericMipMappedTextures(RenderStatistics & render
 
 void ShipRenderContext::RenderExplosions()
 {
+    size_t const totalVertexCount = std::accumulate(
+        mExplosionPlaneVertexBuffers.cbegin(),
+        mExplosionPlaneVertexBuffers.cend(),
+        size_t(0),
+        [](size_t const total, auto const & vec)
+        {
+            return total + vec.vertexBuffer.size();
+        });
+
+    if (totalVertexCount > 0)
+    {
+        //
+        // Buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
+
+        if (totalVertexCount != mExplosionVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer
+            glBufferData(GL_ARRAY_BUFFER, totalVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mExplosionVBOAllocatedVertexSize = totalVertexCount;
+        }
+
+        // Map vertex buffer
+        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        CheckOpenGLError();
+
+        // Upload all planes
+        for (auto const & plane : mExplosionPlaneVertexBuffers)
+        {
+            if (!plane.vertexBuffer.empty())
+            {
+                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(ExplosionVertex);
+                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
+                mappedBuffer += byteCopySize;
+            }
+        }
+
+        // Unmap vertex buffer
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mExplosionVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+
+        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            glLineWidth(0.1f);
+
+        assert(0 == (totalVertexCount % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(totalVertexCount));
+
+        glBindVertexArray(0);
+    }
+
+    /* TODOOLD
     if (mExplosionTotalPlaneVertexCount > 0)
     {
         glBindVertexArray(*mExplosionVAO);
@@ -1531,7 +1605,7 @@ void ShipRenderContext::RenderExplosions()
         {
             mExplosionVBOAllocatedVertexSize = mExplosionTotalPlaneVertexCount;
 
-            glBufferData(GL_ARRAY_BUFFER, mExplosionTotalPlaneVertexCount * sizeof(ExplosionVertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mExplosionTotalPlaneVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
             CheckOpenGLError();
         }
 
@@ -1564,6 +1638,7 @@ void ShipRenderContext::RenderExplosions()
 
         glBindVertexArray(0);
     }
+    */
 }
 
 void ShipRenderContext::RenderHighlights()
@@ -1573,19 +1648,27 @@ void ShipRenderContext::RenderHighlights()
         if (!mHighlightVertexBuffers[i].empty())
         {
             //
-            // Upload buffer
+            // Buffer
             //
 
-            glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVertexVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVBO);
 
-            glBufferData(GL_ARRAY_BUFFER,
-                sizeof(HighlightVertex) * mHighlightVertexBuffers[i].size(),
-                mHighlightVertexBuffers[i].data(),
-                GL_DYNAMIC_DRAW);
-            CheckOpenGLError();
+            if (mHighlightVBOAllocatedVertexSize != mHighlightVertexBuffers[i].size())
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mHighlightVertexBuffers[i].size() * sizeof(HighlightVertex), mHighlightVertexBuffers[i].data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
+
+                mHighlightVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mHighlightVertexBuffers[i].size() * sizeof(HighlightVertex), mHighlightVertexBuffers[i].data());
+                CheckOpenGLError();
+            }
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
             //
             // Render

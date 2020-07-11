@@ -477,8 +477,12 @@ Render:
 							+ Set color param in own Render method, if (mIsVectorArrowColorDirty)
 						+ Use different vector colors
 						+ See if vectors are reset when we stop uploading
-					- Explosions, Highlights: re-enable UploadStart, rest should be already done
+					+ Explosions
+					+ Highlights
+						+ Re-enable upload
+					- See again cam movement (via mouse pan) & ocean borders
 					- Flames
+						- Re-enable upload
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
 							- Flame or just Wind?
 					- StressedSprings
@@ -641,6 +645,13 @@ Render:
 		+ Waallrus: have all
 		+ MasterGarfield: have all
 			+ Have also his PayPal email
+		+ Liamo's pack
+			+ Test
+			+ Rename "Iowa class" as in meta
+			+ Meta
+			+ Got his Paypal
+			+ Repackage
+			+ Publish
 		= Alex02:
 			+ Have Part 1 and Part 2
 			+ Titles: "Le navi dalla storia" (vol. 1 e vol. 2)
@@ -659,12 +670,6 @@ Render:
 		- Captain Nobinson
 			- Test
 			- Meta: <asked>
-		- Liamo's pack
-			- Test
-			- Rename "Iowa class" as in meta
-			+ Meta
-			+ Got his Paypal
-			- Publish
 	- New ships:
 		- Next ship made: "Turbentiy Banalniy"
 		- To test:
