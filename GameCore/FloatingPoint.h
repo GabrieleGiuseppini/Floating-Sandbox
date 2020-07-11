@@ -11,7 +11,7 @@
 #include <limits>
 
 #if defined(FS_ARM)
-#include <fenv.h>
+#include "fenv.h"
 #endif
 
 inline void EnableFloatingPointExceptions()
