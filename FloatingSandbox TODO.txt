@@ -495,10 +495,14 @@ Render:
 							+ RenderContext::SetAmbientLightIntensity & storm update:
 								+ mRenderSettings.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
 								  & mRenderSettings.IsEffectiveAmbientLightIntensityDirty=true
-					- Flames
-						- Re-enable upload
-						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
-							- Flame or just Wind?
+					= Flames
+						+ Re-enable upload
+						= mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
+							= Picked up (when dirty) at PrepareRenderFlames(.), together with buffers
+							- Also at Lightnings
+						+ Buffers
+						- FlameSizeAdjustment: keep as-is, confirming that it's only used for Ship::UploadFlames()
+						- TakeSnapshotAndClear()
 					- StressedSprings
 					- Setters: TODO
 					= Fix render stats
@@ -534,6 +538,9 @@ Render:
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
+					- See if may unify foreground and background ship flame shaders
+
+		- Default ship @ Install: Titanic with Power
 
 		- Explosions: see with progress being sqrt
 

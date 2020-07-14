@@ -591,7 +591,7 @@ void Ship::RenderUpload(
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
-
+    */
 
     //
     // Upload flames
@@ -601,7 +601,6 @@ void Ship::RenderUpload(
         mId,
         mWindSpeedMagnitudeToRender,
         renderContext);
-    */
 
     //
     // Upload bombs

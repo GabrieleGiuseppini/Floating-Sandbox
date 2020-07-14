@@ -1650,27 +1650,24 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
-    if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderModeType::NoDraw)
+    renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
+
+    // Upload flames, in order of plane ID
+    for (auto const pointIndex : mBurningPoints)
     {
-        renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
-
-        // Upload flames, in order of plane ID
-        for (auto const pointIndex : mBurningPoints)
-        {
-            renderContext.UploadShipFlame(
-                shipId,
-                GetPlaneId(pointIndex),
-                GetPosition(pointIndex),
-                mCombustionStateBuffer[pointIndex].FlameVector,
-                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
-                mRandomNormalizedUniformFloatBuffer[pointIndex],
-                // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
-                // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
-                mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
-        }
-
-        renderContext.UploadShipFlamesEnd(shipId);
+        renderContext.UploadShipFlame(
+            shipId,
+            GetPlaneId(pointIndex),
+            GetPosition(pointIndex),
+            mCombustionStateBuffer[pointIndex].FlameVector,
+            mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+            mRandomNormalizedUniformFloatBuffer[pointIndex],
+            // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
+            // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
+            mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
     }
+
+    renderContext.UploadShipFlamesEnd(shipId);
 }
 
 void Points::UploadVectors(

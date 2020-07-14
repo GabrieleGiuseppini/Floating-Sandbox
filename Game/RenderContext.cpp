@@ -124,12 +124,10 @@ RenderContext::RenderContext(
     , mShowShipThroughOcean(false)
     , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
-    , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
     , mVectorFieldLengthMultiplier(1.0f)
     , mShowStressedSprings(false)
     , mDrawHeatOverlay(false)
     , mHeatOverlayTransparency(0.1875f)
-    , mShipFlameRenderMode(ShipFlameRenderModeType::Mode1)
     , mShipFlameSizeAdjustment(1.0f)
     // Statistics
     , mPerfStats(perfStats)
@@ -270,7 +268,6 @@ RenderContext::RenderContext(
             OnShowStressedSpringsUpdated();
             OnDrawHeatOverlayUpdated();
             OnHeatOverlayTransparencyUpdated();
-            OnShipFlameRenderModeUpdated();
             OnShipFlameSizeAdjustmentUpdated();
 
 
@@ -368,7 +365,6 @@ void RenderContext::AddShip(
                     mShowStressedSprings,
                     mDrawHeatOverlay,
                     mHeatOverlayTransparency,
-                    mShipFlameRenderMode,
                     mShipFlameSizeAdjustment));
         });
 }
@@ -489,7 +485,7 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 {
     //
     // Lightnings are not sticky: we upload them at each frame,
-    // though they will be empty for most of the time
+    // though they will be empty most of the time
     //
 
     mLightningVertexBuffer.reset_fill(6 * lightningCount);
@@ -504,15 +500,14 @@ void RenderContext::UploadLightningsEnd()
     // this buffer is used by mulitple render steps and thus we don't have a single user
     // who might upload it at the moment it's needed
 
-    if (mLightningVBOAllocatedVertexSize != mLightningVertexBuffer.size()
-        || mLightningVertexBuffer.size() > 0)
+    if (!mLightningVertexBuffer.empty())
     {
         mRenderThread.QueueTask(
             [this]()
             {
                 glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-                if (mLightningVBOAllocatedVertexSize != mLightningVertexBuffer.size())
+                if (mLightningVertexBuffer.size() > mLightningVBOAllocatedVertexSize)
                 {
                     // Re-allocate VBO buffer and upload
                     glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
@@ -1326,7 +1321,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings(RenderSettings const & r
 
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-    if (mCloudVBOAllocatedVertexSize != mCloudVertexBuffer.size())
+    if (mCloudVertexBuffer.size() > mCloudVBOAllocatedVertexSize)
     {
         // Re-allocate VBO buffer and upload
         glBufferData(GL_ARRAY_BUFFER, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data(), GL_STREAM_DRAW);
@@ -1541,7 +1536,7 @@ void RenderContext::RenderAMBombPreImplosions(RenderSettings const & /*renderSet
 
         glBindBuffer(GL_ARRAY_BUFFER, *mAMBombPreImplosionVBO);
 
-        if (mAMBombPreImplosionVBOAllocatedVertexSize != mAMBombPreImplosionVertexBuffer.size())
+        if (mAMBombPreImplosionVertexBuffer.size() > mAMBombPreImplosionVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
             glBufferData(GL_ARRAY_BUFFER, mAMBombPreImplosionVertexBuffer.size() * sizeof(AMBombPreImplosionVertex), mAMBombPreImplosionVertexBuffer.data(), GL_STREAM_DRAW);
@@ -1584,7 +1579,7 @@ void RenderContext::RenderCrossesOfLight(RenderSettings const & /*renderSettings
 
         glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
 
-        if (mCrossOfLightVBOAllocatedVertexSize != mCrossOfLightVertexBuffer.size())
+        if (mCrossOfLightVertexBuffer.size() > mCrossOfLightVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
             glBufferData(GL_ARRAY_BUFFER, mCrossOfLightVertexBuffer.size() * sizeof(CrossOfLightVertex), mCrossOfLightVertexBuffer.data(), GL_STREAM_DRAW);
@@ -2162,15 +2157,6 @@ void RenderContext::OnHeatOverlayTransparencyUpdated()
     for (auto & s : mShips)
     {
         s->SetHeatOverlayTransparency(mHeatOverlayTransparency);
-    }
-}
-
-void RenderContext::OnShipFlameRenderModeUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetShipFlameRenderMode(mShipFlameRenderMode);
     }
 }
 

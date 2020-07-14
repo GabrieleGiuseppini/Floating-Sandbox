@@ -38,7 +38,6 @@ ShipRenderContext::ShipRenderContext(
     bool showStressedSprings,
     bool drawHeatOverlay,
     float heatOverlayTransparency,
-    ShipFlameRenderModeType shipFlameRenderMode,
     float shipFlameSizeAdjustment)
     : mShipId(shipId)
     , mPointCount(pointCount)
@@ -56,13 +55,14 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
     //
-    , mFlameVertexBuffer()
-    , mFlameVertexBufferAllocatedSize(0u)
+    , mFlameVertexBuffer()    
     , mFlameBackgroundCount(0u)
     , mFlameForegroundCount(0u)
-    , mFlameVertexVBO()
-    , mWindSpeedMagnitudeRunningAverage(0.0f)
-    , mCurrentWindSpeedMagnitudeAverage(-1.0f) // Make sure we update the param right away
+    , mFlameVBO()
+    , mFlameVBOAllocatedVertexSize(0u)
+    , mFlameWindSpeedMagnitudeRunningAverage(0.0f)
+    , mFlameWindSpeedMagnitudeAverage(0.0f)
+    , mIsFlameWindSpeedMagnitudeAverageDirty(true)
     //
     , mExplosionPlaneVertexBuffers()
     , mExplosionVBO()
@@ -123,7 +123,6 @@ ShipRenderContext::ShipRenderContext(
     , mShowStressedSprings(showStressedSprings)
     , mDrawHeatOverlay(drawHeatOverlay)
     , mHeatOverlayTransparency(heatOverlayTransparency)
-    , mShipFlameRenderMode(shipFlameRenderMode)
     , mShipFlameSizeAdjustment(shipFlameSizeAdjustment)
     , mHalfFlameQuadWidth(0.0f) // Will be calculated
     , mFlameQuadHeight(0.0f) // Will be calculated
@@ -165,7 +164,7 @@ ShipRenderContext::ShipRenderContext(
     mStressedSpringElementVBO = vbos[4];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
-    mFlameVertexVBO = vbos[5];
+    mFlameVBO = vbos[5];
 
     mExplosionVBO = vbos[6];
 
@@ -256,7 +255,7 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(*mFlameVAO);
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
         static_assert(sizeof(FlameVertex) == (4 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
@@ -486,17 +485,11 @@ ShipRenderContext::~ShipRenderContext()
 
 void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
-    /* TODOTEST
     //
-    // Reset flames, explosions, sparkles, air bubbles, generic textures, highlights,
+    // Reset explosions, sparkles, air bubbles, generic textures, highlights,
     // vector arrows;
     // they are all uploaded as needed
     //
-
-    mFlameVertexBuffer.reset();
-    mFlameBackgroundCount = 0u;
-    mFlameForegroundCount = 0u;
-    */
 
     {
         size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
@@ -745,90 +738,26 @@ void ShipRenderContext::UploadFlamesStart(
     float windSpeedMagnitude)
 {
     //
-    // Prepare buffer - map flame VBO's
+    // Flames are not sticky: we upload them at each frame,
+    // though they will be empty most of the time
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+    mFlameVertexBuffer.reset_fill(6 * count);
 
-    if (count > mFlameVertexBufferAllocatedSize
-        || count < mFlameVertexBufferAllocatedSize - 100)
-    {
-        // Reallocate
-        mFlameVertexBufferAllocatedSize = ((count / 100) + 1) * 100;
-        glBufferData(GL_ARRAY_BUFFER, mFlameVertexBufferAllocatedSize * 6 * sizeof(FlameVertex), nullptr, GL_STREAM_DRAW);
-
-    }
-
-    // Map buffer
-    mFlameVertexBuffer.map_and_fill(count * 6);
-    CheckOpenGLError();
-
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    mFlameBackgroundCount = 0;
+    mFlameForegroundCount = 0;
 
     //
     // Update wind speed
     //
 
-    float newWind = mWindSpeedMagnitudeRunningAverage.Update(windSpeedMagnitude);
+    float newWind = mFlameWindSpeedMagnitudeRunningAverage.Update(windSpeedMagnitude);
 
-    // Set wind speed magnitude parameter, if it has changed
-    if (newWind != mCurrentWindSpeedMagnitudeAverage)
+    // Pickup wind speed magnitude, if it has changed
+    if (newWind != mFlameWindSpeedMagnitudeAverage)
     {
-        // Calculate wind angle: we do this here once instead of doing it for each and every pixel
-        float const windRotationAngle = std::copysign(
-            0.6f * SmoothStep(0.0f, 100.0f, std::abs(newWind)),
-            -newWind);
-
-        switch (mShipFlameRenderMode)
-        {
-            case ShipFlameRenderModeType::Mode1:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode2:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode3:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::NoDraw:
-            {
-                break;
-            }
-        }
-
-        mCurrentWindSpeedMagnitudeAverage = newWind;
+        mFlameWindSpeedMagnitudeAverage = newWind;
+        mIsFlameWindSpeedMagnitudeAverageDirty = true;
     }
 }
 
@@ -836,11 +765,7 @@ void ShipRenderContext::UploadFlamesEnd()
 {
     assert((mFlameBackgroundCount + mFlameForegroundCount) * 6u == mFlameVertexBuffer.size());
 
-    // Unmap flame VBO's
-    glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
-    mFlameVertexBuffer.unmap();
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Nop    
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
@@ -1016,30 +941,40 @@ void ShipRenderContext::Draw(
         mAreElementBuffersDirty = false;
     }
 
-    /* TODOTEST
+    //
+    // Prepare flames
+    //
+
+    PrepareRenderFlames(renderSettings);
+
     //
     // Render background flames
     //
 
-    if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+    if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
     {
         RenderFlames<ProgramType::ShipFlamesBackground1>(
             0,
-            mFlameBackgroundCount);
+            mFlameBackgroundCount,
+            renderSettings,
+            renderStats);
     }
-    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode2)
+    else if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode2)
     {
         RenderFlames<ProgramType::ShipFlamesBackground2>(
             0,
-            mFlameBackgroundCount);
+            mFlameBackgroundCount,
+            renderSettings,
+            renderStats);
     }
-    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode3)
+    else if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode3)
     {
         RenderFlames<ProgramType::ShipFlamesBackground3>(
             0,
-            mFlameBackgroundCount);
+            mFlameBackgroundCount,
+            renderSettings,
+            renderStats);
     }
-    */
 
     //
     // Draw ship elements
@@ -1267,33 +1202,35 @@ void ShipRenderContext::Draw(
         // We are done with the ship VAO
         glBindVertexArray(0);
     }
-
-
-    /* TODOTEST
+    
     //
     // Render foreground flames
     //
 
-    if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+    if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
     {
         RenderFlames<ProgramType::ShipFlamesForeground1>(
             mFlameBackgroundCount,
-            mFlameForegroundCount);
+            mFlameForegroundCount,
+            renderSettings,
+            renderStats);
     }
-    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode2)
+    else if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode2)
     {
         RenderFlames<ProgramType::ShipFlamesForeground2>(
             mFlameBackgroundCount,
-            mFlameForegroundCount);
+            mFlameForegroundCount,
+            renderSettings,
+            renderStats);
     }
-    else if (mShipFlameRenderMode == ShipFlameRenderMode::Mode3)
+    else if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode3)
     {
         RenderFlames<ProgramType::ShipFlamesForeground3>(
             mFlameBackgroundCount,
-            mFlameForegroundCount);
+            mFlameForegroundCount,
+            renderSettings,
+            renderStats);
     }
-    */
-
 
     //
     // Render sparkles
@@ -1301,13 +1238,11 @@ void ShipRenderContext::Draw(
 
     RenderSparkles(renderSettings);
 
-
     //
     // Render generic textures
     //
 
     RenderGenericMipMappedTextures(renderSettings, renderStats);
-
 
     //
     // Render explosions
@@ -1315,20 +1250,17 @@ void ShipRenderContext::Draw(
 
     RenderExplosions(renderSettings);
 
-
     //
     // Render highlights
     //
 
     RenderHighlights(renderSettings);
 
-
     //
     // Render vectors
     //
 
     RenderVectorArrows(renderSettings);
-
 
     //
     // Update stats
@@ -1339,6 +1271,96 @@ void ShipRenderContext::Draw(
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void ShipRenderContext::PrepareRenderFlames(RenderSettings const & renderSettings)
+{
+    //
+    // Pickup wind speed magnitude, if it has changed
+    //
+
+    if (mIsFlameWindSpeedMagnitudeAverageDirty)
+    {
+        // Calculate wind angle: we do this here once instead of doing it for each and every pixel
+        float const windRotationAngle = std::copysign(
+            0.6f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitudeAverage)),
+            -mFlameWindSpeedMagnitudeAverage);
+
+        switch (renderSettings.ShipFlameRenderMode)
+        {
+            case ShipFlameRenderModeType::Mode1:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::Mode2:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::Mode3:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameWindRotationAngle>(
+                    windRotationAngle);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::NoDraw:
+            {
+                break;
+            }
+        }
+
+        mIsFlameWindSpeedMagnitudeAverageDirty = true;
+    }
+
+    //
+    // Upload buffers, if needed
+    //
+    
+    if (!mFlameVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
+
+        if (mFlameVertexBuffer.size() > mFlameVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mFlameVertexBuffer.size() * sizeof(FlameVertex), mFlameVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mFlameVBOAllocatedVertexSize = mFlameVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mFlameVertexBuffer.size() * sizeof(FlameVertex), mFlameVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
 template<ProgramType ShaderProgram>
 void ShipRenderContext::RenderFlames(
     size_t startFlameIndex,
@@ -1346,8 +1368,9 @@ void ShipRenderContext::RenderFlames(
     RenderSettings const & renderSettings,
     RenderStatistics & renderStats)
 {
-    if (flameCount > 0
-        && mShipFlameRenderMode != ShipFlameRenderModeType::NoDraw)
+    assert(renderSettings.ShipFlameRenderMode != ShipFlameRenderModeType::NoDraw);
+
+    if (flameCount > 0)
     {
         glBindVertexArray(*mFlameVAO);
 
@@ -1358,10 +1381,10 @@ void ShipRenderContext::RenderFlames(
             GameWallClock::GetInstance().NowAsFloat() * 0.345f);
 
         // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
 
         // Render
-        if (mShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+        if (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
         {
             glDrawArrays(
                 GL_TRIANGLES,
@@ -1386,7 +1409,7 @@ void ShipRenderContext::RenderFlames(
 
 void ShipRenderContext::RenderSparkles(RenderSettings const & renderSettings)
 {
-    if (mSparkleVertexBuffer.size() > 0)
+    if (!mSparkleVertexBuffer.empty())
     {
         //
         // Upload buffer
@@ -1394,7 +1417,7 @@ void ShipRenderContext::RenderSparkles(RenderSettings const & renderSettings)
 
         glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVBO);
 
-        if (mSparkleVBOAllocatedVertexSize != mSparkleVertexBuffer.size())
+        if (mSparkleVertexBuffer.size() > mSparkleVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
             glBufferData(GL_ARRAY_BUFFER, mSparkleVertexBuffer.size() * sizeof(SparkleVertex), mSparkleVertexBuffer.data(), GL_DYNAMIC_DRAW);
@@ -1532,7 +1555,7 @@ void ShipRenderContext::RenderExplosions(RenderSettings const & renderSettings)
 
         glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
 
-        if (totalVertexCount != mExplosionVBOAllocatedVertexSize)
+        if (totalVertexCount > mExplosionVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer
             glBufferData(GL_ARRAY_BUFFER, totalVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
@@ -1591,7 +1614,7 @@ void ShipRenderContext::RenderHighlights(RenderSettings const & renderSettings)
 
             glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVBO);
 
-            if (mHighlightVBOAllocatedVertexSize != mHighlightVertexBuffers[i].size())
+            if (mHighlightVertexBuffers[i].size() > mHighlightVBOAllocatedVertexSize)
             {
                 // Re-allocate VBO buffer and upload
                 glBufferData(GL_ARRAY_BUFFER, mHighlightVertexBuffers[i].size() * sizeof(HighlightVertex), mHighlightVertexBuffers[i].data(), GL_DYNAMIC_DRAW);
@@ -1650,6 +1673,10 @@ void ShipRenderContext::RenderVectorArrows(RenderSettings const & /*renderSettin
 {
     if (!mVectorArrowVertexBuffer.empty())
     {
+        //
+        // Color
+        //
+
         if (mIsVectorArrowColorDirty)
         {
             mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
@@ -1669,7 +1696,7 @@ void ShipRenderContext::RenderVectorArrows(RenderSettings const & /*renderSettin
 
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
 
-        if (mVectorArrowVBOAllocatedVertexSize != mVectorArrowVertexBuffer.size())
+        if (mVectorArrowVertexBuffer.size() > mVectorArrowVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
             glBufferData(GL_ARRAY_BUFFER, mVectorArrowVertexBuffer.size() * sizeof(vec3f), mVectorArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);

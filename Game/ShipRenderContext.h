@@ -55,7 +55,6 @@ public:
         bool showStressedSprings,
         bool drawHeatOverlay,
         float heatOverlayTransparency,
-        ShipFlameRenderModeType shipFlameRenderMode,
         float shipFlameSizeAdjustment);
 
     ~ShipRenderContext();
@@ -119,12 +118,7 @@ public:
         // React
         OnHeatOverlayTransparencyUpdated();
     }
-
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
-    {
-        mShipFlameRenderMode = shipFlameRenderMode;
-    }
-
+    
     void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
     {
         mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
@@ -261,7 +255,8 @@ public:
         vec2f const & flameVector,
         float scale,
         float flamePersonalitySeed,
-        bool isOnChain)
+        bool isOnChain,
+        RenderSettings const & renderSettings)
     {
         //
         // Calculate flame quad - encloses the flame vector
@@ -280,7 +275,7 @@ public:
         //
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (mShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+        float const yOffset = (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
             ? 0.066666f
             : 0.013333f;
 
@@ -906,6 +901,8 @@ private:
 
 private:
 
+    void PrepareRenderFlames(RenderSettings const & renderSettings);
+
     template<ProgramType ShaderProgram>
     void RenderFlames(
         size_t startFlameIndex,
@@ -1129,13 +1126,14 @@ private:
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
 
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
-    size_t mFlameVertexBufferAllocatedSize;
+    BoundedVector<FlameVertex> mFlameVertexBuffer;    
     size_t mFlameBackgroundCount;
     size_t mFlameForegroundCount;
-    GameOpenGLVBO mFlameVertexVBO;
-    RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
-    float mCurrentWindSpeedMagnitudeAverage;
+    GameOpenGLVBO mFlameVBO;
+    size_t mFlameVBOAllocatedVertexSize;
+    RunningAverage<18> mFlameWindSpeedMagnitudeRunningAverage;
+    float mFlameWindSpeedMagnitudeAverage;
+    bool mIsFlameWindSpeedMagnitudeAverageDirty;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
     GameOpenGLVBO mExplosionVBO;
@@ -1228,8 +1226,7 @@ private:
     float mWaterLevelOfDetail;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;
-    ShipFlameRenderModeType mShipFlameRenderMode;
+    float mHeatOverlayTransparency;    
     float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;

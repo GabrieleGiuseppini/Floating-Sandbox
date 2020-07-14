@@ -464,14 +464,13 @@ public:
 
     ShipFlameRenderModeType GetShipFlameRenderMode() const
     {
-        return mShipFlameRenderMode;
+        return mRenderSettings.ShipFlameRenderMode;
     }
 
     void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
     {
-        mShipFlameRenderMode = shipFlameRenderMode;
-
-        OnShipFlameRenderModeUpdated();
+        mRenderSettings.ShipFlameRenderMode = shipFlameRenderMode;
+        // No need to notify, will be picked up
     }
 
     float const & GetShipFlameSizeAdjustment() const
@@ -1255,7 +1254,8 @@ public:
             flameVector,
             scale,
             flamePersonalitySeed,
-            isOnChain);
+            isOnChain,
+            mRenderSettings);
     }
 
     void UploadShipFlamesEnd(ShipId shipId)
@@ -1646,11 +1646,9 @@ private:
     void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
-    void OnVectorFieldRenderModeUpdated();
     void OnShowStressedSpringsUpdated();
     void OnDrawHeatOverlayUpdated();
     void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameRenderModeUpdated();
     void OnShipFlameSizeAdjustmentUpdated();
 
     void RecalculateWorldBorder(RenderSettings const & renderSettings);
@@ -2006,7 +2004,6 @@ private:
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;
-    ShipFlameRenderModeType mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
 
     //

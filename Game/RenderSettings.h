@@ -55,7 +55,6 @@ struct RenderSettings
     float WaterContrast;
     float WaterLevelOfDetail;
     DebugShipRenderModeType DebugShipRenderMode;
-    VectorFieldRenderModeType VectorFieldRenderMode;
     float VectorFieldLengthMultiplier;
     bool ShowStressedSprings;
     bool DrawHeatOverlay;
