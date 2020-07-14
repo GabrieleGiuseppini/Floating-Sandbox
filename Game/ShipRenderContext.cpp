@@ -21,33 +21,28 @@ namespace Render {
 static float constexpr BasisHalfFlameQuadWidth = 9.5f * 2.0f;
 static float constexpr BasisFlameQuadHeight = 7.5f * 2.0f;
 
-
 ShipRenderContext::ShipRenderContext(
     ShipId shipId,
-    size_t shipCount,
     size_t pointCount,
     RgbaImageData shipTexture,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
     TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-    ViewModel const & viewModel,
-    float effectiveAmbientLightIntensity,
+    RenderParameters const & renderParameters,
     vec4f const & lampLightColor,
     vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
-    DebugShipRenderMode debugShipRenderMode,
     bool showStressedSprings,
     bool drawHeatOverlay,
     float heatOverlayTransparency,
-    ShipFlameRenderMode shipFlameRenderMode,
+    ShipFlameRenderModeType shipFlameRenderMode,
     float shipFlameSizeAdjustment)
     : mShipId(shipId)
-    , mShipCount(shipCount)
     , mPointCount(pointCount)
     , mMaxMaxPlaneId(0)
-    , mSettingsMutex()
+    , mIsMaxMaxPlaneIdDirty(true)
     // Buffers
     , mPointAttributeGroup1Buffer()
     , mPointAttributeGroup1VBO()
@@ -119,14 +114,10 @@ ShipRenderContext::ShipRenderContext(
     // Managers
     , mShaderManager(shaderManager)
     // Parameters
-    , mViewModel(viewModel)
-    , mIsViewModelDirty(true)
-    , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
     , mLampLightColor(lampLightColor)
     , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
-    , mDebugShipRenderMode(debugShipRenderMode)
     , mShowStressedSprings(showStressedSprings)
     , mDrawHeatOverlay(drawHeatOverlay)
     , mHeatOverlayTransparency(heatOverlayTransparency)
@@ -474,10 +465,9 @@ ShipRenderContext::ShipRenderContext(
     // Update parameters
     //
 
-    ProcessSettingChanges();
+    ProcessParameterChanges(renderParameters);
 
     // TODOOLD
-    OnEffectiveAmbientLightIntensityUpdated();
     OnLampLightColorUpdated();
     OnWaterColorUpdated();
     OnWaterContrastUpdated();
@@ -539,7 +529,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
             mGenericMipMappedTexturePlaneVertexBuffers.resize(newSize);
     }
 
-    for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
+    for (size_t i = 0; i <= static_cast<size_t>(HighlightModeType::_Last); ++i)
     {
         mHighlightVertexBuffers[i].clear();
     }
@@ -552,13 +542,9 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 
     if (maxMaxPlaneId != mMaxMaxPlaneId)
     {
-        std::lock_guard<std::mutex> const lock(mSettingsMutex);
-
         // Update value
         mMaxMaxPlaneId = maxMaxPlaneId;
-
-        // Remember to recalculate ortho matrices
-        mIsViewModelDirty = true;
+        mIsMaxMaxPlaneIdDirty = true;
     }
 }
 
@@ -720,6 +706,7 @@ void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
 
 void ShipRenderContext::UploadElementTrianglesEnd()
 {
+    // Nop
 }
 
 void ShipRenderContext::UploadElementsEnd()
@@ -794,7 +781,7 @@ void ShipRenderContext::UploadFlamesStart(
 
         switch (mShipFlameRenderMode)
         {
-            case ShipFlameRenderMode::Mode1:
+            case ShipFlameRenderModeType::Mode1:
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
                 mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameWindRotationAngle>(
@@ -807,7 +794,7 @@ void ShipRenderContext::UploadFlamesStart(
                 break;
             }
 
-            case ShipFlameRenderMode::Mode2:
+            case ShipFlameRenderModeType::Mode2:
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
                 mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameWindRotationAngle>(
@@ -820,7 +807,7 @@ void ShipRenderContext::UploadFlamesStart(
                 break;
             }
 
-            case ShipFlameRenderMode::Mode3:
+            case ShipFlameRenderModeType::Mode3:
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
                 mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameWindRotationAngle>(
@@ -833,7 +820,7 @@ void ShipRenderContext::UploadFlamesStart(
                 break;
             }
 
-            case ShipFlameRenderMode::NoDraw:
+            case ShipFlameRenderModeType::NoDraw:
             {
                 break;
             }
@@ -921,15 +908,17 @@ void ShipRenderContext::UploadEnd()
     // Nop
 }
 
-void ShipRenderContext::Draw(RenderStatistics & renderStats)
+void ShipRenderContext::Draw(
+    RenderParameters const & renderParameters,
+    RenderStatistics & renderStats)
 {
     // We've been invoked on the render thread
 
     //
-    // Process changes to settings
+    // Process changes to parameters
     //
 
-    ProcessSettingChanges();
+    ProcessParameterChanges(renderParameters);
 
 
     //
@@ -1089,19 +1078,19 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
         // would result in the same artifact
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe
-            || mDebugShipRenderMode == DebugShipRenderMode::Decay
-            || mDebugShipRenderMode == DebugShipRenderMode::Structure
-            || mDebugShipRenderMode == DebugShipRenderMode::None)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
-            if (mDebugShipRenderMode == DebugShipRenderMode::Decay)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
                 // Use decay program
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
             }
             else
             {
-                if (mDebugShipRenderMode == DebugShipRenderMode::None)
+                if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
                 {
                     // Use texture program
                     if (mDrawHeatOverlay)
@@ -1119,7 +1108,7 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
                 }
             }
 
-            if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
                 glLineWidth(0.1f);
 
             // Draw!
@@ -1139,7 +1128,7 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
         // Set line width, for ropes and springs
         //
 
-        glLineWidth(0.1f * 2.0f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+        glLineWidth(0.1f * 2.0f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
 
 
 
@@ -1150,8 +1139,8 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
         // as springs.
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Structure
-            || mDebugShipRenderMode == DebugShipRenderMode::None)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             if (mDrawHeatOverlay)
                 mShaderManager.ActivateProgram<ProgramType::ShipRopesWithTemperature>();
@@ -1182,12 +1171,12 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Springs
-            || mDebugShipRenderMode == DebugShipRenderMode::EdgeSprings
-            || mDebugShipRenderMode == DebugShipRenderMode::Structure
-            || mDebugShipRenderMode == DebugShipRenderMode::None)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
-            if (mDebugShipRenderMode == DebugShipRenderMode::None)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
             {
                 // Use texture program
                 if (mDrawHeatOverlay)
@@ -1250,9 +1239,9 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
         // Draw points (orphaned/all non-ephemerals, and ephemerals)
         //
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Points
-            || mDebugShipRenderMode == DebugShipRenderMode::Structure
-            || mDebugShipRenderMode == DebugShipRenderMode::None)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Points
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             auto const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
 
@@ -1261,7 +1250,7 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
             else
                 mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
 
-            glPointSize(0.3f * mViewModel.GetCanvasToVisibleWorldHeightRatio());
+            glPointSize(0.3f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
 
             glDrawElements(
                 GL_POINTS,
@@ -1308,35 +1297,35 @@ void ShipRenderContext::Draw(RenderStatistics & renderStats)
     // Render sparkles
     //
 
-    RenderSparkles();
+    RenderSparkles(renderParameters);
 
 
     //
     // Render generic textures
     //
 
-    RenderGenericMipMappedTextures(renderStats);
+    RenderGenericMipMappedTextures(renderParameters, renderStats);
 
 
     //
     // Render explosions
     //
 
-    RenderExplosions();
+    RenderExplosions(renderParameters);
 
 
     //
     // Render highlights
     //
 
-    RenderHighlights();
+    RenderHighlights(renderParameters);
 
 
     //
     // Render vectors
     //
 
-    RenderVectorArrows();
+    RenderVectorArrows(renderParameters);
 
 
     //
@@ -1352,10 +1341,11 @@ template<ProgramType ShaderProgram>
 void ShipRenderContext::RenderFlames(
     size_t startFlameIndex,
     size_t flameCount,
+    RenderParameters const & renderParameters,
     RenderStatistics & renderStats)
 {
     if (flameCount > 0
-        && mShipFlameRenderMode != ShipFlameRenderMode::NoDraw)
+        && mShipFlameRenderMode != ShipFlameRenderModeType::NoDraw)
     {
         glBindVertexArray(*mFlameVAO);
 
@@ -1369,7 +1359,7 @@ void ShipRenderContext::RenderFlames(
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVertexVBO);
 
         // Render
-        if (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+        if (mShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
         {
             glDrawArrays(
                 GL_TRIANGLES,
@@ -1392,7 +1382,7 @@ void ShipRenderContext::RenderFlames(
     }
 }
 
-void ShipRenderContext::RenderSparkles()
+void ShipRenderContext::RenderSparkles(RenderParameters const & renderParameters)
 {
     if (mSparkleVertexBuffer.size() > 0)
     {
@@ -1427,7 +1417,7 @@ void ShipRenderContext::RenderSparkles()
 
         mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         assert(0 == (mSparkleVertexBuffer.size() % 6));
@@ -1437,7 +1427,9 @@ void ShipRenderContext::RenderSparkles()
     }
 }
 
-void ShipRenderContext::RenderGenericMipMappedTextures(RenderStatistics & renderStats)
+void ShipRenderContext::RenderGenericMipMappedTextures(
+    RenderParameters const & renderParameters,
+    RenderStatistics & renderStats)
 {
     size_t const nonAirBubblesTotalVertexCount = std::accumulate(
         mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
@@ -1503,7 +1495,7 @@ void ShipRenderContext::RenderGenericMipMappedTextures(RenderStatistics & render
 
         mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         assert(0 == (totalVertexCount % 6));
@@ -1519,7 +1511,7 @@ void ShipRenderContext::RenderGenericMipMappedTextures(RenderStatistics & render
     }
 }
 
-void ShipRenderContext::RenderExplosions()
+void ShipRenderContext::RenderExplosions(RenderParameters const & renderParameters)
 {
     size_t const totalVertexCount = std::accumulate(
         mExplosionPlaneVertexBuffers.cbegin(),
@@ -1575,7 +1567,7 @@ void ShipRenderContext::RenderExplosions()
 
         mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
 
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         assert(0 == (totalVertexCount % 6));
@@ -1583,67 +1575,11 @@ void ShipRenderContext::RenderExplosions()
 
         glBindVertexArray(0);
     }
-
-    /* TODOOLD
-    if (mExplosionTotalPlaneVertexCount > 0)
-    {
-        glBindVertexArray(*mExplosionVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
-
-        if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
-            glLineWidth(0.1f);
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
-
-        //
-        // Upload to VBO
-        //
-
-        // (Re-)Allocate vertex buffer, if needed
-        if (mExplosionVBOAllocatedVertexSize < mExplosionTotalPlaneVertexCount)
-        {
-            mExplosionVBOAllocatedVertexSize = mExplosionTotalPlaneVertexCount;
-
-            glBufferData(GL_ARRAY_BUFFER, mExplosionTotalPlaneVertexCount * sizeof(ExplosionVertex), nullptr, GL_STREAM_DRAW);
-            CheckOpenGLError();
-        }
-
-        // Map vertex buffer
-        auto mappedBuffer = reinterpret_cast<uint8_t *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-        CheckOpenGLError();
-
-        // Copy all buffers
-        for (auto const & plane : mExplosionPlaneVertexBuffers)
-        {
-            if (!plane.vertexBuffer.empty())
-            {
-                size_t const byteCopySize = plane.vertexBuffer.size() * sizeof(ExplosionVertex);
-                std::memcpy(mappedBuffer, plane.vertexBuffer.data(), byteCopySize);
-
-                // Advance
-                mappedBuffer += byteCopySize;
-            }
-        }
-
-        // Unmap vertex buffer
-        glUnmapBuffer(GL_ARRAY_BUFFER);
-
-        //
-        // Render
-        //
-
-        assert(0 == (mExplosionTotalPlaneVertexCount % 6));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mExplosionTotalPlaneVertexCount));
-
-        glBindVertexArray(0);
-    }
-    */
 }
 
-void ShipRenderContext::RenderHighlights()
+void ShipRenderContext::RenderHighlights(RenderParameters const & renderParameters)
 {
-    for (size_t i = 0; i <= static_cast<size_t>(HighlightMode::_Last); ++i)
+    for (size_t i = 0; i <= static_cast<size_t>(HighlightModeType::_Last); ++i)
     {
         if (!mHighlightVertexBuffers[i].empty())
         {
@@ -1676,15 +1612,15 @@ void ShipRenderContext::RenderHighlights()
 
             glBindVertexArray(*mHighlightVAO);
 
-            switch (static_cast<HighlightMode>(i))
+            switch (static_cast<HighlightModeType>(i))
             {
-                case HighlightMode::Circle:
+                case HighlightModeType::Circle:
                 {
                     mShaderManager.ActivateProgram<ProgramType::ShipCircleHighlights>();
                     break;
                 }
 
-                case HighlightMode::ElectricalElement:
+                case HighlightModeType::ElectricalElement:
                 {
                     mShaderManager.ActivateProgram<ProgramType::ShipElectricalElementHighlights>();
                     break;
@@ -1697,7 +1633,7 @@ void ShipRenderContext::RenderHighlights()
                 }
             }
 
-            if (mDebugShipRenderMode == DebugShipRenderMode::Wireframe)
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
                 glLineWidth(0.1f);
 
             assert(0 == (mHighlightVertexBuffers[i].size() % 6));
@@ -1708,7 +1644,7 @@ void ShipRenderContext::RenderHighlights()
     }
 }
 
-void ShipRenderContext::RenderVectorArrows()
+void ShipRenderContext::RenderVectorArrows(RenderParameters const & /*renderParameters*/)
 {
     if (!mVectorArrowVertexBuffer.empty())
     {
@@ -1766,18 +1702,21 @@ void ShipRenderContext::RenderVectorArrows()
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::ProcessSettingChanges()
+void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
 {
-    std::lock_guard<std::mutex> const lock(mSettingsMutex);
-
-    if (mIsViewModelDirty)
+    if (renderParameters.IsViewDirty || renderParameters.IsShipCountDirty || mIsMaxMaxPlaneIdDirty)
     {
-        ApplyViewModelChanges();
-        mIsViewModelDirty = false;
+        ApplyViewModelChanges(renderParameters);
+        mIsMaxMaxPlaneIdDirty = false;
+    }
+
+    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
+    {
+        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
 }
 
-void ShipRenderContext::ApplyViewModelChanges()
+void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
 {
     //
     // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:
@@ -1807,11 +1746,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 0: Ropes
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         0,
         NLayers,
@@ -1829,11 +1768,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 1: Flames - background
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         1,
         NLayers,
@@ -1856,11 +1795,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 2: Springs
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         2,
         NLayers,
@@ -1886,11 +1825,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 3: Triangles
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         3,
         NLayers,
@@ -1920,11 +1859,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 4: Stressed Springs
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         4,
         NLayers,
@@ -1938,11 +1877,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 5: Points
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         5,
         NLayers,
@@ -1960,11 +1899,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 6: Flames - foreground
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         6,
         NLayers,
@@ -1986,11 +1925,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 7: Sparkles
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         7,
         NLayers,
@@ -2004,11 +1943,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 8: Generic Textures
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         8,
         NLayers,
@@ -2022,11 +1961,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 9: Explosions
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         9,
         NLayers,
@@ -2040,11 +1979,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 10: Highlights
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         10,
         NLayers,
@@ -2062,11 +2001,11 @@ void ShipRenderContext::ApplyViewModelChanges()
     // Layer 11: Vectors
     //
 
-    mViewModel.CalculateShipOrthoMatrix(
+    renderParameters.View.CalculateShipOrthoMatrix(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
+        static_cast<int>(renderParameters.ShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         11,
         NLayers,
@@ -2077,7 +2016,7 @@ void ShipRenderContext::ApplyViewModelChanges()
         shipOrthoMatrix);
 }
 
-void ShipRenderContext::OnEffectiveAmbientLightIntensityUpdated()
+void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
 {
     //
     // Set parameter in all programs
@@ -2085,60 +2024,62 @@ void ShipRenderContext::OnEffectiveAmbientLightIntensityUpdated()
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopesWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopesWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColorWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTextureWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColorWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTextureWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorWithTemperature, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mEffectiveAmbientLightIntensity);
+        renderParameters.EffectiveAmbientLightIntensity);
 }
+
+// TODOOLD
 
 void ShipRenderContext::OnLampLightColorUpdated()
 {

@@ -246,12 +246,12 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
 {
     if (mFlatStructureAutoTexturizationModeRadioButton->GetValue())
     {
-        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationMode::FlatStructure;
+        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationModeType::FlatStructure;
     }
     else
     {
         assert(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
-        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationMode::MaterialTextures;
+        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationModeType::MaterialTextures;
     }
 
     ReconciliateShipAutoTexturizationModeSettings();
@@ -943,13 +943,13 @@ void PreferencesDialog::ReadSettings()
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
     switch (mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode)
     {
-        case ShipAutoTexturizationMode::FlatStructure:
+        case ShipAutoTexturizationModeType::FlatStructure:
         {
             mFlatStructureAutoTexturizationModeRadioButton->SetValue(true);
             break;
         }
 
-        case ShipAutoTexturizationMode::MaterialTextures:
+        case ShipAutoTexturizationModeType::MaterialTextures:
         {
             mMaterialTexturesAutoTexturizationModeRadioButton->SetValue(true);
             break;

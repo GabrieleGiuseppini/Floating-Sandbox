@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
-#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/GameOpenGLMappedBuffer.h>
@@ -27,7 +27,6 @@
 #include <array>
 #include <cassert>
 #include <memory>
-#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -40,55 +39,29 @@ public:
 
     ShipRenderContext(
         ShipId shipId,
-        size_t shipCount,
         size_t pointCount,
         RgbaImageData shipTexture,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-        ViewModel const & viewModel,
-        float effectiveAmbientLightIntensity,
+        RenderParameters const & renderParameters,
+        // TODOOLD
         vec4f const & lampLightColor,
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
-        DebugShipRenderMode debugShipRenderMode,
         bool showStressedSprings,
         bool drawHeatOverlay,
         float heatOverlayTransparency,
-        ShipFlameRenderMode shipFlameRenderMode,
+        ShipFlameRenderModeType shipFlameRenderMode,
         float shipFlameSizeAdjustment);
 
     ~ShipRenderContext();
 
-public:
+public:    
 
-    void OnViewModelUpdated()
-    {
-        std::lock_guard<std::mutex> const lock(mSettingsMutex);
-
-        // Remember to recalculate ortho matrices
-        mIsViewModelDirty = true;
-    }
-
-    void SetShipCount(size_t shipCount)
-    {
-        std::lock_guard<std::mutex> const lock(mSettingsMutex);
-
-        mShipCount = shipCount;
-
-        // Remember to recalculate ortho matrices
-        mIsViewModelDirty = true;
-    }
-
-    void SetEffectiveAmbientLightIntensity(float intensity)
-    {
-        mEffectiveAmbientLightIntensity = intensity;
-
-        // React
-        OnEffectiveAmbientLightIntensityUpdated();
-    }
+    // TODOHERE
 
     void SetLampLightColor(vec4f lampLightColor)
     {
@@ -122,11 +95,6 @@ public:
         OnWaterLevelOfDetailUpdated();
     }
 
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
-    {
-        mDebugShipRenderMode = debugShipRenderMode;
-    }
-
     void SetShowStressedSprings(bool showStressedSprings)
     {
         mShowStressedSprings = showStressedSprings;
@@ -145,7 +113,7 @@ public:
         OnHeatOverlayTransparencyUpdated();
     }
 
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
+    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
     {
         mShipFlameRenderMode = shipFlameRenderMode;
     }
@@ -156,7 +124,7 @@ public:
 
         // React
         OnShipFlameSizeAdjustmentUpdated();
-    }
+    }    
 
 public:
 
@@ -305,7 +273,7 @@ public:
         //
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+        float const yOffset = (mShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
             ? 0.066666f
             : 0.013333f;
 
@@ -739,7 +707,7 @@ public:
     //
 
     inline void UploadHighlight(
-        HighlightMode highlightMode,
+        HighlightModeType highlightMode,
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
@@ -825,7 +793,9 @@ public:
 
     void UploadEnd();
 
-    void Draw(RenderStatistics & renderStats);
+    void Draw(
+        RenderParameters const & renderParameters,
+        RenderStatistics & renderStats);
 
 private:
 
@@ -933,18 +903,19 @@ private:
     void RenderFlames(
         size_t startFlameIndex,
         size_t flameCount,
+        RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
-    void RenderSparkles();
-    void RenderGenericMipMappedTextures(RenderStatistics & renderStats);
-    void RenderExplosions();
-    void RenderHighlights();
-    void RenderVectorArrows();
+    void RenderSparkles(RenderParameters const & renderParameters);
+    void RenderGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
+    void RenderExplosions(RenderParameters const & renderParameters);
+    void RenderHighlights(RenderParameters const & renderParameters);
+    void RenderVectorArrows(RenderParameters const & renderParameters);
 
-    void ProcessSettingChanges();
-    void ApplyViewModelChanges();
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+    void ApplyViewModelChanges(RenderParameters const & renderParameters);
+    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     // TODOOLD
-    void OnEffectiveAmbientLightIntensityUpdated();
     void OnLampLightColorUpdated();
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
@@ -955,14 +926,10 @@ private:
 private:
 
     ShipId const mShipId;
-    size_t mShipCount;
     size_t const mPointCount;
-    PlaneId mMaxMaxPlaneId; // Make plane ID ever
 
-    // Lock guarding:
-    // - changes to a setting and its dirty indicator
-    // - consumption of that setting
-    std::mutex mSettingsMutex;
+    PlaneId mMaxMaxPlaneId; // Make plane ID ever
+    bool mIsMaxMaxPlaneIdDirty;
 
     //
     // Types
@@ -1175,7 +1142,7 @@ private:
     GameOpenGLVBO mGenericMipMappedTextureVBO;
     size_t mGenericMipMappedTextureVBOAllocatedVertexSize;
 
-    std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightMode::_Last) + 1> mHighlightVertexBuffers;
+    std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightModeType::_Last) + 1> mHighlightVertexBuffers;
     GameOpenGLVBO mHighlightVBO;
     size_t mHighlightVBOAllocatedVertexSize;
 
@@ -1246,19 +1213,15 @@ private:
     // Parameters
     //
 
-    ViewModel const & mViewModel;
-    bool mIsViewModelDirty;
-
-    float mEffectiveAmbientLightIntensity;
+    // TODO: should nuke all of these
     vec4f mLampLightColor;
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
-    DebugShipRenderMode mDebugShipRenderMode;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;
-    ShipFlameRenderMode mShipFlameRenderMode;
+    ShipFlameRenderModeType mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;

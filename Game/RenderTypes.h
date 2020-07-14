@@ -89,7 +89,7 @@ struct RenderStatistics
 //
 
 /*
- * The positions at which UI elements may be amchored.
+ * The positions at which UI elements may be anchored.
  */
 enum class AnchorPositionType
 {

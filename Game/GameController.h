@@ -598,11 +598,11 @@ public:
     bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    DebugShipRenderMode GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
+    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
-    OceanRenderMode GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
-    void SetOceanRenderMode(OceanRenderMode oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
+    OceanRenderModeType GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
+    void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const override { return mRenderContext->GetTextureOceanAvailableThumbnails(); }
     size_t GetTextureOceanTextureIndex() const override { return mRenderContext->GetTextureOceanTextureIndex(); }
@@ -617,8 +617,8 @@ public:
     rgbColor const & GetFlatOceanColor() const override { return mRenderContext->GetFlatOceanColor(); }
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
-    LandRenderMode GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
-    void SetLandRenderMode(LandRenderMode landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
+    LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
+    void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const override { return mRenderContext->GetTextureLandAvailableThumbnails(); }
     size_t GetTextureLandTextureIndex() const override { return mRenderContext->GetTextureLandTextureIndex(); }
@@ -627,8 +627,8 @@ public:
     rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
 
-    VectorFieldRenderMode GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
-    void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
+    VectorFieldRenderModeType GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
+    void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
 
     bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
@@ -639,8 +639,8 @@ public:
     float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
     void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
 
-    ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
+    ShipFlameRenderModeType GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
+    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
     float GetShipFlameSizeAdjustment() const override { return mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
     void SetShipFlameSizeAdjustment(float value) override { mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }

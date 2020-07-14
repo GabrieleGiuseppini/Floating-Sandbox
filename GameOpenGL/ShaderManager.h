@@ -197,8 +197,14 @@ public:
     inline void ActivateTexture()
     {
         GLenum const textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(Traits::ProgramParameterType::_FirstTexture);
+
         glActiveTexture(GL_TEXTURE0 + textureUnit);
-        CheckOpenGLError();
+
+        GLenum const glError = glGetError();
+        if (GL_NO_ERROR != glError)
+        {
+            throw GameException("Error activating texture " + std::to_string(textureUnit) + ": " + std::to_string(glError));
+        }
     }
 
 private:
@@ -206,18 +212,14 @@ private:
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     static inline void CheckUniformError()
     {
-        GLenum glError = glGetError();
-        if (GL_NO_ERROR != glError)
-        {
-            throw GameException("Error setting uniform for parameter \"" + Traits::ProgramParameterTypeToStr(Parameter) + "\" on program \"" + Traits::ProgramTypeToStr(Program) + "\"");
-        }
+        CheckUniformError(Program, Parameter);
     }
 
     static inline void CheckUniformError(
         typename Traits::ProgramType program,
         typename Traits::ProgramParameterType parameter)
     {
-        GLenum glError = glGetError();
+        GLenum const glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
             throw GameException("Error setting uniform for parameter \"" + Traits::ProgramParameterTypeToStr(parameter) + "\" on program \"" + Traits::ProgramTypeToStr(program) + "\"");

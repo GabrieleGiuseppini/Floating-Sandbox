@@ -268,11 +268,11 @@ struct IGameControllerSettings
     virtual bool GetShowShipThroughOcean() const = 0;
     virtual void SetShowShipThroughOcean(bool value) = 0;
 
-    virtual DebugShipRenderMode GetDebugShipRenderMode() const = 0;
-    virtual void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) = 0;
+    virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
+    virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
 
-    virtual OceanRenderMode GetOceanRenderMode() const = 0;
-    virtual void SetOceanRenderMode(OceanRenderMode oceanRenderMode) = 0;
+    virtual OceanRenderModeType GetOceanRenderMode() const = 0;
+    virtual void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) = 0;
 
     virtual size_t GetTextureOceanTextureIndex() const = 0;
     virtual void SetTextureOceanTextureIndex(size_t index) = 0;
@@ -286,8 +286,8 @@ struct IGameControllerSettings
     virtual rgbColor const & GetFlatOceanColor() const = 0;
     virtual void SetFlatOceanColor(rgbColor const & color) = 0;
 
-    virtual LandRenderMode GetLandRenderMode() const = 0;
-    virtual void SetLandRenderMode(LandRenderMode landRenderMode) = 0;
+    virtual LandRenderModeType GetLandRenderMode() const = 0;
+    virtual void SetLandRenderMode(LandRenderModeType landRenderMode) = 0;
 
     virtual size_t GetTextureLandTextureIndex() const = 0;
     virtual void SetTextureLandTextureIndex(size_t index) = 0;
@@ -295,8 +295,8 @@ struct IGameControllerSettings
     virtual rgbColor const & GetFlatLandColor() const = 0;
     virtual void SetFlatLandColor(rgbColor const & color) = 0;
 
-    virtual VectorFieldRenderMode GetVectorFieldRenderMode() const = 0;
-    virtual void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) = 0;
+    virtual VectorFieldRenderModeType GetVectorFieldRenderMode() const = 0;
+    virtual void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) = 0;
 
     virtual bool GetShowShipStress() const = 0;
     virtual void SetShowShipStress(bool value) = 0;
@@ -307,8 +307,8 @@ struct IGameControllerSettings
     virtual float GetHeatOverlayTransparency() const = 0;
     virtual void SetHeatOverlayTransparency(float value) = 0;
 
-    virtual ShipFlameRenderMode GetShipFlameRenderMode() const = 0;
-    virtual void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) = 0;
+    virtual ShipFlameRenderModeType GetShipFlameRenderMode() const = 0;
+    virtual void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode) = 0;
 
     virtual float GetShipFlameSizeAdjustment() const = 0;
     virtual void SetShipFlameSizeAdjustment(float value) = 0;

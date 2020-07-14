@@ -1631,7 +1631,7 @@ void Points::UploadNonEphemeralPointElements(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    bool const doUploadAllPoints = (DebugShipRenderMode::Points == renderContext.GetDebugShipRenderMode());
+    bool const doUploadAllPoints = (DebugShipRenderModeType::Points == renderContext.GetDebugShipRenderMode());
 
     for (ElementIndex pointIndex : RawShipPoints())
     {
@@ -1650,7 +1650,7 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
-    if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderMode::NoDraw)
+    if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderModeType::NoDraw)
     {
         renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
 
@@ -1677,7 +1677,7 @@ void Points::UploadVectors(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointVelocity)
+    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointVelocity)
     {
         static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
 
@@ -1690,7 +1690,7 @@ void Points::UploadVectors(
             0.25f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointForce)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointForce)
     {
         static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
 
@@ -1703,7 +1703,7 @@ void Points::UploadVectors(
             0.0005f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterVelocity)
     {
         static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
 
@@ -1716,7 +1716,7 @@ void Points::UploadVectors(
             1.0f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterMomentum)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterMomentum)
     {
         static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
 
@@ -1864,7 +1864,7 @@ void Points::UploadHighlights(
     {
         renderContext.UploadShipHighlight(
             shipId,
-            HighlightMode::ElectricalElement,
+            HighlightModeType::ElectricalElement,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
             5.0f, // HalfQuadSize, magic number
@@ -1876,7 +1876,7 @@ void Points::UploadHighlights(
     {
         renderContext.UploadShipHighlight(
             shipId,
-            HighlightMode::Circle,
+            HighlightModeType::Circle,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
             4.0f, // HalfQuadSize, magic number

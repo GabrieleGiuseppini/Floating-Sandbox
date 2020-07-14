@@ -246,7 +246,7 @@ void Ship::Update(
     //
 
     // Check whether we need to save the non-spring force buffer before we zero it out
-    if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+    if (VectorFieldRenderModeType::PointForce == renderContext.GetVectorFieldRenderMode())
     {
         mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
     }

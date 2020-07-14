@@ -480,7 +480,28 @@ Render:
 					+ Explosions
 					+ Highlights
 						+ Re-enable upload
-					- See again cam movement (via mouse pan) & ocean borders
+					= See again issue with cam movement (via mouse pan) & ocean borders
+						= All settings and parameters and uploaded *scalars* are in new RenderParameters struct, including ViewModel
+							- TODO: what about scalars that are uploaded to ship?
+								- RenderParameters is just RenderSettings - settings only; uploaded scalars are reverted
+								  to be members, eventually accompanied by an "isDirty" flag
+									- Move out StormAmbientDarkening and RainDensity, together with their flags
+									- StormAmbientDarkening changes: safely set mRenderParams.Effective=calc(), & make it dirty
+									- RainDensity changes: set mRainDensity, & make it dirty
+										- Pick it up @ RenderRain(), exactly like buffers
+							- Each setting that also requires OpenGL updates:
+								- Also has a boolean
+								- Draw(): still checks if individual settings are dirty, and if so, does updates
+						= RenderContext::Draw: copy struct into another member, on main thread
+							+ Or, see if can copy in capture, & pass into Draw() lambda
+							+ Draw: use second struct recursively down - never reference mRenderParameters
+								+ Second struct passed to ShipRenderContext as arg of its Draw()
+							+ RenderContext::Draw(params) invokes ProcessParameterChanges(params) without clearing dirty flags, 
+							  and later ShipRenderContext::Draw(params) also invokes its own ProcessParameterChanges(params)
+						+ Effective/AmbientLightIntensity:
+							+ RenderContext::SetAmbientLightIntensity & storm update:
+								+ mRenderSettingsStorage.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
+								  & mRenderSettingsStorage.IsEffectiveAmbientLightIntensityDirty=true
 					- Flames
 						- Re-enable upload
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
@@ -512,6 +533,8 @@ Render:
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
 					- See to cleanup GameController::PerfStats state machine
+					- Test with OpenGL uploads all up-front
+						- New perf stat: portion of Render that is purely upload
 					- Do APITrace, including shutdown
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
@@ -525,6 +548,8 @@ Render:
 			- Ideally we only damp small waves, not big ones (e.g. Tsunami)
 
 		- MAC: hide splash only on Windows
+
+		- Mute sound notification
 
 		- GameController: just one special day?
 

@@ -30,7 +30,7 @@ namespace /*anonymous*/ {
 
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
     : mDefaultSettings(
-        ShipAutoTexturizationMode::MaterialTextures,
+        ShipAutoTexturizationModeType::MaterialTextures,
         1.0f, // MaterialTextureMagnification
         0.0f) // MaterialTextureTransparency
     , mDoForceDefaultSettingsOntoShipSettings(false)
@@ -109,7 +109,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 ? rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor)
                 : rgbaColor::zero(); // Fully transparent
 
-            if (settings.Mode == ShipAutoTexturizationMode::FlatStructure
+            if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
                 || !pointMatrix[x][y].has_value())
             {
                 //

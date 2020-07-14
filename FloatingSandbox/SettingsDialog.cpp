@@ -330,16 +330,16 @@ void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*
 {
     if (mTextureOceanRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Texture);
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Texture);
     }
     else if (mDepthOceanRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Depth);
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Depth);
     }
     else
     {
         assert(mFlatOceanRenderModeRadioButton->GetValue());
-        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderMode::Flat);
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Flat);
     }
 
     OnLiveSettingsChanged();
@@ -384,12 +384,12 @@ void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/
 {
     if (mTextureLandRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Texture);
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Texture);
     }
     else
     {
         assert(mFlatLandRenderModeRadioButton->GetValue());
-        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderMode::Flat);
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Flat);
     }
 
     ReconciliateLandRenderModeSettings();
@@ -445,20 +445,20 @@ void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*ev
 {
     if (mMode1ShipFlameRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode1);
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode1);
     }
     else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode2);
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode2);
     }
     else if (mMode3ShipFlameRenderModeRadioButton->GetValue())
     {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::Mode3);
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode3);
     }
     else
     {
         assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderMode::NoDraw);
+        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::NoDraw);
     }
 
     OnLiveSettingsChanged();
@@ -469,32 +469,32 @@ void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
     auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
     if (0 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::None);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::None);
     }
     else if (1 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Wireframe);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Wireframe);
     }
     else if (2 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Points);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Points);
     }
     else if (3 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Springs);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Springs);
     }
     else if (4 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::EdgeSprings);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::EdgeSprings);
     }
     else if(5 == selectedDebugShipRenderMode)
     {
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Decay);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
     }
     else
     {
         assert(6 == selectedDebugShipRenderMode);
-        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderMode::Structure);
+        mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Structure);
     }
 
     OnLiveSettingsChanged();
@@ -507,32 +507,32 @@ void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
     {
         case 0:
         {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::None);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::None);
             break;
         }
 
         case 1:
         {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointVelocity);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointVelocity);
             break;
         }
 
         case 2:
         {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointForce);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointForce);
             break;
         }
 
         case 3:
         {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterVelocity);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
             break;
         }
 
         default:
         {
             assert(4 == selectedVectorFieldRenderMode);
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderMode::PointWaterMomentum);
+            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
             break;
         }
     }
@@ -4187,22 +4187,22 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     // Render
 
-    auto oceanRenderMode = settings.GetValue<OceanRenderMode>(GameSettings::OceanRenderMode);
+    auto oceanRenderMode = settings.GetValue<OceanRenderModeType>(GameSettings::OceanRenderMode);
     switch (oceanRenderMode)
     {
-        case OceanRenderMode::Texture:
+        case OceanRenderModeType::Texture:
         {
             mTextureOceanRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case OceanRenderMode::Depth:
+        case OceanRenderModeType::Depth:
         {
             mDepthOceanRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case OceanRenderMode::Flat:
+        case OceanRenderModeType::Flat:
         {
             mFlatOceanRenderModeRadioButton->SetValue(true);
             break;
@@ -4228,16 +4228,16 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mOceanDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDarkeningRate));
 
-    auto landRenderMode = settings.GetValue<LandRenderMode>(GameSettings::LandRenderMode);
+    auto landRenderMode = settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode);
     switch (landRenderMode)
     {
-        case LandRenderMode::Texture:
+        case LandRenderModeType::Texture:
         {
             mTextureLandRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case LandRenderMode::Flat:
+        case LandRenderModeType::Flat:
         {
             mFlatLandRenderModeRadioButton->SetValue(true);
             break;
@@ -4270,28 +4270,28 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mHeatOverlayTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::HeatOverlayTransparency));
 
-    auto shipFlameRenderMode = settings.GetValue<ShipFlameRenderMode>(GameSettings::ShipFlameRenderMode);
+    auto shipFlameRenderMode = settings.GetValue<ShipFlameRenderModeType>(GameSettings::ShipFlameRenderMode);
     switch (shipFlameRenderMode)
     {
-        case ShipFlameRenderMode::Mode1:
+        case ShipFlameRenderModeType::Mode1:
         {
             mMode1ShipFlameRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case ShipFlameRenderMode::Mode2:
+        case ShipFlameRenderModeType::Mode2:
         {
             mMode2ShipFlameRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case ShipFlameRenderMode::Mode3:
+        case ShipFlameRenderModeType::Mode3:
         {
             mMode3ShipFlameRenderModeRadioButton->SetValue(true);
             break;
         }
 
-        case ShipFlameRenderMode::NoDraw:
+        case ShipFlameRenderModeType::NoDraw:
         {
             mNoDrawShipFlameRenderModeRadioButton->SetValue(true);
             break;
@@ -4320,82 +4320,81 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mSpringDampingSlider->SetValue(settings.GetValue<float>(GameSettings::SpringDampingAdjustment));
 
-    auto debugShipRenderMode = settings.GetValue<DebugShipRenderMode>(GameSettings::DebugShipRenderMode);
+    auto debugShipRenderMode = settings.GetValue<DebugShipRenderModeType>(GameSettings::DebugShipRenderMode);
     switch (debugShipRenderMode)
     {
-        case DebugShipRenderMode::None:
+        case DebugShipRenderModeType::None:
         {
             mDebugShipRenderModeRadioBox->SetSelection(0);
             break;
         }
 
-        case DebugShipRenderMode::Wireframe:
+        case DebugShipRenderModeType::Wireframe:
         {
             mDebugShipRenderModeRadioBox->SetSelection(1);
             break;
         }
 
-        case DebugShipRenderMode::Points:
+        case DebugShipRenderModeType::Points:
         {
             mDebugShipRenderModeRadioBox->SetSelection(2);
             break;
         }
 
-        case DebugShipRenderMode::Springs:
+        case DebugShipRenderModeType::Springs:
         {
             mDebugShipRenderModeRadioBox->SetSelection(3);
             break;
         }
 
-        case DebugShipRenderMode::EdgeSprings:
+        case DebugShipRenderModeType::EdgeSprings:
         {
             mDebugShipRenderModeRadioBox->SetSelection(4);
             break;
         }
 
-        case DebugShipRenderMode::Decay:
+        case DebugShipRenderModeType::Decay:
         {
             mDebugShipRenderModeRadioBox->SetSelection(5);
             break;
         }
 
-        case DebugShipRenderMode::Structure:
+        case DebugShipRenderModeType::Structure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
             break;
         }
     }
 
-    auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderMode>(GameSettings::VectorFieldRenderMode);
+    auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderModeType>(GameSettings::VectorFieldRenderMode);
     switch (vectorFieldRenderMode)
     {
-        case VectorFieldRenderMode::None:
+        case VectorFieldRenderModeType::None:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(0);
             break;
         }
 
-        case VectorFieldRenderMode::PointVelocity:
+        case VectorFieldRenderModeType::PointVelocity:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(1);
             break;
         }
 
-        case VectorFieldRenderMode::PointForce:
+        case VectorFieldRenderModeType::PointForce:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(2);
             break;
         }
 
-        case VectorFieldRenderMode::PointWaterVelocity:
+        case VectorFieldRenderModeType::PointWaterVelocity:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(3);
             break;
         }
 
-        default:
+        case VectorFieldRenderModeType::PointWaterMomentum:
         {
-            assert(vectorFieldRenderMode == VectorFieldRenderMode::PointWaterMomentum);
             mVectorFieldRenderModeRadioBox->SetSelection(4);
             break;
         }
