@@ -20,7 +20,7 @@ struct PerfStats
             GameChronometer::duration Duration;
             size_t Denominator;
 
-            _Ratio()
+            _Ratio() noexcept
                 : Duration(GameChronometer::duration::zero())
                 , Denominator(0)
             {}
@@ -37,7 +37,7 @@ struct PerfStats
 
     public:
 
-        Ratio() noexcept
+        Ratio()
             : mRatio()
         {}
 

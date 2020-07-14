@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderParameters.h"
+#include "RenderSettings.h"
 #include "RenderTypes.h"
 #include "ShaderTypes.h"
 #include "ShipDefinition.h"
@@ -40,12 +40,13 @@ public:
     ShipRenderContext(
         ShipId shipId,
         size_t pointCount,
+        size_t shipCount,
         RgbaImageData shipTexture,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-        RenderParameters const & renderParameters,
+        RenderSettings const & renderSettings,
         // TODOOLD
         vec4f const & lampLightColor,
         vec4f const & waterColor,
@@ -59,7 +60,13 @@ public:
 
     ~ShipRenderContext();
 
-public:    
+public:
+
+    void SetShipCount(size_t shipCount)
+    {
+        mShipCount = shipCount;
+        mIsViewModelDirty = true;
+    }
 
     // TODOHERE
 
@@ -415,7 +422,7 @@ public:
         if (ExplosionType::Deflagration == explosionType)
         {
             // 0..2, randomly
-            explosionIndex = std::min(2.0f, floor(personalitySeed * 3.0f));
+            explosionIndex = std::min(2.0f, floorf(personalitySeed * 3.0f));
         }
         else
         {
@@ -794,7 +801,7 @@ public:
     void UploadEnd();
 
     void Draw(
-        RenderParameters const & renderParameters,
+        RenderSettings const & renderSettings,
         RenderStatistics & renderStats);
 
 private:
@@ -903,18 +910,18 @@ private:
     void RenderFlames(
         size_t startFlameIndex,
         size_t flameCount,
-        RenderParameters const & renderParameters,
+        RenderSettings const & renderSettings,
         RenderStatistics & renderStats);
 
-    void RenderSparkles(RenderParameters const & renderParameters);
-    void RenderGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
-    void RenderExplosions(RenderParameters const & renderParameters);
-    void RenderHighlights(RenderParameters const & renderParameters);
-    void RenderVectorArrows(RenderParameters const & renderParameters);
+    void RenderSparkles(RenderSettings const & renderSettings);
+    void RenderGenericMipMappedTextures(RenderSettings const & renderSettings, RenderStatistics & renderStats);
+    void RenderExplosions(RenderSettings const & renderSettings);
+    void RenderHighlights(RenderSettings const & renderSettings);
+    void RenderVectorArrows(RenderSettings const & renderSettings);
 
-    void ProcessParameterChanges(RenderParameters const & renderParameters);
-    void ApplyViewModelChanges(RenderParameters const & renderParameters);
-    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
+    void ProcessSettingChanges(RenderSettings const & renderSettings);
+    void ApplyViewModelChanges(RenderSettings const & renderSettings);
+    void ApplyEffectiveAmbientLightIntensityChanges(RenderSettings const & renderSettings);
     // TODOOLD
     void OnLampLightColorUpdated();
     void OnWaterColorUpdated();
@@ -928,8 +935,9 @@ private:
     ShipId const mShipId;
     size_t const mPointCount;
 
+    size_t mShipCount;
     PlaneId mMaxMaxPlaneId; // Make plane ID ever
-    bool mIsMaxMaxPlaneIdDirty;
+    bool mIsViewModelDirty;
 
     //
     // Types

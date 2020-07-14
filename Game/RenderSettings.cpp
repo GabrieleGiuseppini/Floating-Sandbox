@@ -3,22 +3,20 @@
 * Created:				2020-07-12
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "RenderParameters.h"
+#include "RenderSettings.h"
 
 namespace Render {
 
-RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
+RenderSettings::RenderSettings(ImageSize const & initialCanvasSize)
 	: View(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
 	, IsViewDirty(true)
 	, IsCanvasSizeDirty(true)
 	, AmbientLightIntensity(1.0f)
-	, StormAmbientDarkening(1.0f)
 	, EffectiveAmbientLightIntensity(1.0f)
 	, IsEffectiveAmbientLightIntensityDirty(true)
-	, RainDensity(0.0f)
-	, IsRainDensityDirty(true)
-	// TODOHERE
+	// World
 	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)	
+	// TODOHERE
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.356993f)
 	, OceanRenderMode(OceanRenderModeType::Texture)
@@ -30,8 +28,6 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, SelectedLandTextureIndex(3) // Rock Coarse 3
 	, FlatLandColor(0x72, 0x46, 0x05)
 	// Ship
-	, ShipCount(0)
-	, IsShipCountDirty(true)
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DefaultWaterColor(0x00, 0x00, 0xcc)
 	, ShowShipThroughOcean(false)
@@ -48,17 +44,15 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 {
 }
 
-RenderParameters RenderParameters::Snapshot()
+RenderSettings RenderSettings::Snapshot()
 {
 	// Make copy
-	RenderParameters copy = *this;
+	RenderSettings copy = *this;
 
 	// Clear own 'dirty' flags
 	IsViewDirty = false;
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
-	IsRainDensityDirty = false;
-	IsShipCountDirty = false;
 
 	return copy;
 }

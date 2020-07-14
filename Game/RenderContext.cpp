@@ -57,8 +57,10 @@ RenderContext::RenderContext(
     , mCrossOfLightVBOAllocatedVertexSize(0u)
     , mHeatBlasterFlameVBO()
     , mFireExtinguisherSprayVBO()
+    , mStormAmbientDarkening(0.0f)
     , mRainVBO()
-    , mDoRenderRain(false)
+    , mRainDensity(0.0)
+    , mIsRainDensityDirty(true)
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -101,8 +103,8 @@ RenderContext::RenderContext(
     // Managers
     , mShaderManager()
     , mNotificationRenderContext()    
-    // Render parameters
-    , mRenderParameters(initialCanvasSize)
+    // Render settings
+    , mRenderSettings(initialCanvasSize)
     // TODOOLD
     , mOceanTransparency(0.8125f)
     , mOceanDarkeningRate(0.356993f)
@@ -217,9 +219,9 @@ RenderContext::RenderContext(
                 resourceLocator,
                 *mShaderManager,
                 *mGenericLinearTextureAtlasMetadata,                
-                mRenderParameters.View.GetCanvasWidth(),
-                mRenderParameters.View.GetCanvasHeight(),
-                mRenderParameters.EffectiveAmbientLightIntensity);
+                mRenderSettings.View.GetCanvasWidth(),
+                mRenderSettings.View.GetCanvasHeight(),
+                mRenderSettings.EffectiveAmbientLightIntensity);
         });
 
     progressCallback(0.9f, "Initializing graphics...");
@@ -248,10 +250,10 @@ RenderContext::RenderContext(
 
 
             //
-            // Update parameters for initial values
+            // Update settings for initial values
             //
 
-            ProcessParameterChanges(mRenderParameters);
+            ProcessSettingChanges(mRenderSettings);
 
             // TODOOLD
             OnOceanTransparencyUpdated();
@@ -335,9 +337,13 @@ void RenderContext::AddShip(
 
     assert(shipId == mShips.size());
 
-    // Make all ships pickup the change in # of ships
-    mRenderParameters.ShipCount = mShips.size() + 1;
-    mRenderParameters.IsShipCountDirty = true;
+    size_t const newShipCount = mShips.size() + 1;
+    
+    // Tell all ships
+    for (auto const & ship : mShips)
+    {
+        ship->SetShipCount(newShipCount);
+    }
 
     // Add the ship - synchronously
     mRenderThread.RunSynchronously(
@@ -347,12 +353,13 @@ void RenderContext::AddShip(
                 new ShipRenderContext(
                     shipId,
                     pointCount,
+                    newShipCount,
                     std::move(texture),
                     *mShaderManager,
                     *mExplosionTextureAtlasMetadata,
                     *mGenericLinearTextureAtlasMetadata,
                     *mGenericMipMappedTextureAtlasMetadata,
-                    mRenderParameters,
+                    mRenderSettings,
                     // TODOOLD
                     CalculateLampLightColor(),
                     CalculateWaterColor(),
@@ -378,8 +385,8 @@ RgbImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    int const canvasWidth = mRenderParameters.View.GetCanvasWidth();
-    int const canvasHeight = mRenderParameters.View.GetCanvasHeight();
+    int const canvasWidth = mRenderSettings.View.GetCanvasWidth();
+    int const canvasHeight = mRenderSettings.View.GetCanvasHeight();
 
     auto pixelBuffer = std::make_unique<rgbColor[]>(canvasWidth * canvasHeight);
 
@@ -584,7 +591,7 @@ void RenderContext::Draw()
     //
     // Take a copy of the current render parameters and clean its dirtyness
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
-        [this, renderParameters = mRenderParameters.Snapshot()]() mutable
+        [this, renderSettings = mRenderSettings.Snapshot()]() mutable
         {
             auto const startTime = GameChronometer::now();
 
@@ -594,37 +601,37 @@ void RenderContext::Draw()
             // Initialize
             //
 
-            // Process changes to parameters
-            ProcessParameterChanges(renderParameters);
+            // Process changes to settings
+            ProcessSettingChanges(renderSettings);
 
             // Set polygon mode
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Clear canvas - and depth buffer
-            vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
+            vec3f const clearColor = renderSettings.FlatSkyColor.toVec3f() * renderSettings.EffectiveAmbientLightIntensity;
             glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Debug mode
-            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+            if (renderSettings.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
             //
             // World
             //
 
-            RenderStars(renderParameters);
+            RenderStars(renderSettings);
 
-            RenderCloudsAndBackgroundLightnings(renderParameters);
+            RenderCloudsAndBackgroundLightnings(renderSettings);
 
             // Render ocean opaquely, over sky
-            RenderOcean(true, renderParameters);
+            RenderOcean(true, renderSettings);
 
             glEnable(GL_DEPTH_TEST); // Required by ships
 
             for (auto const & ship : mShips)
             {
-                ship->Draw(renderParameters, renderStats);
+                ship->Draw(renderSettings, renderStats);
             }
 
             glDisable(GL_DEPTH_TEST);
@@ -632,28 +639,28 @@ void RenderContext::Draw()
             // Render ocean transparently, over ship, unless disabled
             if (!mShowShipThroughOcean)
             {
-                RenderOcean(false, renderParameters);
+                RenderOcean(false, renderSettings);
             }
 
             //
             // Misc
             //
 
-            RenderOceanFloor(renderParameters);
+            RenderOceanFloor(renderSettings);
 
-            RenderAMBombPreImplosions(renderParameters);
+            RenderAMBombPreImplosions(renderSettings);
 
-            RenderCrossesOfLight(renderParameters);
+            RenderCrossesOfLight(renderSettings);
 
-            RenderHeatBlasterFlame(renderParameters);
+            RenderHeatBlasterFlame(renderSettings);
 
-            RenderFireExtinguisherSpray(renderParameters);
+            RenderFireExtinguisherSpray(renderSettings);
 
-            RenderForegroundLightnings(renderParameters);
+            RenderForegroundLightnings(renderSettings);
 
-            RenderRain(renderParameters);
+            RenderRain(renderSettings);
 
-            RenderWorldBorder(renderParameters);
+            RenderWorldBorder(renderSettings);
 
             mNotificationRenderContext->Draw();
 
@@ -1262,7 +1269,7 @@ void RenderContext::InitializeExplosionTextures(ResourceLocator const & resource
     mShaderManager->SetTextureParameters<ProgramType::ShipExplosions>();
 }
 
-void RenderContext::RenderStars(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderStars(RenderSettings const & /*renderSettings*/)
 {
     //
     // Buffer
@@ -1311,7 +1318,7 @@ void RenderContext::RenderStars(RenderParameters const & /*renderParameters*/)
     }
 }
 
-void RenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
+void RenderContext::RenderCloudsAndBackgroundLightnings(RenderSettings const & renderSettings)
 {
     ////////////////////////////////////////////////////
     // Clouds buffer
@@ -1352,7 +1359,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters const &
 
         mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+        if (renderSettings.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
@@ -1387,7 +1394,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters const &
 
         mShaderManager->ActivateProgram<ProgramType::Clouds>();
 
-        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+        if (renderSettings.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVertexBuffer.size()) - cloudsOverLightningVertexStart);
@@ -1399,7 +1406,7 @@ void RenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters const &
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderOcean(bool opaquely, RenderParameters const & renderParameters)
+void RenderContext::RenderOcean(bool opaquely, RenderSettings const & renderSettings)
 {
     //
     // Buffer
@@ -1428,7 +1435,7 @@ void RenderContext::RenderOcean(bool opaquely, RenderParameters const & renderPa
     // Render
     //
 
-    float const transparency = opaquely ? 0.0f : renderParameters.OceanTransparency;
+    float const transparency = opaquely ? 0.0f : renderSettings.OceanTransparency;
 
     glBindVertexArray(*mOceanVAO);
 
@@ -1462,7 +1469,7 @@ void RenderContext::RenderOcean(bool opaquely, RenderParameters const & renderPa
         }
     }
 
-    if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+    if (renderSettings.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
         glLineWidth(0.1f);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mOceanSegmentBuffer.size()));
@@ -1470,7 +1477,7 @@ void RenderContext::RenderOcean(bool opaquely, RenderParameters const & renderPa
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderOceanFloor(RenderParameters const & renderParameters)
+void RenderContext::RenderOceanFloor(RenderSettings const & renderSettings)
 {
     //
     // Buffer
@@ -1516,7 +1523,7 @@ void RenderContext::RenderOceanFloor(RenderParameters const & renderParameters)
         }
     }
 
-    if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+    if (renderSettings.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
         glLineWidth(0.1f);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
@@ -1524,7 +1531,7 @@ void RenderContext::RenderOceanFloor(RenderParameters const & renderParameters)
     glBindVertexArray(0);
 }
 
-void RenderContext::RenderAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderAMBombPreImplosions(RenderSettings const & /*renderSettings*/)
 {
     if (!mAMBombPreImplosionVertexBuffer.empty())
     {
@@ -1567,7 +1574,7 @@ void RenderContext::RenderAMBombPreImplosions(RenderParameters const & /*renderP
     }
 }
 
-void RenderContext::RenderCrossesOfLight(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderCrossesOfLight(RenderSettings const & /*renderSettings*/)
 {
     if (!mCrossOfLightVertexBuffer.empty())
     {
@@ -1610,7 +1617,7 @@ void RenderContext::RenderCrossesOfLight(RenderParameters const & /*renderParame
     }
 }
 
-void RenderContext::RenderHeatBlasterFlame(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderHeatBlasterFlame(RenderSettings const & /*renderSettings*/)
 {
     if (!!mHeatBlasterFlameShaderToRender)
     {
@@ -1650,7 +1657,7 @@ void RenderContext::RenderHeatBlasterFlame(RenderParameters const & /*renderPara
     }
 }
 
-void RenderContext::RenderFireExtinguisherSpray(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderFireExtinguisherSpray(RenderSettings const & /*renderSettings*/)
 {
     if (!!mFireExtinguisherSprayShaderToRender)
     {
@@ -1691,7 +1698,7 @@ void RenderContext::RenderFireExtinguisherSpray(RenderParameters const & /*rende
     }
 }
 
-void RenderContext::RenderForegroundLightnings(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderForegroundLightnings(RenderSettings const & /*renderSettings*/)
 {
     if (mForegroundLightningVertexCount > 0)
     {
@@ -1708,9 +1715,19 @@ void RenderContext::RenderForegroundLightnings(RenderParameters const & /*render
     }
 }
 
-void RenderContext::RenderRain(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderRain(RenderSettings const & /*renderSettings*/)
 {
-    if (mDoRenderRain)
+    if (mIsRainDensityDirty)
+    {
+        // Set parameter
+        mShaderManager->ActivateProgram<ProgramType::Rain>();
+        mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
+            mRainDensity);
+
+        mIsRainDensityDirty = false;
+    }
+
+    if (mRainDensity != 0.0f)
     {
         glBindVertexArray(*mRainVAO);
 
@@ -1728,7 +1745,7 @@ void RenderContext::RenderRain(RenderParameters const & /*renderParameters*/)
     }
 }
 
-void RenderContext::RenderWorldBorder(RenderParameters const & /*renderParameters*/)
+void RenderContext::RenderWorldBorder(RenderSettings const & /*renderSettings*/)
 {
     if (mWorldBorderVertexBuffer.size() > 0)
     {
@@ -1749,30 +1766,25 @@ void RenderContext::RenderWorldBorder(RenderParameters const & /*renderParameter
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
+void RenderContext::ProcessSettingChanges(RenderSettings const & renderSettings)
 {
-    if (renderParameters.IsViewDirty)
+    if (renderSettings.IsViewDirty)
     {
-        ApplyViewModelChanges(renderParameters);
+        ApplyViewModelChanges(renderSettings);
     }
 
-    if (renderParameters.IsCanvasSizeDirty)
+    if (renderSettings.IsCanvasSizeDirty)
     {
-        ApplyCanvasSizeChanges(renderParameters);
+        ApplyCanvasSizeChanges(renderSettings);
     }
 
-    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
+    if (renderSettings.IsEffectiveAmbientLightIntensityDirty)
     {
-        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
-    }
-
-    if (renderParameters.IsRainDensityDirty)
-    {
-        ApplyRainDensityChanges(renderParameters);
+        ApplyEffectiveAmbientLightIntensityChanges(renderSettings);
     }
 }
 
-void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
+void RenderContext::ApplyViewModelChanges(RenderSettings const & renderSettings)
 {
     //
     // Update ortho matrix in all programs
@@ -1782,7 +1794,7 @@ void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParamet
     constexpr float ZNear = 1.0f;
 
     ViewModel::ProjectionMatrix globalOrthoMatrix;
-    renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
+    renderSettings.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
     mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::OrthoMatrix>(
@@ -1832,81 +1844,70 @@ void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParamet
     // Recalculate world border
     //
 
-    RecalculateWorldBorder(renderParameters);
+    RecalculateWorldBorder(renderSettings);
 }
 
-void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
+void RenderContext::ApplyCanvasSizeChanges(RenderSettings const & renderSettings)
 {
     // Set shader parameters
     mShaderManager->ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager->SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(renderParameters.View.GetCanvasWidth()),
-        static_cast<float>(renderParameters.View.GetCanvasHeight()));
+        static_cast<float>(renderSettings.View.GetCanvasWidth()),
+        static_cast<float>(renderSettings.View.GetCanvasHeight()));
 
     // Set viewport
-    glViewport(0, 0, renderParameters.View.GetCanvasWidth(), renderParameters.View.GetCanvasHeight());
+    glViewport(0, 0, renderSettings.View.GetCanvasWidth(), renderSettings.View.GetCanvasHeight());
 
     // Propagate
-    mNotificationRenderContext->UpdateCanvasSize(renderParameters.View.GetCanvasWidth(), renderParameters.View.GetCanvasHeight());
+    mNotificationRenderContext->UpdateCanvasSize(renderSettings.View.GetCanvasWidth(), renderSettings.View.GetCanvasHeight());
 }
 
-void RenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
+void RenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderSettings const & renderSettings)
 {
     // Set parameters in all programs
 
     mShaderManager->ActivateProgram<ProgramType::Stars>();
     mShaderManager->SetProgramParameter<ProgramType::Stars, ProgramParameterType::StarTransparency>(
-        pow(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
+        pow(std::max(0.0f, 1.0f - renderSettings.EffectiveAmbientLightIntensity), 3.0f));
 
     mShaderManager->ActivateProgram<ProgramType::Clouds>();
     mShaderManager->SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::Lightning>();
     mShaderManager->SetProgramParameter<ProgramType::Lightning, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
     mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::LandTexture>();
     mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
     mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanFlat>();
     mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::Rain>();
     mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        renderSettings.EffectiveAmbientLightIntensity);
 
     // Update notification context
-    mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(renderParameters.EffectiveAmbientLightIntensity);
-}
-
-void RenderContext::ApplyRainDensityChanges(RenderParameters const & renderParameters)
-{
-    // Set parameter
-    mShaderManager->ActivateProgram<ProgramType::Rain>();
-    mShaderManager->SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
-        renderParameters.RainDensity);
-
-    // Toggle rain rendering
-    mDoRenderRain = (renderParameters.RainDensity != 0.0f);
+    mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(renderSettings.EffectiveAmbientLightIntensity);
 }
 
 // TODOHERE
@@ -2202,9 +2203,9 @@ static void EmplaceWorldBorderQuad(
     buffer.emplace_back(x2, y2, tx2, ty2);
 }
 
-void RenderContext::RecalculateWorldBorder(RenderParameters const & renderParameters)
+void RenderContext::RecalculateWorldBorder(RenderSettings const & renderSettings)
 {
-    auto const & viewModel = renderParameters.View;
+    auto const & viewModel = renderSettings.View;
 
     ImageSize const & worldBorderTextureSize =
         mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0)
@@ -2316,9 +2317,9 @@ void RenderContext::RecalculateWorldBorder(RenderParameters const & renderParame
     }
 }
 
-float RenderContext::CalculateEffectiveAmbientLightIntensity(RenderParameters const & renderParameters) const
+float RenderContext::CalculateEffectiveAmbientLightIntensity(RenderSettings const & renderSettings) const
 {
-    return renderParameters.AmbientLightIntensity * renderParameters.StormAmbientDarkening;
+    return renderSettings.AmbientLightIntensity * mStormAmbientDarkening;
 }
 
 vec4f RenderContext::CalculateLampLightColor() const

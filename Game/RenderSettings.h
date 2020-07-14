@@ -16,30 +16,24 @@
 namespace Render {
 
 /*
- * The entire set of scalars that are input to the rendering process.
- * The set is comprised of:
- *  - Settings
- *  - Calculated scalars
+ * The entire set of user-controllable settings that are input to the rendering process.
  */ 
-struct RenderParameters
+struct RenderSettings
 {
     ViewModel View;
     bool IsViewDirty;
     bool IsCanvasSizeDirty;
 
     float AmbientLightIntensity;
-    float StormAmbientDarkening;
     float EffectiveAmbientLightIntensity;
-    bool IsEffectiveAmbientLightIntensityDirty;
-
-    float RainDensity;
-    bool IsRainDensityDirty;
+    bool IsEffectiveAmbientLightIntensityDirty;    
 
     //
     // World
     //
 
-    rgbColor FlatSkyColor;    
+    rgbColor FlatSkyColor;
+    // TODOHERE
     float OceanTransparency;
     float OceanDarkeningRate;
     OceanRenderModeType OceanRenderMode;
@@ -55,9 +49,6 @@ struct RenderParameters
     // Ship
     //
 
-    size_t ShipCount;    
-    bool IsShipCountDirty;
-
     rgbColor FlatLampLightColor;
     rgbColor DefaultWaterColor;
     bool ShowShipThroughOcean;
@@ -72,9 +63,9 @@ struct RenderParameters
     ShipFlameRenderModeType ShipFlameRenderMode;
     float ShipFlameSizeAdjustment;
 
-    RenderParameters(ImageSize const & initialCanvasSize);
+    RenderSettings(ImageSize const & initialCanvasSize);
 
-    RenderParameters Snapshot();
+    RenderSettings Snapshot();
 };
 
 }

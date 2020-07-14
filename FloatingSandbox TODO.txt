@@ -480,28 +480,21 @@ Render:
 					+ Explosions
 					+ Highlights
 						+ Re-enable upload
-					= See again issue with cam movement (via mouse pan) & ocean borders
-						= All settings and parameters and uploaded *scalars* are in new RenderParameters struct, including ViewModel
-							- TODO: what about scalars that are uploaded to ship?
-								- RenderParameters is just RenderSettings - settings only; uploaded scalars are reverted
-								  to be members, eventually accompanied by an "isDirty" flag
-									- Move out StormAmbientDarkening and RainDensity, together with their flags
-									- StormAmbientDarkening changes: safely set mRenderParams.Effective=calc(), & make it dirty
-									- RainDensity changes: set mRainDensity, & make it dirty
-										- Pick it up @ RenderRain(), exactly like buffers
-							- Each setting that also requires OpenGL updates:
-								- Also has a boolean
-								- Draw(): still checks if individual settings are dirty, and if so, does updates
-						= RenderContext::Draw: copy struct into another member, on main thread
+					+ See again issue with cam movement (via mouse pan) & ocean borders
+						+ All settings are in new RenderSettings struct, including ViewModel
+							+ Each setting that also requires OpenGL updates:
+								+ Also has a boolean
+								+ Draw(): still checks if individual settings are dirty, and if so, does updates
+						+ RenderContext::Draw: copy struct into another member, on main thread
 							+ Or, see if can copy in capture, & pass into Draw() lambda
-							+ Draw: use second struct recursively down - never reference mRenderParameters
+							+ Draw: use second struct recursively down - never reference mRenderSettings
 								+ Second struct passed to ShipRenderContext as arg of its Draw()
-							+ RenderContext::Draw(params) invokes ProcessParameterChanges(params) without clearing dirty flags, 
-							  and later ShipRenderContext::Draw(params) also invokes its own ProcessParameterChanges(params)
+							+ RenderContext::Draw(params) invokes ProcessSettingChanges(settings) without clearing dirty flags, 
+							  and later ShipRenderContext::Draw(settings) also invokes its own ProcessSettingChanges(settings)
 						+ Effective/AmbientLightIntensity:
 							+ RenderContext::SetAmbientLightIntensity & storm update:
-								+ mRenderSettingsStorage.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
-								  & mRenderSettingsStorage.IsEffectiveAmbientLightIntensityDirty=true
+								+ mRenderSettings.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
+								  & mRenderSettings.IsEffectiveAmbientLightIntensityDirty=true
 					- Flames
 						- Re-enable upload
 						- mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges

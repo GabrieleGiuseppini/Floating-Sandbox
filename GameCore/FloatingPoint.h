@@ -21,7 +21,9 @@ inline void EnableFloatingPointExceptions()
 #if defined(FS_X86)
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~(_MM_MASK_INEXACT | _MM_MASK_UNDERFLOW));
 #elif defined(FS_ARM)
-    __ieee_status(FE_IEEE_MASK_ALL_EXCEPT, FE_IEEE_MASK_ALL_EXCEPT ^ (FE_IEEE_MASK_UNDERFLOW | FE_IEEE_MASK_INEXACT));
+    fexcept_t excepts;
+    fegetexceptflag(&excepts, FE_ALL_EXCEPT);
+    fesetexceptflag(&excepts, FE_ALL_EXCEPT & ~(FE_INEXACT | FE_UNDERFLOW));
 #else
 #pragma error Have no idea how to control Floating Point exceptions on other platforms
 #endif
@@ -33,7 +35,7 @@ inline void EnableFloatingPointFlushToZero()
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #elif defined(FS_ARM)
-    _ieee_status(FE_IEEE_FLUSHZERO, FE_IEEE_FLUSHZERO);
+    asm volatile("vmsr fpscr,%0" :: "r" (1 << 24));
 #else
 #pragma error Have no idea how to control Floating Point flush-to-zero on other platforms
 #endif
@@ -45,7 +47,7 @@ inline void DisableFloatingPointFlushToZero()
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
 #elif defined(FS_ARM)
-    _ieee_status(FE_IEEE_FLUSHZERO, 0);
+    asm volatile("vmsr fpscr,%0" :: "r" (0 << 24));
 #else
 #pragma error Have no idea how to control Floating Point flush-to-zero on other platforms
 #endif
