@@ -496,35 +496,7 @@ void RenderContext::UploadLightningsStart(size_t lightningCount)
 
 void RenderContext::UploadLightningsEnd()
 {
-    // If there has been a change, upload it now - asynchronously, on render thread - as
-    // this buffer is used by mulitple render steps and thus we don't have a single user
-    // who might upload it at the moment it's needed
-
-    if (!mLightningVertexBuffer.empty())
-    {
-        mRenderThread.QueueTask(
-            [this]()
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
-
-                if (mLightningVertexBuffer.size() > mLightningVBOAllocatedVertexSize)
-                {
-                    // Re-allocate VBO buffer and upload
-                    glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
-                    CheckOpenGLError();
-
-                    mLightningVBOAllocatedVertexSize = mLightningVertexBuffer.size();
-                }
-                else
-                {
-                    // No size change, just upload VBO buffer
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data());
-                    CheckOpenGLError();
-                }
-
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            });
-    }
+    // Nop
 }
 
 void RenderContext::UploadCloudsStart(size_t cloudCount)
@@ -616,6 +588,8 @@ void RenderContext::Draw()
             //
 
             RenderStars(renderSettings);
+
+            PrepareRenderLightnings(renderSettings);
 
             RenderCloudsAndBackgroundLightnings(renderSettings);
 
@@ -1310,6 +1284,35 @@ void RenderContext::RenderStars(RenderSettings const & /*renderSettings*/)
         CheckOpenGLError();
 
         glBindVertexArray(0);
+    }
+}
+
+void RenderContext::PrepareRenderLightnings(RenderSettings const & renderSettings)
+{
+    //
+    // Upload buffer
+    //
+    
+    if (!mLightningVertexBuffer.empty())
+    {
+            glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
+
+            if (mLightningVertexBuffer.size() > mLightningVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
+                CheckOpenGLError();
+
+                mLightningVBOAllocatedVertexSize = mLightningVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data());
+                CheckOpenGLError();
+            }
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }
 

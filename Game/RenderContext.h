@@ -1619,6 +1619,7 @@ private:
     void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
 
     void RenderStars(RenderSettings const & renderSettings);
+    void PrepareRenderLightnings(RenderSettings const & renderSettings);
     void RenderCloudsAndBackgroundLightnings(RenderSettings const & renderSettings);
     void RenderOcean(bool opaquely, RenderSettings const & renderSettings);
     void RenderOceanFloor(RenderSettings const & renderSettings);
