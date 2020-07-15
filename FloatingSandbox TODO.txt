@@ -533,9 +533,9 @@ Render:
 						+ All ocean rendering settings (render mode, colors, texture index)
 						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
 						= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
-				- 7: Complete RenderContext Implementation (5)
-					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
-					- Screenshot: queued and waited, like SpringLab
+				= 7: Complete RenderContext Implementation (5)
+					= Reset: queued and waited (ShipRenderContext destructor does OpenGL)
+					= Screenshot: queued and waited, like SpringLab
 					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
 						+ Make sure thread member is first, so its destructor gets called first
 						  waiting for pending operations
@@ -565,6 +565,7 @@ Render:
 			- See if can get rid of floorf ipv #include <cmath>
 			- CMAKE_EXE_LINKER_FLAGS: figure out which projects fail, and add CMAKE_<TBD>_LINKER_FLAGS for them
 			- Crash because SplashScreen not shown
+			- Remove all TODOTEST logging
 
 		- Default ship @ Install: Titanic with Power
 

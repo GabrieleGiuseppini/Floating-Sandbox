@@ -280,8 +280,15 @@ void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
 
 void RenderContext::Reset()
 {
-    // Clear ships
-    mShips.clear();
+    // Ship's destructors do OpenGL cleanups, hence we
+    // want to clear the vector on the rendering thread
+    // (synchronously)
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            // Clear ships
+            mShips.clear();
+        });
 }
 
 void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
@@ -341,12 +348,6 @@ void RenderContext::AddShip(
 RgbImageData RenderContext::TakeScreenshot()
 {
     //
-    // Flush draw calls
-    //
-
-    glFinish();
-
-    //
     // Allocate buffer
     //
 
@@ -356,20 +357,34 @@ RgbImageData RenderContext::TakeScreenshot()
     auto pixelBuffer = std::make_unique<rgbColor[]>(canvasWidth * canvasHeight);
 
     //
-    // Read pixels
+    // Take screnshot - synchronously
     //
 
-    // Alignment is byte
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    CheckOpenGLError();
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            //
+            // Flush draw calls
+            //
 
-    // Read the front buffer
-    glReadBuffer(GL_FRONT);
-    CheckOpenGLError();
+            glFinish();
 
-    // Read
-    glReadPixels(0, 0, canvasWidth, canvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
-    CheckOpenGLError();
+            //
+            // Read pixels
+            //
+
+            // Alignment is byte
+            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+            CheckOpenGLError();
+
+            // Read the front buffer
+            glReadBuffer(GL_FRONT);
+            CheckOpenGLError();
+
+            // Read
+            glReadPixels(0, 0, canvasWidth, canvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+            CheckOpenGLError();
+        });
 
     return RgbImageData(
         ImageSize(canvasWidth, canvasHeight),
