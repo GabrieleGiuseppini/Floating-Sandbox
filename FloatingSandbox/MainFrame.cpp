@@ -1061,7 +1061,9 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 
         // Update game - will also render
         LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
-            !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>");
+            !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
+            " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
+            " IsFrameShown=", std::to_string(this->IsShown()));
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
