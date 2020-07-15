@@ -135,7 +135,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Material textures
                 //
 
-                assert(settings.Mode == ShipAutoTexturizationMode::MaterialTextures);
+                assert(settings.Mode == ShipAutoTexturizationModeType::MaterialTextures);
 
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 

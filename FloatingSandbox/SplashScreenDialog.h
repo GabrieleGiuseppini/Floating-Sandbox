@@ -21,28 +21,32 @@ class SplashScreenDialog : public wxFrame
 {
 public:
 
-    SplashScreenDialog(ResourceLocator const & resourceLocator);
+	SplashScreenDialog(ResourceLocator const & resourceLocator);
 
 	virtual ~SplashScreenDialog();
 
-    /*
-     * We also create and export a (temporary) OpenGL canvas,
-     * which may be used for binding an OpenGL context to while
-     * the main frame's canvas is still hiddden
-     */
-    GLCanvas * GetOpenGLCanvas() const
-    {
-        assert(nullptr != mGLCanvas);
-        return mGLCanvas;
-    }
+	/*
+	 * We also create and export a (temporary) OpenGL canvas,
+	 * which may be used for binding an OpenGL context to while
+	 * the main frame's canvas is still hiddden
+	 */
+	GLCanvas * GetOpenGLCanvas() const
+	{
+		assert(nullptr != mGLCanvas);
+		return mGLCanvas;
+	}
 
 	void UpdateProgress(
-        float progress,
-        std::string const & message);
+		float progress,
+		std::string const & message);
 
 private:
 
-    GLCanvas * mGLCanvas;
-    wxGauge * mGauge;
-    wxStaticText * mProgressText;
+	void OnPaint(wxPaintEvent & event);
+
+private:
+
+	GLCanvas * mGLCanvas;
+	wxGauge * mGauge;
+	wxStaticText * mProgressText;
 };

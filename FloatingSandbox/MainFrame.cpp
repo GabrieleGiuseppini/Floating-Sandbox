@@ -674,6 +674,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
 
 #if defined(_DEBUG) && defined(_WIN32)
+    LogMessage("TODOTEST: Hiding SplashScreenDialog");
     // The guy is pesky while debugging
     splash->Hide();
 #endif

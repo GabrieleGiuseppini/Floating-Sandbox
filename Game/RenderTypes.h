@@ -67,12 +67,12 @@ struct RenderStatistics
     std::uint64_t LastRenderedShipFlames;
     std::uint64_t LastRenderedShipGenericMipMappedTextures;
 
-    RenderStatistics()
+    RenderStatistics() noexcept
     {
         Reset();
     }
 
-    void Reset()
+    void Reset() noexcept
     {
         LastRenderedShipPoints = 0;
         LastRenderedShipRopes = 0;

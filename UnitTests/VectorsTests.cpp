@@ -4,6 +4,8 @@
 
 #include "Utils.h"
 
+#include <cmath>
+
 #include "gtest/gtest.h"
 
 TEST(VectorsTests, Sum_2f)
