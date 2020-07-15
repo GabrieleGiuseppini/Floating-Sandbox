@@ -122,7 +122,6 @@ RenderContext::RenderContext(
     , mSelectedLandTextureIndex(3) // Rock Coarse 3
     , mFlatLandColor(0x72, 0x46, 0x05)
     //
-    , mFlatLampLightColor(0xff, 0xff, 0xbf)
     , mDefaultWaterColor(0x00, 0x00, 0xcc)
     , mShowShipThroughOcean(false)
     , mWaterContrast(0.71875f)
@@ -270,7 +269,6 @@ RenderContext::RenderContext(
             OnLandRenderParametersUpdated();
             OnLandTextureIndexUpdated();
             // Ship
-            OnFlatLampLightColorUpdated();
             OnDefaultWaterColorUpdated();
             OnWaterContrastUpdated();
             OnWaterLevelOfDetailUpdated();
@@ -367,7 +365,6 @@ void RenderContext::AddShip(
                     mRenderParameters,
                     mShipFlameSizeAdjustment,
                     // TODOOLD
-                    CalculateLampLightColor(),
                     CalculateWaterColor(),
                     mWaterContrast,
                     mWaterLevelOfDetail,
@@ -2104,18 +2101,6 @@ void RenderContext::OnLandTextureIndexUpdated()
     }
 }
 
-void RenderContext::OnFlatLampLightColorUpdated()
-{
-    // Calculate new lamp light color
-    auto const lampLightColor = CalculateLampLightColor();
-
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetLampLightColor(lampLightColor);
-    }
-}
-
 void RenderContext::OnDefaultWaterColorUpdated()
 {
     // Calculate new water color
@@ -2310,11 +2295,6 @@ void RenderContext::RecalculateWorldBorder(RenderParameters const & renderParame
 float RenderContext::CalculateEffectiveAmbientLightIntensity() const
 {
     return mAmbientLightIntensity * mStormAmbientDarkening;
-}
-
-vec4f RenderContext::CalculateLampLightColor() const
-{
-    return mFlatLampLightColor.toVec4f(1.0f);
 }
 
 vec4f RenderContext::CalculateWaterColor() const

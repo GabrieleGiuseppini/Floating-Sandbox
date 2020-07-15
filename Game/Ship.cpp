@@ -573,7 +573,6 @@ void Ship::RenderUpload(
         renderContext.UploadShipElementsEnd(mId);
     }
 
-    /* TODOTEST
     //
     // Upload stressed springs
     //
@@ -591,7 +590,6 @@ void Ship::RenderUpload(
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
-    */
 
     //
     // Upload flames

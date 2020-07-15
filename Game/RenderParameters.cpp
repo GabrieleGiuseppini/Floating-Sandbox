@@ -15,6 +15,9 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	// World
 	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)	
+	// Ship
+	, FlatLampLightColor(0xff, 0xff, 0xbf)
+	, IsFlatLampLightColorDirty(true)
 	// TODOHERE
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.356993f)
@@ -26,8 +29,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, LandRenderMode(LandRenderModeType::Texture)
 	, SelectedLandTextureIndex(3) // Rock Coarse 3
 	, FlatLandColor(0x72, 0x46, 0x05)
-	// Ship
-	, FlatLampLightColor(0xff, 0xff, 0xbf)
+	//	
 	, DefaultWaterColor(0x00, 0x00, 0xcc)
 	, ShowShipThroughOcean(false)
 	, WaterContrast(0.71875f)
@@ -50,6 +52,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsViewDirty = false;
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
+	IsFlatLampLightColorDirty = false;
 
 	return copy;
 }

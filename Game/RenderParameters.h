@@ -34,6 +34,14 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
+
+    //
+    // Ship
+    //
+
+    rgbColor FlatLampLightColor;
+    bool IsFlatLampLightColorDirty;
+
     // TODOHERE
     float OceanTransparency;
     float OceanDarkeningRate;
@@ -45,12 +53,7 @@ struct RenderParameters
     LandRenderModeType LandRenderMode;
     size_t SelectedLandTextureIndex;
     rgbColor FlatLandColor;
-
     //
-    // Ship
-    //
-
-    rgbColor FlatLampLightColor;
     rgbColor DefaultWaterColor;
     bool ShowShipThroughOcean;
     float WaterContrast;

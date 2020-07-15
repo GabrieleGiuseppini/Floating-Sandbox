@@ -347,14 +347,13 @@ public:
 
     rgbColor const & GetFlatLampLightColor() const
     {
-        return mFlatLampLightColor;
+        return mRenderParameters.FlatLampLightColor;
     }
 
     void SetFlatLampLightColor(rgbColor const & color)
     {
-        mFlatLampLightColor = color;
-
-        OnFlatLampLightColorUpdated();
+        mRenderParameters.FlatLampLightColor = color;
+        mRenderParameters.IsFlatLampLightColorDirty = true;
     }
 
     rgbColor const & GetDefaultWaterColor() const
@@ -1646,7 +1645,6 @@ private:
     void OnLandRenderParametersUpdated();
     void OnLandTextureIndexUpdated();
     // Ship
-    void OnFlatLampLightColorUpdated();
     void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
@@ -1656,7 +1654,6 @@ private:
 
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
     float CalculateEffectiveAmbientLightIntensity() const;
-    vec4f CalculateLampLightColor() const;
     vec4f CalculateWaterColor() const;
 
 private:
@@ -2006,7 +2003,6 @@ private:
     size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
     // Ship
-    rgbColor mFlatLampLightColor;
     rgbColor mDefaultWaterColor;
     bool mShowShipThroughOcean;
     float mWaterContrast;

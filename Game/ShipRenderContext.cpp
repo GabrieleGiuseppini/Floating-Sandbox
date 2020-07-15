@@ -28,7 +28,6 @@ ShipRenderContext::ShipRenderContext(
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
     RenderParameters const & renderParameters,
     float shipFlameSizeAdjustment,
-    vec4f const & lampLightColor,
     vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
@@ -50,6 +49,7 @@ ShipRenderContext::ShipRenderContext(
     //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
+    , mStressedSpringElementVBOAllocatedElementSize(0u)
     //
     , mFlameVertexBuffer()    
     , mFlameBackgroundCount(0u)
@@ -116,7 +116,6 @@ ShipRenderContext::ShipRenderContext(
     , mFlameQuadHeight(0.0f) // Will be calculated
     // TODOOLD
     // Parameters
-    , mLampLightColor(lampLightColor)
     , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
@@ -473,7 +472,6 @@ ShipRenderContext::ShipRenderContext(
     ProcessParameterChanges(renderParameters);
 
     // TODOOLD
-    OnLampLightColorUpdated();
     OnWaterColorUpdated();
     OnWaterContrastUpdated();
     OnWaterLevelOfDetailUpdated();
@@ -714,26 +712,17 @@ void ShipRenderContext::UploadElementsEnd()
 
 void ShipRenderContext::UploadElementStressedSpringsStart()
 {
-    // Empty buffer
+    //
+    // Stressed springs are not sticky: we upload them at each frame,
+    // though they will be empty most of the time
+    //
+
     mStressedSpringElementBuffer.clear();
 }
 
 void ShipRenderContext::UploadElementStressedSpringsEnd()
 {
-    //
-    // Upload stressed spring elements
-    //
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
-
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        mStressedSpringElementBuffer.size() * sizeof(LineElement),
-        mStressedSpringElementBuffer.data(),
-        GL_STREAM_DRAW);
-    CheckOpenGLError();
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // Nop
 }
 
 void ShipRenderContext::UploadFlamesStart(
@@ -1152,15 +1141,37 @@ void ShipRenderContext::Draw(
         if (mShowStressedSprings
             && !mStressedSpringElementBuffer.empty())
         {
+            //
+            // Upload buffer
+            //
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+
+            if (mStressedSpringElementBuffer.size() > mStressedSpringElementVBOAllocatedElementSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, mStressedSpringElementBuffer.size() * sizeof(LineElement), mStressedSpringElementBuffer.data(), GL_STREAM_DRAW);
+                CheckOpenGLError();
+
+                mStressedSpringElementVBOAllocatedElementSize = mStressedSpringElementBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mStressedSpringElementBuffer.size() * sizeof(LineElement), mStressedSpringElementBuffer.data());
+                CheckOpenGLError();
+            }
+
+            //
+            // Render
+            //
+
             mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
 
             // Bind stressed spring texture
             mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
             glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
             CheckOpenGLError();
-
-            // Bind stressed spring VBO
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
 
             // Draw
             glDrawElements(
@@ -1746,6 +1757,11 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
+
+    if (renderParameters.IsFlatLampLightColorDirty)
+    {
+        ApplyFlatLampLightColorChanges(renderParameters);
+    }
 }
 
 void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -2113,62 +2129,64 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
         renderParameters.EffectiveAmbientLightIntensity);
 }
 
-// TODOOLD
-
-void ShipRenderContext::OnLampLightColorUpdated()
+void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters)
 {
     //
     // Set parameter in all programs
     //
 
+    vec4f const lampLightColor = renderParameters.FlatLampLightColor.toVec4f(1.0f);
+
     mShaderManager.ActivateProgram<ProgramType::ShipRopes>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopes, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipRopesWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipRopesWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColor, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColorWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTexture, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTextureWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColor, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColorWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTexture, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTextureWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColor>();
     mShaderManager.SetProgramParameter<ProgramType::ShipPointsColor, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 
     mShaderManager.ActivateProgram<ProgramType::ShipPointsColorWithTemperature>();
     mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorWithTemperature, ProgramParameterType::LampLightColor>(
-        mLampLightColor.x, mLampLightColor.y, mLampLightColor.z, mLampLightColor.w);
+        lampLightColor.x, lampLightColor.y, lampLightColor.z, lampLightColor.w);
 }
+
+// TODOOLD
 
 void ShipRenderContext::OnWaterColorUpdated()
 {

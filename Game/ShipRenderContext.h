@@ -38,8 +38,6 @@ class ShipRenderContext
 private:
 
     // Base dimensions of flame quads
-    // TODOTEST
-    //static float constexpr BasisHalfFlameQuadWidth = 9.5f * 2.0f;
     static float constexpr BasisHalfFlameQuadWidth = 10.5f * 2.0f;
     static float constexpr BasisFlameQuadHeight = 7.5f * 2.0f;
 
@@ -56,8 +54,7 @@ public:
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
-        // TODOOLD
-        vec4f const & lampLightColor,
+        // TODOOLD        
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
@@ -83,14 +80,6 @@ public:
     }
 
     // TODOHERE
-
-    void SetLampLightColor(vec4f lampLightColor)
-    {
-        mLampLightColor = lampLightColor;
-
-        // React
-        OnLampLightColorUpdated();
-    }
 
     void SetWaterColor(vec4f waterColor)
     {
@@ -926,8 +915,8 @@ private:
     void ProcessParameterChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
-    // TODOOLD
-    void OnLampLightColorUpdated();
+    void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
+    // TODOOLD    
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
@@ -1131,6 +1120,7 @@ private:
 
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
+    size_t mStressedSpringElementVBOAllocatedElementSize;
 
     BoundedVector<FlameVertex> mFlameVertexBuffer;    
     size_t mFlameBackgroundCount;
@@ -1235,7 +1225,6 @@ private:
     //
 
     // TODO: should nuke all of these
-    vec4f mLampLightColor;
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
