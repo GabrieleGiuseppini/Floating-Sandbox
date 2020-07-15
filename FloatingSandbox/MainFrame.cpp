@@ -1060,6 +1060,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         mToolController->UpdateSimulation();
 
         // Update game - will also render
+        LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
+            !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>");
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
@@ -1358,86 +1360,92 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     assert(!!mSoundController);
     mSoundController->PlaySnapshotSound();
 
-
-    //
-    // Take screenshot
-    //
-
-    assert(!!mGameController);
-    auto screenshotImage = mGameController->TakeScreenshot();
-
-
-    //
-    // Ensure pictures folder exists
-    //
-
-    assert(!!mUIPreferencesManager);
-    auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
-
-    if (!std::filesystem::exists(folderPath))
+    try
     {
+        //
+        // Take screenshot
+        //
+
+        assert(!!mGameController);
+        auto screenshotImage = mGameController->TakeScreenshot();
+
+        //
+        // Ensure pictures folder exists
+        //
+
+        assert(!!mUIPreferencesManager);
+        auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
+
+        if (!std::filesystem::exists(folderPath))
+        {
+            try
+            {
+                std::filesystem::create_directories(folderPath);
+            }
+            catch (std::filesystem::filesystem_error const & fex)
+            {
+                OnError(
+                    std::string("Could not save screenshot to path \"") + folderPath.string() + "\": " + fex.what(),
+                    false);
+
+                return;
+            }
+        }
+
+        //
+        // Choose filename
+        //
+
+        std::filesystem::path screenshotFilePath;
+
+        std::string shipName = mCurrentShipTitles.empty()
+            ? "NoShip"
+            : mCurrentShipTitles.back();
+
+        do
+        {
+            auto now = std::chrono::system_clock::now();
+            auto now_time_t = std::chrono::system_clock::to_time_t(now);
+            auto const tm = std::localtime(&now_time_t);
+
+            std::stringstream ssFilename;
+            ssFilename.fill('0');
+            ssFilename
+                << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
+                << "_"
+                << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
+                << "_"
+                << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
+                << "_"
+                << shipName
+                << ".png";
+
+            screenshotFilePath = folderPath / ssFilename.str();
+
+        } while (std::filesystem::exists(screenshotFilePath));
+
+
+        //
+        // Save screenshot
+        //
+
         try
         {
-            std::filesystem::create_directories(folderPath);
+            ImageFileTools::SaveImage(
+                screenshotFilePath,
+                screenshotImage);
         }
         catch (std::filesystem::filesystem_error const & fex)
         {
             OnError(
-                std::string("Could not save screenshot to path \"") + folderPath.string() + "\": " + fex.what(),
+                std::string("Could not save screenshot to file \"") + screenshotFilePath.string() + "\": " + fex.what(),
                 false);
-
-            return;
         }
     }
-
-    //
-    // Choose filename
-    //
-
-    std::filesystem::path screenshotFilePath;
-
-    std::string shipName = mCurrentShipTitles.empty()
-        ? "NoShip"
-        : mCurrentShipTitles.back();
-
-    do
+    catch (std::exception const & ex)
     {
-        auto now = std::chrono::system_clock::now();
-        auto now_time_t = std::chrono::system_clock::to_time_t(now);
-        auto const tm = std::localtime(&now_time_t);
-
-        std::stringstream ssFilename;
-        ssFilename.fill('0');
-        ssFilename
-            << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
-            << "_"
-            << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
-            << "_"
-            << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
-            << "_"
-            << shipName
-            << ".png";
-
-        screenshotFilePath = folderPath / ssFilename.str();
-
-    } while (std::filesystem::exists(screenshotFilePath));
-
-
-    //
-    // Save screenshot
-    //
-
-    try
-    {
-        ImageFileTools::SaveImage(
-            screenshotFilePath,
-            screenshotImage);
-    }
-    catch (std::filesystem::filesystem_error const & fex)
-    {
-        OnError(
-            std::string("Could not save screenshot to file \"") + screenshotFilePath.string() + "\": " + fex.what(),
-            false);
+        OnError(std::string("Could not take screenshot: ") + ex.what(), false);
+        return;
     }
 }
 
