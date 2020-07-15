@@ -31,7 +31,6 @@ ShipRenderContext::ShipRenderContext(
     vec4f const & waterColor,
     float waterContrast,
     float waterLevelOfDetail,
-    bool showStressedSprings,
     bool drawHeatOverlay,
     float heatOverlayTransparency)
     : mShipId(shipId)
@@ -119,7 +118,6 @@ ShipRenderContext::ShipRenderContext(
     , mWaterColor(waterColor)
     , mWaterContrast(waterContrast)
     , mWaterLevelOfDetail(waterLevelOfDetail)
-    , mShowStressedSprings(showStressedSprings)
     , mDrawHeatOverlay(drawHeatOverlay)
     , mHeatOverlayTransparency(heatOverlayTransparency)
 {
@@ -687,7 +685,6 @@ void ShipRenderContext::UploadElementsStart()
     mPointElementBuffer.clear();
     mSpringElementBuffer.clear();
     mRopeElementBuffer.clear();
-    mStressedSpringElementBuffer.clear();
     mAreElementBuffersDirty = true;
 }
 
@@ -1138,7 +1135,7 @@ void ShipRenderContext::Draw(
         // Draw stressed springs
         //
 
-        if (mShowStressedSprings
+        if (renderParameters.ShowStressedSprings
             && !mStressedSpringElementBuffer.empty())
         {
             //

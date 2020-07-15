@@ -109,8 +109,6 @@ RenderContext::RenderContext(
     // Render parameters
     , mRenderParameters(initialCanvasSize)
     // TODOOLD
-    , mOceanTransparency(0.8125f)
-    , mOceanDarkeningRate(0.356993f)
     , mOceanRenderMode(OceanRenderModeType::Texture)
     , mOceanAvailableThumbnails()
     , mSelectedOceanTextureIndex(0) // Wavy Clear Thin
@@ -127,7 +125,6 @@ RenderContext::RenderContext(
     , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
     , mVectorFieldLengthMultiplier(1.0f)
-    , mShowStressedSprings(false)
     , mDrawHeatOverlay(false)
     , mHeatOverlayTransparency(0.1875f)
     // Statistics
@@ -262,8 +259,6 @@ RenderContext::RenderContext(
             ProcessParameterChanges(mRenderParameters);
 
             // TODOOLD
-            OnOceanTransparencyUpdated();
-            OnOceanDarkeningRateUpdated();
             OnOceanRenderParametersUpdated();
             OnOceanTextureIndexUpdated();
             OnLandRenderParametersUpdated();
@@ -272,7 +267,6 @@ RenderContext::RenderContext(
             OnDefaultWaterColorUpdated();
             OnWaterContrastUpdated();
             OnWaterLevelOfDetailUpdated();
-            OnShowStressedSpringsUpdated();
             OnDrawHeatOverlayUpdated();
             OnHeatOverlayTransparencyUpdated();
 
@@ -368,7 +362,6 @@ void RenderContext::AddShip(
                     CalculateWaterColor(),
                     mWaterContrast,
                     mWaterLevelOfDetail,
-                    mShowStressedSprings,
                     mDrawHeatOverlay,
                     mHeatOverlayTransparency));
         });
@@ -1785,6 +1778,11 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
+
+    if (renderParameters.IsOceanDarkeningRateDirty)
+    {
+        ApplyOceanDarkeningRateChanges(renderParameters);
+    }
 }
 
 void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -1915,41 +1913,24 @@ void RenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters 
     mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(renderParameters.EffectiveAmbientLightIntensity);
 }
 
-// TODOHERE
-
-void RenderContext::OnOceanTransparencyUpdated()
-{
-    // Set parameter in all programs
-
-    mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanTransparency>(
-        mOceanTransparency);
-
-    mShaderManager->ActivateProgram<ProgramType::OceanFlat>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::OceanTransparency>(
-        mOceanTransparency);
-
-    mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
-    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
-        mOceanTransparency);
-}
-
-void RenderContext::OnOceanDarkeningRateUpdated()
+void RenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters)
 {
     // Set parameter in all programs
 
     mShaderManager->ActivateProgram<ProgramType::LandTexture>();
     mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OceanDarkeningRate>(
-        mOceanDarkeningRate / 50.0f);
+        renderParameters.OceanDarkeningRate / 50.0f);
 
     mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
     mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanDarkeningRate>(
-        mOceanDarkeningRate / 50.0f);
+        renderParameters.OceanDarkeningRate / 50.0f);
 
     mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanDarkeningRate>(
-        mOceanDarkeningRate / 50.0f);
+        renderParameters.OceanDarkeningRate / 50.0f);
 }
+
+// TODOHERE
 
 void RenderContext::OnOceanRenderParametersUpdated()
 {
@@ -2128,15 +2109,6 @@ void RenderContext::OnWaterLevelOfDetailUpdated()
     for (auto & s : mShips)
     {
         s->SetWaterLevelThreshold(mWaterLevelOfDetail);
-    }
-}
-
-void RenderContext::OnShowStressedSpringsUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetShowStressedSprings(mShowStressedSprings);
     }
 }
 

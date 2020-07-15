@@ -34,6 +34,9 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
+    float OceanTransparency;
+    float OceanDarkeningRate;
+    bool IsOceanDarkeningRateDirty;
 
     //
     // Ship
@@ -41,10 +44,10 @@ struct RenderParameters
 
     rgbColor FlatLampLightColor;
     bool IsFlatLampLightColorDirty;
+    ShipFlameRenderModeType ShipFlameRenderMode;
+    bool ShowStressedSprings;
 
-    // TODOHERE
-    float OceanTransparency;
-    float OceanDarkeningRate;
+    // TODOOLD       
     OceanRenderModeType OceanRenderMode;
     size_t SelectedOceanTextureIndex;
     rgbColor DepthOceanColorStart;
@@ -59,11 +62,9 @@ struct RenderParameters
     float WaterContrast;
     float WaterLevelOfDetail;
     DebugShipRenderModeType DebugShipRenderMode;
-    float VectorFieldLengthMultiplier;
-    bool ShowStressedSprings;
+    float VectorFieldLengthMultiplier;    
     bool DrawHeatOverlay;
-    float HeatOverlayTransparency;
-    ShipFlameRenderModeType ShipFlameRenderMode;
+    float HeatOverlayTransparency;    
 
     RenderParameters(ImageSize const & initialCanvasSize);
 

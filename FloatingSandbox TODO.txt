@@ -515,16 +515,18 @@ Render:
 						+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
 						  and then stores in own member, of type std::atomic
 						+ @ Use: get local copy
-				- 6b: All setters
+				= 6b: All setters
 					- TODOOLD:
 						- Special strategy for "seldom" setters 
 							- Queued and waited for those that do OpenGL (including shader params) (e.g. ocean textures, water color)
 							- std::atomic and local copy for those used as switches (e.g. render modes)
 					- ShipRenderContext setters
-						= FlatLampLightColor
-						- WaterColor: it's a function of mOceanRenderMode et al
-						- TODOHERE
+						+ FlatLampLightColor
+						+ ShowStressedSprings
+						- WaterColor: it's a function of TODOHERE: draw dependency graph of ocean settings & params
 					- RenderContext setters
+						+ OceanTransparency
+						+ OceanDarkeningRate
 				- 7: Complete RenderContext Implementation (5)
 					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					- Screenshot: queued and waited, like SpringLab

@@ -58,7 +58,6 @@ public:
         vec4f const & waterColor,
         float waterContrast,
         float waterLevelOfDetail,
-        bool showStressedSprings,
         bool drawHeatOverlay,
         float heatOverlayTransparency);
 
@@ -103,11 +102,6 @@ public:
 
         // React
         OnWaterLevelOfDetailUpdated();
-    }
-
-    void SetShowStressedSprings(bool showStressedSprings)
-    {
-        mShowStressedSprings = showStressedSprings;
     }
 
     void SetDrawHeatOverlay(bool drawHeatOverlay)
@@ -1228,7 +1222,6 @@ private:
     vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
-    bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;    
 };

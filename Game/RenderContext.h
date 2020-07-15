@@ -197,33 +197,86 @@ public:
     {
         mRenderParameters.FlatSkyColor = color;
         // No need to set dirty, this is picked up at each cycle anyway
-    }
-
-    // TODOHERE
+    }    
 
     float GetOceanTransparency() const
     {
-        return mOceanTransparency;
+        return mRenderParameters.OceanTransparency;
     }
 
     void SetOceanTransparency(float transparency)
     {        
-        mOceanTransparency = transparency;
-
-        OnOceanTransparencyUpdated();
+        mRenderParameters.OceanTransparency = transparency;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
     float GetOceanDarkeningRate() const
     {
-        return mOceanDarkeningRate;
+        return mRenderParameters.OceanDarkeningRate;
     }
 
     void SetOceanDarkeningRate(float darkeningRate)
     {
-        mOceanDarkeningRate = darkeningRate;
-
-        OnOceanDarkeningRateUpdated();
+        mRenderParameters.OceanDarkeningRate = darkeningRate;
+        mRenderParameters.IsOceanDarkeningRateDirty = true;
     }
+
+    //
+    // Ship rendering properties
+    //
+
+    rgbColor const & GetFlatLampLightColor() const
+    {
+        return mRenderParameters.FlatLampLightColor;
+    }
+
+    void SetFlatLampLightColor(rgbColor const & color)
+    {
+        mRenderParameters.FlatLampLightColor = color;
+        mRenderParameters.IsFlatLampLightColorDirty = true;
+    }
+
+    ShipFlameRenderModeType GetShipFlameRenderMode() const
+    {
+        return mRenderParameters.ShipFlameRenderMode;
+    }
+
+    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
+    {
+        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
+    float const & GetShipFlameSizeAdjustment() const
+    {
+        return mShipFlameSizeAdjustment;
+    }
+
+    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
+    {
+        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
+
+        for (auto & s : mShips)
+        {
+            s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
+        }
+    }
+
+    static constexpr float MinShipFlameSizeAdjustment = 0.1f;
+    static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
+
+    bool GetShowStressedSprings() const
+    {
+        return mRenderParameters.ShowStressedSprings;
+    }
+
+    void SetShowStressedSprings(bool showStressedSprings)
+    {
+        mRenderParameters.ShowStressedSprings = showStressedSprings;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
+    // TODOOLD
 
     bool GetShowShipThroughOcean() const
     {
@@ -345,17 +398,6 @@ public:
     // Ship rendering properties
     //
 
-    rgbColor const & GetFlatLampLightColor() const
-    {
-        return mRenderParameters.FlatLampLightColor;
-    }
-
-    void SetFlatLampLightColor(rgbColor const & color)
-    {
-        mRenderParameters.FlatLampLightColor = color;
-        mRenderParameters.IsFlatLampLightColorDirty = true;
-    }
-
     rgbColor const & GetDefaultWaterColor() const
     {
         return mDefaultWaterColor;
@@ -425,18 +467,6 @@ public:
         mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
-    bool GetShowStressedSprings() const
-    {
-        return mShowStressedSprings;
-    }
-
-    void SetShowStressedSprings(bool showStressedSprings)
-    {
-        mShowStressedSprings = showStressedSprings;
-
-        OnShowStressedSpringsUpdated();
-    }
-
     bool GetDrawHeatOverlay() const
     {
         return mDrawHeatOverlay;
@@ -460,35 +490,6 @@ public:
 
         OnHeatOverlayTransparencyUpdated();
     }
-
-    ShipFlameRenderModeType GetShipFlameRenderMode() const
-    {
-        return mRenderParameters.ShipFlameRenderMode;
-    }
-
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
-    {
-        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
-        // No need to notify, will be picked up
-    }
-
-    float const & GetShipFlameSizeAdjustment() const
-    {
-        return mShipFlameSizeAdjustment;
-    }
-
-    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
-    {
-        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
-
-        for (auto & s : mShips)
-        {
-            s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
-        }
-    }
-
-    static constexpr float MinShipFlameSizeAdjustment = 0.1f;
-    static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
 
     //
     // Screen <-> World transformations
@@ -1637,9 +1638,8 @@ private:
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
-    // TODOOLD
-    void OnOceanTransparencyUpdated();
-    void OnOceanDarkeningRateUpdated();
+    void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
+    // TODOOLD        
     void OnOceanRenderParametersUpdated();
     void OnOceanTextureIndexUpdated();
     void OnLandRenderParametersUpdated();
@@ -1647,8 +1647,7 @@ private:
     // Ship
     void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();
-    void OnShowStressedSpringsUpdated();
+    void OnWaterLevelOfDetailUpdated();    
     void OnDrawHeatOverlayUpdated();
     void OnHeatOverlayTransparencyUpdated();
 
@@ -1990,8 +1989,6 @@ private:
     RenderParameters mRenderParameters;
 
     // TODOOLD
-    float mOceanTransparency;
-    float mOceanDarkeningRate;
     OceanRenderModeType mOceanRenderMode;
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     size_t mSelectedOceanTextureIndex;
@@ -2009,7 +2006,6 @@ private:
     float mWaterLevelOfDetail;
     VectorFieldRenderModeType mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
-    bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;    
 
