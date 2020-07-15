@@ -96,6 +96,7 @@ target_link_libraries (FloatingSandbox
 	UIControlsLib
 	sfml-audio
 	sfml-network
+	sfml-system
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
