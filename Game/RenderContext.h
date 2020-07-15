@@ -177,6 +177,7 @@ public:
     void SetAmbientLightIntensity(float intensity)
     {
         mAmbientLightIntensity = intensity;
+
         mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
         mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
     }
@@ -220,6 +221,105 @@ public:
         mRenderParameters.OceanDarkeningRate = darkeningRate;
         mRenderParameters.IsOceanDarkeningRateDirty = true;
     }
+
+    OceanRenderModeType GetOceanRenderMode() const
+    {
+        return mRenderParameters.OceanRenderMode;
+    }
+
+    void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
+    {
+        mRenderParameters.OceanRenderMode = oceanRenderMode;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
+
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
+    }
+
+    rgbColor const & GetDepthOceanColorStart() const
+    {
+        return mRenderParameters.DepthOceanColorStart;
+    }
+
+    void SetDepthOceanColorStart(rgbColor const & color)
+    {
+        mRenderParameters.DepthOceanColorStart = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
+
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
+    }
+
+    rgbColor const & GetDepthOceanColorEnd() const
+    {
+        return mRenderParameters.DepthOceanColorEnd;
+    }
+
+    void SetDepthOceanColorEnd(rgbColor const & color)
+    {
+        mRenderParameters.DepthOceanColorEnd = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
+
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
+    }
+
+    rgbColor const & GetFlatOceanColor() const
+    {
+        return mRenderParameters.FlatOceanColor;
+    }
+
+    void SetFlatOceanColor(rgbColor const & color)
+    {
+        mRenderParameters.FlatOceanColor = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
+
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
+    }
+
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
+    {
+        return mOceanAvailableThumbnails;
+    }
+
+    size_t GetTextureOceanTextureIndex() const
+    {
+        return mRenderParameters.OceanTextureIndex;
+    }
+
+    void SetTextureOceanTextureIndex(size_t index)
+    {
+        mRenderParameters.OceanTextureIndex = index;
+        mRenderParameters.IsOceanTextureIndexDirty = true;
+    }
+
+    bool GetShowShipThroughOcean() const
+    {
+        return mRenderParameters.ShowShipThroughOcean;
+    }
+
+    void SetShowShipThroughOcean(bool showShipThroughOcean)
+    {
+        mRenderParameters.ShowShipThroughOcean = showShipThroughOcean;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
+    rgbColor const & GetDefaultWaterColor() const
+    {
+        return mDefaultWaterColor;
+    }
+
+    void SetDefaultWaterColor(rgbColor const & color)
+    {
+        mDefaultWaterColor = color;
+
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
+    }
+
+    // TODOHERE: move more here
+
 
     //
     // Ship rendering properties
@@ -276,82 +376,7 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    // TODOOLD
-
-    bool GetShowShipThroughOcean() const
-    {
-        return mShowShipThroughOcean;
-    }
-
-    void SetShowShipThroughOcean(bool showShipThroughOcean)
-    {
-        mShowShipThroughOcean = showShipThroughOcean;
-    }
-
-    OceanRenderModeType GetOceanRenderMode() const
-    {
-        return mOceanRenderMode;
-    }
-
-    void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
-    {
-        mOceanRenderMode = oceanRenderMode;
-
-        OnOceanRenderParametersUpdated();
-    }
-
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
-    {
-        return mOceanAvailableThumbnails;
-    }
-
-    size_t GetTextureOceanTextureIndex() const
-    {
-        return mSelectedOceanTextureIndex;
-    }
-
-    void SetTextureOceanTextureIndex(size_t index)
-    {
-        mSelectedOceanTextureIndex = index;
-
-        OnOceanTextureIndexUpdated();
-    }
-
-    rgbColor const & GetDepthOceanColorStart() const
-    {
-        return mDepthOceanColorStart;
-    }
-
-    void SetDepthOceanColorStart(rgbColor const & color)
-    {
-        mDepthOceanColorStart = color;
-
-        OnOceanRenderParametersUpdated();
-    }
-
-    rgbColor const & GetDepthOceanColorEnd() const
-    {
-        return mDepthOceanColorEnd;
-    }
-
-    void SetDepthOceanColorEnd(rgbColor const & color)
-    {
-        mDepthOceanColorEnd = color;
-
-        OnOceanRenderParametersUpdated();
-    }
-
-    rgbColor const & GetFlatOceanColor() const
-    {
-        return mFlatOceanColor;
-    }
-
-    void SetFlatOceanColor(rgbColor const & color)
-    {
-        mFlatOceanColor = color;
-
-        OnOceanRenderParametersUpdated();
-    }
+    // TODOOLD    
 
     LandRenderModeType GetLandRenderMode() const
     {
@@ -397,18 +422,6 @@ public:
     //
     // Ship rendering properties
     //
-
-    rgbColor const & GetDefaultWaterColor() const
-    {
-        return mDefaultWaterColor;
-    }
-
-    void SetDefaultWaterColor(rgbColor const & color)
-    {
-        mDefaultWaterColor = color;
-
-        OnDefaultWaterColorUpdated();
-    }
 
     float GetWaterContrast() const
     {
@@ -560,6 +573,7 @@ public:
         if (darkening != mStormAmbientDarkening)
         {
             mStormAmbientDarkening = darkening;
+
             mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
             mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
@@ -767,7 +781,7 @@ public:
         float const oceanSegmentY2 = yVisibleWorldBottom;
         oceanSegment.y2 = oceanSegmentY2;
 
-        switch (mOceanRenderMode)
+        switch (mRenderParameters.OceanRenderMode)
         {
             case OceanRenderModeType::Texture:
             {
@@ -1639,13 +1653,12 @@ private:
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
-    // TODOOLD        
-    void OnOceanRenderParametersUpdated();
-    void OnOceanTextureIndexUpdated();
+    void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
+    void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
+    // TODOOLD                
     void OnLandRenderParametersUpdated();
     void OnLandTextureIndexUpdated();
     // Ship
-    void OnDefaultWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();    
     void OnDrawHeatOverlayUpdated();
@@ -1653,7 +1666,7 @@ private:
 
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
     float CalculateEffectiveAmbientLightIntensity() const;
-    vec4f CalculateWaterColor() const;
+    vec4f CalculateShipWaterColor() const;
 
 private:
 
@@ -1923,7 +1936,6 @@ private:
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
-    size_t mLoadedOceanTextureIndex;
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
@@ -1966,6 +1978,7 @@ private:
 
     float mAmbientLightIntensity;
     float mShipFlameSizeAdjustment;
+    rgbColor mDefaultWaterColor;
 
 private:
 
@@ -1988,20 +2001,15 @@ private:
 
     RenderParameters mRenderParameters;
 
-    // TODOOLD
-    OceanRenderModeType mOceanRenderMode;
+    // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
-    size_t mSelectedOceanTextureIndex;
-    rgbColor mDepthOceanColorStart;
-    rgbColor mDepthOceanColorEnd;
-    rgbColor mFlatOceanColor;
-    LandRenderModeType mLandRenderMode;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
+    // TODOOLD    
+    LandRenderModeType mLandRenderMode;    
     size_t mSelectedLandTextureIndex;
     rgbColor mFlatLandColor;
-    // Ship
-    rgbColor mDefaultWaterColor;
-    bool mShowShipThroughOcean;
+    // Ship    
     float mWaterContrast;
     float mWaterLevelOfDetail;
     VectorFieldRenderModeType mVectorFieldRenderMode;

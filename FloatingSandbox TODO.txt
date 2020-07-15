@@ -523,10 +523,18 @@ Render:
 					- ShipRenderContext setters
 						+ FlatLampLightColor
 						+ ShowStressedSprings
-						- WaterColor: it's a function of TODOHERE: draw dependency graph of ocean settings & params
+						+ WaterColor (default color; derivation from ocean rendering settings)
+						- WaterContrast: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+						- WaterLevelOfDetail: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+
+						- VectorFieldRenderMode: pure storage, so member @ RenderContext and that's it
+						- VectorLengthAdjustment: only at Update, so member @ RenderContext and used when forwarding Upload to ship (like now)
 					- RenderContext setters
 						+ OceanTransparency
 						+ OceanDarkeningRate
+						+ All ocean rendering settings (render mode, colors, texture index)
+						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
+						- Land parameters & texture index (exactly like ocean, but without WaterColor complication)
 				- 7: Complete RenderContext Implementation (5)
 					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					- Screenshot: queued and waited, like SpringLab
@@ -562,6 +570,8 @@ Render:
 			- Crash because SplashScreen not shown
 
 		- Default ship @ Install: Titanic with Power
+
+		- More stress metal sounds, to dilute "cycle of sounds"
 
 		- Explosions: see with progress being sqrt
 

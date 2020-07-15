@@ -54,8 +54,7 @@ public:
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
-        // TODOOLD        
-        vec4f const & waterColor,
+        // TODOOLD                
         float waterContrast,
         float waterLevelOfDetail,
         bool drawHeatOverlay,
@@ -79,15 +78,7 @@ public:
     }
 
     // TODOHERE
-
-    void SetWaterColor(vec4f waterColor)
-    {
-        mWaterColor = waterColor;
-
-        // React
-        OnWaterColorUpdated();
-    }
-
+    
     void SetWaterContrast(float waterContrast)
     {
         mWaterContrast = waterContrast;
@@ -910,8 +901,8 @@ private:
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
-    // TODOOLD    
-    void OnWaterColorUpdated();
+    void ApplyWaterColorChanges(RenderParameters const & renderParameters);
+    // TODOOLD        
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
     void OnHeatOverlayTransparencyUpdated();    
@@ -1219,7 +1210,6 @@ private:
     //
 
     // TODO: should nuke all of these
-    vec4f mWaterColor;
     float mWaterContrast;
     float mWaterLevelOfDetail;
     bool mDrawHeatOverlay;

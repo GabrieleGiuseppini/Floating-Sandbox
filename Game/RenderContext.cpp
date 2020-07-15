@@ -81,7 +81,6 @@ RenderContext::RenderContext(
     , mUploadedWorldTextureManager()
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
-    , mLoadedOceanTextureIndex(std::numeric_limits<size_t>::max())
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
     , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
@@ -101,6 +100,7 @@ RenderContext::RenderContext(
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
     , mShipFlameSizeAdjustment(1.0f)
+    , mDefaultWaterColor(0x00, 0x00, 0xcc)
     // Rendering externals
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     // Managers
@@ -108,20 +108,14 @@ RenderContext::RenderContext(
     , mNotificationRenderContext()    
     // Render parameters
     , mRenderParameters(initialCanvasSize)
-    // TODOOLD
-    , mOceanRenderMode(OceanRenderModeType::Texture)
+    // Thumbnails
     , mOceanAvailableThumbnails()
-    , mSelectedOceanTextureIndex(0) // Wavy Clear Thin
-    , mDepthOceanColorStart(0x4a, 0x84, 0x9f)
-    , mDepthOceanColorEnd(0x00, 0x00, 0x00)
-    , mFlatOceanColor(0x00, 0x3d, 0x99)
-    , mLandRenderMode(LandRenderModeType::Texture)
     , mLandAvailableThumbnails()
+    // TODOOLD
+    , mLandRenderMode(LandRenderModeType::Texture)    
     , mSelectedLandTextureIndex(3) // Rock Coarse 3
     , mFlatLandColor(0x72, 0x46, 0x05)
-    //
-    , mDefaultWaterColor(0x00, 0x00, 0xcc)
-    , mShowShipThroughOcean(false)
+    //    
     , mWaterContrast(0.71875f)
     , mWaterLevelOfDetail(0.6875f)
     , mVectorFieldLengthMultiplier(1.0f)
@@ -259,12 +253,9 @@ RenderContext::RenderContext(
             ProcessParameterChanges(mRenderParameters);
 
             // TODOOLD
-            OnOceanRenderParametersUpdated();
-            OnOceanTextureIndexUpdated();
             OnLandRenderParametersUpdated();
             OnLandTextureIndexUpdated();
             // Ship
-            OnDefaultWaterColorUpdated();
             OnWaterContrastUpdated();
             OnWaterLevelOfDetailUpdated();
             OnDrawHeatOverlayUpdated();
@@ -359,7 +350,6 @@ void RenderContext::AddShip(
                     mRenderParameters,
                     mShipFlameSizeAdjustment,
                     // TODOOLD
-                    CalculateWaterColor(),
                     mWaterContrast,
                     mWaterLevelOfDetail,
                     mDrawHeatOverlay,
@@ -604,7 +594,7 @@ void RenderContext::Draw()
             glDisable(GL_DEPTH_TEST);
 
             // Render ocean transparently, over ship, unless disabled
-            if (!mShowShipThroughOcean)
+            if (!renderParameters.ShowShipThroughOcean)
             {
                 RenderOcean(false, renderParameters);
             }
@@ -1435,7 +1425,7 @@ void RenderContext::RenderOcean(bool opaquely, RenderParameters const & renderPa
 
     glBindVertexArray(*mOceanVAO);
 
-    switch (mOceanRenderMode)
+    switch (renderParameters.OceanRenderMode)
     {
         case OceanRenderModeType::Depth:
         {
@@ -1783,6 +1773,16 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyOceanDarkeningRateChanges(renderParameters);
     }
+
+    if (renderParameters.AreOceanRenderParametersDirty)
+    {
+        ApplyOceanRenderParametersChanges(renderParameters);
+    }
+
+    if (renderParameters.IsOceanTextureIndexDirty)
+    {
+        ApplyOceanTextureIndexChanges(renderParameters);
+    }
 }
 
 void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -1930,94 +1930,81 @@ void RenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & rend
         renderParameters.OceanDarkeningRate / 50.0f);
 }
 
-// TODOHERE
-
-void RenderContext::OnOceanRenderParametersUpdated()
+void RenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
 {
     // Set ocean parameters in all water programs
 
-    auto depthColorStart = mDepthOceanColorStart.toVec3f();
+    auto const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
     mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
     mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanDepthColorStart>(
         depthColorStart.x,
         depthColorStart.y,
         depthColorStart.z);
 
-    auto depthColorEnd = mDepthOceanColorEnd.toVec3f();
+    auto const depthColorEnd = renderParameters.DepthOceanColorEnd.toVec3f();
     mShaderManager->ActivateProgram<ProgramType::OceanDepth>();
     mShaderManager->SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanDepthColorEnd>(
         depthColorEnd.x,
         depthColorEnd.y,
         depthColorEnd.z);
 
-    auto flatColor = mFlatOceanColor.toVec3f();
+    auto const flatColor = renderParameters.FlatOceanColor.toVec3f();
     mShaderManager->ActivateProgram<ProgramType::OceanFlat>();
     mShaderManager->SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::OceanFlatColor>(
         flatColor.x,
         flatColor.y,
         flatColor.z);
-
-    //
-    // Tell ships about the water color
-    //
-
-    auto const waterColor = CalculateWaterColor();
-    for (auto & s : mShips)
-    {
-        s->SetWaterColor(waterColor);
-    }
 }
 
-void RenderContext::OnOceanTextureIndexUpdated()
+void RenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
 {
-    if (mSelectedOceanTextureIndex != mLoadedOceanTextureIndex)
-    {
-        //
-        // Reload the ocean texture
-        //
+    //
+    // Reload the ocean texture
+    //
 
-        // Destroy previous texture
-        mOceanTextureOpenGLHandle.reset();
+    // Destroy previous texture
+    mOceanTextureOpenGLHandle.reset();
 
-        // Clamp the texture index
-        mLoadedOceanTextureIndex = std::min(mSelectedOceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
+    // Clamp the texture index
+    auto clampedOceanTextureIndex = std::min(renderParameters.OceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
 
-        // Load texture image
-        auto oceanTextureFrame = mOceanTextureFrameSpecifications[mLoadedOceanTextureIndex].LoadFrame();
+    // Load texture image
+    auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame();
 
-        // Activate texture
-        mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();
+    // Activate texture
+    mShaderManager->ActivateTexture<ProgramParameterType::OceanTexture>();
 
-        // Create texture
-        GLuint tmpGLuint;
-        glGenTextures(1, &tmpGLuint);
-        mOceanTextureOpenGLHandle = tmpGLuint;
+    // Create texture
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mOceanTextureOpenGLHandle = tmpGLuint;
 
-        // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
-        CheckOpenGLError();
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
+    CheckOpenGLError();
 
-        // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
+    // Upload texture
+    GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
 
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        CheckOpenGLError();
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
 
-        // Set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        CheckOpenGLError();
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
 
-        // Set texture and texture parameters in shader
-        mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
-        mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::TextureScaling>(
-            1.0f / oceanTextureFrame.Metadata.WorldWidth,
-            1.0f / oceanTextureFrame.Metadata.WorldHeight);
-        mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
-    }
+    // Set texture and texture parameters in shader
+    mShaderManager->ActivateProgram<ProgramType::OceanTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::TextureScaling>(
+        1.0f / oceanTextureFrame.Metadata.WorldWidth,
+        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+    mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
 }
+
+// TODOOLD
 
 void RenderContext::OnLandRenderParametersUpdated()
 {
@@ -2079,18 +2066,6 @@ void RenderContext::OnLandTextureIndexUpdated()
             1.0f / landTextureFrame.Metadata.WorldWidth,
             1.0f / landTextureFrame.Metadata.WorldHeight);
         mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
-    }
-}
-
-void RenderContext::OnDefaultWaterColorUpdated()
-{
-    // Calculate new water color
-    auto const waterColor = CalculateWaterColor();
-
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetWaterColor(waterColor);
     }
 }
 
@@ -2269,25 +2244,25 @@ float RenderContext::CalculateEffectiveAmbientLightIntensity() const
     return mAmbientLightIntensity * mStormAmbientDarkening;
 }
 
-vec4f RenderContext::CalculateWaterColor() const
+vec4f RenderContext::CalculateShipWaterColor() const
 {
-    switch (mOceanRenderMode)
+    switch (mRenderParameters.OceanRenderMode)
     {
         case OceanRenderModeType::Depth:
         {
             return
-                (mDepthOceanColorStart.toVec4f(1.0f) + mDepthOceanColorEnd.toVec4f(1.0f))
+                (mRenderParameters.DepthOceanColorStart.toVec4f(1.0f) + mRenderParameters.DepthOceanColorEnd.toVec4f(1.0f))
                 / 2.0f;
         }
 
         case OceanRenderModeType::Flat:
         {
-            return mFlatOceanColor.toVec4f(1.0f);
+            return mRenderParameters.FlatOceanColor.toVec4f(1.0f);
         }
 
         default:
         {
-            assert(mOceanRenderMode == OceanRenderModeType::Texture); // Darn VS - warns
+            assert(mRenderParameters.OceanRenderMode == OceanRenderModeType::Texture); // Darn VS - warns
 
             return mDefaultWaterColor.toVec4f(1.0f);
         }

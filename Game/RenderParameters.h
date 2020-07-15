@@ -26,7 +26,7 @@ struct RenderParameters
     bool IsViewDirty;
     bool IsCanvasSizeDirty;
     
-    float EffectiveAmbientLightIntensity;
+    float EffectiveAmbientLightIntensity; // Calculated
     bool IsEffectiveAmbientLightIntensityDirty;    
 
     //
@@ -34,9 +34,22 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
+
     float OceanTransparency;
+
     float OceanDarkeningRate;
     bool IsOceanDarkeningRateDirty;
+
+    OceanRenderModeType OceanRenderMode;
+    rgbColor DepthOceanColorStart;
+    rgbColor DepthOceanColorEnd;
+    rgbColor FlatOceanColor;
+    bool AreOceanRenderParametersDirty; // Tracks all of the above as a whole, for convenience
+
+    size_t OceanTextureIndex;
+    bool IsOceanTextureIndexDirty;
+
+    bool ShowShipThroughOcean;
 
     //
     // Ship
@@ -44,21 +57,19 @@ struct RenderParameters
 
     rgbColor FlatLampLightColor;
     bool IsFlatLampLightColorDirty;
+
     ShipFlameRenderModeType ShipFlameRenderMode;
+
     bool ShowStressedSprings;
 
-    // TODOOLD       
-    OceanRenderModeType OceanRenderMode;
-    size_t SelectedOceanTextureIndex;
-    rgbColor DepthOceanColorStart;
-    rgbColor DepthOceanColorEnd;
-    rgbColor FlatOceanColor;
+    vec4f ShipWaterColor; // Calculated
+    bool IsShipWaterColorDirty;
+
+    // TODOOLD           
     LandRenderModeType LandRenderMode;
     size_t SelectedLandTextureIndex;
     rgbColor FlatLandColor;
     //
-    rgbColor DefaultWaterColor;
-    bool ShowShipThroughOcean;
     float WaterContrast;
     float WaterLevelOfDetail;
     DebugShipRenderModeType DebugShipRenderMode;
