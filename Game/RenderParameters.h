@@ -16,15 +16,16 @@
 namespace Render {
 
 /*
- * The entire set of user-controllable settings that are input to the rendering process.
+ * The entire set of user-controllable settings or calculated parameters 
+ * that are direct input to the rendering process (i.e. which are accessed
+ *  by rendering code)
  */ 
-struct RenderSettings
+struct RenderParameters
 {
     ViewModel View;
     bool IsViewDirty;
     bool IsCanvasSizeDirty;
-
-    float AmbientLightIntensity;
+    
     float EffectiveAmbientLightIntensity;
     bool IsEffectiveAmbientLightIntensityDirty;    
 
@@ -60,11 +61,10 @@ struct RenderSettings
     bool DrawHeatOverlay;
     float HeatOverlayTransparency;
     ShipFlameRenderModeType ShipFlameRenderMode;
-    float ShipFlameSizeAdjustment;
 
-    RenderSettings(ImageSize const & initialCanvasSize);
+    RenderParameters(ImageSize const & initialCanvasSize);
 
-    RenderSettings Snapshot();
+    RenderParameters TakeSnapshotAndClear();
 };
 
 }

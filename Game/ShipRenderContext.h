@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderSettings.h"
+#include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ShaderTypes.h"
 #include "ShipDefinition.h"
@@ -35,6 +35,14 @@ namespace Render {
 
 class ShipRenderContext
 {
+private:
+
+    // Base dimensions of flame quads
+    // TODOTEST
+    //static float constexpr BasisHalfFlameQuadWidth = 9.5f * 2.0f;
+    static float constexpr BasisHalfFlameQuadWidth = 10.5f * 2.0f;
+    static float constexpr BasisFlameQuadHeight = 7.5f * 2.0f;
+
 public:
 
     ShipRenderContext(
@@ -46,7 +54,8 @@ public:
         TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-        RenderSettings const & renderSettings,
+        RenderParameters const & renderParameters,
+        float shipFlameSizeAdjustment,
         // TODOOLD
         vec4f const & lampLightColor,
         vec4f const & waterColor,
@@ -54,8 +63,7 @@ public:
         float waterLevelOfDetail,
         bool showStressedSprings,
         bool drawHeatOverlay,
-        float heatOverlayTransparency,
-        float shipFlameSizeAdjustment);
+        float heatOverlayTransparency);
 
     ~ShipRenderContext();
 
@@ -65,6 +73,13 @@ public:
     {
         mShipCount = shipCount;
         mIsViewModelDirty = true;
+    }
+
+    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
+    {
+        // Recalculate quad dimensions
+        mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
+        mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
     }
 
     // TODOHERE
@@ -119,14 +134,6 @@ public:
         OnHeatOverlayTransparencyUpdated();
     }
     
-    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
-    {
-        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
-
-        // React
-        OnShipFlameSizeAdjustmentUpdated();
-    }    
-
 public:
 
     void UploadStart(PlaneId maxMaxPlaneId);
@@ -256,7 +263,7 @@ public:
         float scale,
         float flamePersonalitySeed,
         bool isOnChain,
-        RenderSettings const & renderSettings)
+        RenderParameters const & renderParameters)
     {
         //
         // Calculate flame quad - encloses the flame vector
@@ -275,7 +282,7 @@ public:
         //
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (renderSettings.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+        float const yOffset = (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
             ? 0.066666f
             : 0.013333f;
 
@@ -796,7 +803,7 @@ public:
     void UploadEnd();
 
     void Draw(
-        RenderSettings const & renderSettings,
+        RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
 private:
@@ -901,31 +908,30 @@ private:
 
 private:
 
-    void PrepareRenderFlames(RenderSettings const & renderSettings);
+    void PrepareRenderFlames(RenderParameters const & renderParameters);
 
     template<ProgramType ShaderProgram>
     void RenderFlames(
         size_t startFlameIndex,
         size_t flameCount,
-        RenderSettings const & renderSettings,
+        RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
-    void RenderSparkles(RenderSettings const & renderSettings);
-    void RenderGenericMipMappedTextures(RenderSettings const & renderSettings, RenderStatistics & renderStats);
-    void RenderExplosions(RenderSettings const & renderSettings);
-    void RenderHighlights(RenderSettings const & renderSettings);
-    void RenderVectorArrows(RenderSettings const & renderSettings);
+    void RenderSparkles(RenderParameters const & renderParameters);
+    void RenderGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
+    void RenderExplosions(RenderParameters const & renderParameters);
+    void RenderHighlights(RenderParameters const & renderParameters);
+    void RenderVectorArrows(RenderParameters const & renderParameters);
 
-    void ProcessSettingChanges(RenderSettings const & renderSettings);
-    void ApplyViewModelChanges(RenderSettings const & renderSettings);
-    void ApplyEffectiveAmbientLightIntensityChanges(RenderSettings const & renderSettings);
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+    void ApplyViewModelChanges(RenderParameters const & renderParameters);
+    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     // TODOOLD
     void OnLampLightColorUpdated();
     void OnWaterColorUpdated();
     void OnWaterContrastUpdated();
     void OnWaterLevelOfDetailUpdated();
-    void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameSizeAdjustmentUpdated();
+    void OnHeatOverlayTransparencyUpdated();    
 
 private:
 
@@ -1216,6 +1222,15 @@ private:
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
+    // Externally-controlled parameters that only affect Upload (i.e. that do
+    // not affect rendering directly) or that purely serve as input to calculated
+    // render parameters
+    //
+
+    float mHalfFlameQuadWidth;
+    float mFlameQuadHeight;
+
+    //
     // Parameters
     //
 
@@ -1227,9 +1242,6 @@ private:
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
     float mHeatOverlayTransparency;    
-    float mShipFlameSizeAdjustment;
-    float mHalfFlameQuadWidth;
-    float mFlameQuadHeight;
 };
 
 }

@@ -1172,6 +1172,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
                 mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
             });
 
+        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasPaint(): hiding SplashScreen");
         // Close splash screen
         mSplashScreenDialog->Close();
         mSplashScreenDialog->Destroy();

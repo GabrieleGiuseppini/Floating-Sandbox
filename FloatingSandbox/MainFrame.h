@@ -291,6 +291,8 @@ private:
     {
         if (!mHasWindowBeenShown)
         {
+            LogMessage("TODOTEST: MainFrame::AfterGameRender: showing frame");
+
             this->Show(true);
 
             if (StartInFullScreenMode)

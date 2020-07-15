@@ -7,7 +7,7 @@
 
 #include "NotificationRenderContext.h"
 #include "PerfStats.h"
-#include "RenderSettings.h"
+#include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
@@ -64,138 +64,138 @@ public:
 
     float const & GetZoom() const
     {
-        return mRenderSettings.View.GetZoom();
+        return mRenderParameters.View.GetZoom();
     }
 
     float ClampZoom(float zoom) const
     {
-        return mRenderSettings.View.ClampZoom(zoom);
+        return mRenderParameters.View.ClampZoom(zoom);
     }
 
     float const & SetZoom(float zoom)
     {
-        float const & newZoom = mRenderSettings.View.SetZoom(zoom);
-        mRenderSettings.IsViewDirty = true;
+        float const & newZoom = mRenderParameters.View.SetZoom(zoom);
+        mRenderParameters.IsViewDirty = true;
 
         return newZoom;
     }
 
     vec2f const & GetCameraWorldPosition() const
     {
-        return mRenderSettings.View.GetCameraWorldPosition();
+        return mRenderParameters.View.GetCameraWorldPosition();
     }
 
     vec2f ClampCameraWorldPosition(vec2f const & pos) const
     {
-        return mRenderSettings.View.ClampCameraWorldPosition(pos);
+        return mRenderParameters.View.ClampCameraWorldPosition(pos);
     }
 
     vec2f const & SetCameraWorldPosition(vec2f const & pos)
     {
-        vec2f const & newCameraWorldPosition = mRenderSettings.View.SetCameraWorldPosition(pos);
-        mRenderSettings.IsViewDirty = true;
+        vec2f const & newCameraWorldPosition = mRenderParameters.View.SetCameraWorldPosition(pos);
+        mRenderParameters.IsViewDirty = true;
 
         return newCameraWorldPosition;
     }
 
     int GetCanvasWidth() const
     {
-        return mRenderSettings.View.GetCanvasWidth();
+        return mRenderParameters.View.GetCanvasWidth();
     }
 
     int GetCanvasHeight() const
     {
-        return mRenderSettings.View.GetCanvasHeight();
+        return mRenderParameters.View.GetCanvasHeight();
     }
 
     void SetCanvasSize(int width, int height)
     {
-        mRenderSettings.View.SetCanvasSize(width, height);
-        mRenderSettings.IsViewDirty = true;
-        mRenderSettings.IsCanvasSizeDirty = true;
+        mRenderParameters.View.SetCanvasSize(width, height);
+        mRenderParameters.IsViewDirty = true;
+        mRenderParameters.IsCanvasSizeDirty = true;
     }
 
     void SetPixelOffset(float x, float y)
     {
-        mRenderSettings.View.SetPixelOffset(x, y);
-        mRenderSettings.IsViewDirty = true;
+        mRenderParameters.View.SetPixelOffset(x, y);
+        mRenderParameters.IsViewDirty = true;
     }
 
     void ResetPixelOffset()
     {
-        mRenderSettings.View.ResetPixelOffset();
-        mRenderSettings.IsViewDirty = true;
+        mRenderParameters.View.ResetPixelOffset();
+        mRenderParameters.IsViewDirty = true;
     }
 
     float GetVisibleWorldWidth() const
     {
-        return mRenderSettings.View.GetVisibleWorldWidth();
+        return mRenderParameters.View.GetVisibleWorldWidth();
     }
 
     float GetVisibleWorldHeight() const
     {
-        return mRenderSettings.View.GetVisibleWorldHeight();
+        return mRenderParameters.View.GetVisibleWorldHeight();
     }
 
     float GetVisibleWorldLeft() const
     {
-        return mRenderSettings.View.GetVisibleWorldTopLeft().x;
+        return mRenderParameters.View.GetVisibleWorldTopLeft().x;
     }
 
     float GetVisibleWorldRight() const
     {
-        return mRenderSettings.View.GetVisibleWorldBottomRight().x;
+        return mRenderParameters.View.GetVisibleWorldBottomRight().x;
     }
 
     float GetVisibleWorldTop() const
     {
-        return mRenderSettings.View.GetVisibleWorldTopLeft().y;
+        return mRenderParameters.View.GetVisibleWorldTopLeft().y;
     }
 
     float GetVisibleWorldBottom() const
     {
-        return mRenderSettings.View.GetVisibleWorldBottomRight().y;
+        return mRenderParameters.View.GetVisibleWorldBottomRight().y;
     }
 
     float CalculateZoomForWorldWidth(float worldWidth) const
     {
-        return mRenderSettings.View.CalculateZoomForWorldWidth(worldWidth);
+        return mRenderParameters.View.CalculateZoomForWorldWidth(worldWidth);
     }
 
     float CalculateZoomForWorldHeight(float worldHeight) const
     {
-        return mRenderSettings.View.CalculateZoomForWorldHeight(worldHeight);
+        return mRenderParameters.View.CalculateZoomForWorldHeight(worldHeight);
     }
 
     //
 
     float GetAmbientLightIntensity() const
     {
-        return mRenderSettings.AmbientLightIntensity;
+        return mAmbientLightIntensity;
     }
 
     void SetAmbientLightIntensity(float intensity)
     {
-        mRenderSettings.AmbientLightIntensity = intensity;
-        mRenderSettings.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(mRenderSettings);
-        mRenderSettings.IsEffectiveAmbientLightIntensityDirty = true;
+        mAmbientLightIntensity = intensity;
+        mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
+        mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
     }
 
     float GetEffectiveAmbientLightIntensity() const
     {
-        return mRenderSettings.EffectiveAmbientLightIntensity;
+        return mRenderParameters.EffectiveAmbientLightIntensity;
     }
 
     //
 
     rgbColor const & GetFlatSkyColor() const
     {
-        return mRenderSettings.FlatSkyColor;
+        return mRenderParameters.FlatSkyColor;
     }
 
     void SetFlatSkyColor(rgbColor const & color)
     {
-        mRenderSettings.FlatSkyColor = color;
+        mRenderParameters.FlatSkyColor = color;
         // No need to set dirty, this is picked up at each cycle anyway
     }
 
@@ -398,12 +398,12 @@ public:
 
     DebugShipRenderModeType GetDebugShipRenderMode() const
     {
-        return mRenderSettings.DebugShipRenderMode;
+        return mRenderParameters.DebugShipRenderMode;
     }
 
     void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
     {
-        mRenderSettings.DebugShipRenderMode = debugShipRenderMode;
+        mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
     }
 
     VectorFieldRenderModeType GetVectorFieldRenderMode() const
@@ -464,12 +464,12 @@ public:
 
     ShipFlameRenderModeType GetShipFlameRenderMode() const
     {
-        return mRenderSettings.ShipFlameRenderMode;
+        return mRenderParameters.ShipFlameRenderMode;
     }
 
     void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
     {
-        mRenderSettings.ShipFlameRenderMode = shipFlameRenderMode;
+        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
         // No need to notify, will be picked up
     }
 
@@ -482,7 +482,10 @@ public:
     {
         mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
 
-        OnShipFlameSizeAdjustmentUpdated();
+        for (auto & s : mShips)
+        {
+            s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
+        }
     }
 
     static constexpr float MinShipFlameSizeAdjustment = 0.1f;
@@ -494,12 +497,12 @@ public:
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
     {
-        return mRenderSettings.View.ScreenToWorld(screenCoordinates);
+        return mRenderParameters.View.ScreenToWorld(screenCoordinates);
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
     {
-        return mRenderSettings.View.ScreenOffsetToWorldOffset(screenOffset);
+        return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }
 
     //
@@ -557,8 +560,8 @@ public:
         if (darkening != mStormAmbientDarkening)
         {
             mStormAmbientDarkening = darkening;
-            mRenderSettings.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(mRenderSettings);
-            mRenderSettings.IsEffectiveAmbientLightIntensityDirty = true;
+            mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity();
+            mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
     }
 
@@ -580,7 +583,7 @@ public:
         float personalitySeed)
     {
         // Get NDC coordinates of world y=0 (i.e. sea level)
-        float const ndcSeaLevel = mRenderSettings.View.WorldToNdc(vec2f::zero()).y;
+        float const ndcSeaLevel = mRenderParameters.View.WorldToNdc(vec2f::zero()).y;
 
         // Store vertices
         StoreLightningVertices(
@@ -602,7 +605,7 @@ public:
     {
         // Get NDC coordinates of tip point, a few metres down,
         // to make sure tip touches visually the point
-        vec2f const ndcTip = mRenderSettings.View.WorldToNdc(
+        vec2f const ndcTip = mRenderParameters.View.WorldToNdc(
             tipWorldCoordinates
             + vec2f(0.0f, -3.0f));
 
@@ -650,7 +653,7 @@ public:
         // Populate quad in buffer
         //
 
-        float const aspectRatio = mRenderSettings.View.GetAspectRatio();
+        float const aspectRatio = mRenderParameters.View.GetAspectRatio();
 
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
@@ -720,7 +723,7 @@ public:
         float x,
         float yLand)
     {
-        float const yVisibleWorldBottom = mRenderSettings.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = mRenderParameters.View.GetVisibleWorldBottomRight().y;
 
         //
         // Store Land element
@@ -748,7 +751,7 @@ public:
         float yOcean,
         float oceanDepth)
     {
-        float const yVisibleWorldBottom = mRenderSettings.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = mRenderParameters.View.GetVisibleWorldBottomRight().y;
 
         //
         // Store ocean element
@@ -861,7 +864,7 @@ public:
         vec2f const & centerPosition,
         float progress)
     {
-        auto const & viewModel = mRenderSettings.View;
+        auto const & viewModel = mRenderParameters.View;
 
         // Triangle 1
 
@@ -1255,7 +1258,7 @@ public:
             scale,
             flamePersonalitySeed,
             isOnChain,
-            mRenderSettings);
+            mRenderParameters);
     }
 
     void UploadShipFlamesEnd(ShipId shipId)
@@ -1618,23 +1621,23 @@ private:
     void InitializeGenericTextures(ResourceLocator const & resourceLocator);
     void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
 
-    void RenderStars(RenderSettings const & renderSettings);
-    void PrepareRenderLightnings(RenderSettings const & renderSettings);
-    void RenderCloudsAndBackgroundLightnings(RenderSettings const & renderSettings);
-    void RenderOcean(bool opaquely, RenderSettings const & renderSettings);
-    void RenderOceanFloor(RenderSettings const & renderSettings);
-    void RenderAMBombPreImplosions(RenderSettings const & renderSettings);
-    void RenderCrossesOfLight(RenderSettings const & renderSettings);
-    void RenderHeatBlasterFlame(RenderSettings const & renderSettings);
-    void RenderFireExtinguisherSpray(RenderSettings const & renderSettings);
-    void RenderForegroundLightnings(RenderSettings const & renderSettings);
-    void RenderRain(RenderSettings const & renderSettings);
-    void RenderWorldBorder(RenderSettings const & renderSettings);
+    void RenderStars(RenderParameters const & renderParameters);
+    void PrepareRenderLightnings(RenderParameters const & renderParameters);
+    void RenderCloudsAndBackgroundLightnings(RenderParameters const & renderParameters);
+    void RenderOcean(bool opaquely, RenderParameters const & renderParameters);
+    void RenderOceanFloor(RenderParameters const & renderParameters);
+    void RenderAMBombPreImplosions(RenderParameters const & renderParameters);
+    void RenderCrossesOfLight(RenderParameters const & renderParameters);
+    void RenderHeatBlasterFlame(RenderParameters const & renderParameters);
+    void RenderFireExtinguisherSpray(RenderParameters const & renderParameters);
+    void RenderForegroundLightnings(RenderParameters const & renderParameters);
+    void RenderRain(RenderParameters const & renderParameters);
+    void RenderWorldBorder(RenderParameters const & renderParameters);
 
-    void ProcessSettingChanges(RenderSettings const & renderSettings);
-    void ApplyViewModelChanges(RenderSettings const & renderSettings);
-    void ApplyCanvasSizeChanges(RenderSettings const & renderSettings);
-    void ApplyEffectiveAmbientLightIntensityChanges(RenderSettings const & renderSettings);
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+    void ApplyViewModelChanges(RenderParameters const & renderParameters);
+    void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
+    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     // TODOOLD
     void OnOceanTransparencyUpdated();
     void OnOceanDarkeningRateUpdated();
@@ -1650,10 +1653,9 @@ private:
     void OnShowStressedSpringsUpdated();
     void OnDrawHeatOverlayUpdated();
     void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameSizeAdjustmentUpdated();
 
-    void RecalculateWorldBorder(RenderSettings const & renderSettings);
-    float CalculateEffectiveAmbientLightIntensity(RenderSettings const & renderSettings) const;
+    void RecalculateWorldBorder(RenderParameters const & renderParameters);
+    float CalculateEffectiveAmbientLightIntensity() const;
     vec4f CalculateLampLightColor() const;
     vec4f CalculateWaterColor() const;
 
@@ -1849,7 +1851,7 @@ private:
 #pragma pack(pop)
 
     //
-    // Buffers and params
+    // VBOs and uploaded buffers and params
     //
 
     BoundedVector<StarVertex> mStarVertexBuffer;
@@ -1960,6 +1962,15 @@ private:
 
     std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
 
+    //
+    // Externally-controlled parameters that only affect Upload (i.e. that do
+    // not affect rendering directly) or that purely serve as input to calculated
+    // render parameters
+    //
+
+    float mAmbientLightIntensity;
+    float mShipFlameSizeAdjustment;
+
 private:
 
     //
@@ -1976,10 +1987,10 @@ private:
     std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
     //
-    // Render settings
+    // Render parameters
     //
 
-    RenderSettings mRenderSettings;
+    RenderParameters mRenderParameters;
 
     // TODOOLD
     float mOceanTransparency;
@@ -2004,8 +2015,7 @@ private:
     float mVectorFieldLengthMultiplier;
     bool mShowStressedSprings;
     bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;
-    float mShipFlameSizeAdjustment;
+    float mHeatOverlayTransparency;    
 
     //
     // Statistics

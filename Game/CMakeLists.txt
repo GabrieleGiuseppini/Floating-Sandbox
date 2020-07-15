@@ -95,8 +95,8 @@ set  (RENDER_SOURCES
 	NotificationRenderContext.h
 	RenderContext.cpp
 	RenderContext.h
-	RenderSettings.cpp
-	RenderSettings.h
+	RenderParameters.cpp
+	RenderParameters.h
 	RenderTypes.h
 	ShaderTypes.cpp
 	ShaderTypes.h

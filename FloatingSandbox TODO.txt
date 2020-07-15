@@ -497,12 +497,19 @@ Render:
 								  & mRenderSettings.IsEffectiveAmbientLightIntensityDirty=true
 					= Flames
 						+ Re-enable upload
-						= mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
-							= Picked up (when dirty) at PrepareRenderFlames(.), together with buffers
-							- Also at Lightnings
+						+ mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
+							+ Picked up (when dirty) at PrepareRenderFlames(.), together with buffers
+							+ Also at Lightnings
 						+ Buffers
-						- FlameSizeAdjustment: keep as-is, confirming that it's only used for Ship::UploadFlames()
-						- TakeSnapshotAndClear()
+						+ FlameSizeAdjustment: keep as-is, confirming that it's only used for Ship::UploadFlames()
+							+ Setting is in new RenderContext section that has upload-only settings, or settings that
+							  are used to calculate RenderParameter values immediately
+							+ RenderContext::SetFlameSizeAdjustment(): - store; call all ships' UpdateFlameSizeAdjustment(adj)
+							  which calculates those two vals and stores them in the Ship's corresponding section
+								+ UpdateFlameSizeAdjustment also called by cctor on raw cctor arg
+							+ Move AmbientLightIntensity storage here
+						+ "TakeSnapshotAndClear()"
+						= Test: wider flame
 					- StressedSprings
 					- Setters: TODO
 					= Fix render stats
@@ -539,6 +546,11 @@ Render:
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
 					- See if may unify foreground and background ship flame shaders
+
+		- ARM issues:
+			- See if can get rid of floorf ipv #include <cmath>
+			- CMAKE_EXE_LINKER_FLAGS
+			- Crash because SplashScreen not shown
 
 		- Default ship @ Install: Titanic with Power
 

@@ -3,15 +3,14 @@
 * Created:				2020-07-12
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "RenderSettings.h"
+#include "RenderParameters.h"
 
 namespace Render {
 
-RenderSettings::RenderSettings(ImageSize const & initialCanvasSize)
+RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	: View(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
 	, IsViewDirty(true)
 	, IsCanvasSizeDirty(true)
-	, AmbientLightIntensity(1.0f)
 	, EffectiveAmbientLightIntensity(1.0f)
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	// World
@@ -39,14 +38,13 @@ RenderSettings::RenderSettings(ImageSize const & initialCanvasSize)
 	, DrawHeatOverlay(false)
 	, HeatOverlayTransparency(0.1875f)
 	, ShipFlameRenderMode(ShipFlameRenderModeType::Mode1)
-	, ShipFlameSizeAdjustment(1.0f)
 {
 }
 
-RenderSettings RenderSettings::Snapshot()
+RenderParameters RenderParameters::TakeSnapshotAndClear()
 {
 	// Make copy
-	RenderSettings copy = *this;
+	RenderParameters copy = *this;
 
 	// Clear own 'dirty' flags
 	IsViewDirty = false;
