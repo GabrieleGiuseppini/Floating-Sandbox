@@ -273,7 +273,9 @@ RenderContext::~RenderContext()
 
 void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
 {
+    LogMessage("TODOTEST: RenderContext::RebindContext: start");
     mRenderThread.RunSynchronously(std::move(rebindContextFunction));
+    LogMessage("TODOTEST: RenderContext::RebindContext: end");
 }
 
 void RenderContext::Reset()
@@ -601,7 +603,9 @@ void RenderContext::Draw()
             mNotificationRenderContext->Draw();
 
             // Flip the back buffer onto the screen
+            LogMessage("TODOTEST: RenderContext::Draw: Swapping buffers...");
             mSwapRenderBuffersFunction();
+            LogMessage("TODOTEST: RenderContext::Draw: ...buffers swapped.");
 
             // Update stats
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
