@@ -83,7 +83,6 @@ RenderContext::RenderContext(
     , mOceanTextureOpenGLHandle()
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
-    , mLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     , mGenericLinearTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata()
     , mGenericMipMappedTextureAtlasOpenGLHandle()
@@ -100,7 +99,9 @@ RenderContext::RenderContext(
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
     , mShipFlameSizeAdjustment(1.0f)
-    , mDefaultWaterColor(0x00, 0x00, 0xcc)
+    , mShipDefaultWaterColor(0x00, 0x00, 0xcc)
+    , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
+    , mVectorFieldLengthMultiplier(1.0f)
     // Rendering externals
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     // Managers
@@ -111,16 +112,6 @@ RenderContext::RenderContext(
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
-    // TODOOLD
-    , mLandRenderMode(LandRenderModeType::Texture)    
-    , mSelectedLandTextureIndex(3) // Rock Coarse 3
-    , mFlatLandColor(0x72, 0x46, 0x05)
-    //    
-    , mWaterContrast(0.71875f)
-    , mWaterLevelOfDetail(0.6875f)
-    , mVectorFieldLengthMultiplier(1.0f)
-    , mDrawHeatOverlay(false)
-    , mHeatOverlayTransparency(0.1875f)
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -240,10 +231,12 @@ RenderContext::RenderContext(
 
 
             //
-            // Set initial values of non-render parameters
+            // Set initial values of non-render parameters from which
+            // other parameters are calculated
             //
 
             SetAmbientLightIntensity(mAmbientLightIntensity);
+            SetShipDefaultWaterColor(mShipDefaultWaterColor);
 
 
             //
@@ -251,15 +244,6 @@ RenderContext::RenderContext(
             //
 
             ProcessParameterChanges(mRenderParameters);
-
-            // TODOOLD
-            OnLandRenderParametersUpdated();
-            OnLandTextureIndexUpdated();
-            // Ship
-            OnWaterContrastUpdated();
-            OnWaterLevelOfDetailUpdated();
-            OnDrawHeatOverlayUpdated();
-            OnHeatOverlayTransparencyUpdated();
 
 
             //
@@ -348,12 +332,7 @@ void RenderContext::AddShip(
                     *mGenericLinearTextureAtlasMetadata,
                     *mGenericMipMappedTextureAtlasMetadata,
                     mRenderParameters,
-                    mShipFlameSizeAdjustment,
-                    // TODOOLD
-                    mWaterContrast,
-                    mWaterLevelOfDetail,
-                    mDrawHeatOverlay,
-                    mHeatOverlayTransparency));
+                    mShipFlameSizeAdjustment));
         });
 }
 
@@ -1494,7 +1473,7 @@ void RenderContext::RenderOceanFloor(RenderParameters const & renderParameters)
 
     glBindVertexArray(*mLandVAO);
 
-    switch (mLandRenderMode)
+    switch (renderParameters.LandRenderMode)
     {
         case LandRenderModeType::Flat:
         {
@@ -1783,6 +1762,16 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyOceanTextureIndexChanges(renderParameters);
     }
+
+    if (renderParameters.AreLandRenderParametersDirty)
+    {
+        ApplyLandRenderParametersChanges(renderParameters);
+    }
+
+    if (renderParameters.IsLandTextureIndexDirty)
+    {
+        ApplyLandTextureIndexChanges(renderParameters);
+    }
 }
 
 void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -2004,13 +1993,11 @@ void RenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & rende
     mShaderManager->SetTextureParameters<ProgramType::OceanTexture>();
 }
 
-// TODOOLD
-
-void RenderContext::OnLandRenderParametersUpdated()
+void RenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)
 {
-    // Set land parameters in all water programs
+    // Set land parameters in all land programs
 
-    auto flatColor = mFlatLandColor.toVec3f();
+    auto const flatColor = renderParameters.FlatLandColor.toVec3f();
     mShaderManager->ActivateProgram<ProgramType::LandFlat>();
     mShaderManager->SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::LandFlatColor>(
         flatColor.x,
@@ -2018,91 +2005,52 @@ void RenderContext::OnLandRenderParametersUpdated()
         flatColor.z);
 }
 
-void RenderContext::OnLandTextureIndexUpdated()
+void RenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
 {
-    if (mSelectedLandTextureIndex != mLoadedLandTextureIndex)
-    {
-        //
-        // Reload the land texture
-        //
+    //
+    // Reload the land texture
+    //
 
-        // Destroy previous texture
-        mLandTextureOpenGLHandle.reset();
+    // Destroy previous texture
+    mLandTextureOpenGLHandle.reset();
 
-        // Clamp the texture index
-        mLoadedLandTextureIndex = std::min(mSelectedLandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
+    // Clamp the texture index
+    auto clampedLandTextureIndex = std::min(renderParameters.LandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
 
-        // Load texture image
-        auto landTextureFrame = mLandTextureFrameSpecifications[mLoadedLandTextureIndex].LoadFrame();
+    // Load texture image
+    auto landTextureFrame = mLandTextureFrameSpecifications[clampedLandTextureIndex].LoadFrame();
 
-        // Activate texture
-        mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
+    // Activate texture
+    mShaderManager->ActivateTexture<ProgramParameterType::LandTexture>();
 
-        // Create texture
-        GLuint tmpGLuint;
-        glGenTextures(1, &tmpGLuint);
-        mLandTextureOpenGLHandle = tmpGLuint;
+    // Create texture
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mLandTextureOpenGLHandle = tmpGLuint;
 
-        // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
-        CheckOpenGLError();
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
+    CheckOpenGLError();
 
-        // Upload texture
-        GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
+    // Upload texture
+    GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
 
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        CheckOpenGLError();
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
 
-        // Set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        CheckOpenGLError();
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
 
-        // Set texture and texture parameters in shader
-        mShaderManager->ActivateProgram<ProgramType::LandTexture>();
-        mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
-            1.0f / landTextureFrame.Metadata.WorldWidth,
-            1.0f / landTextureFrame.Metadata.WorldHeight);
-        mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
-    }
-}
-
-void RenderContext::OnWaterContrastUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetWaterContrast(mWaterContrast);
-    }
-}
-
-void RenderContext::OnWaterLevelOfDetailUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetWaterLevelThreshold(mWaterLevelOfDetail);
-    }
-}
-
-void RenderContext::OnDrawHeatOverlayUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetDrawHeatOverlay(mDrawHeatOverlay);
-    }
-}
-
-void RenderContext::OnHeatOverlayTransparencyUpdated()
-{
-    // Set parameter in all ships
-    for (auto & s : mShips)
-    {
-        s->SetHeatOverlayTransparency(mHeatOverlayTransparency);
-    }
+    // Set texture and texture parameters in shader
+    mShaderManager->ActivateProgram<ProgramType::LandTexture>();
+    mShaderManager->SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
+        1.0f / landTextureFrame.Metadata.WorldWidth,
+        1.0f / landTextureFrame.Metadata.WorldHeight);
+    mShaderManager->SetTextureParameters<ProgramType::LandTexture>();
 }
 
 template <typename TVertexBuffer>
@@ -2264,7 +2212,7 @@ vec4f RenderContext::CalculateShipWaterColor() const
         {
             assert(mRenderParameters.OceanRenderMode == OceanRenderModeType::Texture); // Darn VS - warns
 
-            return mDefaultWaterColor.toVec4f(1.0f);
+            return mShipDefaultWaterColor.toVec4f(1.0f);
         }
     }
 }

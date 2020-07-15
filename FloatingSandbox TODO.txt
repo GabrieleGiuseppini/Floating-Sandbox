@@ -515,26 +515,24 @@ Render:
 						+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
 						  and then stores in own member, of type std::atomic
 						+ @ Use: get local copy
-				= 6b: All setters
-					- TODOOLD:
-						- Special strategy for "seldom" setters 
-							- Queued and waited for those that do OpenGL (including shader params) (e.g. ocean textures, water color)
-							- std::atomic and local copy for those used as switches (e.g. render modes)
-					- ShipRenderContext setters
+				+ 6b: All setters
+					+ ShipRenderContext setters
 						+ FlatLampLightColor
 						+ ShowStressedSprings
 						+ WaterColor (default color; derivation from ocean rendering settings)
-						- WaterContrast: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
-						- WaterLevelOfDetail: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
-
-						- VectorFieldRenderMode: pure storage, so member @ RenderContext and that's it
-						- VectorLengthAdjustment: only at Update, so member @ RenderContext and used when forwarding Upload to ship (like now)
-					- RenderContext setters
+						+ WaterContrast: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+						+ WaterLevelOfDetail: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+						+ VectorFieldRenderMode: pure storage, so member @ RenderContext and that's it
+						+ VectorLengthAdjustment: only at Update, so member @ RenderContext and used when forwarding Upload to ship (like now)
+						+ DrawHeatOverlay
+						+ HeatOverlayTransparency
+						+ DebugShipRenderMode
+					+ RenderContext setters
 						+ OceanTransparency
 						+ OceanDarkeningRate
 						+ All ocean rendering settings (render mode, colors, texture index)
 						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
-						- Land parameters & texture index (exactly like ocean, but without WaterColor complication)
+						= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
 				- 7: Complete RenderContext Implementation (5)
 					- Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					- Screenshot: queued and waited, like SpringLab
@@ -553,20 +551,19 @@ Render:
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
-					- See to cleanup GameController::PerfStats state machine
 					- Test with OpenGL uploads all up-front
 						- New perf stat: portion of Render that is purely upload
+					- See if may unify foreground and background ship flame shaders
 					- Do APITrace, including shutdown
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
-					- See if may unify foreground and background ship flame shaders
 
 		- ARM issues:
 			- See if can get rid of floorf ipv #include <cmath>
-			- CMAKE_EXE_LINKER_FLAGS
+			- CMAKE_EXE_LINKER_FLAGS: figure out which projects fail, and add CMAKE_<TBD>_LINKER_FLAGS for them
 			- Crash because SplashScreen not shown
 
 		- Default ship @ Install: Titanic with Power

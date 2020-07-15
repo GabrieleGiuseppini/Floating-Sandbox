@@ -26,6 +26,11 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, OceanTextureIndex(0) // Wavy Clear Thin
 	, IsOceanTextureIndexDirty(true)
 	, ShowShipThroughOcean(false)
+	, LandRenderMode(LandRenderModeType::Texture)	
+	, FlatLandColor(0x72, 0x46, 0x05)
+	, AreLandRenderParametersDirty(true)
+	, LandTextureIndex(3) // Rock Coarse 3
+	, IsLandTextureIndexDirty(true)
 	// Ship
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, IsFlatLampLightColorDirty(true)
@@ -33,17 +38,16 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, ShowStressedSprings(false)
 	, ShipWaterColor(vec4f::zero()) // Calculated
 	, IsShipWaterColorDirty(true)
-	// TODOOLD	
-	, LandRenderMode(LandRenderModeType::Texture)
-	, SelectedLandTextureIndex(3) // Rock Coarse 3
-	, FlatLandColor(0x72, 0x46, 0x05)
-	//		
-	, WaterContrast(0.71875f)
-	, WaterLevelOfDetail(0.6875f)
-	, DebugShipRenderMode(DebugShipRenderModeType::None)
-	, VectorFieldLengthMultiplier(1.0f)	
+	, ShipWaterContrast(0.71875f)
+	, IsShipWaterContrastDirty(true)
+	, ShipWaterLevelOfDetail(0.6875f)
+	, IsShipWaterLevelOfDetailDirty(true)
 	, DrawHeatOverlay(false)
-	, HeatOverlayTransparency(0.1875f)	
+	, HeatOverlayTransparency(0.1875f)
+	, IsHeatOverlayTransparencyDirty(true)
+	// TODOOLD	
+	//			
+	, DebugShipRenderMode(DebugShipRenderModeType::None)		
 {
 }
 
@@ -59,9 +63,14 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsOceanDarkeningRateDirty = false;
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
+	AreLandRenderParametersDirty = false;
+	IsLandTextureIndexDirty = false;
 	//
 	IsFlatLampLightColorDirty = false;
 	IsShipWaterColorDirty = false;
+	IsShipWaterContrastDirty = false;
+	IsShipWaterLevelOfDetailDirty = false;
+	IsHeatOverlayTransparencyDirty = false;
 
 	return copy;
 }

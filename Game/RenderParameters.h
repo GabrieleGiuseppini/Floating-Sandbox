@@ -51,6 +51,13 @@ struct RenderParameters
 
     bool ShowShipThroughOcean;
 
+    LandRenderModeType LandRenderMode;
+    rgbColor FlatLandColor;
+    bool AreLandRenderParametersDirty; // Tracks all of the above as a whole, for convenience
+
+    size_t LandTextureIndex;
+    bool IsLandTextureIndexDirty;    
+
     //
     // Ship
     //
@@ -65,17 +72,20 @@ struct RenderParameters
     vec4f ShipWaterColor; // Calculated
     bool IsShipWaterColorDirty;
 
-    // TODOOLD           
-    LandRenderModeType LandRenderMode;
-    size_t SelectedLandTextureIndex;
-    rgbColor FlatLandColor;
-    //
-    float WaterContrast;
-    float WaterLevelOfDetail;
-    DebugShipRenderModeType DebugShipRenderMode;
-    float VectorFieldLengthMultiplier;    
+    float ShipWaterContrast;
+    bool IsShipWaterContrastDirty;
+
+    float ShipWaterLevelOfDetail;
+    bool IsShipWaterLevelOfDetailDirty;
+
     bool DrawHeatOverlay;
-    float HeatOverlayTransparency;    
+
+    float HeatOverlayTransparency;
+    float IsHeatOverlayTransparencyDirty;
+
+    // TODOOLD           
+    //
+    DebugShipRenderModeType DebugShipRenderMode;
 
     RenderParameters(ImageSize const & initialCanvasSize);
 

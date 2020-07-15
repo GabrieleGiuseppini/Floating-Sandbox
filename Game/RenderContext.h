@@ -305,21 +305,43 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    rgbColor const & GetDefaultWaterColor() const
+    LandRenderModeType GetLandRenderMode() const
     {
-        return mDefaultWaterColor;
+        return mRenderParameters.LandRenderMode;
     }
 
-    void SetDefaultWaterColor(rgbColor const & color)
+    void SetLandRenderMode(LandRenderModeType landRenderMode)
     {
-        mDefaultWaterColor = color;
-
-        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
-        mRenderParameters.IsShipWaterColorDirty = true;
+        mRenderParameters.LandRenderMode = landRenderMode;
+        mRenderParameters.AreLandRenderParametersDirty = true;
     }
 
-    // TODOHERE: move more here
+    rgbColor const & GetFlatLandColor() const
+    {
+        return mRenderParameters.FlatLandColor;
+    }
 
+    void SetFlatLandColor(rgbColor const & color)
+    {
+        mRenderParameters.FlatLandColor = color;
+        mRenderParameters.AreLandRenderParametersDirty = true;
+    }
+
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    {
+        return mLandAvailableThumbnails;
+    }
+
+    size_t GetTextureLandTextureIndex() const
+    {
+        return mRenderParameters.LandTextureIndex;
+    }
+
+    void SetTextureLandTextureIndex(size_t index)
+    {
+        mRenderParameters.LandTextureIndex = index;
+        mRenderParameters.IsLandTextureIndexDirty = true;
+    }
 
     //
     // Ship rendering properties
@@ -376,88 +398,64 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    // TODOOLD    
-
-    LandRenderModeType GetLandRenderMode() const
+    rgbColor const & GetShipDefaultWaterColor() const
     {
-        return mLandRenderMode;
+        return mShipDefaultWaterColor;
     }
 
-    void SetLandRenderMode(LandRenderModeType landRenderMode)
+    void SetShipDefaultWaterColor(rgbColor const & color)
     {
-        mLandRenderMode = landRenderMode;
+        mShipDefaultWaterColor = color;
 
-        OnLandRenderParametersUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    float GetShipWaterContrast() const
     {
-        return mLandAvailableThumbnails;
+        return mRenderParameters.ShipWaterContrast;
     }
 
-    size_t GetTextureLandTextureIndex() const
+    void SetShipWaterContrast(float contrast)
     {
-        return mSelectedLandTextureIndex;
+        mRenderParameters.ShipWaterContrast = contrast;
+        mRenderParameters.IsShipWaterContrastDirty = true;
     }
 
-    void SetTextureLandTextureIndex(size_t index)
+    float GetShipWaterLevelOfDetail() const
     {
-        mSelectedLandTextureIndex = index;
-
-        OnLandTextureIndexUpdated();
+        return mRenderParameters.ShipWaterLevelOfDetail;
     }
 
-    rgbColor const & GetFlatLandColor() const
+    void SetShipWaterLevelOfDetail(float levelOfDetail)
     {
-        return mFlatLandColor;
+        mRenderParameters.ShipWaterLevelOfDetail = levelOfDetail;
+        mRenderParameters.IsShipWaterLevelOfDetailDirty = true;
     }
 
-    void SetFlatLandColor(rgbColor const & color)
-    {
-        mFlatLandColor = color;
+    static constexpr float MinShipWaterLevelOfDetail = 0.0f;
+    static constexpr float MaxShipWaterLevelOfDetail = 1.0f;
 
-        OnLandRenderParametersUpdated();
+    bool GetDrawHeatOverlay() const
+    {
+        return mRenderParameters.DrawHeatOverlay;
     }
 
-    //
-    // Ship rendering properties
-    //
-
-    float GetWaterContrast() const
+    void SetDrawHeatOverlay(bool drawHeatOverlay)
     {
-        return mWaterContrast;
+        mRenderParameters.DrawHeatOverlay = drawHeatOverlay;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
-    void SetWaterContrast(float contrast)
+    float GetHeatOverlayTransparency() const
     {
-        mWaterContrast = contrast;
-
-        OnWaterContrastUpdated();
+        return mRenderParameters.HeatOverlayTransparency;
     }
 
-    float GetWaterLevelOfDetail() const
+    void SetHeatOverlayTransparency(float transparency)
     {
-        return mWaterLevelOfDetail;
-    }
-
-    void SetWaterLevelOfDetail(float levelOfDetail)
-    {
-        mWaterLevelOfDetail = levelOfDetail;
-
-        OnWaterLevelOfDetailUpdated();
-    }
-
-    static constexpr float MinWaterLevelOfDetail = 0.0f;
-    static constexpr float MaxWaterLevelOfDetail = 1.0f;
-
-    DebugShipRenderModeType GetDebugShipRenderMode() const
-    {
-        return mRenderParameters.DebugShipRenderMode;
-    }
-
-    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
-    {
-        mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
+        mRenderParameters.HeatOverlayTransparency = transparency;
+        mRenderParameters.IsHeatOverlayTransparencyDirty = true;
     }
 
     VectorFieldRenderModeType GetVectorFieldRenderMode() const
@@ -480,28 +478,14 @@ public:
         mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
-    bool GetDrawHeatOverlay() const
+    DebugShipRenderModeType GetDebugShipRenderMode() const
     {
-        return mDrawHeatOverlay;
+        return mRenderParameters.DebugShipRenderMode;
     }
 
-    void SetDrawHeatOverlay(bool drawHeatOverlay)
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
     {
-        mDrawHeatOverlay = drawHeatOverlay;
-
-        OnDrawHeatOverlayUpdated();
-    }
-
-    float GetHeatOverlayTransparency() const
-    {
-        return mHeatOverlayTransparency;
-    }
-
-    void SetHeatOverlayTransparency(float transparency)
-    {
-        mHeatOverlayTransparency = transparency;
-
-        OnHeatOverlayTransparencyUpdated();
+        mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
     }
 
     //
@@ -1654,15 +1638,9 @@ private:
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
-    void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
-    // TODOOLD                
-    void OnLandRenderParametersUpdated();
-    void OnLandTextureIndexUpdated();
-    // Ship
-    void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();    
-    void OnDrawHeatOverlayUpdated();
-    void OnHeatOverlayTransparencyUpdated();
+    void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);    
+    void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
+    void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
 
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
     float CalculateEffectiveAmbientLightIntensity() const;
@@ -1939,7 +1917,6 @@ private:
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
-    size_t mLoadedLandTextureIndex;
 
     GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
@@ -1972,13 +1949,16 @@ private:
 
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
-    // not affect rendering directly) or that purely serve as input to calculated
-    // render parameters
+    // not affect rendering directly), or that purely serve as input to calculated
+    // render parameters, or that only need storage here (e.g. being used elsewhere 
+    // to control upload's)
     //
 
     float mAmbientLightIntensity;
     float mShipFlameSizeAdjustment;
-    rgbColor mDefaultWaterColor;
+    rgbColor mShipDefaultWaterColor;
+    VectorFieldRenderModeType mVectorFieldRenderMode;
+    float mVectorFieldLengthMultiplier;
 
 private:
 
@@ -2004,18 +1984,6 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
-
-    // TODOOLD    
-    LandRenderModeType mLandRenderMode;    
-    size_t mSelectedLandTextureIndex;
-    rgbColor mFlatLandColor;
-    // Ship    
-    float mWaterContrast;
-    float mWaterLevelOfDetail;
-    VectorFieldRenderModeType mVectorFieldRenderMode;
-    float mVectorFieldLengthMultiplier;
-    bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;    
 
     //
     // Statistics

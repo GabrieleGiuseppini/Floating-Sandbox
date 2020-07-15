@@ -53,12 +53,7 @@ public:
         TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
         TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
         RenderParameters const & renderParameters,
-        float shipFlameSizeAdjustment,
-        // TODOOLD                
-        float waterContrast,
-        float waterLevelOfDetail,
-        bool drawHeatOverlay,
-        float heatOverlayTransparency);
+        float shipFlameSizeAdjustment);
 
     ~ShipRenderContext();
 
@@ -76,38 +71,7 @@ public:
         mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
         mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
     }
-
-    // TODOHERE
-    
-    void SetWaterContrast(float waterContrast)
-    {
-        mWaterContrast = waterContrast;
-
-        // React
-        OnWaterContrastUpdated();
-    }
-
-    void SetWaterLevelThreshold(float waterLevelOfDetail)
-    {
-        mWaterLevelOfDetail = waterLevelOfDetail;
-
-        // React
-        OnWaterLevelOfDetailUpdated();
-    }
-
-    void SetDrawHeatOverlay(bool drawHeatOverlay)
-    {
-        mDrawHeatOverlay = drawHeatOverlay;
-    }
-
-    void SetHeatOverlayTransparency(float transparency)
-    {
-        mHeatOverlayTransparency = transparency;
-
-        // React
-        OnHeatOverlayTransparencyUpdated();
-    }
-    
+       
 public:
 
     void UploadStart(PlaneId maxMaxPlaneId);
@@ -902,10 +866,9 @@ private:
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
     void ApplyWaterColorChanges(RenderParameters const & renderParameters);
-    // TODOOLD        
-    void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();
-    void OnHeatOverlayTransparencyUpdated();    
+    void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
+    void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
+    void ApplyHeatOverlayTransparencyChanges(RenderParameters const & renderParameters);
 
 private:
 
@@ -1204,16 +1167,6 @@ private:
 
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
-
-    //
-    // Parameters
-    //
-
-    // TODO: should nuke all of these
-    float mWaterContrast;
-    float mWaterLevelOfDetail;
-    bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;    
 };
 
 }
