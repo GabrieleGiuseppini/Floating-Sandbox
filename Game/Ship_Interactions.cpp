@@ -1338,7 +1338,7 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
                         {
                             // Height of to-be-inserted point is augmented based on distance from the point
                             float const distance = (candidatePos - pos).length();
-                            float const actualPosY = pos.y + std::max(floor(distance / 3.0f), 5.0f);
+                            float const actualPosY = pos.y + std::max(std::floor(distance / 3.0f), 5.0f);
                             return candidatePos.y > actualPosY;
                         }),
                     pos);
