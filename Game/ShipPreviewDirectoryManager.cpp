@@ -105,7 +105,7 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
             previewImageFileLastModified,
             previewImage.MakeCopy());
 
-        return std::move(previewImage);
+        return previewImage;
     }
 }
 
