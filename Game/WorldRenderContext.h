@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GlobalRenderContext.h"
 #include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
@@ -17,7 +18,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
-#include <Game/GameParameters.h>
+//#include <Game/GameParameters.h> // TODO?
 
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
@@ -42,16 +43,23 @@ public:
 
     WorldRenderContext(
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-        UploadedTextureManager<NoiseTextureGroups> const & uploadedNoiseTexturesManager);
+        GlobalRenderContext const & globalRenderContext);
 
     ~WorldRenderContext();
 
-    void InitializeBuffersAndVAOs();
-
     void InitializeCloudTextures(ResourceLocator const & resourceLocator);
 
-    void InitializeWorldTextures(ResourceLocator const & resourceLocator);
+    void InitializeWorldTextures(ResourceLocator const & resourceLocator);    
+
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
+    {
+        return mOceanAvailableThumbnails;
+    }
+
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    {
+        return mLandAvailableThumbnails;
+    }
 
     inline float GetStormAmbientDarkening() const
     {
@@ -790,16 +798,6 @@ private:
     GameOpenGLTexture mLandTextureOpenGLHandle;
 
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
-    UploadedTextureManager<NoiseTextureGroups> const & mUploadedNoiseTexturesManager;
-
-    /* TODOOLD
-
-    GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericMipMappedTextureGroups>> mGenericMipMappedTextureAtlasMetadata;
-
-    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
-    */
 
 private:
 

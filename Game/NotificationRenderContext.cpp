@@ -13,7 +13,7 @@ float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
 NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
+    GlobalRenderContext const & globalRenderContext,
     int canvasWidth,
     int canvasHeight,
     float effectiveAmbientLightIntensity)
@@ -24,7 +24,7 @@ NotificationRenderContext::NotificationRenderContext(
 	//
     , mFontRenderContexts()
     //
-    , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
+    , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mTextureNotificationVAO()
     , mTextureNotificationVertexBuffer()
     , mIsTextureNotificationVertexBufferDirty(false)

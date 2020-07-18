@@ -33,18 +33,11 @@ RenderContext::RenderContext(
     , mFireExtinguisherSprayVBO()
     // VAOs
     , mHeatBlasterFlameVAO()
-    , mFireExtinguisherSprayVAO()
-    // Textures
-    , mGenericLinearTextureAtlasOpenGLHandle()
-    , mGenericLinearTextureAtlasMetadata()
-    , mGenericMipMappedTextureAtlasOpenGLHandle()
-    , mGenericMipMappedTextureAtlasMetadata()
-    , mExplosionTextureAtlasOpenGLHandle()
-    , mExplosionTextureAtlasMetadata()
-    , mUploadedNoiseTexturesManager()
+    , mFireExtinguisherSprayVAO()    
     // Child contextes
-    , mShips()
+    , mGlobalRenderContext()
     , mWorldRenderContext()
+    , mShips()    
     , mNotificationRenderContext()
     // HeatBlaster
     , mHeatBlasterFlameShaderToRender()
@@ -62,9 +55,6 @@ RenderContext::RenderContext(
     , mShaderManager()    
     // Render parameters
     , mRenderParameters(initialCanvasSize)
-    // Thumbnails
-    , mOceanAvailableThumbnails()
-    , mLandAvailableThumbnails()
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -88,7 +78,7 @@ RenderContext::RenderContext(
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
         });
 
-    progressCallback(0.1f, "Loading shaders...");
+    progressCallback(0.05f, "Loading shaders...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -100,35 +90,48 @@ RenderContext::RenderContext(
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
         });
 
-    progressCallback(0.2f, "Initializing noise...");
+    progressCallback(0.1f, "Initializing noise...");
 
     mRenderThread.RunSynchronously(
         [&]()
         {
-            InitializeNoiseTextures(resourceLocator);
+            mGlobalRenderContext = std::make_unique<GlobalRenderContext>(*mShaderManager);
+
+            mGlobalRenderContext->InitializeNoiseTextures(resourceLocator);
         });
     
-    progressCallback(0.3f, "Loading generic textures...");
+    progressCallback(0.15f, "Loading generic textures...");
 
     mRenderThread.RunSynchronously(
         [&]()
         {
-            InitializeGenericTextures(resourceLocator);
+            mGlobalRenderContext->InitializeGenericTextures(resourceLocator);
         });
 
-    progressCallback(0.4f, "Initializing buffers and world...");
+    progressCallback(0.2f, "Loading explosion texture atlas...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mGlobalRenderContext->InitializeExplosionTextures(resourceLocator);
+        });
+
+    progressCallback(0.4f, "Initializing buffers...");
 
     mRenderThread.RunSynchronously(
         [&]()
         {
             InitializeBuffersAndVAOs();
+        });
 
+    progressCallback(0.45f, "Initializing world...");
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
             mWorldRenderContext = std::make_unique<WorldRenderContext>(
                 *mShaderManager,
-                *mGenericLinearTextureAtlasMetadata,
-                mUploadedNoiseTexturesManager);
-
-            mWorldRenderContext->InitializeBuffersAndVAOs();
+                *mGlobalRenderContext);
         });
 
     progressCallback(0.5f, "Loading cloud texture atlas...");
@@ -139,20 +142,12 @@ RenderContext::RenderContext(
             mWorldRenderContext->InitializeCloudTextures(resourceLocator);
         });
 
-    progressCallback(0.6f, "Loading world textures...");
+    progressCallback(0.7f, "Loading world textures...");
 
     mRenderThread.RunSynchronously(
         [&]()
         {
             mWorldRenderContext->InitializeWorldTextures(resourceLocator);
-        });
-
-    progressCallback(0.7f, "Loading explosion texture atlas...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            InitializeExplosionTextures(resourceLocator);
         });
 
     progressCallback(0.8f, "Loading fonts...");
@@ -167,7 +162,7 @@ RenderContext::RenderContext(
             mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
                 resourceLocator,
                 *mShaderManager,
-                *mGenericLinearTextureAtlasMetadata,                
+                *mGlobalRenderContext,
                 mRenderParameters.View.GetCanvasWidth(),
                 mRenderParameters.View.GetCanvasHeight(),
                 mRenderParameters.EffectiveAmbientLightIntensity);
@@ -313,9 +308,7 @@ void RenderContext::AddShip(
                     newShipCount,
                     std::move(texture),
                     *mShaderManager,
-                    *mExplosionTextureAtlasMetadata,
-                    *mGenericLinearTextureAtlasMetadata,
-                    *mGenericMipMappedTextureAtlasMetadata,
+                    *mGlobalRenderContext,
                     mRenderParameters,
                     mShipFlameSizeAdjustment));
         });
@@ -598,246 +591,6 @@ void RenderContext::InitializeBuffersAndVAOs()
     CheckOpenGLError();
 
     glBindVertexArray(0);
-}
-
-void RenderContext::InitializeNoiseTextures(ResourceLocator const & resourceLocator)
-{
-    // Load noise texture database
-    auto noiseTextureDatabase = TextureDatabase<Render::NoiseTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
-
-    // Noise 1
-
-    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture1>();
-
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        0,
-        GL_LINEAR);
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
-    CheckOpenGLError();
-
-    // Set noise texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground2>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground2>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground3>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground3>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground2>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground2>();
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground3>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground3>();
-
-    // Noise 2
-
-    mShaderManager->ActivateTexture<ProgramParameterType::NoiseTexture2>();
-
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        1,
-        GL_LINEAR);
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
-    CheckOpenGLError();
-
-    // Set noise texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameCool>(); // TODO
-    mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameCool>(); // TODO
-    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>(); // TODO
-    mShaderManager->SetTextureParameters<ProgramType::HeatBlasterFlameHeat>(); // TODO
-    mShaderManager->ActivateProgram<ProgramType::FireExtinguisherSpray>(); // TODO
-    mShaderManager->SetTextureParameters<ProgramType::FireExtinguisherSpray>(); // TODO
-    // TODOHERE: move to world render context
-    mShaderManager->ActivateProgram<ProgramType::Lightning>();
-    mShaderManager->SetTextureParameters<ProgramType::Lightning>();
-}
-
-void RenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)
-{
-    //
-    // Create generic linear texture atlas
-    //
-
-    // Load texture database
-    auto genericLinearTextureDatabase = TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
-
-    // Create atlas
-    auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
-        genericLinearTextureDatabase,
-        AtlasOptions::None,
-        [](float, std::string const &) {});
-
-    LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
-
-    // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
-
-    // Create texture OpenGL handle
-    GLuint tmpGLuint;
-    glGenTextures(1, &tmpGLuint);
-    mGenericLinearTextureAtlasOpenGLHandle = tmpGLuint;
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mGenericLinearTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.AtlasData));
-
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckOpenGLError();
-
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Store metadata
-    mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericLinearTextureGroups>>(
-        genericLinearTextureAtlas.Metadata);
-
-    // Set FlamesBackground1 shader parameters
-    auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesBackground1>();
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth,
-        fireAtlasFrameMetadata.TextureSpaceHeight);
-
-    // Set FlamesForeground1 shader parameters
-    mShaderManager->ActivateProgram<ProgramType::ShipFlamesForeground1>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipFlamesForeground1>();
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
-    mShaderManager->SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth,
-        fireAtlasFrameMetadata.TextureSpaceHeight);
-
-    // Set WorldBorder shader parameters
-    auto const & worldBorderAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0);
-    mShaderManager->ActivateProgram<ProgramType::WorldBorder>();
-    mShaderManager->SetTextureParameters<ProgramType::WorldBorder>();
-    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Height));
-    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
-    mShaderManager->SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
-        worldBorderAtlasFrameMetadata.TextureSpaceWidth,
-        worldBorderAtlasFrameMetadata.TextureSpaceHeight);
-
-
-    //
-    // Create generic mipmapped texture atlas
-    //
-
-    // Load texture database
-    auto genericMipMappedTextureDatabase = TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
-
-    // Create atlas
-    auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
-        genericMipMappedTextureDatabase,
-        AtlasOptions::None,
-        [](float, std::string const &) {});
-
-    LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
-
-    // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::GenericMipMappedTexturesAtlasTexture>();
-
-    // Create texture OpenGL handle
-    glGenTextures(1, &tmpGLuint);
-    mGenericMipMappedTextureAtlasOpenGLHandle = tmpGLuint;
-
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mGenericMipMappedTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload atlas texture
-    GameOpenGL::UploadMipmappedPowerOfTwoTexture(
-        std::move(genericMipMappedTextureAtlas.AtlasData),
-        genericMipMappedTextureAtlas.Metadata.GetMaxDimension());
-
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckOpenGLError();
-
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Store metadata
-    mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericMipMappedTextureGroups>>(genericMipMappedTextureAtlas.Metadata);
-
-    // Set texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipGenericMipMappedTextures>();
-}
-
-void RenderContext::InitializeExplosionTextures(ResourceLocator const & resourceLocator)
-{
-    // Load atlas
-    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
-        ExplosionTextureDatabaseTraits::DatabaseName,
-        resourceLocator.GetTexturesRootFolderPath());
-
-    LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
-
-    // Activate texture
-    mShaderManager->ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
-
-    // Create OpenGL handle
-    GLuint tmpGLuint;
-    glGenTextures(1, &tmpGLuint);
-    mExplosionTextureAtlasOpenGLHandle = tmpGLuint;
-
-    // Bind texture atlas
-    glBindTexture(GL_TEXTURE_2D, *mExplosionTextureAtlasOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
-
-    // Set repeat mode - we want to clamp, to leverage the fact that
-    // all frames are perfectly transparent at the edges
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckOpenGLError();
-
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
-
-    // Store metadata
-    mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<ExplosionTextureGroups>>(explosionTextureAtlas.Metadata);
-
-    // Set texture in shaders
-    mShaderManager->ActivateProgram<ProgramType::ShipExplosions>();
-    mShaderManager->SetTextureParameters<ProgramType::ShipExplosions>();
 }
 
 void RenderContext::RenderHeatBlasterFlame(RenderParameters const & /*renderParameters*/)

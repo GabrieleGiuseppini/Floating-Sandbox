@@ -21,8 +21,7 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-    UploadedTextureManager<NoiseTextureGroups> const & uploadedNoiseTexturesManager)
+    GlobalRenderContext const & globalRenderContext)
     // Buffers
     : mStarVertexBuffer()
     , mIsStarVertexBufferDirty(true)
@@ -72,30 +71,12 @@ WorldRenderContext::WorldRenderContext(
     , mOceanTextureOpenGLHandle()
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
-    , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
-    , mUploadedNoiseTexturesManager(uploadedNoiseTexturesManager)
-    /* TODO
-    , mGenericLinearTextureAtlasOpenGLHandle()
-    , mGenericLinearTextureAtlasMetadata()
-    , mGenericMipMappedTextureAtlasOpenGLHandle()
-    , mGenericMipMappedTextureAtlasMetadata()
-    , mExplosionTextureAtlasOpenGLHandle()
-    , mExplosionTextureAtlasMetadata()
-    */
+    , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     // ShaderManager
     , mShaderManager(shaderManager)
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
-{
-    // TODOHERE: move texture initializations from render context
-}
-
-WorldRenderContext::~WorldRenderContext()
-{
-}
-
-void WorldRenderContext::InitializeBuffersAndVAOs()
 {
     GLuint tmpGLuint;
 
@@ -308,6 +289,49 @@ void WorldRenderContext::InitializeBuffersAndVAOs()
     CheckOpenGLError();
 
     glBindVertexArray(0);
+
+
+    // 
+    // Set generic linear texture in our shaders
+    //
+
+    mShaderManager.ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
+
+    glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetGenericLinearTextureAtlasOpenGLHandle());
+    CheckOpenGLError();
+
+    auto const & worldBorderAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0);
+
+    mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
+    mShaderManager.SetTextureParameters<ProgramType::WorldBorder>();
+    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Width),
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Height));
+    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
+    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
+        worldBorderAtlasFrameMetadata.TextureSpaceWidth,
+        worldBorderAtlasFrameMetadata.TextureSpaceHeight);
+
+
+    //
+    // Set noise textures in our shaders
+    //
+
+    // Noise 2
+
+    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+
+    glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+    CheckOpenGLError();
+
+    mShaderManager.ActivateProgram<ProgramType::Lightning>();
+    mShaderManager.SetTextureParameters<ProgramType::Lightning>();
+}
+
+WorldRenderContext::~WorldRenderContext()
+{
 }
 
 void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourceLocator)

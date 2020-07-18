@@ -536,15 +536,15 @@ Render:
 				= 7: Complete RenderContext Implementation (5)
 					+ Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					+ Screenshot: queued and waited, like SpringLab
-					- Destructor:
+					= Destructor:
 						+ Make sure thread member is first, so its destructor gets called first
 						  waiting for pending operations
-						= Split off WorldRenderContext
-								- RenderContext owns ShaderManager and WorldRenderContext and Ships and NotificationContext
-								- WorldRenderContext has ShaderManager reference like Ship, and copies own
+						+ Split off WorldRenderContext
+								! RenderContext owns ShaderManager and WorldRenderContext and Ships and NotificationContext
+								! WorldRenderContext has ShaderManager reference like Ship, and copies own
 								  texture metadata (passed on by RenderContext via cctor)
-								- WorldRenderContext exposes detailed init and upload and draw methods
-							= Initialization:
+								! WorldRenderContext exposes detailed init and upload and draw methods
+							+ Initialization:
 								+ Textures:
 									+ Those textures that are exclusively for the world get moved
 									  to WorldRenderContext (Clouds, world)
@@ -553,10 +553,10 @@ Render:
 								+ Make sure ambient light intensity gets calculated
 								+ Make sure world border gets calculated
 									+ Via WorldRenderContext::ProcessParameterChanges
-								- WorldRenderContext cctor also gets reference - and does own init'n - to:
-									- Generic textures
-									- mUploadedNoiseTexturesManager (like NotificationRenderContext below) for
-									  setting nosie textures as needed
+								+ WorldRenderContext cctor also gets reference - and does own init'n - to:
+									+ Generic textures
+									+ mUploadedNoiseTexturesManager (like NotificationRenderContext below) for
+									  setting noise textures as needed
 							+ Hook all Upload() calls
 							+ Hook all Render calls
 							+ RenderContext::ApplyParamChanges: 
@@ -564,8 +564,8 @@ Render:
 								+ invoke child contexts'
 								+ Make sure world border gets calculated
 									+ Via WorldRenderContext::ProcessParameterChanges
-						- Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
-							- Pass then to child contexts as needed
+						+ Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
+							+ Pass then to child contexts as needed
 						- Move out 2 tools to NotificationRenderContext
 							- And do ProcessParameterChanges(.) on it
 								- And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges

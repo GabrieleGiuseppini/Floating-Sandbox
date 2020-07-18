@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GlobalRenderContext.h"
 #include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ShaderTypes.h"
@@ -50,9 +51,7 @@ public:
         size_t shipCount,
         RgbaImageData shipTexture,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-        TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-        TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
+        GlobalRenderContext const & globalRenderContext,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment);
 

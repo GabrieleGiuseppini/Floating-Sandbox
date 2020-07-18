@@ -91,6 +91,8 @@ set  (PHYSICS_SOURCES
 set  (RENDER_SOURCES
 	Font.cpp
 	Font.h
+	GlobalRenderContext.cpp
+	GlobalRenderContext.h
 	NotificationRenderContext.cpp
 	NotificationRenderContext.h
 	RenderContext.cpp

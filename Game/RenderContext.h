@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GlobalRenderContext.h"
 #include "NotificationRenderContext.h"
 #include "PerfStats.h"
 #include "RenderParameters.h"
@@ -284,9 +285,9 @@ public:
         mRenderParameters.IsShipWaterColorDirty = true;
     }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
-        return mOceanAvailableThumbnails;
+        return mWorldRenderContext->GetTextureOceanAvailableThumbnails();
     }
 
     size_t GetTextureOceanTextureIndex() const
@@ -335,7 +336,7 @@ public:
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
     {
-        return mLandAvailableThumbnails;
+        return mWorldRenderContext->GetTextureLandAvailableThumbnails();
     }
 
     size_t GetTextureLandTextureIndex() const
@@ -1335,11 +1336,7 @@ public:
 
 private:
     
-    void InitializeBuffersAndVAOs();    
-    void InitializeNoiseTextures(ResourceLocator const & resourceLocator);
-    void InitializeGenericTextures(ResourceLocator const & resourceLocator);
-    void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
-
+    void InitializeBuffersAndVAOs();            
     void RenderHeatBlasterFlame(RenderParameters const & renderParameters);
     void RenderFireExtinguisherSpray(RenderParameters const & renderParameters);
 
@@ -1412,29 +1409,13 @@ private:
     GameOpenGLVAO mFireExtinguisherSprayVAO;
 
     //
-    // Textures
-    //
-
-    GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
-
-    GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericMipMappedTextureGroups>> mGenericMipMappedTextureAtlasMetadata;
-
-    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
-
-    UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
-
-
-    //
     // Child contextes
     //
 
-    std::vector<std::unique_ptr<ShipRenderContext>> mShips;
+    std::unique_ptr<GlobalRenderContext> mGlobalRenderContext;
     std::unique_ptr<WorldRenderContext> mWorldRenderContext;
+    std::vector<std::unique_ptr<ShipRenderContext>> mShips;    
     std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
-
 
     //
     // HeatBlaster
@@ -1480,10 +1461,6 @@ private:
     //
 
     RenderParameters mRenderParameters;
-
-    // Thumbnails
-    std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
-    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
 
     //
     // Statistics

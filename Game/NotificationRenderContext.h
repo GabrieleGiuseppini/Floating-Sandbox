@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Font.h"
+#include "GlobalRenderContext.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
 #include "TextureAtlas.h"
@@ -41,7 +42,7 @@ public:
 	NotificationRenderContext(
         ResourceLocator const & resourceLocator,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-		TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
+		GlobalRenderContext const & globalRenderContext,
         int canvasWidth,
         int canvasHeight,
         float effectiveAmbientLightIntensity);

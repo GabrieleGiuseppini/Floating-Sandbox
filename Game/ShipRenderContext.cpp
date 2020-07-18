@@ -23,9 +23,7 @@ ShipRenderContext::ShipRenderContext(
     size_t shipCount,
     RgbaImageData shipTexture,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-    TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-    TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
+    GlobalRenderContext const & globalRenderContext,
     RenderParameters const & renderParameters,
     float shipFlameSizeAdjustment)
     : mShipId(shipId)
@@ -100,9 +98,9 @@ ShipRenderContext::ShipRenderContext(
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
-    , mExplosionTextureAtlasMetadata(explosionTextureAtlasMetadata)
-    , mGenericLinearTextureAtlasMetadata(genericLinearTextureAtlasMetadata)
-    , mGenericMipMappedTextureAtlasMetadata(genericMipMappedTextureAtlasMetadata)
+    , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
+    , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
+    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
     // Managers
     , mShaderManager(shaderManager)
     // Non-render parameters
