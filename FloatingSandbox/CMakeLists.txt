@@ -163,7 +163,7 @@ endif (WIN32)
 
 # Main binary
 install(TARGETS FloatingSandbox
-	CONFIGURATIONS Release
+	CONFIGURATIONS Release RelWithDebInfo Debug
         RUNTIME
 	DESTINATION .)
 
