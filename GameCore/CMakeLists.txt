@@ -49,6 +49,7 @@ set  (SOURCES
 	RunningAverage.h
 	Settings.cpp
 	Settings.h
+	SysSpecifics.cpp
 	SysSpecifics.h
 	TaskThread.cpp
 	TaskThread.h

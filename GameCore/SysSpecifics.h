@@ -19,15 +19,35 @@
 // Architecture
 //
 
-#undef FS_ARM
-#undef FS_X86
+#undef FS_ARCHITECTURE_ARM
+#undef FS_ARCHITECTURE_X86_32
+#undef FS_ARCHITECTURE_X86_64
 
 #if defined(__arm__) || defined(_ARM) || defined (_M_ARM) || defined(__arm) || defined(	__aarch64__)
-#define FS_ARM
-#else
-// At this moment we assume that non-ARM is Intel
-#define FS_X86
+#define FS_ARCHITECTURE_ARM
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined (_M_AMD64)
+#define FS_ARCHITECTURE_X86_64
+#elif defined(_M_IX86) || defined(i386)) || defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
+#define FS_ARCHITECTURE_X86_32
 #endif
+
+//
+// OS
+//
+
+#undef FS_OS_LINUX
+#undef FS_OS_MACOS
+#undef FS_OS_WINDOWS
+
+#if defined(__linux__) || defined(linux) || defined(__linux)
+#define FS_OS_LINUX
+#elif defined(macintosh) || defined(Macintosh) || (defined(__APPLE__) && defined(__MACH__))
+#define FS_OS_MACOS
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__)
+#define FS_OS_WINDOWS
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define restrict __restrict
 
@@ -91,9 +111,9 @@ inline constexpr T ceil_square_power_of_two(T value)
 #include <pmmintrin.h>
 */
 
-#if defined(FS_X86)
+#if defined(FS_ARCHITECTURE_X86_64)
 #include <pmmintrin.h>
-#elif defined(FS_ARM)
+#elif defined(FS_ARCHITECTURE_ARM)
 #define SIMDE_ENABLE_NATIVE_ALIASES
 #define SIMDE_ENABLE_OPENMP
 #include "simde/simde/x86/mmx.h"

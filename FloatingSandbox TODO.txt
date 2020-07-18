@@ -577,10 +577,10 @@ Render:
 						- Do correct destroy sequence						
 
 				- TaskThread optimization for single-core boxes
-					- Verify no ovearhead anymore
-					- ARM:
-						- Ask to test
-						- If OK: - https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
+					- Verify no overhead anymore
+				- ARM:
+					- Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
+					- Ask to test
 				- Tests:
 					- Number of stars changes
 					- Number of clouds changes
@@ -601,6 +601,7 @@ Render:
 			- See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
 			- Crash because SplashScreen not shown
 			- Remove all TODOTEST logging
+			- Do intrinstics only on FS_ARCHITECTURE_x86_64, else do C++
 
 		- Default ship @ Install: Titanic with Power
 

@@ -12,6 +12,7 @@
 #include "UnhandledExceptionHandler.h"
 
 #include <GameCore/FloatingPoint.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -66,6 +67,10 @@ private:
 
 IMPLEMENT_APP(MainApp);
 
+#ifdef FS_OS_LINUX
+#include <X11/Xlib.h>
+#endif
+
 bool MainApp::OnInit()
 {
     //
@@ -96,6 +101,7 @@ bool MainApp::OnInit()
 #endif
 #endif
 
+
     //
     // Initialize floating point handling
     //
@@ -108,12 +114,20 @@ bool MainApp::OnInit()
 #endif
 
 
+#ifdef FS_OS_LINUX
+    //
+    // Initialize X-Windows
+    //
+
+    XInitThreads();
+#endif
+
+
     //
     // Initialize wxWidgets
     //
 
     wxInitAllImageHandlers();
-
 
 
     //
