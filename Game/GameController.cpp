@@ -435,7 +435,7 @@ void GameController::RunGameIteration()
     {
         auto const startTime = GameChronometer::now();
 
-        // Tell RenderContext we're starting an upload
+        // Tell RenderContext we're starting an update
         mRenderContext->UpdateStart();
 
         auto const netStartTime = GameChronometer::now();

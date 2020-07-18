@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "NotificationRenderContext.h"
 
+#include <GameCore/GameWallClock.h>
+
 namespace Render {
 
 float constexpr MarginScreen = 10.0f;
@@ -13,23 +15,28 @@ float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
 NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GlobalRenderContext const & globalRenderContext,
-    int canvasWidth,
-    int canvasHeight,
-    float effectiveAmbientLightIntensity)
+    GlobalRenderContext const & globalRenderContext)
     : mShaderManager(shaderManager)
-    , mScreenToNdcX(2.0f / static_cast<float>(canvasWidth))
-    , mScreenToNdcY(2.0f / static_cast<float>(canvasHeight))
-    , mEffectiveAmbientLightIntensity(effectiveAmbientLightIntensity)
+    , mScreenToNdcX(0.0f) // Will be recalculated
+    , mScreenToNdcY(0.0f) // Will be recalculated
 	//
     , mFontRenderContexts()
-    //
+    // Test notifications
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mTextureNotificationVAO()
     , mTextureNotificationVertexBuffer()
     , mIsTextureNotificationVertexBufferDirty(false)
     , mTextureNotificationVBO()
+    // Tool notifications
+    , mHeatBlasterFlameVAO()
+    , mHeatBlasterFlameVBO()
+    , mHeatBlasterFlameShaderToRender()
+    , mFireExtinguisherSprayVAO()
+    , mFireExtinguisherSprayVBO()
+    , mFireExtinguisherSprayShaderToRender()
 {
+    GLuint tmpGLuint;
+
     //
     // Load fonts
     //
@@ -121,52 +128,104 @@ NotificationRenderContext::NotificationRenderContext(
     //
     // Initialize texture notifications
     //
+    
+    {
+        // Set texture parameters
+        mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+        mShaderManager.SetTextureParameters<ProgramType::TextureNotifications>();
 
-    // Set texture parameters
-    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
-    mShaderManager.SetTextureParameters<ProgramType::TextureNotifications>();
+        // Initialize VAO    
+        glGenVertexArrays(1, &tmpGLuint);
+        mTextureNotificationVAO = tmpGLuint;
 
-    // Initialize VAO
-    GLuint tmpGLuint;
-    glGenVertexArrays(1, &tmpGLuint);
-    mTextureNotificationVAO = tmpGLuint;
+        // Initialize VBO
+        glGenBuffers(1, &tmpGLuint);
+        mTextureNotificationVBO = tmpGLuint;
 
-    // Initialize VBO
-    glGenBuffers(1, &tmpGLuint);
-    mTextureNotificationVBO = tmpGLuint;
-
-    // Describe vertex attributes
-    glBindVertexArray(*mTextureNotificationVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
-    static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification2));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
-    CheckOpenGLError();
-    glBindVertexArray(0);
+        // Describe vertex attributes
+        glBindVertexArray(*mTextureNotificationVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
+        static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+        glBindVertexArray(0);
+    }
 
 
     //
-    // Update parameters
+    // Initialize HeatBlaster flame
     //
 
-    UpdateEffectiveAmbientLightIntensity(mEffectiveAmbientLightIntensity);
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mHeatBlasterFlameVAO = tmpGLuint;
+
+        glBindVertexArray(*mHeatBlasterFlameVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mHeatBlasterFlameVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
+        mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
+        mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
+        mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
+    }
+
+
+    //
+    // Initialize Fire Extinguisher spray
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mFireExtinguisherSprayVAO = tmpGLuint;
+
+        glBindVertexArray(*mFireExtinguisherSprayVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mFireExtinguisherSprayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray), 4, GL_FLOAT, GL_FALSE, sizeof(FireExtinguisherSprayVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
+        mShaderManager.SetTextureParameters<ProgramType::FireExtinguisherSpray>();
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void NotificationRenderContext::UpdateEffectiveAmbientLightIntensity(float intensity)
+void NotificationRenderContext::UploadStart()
 {
-    mEffectiveAmbientLightIntensity = intensity;
+    // Reset HeatBlaster flame, it's uploaded as needed
+    mHeatBlasterFlameShaderToRender.reset();
 
-    float const lighteningStrength = Step(0.5f, 1.0f - mEffectiveAmbientLightIntensity);
-
-    // Set parameter in all programs
-    mShaderManager.ActivateProgram<ProgramType::TextNotifications>();
-    mShaderManager.SetProgramParameter<ProgramType::TextNotifications, ProgramParameterType::TextLighteningStrength>(
-        lighteningStrength);
-    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
-    mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
-        lighteningStrength);
+    // Reset fire extinguisher spray, it's uploaded as needed
+    mFireExtinguisherSprayShaderToRender.reset();
 }
 
 void NotificationRenderContext::UploadTextureNotification(
@@ -274,11 +333,38 @@ void NotificationRenderContext::UploadTextureNotification(
         alpha);
 }
 
+void NotificationRenderContext::UploadEnd()
+{
+    // Nop
+}
+
+void NotificationRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
+{
+    if (renderParameters.IsViewDirty)
+    {
+        ApplyViewModelChanges(renderParameters);
+    }
+
+    if (renderParameters.IsCanvasSizeDirty)
+    {
+        ApplyCanvasSizeChanges(renderParameters);
+    }
+
+    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
+    {
+        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    }
+}
+
 void NotificationRenderContext::Draw()
 {
     RenderTextNotifications();
 
     RenderTextureNotifications();
+
+    RenderHeatBlasterFlame();
+
+    RenderFireExtinguisherSpray();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -359,6 +445,60 @@ void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context
             mScreenToNdcY,
             context.GetVertexBuffer());
     }
+}
+
+void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
+{
+    //
+    // Update ortho matrix in all programs
+    //
+
+    constexpr float ZFar = 1000.0f;
+    constexpr float ZNear = 1.0f;
+
+    ViewModel::ProjectionMatrix globalOrthoMatrix;
+    renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
+    mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameCool, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
+    mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
+    mShaderManager.SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+}
+
+void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
+{
+    auto const & view = renderParameters.View;
+
+    // Recalculate screen -> NDC conversion factors
+    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasWidth());
+    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasHeight());
+
+    // Make sure we re-calculate (and re-upload) all vertices
+    // at the next iteration
+    for (auto & fc : mFontRenderContexts)
+    {
+        fc.SetLineDataDirty(true);
+    }
+}
+
+void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
+{
+    float const lighteningStrength = Step(0.5f, 1.0f - renderParameters.EffectiveAmbientLightIntensity);
+
+    // Set parameter in all programs
+    mShaderManager.ActivateProgram<ProgramType::TextNotifications>();
+    mShaderManager.SetProgramParameter<ProgramType::TextNotifications, ProgramParameterType::TextLighteningStrength>(
+        lighteningStrength);
+    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+    mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
+        lighteningStrength);
 }
 
 void NotificationRenderContext::RenderTextNotifications()
@@ -470,6 +610,87 @@ void NotificationRenderContext::RenderTextureNotifications()
 
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mTextureNotificationVertexBuffer.size()));
         CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderHeatBlasterFlame()
+{
+    if (!!mHeatBlasterFlameShaderToRender)
+    {
+        //
+        // Buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
+            mHeatBlasterFlameVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mHeatBlasterFlameVAO);
+
+        assert(!!mHeatBlasterFlameShaderToRender);
+
+        mShaderManager.ActivateProgram(*mHeatBlasterFlameShaderToRender);
+
+        // Set time parameter
+        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
+            *mHeatBlasterFlameShaderToRender,
+            GameWallClock::GetInstance().NowAsFloat());
+
+        assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderFireExtinguisherSpray()
+{
+    if (!!mFireExtinguisherSprayShaderToRender)
+    {
+        //
+        // Buffer
+        //
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
+            mFireExtinguisherSprayVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Render
+        //
+
+        glBindVertexArray(*mFireExtinguisherSprayVAO);
+
+        assert(!!mFireExtinguisherSprayShaderToRender);
+
+        mShaderManager.ActivateProgram(*mFireExtinguisherSprayShaderToRender);
+
+        // Set time parameter
+        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
+            *mFireExtinguisherSprayShaderToRender,
+            GameWallClock::GetInstance().NowAsFloat());
+
+        // Draw
+        assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

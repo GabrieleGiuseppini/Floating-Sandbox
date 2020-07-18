@@ -9,8 +9,6 @@
 
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <cstring>
@@ -28,21 +26,11 @@ RenderContext::RenderContext(
     : mRenderThread()
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
-    // Buffers
-    , mHeatBlasterFlameVBO()
-    , mFireExtinguisherSprayVBO()
-    // VAOs
-    , mHeatBlasterFlameVAO()
-    , mFireExtinguisherSprayVAO()    
     // Child contextes
     , mGlobalRenderContext()
     , mWorldRenderContext()
     , mShips()    
     , mNotificationRenderContext()
-    // HeatBlaster
-    , mHeatBlasterFlameShaderToRender()
-    // Fire extinguisher
-    , mFireExtinguisherSprayShaderToRender()
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
     , mShipFlameSizeAdjustment(1.0f)
@@ -116,16 +104,6 @@ RenderContext::RenderContext(
             mGlobalRenderContext->InitializeExplosionTextures(resourceLocator);
         });
 
-    progressCallback(0.4f, "Initializing buffers...");
-
-    mRenderThread.RunSynchronously(
-        [&]()
-        {
-            InitializeBuffersAndVAOs();
-        });
-
-    progressCallback(0.45f, "Initializing world...");
-
     mRenderThread.RunSynchronously(
         [&]()
         {
@@ -134,7 +112,7 @@ RenderContext::RenderContext(
                 *mGlobalRenderContext);
         });
 
-    progressCallback(0.5f, "Loading cloud texture atlas...");
+    progressCallback(0.45f, "Loading cloud texture atlas...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -162,13 +140,10 @@ RenderContext::RenderContext(
             mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
                 resourceLocator,
                 *mShaderManager,
-                *mGlobalRenderContext,
-                mRenderParameters.View.GetCanvasWidth(),
-                mRenderParameters.View.GetCanvasHeight(),
-                mRenderParameters.EffectiveAmbientLightIntensity);
+                *mGlobalRenderContext);
         });
 
-    progressCallback(0.9f, "Initializing graphics...");
+    progressCallback(0.9f, "Initializing OpenGL...");
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -213,7 +188,7 @@ RenderContext::RenderContext(
 
                 mWorldRenderContext->ProcessParameterChanges(initialRenderParameters);
 
-                // TODO: notification render context
+                mNotificationRenderContext->ProcessParameterChanges(initialRenderParameters);
             }
 
 
@@ -407,17 +382,15 @@ void RenderContext::UploadStart()
 
     mWorldRenderContext->UploadStart();
 
-    // Reset HeatBlaster flame, it's uploaded as needed
-    mHeatBlasterFlameShaderToRender.reset();
-
-    // Reset fire extinguisher spray, it's uploaded as needed
-    mFireExtinguisherSprayShaderToRender.reset();
+    mNotificationRenderContext->UploadStart();    
 }
 
 
 void RenderContext::UploadEnd()
 {
     mWorldRenderContext->UploadEnd();
+
+    mNotificationRenderContext->UploadEnd();
 
     // Queue an indicator here, so we may wait for it
     // when we want to touch CPU buffers again
@@ -449,12 +422,12 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->ProcessParameterChanges(renderParameters);
 
-                // TODO: notification render context
-
                 for (auto const & ship : mShips)
                 {
                     ship->ProcessParameterChanges(renderParameters);
                 }
+
+                mNotificationRenderContext->ProcessParameterChanges(renderParameters);
             }
 
             //
@@ -511,10 +484,6 @@ void RenderContext::Draw()
 
             mWorldRenderContext->RenderCrossesOfLight(renderParameters);
 
-            RenderHeatBlasterFlame(renderParameters);
-
-            RenderFireExtinguisherSpray(renderParameters);
-
             mWorldRenderContext->RenderForegroundLightnings(renderParameters);
 
             mWorldRenderContext->RenderRain(renderParameters);
@@ -541,180 +510,12 @@ void RenderContext::RenderEnd()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::InitializeBuffersAndVAOs()
-{
-    GLuint tmpGLuint;
-
-    //
-    // Initialize buffers
-    //
-
-    GLuint vbos[2];
-    glGenBuffers(2, vbos);
-    mHeatBlasterFlameVBO = vbos[0];
-    mFireExtinguisherSprayVBO = vbos[1];
-
-
-    //
-    // Initialize HeatBlaster flame VAO
-    //
-
-    glGenVertexArrays(1, &tmpGLuint);
-    mHeatBlasterFlameVAO = tmpGLuint;
-
-    glBindVertexArray(*mHeatBlasterFlameVAO);
-    CheckOpenGLError();
-
-    // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void *)0);
-    CheckOpenGLError();
-
-    glBindVertexArray(0);
-
-
-    //
-    // Initialize Fire Extinguisher Spray VAO
-    //
-
-    glGenVertexArrays(1, &tmpGLuint);
-    mFireExtinguisherSprayVAO = tmpGLuint;
-
-    glBindVertexArray(*mFireExtinguisherSprayVAO);
-    CheckOpenGLError();
-
-    // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray), 4, GL_FLOAT, GL_FALSE, sizeof(FireExtinguisherSprayVertex), (void *)0);
-    CheckOpenGLError();
-
-    glBindVertexArray(0);
-}
-
-void RenderContext::RenderHeatBlasterFlame(RenderParameters const & /*renderParameters*/)
-{
-    if (!!mHeatBlasterFlameShaderToRender)
-    {
-        //
-        // Buffer
-        //
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
-            mHeatBlasterFlameVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        //
-        // Render
-        //
-
-        glBindVertexArray(*mHeatBlasterFlameVAO);
-
-        assert(!!mHeatBlasterFlameShaderToRender);
-
-        mShaderManager->ActivateProgram(*mHeatBlasterFlameShaderToRender);
-
-        // Set time parameter
-        mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-            *mHeatBlasterFlameShaderToRender,
-            GameWallClock::GetInstance().NowAsFloat());
-
-        assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
-
-        glBindVertexArray(0);
-    }
-}
-
-void RenderContext::RenderFireExtinguisherSpray(RenderParameters const & /*renderParameters*/)
-{
-    if (!!mFireExtinguisherSprayShaderToRender)
-    {
-        //
-        // Buffer
-        //
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
-            mFireExtinguisherSprayVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        //
-        // Render
-        //
-
-        glBindVertexArray(*mFireExtinguisherSprayVAO);
-
-        assert(!!mFireExtinguisherSprayShaderToRender);
-
-        mShaderManager->ActivateProgram(*mFireExtinguisherSprayShaderToRender);
-
-        // Set time parameter
-        mShaderManager->SetProgramParameter<ProgramParameterType::Time>(
-            *mFireExtinguisherSprayShaderToRender,
-            GameWallClock::GetInstance().NowAsFloat());
-
-        // Draw
-        assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
-
-        glBindVertexArray(0);
-    }
-}
-
 void RenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
 {
-    if (renderParameters.IsViewDirty)
-    {
-        ApplyViewModelChanges(renderParameters);
-    }
-
     if (renderParameters.IsCanvasSizeDirty)
     {
         ApplyCanvasSizeChanges(renderParameters);
     }
-
-    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
-    {
-        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
-    }
-}
-
-void RenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
-{
-    //
-    // Update ortho matrix in all programs
-    //
-
-    constexpr float ZFar = 1000.0f;
-    constexpr float ZNear = 1.0f;
-
-    ViewModel::ProjectionMatrix globalOrthoMatrix;
-    renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
-
-    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameCool>();
-    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameCool, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager->ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
-    mShaderManager->SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager->ActivateProgram<ProgramType::FireExtinguisherSpray>();
-    mShaderManager->SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
 }
 
 void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
@@ -723,15 +524,6 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
 
     // Set viewport
     glViewport(0, 0, view.GetCanvasWidth(), view.GetCanvasHeight());
-
-    // Propagate
-    mNotificationRenderContext->UpdateCanvasSize(view.GetCanvasWidth(), view.GetCanvasHeight());
-}
-
-void RenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
-{
-    // TODO: move upstairs - NotificationRenderContext::ProcessParameterChanges() invoked at all places
-    mNotificationRenderContext->UpdateEffectiveAmbientLightIntensity(renderParameters.EffectiveAmbientLightIntensity);
 }
 
 float RenderContext::CalculateEffectiveAmbientLightIntensity(

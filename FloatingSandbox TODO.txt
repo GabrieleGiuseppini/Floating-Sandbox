@@ -566,12 +566,13 @@ Render:
 									+ Via WorldRenderContext::ProcessParameterChanges
 						+ Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
 							+ Pass then to child contexts as needed
-						- Move out 2 tools to NotificationRenderContext
-							- And do ProcessParameterChanges(.) on it
-								- And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
-							- And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
+						= Move out 2 tools to NotificationRenderContext
+							+ And do ProcessParameterChanges(.) on it
+								+ And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
+							+ And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
 							  that does own part of RenderContext::InitializeGenericTextures, which takes 
 							  mUploadedNoiseTexturesManager for setting noise textures as needed
+							- Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
 
 						- Do correct destroy sequence						
 

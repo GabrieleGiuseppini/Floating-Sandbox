@@ -18,8 +18,6 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
-//#include <Game/GameParameters.h> // TODO?
-
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>

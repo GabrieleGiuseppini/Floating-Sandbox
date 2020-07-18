@@ -75,24 +75,6 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         1,
         GL_LINEAR);
-
-
-
-    // TODO: move the following out, to NotificationRenderContext
-
-    //
-    // Set noise 2 in shaders
-    //
-
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
-    CheckOpenGLError();
-
-    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
-    mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
-    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
-    mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
-    mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
-    mShaderManager.SetTextureParameters<ProgramType::FireExtinguisherSpray>();
 }
 
 void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)

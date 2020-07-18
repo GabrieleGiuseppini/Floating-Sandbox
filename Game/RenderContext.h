@@ -714,99 +714,19 @@ public:
         float radius,
         HeatBlasterActionType action)
     {
-        //
-        // Populate vertices
-        //
-
-        float const quadHalfSize = (radius * 1.5f) / 2.0f; // Add some slack for transparency
-        float const left = centerPosition.x - quadHalfSize;
-        float const right = centerPosition.x + quadHalfSize;
-        float const top = centerPosition.y + quadHalfSize;
-        float const bottom = centerPosition.y - quadHalfSize;
-
-        // Triangle 1
-
-        mHeatBlasterFlameVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-        mHeatBlasterFlameVertexBuffer[0].flameSpacePosition = vec2f(-0.5f, -0.5f);
-
-        mHeatBlasterFlameVertexBuffer[1].vertexPosition = vec2f(left, top);
-        mHeatBlasterFlameVertexBuffer[1].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-        mHeatBlasterFlameVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-        mHeatBlasterFlameVertexBuffer[2].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-        // Triangle 2
-
-        mHeatBlasterFlameVertexBuffer[3].vertexPosition = vec2f(left, top);
-        mHeatBlasterFlameVertexBuffer[3].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-        mHeatBlasterFlameVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-        mHeatBlasterFlameVertexBuffer[4].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-        mHeatBlasterFlameVertexBuffer[5].vertexPosition = vec2f(right, top);
-        mHeatBlasterFlameVertexBuffer[5].flameSpacePosition = vec2f(0.5f, 0.5f);
-
-        //
-        // Store shader
-        //
-
-        switch (action)
-        {
-            case HeatBlasterActionType::Cool:
-            {
-                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameCool;
-                break;
-            }
-
-            case HeatBlasterActionType::Heat:
-            {
-                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameHeat;
-                break;
-            }
-        }
+        mNotificationRenderContext->UploadHeatBlasterFlame(
+            centerPosition,
+            radius,
+            action);
     }
 
-    void UploadFireExtinguisherSpray(
+    inline void UploadFireExtinguisherSpray(
         vec2f const & centerPosition,
         float radius)
     {
-        //
-        // Populate vertices
-        //
-
-        float const quadHalfSize = (radius * 3.5f) / 2.0f; // Add some slack to account for transparency
-        float const left = centerPosition.x - quadHalfSize;
-        float const right = centerPosition.x + quadHalfSize;
-        float const top = centerPosition.y + quadHalfSize;
-        float const bottom = centerPosition.y - quadHalfSize;
-
-        // Triangle 1
-
-        mFireExtinguisherSprayVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-        mFireExtinguisherSprayVertexBuffer[0].spraySpacePosition = vec2f(-0.5f, -0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[1].vertexPosition = vec2f(left, top);
-        mFireExtinguisherSprayVertexBuffer[1].spraySpacePosition = vec2f(-0.5f, 0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-        mFireExtinguisherSprayVertexBuffer[2].spraySpacePosition = vec2f(0.5f, -0.5f);
-
-        // Triangle 2
-
-        mFireExtinguisherSprayVertexBuffer[3].vertexPosition = vec2f(left, top);
-        mFireExtinguisherSprayVertexBuffer[3].spraySpacePosition = vec2f(-0.5f, 0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-        mFireExtinguisherSprayVertexBuffer[4].spraySpacePosition = vec2f(0.5f, -0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[5].vertexPosition = vec2f(right, top);
-        mFireExtinguisherSprayVertexBuffer[5].spraySpacePosition = vec2f(0.5f, 0.5f);
-
-        //
-        // Store shader
-        //
-
-        mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
+        mNotificationRenderContext->UploadFireExtinguisherSpray(
+            centerPosition,
+            radius);
     }
 
     inline void UploadShipsStart()
@@ -1336,18 +1256,14 @@ public:
 
 private:
     
-    void InitializeBuffersAndVAOs();            
-    void RenderHeatBlasterFlame(RenderParameters const & renderParameters);
-    void RenderFireExtinguisherSpray(RenderParameters const & renderParameters);
-
     void ProcessParameterChanges(RenderParameters const & renderParameters);
-    void ApplyViewModelChanges(RenderParameters const & renderParameters);
+    
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
-    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
 
     static float CalculateEffectiveAmbientLightIntensity(
         float ambientLightIntensity,
         float stormAmbientDarkening);
+
     vec4f CalculateShipWaterColor() const;
 
 private:
@@ -1365,69 +1281,13 @@ private:
     TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
 
     //
-    // Types
-    //
-
-#pragma pack(push, 1)
-
-    struct HeatBlasterFlameVertex
-    {
-        vec2f vertexPosition;
-        vec2f flameSpacePosition;
-
-        HeatBlasterFlameVertex()
-        {}
-    };
-
-    struct FireExtinguisherSprayVertex
-    {
-        vec2f vertexPosition;
-        vec2f spraySpacePosition;
-
-        FireExtinguisherSprayVertex()
-        {}
-    };
-
-
-#pragma pack(pop)
-
-    //
-    // VBOs and uploaded buffers and params
-    //
-
-    std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
-    GameOpenGLVBO mHeatBlasterFlameVBO;
-
-    std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
-    GameOpenGLVBO mFireExtinguisherSprayVBO;
-
-    //
-    // VAOs
-    //
-
-    GameOpenGLVAO mHeatBlasterFlameVAO;
-    GameOpenGLVAO mFireExtinguisherSprayVAO;
-
-    //
     // Child contextes
     //
 
     std::unique_ptr<GlobalRenderContext> mGlobalRenderContext;
     std::unique_ptr<WorldRenderContext> mWorldRenderContext;
     std::vector<std::unique_ptr<ShipRenderContext>> mShips;    
-    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
-
-    //
-    // HeatBlaster
-    //
-
-    std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
-
-    //
-    // Fire extinguisher
-    //
-
-    std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
+    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;  
 
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
