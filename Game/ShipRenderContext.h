@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <optional>
 #include <string>
@@ -362,7 +363,7 @@ public:
         if (ExplosionType::Deflagration == explosionType)
         {
             // 0..2, randomly
-            explosionIndex = std::min(2.0f, floorf(personalitySeed * 3.0f));
+            explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
         }
         else
         {
@@ -590,7 +591,7 @@ public:
         size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
         float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
-            static_cast<TextureFrameIndex>(floor(frameIndexF)),
+            static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
             static_cast<TextureFrameIndex>(frameCount - 1));
 
         // Choose angle
@@ -740,6 +741,8 @@ public:
 
     void UploadEnd();
 
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+
     void Draw(
         RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
@@ -860,8 +863,7 @@ private:
     void RenderExplosions(RenderParameters const & renderParameters);
     void RenderHighlights(RenderParameters const & renderParameters);
     void RenderVectorArrows(RenderParameters const & renderParameters);
-
-    void ProcessParameterChanges(RenderParameters const & renderParameters);
+    
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);

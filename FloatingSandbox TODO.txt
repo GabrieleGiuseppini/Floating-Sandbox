@@ -534,16 +534,52 @@ Render:
 						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
 						= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
 				= 7: Complete RenderContext Implementation (5)
-					= Reset: queued and waited (ShipRenderContext destructor does OpenGL)
-					= Screenshot: queued and waited, like SpringLab
-					- Destructor: queue - and wait - (some) explicit cleanup, e.g. ships
+					+ Reset: queued and waited (ShipRenderContext destructor does OpenGL)
+					+ Screenshot: queued and waited, like SpringLab
+					- Destructor:
 						+ Make sure thread member is first, so its destructor gets called first
 						  waiting for pending operations
-						- Consider ThreadRenderContext uq_ptr member, containing all OpenGL members (and all
-						  members that pertain exclusively to the thread, e.g. allocated VBO sizes)
-							- But see how to avoid having to always dereference the uq_ptr at Upload()'s
+						= Split off WorldRenderContext
+								- RenderContext owns ShaderManager and WorldRenderContext and Ships and NotificationContext
+								- WorldRenderContext has ShaderManager reference like Ship, and copies own
+								  texture metadata (passed on by RenderContext via cctor)
+								- WorldRenderContext exposes detailed init and upload and draw methods
+							= Initialization:
+								+ Textures:
+									+ Those textures that are exclusively for the world get moved
+									  to WorldRenderContext (Clouds, world)
+								+ RenderContext::cctor: 
+									+ Invoke both own and WorldRenderContext's initializations
+								+ Make sure ambient light intensity gets calculated
+								+ Make sure world border gets calculated
+									+ Via WorldRenderContext::ProcessParameterChanges
+								- WorldRenderContext cctor also gets reference - and does own init'n - to:
+									- Generic textures
+									- mUploadedNoiseTexturesManager (like NotificationRenderContext below) for
+									  setting nosie textures as needed
+							+ Hook all Upload() calls
+							+ Hook all Render calls
+							+ RenderContext::ApplyParamChanges: 
+								+ maintain those that affect two tools and generals
+								+ invoke child contexts'
+								+ Make sure world border gets calculated
+									+ Via WorldRenderContext::ProcessParameterChanges
+						- Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
+							- Pass then to child contexts as needed
+						- Move out 2 tools to NotificationRenderContext
+							- And do ProcessParameterChanges(.) on it
+								- And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
+							- And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
+							  that does own part of RenderContext::InitializeGenericTextures, which takes 
+							  mUploadedNoiseTexturesManager for setting noise textures as needed
+
+						- Do correct destroy sequence						
+
 				- TaskThread optimization for single-core boxes
 					- Verify no ovearhead anymore
+					- ARM:
+						- Ask to test
+						- If OK: - https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
 				- Tests:
 					- Number of stars changes
 					- Number of clouds changes
@@ -553,7 +589,6 @@ Render:
 					+ Remove PerfStats' obsolete members
 					- Test with OpenGL uploads all up-front
 						- New perf stat: portion of Render that is purely upload
-					- See if may unify foreground and background ship flame shaders
 					- Do APITrace, including shutdown
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
@@ -562,8 +597,7 @@ Render:
 						+ Test ambient light darkening
 
 		- ARM issues:
-			- See if can get rid of floorf ipv #include <cmath>
-			- CMAKE_EXE_LINKER_FLAGS: figure out which projects fail, and add CMAKE_<TBD>_LINKER_FLAGS for them
+			- See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
 			- Crash because SplashScreen not shown
 			- Remove all TODOTEST logging
 

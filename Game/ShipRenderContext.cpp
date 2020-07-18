@@ -32,7 +32,7 @@ ShipRenderContext::ShipRenderContext(
     , mPointCount(pointCount)
     , mShipCount(shipCount)
     , mMaxMaxPlaneId(0)
-    , mIsViewModelDirty(true)
+    , mIsViewModelDirty(false)
     // Buffers
     , mPointAttributeGroup1Buffer()
     , mPointAttributeGroup1VBO()
@@ -453,10 +453,16 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Update parameters
+    // Update parameters for initial values
     //
     
-    ProcessParameterChanges(renderParameters);
+    ApplyViewModelChanges(renderParameters);
+    ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    ApplyFlatLampLightColorChanges(renderParameters);
+    ApplyWaterColorChanges(renderParameters);
+    ApplyWaterContrastChanges(renderParameters);
+    ApplyWaterLevelOfDetailChanges(renderParameters);
+    ApplyHeatOverlayTransparencyChanges(renderParameters);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -807,18 +813,50 @@ void ShipRenderContext::UploadEnd()
     // Nop
 }
 
+void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
+{
+    if (renderParameters.IsViewDirty || mIsViewModelDirty)
+    {
+        ApplyViewModelChanges(renderParameters);
+        mIsViewModelDirty = false;
+    }
+
+    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
+    {
+        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    }
+
+    if (renderParameters.IsFlatLampLightColorDirty)
+    {
+        ApplyFlatLampLightColorChanges(renderParameters);
+    }
+
+    if (renderParameters.IsShipWaterColorDirty)
+    {
+        ApplyWaterColorChanges(renderParameters);
+    }
+
+    if (renderParameters.IsShipWaterContrastDirty)
+    {
+        ApplyWaterContrastChanges(renderParameters);
+    }
+
+    if (renderParameters.IsShipWaterLevelOfDetailDirty)
+    {
+        ApplyWaterLevelOfDetailChanges(renderParameters);
+    }
+
+    if (renderParameters.IsHeatOverlayTransparencyDirty)
+    {
+        ApplyHeatOverlayTransparencyChanges(renderParameters);
+    }
+}
+
 void ShipRenderContext::Draw(
     RenderParameters const & renderParameters,
     RenderStatistics & renderStats)
 {
     // We've been invoked on the render thread
-
-    //
-    // Process changes to parameters
-    //
-
-    ProcessParameterChanges(renderParameters);
-
 
     //
     // Upload Point AttributeGroup1 buffer
@@ -1724,45 +1762,6 @@ void ShipRenderContext::RenderVectorArrows(RenderParameters const & /*renderPara
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-
-void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
-{
-    if (renderParameters.IsViewDirty || mIsViewModelDirty)
-    {
-        ApplyViewModelChanges(renderParameters);
-        mIsViewModelDirty = false;
-    }
-
-    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
-    {
-        ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
-    }
-
-    if (renderParameters.IsFlatLampLightColorDirty)
-    {
-        ApplyFlatLampLightColorChanges(renderParameters);
-    }
-
-    if (renderParameters.IsShipWaterColorDirty)
-    {
-        ApplyWaterColorChanges(renderParameters);
-    }
-
-    if (renderParameters.IsShipWaterContrastDirty)
-    {
-        ApplyWaterContrastChanges(renderParameters);
-    }
-
-    if (renderParameters.IsShipWaterLevelOfDetailDirty)
-    {
-        ApplyWaterLevelOfDetailChanges(renderParameters);
-    }
-
-    if (renderParameters.IsHeatOverlayTransparencyDirty)
-    {
-        ApplyHeatOverlayTransparencyChanges(renderParameters);
-    }
-}
 
 void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
 {

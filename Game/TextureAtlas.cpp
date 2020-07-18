@@ -12,6 +12,7 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Utils.h>
 
+#include <cmath>
 #include <cstring>
 
 namespace Render {

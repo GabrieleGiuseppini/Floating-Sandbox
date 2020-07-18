@@ -305,7 +305,7 @@ void ToolController::InternalSetCurrentToolCursor()
     unsigned char * const data = newCursorImage.GetData();
 
     // Calculate height of power bar
-    int const powerHeight = static_cast<int>(floor(static_cast<float>(imageHeight) * mCurrentToolCursor.Strength));
+    int const powerHeight = static_cast<int>(std::floor(static_cast<float>(imageHeight) * mCurrentToolCursor.Strength));
 
     // Calculate target power bar color
     // Red   = 0xDB0F0F

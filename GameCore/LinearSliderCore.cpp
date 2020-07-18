@@ -81,7 +81,7 @@ int LinearSliderCore::ValueToTick(float value) const
     }
     else
     {
-        return static_cast<int>(floor(value / mTickSize));
+        return static_cast<int>(std::floor(value / mTickSize));
     }
 }
 

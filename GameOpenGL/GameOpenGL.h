@@ -75,9 +75,8 @@ public:
         if (!!(mValue))
         {
             TDeleter::Delete(mValue);
-        }
-
-        mValue = T();
+            mValue = T();
+        }        
     }
 
     [[nodiscard]] T release() noexcept

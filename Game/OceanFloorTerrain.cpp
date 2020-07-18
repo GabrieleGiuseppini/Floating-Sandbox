@@ -8,6 +8,8 @@
 #include "GameParameters.h"
 #include "ImageFileTools.h"
 
+#include <cmath>
+
 size_t OceanFloorTerrain::Size = GameParameters::OceanFloorTerrainSamples<size_t>;
 
 namespace /* anonymous */ {
@@ -58,7 +60,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
         float const imageX = worldX * worldXToImageX;
 
         // Integral and fractional parts
-        int const imageXI = static_cast<int>(floor(imageX));
+        int const imageXI = static_cast<int>(std::floor(imageX));
         float const imageXIF = imageX - static_cast<float>(imageXI);
 
         assert(imageXI >= 0 && imageXI < oceanFloorImage.Size.Width);

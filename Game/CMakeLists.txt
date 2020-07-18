@@ -109,7 +109,9 @@ set  (RENDER_SOURCES
 	TextureDatabase.h
 	UploadedTextureManager.h
 	UploadedTextureManager-inl.h
-	ViewModel.h)
+	ViewModel.h
+	WorldRenderContext.cpp
+	WorldRenderContext.h)
 
 source_group(" " FILES ${GAME_SOURCES})
 source_group("Physics" FILES ${PHYSICS_SOURCES})
