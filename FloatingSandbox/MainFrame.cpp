@@ -665,16 +665,28 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create splash screen
     //
 
-    std::shared_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
+    std::shared_ptr<SplashScreenDialog> splash;
+    
+    try
+    {
+        splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
+    }
+    catch (std::exception const & e)
+    {
+        OnError("Error during game initialization: " + std::string(e.what()), true);
+
+        return;
+    }
 
     //
-    // Create OpenGL context, temporarily on the splash screen's canvas
+    // Create OpenGL context, temporarily on the splash screen's canvas, as we need
+    // the canvas to be visible at the moment the context is created
     //
 
     mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
 
 #if defined(_DEBUG) && defined(_WIN32)
-    LogMessage("TODOTEST: Hiding SplashScreenDialog");
+    LogMessage("MainFrame::OnPostInitializeTrigger: Hiding SplashScreenDialog");
     // The guy is pesky while debugging
     splash->Hide();
 #endif
@@ -1176,7 +1188,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
                 mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
             });
 
-        LogMessage("TODOTEST: MainFrame::OnMainGLCanvasPaint(): hiding SplashScreen");
+        LogMessage("MainFrame::OnMainGLCanvasPaint(): Hiding SplashScreen");
         // Close splash screen
         mSplashScreenDialog->Close();
         mSplashScreenDialog->Destroy();

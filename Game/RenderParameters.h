@@ -82,9 +82,7 @@ struct RenderParameters
 
     float HeatOverlayTransparency;
     float IsHeatOverlayTransparencyDirty;
-
-    // TODOOLD           
-    //
+    
     DebugShipRenderModeType DebugShipRenderMode;
 
     RenderParameters(ImageSize const & initialCanvasSize);

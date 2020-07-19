@@ -533,10 +533,10 @@ Render:
 						+ All ocean rendering settings (render mode, colors, texture index)
 						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
 						= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
-				= 7: Complete RenderContext Implementation (5)
+				+ 7: Complete RenderContext Implementation (5)
 					+ Reset: queued and waited (ShipRenderContext destructor does OpenGL)
 					+ Screenshot: queued and waited, like SpringLab
-					= Destructor:
+					+ Destructor:
 						+ Make sure thread member is first, so its destructor gets called first
 						  waiting for pending operations
 						+ Split off WorldRenderContext
@@ -566,25 +566,21 @@ Render:
 									+ Via WorldRenderContext::ProcessParameterChanges
 						+ Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
 							+ Pass then to child contexts as needed
-						= Move out 2 tools to NotificationRenderContext
+						+ Move out 2 tools to NotificationRenderContext
 							+ And do ProcessParameterChanges(.) on it
 								+ And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
 							+ And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
 							  that does own part of RenderContext::InitializeGenericTextures, which takes 
 							  mUploadedNoiseTexturesManager for setting noise textures as needed
-							- Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
-
-						- Do correct destroy sequence						
-
+						+ Do correct destroy sequence						
 				- TaskThread optimization for single-core boxes
 					- Verify no overhead anymore
-				- ARM:
-					- Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
-					- Ask to test
 				- Tests:
 					- Number of stars changes
 					- Number of clouds changes
+					- Debug ship render mode
 				- Cleanup:
+					- Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
@@ -596,33 +592,50 @@ Render:
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
+					- changes.txt
+					- merge
+
+		+ Hard error if Splash can't find image
+		+ Latest picojson
 
 		- ARM issues:
-			- See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
-			- Crash because SplashScreen not shown
-			- Remove all TODOTEST logging
-			- Do intrinstics only on FS_ARCHITECTURE_x86_64, else do C++
+			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
+			+ Crash because SplashScreen not shown
+			= Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
+			= Ask to test
+			- Remove all TODOTEST logging		
 
-		- Default ship @ Install: Titanic with Power
+		+ Default ship @ Install: Titanic with Power
+
+		- Notification for sound muted
+			- Otherwise, remove CTRL+M shortcut for mute?
+		- Day/night cycle
+			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
+			  ambient light to target ambient light (target based off next "12-hour")
+			- With texture notification when on
+
+		- Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
+
+		- Do intrinsics only on FS_ARCHITECTURE_x86_64, else do C++
+			- Test with fake architecture detection
 
 		- More stress metal sounds, to dilute "cycle of sounds"
+			- New raw sounds are at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 
 		- Explosions: see with progress being sqrt
 
 		- SWE: see if should damp waves, now that we have bubble waves
 			- Ideally we only damp small waves, not big ones (e.g. Tsunami)
 
-		- MAC: hide splash only on Windows
-
-		- Mute sound notification
-
 		- GameController: just one special day?
 
-		- Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
-
-		- Remove CTRL+M shortcut for mute?
-
 		- Frontier (*)
+
+		- Latest wxWidgets - Unicode 
+
+		- 32-bit build
+
+		----------------------------------------------------------------------------------------
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 

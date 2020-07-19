@@ -45,8 +45,6 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, DrawHeatOverlay(false)
 	, HeatOverlayTransparency(0.1875f)
 	, IsHeatOverlayTransparencyDirty(true)
-	// TODOOLD	
-	//			
 	, DebugShipRenderMode(DebugShipRenderModeType::None)		
 {
 }
