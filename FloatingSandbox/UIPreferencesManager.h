@@ -277,6 +277,7 @@ public:
     void SetGlobalMute(bool value)
     {
         AudioController::SetGlobalMute(value);
+        mGameController->NotifySoundMuted(value);
     }
 
     float GetBackgroundMusicVolume() const

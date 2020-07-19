@@ -298,43 +298,9 @@ Render:
 				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
 				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
 				- Bazzico: TODO
-			- Spec:
+			+ Spec:
 				+ Rendering runs entirely on separate thread
 					+ Context & SwapBuffers needs to made current in this thread
-				- [OBSOLETE] Update & Render Game Loop:						
-					- Do all physics (World & Ship), without
-					  touching RenderContext
-					- Wait until everything rendered			
-						- RenderEnd()					- (nop if not rendering)
-												- render completes here
-												- SwapBuffers
-					- Upload all buffers (World & Ship)
-						- Safe to upload entire buffer in 
-						  "locked synchronous mode" here
-						- Those uploaded elem-by-elem are here just 
-						  aggregated by RenderContext on caller's
-						  thread 
-						  - Might mean that we don't use mapped 
-						    buffers anymore
-					- Queue render of everything (on render thread)
-						- Here uploads take place of those buffers
-						  that were aggregated by RenderContext 
-						- This is the one that will be waited
-						  after the physics update						  
-				- Setters:
-					- Main thread: @ SetXYZ():
-						- Lock mSettingsMutex
-						- Set value
-							- So that getter finds same value
-						- Then set "mIsXXXDirty" flag
-						- Unlock mSettingsMutex
-					- Render thread: @ RenderStart:
-						- Lock mSettingsMutex
-						- Process all dirty flags & invoke "OnXXXUpdated" as appropriate
-							- And clear dirty flags
-						- Unlock mSettingsMutex
-				- Getters:
-					- Plain from main thread, no locks
 			= Impl:
 				+ Branch
 				+ 0: Take measurements: UPL=30 R=13
@@ -573,14 +539,12 @@ Render:
 							  that does own part of RenderContext::InitializeGenericTextures, which takes 
 							  mUploadedNoiseTexturesManager for setting noise textures as needed
 						+ Do correct destroy sequence						
-				- TaskThread optimization for single-core boxes
-					- Verify no overhead anymore
-				- Tests:
-					- Number of stars changes
-					- Number of clouds changes
-					- Debug ship render mode
-				- Cleanup:
-					- Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
+				+ Tests:
+					+ Number of stars changes
+					+ Number of clouds changes
+					+ Debug ship render mode
+				= Cleanup:
+					+ Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
@@ -592,11 +556,18 @@ Render:
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
+					- TaskThread optimization for single-core boxes
+						- Verify no overhead anymore
 					- changes.txt
 					- merge
 
 		+ Hard error if Splash can't find image
 		+ Latest picojson
+		+ Default ship @ Install: Titanic with Power
+		+ Notification for muted sound
+			+ Test with both false and true loaded at startup
+			+ Test with ambient light
+			+ Test CTRL+M shortcut
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
@@ -605,10 +576,6 @@ Render:
 			= Ask to test
 			- Remove all TODOTEST logging		
 
-		+ Default ship @ Install: Titanic with Power
-
-		- Notification for sound muted
-			- Otherwise, remove CTRL+M shortcut for mute?
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
 			  ambient light to target ambient light (target based off next "12-hour")

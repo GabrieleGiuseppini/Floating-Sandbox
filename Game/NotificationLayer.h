@@ -13,6 +13,7 @@
 #include <array>
 #include <chrono>
 #include <deque>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,9 @@ class NotificationLayer
 {
 public:
 
-	NotificationLayer(bool isUltraViolentMode);
+	NotificationLayer(
+		bool isUltraViolentMode,
+		bool isSoundMuted);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -44,6 +47,32 @@ public:
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
 	void SetUltraViolentModeIndicator(bool isUltraViolentMode);
+
+	void SetSoundMuteIndicator(bool isSoundMuted);
+
+	// One frame only; after RenderUpload() it's gone
+	// (special case as this is really UI)
+	inline void SetHeatBlaster(
+		vec2f const & worldCoordinates,
+		float radius,
+		HeatBlasterActionType action)
+	{
+		mHeatBlasterFlameToRender.emplace(
+			worldCoordinates,
+			radius,
+			action);
+	}
+
+	// One frame only; after RenderUpload() it's gone
+	// (special case as this is really UI)
+	inline void SetFireExtinguisherSpray(
+		vec2f const & worldCoordinates,
+		float radius)
+	{
+		mFireExtinguisherSprayToRender.emplace(
+			worldCoordinates,
+			radius);
+	}
 
 	void Reset();
 
@@ -108,10 +137,52 @@ private:
 	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
 
 	//
-	// Ultra-Violent Mode Indicator
+	// Indicators
 	//
 
 	bool mIsUltraViolentModeIndicatorOn;
+	bool mIsSoundMuteIndicatorOn;
+
+	//
+	// Interactions
+	//
+
+	struct HeatBlasterInfo
+	{
+		vec2f WorldCoordinates;
+		float Radius;
+		HeatBlasterActionType Action;
+
+		HeatBlasterInfo(
+			vec2f const & worldCoordinates,
+			float radius,
+			HeatBlasterActionType action)
+			: WorldCoordinates(worldCoordinates)
+			, Radius(radius)
+			, Action(action)
+		{}
+	};
+
+	// When set, will be uploaded to display the HeatBlaster flame
+	// - and then reset (one-time use, it's a special case as it's really UI)
+	std::optional<HeatBlasterInfo> mHeatBlasterFlameToRender;
+
+	struct FireExtinguisherSpray
+	{
+		vec2f WorldCoordinates;
+		float Radius;
+
+		FireExtinguisherSpray(
+			vec2f const & worldCoordinates,
+			float radius)
+			: WorldCoordinates(worldCoordinates)
+			, Radius(radius)
+		{}
+	};
+
+	// When set, will be uploaded to display the fire extinguisher spray
+	// - and then reset (one-time use, it's a special case as it's really UI)
+	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender;
 
 	//
 	// State
@@ -119,5 +190,5 @@ private:
 
 	bool mIsStatusTextDirty;
 	bool mIsGameTextDirty;
-	bool mIsUltraViolentModeIndicatorDirty;
+	bool mAreTextureNotificationsDirty;
 };

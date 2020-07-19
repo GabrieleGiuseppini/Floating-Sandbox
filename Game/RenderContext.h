@@ -44,6 +44,15 @@
 
 namespace Render {
 
+/*
+ * This class is the entry point of the entire rendering subsystem, providing
+ * the API for rendering, which is agnostic about the render platform implementation.
+ * 
+ * This class is in turn a coordinator of a number of child contextes, each focusing
+ * on a different subset of the rendering universe (world, ships, UI); this class
+ * dispatches all externally-invoked API calls to the child contexts implementing
+ * those calls.
+ */
 class RenderContext
 {
 public:
@@ -1281,6 +1290,12 @@ private:
     TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
 
     //
+    // Shader manager
+    //
+
+    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
+
+    //
     // Child contextes
     //
 
@@ -1310,11 +1325,6 @@ private:
 
     std::function<void()> const mSwapRenderBuffersFunction;
 
-    //
-    // Shader manager
-    //
-
-    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;    
 
     //
     // Render parameters

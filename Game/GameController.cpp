@@ -68,8 +68,6 @@ GameController::GameController(
     , mIsPaused(false)
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
-    , mHeatBlasterFlameToRender()
-    , mFireExtinguisherSprayToRender()
     // Parameters that we own
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
@@ -77,7 +75,7 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mNotificationLayer(mGameParameters.IsUltraViolentMode)
+    , mNotificationLayer(mGameParameters.IsUltraViolentMode, false /*loaded value will come later*/)
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilepath()),
@@ -477,7 +475,7 @@ void GameController::RunGameIteration()
         // Update notification layer
         mNotificationLayer.Update(nowGame);
 
-        // Tell RenderContext we've finished an upload
+        // Tell RenderContext we've finished an update
         mRenderContext->UpdateEnd();
 
         mTotalPerfStats->TotalNetUpdateDuration.Update(GameChronometer::now() - netStartTime);
@@ -514,33 +512,6 @@ void GameController::RunGameIteration()
             mGameParameters,
             *mRenderContext,
             *mTotalPerfStats);
-
-        //
-        // Upload HeatBlaster flame, if any
-        //
-
-        if (!!mHeatBlasterFlameToRender)
-        {
-            mRenderContext->UploadHeatBlasterFlame(
-                std::get<0>(*mHeatBlasterFlameToRender),
-                std::get<1>(*mHeatBlasterFlameToRender),
-                std::get<2>(*mHeatBlasterFlameToRender));
-
-            mHeatBlasterFlameToRender.reset();
-        }
-
-        //
-        // Upload fire extinguisher spray, if any
-        //
-
-        if (!!mFireExtinguisherSprayToRender)
-        {
-            mRenderContext->UploadFireExtinguisherSpray(
-                std::get<0>(*mFireExtinguisherSprayToRender),
-                std::get<1>(*mFireExtinguisherSprayToRender));
-
-            mFireExtinguisherSprayToRender.reset();
-        }
 
         //
         // Upload notification layer
@@ -649,6 +620,11 @@ bool GameController::GetShowExtendedStatusText() const
 void GameController::SetShowExtendedStatusText(bool value)
 {
     mNotificationLayer.SetExtendedStatusTextEnabled(value);
+}
+
+void GameController::NotifySoundMuted(bool isSoundMuted)
+{
+    mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
 }
 
 void GameController::PickObjectToMove(
@@ -878,8 +854,8 @@ bool GameController::ApplyHeatBlasterAt(
     {
         if (mDoDrawHeatBlasterFlame)
         {
-            // Remember to render the flame at the next Render() step
-            mHeatBlasterFlameToRender.emplace(
+            // Draw notification (one frame only)
+            mNotificationLayer.SetHeatBlaster(
                 worldCoordinates,
                 radius,
                 action);
@@ -907,8 +883,8 @@ bool GameController::ExtinguishFireAt(vec2f const & screenCoordinates)
 
     if (isApplied)
     {
-        // Remember to render the extinguisher at the next Render() step
-        mFireExtinguisherSprayToRender.emplace(
+        // Draw notification (one frame only)
+        mNotificationLayer.SetFireExtinguisherSpray(
             worldCoordinates,
             radius);
     }

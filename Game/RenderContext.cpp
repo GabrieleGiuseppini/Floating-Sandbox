@@ -493,9 +493,7 @@ void RenderContext::Draw()
             mNotificationRenderContext->Draw();
 
             // Flip the back buffer onto the screen
-            LogMessage("TODOTEST: RenderContext::Draw: Swapping buffers...");
             mSwapRenderBuffersFunction();
-            LogMessage("TODOTEST: RenderContext::Draw: ...buffers swapped.");
 
             // Update stats
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);

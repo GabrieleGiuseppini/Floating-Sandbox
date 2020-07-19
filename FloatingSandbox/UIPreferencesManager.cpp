@@ -149,7 +149,6 @@ void UIPreferencesManager::LoadPreferences()
             }
         }
 
-
         //
         // Check updates at startup
         //
@@ -311,7 +310,9 @@ void UIPreferencesManager::LoadPreferences()
             if (auto globalMuteIt = preferencesRootObject.find("global_mute");
                 globalMuteIt != preferencesRootObject.end() && globalMuteIt->second.is<bool>())
             {
-                AudioController::SetGlobalMute(globalMuteIt->second.get<bool>());
+                bool const isSoundMuted = globalMuteIt->second.get<bool>();                
+                AudioController::SetGlobalMute(isSoundMuted);
+                mGameController->NotifySoundMuted(isSoundMuted);
             }
 
             // Background music volume

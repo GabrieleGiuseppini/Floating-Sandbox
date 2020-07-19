@@ -145,6 +145,8 @@ public:
     bool GetShowExtendedStatusText() const override;
     void SetShowExtendedStatusText(bool value) override;
 
+    void NotifySoundMuted(bool isSoundMuted) override;
+
     //
     // World probing
     //
@@ -719,12 +721,6 @@ private:
     bool mIsPaused;
     bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;
-
-    // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
-    std::optional<std::tuple<vec2f, float, HeatBlasterActionType>> mHeatBlasterFlameToRender;
-
-    // When set, will be uploaded to the RenderContext to display the fire extinguisher spray
-    std::optional<std::tuple<vec2f, float>> mFireExtinguisherSprayToRender;
 
 
     //

@@ -26,7 +26,7 @@
 #include <Game/ResourceLocator.h>
 
 #include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
-                                // so that wxGLCanvas ends up *not* including the system's OpenGL header
+                                // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 
 #include <wx/frame.h>
 #include <wx/menu.h>

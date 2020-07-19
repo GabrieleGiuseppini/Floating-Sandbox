@@ -13,19 +13,22 @@
 
 using namespace std::literals::chrono_literals;
 
-NotificationLayer::NotificationLayer(bool isUltraViolentMode)
+NotificationLayer::NotificationLayer(
+	bool isUltraViolentMode,
+	bool isSoundMuted)
     : // StatusText
 	  mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
 	// Ephemeral text
 	, mEphemeralTextLines()
-	// Ultra-Violent Mode
+	// Indicators
 	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
+	, mIsSoundMuteIndicatorOn(isSoundMuted)
 	// State
 	, mIsStatusTextDirty(true)
 	, mIsGameTextDirty(true)
-	, mIsUltraViolentModeIndicatorDirty(true)
+	, mAreTextureNotificationsDirty(true)
 {
 }
 
@@ -156,7 +159,15 @@ void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
 	mIsUltraViolentModeIndicatorOn = isUltraViolentMode;
 
 	// Indicator needs to be re-uploaded
-	mIsUltraViolentModeIndicatorDirty = true;
+	mAreTextureNotificationsDirty = true;
+}
+
+void NotificationLayer::SetSoundMuteIndicator(bool isSoundMuted)
+{
+	mIsSoundMuteIndicatorOn = isSoundMuted;
+
+	// Indicator needs to be re-uploaded
+	mAreTextureNotificationsDirty = true;
 }
 
 void NotificationLayer::Reset()
@@ -392,10 +403,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	}
 
 	//
-	// Upload ultra-violent mode indicator, if needed
+	// Upload indicators, when needed
 	//
 
-	if (mIsUltraViolentModeIndicatorDirty)
+	if (mAreTextureNotificationsDirty)
 	{
 		renderContext.UploadTextureNotificationStart();
 
@@ -404,13 +415,45 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			renderContext.UploadTextureNotification(
 				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
 				Render::AnchorPositionType::BottomRight,
-				vec2f::zero(),
+				vec2f(0.0f, 0.0f),
+				1.0f);
+		}			
+
+		if (mIsSoundMuteIndicatorOn)
+		{
+			renderContext.UploadTextureNotification(
+				TextureFrameId(Render::GenericLinearTextureGroups::SoundMuteNotification, 0),
+				Render::AnchorPositionType::BottomRight,
+				vec2f(-1.5f, 0.0f),
 				1.0f);
 		}
 
 		renderContext.UploadTextureNotificationEnd();
 
-		mIsUltraViolentModeIndicatorDirty = false;
+		mAreTextureNotificationsDirty = false;
+	}
+
+	//
+	// Upload interactions, if needed
+	//
+
+	if (!!mHeatBlasterFlameToRender)
+	{
+		renderContext.UploadHeatBlasterFlame(
+			mHeatBlasterFlameToRender->WorldCoordinates,
+			mHeatBlasterFlameToRender->Radius,
+			mHeatBlasterFlameToRender->Action);
+
+		mHeatBlasterFlameToRender.reset();
+	}
+
+	if (!!mFireExtinguisherSprayToRender)
+	{
+		renderContext.UploadFireExtinguisherSpray(
+			mFireExtinguisherSprayToRender->WorldCoordinates,
+			mFireExtinguisherSprayToRender->Radius);
+
+		mFireExtinguisherSprayToRender.reset();
 	}
 }
 
