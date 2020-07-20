@@ -44,6 +44,8 @@ class MainApp : public wxApp
 {
 public:
 
+    MainApp();
+
     virtual bool OnInit() override;
 
     virtual int FilterEvent(wxEvent & event) override;
@@ -71,8 +73,17 @@ IMPLEMENT_APP(MainApp);
 #include <X11/Xlib.h>
 #endif
 
-bool MainApp::OnInit()
+MainApp::MainApp()
 {
+#ifdef FS_OS_LINUX
+    //
+    // Initialize multi-threading in X-Windows
+    //
+
+    XInitThreads();
+#endif
+
+
     //
     // Install handler for unhandled exceptions
     //
@@ -112,17 +123,10 @@ bool MainApp::OnInit()
 #ifdef FLOATING_POINT_CHECKS
     EnableFloatingPointExceptions();
 #endif
+}
 
-
-#ifdef FS_OS_LINUX
-    //
-    // Initialize X-Windows
-    //
-
-    XInitThreads();
-#endif
-
-
+bool MainApp::OnInit()
+{
     //
     // Initialize wxWidgets
     //
