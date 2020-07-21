@@ -296,7 +296,7 @@ Render:
 			+ Start:
 				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7) - 30.9 FPS
 				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
-				+ HP: U:45-46 R:14-15 (SWP:1.1 SHP:4.5)
+				+ HP: U:45-46 R:13.4-15 (SWP:1.1 SHP:4.5) - 16.9 FPS
 				- Bazzico: TODO
 			+ Spec:
 				+ Rendering runs entirely on separate thread
@@ -543,13 +543,26 @@ Render:
 					+ Number of stars changes
 					+ Number of clouds changes
 					+ Debug ship render mode
+				+ Perf on other laptops:
+					+ Samsung: 
+						- FPS: 10.5
+						- UPD: 94.7 (W=0.00) UPL: (W=0.01 + 0.32)
+						- RND: 3.07 (3.10) (MT=0.01)
+					+ HP:
+						- FPS: 20.7
+						- UPD: 47.3 (W=0.01) UPL: (W=0.00 + 0.24)
+						- RND: 4.00 (3.84) (MT=0.04)
 				= Cleanup:
 					+ Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
 					- Test with OpenGL uploads all up-front
+						- Perf before:
 						- New perf stat: portion of Render that is purely upload
+						- Perf after:
+					- Test with wxMutexGuiLocker 
+						- https://docs.wxwidgets.org/3.0/group__group__funcmacro__thread.html#ga6671c1599fd4ccf6a7c7bb90b2304709
 					- Do APITrace, including shutdown
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
@@ -588,11 +601,12 @@ Render:
 
 		- More stress metal sounds, to dilute "cycle of sounds"
 			- New raw sounds are at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
+			- Also try not dispatching stress if also dispatching break's (or destroy's?)
 
 		- Explosions: see with progress being sqrt
 
 		- SWE: see if should damp waves, now that we have bubble waves
-			- Ideally we only damp small waves, not big ones (e.g. Tsunami)
+			- Ideally we only damp small waves, not big ones (like Tsunami)
 
 		- GameController: just one special day?
 
