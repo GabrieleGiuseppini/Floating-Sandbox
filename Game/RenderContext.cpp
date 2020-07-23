@@ -447,50 +447,78 @@ void RenderContext::Draw()
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
             //
-            // World
+            // Prepare
             //
 
-            mWorldRenderContext->RenderStars(renderParameters);
-
-            mWorldRenderContext->PrepareRenderLightnings(renderParameters);
-
-            mWorldRenderContext->RenderCloudsAndBackgroundLightnings(renderParameters);
-
-            // Render ocean opaquely, over sky
-            mWorldRenderContext->RenderOcean(true, renderParameters);
-
-            glEnable(GL_DEPTH_TEST); // Required by ships
-
-            for (auto const & ship : mShips)
             {
-                ship->Draw(renderParameters, renderStats);
+                mWorldRenderContext->RenderPrepareStars(renderParameters);
+
+                mWorldRenderContext->RenderPrepareLightnings(renderParameters);
+
+                mWorldRenderContext->RenderPrepareClouds(renderParameters);
+
+                mWorldRenderContext->RenderPrepareOcean(renderParameters);
+
+                for (auto const & ship : mShips)
+                {
+                    ship->RenderPrepare(renderParameters);
+                }
+
+                mWorldRenderContext->RenderPrepareOceanFloor(renderParameters);
+
+                mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
+
+                mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
+
+                mWorldRenderContext->RenderPrepareRain(renderParameters);
+
+                mNotificationRenderContext->RenderPrepare();
+
+                // Update stats
+                mPerfStats.TotalUploadRenderDrawDuration.Update(GameChronometer::now() - startTime);
             }
 
-            glDisable(GL_DEPTH_TEST);
+            //
+            // Render
+            //
 
-            // Render ocean transparently, over ship, unless disabled
-            if (!renderParameters.ShowShipThroughOcean)
             {
-                mWorldRenderContext->RenderOcean(false, renderParameters);
+                mWorldRenderContext->RenderDrawStars(renderParameters);
+
+                mWorldRenderContext->RenderDrawCloudsAndBackgroundLightnings(renderParameters);
+
+                // Render ocean opaquely, over sky
+                mWorldRenderContext->RenderDrawOcean(true, renderParameters);
+
+                glEnable(GL_DEPTH_TEST); // Required by ships
+
+                for (auto const & ship : mShips)
+                {
+                    ship->RenderDraw(renderParameters, renderStats);
+                }
+
+                glDisable(GL_DEPTH_TEST);
+
+                // Render ocean transparently, over ship, unless disabled
+                if (!renderParameters.ShowShipThroughOcean)
+                {
+                    mWorldRenderContext->RenderDrawOcean(false, renderParameters);
+                }
+
+                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
+
+                mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
+
+                mWorldRenderContext->RenderDrawCrossesOfLight(renderParameters);
+
+                mWorldRenderContext->RenderDrawForegroundLightnings(renderParameters);
+
+                mWorldRenderContext->RenderDrawRain(renderParameters);
+
+                mWorldRenderContext->RenderDrawWorldBorder(renderParameters);
+
+                mNotificationRenderContext->RenderDraw();
             }
-
-            //
-            // Misc
-            //
-
-            mWorldRenderContext->RenderOceanFloor(renderParameters);
-
-            mWorldRenderContext->RenderAMBombPreImplosions(renderParameters);
-
-            mWorldRenderContext->RenderCrossesOfLight(renderParameters);
-
-            mWorldRenderContext->RenderForegroundLightnings(renderParameters);
-
-            mWorldRenderContext->RenderRain(renderParameters);
-
-            mWorldRenderContext->RenderWorldBorder(renderParameters);
-
-            mNotificationRenderContext->Draw();
 
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();

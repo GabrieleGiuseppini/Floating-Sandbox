@@ -565,12 +565,8 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
     }
 }
 
-void WorldRenderContext::RenderStars(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderParameters*/)
 {
-    //
-    // Buffer
-    //
-
     if (mIsStarVertexBufferDirty)
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
@@ -594,11 +590,10 @@ void WorldRenderContext::RenderStars(RenderParameters const & /*renderParameters
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+}
 
-    //
-    // Render
-    //
-
+void WorldRenderContext::RenderDrawStars(RenderParameters const & /*renderParameters*/)
+{
     if (mStarVertexBuffer.size() > 0)
     {
         glBindVertexArray(*mStarVAO);
@@ -614,12 +609,8 @@ void WorldRenderContext::RenderStars(RenderParameters const & /*renderParameters
     }
 }
 
-void WorldRenderContext::PrepareRenderLightnings(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareLightnings(RenderParameters const & /*renderParameters*/)
 {
-    //
-    // Upload buffer
-    //
-    
     if (!mLightningVertexBuffer.empty())
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
@@ -643,12 +634,8 @@ void WorldRenderContext::PrepareRenderLightnings(RenderParameters const & /*rend
     }
 }
 
-void WorldRenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
+void WorldRenderContext::RenderPrepareClouds(RenderParameters const & /*renderParameters*/)
 {
-    ////////////////////////////////////////////////////
-    // Clouds buffer
-    ////////////////////////////////////////////////////
-
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
     if (mCloudVertexBuffer.size() > mCloudVBOAllocatedVertexSize)
@@ -667,7 +654,10 @@ void WorldRenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters co
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
+void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
+{
     ////////////////////////////////////////////////////
     // Draw background clouds, iff there are background lightnings
     ////////////////////////////////////////////////////
@@ -731,12 +721,8 @@ void WorldRenderContext::RenderCloudsAndBackgroundLightnings(RenderParameters co
     glBindVertexArray(0);
 }
 
-void WorldRenderContext::RenderOcean(bool opaquely, RenderParameters const & renderParameters)
+void WorldRenderContext::RenderPrepareOcean(RenderParameters const & /*renderParameters*/)
 {
-    //
-    // Buffer
-    //
-
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanSegmentVBO);
 
     if (mOceanSegmentVBOAllocatedVertexSize != mOceanSegmentBuffer.size())
@@ -755,11 +741,9 @@ void WorldRenderContext::RenderOcean(bool opaquely, RenderParameters const & ren
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    //
-    // Render
-    //
-
+}
+void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters)
+{
     float const transparency = opaquely ? 0.0f : renderParameters.OceanTransparency;
 
     glBindVertexArray(*mOceanVAO);
@@ -802,12 +786,8 @@ void WorldRenderContext::RenderOcean(bool opaquely, RenderParameters const & ren
     glBindVertexArray(0);
 }
 
-void WorldRenderContext::RenderOceanFloor(RenderParameters const & renderParameters)
+void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*renderParameters*/)
 {
-    //
-    // Buffer
-    //
-
     glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
 
     if (mLandSegmentVBOAllocatedVertexSize != mLandSegmentBuffer.size())
@@ -826,11 +806,10 @@ void WorldRenderContext::RenderOceanFloor(RenderParameters const & renderParamet
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
-    //
-    // Render
-    //
-
+void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderParameters)
+{
     glBindVertexArray(*mLandVAO);
 
     switch (renderParameters.LandRenderMode)
@@ -856,14 +835,10 @@ void WorldRenderContext::RenderOceanFloor(RenderParameters const & renderParamet
     glBindVertexArray(0);
 }
 
-void WorldRenderContext::RenderAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
 {
     if (!mAMBombPreImplosionVertexBuffer.empty())
     {
-        //
-        // Buffer
-        //
-
         glBindBuffer(GL_ARRAY_BUFFER, *mAMBombPreImplosionVBO);
 
         if (mAMBombPreImplosionVertexBuffer.size() > mAMBombPreImplosionVBOAllocatedVertexSize)
@@ -882,12 +857,13 @@ void WorldRenderContext::RenderAMBombPreImplosions(RenderParameters const & /*re
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
 
-
-        //
-        // Render
-        //
-
+void WorldRenderContext::RenderDrawAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
+{
+    if (!mAMBombPreImplosionVertexBuffer.empty())
+    {
         glBindVertexArray(*mAMBombPreImplosionVAO);
 
         mShaderManager.ActivateProgram<ProgramType::AMBombPreImplosion>();
@@ -899,14 +875,10 @@ void WorldRenderContext::RenderAMBombPreImplosions(RenderParameters const & /*re
     }
 }
 
-void WorldRenderContext::RenderCrossesOfLight(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareCrossesOfLight(RenderParameters const & /*renderParameters*/)
 {
     if (!mCrossOfLightVertexBuffer.empty())
     {
-        //
-        // Buffer
-        //
-
         glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
 
         if (mCrossOfLightVertexBuffer.size() > mCrossOfLightVBOAllocatedVertexSize)
@@ -925,12 +897,13 @@ void WorldRenderContext::RenderCrossesOfLight(RenderParameters const & /*renderP
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
 
-
-        //
-        // Render
-        //
-
+void WorldRenderContext::RenderDrawCrossesOfLight(RenderParameters const & /*renderParameters*/)
+{
+    if (!mCrossOfLightVertexBuffer.empty())
+    {
         glBindVertexArray(*mCrossOfLightVAO);
 
         mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
@@ -942,7 +915,7 @@ void WorldRenderContext::RenderCrossesOfLight(RenderParameters const & /*renderP
     }
 }
 
-void WorldRenderContext::RenderForegroundLightnings(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const & /*renderParameters*/)
 {
     if (mForegroundLightningVertexCount > 0)
     {
@@ -959,12 +932,13 @@ void WorldRenderContext::RenderForegroundLightnings(RenderParameters const & /*r
     }
 }
 
-void WorldRenderContext::RenderRain(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderParameters*/)
 {
+    mShaderManager.ActivateProgram<ProgramType::Rain>();
+
     if (mIsRainDensityDirty)
     {
-        // Set parameter
-        mShaderManager.ActivateProgram<ProgramType::Rain>();
+        // Set parameter        
         mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
             mRainDensity);
 
@@ -973,23 +947,29 @@ void WorldRenderContext::RenderRain(RenderParameters const & /*renderParameters*
 
     if (mRainDensity != 0.0f)
     {
-        glBindVertexArray(*mRainVAO);
-
-        mShaderManager.ActivateProgram(ProgramType::Rain);
-
         // Set time parameter
         mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
             ProgramType::Rain,
             GameWallClock::GetInstance().NowAsFloat());
+    }
+}
 
-        // Draw
+void WorldRenderContext::RenderDrawRain(RenderParameters const & /*renderParameters*/)
+{
+    if (mRainDensity != 0.0f)
+    {
+        glBindVertexArray(*mRainVAO);
+
+        mShaderManager.ActivateProgram(ProgramType::Rain);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        CheckOpenGLError();
 
         glBindVertexArray(0);
     }
 }
 
-void WorldRenderContext::RenderWorldBorder(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*renderParameters*/)
 {
     if (mWorldBorderVertexBuffer.size() > 0)
     {

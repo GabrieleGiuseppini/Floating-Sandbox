@@ -706,11 +706,21 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 mMainGLCanvas->GetSize().GetHeight()),
             [this, splash]() // Allow deferred execution, capturing splash dialog by value
             {
+                //
+                // Invoked on a different thread, but with synchronous
+                // execution
+                //
+
                 mMainGLCanvasContext->SetCurrent(*(splash->GetOpenGLCanvas()));
 
             },
             [this]()
-            {
+            {   
+                //
+                // Invoked by a different thread, with asynchronous
+                // execution
+                //
+
                 ////LogMessage("TODOTEST: Swapping buffers...");
 
                 assert(!!mMainGLCanvas);

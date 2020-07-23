@@ -106,6 +106,7 @@ struct PerfStats
     // Render-Draw
     Ratio TotalMainThreadRenderDrawDuration;
     Ratio TotalRenderDrawDuration; // In render thread
+    Ratio TotalUploadRenderDrawDuration;
 
     PerfStats()
     {
@@ -125,6 +126,7 @@ struct PerfStats
 
         TotalMainThreadRenderDrawDuration.Reset();
         TotalRenderDrawDuration.Reset();
+        TotalUploadRenderDrawDuration.Reset();
     }
 
     PerfStats & operator=(PerfStats const & other) = default;
@@ -145,6 +147,7 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
 
     perfStats.TotalMainThreadRenderDrawDuration = lhs.TotalMainThreadRenderDrawDuration - rhs.TotalMainThreadRenderDrawDuration;
     perfStats.TotalRenderDrawDuration = lhs.TotalRenderDrawDuration - rhs.TotalRenderDrawDuration;
+    perfStats.TotalUploadRenderDrawDuration = lhs.TotalUploadRenderDrawDuration - rhs.TotalUploadRenderDrawDuration;
 
     return perfStats;
 }

@@ -742,7 +742,9 @@ public:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
-    void Draw(
+    void RenderPrepare(RenderParameters const & renderParameters);
+
+    void RenderDraw(
         RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
@@ -848,20 +850,29 @@ private:
 
 private:
 
-    void PrepareRenderFlames(RenderParameters const & renderParameters);
+    void RenderPrepareFlames(RenderParameters const & renderParameters);
 
     template<ProgramType ShaderProgram>
-    void RenderFlames(
+    void RenderDrawFlames(
         size_t startFlameIndex,
         size_t flameCount,
         RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
-    void RenderSparkles(RenderParameters const & renderParameters);
-    void RenderGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
-    void RenderExplosions(RenderParameters const & renderParameters);
-    void RenderHighlights(RenderParameters const & renderParameters);
-    void RenderVectorArrows(RenderParameters const & renderParameters);
+    void RenderPrepareSparkles(RenderParameters const & renderParameters);
+    void RenderDrawSparkles(RenderParameters const & renderParameters);
+
+    void RenderPrepareGenericMipMappedTextures(RenderParameters const & renderParameters);
+    void RenderDrawGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
+
+    void RenderPrepareExplosions(RenderParameters const & renderParameters);
+    void RenderDrawExplosions(RenderParameters const & renderParameters);
+
+    void RenderPrepareHighlights(RenderParameters const & renderParameters);
+    void RenderDrawHighlights(RenderParameters const & renderParameters);
+
+    void RenderPrepareVectorArrows(RenderParameters const & renderParameters);
+    void RenderDrawVectorArrows(RenderParameters const & renderParameters);
     
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
@@ -1081,6 +1092,7 @@ private:
     bool mIsFlameWindSpeedMagnitudeAverageDirty;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
+    size_t mExplosionTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mExplosionVBO;
     size_t mExplosionVBOAllocatedVertexSize;
 
@@ -1090,8 +1102,9 @@ private:
 
     std::vector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
     std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
+    size_t mGenericMipMappedTextureTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mGenericMipMappedTextureVBO;
-    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;
+    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;    
 
     std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightModeType::_Last) + 1> mHighlightVertexBuffers;
     GameOpenGLVBO mHighlightVBO;

@@ -450,16 +450,31 @@ public:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
-    void RenderStars(RenderParameters const & renderParameters);
-    void PrepareRenderLightnings(RenderParameters const & renderParameters);
-    void RenderCloudsAndBackgroundLightnings(RenderParameters const & renderParameters);
-    void RenderOcean(bool opaquely, RenderParameters const & renderParameters);
-    void RenderOceanFloor(RenderParameters const & renderParameters);
-    void RenderAMBombPreImplosions(RenderParameters const & renderParameters);
-    void RenderCrossesOfLight(RenderParameters const & renderParameters);
-    void RenderForegroundLightnings(RenderParameters const & renderParameters);
-    void RenderRain(RenderParameters const & renderParameters);
-    void RenderWorldBorder(RenderParameters const & renderParameters);
+    void RenderPrepareStars(RenderParameters const & renderParameters);
+    void RenderDrawStars(RenderParameters const & renderParameters);
+
+    void RenderPrepareLightnings(RenderParameters const & renderParameters);
+    void RenderPrepareClouds(RenderParameters const & renderParameters);
+    void RenderDrawCloudsAndBackgroundLightnings(RenderParameters const & renderParameters);
+
+    void RenderPrepareOcean(RenderParameters const & renderParameters);
+    void RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters);
+
+    void RenderPrepareOceanFloor(RenderParameters const & renderParameters);
+    void RenderDrawOceanFloor(RenderParameters const & renderParameters);
+
+    void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
+    void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
+
+    void RenderPrepareCrossesOfLight(RenderParameters const & renderParameters);
+    void RenderDrawCrossesOfLight(RenderParameters const & renderParameters);
+
+    void RenderDrawForegroundLightnings(RenderParameters const & renderParameters);
+
+    void RenderPrepareRain(RenderParameters const & renderParameters);
+    void RenderDrawRain(RenderParameters const & renderParameters);
+
+    void RenderDrawWorldBorder(RenderParameters const & renderParameters);
 
 private:
 

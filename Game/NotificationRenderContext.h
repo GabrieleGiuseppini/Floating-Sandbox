@@ -215,7 +215,9 @@ public:
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
 
-	void Draw();
+	void RenderPrepare();
+
+	void RenderDraw();
 
 private:
 
@@ -227,10 +229,17 @@ private:
 	void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);	
 	void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
 
-	void RenderTextNotifications();
-	void RenderTextureNotifications();
-	void RenderHeatBlasterFlame();
-	void RenderFireExtinguisherSpray();
+	void RenderPrepareTextNotifications();
+	void RenderDrawTextNotifications();
+
+	void RenderPrepareTextureNotifications();
+	void RenderDrawTextureNotifications();
+
+	void RenderPrepareHeatBlasterFlame();
+	void RenderDrawHeatBlasterFlame();
+
+	void RenderPrepareFireExtinguisherSpray();
+	void RenderDrawFireExtinguisherSpray();
 
 private:
 

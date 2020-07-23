@@ -356,15 +356,26 @@ void NotificationRenderContext::ProcessParameterChanges(RenderParameters const &
     }
 }
 
-void NotificationRenderContext::Draw()
+void NotificationRenderContext::RenderPrepare()
 {
-    RenderTextNotifications();
+    RenderPrepareTextNotifications();
 
-    RenderTextureNotifications();
+    RenderPrepareTextureNotifications();
 
-    RenderHeatBlasterFlame();
+    RenderPrepareHeatBlasterFlame();
 
-    RenderFireExtinguisherSpray();
+    RenderPrepareFireExtinguisherSpray();
+}
+
+void NotificationRenderContext::RenderDraw()
+{
+    RenderDrawTextNotifications();
+
+    RenderDrawTextureNotifications();
+
+    RenderDrawHeatBlasterFlame();
+
+    RenderDrawFireExtinguisherSpray();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -501,10 +512,8 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
         lighteningStrength);
 }
 
-void NotificationRenderContext::RenderTextNotifications()
+void NotificationRenderContext::RenderPrepareTextNotifications()
 {
-    bool isFirst = true;
-
     for (auto & fontRenderContext : mFontRenderContexts)
     {
         auto const & vertexBuffer = fontRenderContext.GetVertexBuffer();
@@ -538,10 +547,16 @@ void NotificationRenderContext::RenderTextNotifications()
 
             fontRenderContext.SetLineDataDirty(false);
         }
+    }
+}
 
-        //
-        // Render
-        //
+void NotificationRenderContext::RenderDrawTextNotifications()
+{
+    bool isFirst = true;
+
+    for (auto & fontRenderContext : mFontRenderContexts)
+    {
+        auto const & vertexBuffer = fontRenderContext.GetVertexBuffer();
 
         if (!vertexBuffer.empty())
         {
@@ -574,12 +589,8 @@ void NotificationRenderContext::RenderTextNotifications()
     }
 }
 
-void NotificationRenderContext::RenderTextureNotifications()
+void NotificationRenderContext::RenderPrepareTextureNotifications()
 {
-    //
-    // Re-upload vertex buffer if dirty
-    //
-
     if (mIsTextureNotificationVertexBufferDirty)
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
@@ -595,13 +606,10 @@ void NotificationRenderContext::RenderTextureNotifications()
 
         mIsTextureNotificationVertexBufferDirty = false;
     }
+}
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    //
-    // Render
-    //
-
+void NotificationRenderContext::RenderDrawTextureNotifications()
+{
     if (mTextureNotificationVertexBuffer.size() > 0)
     {
         glBindVertexArray(*mTextureNotificationVAO);
@@ -615,14 +623,10 @@ void NotificationRenderContext::RenderTextureNotifications()
     }
 }
 
-void NotificationRenderContext::RenderHeatBlasterFlame()
+void NotificationRenderContext::RenderPrepareHeatBlasterFlame()
 {
     if (!!mHeatBlasterFlameShaderToRender)
     {
-        //
-        // Buffer
-        //
-
         glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
 
         glBufferData(GL_ARRAY_BUFFER,
@@ -632,11 +636,13 @@ void NotificationRenderContext::RenderHeatBlasterFlame()
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
 
-        //
-        // Render
-        //
-
+void NotificationRenderContext::RenderDrawHeatBlasterFlame()
+{
+    if (!!mHeatBlasterFlameShaderToRender)
+    {
         glBindVertexArray(*mHeatBlasterFlameVAO);
 
         assert(!!mHeatBlasterFlameShaderToRender);
@@ -655,14 +661,10 @@ void NotificationRenderContext::RenderHeatBlasterFlame()
     }
 }
 
-void NotificationRenderContext::RenderFireExtinguisherSpray()
+void NotificationRenderContext::RenderPrepareFireExtinguisherSpray()
 {
     if (!!mFireExtinguisherSprayShaderToRender)
     {
-        //
-        // Buffer
-        //
-
         glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
 
         glBufferData(GL_ARRAY_BUFFER,
@@ -672,11 +674,13 @@ void NotificationRenderContext::RenderFireExtinguisherSpray()
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
 
-        //
-        // Render
-        //
-
+void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
+{
+    if (!!mFireExtinguisherSprayShaderToRender)
+    {
         glBindVertexArray(*mFireExtinguisherSprayVAO);
 
         assert(!!mFireExtinguisherSprayShaderToRender);

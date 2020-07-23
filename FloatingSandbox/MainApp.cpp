@@ -82,8 +82,10 @@ MainApp::MainApp()
 
     XInitThreads();
 #endif
+}
 
-
+bool MainApp::OnInit()
+{
     //
     // Install handler for unhandled exceptions
     //
@@ -123,10 +125,8 @@ MainApp::MainApp()
 #ifdef FLOATING_POINT_CHECKS
     EnableFloatingPointExceptions();
 #endif
-}
 
-bool MainApp::OnInit()
-{
+
     //
     // Initialize wxWidgets
     //

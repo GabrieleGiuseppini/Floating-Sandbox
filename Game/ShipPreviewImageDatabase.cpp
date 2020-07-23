@@ -185,7 +185,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                     // Deserialize entries
                     for (size_t indexOffset = 0; indexOffset != indexSize; /* incremented in loop */)
                     {
-                        if (indexOffset > indexSize)
+                        if (indexOffset >= indexSize)
                         {
                             throw std::runtime_error("Out-of-sync while deserializing index");
                         }
@@ -205,7 +205,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                             size,
                             dimensions);
 
-                        auto [it, isInserted] = index.try_emplace(
+                        auto [_, isInserted] = index.try_emplace(
                             filename,
                             lastModified,
                             position,
