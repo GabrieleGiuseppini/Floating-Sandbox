@@ -1838,6 +1838,8 @@ public:
 
     virtual void Initialize(InputState const & inputState) override
     {
+        mCurrentCursor = nullptr;
+
         if (inputState.IsLeftMouseDown)
         {
             mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
