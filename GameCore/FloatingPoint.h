@@ -23,7 +23,7 @@ inline void EnableFloatingPointExceptions()
     fegetexceptflag(&excepts, FE_ALL_EXCEPT);
     fesetexceptflag(&excepts, FE_ALL_EXCEPT & ~(FE_INEXACT | FE_UNDERFLOW));
 #elif defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
-    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~(_MM_MASK_INEXACT | _MM_MASK_UNDERFLOW));
+    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & (_MM_MASK_INEXACT | _MM_MASK_UNDERFLOW));
 #else
 #pragma message ("WARNING: Unknown architecture - cannot set floating point exception mask")
 #endif
