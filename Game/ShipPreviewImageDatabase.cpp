@@ -60,21 +60,25 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     size_t & size,
     ImageSize & dimensions)
 {
-    DatabaseStructure::IndexEntry const * const indexEntry =
-        reinterpret_cast<DatabaseStructure::IndexEntry const *>(&(buffer[bufferIndex]));
+    DatabaseStructure::IndexEntry indexEntry;
 
-    lastModified = indexEntry->LastModified;
-    position = indexEntry->Position;
-    size = indexEntry->Size;
-    dimensions = indexEntry->Dimensions;
+    std::memcpy(
+        reinterpret_cast<char *>(&indexEntry),
+        &(buffer[bufferIndex]),
+        sizeof(DatabaseStructure::IndexEntry));
+
+    lastModified = indexEntry.LastModified;
+    position = indexEntry.Position;
+    size = indexEntry.Size;
+    dimensions = indexEntry.Dimensions;
 
     std::string filenameString = std::string(
         &(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)]),
-        indexEntry->FilenameLength);
+        indexEntry.FilenameLength);
 
     filename = std::filesystem::path(filenameString);
 
-    return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry->FilenameLength;
+    return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry.FilenameLength;
 }
 
 size_t ShipPreviewImageDatabase::SerializePreviewImage(

@@ -564,7 +564,8 @@ Render:
 						+ New perf stat: portion of Render that is purely upload
 							+ Display						
 						- Perf after:
-					- Test with wxMutexGuiLocker, or move SwapBuffers to main thread
+					= Test with wxMutexGuiLocker, or move SwapBuffers to main thread
+						- Test on other laptops
 						- https://docs.wxwidgets.org/3.0/group__group__funcmacro__thread.html#ga6671c1599fd4ccf6a7c7bb90b2304709
 						- Send to Don
 					- Run debug
@@ -580,6 +581,10 @@ Render:
 					- changes.txt
 					- merge
 
+		- Explore branch predictions:
+			- likely, unpredictable
+		- Run with address sanitizer
+
 		+ Bug: no terrain cursor appears if you are in tool 'M' and then hit 'J'
 		+ Hard error if Splash can't find image
 		+ Latest picojson
@@ -589,34 +594,12 @@ Render:
 			+ Test with ambient light
 			+ Test CTRL+M shortcut
 
-		- Harden ship database:
-			Thread 15 "FloatingSandbox" received signal SIGBUS, Bus error.
-			[Switching to Thread 0xc85c71f0 (LWP 4473)]
-			ShipPreviewImageDatabase::DeserializeIndexEntry (buffer=std::vector of length 15974, capacity 15974 = {...}, bufferIndex=67, filename=filesystem::path "", lastModified=..., position=..., size=@0xc85c6884: 35200, dimensions=...)
-			    at /path/to/fs/Game/ShipPreviewImageDatabase.cpp:67
-			67	    position = indexEntry->Position;
-			(gdb) where
-			#0  0x001a7050 in ShipPreviewImageDatabase::DeserializeIndexEntry(std::vector<char, std::allocator<char> > const&, unsigned int, std::filesystem::__cxx11::path&, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::duration<long long, std::ratio<1ll, 1000000000ll> > >&, std::fpos<__mbstate_t>&, unsigned int&, ImageSize&)
-			    (buffer=std::vector of length 15974, capacity 15974 = {...}, bufferIndex=67, filename=filesystem::path "", lastModified=..., position=..., size=@0xc85c6884: 35200, dimensions=...)
-			    at/path/to/fs/ShipPreviewImageDatabase.cpp:67
-			#1  0x001a7774 in PersistedShipPreviewImageDatabase::Load(std::filesystem::__cxx11::path const&, std::shared_ptr<IFileSystem>) (databaseFilePath=..., fileSystem=...)
-			    at/path/to/fs/Game/ShipPreviewImageDatabase.cpp:199
-			#2  0x001a2824 in ShipPreviewDirectoryManager::Create(std::filesystem::__cxx11::path const&, std::shared_ptr<IFileSystem>) (directoryPath=..., fileSystem=...)
-			    at/path/to/fs/Game/ShipPreviewDirectoryManager.cpp:32
-			#3  0x001a2578 in ShipPreviewDirectoryManager::Create(std::filesystem::__cxx11::path const&) (directoryPath=<error reading variable: Cannot access memory at address 0x5f>...)
-			    at/path/to/fs/Game/ShipPreviewDirectoryManager.cpp:19
-			#4  0x0010a098 in ShipPreviewWindow::ScanDirectory(std::filesystem::__cxx11::path const&) (this=0x66a51f0, directoryPath=...)
-			    at/path/to/fs/FloatingSandbox/ShipPreviewWindow.cpp:878
-			#5  0x001080cc in ShipPreviewWindow::RunPreviewThread() (this=0x66a51f0)
-			    at /path/to/fs/FloatingSandbox/ShipPreviewWindow.cpp:859
-			#6  0xf6fb69b0 in  () at /usr/lib/arm-linux-gnueabihf/libstdc++.so.6
-			#7  0xf7361494 in start_thread (arg=0xc85c71f0) at pthread_create.c:486
-
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
 			+ Crash because SplashScreen not shown
 			+ Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
 			+ Ask to test
+			= Unalignment exception with ship database file
 			- Remove all TODOTEST logging		
 
 		- Day/night cycle

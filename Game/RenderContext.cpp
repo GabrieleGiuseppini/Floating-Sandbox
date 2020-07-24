@@ -377,10 +377,6 @@ void RenderContext::UploadStart()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
 
-        // TODOTEST
-        // Flip the back buffer onto the screen
-        //mSwapRenderBuffersFunction();
-
         mPerfStats.TotalWaitForRenderDrawDuration.Update(GameChronometer::now() - waitStart);
     }
 
@@ -530,9 +526,8 @@ void RenderContext::Draw()
 
             glFinish();
 
-            // TODOTEST
-            ////// Flip the back buffer onto the screen
-            ////mSwapRenderBuffersFunction();
+            // Flip the back buffer onto the screen
+            mSwapRenderBuffersFunction();
 
             // Update stats
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
