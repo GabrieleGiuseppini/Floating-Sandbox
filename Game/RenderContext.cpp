@@ -434,17 +434,19 @@ void RenderContext::Draw()
             // Initialize
             //
 
-            // Set polygon mode
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            if (renderParameters.IsDebugShipRenderModeDirty)
+            {
+                // Set polygon mode
+                if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                else
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
 
             // Clear canvas - and depth buffer
             vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
             glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            // Debug mode
-            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);           
 
             //
             // Prepare

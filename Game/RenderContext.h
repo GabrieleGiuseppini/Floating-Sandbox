@@ -502,6 +502,7 @@ public:
     void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
     {
         mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
+        mRenderParameters.IsDebugShipRenderModeDirty = true;
     }
 
     //
@@ -1307,8 +1308,8 @@ private:
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly), or that purely serve as input to calculated
-    // render parameters, or that only need storage here (e.g. being used elsewhere 
-    // to control upload's)
+    // render parameters, or that only need storage here (e.g. being used in other 
+    // contexts to control upload's)
     //
 
     float mAmbientLightIntensity;
@@ -1317,7 +1318,6 @@ private:
     VectorFieldRenderModeType mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier;
 
-private:
 
     //
     // Rendering externals

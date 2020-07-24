@@ -934,23 +934,26 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
 
 void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderParameters*/)
 {
-    mShaderManager.ActivateProgram<ProgramType::Rain>();
-
-    if (mIsRainDensityDirty)
+    if (mIsRainDensityDirty || mRainDensity != 0.0f)
     {
-        // Set parameter        
-        mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
-            mRainDensity);
+        mShaderManager.ActivateProgram<ProgramType::Rain>();
 
-        mIsRainDensityDirty = false;
-    }
+        if (mIsRainDensityDirty) 
+        {
+            // Set parameter        
+            mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
+                mRainDensity);
 
-    if (mRainDensity != 0.0f)
-    {
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            ProgramType::Rain,
-            GameWallClock::GetInstance().NowAsFloat());
+            mIsRainDensityDirty = false; // Uploaded flag
+        }
+
+        if (mRainDensity != 0.0f)
+        {
+            // Set time parameter
+            mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
+                ProgramType::Rain,
+                GameWallClock::GetInstance().NowAsFloat());
+        }
     }
 }
 

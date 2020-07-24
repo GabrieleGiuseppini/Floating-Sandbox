@@ -45,7 +45,8 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, DrawHeatOverlay(false)
 	, HeatOverlayTransparency(0.1875f)
 	, IsHeatOverlayTransparencyDirty(true)
-	, DebugShipRenderMode(DebugShipRenderModeType::None)		
+	, DebugShipRenderMode(DebugShipRenderModeType::None)	
+	, IsDebugShipRenderModeDirty(true)
 {
 }
 
@@ -69,6 +70,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsShipWaterContrastDirty = false;
 	IsShipWaterLevelOfDetailDirty = false;
 	IsHeatOverlayTransparencyDirty = false;
+	IsDebugShipRenderModeDirty = false;
 
 	return copy;
 }

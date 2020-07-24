@@ -567,7 +567,25 @@ Render:
 							- UPL: W=0.0-0.5 + 0.16
 							- RND: 13.4-22.6 (MT=10 / 5.77-8.33)
 					+ Run debug
-					- Do APITrace, including shutdown
+					= Do APITrace, including shutdown
+						= Reduce calls
+							+ Start: 97, 101 when writing
+							+ Move out glPolygonMode
+								+ Use RenderParameters::IsDebugSgipRenderModeDirty
+									+ Setter @ RenderContext, never give to Ship
+									+ Process @ render
+								+ Test
+							- if all glBindVertexBuffer always end with zero, do once at end of Prepare
+							- If all glBindVertexArray always end with zero, do once at end of Draw
+							+ Better rain parameter setting
+								+ Test rain
+							- Flame parameters: only set if will draw flames
+								- Also: @ ShipRenderContext::RenderDrawFlames: VBO bind is not needed
+								- Test flames & wind
+						+ Check shutdown
+					- Test:
+						- World border
+						- Stressed springs
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
 						+ NotifRenderContext has vector of notification textures vertices
