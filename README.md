@@ -89,6 +89,12 @@ So far I've also added the following:
 - Storms with rain and lightnings
 - Ability to persist and reload the ~100 simulation settings
 
+# Performance Characteristics
+The bottleneck at the moment is the spring relaxation algorithm, which requires about 80% of the time spent for the simulation of each single frame. I have an alternative version of the same algorithm written with intrinsics in the Benchmarks project, which shows a 20%-27% perf improvement. Sooner or later I'll integrate that in the game, but it's not gonna be a...game changer (pun intended). Instead, I plan to revisit the spring relaxation algorithm altogether after the next two major versions (see roadmap at https://gamejolt.com/games/floating-sandbox/353572/devlog/the-future-of-floating-sandbox-cdk2c9yi). There is a different family of algorithms based on minimization of potential energy, which supposedly requires less iterations and on top of that is easily parallelizable - the current iterative algorithm is not (easily) parallelize-able.
+This said, in the current implementation, what matters the most is CPU speed - the whole simulation is basically single-threaded (some small steps are parallel, but they're puny compared with the spring relaxation). My laptop is a single-core, 2.2GHz Intel box, and the plain Titanic runs at ~22 FPS. The same ship on a 4-core, 1GHz Intel laptop runs at ~9FPS.
+
+Rendering is a different story. At the time of writing, I'm moving all the rendering code to a separate thread, allowing simulation updates and rendering to run in parallel. Obviously, only multi-core boxes will benefit from parallel rendering, and boxes with very slow or emulated graphics hardware will benefit the most. In any case, at this moment rendering requires a fraction of the time needed for updating the simulation, so CPU speed still dominates the performance you get, compared to GPU speed. The 4-core box I mentioned earlier got a ~10% perf improvement, while another 2-core box - with a faster clock - showed a ~25% perf improvement.
+
 # Building the Game
 I build this game with Visual Studio 2019 (thus full C++ 17 support).
 I tried to do my best to craft the CMake files in a platform-independent way, but I'm working on this exclusively in Visual Studio, hence I'm sure some unportable features have slipped in. Feel free to send pull requests for CMake edits for other platforms.

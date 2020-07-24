@@ -557,18 +557,16 @@ Render:
 					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
 					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
 					+ Remove PerfStats' obsolete members
-					= Test with OpenGL uploads all up-front
+					+ Test with OpenGL uploads all up-front
 						+ Perf before:
 							- UPL: W=0.0-0.5 + 0.16
 							- RND: 16.6-22.6 (MT=5 / 3.77-8.33)
 						+ New perf stat: portion of Render that is purely upload
 							+ Display						
-						- Perf after:
-					= Test with wxMutexGuiLocker, or move SwapBuffers to main thread
-						- Test on other laptops
-						- https://docs.wxwidgets.org/3.0/group__group__funcmacro__thread.html#ga6671c1599fd4ccf6a7c7bb90b2304709
-						- Send to Don
-					- Run debug
+						+ Perf after:
+							- UPL: W=0.0-0.5 + 0.16
+							- RND: 13.4-22.6 (MT=10 / 5.77-8.33)
+					+ Run debug
 					- Do APITrace, including shutdown
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
@@ -600,6 +598,7 @@ Render:
 			+ Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
 			+ Ask to test
 			= Unalignment exception with ship database file
+				- Ask to test
 			- Remove all TODOTEST logging		
 
 		- Day/night cycle
@@ -628,6 +627,8 @@ Render:
 		- Latest wxWidgets - Unicode 
 
 		- 32-bit build
+
+		- Spring relaxation with intrinsics
 
 		----------------------------------------------------------------------------------------
 
@@ -721,8 +722,6 @@ Render:
 		- Underwater currents (*)		
 		
 		- Continuous Auto-focus (*)
-
-		- Spring relaxation with intrinsics
 
 - Ship making:
 	# Credit names:

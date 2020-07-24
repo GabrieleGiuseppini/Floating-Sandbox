@@ -521,9 +521,10 @@ void RenderContext::Draw()
             }
 
             //
-            // Flush all pending operations
+            // Wrap up
             //
 
+            // Flush all pending operations
             glFinish();
 
             // Flip the back buffer onto the screen
