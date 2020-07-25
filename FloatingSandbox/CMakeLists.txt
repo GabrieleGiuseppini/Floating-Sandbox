@@ -96,6 +96,7 @@ target_link_libraries (FloatingSandbox
 	UIControlsLib
 	sfml-audio
 	sfml-network
+	sfml-system
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
@@ -162,7 +163,7 @@ endif (WIN32)
 
 # Main binary
 install(TARGETS FloatingSandbox
-	CONFIGURATIONS Release
+	CONFIGURATIONS Release RelWithDebInfo Debug
         RUNTIME
 	DESTINATION .)
 
@@ -196,7 +197,7 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/Guides"
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION .
 	PATTERN "default_ship.png" EXCLUDE)
-install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic.shp"
+install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic (With Power).shp"
 	DESTINATION Ships
 	RENAME "default_ship.shp")
 

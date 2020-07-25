@@ -81,16 +81,30 @@ public:
 
     inline void reset(size_t maxSize)
     {
-        mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
-        mAllocatedSize = maxSize;
+        set_maxsize(maxSize);
         mSize = 0u;
     }
 
+    inline void reset_fill(size_t maxSize)
+    {
+        set_maxsize(maxSize);
+        mSize = maxSize;
+    }
+
     template<typename... TArgs>
-    inline TElement & emplace_back(TArgs&&... args)
+    inline TElement & emplace_back(TArgs &&... args)
     {
         assert(mSize < mAllocatedSize);
         return *new(&(mBuffer[mSize++])) TElement(std::forward<TArgs>(args)...);
+    }
+
+    template<typename... TArgs>
+    inline TElement & emplace_at(
+        size_t index,
+        TArgs &&... args)
+    {
+        assert(index < mSize);
+        return *new(&(mBuffer[index])) TElement(std::forward<TArgs>(args)...);
     }
 
     template <typename TCompare>
@@ -103,6 +117,15 @@ public:
     }
 
 private:
+
+    inline void set_maxsize(size_t maxSize)
+    {
+        if (maxSize != mAllocatedSize)
+        {
+            mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
+            mAllocatedSize = maxSize;
+        }
+    }
 
     std::unique_ptr<TElement[], decltype(&std::free)> mBuffer;
     size_t mAllocatedSize;

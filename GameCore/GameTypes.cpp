@@ -26,12 +26,12 @@ ShipAutoTexturizationSettings ShipAutoTexturizationSettings::FromJSON(picojson::
     if (!modeIt->second.is<std::string>())
         throw GameException("Error reading ship auto-texturization settings: the 'mode' parameter must be a string");
 
-    ShipAutoTexturizationMode mode;
+    ShipAutoTexturizationModeType mode;
     std::string const modeString = modeIt->second.get<std::string>();
     if (modeString == "flat_structure")
-        mode = ShipAutoTexturizationMode::FlatStructure;
+        mode = ShipAutoTexturizationModeType::FlatStructure;
     else if (modeString == "material_textures")
-        mode = ShipAutoTexturizationMode::MaterialTextures;
+        mode = ShipAutoTexturizationModeType::MaterialTextures;
     else
         throw GameException("Error reading ship auto-texturization settings: the 'mode' parameter is not recognized; it must be 'flat_structure' or 'material_textures'");
 
@@ -50,13 +50,13 @@ picojson::object ShipAutoTexturizationSettings::ToJSON() const
 
     switch (Mode)
     {
-        case ShipAutoTexturizationMode::FlatStructure:
+        case ShipAutoTexturizationModeType::FlatStructure:
         {
             jsonObject["mode"] = picojson::value(std::string("flat_structure"));
             break;
         }
 
-        case ShipAutoTexturizationMode::MaterialTextures:
+        case ShipAutoTexturizationModeType::MaterialTextures:
         {
             jsonObject["mode"] = picojson::value(std::string("material_textures"));
             break;

@@ -75,6 +75,11 @@ public:
 
 private:
 
+    static inline float CalculatePreImplosionRadius(float progress)
+    {
+        return 7.0f + progress * 100.0f;
+    }
+
     ///////////////////////////////////////////////////////
     // State machine
     ///////////////////////////////////////////////////////
@@ -88,21 +93,23 @@ private:
         // before exploding
         TriggeringPreImploding_2,
         PreImploding_3,
-        Imploding_4,
+        PreImplodingToImplodingPause_4,
+        Imploding_5,
 
         // Short pause before exploding, to show cross of light
-        PreExploding_5,
+        PreExploding_6,
 
         // In this state we are exploding, and increment our counter to
         // match the explosion animation until the animation is over
-        Exploding_6,
+        Exploding_7,
 
         // This is the final state; once this state is reached, we're expired
-        Expired_7
+        Expired_8
     };
 
     static constexpr auto ContainedCloudRevolutionSpeed = -2.0f * Pi<float> / std::chrono::duration<float>(2.0f).count();
-    static constexpr auto PreImplosionInterval = 1000ms;
+    static constexpr auto PreImplosionInterval = 600ms;
+    static constexpr auto PreImplosionToImplosionPauseInterval = 2000ms;
     static constexpr auto ImplosionInterval = 16000ms;
     static constexpr auto ImplosionCloudRevolutionSpeed = 2.0f * Pi<float> / std::chrono::duration<float>(0.5f).count();
     static constexpr auto PreExplosionInterval = 1000ms;

@@ -28,7 +28,6 @@ struct IGameController
     virtual ~IGameController()
     {}
 
-    virtual void RegisterRenderEventHandler(IRenderGameEventHandler * handler) = 0;
     virtual void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) = 0;
     virtual void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) = 0;
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
@@ -66,11 +65,14 @@ struct IGameController
 	virtual bool GetShowExtendedStatusText() const = 0;
 	virtual void SetShowExtendedStatusText(bool value) = 0;
 
+    virtual void NotifySoundMuted(bool isSoundMuted) = 0;
+
     //
     // World Probing
     //
 
     virtual float GetCurrentSimulationTime() const = 0;
+    virtual float GetEffectiveAmbientLightIntensity() const = 0;
     virtual bool IsUnderwater(vec2f const & screenCoordinates) const = 0;
     virtual bool IsUnderwater(ElementId elementId) const = 0;
 

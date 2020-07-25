@@ -6,6 +6,7 @@
 #include "LinearSliderCore.h"
 
 #include <cassert>
+#include <cmath>
 
 LinearSliderCore::LinearSliderCore(
     float minValue,
@@ -80,7 +81,7 @@ int LinearSliderCore::ValueToTick(float value) const
     }
     else
     {
-        return static_cast<int>(floorf(value / mTickSize));
+        return static_cast<int>(std::floor(value / mTickSize));
     }
 }
 

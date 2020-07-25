@@ -67,9 +67,13 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
-    void DisplaceAt(
+    inline void DisplaceAt(
         float x,
-        float yOffset);
+        float yOffset)
+    {
+        auto const sampleIndex = ToSampleIndex(x);
+        mHeightField[sampleIndex] += yOffset / SWEHeightFieldAmplification;
+    }
 
     void ApplyThanosSnap(
         float leftFrontX,
@@ -92,7 +96,7 @@ public:
 
 private:
 
-    static int32_t ToSampleIndex(float x)
+    static inline int32_t ToSampleIndex(float x)
     {
         // Calculate sample index, minimizing error
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
@@ -139,6 +143,39 @@ private:
 
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
+
+    //
+    // SWE Layer constants
+    //
+
+    // The rest height of the height field - indirectly determines velocity
+    // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
+    // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
+    static float constexpr SWEHeightFieldOffset = 50.0f;
+
+    // The factor by which we amplify the height field perturbations;
+    // higher values allow for smaller height field variations with the same visual height,
+    // and smaller height field variations allow for greater stability
+    static float constexpr SWEHeightFieldAmplification = 50.0f;
+
+    // The number of samples we raise with a state machine
+    static int32_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
+
+    // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
+    static int32_t constexpr SWEWaveGenerationSamples = 1;
+
+    // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
+    static int32_t constexpr SWEBoundaryConditionsSamples = 3;
+
+    static int32_t constexpr SWEOuterLayerSamples =
+        SWEWaveGenerationSamples
+        + SWEBoundaryConditionsSamples;
+
+    // The total number of samples in the SWE buffers
+    static int32_t constexpr SWETotalSamples =
+        SWEOuterLayerSamples
+        + SamplesCount
+        + SWEOuterLayerSamples;
 
     //
     // Calculated coefficients

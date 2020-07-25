@@ -128,12 +128,13 @@ endif()
 add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
 
 ####################################################
-# Flags
+# Flags 
 ####################################################
 
 set(CMAKE_CXX_STANDARD 17)
 
 if (MSVC)
+
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
 
 	# Make sure the CRT is statically linked, and that we use W4 instead of W3
@@ -174,17 +175,32 @@ if (MSVC)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /fp:fast /Ox /GS-")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /fp:fast /Ox /GS-")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fp:strict /DFLOATING_POINT_CHECKS")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRT;MSVCRTD")
 
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:MSVCRTD")
 	add_compile_options(/permissive-)
 
 elseif(CMAKE_COMPILER_IS_GNUXX)
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /W4 -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
-	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /W4 -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fp:strict -DFLOATING_POINT_CHECKS")
+
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fp:strict -DFLOATING_POINT_CHECKS")
+
 endif()
 
 add_definitions(-DPICOJSON_USE_INT64)
+
+####################################################
+# Libraries
+####################################################
+
+if (MSVC)
+	set(ADDITIONAL_LIBRARIES comctl32 rpcrt4 advapi32)
+elseif(CMAKE_COMPILER_IS_GNUXX)
+	set(ADDITIONAL_LIBRARIES ${CMAKE_DL_LIBS} pthread stdc++fs atomic)
+	if (UNIX)
+	    list(APPEND ADDITIONAL_LIBRARIES X11)
+	endif (UNIX)
+endif()
 
 message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
 message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
@@ -197,16 +213,7 @@ message (STATUS "c Flags Debug:" ${CMAKE_C_FLAGS_DEBUG})
 message (STATUS "exe Linker Flags Release:" ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
 message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
 message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
-
-####################################################
-# Misc
-####################################################
-
-if (MSVC)
-	set(ADDITIONAL_LIBRARIES "comctl32;rpcrt4;advapi32") # winmm.lib wsock32.lib
-else(MSVC)
-	set(ADDITIONAL_LIBRARIES "")
-endif(MSVC)
+message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
 
 ####################################################
 # Sub-projects

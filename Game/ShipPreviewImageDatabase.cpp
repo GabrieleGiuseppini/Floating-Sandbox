@@ -60,21 +60,25 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     size_t & size,
     ImageSize & dimensions)
 {
-    DatabaseStructure::IndexEntry const * const indexEntry =
-        reinterpret_cast<DatabaseStructure::IndexEntry const *>(&(buffer[bufferIndex]));
+    DatabaseStructure::IndexEntry indexEntry;
 
-    lastModified = indexEntry->LastModified;
-    position = indexEntry->Position;
-    size = indexEntry->Size;
-    dimensions = indexEntry->Dimensions;
+    std::memcpy(
+        reinterpret_cast<char *>(&indexEntry),
+        &(buffer[bufferIndex]),
+        sizeof(DatabaseStructure::IndexEntry));
+
+    lastModified = indexEntry.LastModified;
+    position = indexEntry.Position;
+    size = indexEntry.Size;
+    dimensions = indexEntry.Dimensions;
 
     std::string filenameString = std::string(
         &(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)]),
-        indexEntry->FilenameLength);
+        indexEntry.FilenameLength);
 
     filename = std::filesystem::path(filenameString);
 
-    return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry->FilenameLength;
+    return bufferIndex + sizeof(DatabaseStructure::IndexEntry) + indexEntry.FilenameLength;
 }
 
 size_t ShipPreviewImageDatabase::SerializePreviewImage(
@@ -133,17 +137,17 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                 if (!databaseFileStream->good()
                     || 0 != strncmp(header.Title.data(), DatabaseStructure::FileHeader::StockTitle.data(), header.Title.size()))
                 {
-                    throw std::exception("Database file is not recognized");
+                    throw std::runtime_error("Database file is not recognized");
                 }
 
                 if (header.GameVersion > Version::CurrentVersion())
                 {
-                    throw std::exception("Database file was generated on a more recent version of the simulator");
+                    throw std::runtime_error("Database file was generated on a more recent version of the simulator");
                 }
 
                 if (header.SizeOfInt != sizeof(int))
                 {
-                    throw std::exception("Database file was generated on a different platform");
+                    throw std::runtime_error("Database file was generated on a different platform");
                 }
             }
 
@@ -166,7 +170,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                 if (trailer.IndexOffset >= totalFileSize
                     || 0 != strncmp(trailer.Title.data(), DatabaseStructure::FileTrailer::StockTitle.data(), trailer.Title.size()))
                 {
-                    throw std::exception("Database file was not properly closed");
+                    throw std::runtime_error("Database file was not properly closed");
                 }
 
                 // Move to beginning of index
@@ -185,9 +189,9 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                     // Deserialize entries
                     for (size_t indexOffset = 0; indexOffset != indexSize; /* incremented in loop */)
                     {
-                        if (indexOffset > indexSize)
+                        if (indexOffset >= indexSize)
                         {
-                            throw std::exception("Out-of-sync while deserializing index");
+                            throw std::runtime_error("Out-of-sync while deserializing index");
                         }
 
                         std::filesystem::path filename;
@@ -205,7 +209,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                             size,
                             dimensions);
 
-                        auto [it, isInserted] = index.try_emplace(
+                        auto [_, isInserted] = index.try_emplace(
                             filename,
                             lastModified,
                             position,
@@ -214,7 +218,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
 
                         if (!isInserted)
                         {
-                            throw std::exception("Index is inconsistent");
+                            throw std::runtime_error("Index is inconsistent");
                         }
                     }
                 }

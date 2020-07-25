@@ -4,6 +4,8 @@
 
 #include "Utils.h"
 
+#include <cmath>
+
 #include "gtest/gtest.h"
 
 TEST(VectorsTests, Sum_2f)
@@ -40,7 +42,7 @@ INSTANTIATE_TEST_SUITE_P(
     Normalization2fTest,
     ::testing::Values(
         std::make_tuple(vec2f{ 1.0f, 0.0f }, vec2f{ 1.0f, 0.0f }),
-        std::make_tuple(vec2f{ 1.0f, 1.0f }, vec2f{ 1.0f / sqrt(2.0f), 1.0f / sqrt(2.0f) }),
+        std::make_tuple(vec2f{ 1.0f, 1.0f }, vec2f{ 1.0f / std::sqrt(2.0f), 1.0f / std::sqrt(2.0f) }),
         std::make_tuple(vec2f{ 3.0f, 4.0f }, vec2f{ 3.0f / 5.0f, 4.0f / 5.0f}),
         std::make_tuple(vec2f{ 0.0f, 0.0f }, vec2f{ 0.0f, 0.0f })
     ));

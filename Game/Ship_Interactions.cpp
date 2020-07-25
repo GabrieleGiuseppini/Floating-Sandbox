@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <limits>
 
 namespace Physics {
@@ -952,7 +953,7 @@ bool Ship::ExtinguishFireAt(
                 //
 
                 float const strength = 1.0f - SmoothStep(
-					squareRadius / 2.0f,
+                    squareRadius / 2.0f,
                     squareRadius,
                     pointSquareDistance);
 
@@ -1309,156 +1310,156 @@ bool Ship::QueryNearestPointAt(
 
 std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 {
-	//
-	// Find top N points
-	//
+    //
+    // Find top N points
+    //
 
-	constexpr size_t MaxCandidates = 4;
+    constexpr size_t MaxCandidates = 4;
 
-	// Sorted by y, largest first
-	std::vector<vec2f> candidatePositions;
+    // Sorted by y, largest first
+    std::vector<vec2f> candidatePositions;
 
-	for (auto pointIndex : mPoints.RawShipPoints())
-	{
-		// Non-deleted, non-orphaned point
-		if (mPoints.IsActive(pointIndex)
-			&& !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
-		{
-			auto const & pos = mPoints.GetPosition(pointIndex);
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        // Non-deleted, non-orphaned point
+        if (mPoints.IsActive(pointIndex)
+            && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
+        {
+            auto const & pos = mPoints.GetPosition(pointIndex);
 
-			if (!mParentWorld.IsUnderwater(pos))
-			{
-				candidatePositions.insert(
-					std::upper_bound(
-						candidatePositions.begin(),
-						candidatePositions.end(),
-						pos,
-						[](auto const & candidatePos, auto const & pos)
-						{
-							// Height of to-be-inserted point is augmented based on distance from the point
-							float const distance = (candidatePos - pos).length();
-							float const actualPosY = pos.y + std::max(floor(distance / 3.0f), 5.0f);
-							return candidatePos.y > actualPosY;
-						}),
-					pos);
+            if (!mParentWorld.IsUnderwater(pos))
+            {
+                candidatePositions.insert(
+                    std::upper_bound(
+                        candidatePositions.begin(),
+                        candidatePositions.end(),
+                        pos,
+                        [](auto const & candidatePos, auto const & pos)
+                        {
+                            // Height of to-be-inserted point is augmented based on distance from the point
+                            float const distance = (candidatePos - pos).length();
+                            float const actualPosY = pos.y + std::max(std::floor(distance / 3.0f), 5.0f);
+                            return candidatePos.y > actualPosY;
+                        }),
+                    pos);
 
-				if (candidatePositions.size() > MaxCandidates)
-				{
-					candidatePositions.pop_back();
-					assert(candidatePositions.size() == MaxCandidates);
-				}
-			}
-		}
-	}
+                if (candidatePositions.size() > MaxCandidates)
+                {
+                    candidatePositions.pop_back();
+                    assert(candidatePositions.size() == MaxCandidates);
+                }
+            }
+        }
+    }
 
-	if (candidatePositions.empty())
-		return std::nullopt;
+    if (candidatePositions.empty())
+        return std::nullopt;
 
-	//
-	// Choose
-	//
+    //
+    // Choose
+    //
 
-	return candidatePositions[GameRandomEngine::GetInstance().Choose(candidatePositions.size())];
+    return candidatePositions[GameRandomEngine::GetInstance().Choose(candidatePositions.size())];
 }
 
 void Ship::ApplyLightning(
-	vec2f const & targetPos,
-	float currentSimulationTime,
-	GameParameters const & gameParameters)
+    vec2f const & targetPos,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
-	float const searchRadius =
-		gameParameters.LightningBlastRadius
-		* (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+    float const searchRadius =
+        gameParameters.LightningBlastRadius
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-	// Note: we don't consider the simulation dt here as the lightning touch-down
-	// happens in one frame only, rather than being splattered across multiple frames
-	float const lightningHeat =
-		gameParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
-		* (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
+    // Note: we don't consider the simulation dt here as the lightning touch-down
+    // happens in one frame only, rather than being splattered across multiple frames
+    float const lightningHeat =
+        gameParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
+        * (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
 
-	//
-	// Find the (non-ephemeral) points in the radius
-	//
+    //
+    // Find the (non-ephemeral) points in the radius
+    //
 
-	float const searchSquareRadius = searchRadius * searchRadius;
-	float const searchSquareRadiusBlast = searchSquareRadius / 2.0f;
-	float const searchSquareRadiusHeat = searchSquareRadius;
+    float const searchSquareRadius = searchRadius * searchRadius;
+    float const searchSquareRadiusBlast = searchSquareRadius / 2.0f;
+    float const searchSquareRadiusHeat = searchSquareRadius;
 
-	for (auto pointIndex : mPoints.RawShipPoints())
-	{
-		float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+    for (auto pointIndex : mPoints.RawShipPoints())
+    {
+        float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
 
-		bool wasDestroyed = false;
+        bool wasDestroyed = false;
 
-		if (squareDistance < searchSquareRadiusBlast)
-		{
-			//
-			// Calculate destroy probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
-			// however, we always destroy if we're in a very small fraction of the radius
-			//
+        if (squareDistance < searchSquareRadiusBlast)
+        {
+            //
+            // Calculate destroy probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
+            // however, we always destroy if we're in a very small fraction of the radius
+            //
 
-			float destroyProbability =
-				(searchSquareRadiusBlast < 1.0f)
-				? 1.0f
-				: (1.0f - (squareDistance / searchSquareRadiusBlast)) * (1.0f - (squareDistance / searchSquareRadiusBlast));
+            float destroyProbability =
+                (searchSquareRadiusBlast < 1.0f)
+                ? 1.0f
+                : (1.0f - (squareDistance / searchSquareRadiusBlast)) * (1.0f - (squareDistance / searchSquareRadiusBlast));
 
-			if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
-			{
-				//
-				// Destroy
-				//
+            if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+            {
+                //
+                // Destroy
+                //
 
-				// Choose a detach velocity - using the same distribution as Debris
-				vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-					GameParameters::MinDebrisParticlesVelocity,
-					GameParameters::MaxDebrisParticlesVelocity);
+                // Choose a detach velocity - using the same distribution as Debris
+                vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+                    GameParameters::MinDebrisParticlesVelocity,
+                    GameParameters::MaxDebrisParticlesVelocity);
 
-				// Detach
+                // Detach
                 mPoints.Detach(
-					pointIndex,
-					detachVelocity,
+                    pointIndex,
+                    detachVelocity,
                     Points::DetachOptions::GenerateDebris,
-					currentSimulationTime,
-					gameParameters);
+                    currentSimulationTime,
+                    gameParameters);
 
-				// Generate sparkles
+                // Generate sparkles
                 GenerateSparklesForLightning(
-					pointIndex,
-					currentSimulationTime,
-					gameParameters);
+                    pointIndex,
+                    currentSimulationTime,
+                    gameParameters);
 
-				// Notify
-				mGameEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
+                // Notify
+                mGameEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
 
-				wasDestroyed = true;
-			}
-		}
+                wasDestroyed = true;
+            }
+        }
 
-		if (!wasDestroyed
-			&& squareDistance < searchSquareRadiusHeat)
-		{
-			//
-			// Apply heat
-			//
+        if (!wasDestroyed
+            && squareDistance < searchSquareRadiusHeat)
+        {
+            //
+            // Apply heat
+            //
 
-			// Smooth heat out for radius
-			float const smoothing = 1.0f - SmoothStep(
-				searchSquareRadiusHeat * 3.0f / 4.0f,
-				searchSquareRadiusHeat,
-				squareDistance);
+            // Smooth heat out for radius
+            float const smoothing = 1.0f - SmoothStep(
+                searchSquareRadiusHeat * 3.0f / 4.0f,
+                searchSquareRadiusHeat,
+                squareDistance);
 
-			// Calc temperature delta
-			// T = Q/HeatCapacity
-			float deltaT =
-				lightningHeat * smoothing
-				* mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+            // Calc temperature delta
+            // T = Q/HeatCapacity
+            float deltaT =
+                lightningHeat * smoothing
+                * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
-			// Increase/lower temperature
-			mPoints.SetTemperature(
-				pointIndex,
-				std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
-		}
-	}
+            // Increase/lower temperature
+            mPoints.SetTemperature(
+                pointIndex,
+                std::max(mPoints.GetTemperature(pointIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+        }
+    }
 }
 
 void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)

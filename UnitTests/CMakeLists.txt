@@ -37,6 +37,7 @@ set (UNIT_TEST_SOURCES
 	ShipPreviewDirectoryManagerTests.cpp
 	SliderCoreTests.cpp
 	SysSpecificsTests.cpp
+	TaskThreadTests.cpp
 	TaskThreadPoolTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp

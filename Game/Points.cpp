@@ -187,6 +187,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::CreateEphemeralParticleDebris(
@@ -256,6 +257,7 @@ void Points::CreateEphemeralParticleDebris(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 
     // Remember that ephemeral points are dirty now
     mAreEphemeralPointsDirtyForRendering = true;
@@ -345,6 +347,7 @@ void Points::CreateEphemeralParticleSmoke(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::CreateEphemeralParticleSparkle(
@@ -485,6 +488,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mIsPlaneIdBufferEphemeralDirty = true;
 
     mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor;
+    mIsEphemeralColorBufferDirty = true;
 }
 
 void Points::Detach(
@@ -1329,6 +1333,7 @@ void Points::UpdateEphemeralParticles(
                             0.0f);
 
                         mColorBuffer[pointIndex].w = alpha;
+                        mIsEphemeralColorBufferDirty = true;
                     }
 
                     break;
@@ -1525,8 +1530,9 @@ void Points::UploadAttributes(
             mAllPointCount);
 
         mIsWholeColorBufferDirty = false;
+        mIsEphemeralColorBufferDirty = false;
     }
-    else
+    else if (mIsEphemeralColorBufferDirty)
     {
         // Only upload ephemeral particle portion
         renderContext.UploadShipPointColors(
@@ -1534,14 +1540,17 @@ void Points::UploadAttributes(
             &(mColorBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
             mEphemeralPointCount);
+
+        mIsEphemeralColorBufferDirty = false;
     }
 
     //
     // Upload mutable attributes
     //
 
-    // We only upload all points for the first upload; for subsequent uploads,
-    // depending on the buffer we only need to upload non-ephemeral points
+    // We only upload all points for the first upload, so that also ephemeral
+    // points have reasonable (default) values; for subsequent uploads,
+    // for some buffers we only need to upload non-ephemeral points
     size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
     renderContext.UploadShipPointMutableAttributesStart(shipId);
@@ -1622,7 +1631,7 @@ void Points::UploadNonEphemeralPointElements(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    bool const doUploadAllPoints = (DebugShipRenderMode::Points == renderContext.GetDebugShipRenderMode());
+    bool const doUploadAllPoints = (DebugShipRenderModeType::Points == renderContext.GetDebugShipRenderMode());
 
     for (ElementIndex pointIndex : RawShipPoints())
     {
@@ -1641,37 +1650,34 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
-    if (renderContext.GetShipFlameRenderMode() != ShipFlameRenderMode::NoDraw)
+    renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
+
+    // Upload flames, in order of plane ID
+    for (auto const pointIndex : mBurningPoints)
     {
-        renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
-
-        // Upload flames, in order of plane ID
-        for (auto const pointIndex : mBurningPoints)
-        {
-            renderContext.UploadShipFlame(
-                shipId,
-                GetPlaneId(pointIndex),
-                GetPosition(pointIndex),
-                mCombustionStateBuffer[pointIndex].FlameVector,
-                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
-                mRandomNormalizedUniformFloatBuffer[pointIndex],
-                // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
-                // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
-                mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
-        }
-
-        renderContext.UploadShipFlamesEnd(shipId);
+        renderContext.UploadShipFlame(
+            shipId,
+            GetPlaneId(pointIndex),
+            GetPosition(pointIndex),
+            mCombustionStateBuffer[pointIndex].FlameVector,
+            mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+            mRandomNormalizedUniformFloatBuffer[pointIndex],
+            // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
+            // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
+            mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
     }
+
+    renderContext.UploadShipFlamesEnd(shipId);
 }
 
 void Points::UploadVectors(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
-    static constexpr vec4f VectorColor(0.5f, 0.1f, 0.f, 1.0f);
-
-    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointVelocity)
+    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointVelocity)
     {
+        static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1681,8 +1687,10 @@ void Points::UploadVectors(
             0.25f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointForce)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointForce)
     {
+        static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1692,8 +1700,10 @@ void Points::UploadVectors(
             0.0005f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterVelocity)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterVelocity)
     {
+        static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1703,8 +1713,10 @@ void Points::UploadVectors(
             1.0f,
             VectorColor);
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderMode::PointWaterMomentum)
+    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterMomentum)
     {
+        static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
+
         renderContext.UploadShipVectors(
             shipId,
             mElementCount,
@@ -1728,8 +1740,6 @@ void Points::UploadEphemeralParticles(
     {
         renderContext.UploadShipElementEphemeralPointsStart(shipId);
     }
-
-    renderContext.UploadShipSparklesStart(shipId);
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
@@ -1834,8 +1844,6 @@ void Points::UploadEphemeralParticles(
         }
     }
 
-    renderContext.UploadShipSparklesEnd(shipId);
-
     if (mAreEphemeralPointsDirtyForRendering)
     {
         renderContext.UploadShipElementEphemeralPointsEnd(shipId);
@@ -1853,7 +1861,7 @@ void Points::UploadHighlights(
     {
         renderContext.UploadShipHighlight(
             shipId,
-            HighlightMode::ElectricalElement,
+            HighlightModeType::ElectricalElement,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
             5.0f, // HalfQuadSize, magic number
@@ -1865,7 +1873,7 @@ void Points::UploadHighlights(
     {
         renderContext.UploadShipHighlight(
             shipId,
-            HighlightMode::Circle,
+            HighlightModeType::Circle,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
             4.0f, // HalfQuadSize, magic number

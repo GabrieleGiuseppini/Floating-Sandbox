@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #include "SplashScreenDialog.h"
 
+#include <GameCore/GameException.h>
+#include <GameCore/Log.h>
+
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>
 #include <wx/sizer.h>
@@ -24,6 +27,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
+    Connect(wxEVT_PAINT, (wxObjectEventFunction)&SplashScreenDialog::OnPaint, 0, this);
 
     wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -36,6 +40,12 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
     {
         bmp = new wxBitmap(resourceLocator.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+        if (!bmp->IsOk())
+        { 
+            // This is likely to be the first resource load of the game; if it's broken,
+            // then the game will likely be utterly broken, so bail out now
+            throw GameException("Cannot load splash screen. The installation is likely corrupted, please repair the game by running the installer again.");
+        }
 
         wxStaticBitmap * stBmp = new wxStaticBitmap(
             this,
@@ -106,6 +116,8 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 
     Show();
+
+    LogMessage("SplashScreenDialog::Show(): Completed");
 }
 
 SplashScreenDialog::~SplashScreenDialog()
@@ -119,4 +131,11 @@ void SplashScreenDialog::UpdateProgress(
     mGauge->SetValue(1 + static_cast<int>(100.0f * progress));
 
     mProgressText->SetLabelText(message);
+}
+
+void SplashScreenDialog::OnPaint(wxPaintEvent & event)
+{
+    LogMessage("SplashScreenDialog::OnPaint()");
+
+    event.Skip();
 }

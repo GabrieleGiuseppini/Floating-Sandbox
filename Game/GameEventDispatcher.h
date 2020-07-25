@@ -15,8 +15,7 @@
 #include <vector>
 
 class GameEventDispatcher final
-    : public IRenderGameEventHandler
-    , public ILifecycleGameEventHandler
+    : public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
     , public IWavePhenomenaGameEventHandler
     , public ICombustionGameEventHandler
@@ -42,7 +41,6 @@ public:
         , mWatertightDoorOpenedEvents()
         , mWatertightDoorClosedEvents()
         // Sinks
-        , mRenderSinks()
         , mLifecycleSinks()
         , mStructuralSinks()
         , mWavePhenomenaSinks()
@@ -55,18 +53,6 @@ public:
     }
 
 public:
-
-    //
-    // Render
-    //
-
-    virtual void OnEffectiveAmbientLightIntensityUpdated(float effectiveAmbientLightIntensity) override
-    {
-        for (auto sink : mRenderSinks)
-        {
-            sink->OnEffectiveAmbientLightIntensityUpdated(effectiveAmbientLightIntensity);
-        }
-    }
 
     //
     // Lifecycle
@@ -206,13 +192,11 @@ public:
         }
     }
 
-    virtual void OnUpdateToRenderRatioUpdated(
-        float immediateURRatio) override
+    virtual void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override
     {
         for (auto sink : mStatisticsSinks)
         {
-            sink->OnUpdateToRenderRatioUpdated(
-                immediateURRatio);
+            sink->OnCurrentUpdateDurationUpdated(currentUpdateDuration);
         }
     }
 
@@ -829,11 +813,6 @@ public:
         mWatertightDoorClosedEvents.clear();
     }
 
-    void RegisterRenderEventHandler(IRenderGameEventHandler * sink)
-    {
-        mRenderSinks.push_back(sink);
-    }
-
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
     {
         mLifecycleSinks.push_back(sink);
@@ -892,7 +871,6 @@ private:
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
 
     // The registered sinks
-    std::vector<IRenderGameEventHandler *> mRenderSinks;
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
     std::vector<IStructuralGameEventHandler *> mStructuralSinks;
     std::vector<IWavePhenomenaGameEventHandler *> mWavePhenomenaSinks;

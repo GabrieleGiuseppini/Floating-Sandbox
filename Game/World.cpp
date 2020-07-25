@@ -680,228 +680,63 @@ void World::SetSilence(float silenceAmount)
 // Simulation
 //////////////////////////////////////////////////////////////////////////////
 
-void World::UpdateAndRender(
+void World::Update(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext,
-    bool doUpdate,
-    PerfStats & perfStats)
+    PerfStats & /*perfStats*/)
 {
-    if (doUpdate)
+    // Update current time
+    mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
+
+    mStars.Update(gameParameters);
+
+    mStorm.Update(mCurrentSimulationTime, gameParameters);
+
+    mWind.Update(mStorm.GetParameters(), gameParameters);
+
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
+
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+
+    mOceanFloor.Update(gameParameters);
+
+    for (auto & ship : mAllShips)
     {
-        // Update current time
-        mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
+        ship->Update(
+            mCurrentSimulationTime,
+            mStorm.GetParameters(),
+            gameParameters,
+            renderContext);
     }
+}
 
-    //
-    // Update stars
-    //
+void World::RenderUpload(
+    GameParameters const & gameParameters,
+    Render::RenderContext & renderContext,
+    PerfStats & /*perfStats*/)
+{
+    mStars.Upload(renderContext);
 
-    if (doUpdate)
+    mStorm.Upload(renderContext);
+
+    mClouds.Upload(renderContext);
+
+    mOceanFloor.Upload(gameParameters, renderContext);
+
+    mOceanSurface.Upload(gameParameters, renderContext);
+
+    // Ships
     {
-        auto const updateStartTime = GameChronometer::now();
+        renderContext.UploadShipsStart();
 
-        mStars.Update(gameParameters);
-
-        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
-    }
-
-    //
-    // Render stars
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-        // Upload
-        mStars.Upload(renderContext);
-
-        // Render
-        renderContext.RenderStars();
-
-        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
-    }
-
-    //
-    // Update clouds
-    //
-
-    if (doUpdate)
-    {
-        auto const updateStartTime = GameChronometer::now();
-
-        //
-        // Update storm
-        //
-
-        mStorm.Update(mCurrentSimulationTime, gameParameters);
-
-        //
-        // Update wind
-        //
-
-        mWind.Update(mStorm.GetParameters(), gameParameters);
-
-        //
-        // Update clouds
-        //
-
-        mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
-
-
-        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
-    }
-
-    //
-    // Render clouds
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-        renderContext.RenderCloudsStart();
-
-        //
-        // Upload storm
-        //
-
-        mStorm.Upload(renderContext);
-
-        //
-        // Upload clouds
-        //
-
-        mClouds.Upload(renderContext);
-
-        renderContext.RenderCloudsEnd();
-
-        auto const elapsed = GameChronometer::now() - renderStartTime;
-        perfStats.TotalCloudRenderDuration += elapsed;
-        perfStats.TotalRenderDuration += elapsed;
-    }
-
-    //
-    // Update Ocean
-    //
-
-    if (doUpdate)
-    {
-        auto const updateStartTime = GameChronometer::now();
-
-
-        //
-        // Update ocean surface
-        //
-
-        mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
-
-        perfStats.TotalOceanSurfaceUpdateDuration += GameChronometer::now() - updateStartTime;
-
-        //
-        // Update ocean floor
-        //
-
-        mOceanFloor.Update(gameParameters);
-
-
-        perfStats.TotalUpdateDuration += GameChronometer::now() - updateStartTime;
-    }
-
-    //
-    // Render Ocean
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-
-        //
-        // Upload land
-        //
-
-        mOceanFloor.Upload(gameParameters, renderContext);
-
-        //
-        // Upload ocean surface
-        //
-
-        mOceanSurface.Upload(gameParameters, renderContext);
-
-        //
-        // Render ocean (opaquely over sky)
-        //
-
-        renderContext.RenderOceanOpaquely();
-
-
-        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
-    }
-
-    //
-    // Update Ships
-    //
-
-    if (doUpdate)
-    {
-        auto const updateStartTime = GameChronometer::now();
-
-        for (auto & ship : mAllShips)
+        for (auto const & ship : mAllShips)
         {
-            ship->Update(
-                mCurrentSimulationTime,
-                mStorm.GetParameters(),
+            ship->RenderUpload(
                 gameParameters,
                 renderContext);
         }
 
-        auto const elapsed = GameChronometer::now() - updateStartTime;
-        perfStats.TotalShipsUpdateDuration += elapsed;
-        perfStats.TotalUpdateDuration += elapsed;
-    }
-
-    //
-    // Render Ships and Remaining Parts
-    //
-
-    {
-        auto const renderStartTime = GameChronometer::now();
-
-        {
-            renderContext.RenderShipsStart();
-
-            for (auto const & ship : mAllShips)
-            {
-                ship->Render(
-                    gameParameters,
-                    renderContext);
-            }
-
-            renderContext.RenderShipsEnd();
-
-            perfStats.TotalShipsRenderDuration += GameChronometer::now() - renderStartTime;
-        }
-
-        //
-        // Render the ocean transparently, if we want to see the ship *in* the ocean instead
-        //
-
-        if (!renderContext.GetShowShipThroughOcean())
-        {
-            renderContext.RenderOceanTransparently();
-        }
-
-        //
-        // Render the ocean floor
-        //
-
-        {
-            auto const renderStartTime1 = GameChronometer::now();
-
-            renderContext.RenderLand();
-
-            perfStats.TotalOceanFloorRenderDuration += GameChronometer::now() - renderStartTime1;
-        }
-
-        perfStats.TotalRenderDuration += GameChronometer::now() - renderStartTime;
+        renderContext.UploadShipsEnd();
     }
 }
 

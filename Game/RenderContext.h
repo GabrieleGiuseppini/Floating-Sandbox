@@ -5,16 +5,19 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
+#include "GlobalRenderContext.h"
+#include "NotificationRenderContext.h"
+#include "PerfStats.h"
+#include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
 #include "ShipRenderContext.h"
-#include "TextRenderContext.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
 #include "UploadedTextureManager.h"
 #include "ViewModel.h"
+#include "WorldRenderContext.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/GameOpenGLMappedBuffer.h>
@@ -29,6 +32,7 @@
 #include <GameCore/ImageSize.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/SysSpecifics.h>
+#include <GameCore/TaskThread.h>
 #include <GameCore/Vectors.h>
 
 #include <array>
@@ -40,14 +44,25 @@
 
 namespace Render {
 
+/*
+ * This class is the entry point of the entire rendering subsystem, providing
+ * the API for rendering, which is agnostic about the render platform implementation.
+ * 
+ * This class is in turn a coordinator of a number of child contextes, each focusing
+ * on a different subset of the rendering universe (world, ships, UI); this class
+ * dispatches all externally-invoked API calls to the child contexts implementing
+ * those calls.
+ */
 class RenderContext
 {
 public:
 
     RenderContext(
         ImageSize const & initialCanvasSize,
+        std::function<void()> makeRenderContextCurrentFunction,
+        std::function<void()> swapRenderBuffersFunction,
+        PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
@@ -55,145 +70,115 @@ public:
 public:
 
     //
-    // Components
-    //
-
-    std::shared_ptr<TextRenderContext> GetTextRenderContext() const
-    {
-        return mTextRenderContext;
-    }
-
-
-    //
     // World and view properties
     //
 
     float const & GetZoom() const
     {
-        return mViewModel.GetZoom();
+        return mRenderParameters.View.GetZoom();
     }
 
     float ClampZoom(float zoom) const
     {
-        return mViewModel.ClampZoom(zoom);
+        return mRenderParameters.View.ClampZoom(zoom);
     }
 
     float const & SetZoom(float zoom)
     {
-        float const & newZoom = mViewModel.SetZoom(zoom);
-
-        OnViewModelUpdated();
+        float const & newZoom = mRenderParameters.View.SetZoom(zoom);
+        mRenderParameters.IsViewDirty = true;
 
         return newZoom;
     }
 
     vec2f const & GetCameraWorldPosition() const
     {
-        return mViewModel.GetCameraWorldPosition();
+        return mRenderParameters.View.GetCameraWorldPosition();
     }
 
     vec2f ClampCameraWorldPosition(vec2f const & pos) const
     {
-        return mViewModel.ClampCameraWorldPosition(pos);
+        return mRenderParameters.View.ClampCameraWorldPosition(pos);
     }
 
     vec2f const & SetCameraWorldPosition(vec2f const & pos)
     {
-        vec2f const & newCameraWorldPosition = mViewModel.SetCameraWorldPosition(pos);
-
-        OnViewModelUpdated();
+        vec2f const & newCameraWorldPosition = mRenderParameters.View.SetCameraWorldPosition(pos);
+        mRenderParameters.IsViewDirty = true;
 
         return newCameraWorldPosition;
     }
 
     int GetCanvasWidth() const
     {
-        return mViewModel.GetCanvasWidth();
+        return mRenderParameters.View.GetCanvasWidth();
     }
 
     int GetCanvasHeight() const
     {
-        return mViewModel.GetCanvasHeight();
+        return mRenderParameters.View.GetCanvasHeight();
     }
 
     void SetCanvasSize(int width, int height)
     {
-        mViewModel.SetCanvasSize(width, height);
-
-        glViewport(0, 0, mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
-
-        mTextRenderContext->UpdateCanvasSize(mViewModel.GetCanvasWidth(), mViewModel.GetCanvasHeight());
-
-        OnViewModelUpdated();
+        mRenderParameters.View.SetCanvasSize(width, height);
+        mRenderParameters.IsViewDirty = true;
+        mRenderParameters.IsCanvasSizeDirty = true;
     }
 
     void SetPixelOffset(float x, float y)
     {
-        mViewModel.SetPixelOffset(x, y);
-
-        OnViewModelUpdated();
+        mRenderParameters.View.SetPixelOffset(x, y);
+        mRenderParameters.IsViewDirty = true;
     }
 
     void ResetPixelOffset()
     {
-        mViewModel.ResetPixelOffset();
-
-        OnViewModelUpdated();
+        mRenderParameters.View.ResetPixelOffset();
+        mRenderParameters.IsViewDirty = true;
     }
 
     float GetVisibleWorldWidth() const
     {
-        return mViewModel.GetVisibleWorldWidth();
+        return mRenderParameters.View.GetVisibleWorldWidth();
     }
 
     float GetVisibleWorldHeight() const
     {
-        return mViewModel.GetVisibleWorldHeight();
+        return mRenderParameters.View.GetVisibleWorldHeight();
     }
 
     float GetVisibleWorldLeft() const
     {
-        return mViewModel.GetVisibleWorldTopLeft().x;
+        return mRenderParameters.View.GetVisibleWorldTopLeft().x;
     }
 
     float GetVisibleWorldRight() const
     {
-        return mViewModel.GetVisibleWorldBottomRight().x;
+        return mRenderParameters.View.GetVisibleWorldBottomRight().x;
     }
 
     float GetVisibleWorldTop() const
     {
-        return mViewModel.GetVisibleWorldTopLeft().y;
+        return mRenderParameters.View.GetVisibleWorldTopLeft().y;
     }
 
     float GetVisibleWorldBottom() const
     {
-        return mViewModel.GetVisibleWorldBottomRight().y;
+        return mRenderParameters.View.GetVisibleWorldBottomRight().y;
     }
 
     float CalculateZoomForWorldWidth(float worldWidth) const
     {
-        return mViewModel.CalculateZoomForWorldWidth(worldWidth);
+        return mRenderParameters.View.CalculateZoomForWorldWidth(worldWidth);
     }
 
     float CalculateZoomForWorldHeight(float worldHeight) const
     {
-        return mViewModel.CalculateZoomForWorldHeight(worldHeight);
+        return mRenderParameters.View.CalculateZoomForWorldHeight(worldHeight);
     }
 
     //
-
-    rgbColor const & GetFlatSkyColor() const
-    {
-        return mFlatSkyColor;
-    }
-
-    void SetFlatSkyColor(rgbColor const & color)
-    {
-        mFlatSkyColor = color;
-
-        // No need to notify anyone
-    }
 
     float GetAmbientLightIntensity() const
     {
@@ -202,154 +187,176 @@ public:
 
     void SetAmbientLightIntensity(float intensity)
     {
+        // Assume calls are already damped
+
         mAmbientLightIntensity = intensity;
 
-        OnEffectiveAmbientLightIntensityUpdated();
+        // Re-calculate effective ambient light intensity
+        mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
+            mAmbientLightIntensity,
+            mWorldRenderContext->GetStormAmbientDarkening());
+        mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
     }
 
     float GetEffectiveAmbientLightIntensity() const
     {
-        return mEffectiveAmbientLightIntensity;
+        return mRenderParameters.EffectiveAmbientLightIntensity;
     }
+
+    //
+
+    rgbColor const & GetFlatSkyColor() const
+    {
+        return mRenderParameters.FlatSkyColor;
+    }
+
+    void SetFlatSkyColor(rgbColor const & color)
+    {
+        mRenderParameters.FlatSkyColor = color;
+        // No need to set dirty, this is picked up at each cycle anyway
+    }    
 
     float GetOceanTransparency() const
     {
-        return mOceanTransparency;
+        return mRenderParameters.OceanTransparency;
     }
 
     void SetOceanTransparency(float transparency)
-    {
-        mOceanTransparency = transparency;
-
-        OnOceanTransparencyUpdated();
+    {        
+        mRenderParameters.OceanTransparency = transparency;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
     float GetOceanDarkeningRate() const
     {
-        return mOceanDarkeningRate;
+        return mRenderParameters.OceanDarkeningRate;
     }
 
     void SetOceanDarkeningRate(float darkeningRate)
     {
-        mOceanDarkeningRate = darkeningRate;
-
-        OnOceanDarkeningRateUpdated();
+        mRenderParameters.OceanDarkeningRate = darkeningRate;
+        mRenderParameters.IsOceanDarkeningRateDirty = true;
     }
 
-    bool GetShowShipThroughOcean() const
+    OceanRenderModeType GetOceanRenderMode() const
     {
-        return mShowShipThroughOcean;
+        return mRenderParameters.OceanRenderMode;
     }
 
-    void SetShowShipThroughOcean(bool showShipThroughOcean)
+    void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
     {
-        mShowShipThroughOcean = showShipThroughOcean;
-    }
+        mRenderParameters.OceanRenderMode = oceanRenderMode;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
-    OceanRenderMode GetOceanRenderMode() const
-    {
-        return mOceanRenderMode;
-    }
-
-    void SetOceanRenderMode(OceanRenderMode oceanRenderMode)
-    {
-        mOceanRenderMode = oceanRenderMode;
-
-        OnOceanRenderParametersUpdated();
-    }
-
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
-    {
-        return mOceanAvailableThumbnails;
-    }
-
-    size_t GetTextureOceanTextureIndex() const
-    {
-        return mSelectedOceanTextureIndex;
-    }
-
-    void SetTextureOceanTextureIndex(size_t index)
-    {
-        mSelectedOceanTextureIndex = index;
-
-        OnOceanTextureIndexUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
     rgbColor const & GetDepthOceanColorStart() const
     {
-        return mDepthOceanColorStart;
+        return mRenderParameters.DepthOceanColorStart;
     }
 
     void SetDepthOceanColorStart(rgbColor const & color)
     {
-        mDepthOceanColorStart = color;
+        mRenderParameters.DepthOceanColorStart = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
-        OnOceanRenderParametersUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
     rgbColor const & GetDepthOceanColorEnd() const
     {
-        return mDepthOceanColorEnd;
+        return mRenderParameters.DepthOceanColorEnd;
     }
 
     void SetDepthOceanColorEnd(rgbColor const & color)
     {
-        mDepthOceanColorEnd = color;
+        mRenderParameters.DepthOceanColorEnd = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
-        OnOceanRenderParametersUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
     rgbColor const & GetFlatOceanColor() const
     {
-        return mFlatOceanColor;
+        return mRenderParameters.FlatOceanColor;
     }
 
     void SetFlatOceanColor(rgbColor const & color)
     {
-        mFlatOceanColor = color;
+        mRenderParameters.FlatOceanColor = color;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
-        OnOceanRenderParametersUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
-    LandRenderMode GetLandRenderMode() const
+    inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
-        return mLandRenderMode;
+        return mWorldRenderContext->GetTextureOceanAvailableThumbnails();
     }
 
-    void SetLandRenderMode(LandRenderMode landRenderMode)
+    size_t GetTextureOceanTextureIndex() const
     {
-        mLandRenderMode = landRenderMode;
-
-        OnLandRenderParametersUpdated();
+        return mRenderParameters.OceanTextureIndex;
     }
 
-    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    void SetTextureOceanTextureIndex(size_t index)
     {
-        return mLandAvailableThumbnails;
+        mRenderParameters.OceanTextureIndex = index;
+        mRenderParameters.IsOceanTextureIndexDirty = true;
     }
 
-    size_t GetTextureLandTextureIndex() const
+    bool GetShowShipThroughOcean() const
     {
-        return mSelectedLandTextureIndex;
+        return mRenderParameters.ShowShipThroughOcean;
     }
 
-    void SetTextureLandTextureIndex(size_t index)
+    void SetShowShipThroughOcean(bool showShipThroughOcean)
     {
-        mSelectedLandTextureIndex = index;
+        mRenderParameters.ShowShipThroughOcean = showShipThroughOcean;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
 
-        OnLandTextureIndexUpdated();
+    LandRenderModeType GetLandRenderMode() const
+    {
+        return mRenderParameters.LandRenderMode;
+    }
+
+    void SetLandRenderMode(LandRenderModeType landRenderMode)
+    {
+        mRenderParameters.LandRenderMode = landRenderMode;
+        mRenderParameters.AreLandRenderParametersDirty = true;
     }
 
     rgbColor const & GetFlatLandColor() const
     {
-        return mFlatLandColor;
+        return mRenderParameters.FlatLandColor;
     }
 
     void SetFlatLandColor(rgbColor const & color)
     {
-        mFlatLandColor = color;
+        mRenderParameters.FlatLandColor = color;
+        mRenderParameters.AreLandRenderParametersDirty = true;
+    }
 
-        OnLandRenderParametersUpdated();
+    std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const
+    {
+        return mWorldRenderContext->GetTextureLandAvailableThumbnails();
+    }
+
+    size_t GetTextureLandTextureIndex() const
+    {
+        return mRenderParameters.LandTextureIndex;
+    }
+
+    void SetTextureLandTextureIndex(size_t index)
+    {
+        mRenderParameters.LandTextureIndex = index;
+        mRenderParameters.IsLandTextureIndexDirty = true;
     }
 
     //
@@ -358,77 +365,123 @@ public:
 
     rgbColor const & GetFlatLampLightColor() const
     {
-        return mFlatLampLightColor;
+        return mRenderParameters.FlatLampLightColor;
     }
 
     void SetFlatLampLightColor(rgbColor const & color)
     {
-        mFlatLampLightColor = color;
-
-        OnFlatLampLightColorUpdated();
+        mRenderParameters.FlatLampLightColor = color;
+        mRenderParameters.IsFlatLampLightColorDirty = true;
     }
 
-    rgbColor const & GetDefaultWaterColor() const
+    ShipFlameRenderModeType GetShipFlameRenderMode() const
     {
-        return mDefaultWaterColor;
+        return mRenderParameters.ShipFlameRenderMode;
     }
 
-    void SetDefaultWaterColor(rgbColor const & color)
+    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
     {
-        mDefaultWaterColor = color;
-
-        OnDefaultWaterColorUpdated();
+        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
-    float GetWaterContrast() const
+    float const & GetShipFlameSizeAdjustment() const
     {
-        return mWaterContrast;
+        return mShipFlameSizeAdjustment;
     }
 
-    void SetWaterContrast(float contrast)
+    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
     {
-        mWaterContrast = contrast;
+        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
 
-        OnWaterContrastUpdated();
+        for (auto & s : mShips)
+        {
+            s->SetShipFlameSizeAdjustment(mShipFlameSizeAdjustment);
+        }
     }
 
-    float GetWaterLevelOfDetail() const
+    static constexpr float MinShipFlameSizeAdjustment = 0.1f;
+    static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
+
+    bool GetShowStressedSprings() const
     {
-        return mWaterLevelOfDetail;
+        return mRenderParameters.ShowStressedSprings;
     }
 
-    void SetWaterLevelOfDetail(float levelOfDetail)
+    void SetShowStressedSprings(bool showStressedSprings)
     {
-        mWaterLevelOfDetail = levelOfDetail;
-
-        OnWaterLevelOfDetailUpdated();
+        mRenderParameters.ShowStressedSprings = showStressedSprings;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
-    static constexpr float MinWaterLevelOfDetail = 0.0f;
-    static constexpr float MaxWaterLevelOfDetail = 1.0f;
-
-    DebugShipRenderMode GetDebugShipRenderMode() const
+    rgbColor const & GetShipDefaultWaterColor() const
     {
-        return mDebugShipRenderMode;
+        return mShipDefaultWaterColor;
     }
 
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
+    void SetShipDefaultWaterColor(rgbColor const & color)
     {
-        mDebugShipRenderMode = debugShipRenderMode;
+        mShipDefaultWaterColor = color;
 
-        OnDebugShipRenderModeUpdated();
+        mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
+        mRenderParameters.IsShipWaterColorDirty = true;
     }
 
-    VectorFieldRenderMode GetVectorFieldRenderMode() const
+    float GetShipWaterContrast() const
+    {
+        return mRenderParameters.ShipWaterContrast;
+    }
+
+    void SetShipWaterContrast(float contrast)
+    {
+        mRenderParameters.ShipWaterContrast = contrast;
+        mRenderParameters.IsShipWaterContrastDirty = true;
+    }
+
+    float GetShipWaterLevelOfDetail() const
+    {
+        return mRenderParameters.ShipWaterLevelOfDetail;
+    }
+
+    void SetShipWaterLevelOfDetail(float levelOfDetail)
+    {
+        mRenderParameters.ShipWaterLevelOfDetail = levelOfDetail;
+        mRenderParameters.IsShipWaterLevelOfDetailDirty = true;
+    }
+
+    static constexpr float MinShipWaterLevelOfDetail = 0.0f;
+    static constexpr float MaxShipWaterLevelOfDetail = 1.0f;
+
+    bool GetDrawHeatOverlay() const
+    {
+        return mRenderParameters.DrawHeatOverlay;
+    }
+
+    void SetDrawHeatOverlay(bool drawHeatOverlay)
+    {
+        mRenderParameters.DrawHeatOverlay = drawHeatOverlay;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
+    float GetHeatOverlayTransparency() const
+    {
+        return mRenderParameters.HeatOverlayTransparency;
+    }
+
+    void SetHeatOverlayTransparency(float transparency)
+    {
+        mRenderParameters.HeatOverlayTransparency = transparency;
+        mRenderParameters.IsHeatOverlayTransparencyDirty = true;
+    }
+
+    VectorFieldRenderModeType GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;
     }
 
-    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
+    void SetVectorFieldRenderMode(VectorFieldRenderModeType vectorFieldRenderMode)
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
-
-        OnVectorFieldRenderModeUpdated();
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -441,69 +494,16 @@ public:
         mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
-    bool GetShowStressedSprings() const
+    DebugShipRenderModeType GetDebugShipRenderMode() const
     {
-        return mShowStressedSprings;
+        return mRenderParameters.DebugShipRenderMode;
     }
 
-    void SetShowStressedSprings(bool showStressedSprings)
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
     {
-        mShowStressedSprings = showStressedSprings;
-
-        OnShowStressedSpringsUpdated();
+        mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
+        mRenderParameters.IsDebugShipRenderModeDirty = true;
     }
-
-    bool GetDrawHeatOverlay() const
-    {
-        return mDrawHeatOverlay;
-    }
-
-    void SetDrawHeatOverlay(bool drawHeatOverlay)
-    {
-        mDrawHeatOverlay = drawHeatOverlay;
-
-        OnDrawHeatOverlayUpdated();
-    }
-
-    float GetHeatOverlayTransparency() const
-    {
-        return mHeatOverlayTransparency;
-    }
-
-    void SetHeatOverlayTransparency(float transparency)
-    {
-        mHeatOverlayTransparency = transparency;
-
-        OnHeatOverlayTransparencyUpdated();
-    }
-
-    ShipFlameRenderMode GetShipFlameRenderMode() const
-    {
-        return mShipFlameRenderMode;
-    }
-
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
-    {
-        mShipFlameRenderMode = shipFlameRenderMode;
-
-        OnShipFlameRenderModeUpdated();
-    }
-
-    float const & GetShipFlameSizeAdjustment() const
-    {
-        return mShipFlameSizeAdjustment;
-    }
-
-    void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
-    {
-        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
-
-        OnShipFlameSizeAdjustmentUpdated();
-    }
-
-    static constexpr float MinShipFlameSizeAdjustment = 0.1f;
-    static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
-
 
     //
     // Screen <-> World transformations
@@ -511,25 +511,26 @@ public:
 
     inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
     {
-        return mViewModel.ScreenToWorld(screenCoordinates);
+        return mRenderParameters.View.ScreenToWorld(screenCoordinates);
     }
 
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
     {
-        return mViewModel.ScreenOffsetToWorldOffset(screenOffset);
+        return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }
-
 
     //
     // Statistics
     //
 
-    RenderStatistics const & GetStatistics() const
+    RenderStatistics GetStatistics() const
     {
-        return mRenderStatistics;
+        return mRenderStats.load();
     }
 
 public:
+
+    void RebindContext(std::function<void()> rebindContextFunction);
 
     void Reset();
 
@@ -544,61 +545,56 @@ public:
 
 public:
 
-    //////////////////////////////////////////////////////////////////
-    // Rendering
-    //////////////////////////////////////////////////////////////////
+    void UpdateStart();
+
+    void UpdateEnd();
 
     void RenderStart();
 
-    //
-    // Stars
-    //
+    void UploadStart();
 
-    void UploadStarsStart(size_t starCount);
+    inline void UploadStarsStart(size_t starCount)
+    {
+        mWorldRenderContext->UploadStarsStart(starCount);
+    }
 
     inline void UploadStar(
         float ndcX,
         float ndcY,
         float brightness)
     {
-        //
-        // Populate vertex in buffer
-        //
-
-        mStarVertexBuffer.emplace_back(ndcX, ndcY, brightness);
+        mWorldRenderContext->UploadStar(
+            ndcX,
+            ndcY,
+            brightness);
     }
 
-    void UploadStarsEnd();
-
-    void RenderStars();
-
-    //
-    // Clouds
-    //
-
-    void RenderCloudsStart();
-
+    inline void UploadStarsEnd()
+    {
+        mWorldRenderContext->UploadStarsEnd();
+    }
 
     inline void UploadStormAmbientDarkening(float darkening)
-    {
-        if (darkening != mCurrentStormAmbientDarkening)
+    {        
+        if (mWorldRenderContext->UploadStormAmbientDarkening(darkening))
         {
-            mCurrentStormAmbientDarkening = darkening;
-            OnEffectiveAmbientLightIntensityUpdated();
+            mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
+                mAmbientLightIntensity,
+                mWorldRenderContext->GetStormAmbientDarkening());
+            
+            mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
     }
 
     inline void UploadRain(float density)
     {
-        if (density != mCurrentRainDensity)
-        {
-            mCurrentRainDensity = density;
-            OnRainDensityUpdated();
-        }
+        mWorldRenderContext->UploadRain(density);
     }
 
-
-    void UploadLightningsStart(size_t lightningCount);
+    inline void UploadLightningsStart(size_t lightningCount)
+    {
+        mWorldRenderContext->UploadLightningsStart(lightningCount);
+    }
 
     inline void UploadBackgroundLightning(
         float ndcX,
@@ -606,19 +602,12 @@ public:
         float renderProgress,
         float personalitySeed)
     {
-        // Get NDC coordinates of world y=0 (i.e. sea level)
-        float const ndcSeaLevel = mViewModel.WorldToNdc(vec2f::zero()).y;
-
-        // Store vertices
-        StoreLightningVertices(
+        mWorldRenderContext->UploadBackgroundLightning(
             ndcX,
-            ndcSeaLevel,
             progress,
             renderProgress,
             personalitySeed,
-            mBackgroundLightningVertexCount);
-
-        mBackgroundLightningVertexCount += 6;
+            mRenderParameters);
     }
 
     inline void UploadForegroundLightning(
@@ -627,28 +616,23 @@ public:
         float renderProgress,
         float personalitySeed)
     {
-        // Get NDC coordinates of tip point, a few metres down,
-        // to make sure tip touches visually the point
-        vec2f const ndcTip = mViewModel.WorldToNdc(
-            tipWorldCoordinates
-            + vec2f(0.0f, -3.0f));
-
-        // Store vertices
-        StoreLightningVertices(
-            ndcTip.x,
-            ndcTip.y,
+        mWorldRenderContext->UploadForegroundLightning(
+            tipWorldCoordinates,
             progress,
             renderProgress,
             personalitySeed,
-            mLightningVertexBuffer.max_size() - (mForegroundLightningVertexCount + 6));
-
-        mForegroundLightningVertexCount += 6;
+            mRenderParameters);
     }
 
-    void UploadLightningsEnd();
+    inline void UploadLightningsEnd()
+    {
+        mWorldRenderContext->UploadLightningsEnd();
+    }
 
-
-    void UploadCloudsStart(size_t cloudCount);
+    inline void UploadCloudsStart(size_t cloudCount)
+    {
+        mWorldRenderContext->UploadCloudsStart(cloudCount);
+    }
 
     inline void UploadCloud(
         uint32_t cloudId,
@@ -657,373 +641,119 @@ public:
         float scale,
         float darkening)    // 0.0:dark, 1.0:light
     {
+        mWorldRenderContext->UploadCloud(
+            cloudId,
+            virtualX,
+            virtualY,
+            scale,
+            darkening,
+            mRenderParameters);
         //
-        // We use Normalized Device Coordinates here
-        //
-
-        //
-        // Map input slice [-0.5, +0.5], [-0.5, +0.5] into NDC [-1.0, +1.0], [-1.0, +1.0]
-        //
-
-        float const mappedX = virtualX * 2.0f;
-        float const mappedY = virtualY * 2.0f;
-
-        // TEST CODE: this code fits everything in the visible window
-        ////float const mappedX = virtualX / 1.5f;
-        ////float const mappedY = virtualY / 1.5f;
-        ////scale /= 1.5f;
-
-
-        //
-        // Populate quad in buffer
-        //
-
-        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
-
-        auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
-            CloudTextureGroups::Cloud,
-            static_cast<TextureFrameIndex>(cloudTextureIndex));
-
-        float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
-        float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
-        float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * mViewModel.GetAspectRatio();
-        float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * mViewModel.GetAspectRatio();
-
-        // top-left
-        mCloudVertexBuffer.emplace_back(
-            leftX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
-
-        // bottom-left
-        mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
-
-        // top-right
-        mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
-
-        // bottom-left
-        mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
-
-        // top-right
-        mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
-
-        // bottom-right
-        mCloudVertexBuffer.emplace_back(
-            rightX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
     }
 
-    void UploadCloudsEnd();
+    inline void UploadCloudsEnd()
+    {
+        mWorldRenderContext->UploadCloudsEnd();
+    }
 
-
-    void RenderCloudsEnd();
-
-
-    //
-    // Land
-    //
-
-    void UploadLandStart(size_t slices);
+    inline void UploadLandStart(size_t slices)
+    {
+        mWorldRenderContext->UploadLandStart(slices);
+    }
 
     inline void UploadLand(
         float x,
         float yLand)
     {
-        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
+        mWorldRenderContext->UploadLand(
+            x,
+            yLand,
+            mRenderParameters);
+    }
 
-        //
-        // Store Land element
-        //
+    inline void UploadLandEnd()
+    {
+        mWorldRenderContext->UploadLandEnd();
+    }
 
-        LandSegment & landSegment = mLandSegmentBuffer.emplace_back();
-
-        landSegment.x1 = x;
-        landSegment.y1 = yLand;
-        landSegment.depth1 = 0.0f;
-        landSegment.x2 = x;
-        // If land is invisible (below), then keep both points at same height, or else interpolated lines
-        // will have a slope varying with the y of the visible world bottom
-        float yBottom = yLand >= yVisibleWorldBottom ? yVisibleWorldBottom : yLand;
-        landSegment.y2 = yBottom;
-        landSegment.depth2 = -(yBottom - yLand); // Height of land
-   }
-
-    void UploadLandEnd();
-
-    void RenderLand();
-
-
-    //
-    // Ocean
-    //
-
-    void UploadOceanStart(size_t slices);
+    inline void UploadOceanStart(size_t slices)
+    {
+        mWorldRenderContext->UploadOceanStart(slices);
+    }
 
     inline void UploadOcean(
         float x,
         float yOcean,
         float oceanDepth)
     {
-        float const yVisibleWorldBottom = mViewModel.GetVisibleWorldBottomRight().y;
-
-        //
-        // Store ocean element
-        //
-
-        OceanSegment & oceanSegment = mOceanSegmentBuffer.emplace_back();
-
-        oceanSegment.x1 = x;
-        float const oceanSegmentY1 = yOcean;
-        oceanSegment.y1 = oceanSegmentY1;
-
-        oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yVisibleWorldBottom;
-        oceanSegment.y2 = oceanSegmentY2;
-
-        switch (mOceanRenderMode)
-        {
-            case OceanRenderMode::Texture:
-            {
-                // Texture sample Y levels: anchor texture at top of wave,
-                // and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // This is at yOcean
-                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
-
-                break;
-            }
-
-            case OceanRenderMode::Depth:
-            {
-                // Depth: top=0.0, bottom=height as fraction of ocean depth
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = oceanDepth != 0.0f
-                    ? abs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                    : 0.0f;
-
-                break;
-            }
-
-            case OceanRenderMode::Flat:
-            {
-                // Nop, but be nice
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = 0.0f;
-
-                break;
-            }
-        }
+        mWorldRenderContext->UploadOcean(
+            x,
+            yOcean,
+            oceanDepth,
+            mRenderParameters);
     }
 
-    void UploadOceanEnd();
-
-    void RenderOceanOpaquely()
+    inline void UploadOceanEnd()
     {
-        RenderOcean(true);
+        mWorldRenderContext->UploadOceanEnd();
     }
 
-    void RenderOceanTransparently()
+    inline void UploadAMBombPreImplosion(
+        vec2f const & centerPosition,
+        float progress,
+        float radius)
     {
-        RenderOcean(false);
+        mWorldRenderContext->UploadAMBombPreImplosion(
+            centerPosition,
+            progress,
+            radius);
     }
 
-
-    //
-    // Crosses of light
-    //
-
-    void UploadCrossOfLight(
+    inline void UploadCrossOfLight(
         vec2f const & centerPosition,
         float progress)
     {
-        // Triangle 1
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(mViewModel.GetVisibleWorldTopLeft().x, mViewModel.GetVisibleWorldBottomRight().y), // left, bottom
+        mWorldRenderContext->UploadCrossOfLight(
             centerPosition,
-            progress);
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldTopLeft(), // left, top
-            centerPosition,
-            progress);
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
-            centerPosition,
-            progress);
-
-        // Triangle 2
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldTopLeft(), // left, top
-            centerPosition,
-            progress);
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            mViewModel.GetVisibleWorldBottomRight(), // right, bottom
-            centerPosition,
-            progress);
-
-        mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(mViewModel.GetVisibleWorldBottomRight().x, mViewModel.GetVisibleWorldTopLeft().y),  // right, top
-            centerPosition,
-            progress);
+            progress,
+            mRenderParameters);
     }
 
-    //
-    // HeatBlaster flame
-    //
-
-    void UploadHeatBlasterFlame(
+    inline void UploadHeatBlasterFlame(
         vec2f const & centerPosition,
         float radius,
         HeatBlasterActionType action)
     {
-        //
-        // Populate vertices
-        //
-
-        float const quadHalfSize = (radius * 1.5f) / 2.0f; // Add some slack for transparency
-        float const left = centerPosition.x - quadHalfSize;
-        float const right = centerPosition.x + quadHalfSize;
-        float const top = centerPosition.y + quadHalfSize;
-        float const bottom = centerPosition.y - quadHalfSize;
-
-        // Triangle 1
-
-        mHeatBlasterFlameVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-        mHeatBlasterFlameVertexBuffer[0].flameSpacePosition = vec2f(-0.5f, -0.5f);
-
-        mHeatBlasterFlameVertexBuffer[1].vertexPosition = vec2f(left, top);
-        mHeatBlasterFlameVertexBuffer[1].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-        mHeatBlasterFlameVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-        mHeatBlasterFlameVertexBuffer[2].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-        // Triangle 2
-
-        mHeatBlasterFlameVertexBuffer[3].vertexPosition = vec2f(left, top);
-        mHeatBlasterFlameVertexBuffer[3].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-        mHeatBlasterFlameVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-        mHeatBlasterFlameVertexBuffer[4].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-        mHeatBlasterFlameVertexBuffer[5].vertexPosition = vec2f(right, top);
-        mHeatBlasterFlameVertexBuffer[5].flameSpacePosition = vec2f(0.5f, 0.5f);
-
-        //
-        // Store shader
-        //
-
-        switch (action)
-        {
-            case HeatBlasterActionType::Cool:
-            {
-                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameCool;
-                break;
-            }
-
-            case HeatBlasterActionType::Heat:
-            {
-                mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameHeat;
-                break;
-            }
-        }
+        mNotificationRenderContext->UploadHeatBlasterFlame(
+            centerPosition,
+            radius,
+            action);
     }
 
-    //
-    // Fire extinguisher spray
-    //
-
-    void UploadFireExtinguisherSpray(
+    inline void UploadFireExtinguisherSpray(
         vec2f const & centerPosition,
         float radius)
     {
-        //
-        // Populate vertices
-        //
-
-        float const quadHalfSize = (radius * 3.5f) / 2.0f; // Add some slack to account for transparency
-        float const left = centerPosition.x - quadHalfSize;
-        float const right = centerPosition.x + quadHalfSize;
-        float const top = centerPosition.y + quadHalfSize;
-        float const bottom = centerPosition.y - quadHalfSize;
-
-        // Triangle 1
-
-        mFireExtinguisherSprayVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-        mFireExtinguisherSprayVertexBuffer[0].spraySpacePosition = vec2f(-0.5f, -0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[1].vertexPosition = vec2f(left, top);
-        mFireExtinguisherSprayVertexBuffer[1].spraySpacePosition = vec2f(-0.5f, 0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-        mFireExtinguisherSprayVertexBuffer[2].spraySpacePosition = vec2f(0.5f, -0.5f);
-
-        // Triangle 2
-
-        mFireExtinguisherSprayVertexBuffer[3].vertexPosition = vec2f(left, top);
-        mFireExtinguisherSprayVertexBuffer[3].spraySpacePosition = vec2f(-0.5f, 0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-        mFireExtinguisherSprayVertexBuffer[4].spraySpacePosition = vec2f(0.5f, -0.5f);
-
-        mFireExtinguisherSprayVertexBuffer[5].vertexPosition = vec2f(right, top);
-        mFireExtinguisherSprayVertexBuffer[5].spraySpacePosition = vec2f(0.5f, 0.5f);
-
-        //
-        // Store shader
-        //
-
-        mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
+        mNotificationRenderContext->UploadFireExtinguisherSpray(
+            centerPosition,
+            radius);
     }
 
-    /////////////////////////////////////////////////////////////////////////
-    // Ships
-    /////////////////////////////////////////////////////////////////////////
+    inline void UploadShipsStart()
+    {
+        // Nop
+    }
 
-    void RenderShipsStart();
-
-
-    void RenderShipStart(
+    inline void UploadShipStart(
         ShipId shipId,
         PlaneId maxMaxPlaneId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderStart(maxMaxPlaneId);
+        mShips[shipId]->UploadStart(maxMaxPlaneId);
     }
 
-    //
-    // Ship Points
-    //
-
-    void UploadShipPointImmutableAttributes(
+    inline void UploadShipPointImmutableAttributes(
         ShipId shipId,
         vec2f const * textureCoordinates)
     {
@@ -1032,14 +762,14 @@ public:
         mShips[shipId]->UploadPointImmutableAttributes(textureCoordinates);
     }
 
-    void UploadShipPointMutableAttributesStart(ShipId shipId)
+    inline void UploadShipPointMutableAttributesStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointMutableAttributesStart();
     }
 
-    void UploadShipPointMutableAttributes(
+    inline void UploadShipPointMutableAttributes(
         ShipId shipId,
         vec2f const * position,
         float const * light,
@@ -1055,7 +785,7 @@ public:
             lightAndWaterCount);
     }
 
-    void UploadShipPointMutableAttributesPlaneId(
+    inline void UploadShipPointMutableAttributesPlaneId(
         ShipId shipId,
         float const * planeId,
         size_t startDst,
@@ -1069,7 +799,7 @@ public:
             count);
     }
 
-    void UploadShipPointMutableAttributesDecay(
+    inline void UploadShipPointMutableAttributesDecay(
         ShipId shipId,
         float const * decay,
         size_t startDst,
@@ -1083,14 +813,16 @@ public:
             count);
     }
 
-    void UploadShipPointMutableAttributesEnd(ShipId shipId)
+    inline void UploadShipPointMutableAttributesEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadPointMutableAttributesEnd();
     }
 
-    void UploadShipPointColors(
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointColors(
         ShipId shipId,
         vec4f const * color,
         size_t startDst,
@@ -1098,13 +830,20 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointColors(
-            color,
-            startDst,
-            count);
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointColors(
+                    color,
+                    startDst,
+                    count);
+            });
     }
 
-    void UploadShipPointTemperature(
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointTemperature(
         ShipId shipId,
         float const * temperature,
         size_t startDst,
@@ -1112,15 +851,16 @@ public:
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadPointTemperature(
-            temperature,
-            startDst,
-            count);
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointTemperature(
+                    temperature,
+                    startDst,
+                    count);
+            });
     }
-
-    //
-    // Ship elements
-    //
 
     inline void UploadShipElementsStart(ShipId shipId)
     {
@@ -1195,18 +935,12 @@ public:
         mShips[shipId]->UploadElementTrianglesEnd();
     }
 
-    inline void UploadShipElementsEnd(
-        ShipId shipId,
-        bool doFinalizeEphemeralPoints)
+    inline void UploadShipElementsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementsEnd(doFinalizeEphemeralPoints);
+        mShips[shipId]->UploadElementsEnd();
     }
-
-    //
-    // Ship stressed springs
-    //
 
     inline void UploadShipElementStressedSpringsStart(ShipId shipId)
     {
@@ -1227,16 +961,12 @@ public:
             shipPointIndex2);
     }
 
-    void UploadShipElementStressedSpringsEnd(ShipId shipId)
+    inline void UploadShipElementStressedSpringsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
-
-    //
-    // Flames
-    //
 
     inline void UploadShipFlamesStart(
         ShipId shipId,
@@ -1265,19 +995,16 @@ public:
             flameVector,
             scale,
             flamePersonalitySeed,
-            isOnChain);
+            isOnChain,
+            mRenderParameters);
     }
 
-    void UploadShipFlamesEnd(ShipId shipId)
+    inline void UploadShipFlamesEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadFlamesEnd();
     }
-
-    //
-    // Explosions
-    //
 
     inline void UploadShipExplosion(
         ShipId shipId,
@@ -1299,17 +1026,6 @@ public:
             progress);
     }
 
-    //
-    // Sparkles
-    //
-
-    inline void UploadShipSparklesStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadSparklesStart();
-    }
-
     inline void UploadShipSparkle(
         ShipId shipId,
         PlaneId planeId,
@@ -1325,17 +1041,6 @@ public:
             velocityVector,
             progress);
     }
-
-    inline void UploadShipSparklesEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadSparklesEnd();
-    }
-
-    //
-    // Air bubbles and generic textures
-    //
 
     inline void UploadShipAirBubble(
         ShipId shipId,
@@ -1429,10 +1134,6 @@ public:
             alpha);
     }
 
-    //
-    // Ephemeral points
-    //
-
     inline void UploadShipElementEphemeralPointsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -1450,20 +1151,16 @@ public:
             pointIndex);
     }
 
-    void UploadShipElementEphemeralPointsEnd(ShipId shipId)
+    inline void UploadShipElementEphemeralPointsEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementEphemeralPointsEnd();
     }
 
-    //
-    // Highlights
-    //
-
     inline void UploadShipHighlight(
         ShipId shipId,
-        HighlightMode highlightMode,
+        HighlightModeType highlightMode,
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
@@ -1481,11 +1178,7 @@ public:
             progress);
     }
 
-    //
-    // Vectors
-    //
-
-    void UploadShipVectors(
+    inline void UploadShipVectors(
         ShipId shipId,
         size_t count,
         vec2f const * position,
@@ -1505,466 +1198,148 @@ public:
             color);
     }
 
-
-
-    void RenderShipEnd(ShipId shipId)
+    inline void UploadShipEnd(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->RenderEnd();
+        mShips[shipId]->UploadEnd();
     }
 
-    void RenderShipsEnd();
+    inline void UploadShipsEnd()
+    {
+        // Nop
+    }
 
+    inline void UploadTextNotificationStart(FontType fontType)
+    {
+        mNotificationRenderContext->UploadTextNotificationStart(fontType);
+    }
 
-    //
-    // Final
-    //
+    inline void UploadTextNotificationLine(
+        FontType font,
+        std::string const & text,
+        AnchorPositionType anchor,
+        vec2f const & screenOffset,
+        float alpha)
+    {
+        mNotificationRenderContext->UploadTextNotificationLine(
+            font,
+            text,
+            anchor,
+            screenOffset,
+            alpha);
+    }
+
+    inline void UploadTextNotificationEnd(FontType fontType)
+    {
+        mNotificationRenderContext->UploadTextNotificationEnd(fontType);
+    }
+
+    inline void UploadTextureNotificationStart()
+    {
+        mNotificationRenderContext->UploadTextureNotificationStart();
+    }
+
+    inline void UploadTextureNotification(
+        TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+        AnchorPositionType anchor,
+        vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
+        float alpha)
+    {
+        mNotificationRenderContext->UploadTextureNotification(
+            textureFrameId,
+            anchor,
+            screenOffset,
+            alpha);
+    }
+
+    inline void UploadTextureNotificationEnd()
+    {
+        mNotificationRenderContext->UploadTextureNotificationEnd();
+    }
+
+    void UploadEnd();
+
+    void Draw();
 
     void RenderEnd();
 
 private:
+    
+    void ProcessParameterChanges(RenderParameters const & renderParameters);    
+    
+    void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 
-    inline void StoreLightningVertices(
-        float ndcX,
-        float ndcBottomY,
-        float progress,
-        float renderProgress,
-        float personalitySeed,
-        size_t vertexBufferIndex)
-    {
-        if (ndcBottomY > 1.0)
-            return; // Above top, discard
+    void ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters);
 
-        float constexpr LightningQuadWidth = 0.5f;
+    static float CalculateEffectiveAmbientLightIntensity(
+        float ambientLightIntensity,
+        float stormAmbientDarkening);
 
-        float const leftX = ndcX - LightningQuadWidth / 2.0f;
-        float const rightX = ndcX + LightningQuadWidth / 2.0f;
-        float const topY = 1.0f;
-        float const bottomY = ndcBottomY;
-
-        // Append vertices - two triangles
-
-        // Triangle 1
-
-        // Top-left
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(leftX, topY),
-            -1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-
-        // Top-Right
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(rightX, topY),
-            1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-
-        // Bottom-left
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(leftX, bottomY),
-            -1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-
-        // Triangle 2
-
-        // Top-Right
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(rightX, topY),
-            1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-
-        // Bottom-left
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(leftX, bottomY),
-            -1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-
-        // Bottom-right
-        mLightningVertexBuffer.emplace_at(
-            vertexBufferIndex++,
-            vec2f(rightX, bottomY),
-            1.0f,
-            ndcBottomY,
-            progress,
-            renderProgress,
-            personalitySeed);
-    }
-
-private:
-
-    void RenderOcean(bool opaquely);
-
-    void RenderCrossesOfLight();
-    void RenderHeatBlasterFlame();
-    void RenderFireExtinguisherSpray();
-    void RenderForegroundLightnings();
-    void RenderRain();
-    void RenderWorldBorder();
-
-    void OnViewModelUpdated();
-    void OnEffectiveAmbientLightIntensityUpdated();
-    void OnRainDensityUpdated();
-    void OnOceanTransparencyUpdated();
-    void OnOceanDarkeningRateUpdated();
-    void OnOceanRenderParametersUpdated();
-    void OnOceanTextureIndexUpdated();
-    void OnLandRenderParametersUpdated();
-    void OnLandTextureIndexUpdated();
-
-    void OnFlatLampLightColorUpdated();
-    void OnDefaultWaterColorUpdated();
-    void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();
-    void OnDebugShipRenderModeUpdated();
-    void OnVectorFieldRenderModeUpdated();
-    void OnShowStressedSpringsUpdated();
-    void OnDrawHeatOverlayUpdated();
-    void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameRenderModeUpdated();
-    void OnShipFlameSizeAdjustmentUpdated();
-
-    void UpdateWorldBorder();
-    vec4f CalculateLampLightColor() const;
-    vec4f CalculateWaterColor() const;
+    vec4f CalculateShipWaterColor() const;
 
 private:
 
     //
-    // Types
+    // Render Thread
     //
 
-#pragma pack(push, 1)
+    // The thread running all of our OpenGL calls
+    TaskThread mRenderThread;
 
-    struct StarVertex
-    {
-        float ndcX;
-        float ndcY;
-        float brightness;
-
-        StarVertex(
-            float _ndcX,
-            float _ndcY,
-            float _brightness)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-            , brightness(_brightness)
-        {}
-    };
-
-    struct LightningVertex
-    {
-        vec2f ndc;
-        float spacePositionX;
-        float ndcBottomY;
-        float progress;
-        float renderProgress;
-        float personalitySeed;
-
-        LightningVertex(
-            vec2f _ndc,
-            float _spacePositionX,
-            float _ndcBottomY,
-            float _progress,
-            float _renderProgress,
-            float _personalitySeed)
-            : ndc(_ndc)
-            , spacePositionX(_spacePositionX)
-            , ndcBottomY(_ndcBottomY)
-            , progress(_progress)
-            , renderProgress(_renderProgress)
-            , personalitySeed(_personalitySeed)
-        {}
-    };
-
-    struct CloudVertex
-    {
-        float ndcX;
-        float ndcY;
-        float ndcTextureX;
-        float ndcTextureY;
-        float darkness;
-
-        CloudVertex(
-            float _ndcX,
-            float _ndcY,
-            float _ndcTextureX,
-            float _ndcTextureY,
-            float _darkness)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-            , ndcTextureX(_ndcTextureX)
-            , ndcTextureY(_ndcTextureY)
-            , darkness(_darkness)
-        {}
-    };
-
-    struct LandSegment
-    {
-        float x1;
-        float y1;
-        float depth1;
-        float x2;
-        float y2;
-        float depth2;
-    };
-
-    struct OceanSegment
-    {
-        float x1;
-        float y1;
-        float value1;
-
-        float x2;
-        float y2;
-        float value2;
-    };
-
-    struct CrossOfLightVertex
-    {
-        vec2f vertex;
-        vec2f centerPosition;
-        float progress;
-
-        CrossOfLightVertex(
-            vec2f _vertex,
-            vec2f _centerPosition,
-            float _progress)
-            : vertex(_vertex)
-            , centerPosition(_centerPosition)
-            , progress(_progress)
-        {}
-    };
-
-    struct HeatBlasterFlameVertex
-    {
-        vec2f vertexPosition;
-        vec2f flameSpacePosition;
-
-        HeatBlasterFlameVertex()
-        {}
-    };
-
-    struct FireExtinguisherSprayVertex
-    {
-        vec2f vertexPosition;
-        vec2f spraySpacePosition;
-
-        FireExtinguisherSprayVertex()
-        {}
-    };
-
-    struct RainVertex
-    {
-        float ndcX;
-        float ndcY;
-
-        RainVertex(
-            float _ndcX,
-            float _ndcY)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-        {}
-    };
-
-    struct WorldBorderVertex
-    {
-        float x;
-        float y;
-        float textureX;
-        float textureY;
-
-        WorldBorderVertex(
-            float _x,
-            float _y,
-            float _textureX,
-            float _textureY)
-            : x(_x)
-            , y(_y)
-            , textureX(_textureX)
-            , textureY(_textureY)
-        {}
-    };
-
-#pragma pack(pop)
+    // The asynchronous rendering tasks from the previous iteration,
+    // which we have to wait for before proceeding further
+    TaskThread::TaskCompletionIndicator mLastRenderUploadEndCompletionIndicator;
+    TaskThread::TaskCompletionIndicator mLastRenderDrawCompletionIndicator;
 
     //
-    // Buffers
+    // Shader manager
     //
 
-    BoundedVector<StarVertex> mStarVertexBuffer;
-    GameOpenGLVBO mStarVBO;
-
-    GameOpenGLMappedBuffer<LightningVertex, GL_ARRAY_BUFFER> mLightningVertexBuffer;
-    size_t mBackgroundLightningVertexCount;
-    size_t mForegroundLightningVertexCount;
-    GameOpenGLVBO mLightningVBO;
-
-    GameOpenGLMappedBuffer<CloudVertex, GL_ARRAY_BUFFER> mCloudVertexBuffer;
-    GameOpenGLVBO mCloudVBO;
-
-    GameOpenGLMappedBuffer<LandSegment, GL_ARRAY_BUFFER> mLandSegmentBuffer;
-    size_t mLandSegmentBufferAllocatedSize;
-    GameOpenGLVBO mLandVBO;
-
-    GameOpenGLMappedBuffer<OceanSegment, GL_ARRAY_BUFFER> mOceanSegmentBuffer;
-    size_t mOceanSegmentBufferAllocatedSize;
-    GameOpenGLVBO mOceanVBO;
-
-    std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
-    GameOpenGLVBO mCrossOfLightVBO;
-
-    std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
-    GameOpenGLVBO mHeatBlasterFlameVBO;
-
-    std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
-    GameOpenGLVBO mFireExtinguisherSprayVBO;
-
-    GameOpenGLVBO mRainVBO;
-
-    std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
-    GameOpenGLVBO mWorldBorderVBO;
-
-    //
-    // VAOs
-    //
-
-    GameOpenGLVAO mStarVAO;
-    GameOpenGLVAO mLightningVAO;
-    GameOpenGLVAO mCloudVAO;
-    GameOpenGLVAO mLandVAO;
-    GameOpenGLVAO mOceanVAO;
-    GameOpenGLVAO mCrossOfLightVAO;
-    GameOpenGLVAO mHeatBlasterFlameVAO;
-    GameOpenGLVAO mFireExtinguisherSprayVAO;
-    GameOpenGLVAO mRainVAO;
-    GameOpenGLVAO mWorldBorderVAO;
-
-    //
-    // Textures
-    //
-
-    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
-
-    UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
-
-    std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
-    GameOpenGLTexture mOceanTextureOpenGLHandle;
-    size_t mLoadedOceanTextureIndex;
-
-    std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
-    GameOpenGLTexture mLandTextureOpenGLHandle;
-    size_t mLoadedLandTextureIndex;
-
-    bool mIsWorldBorderVisible;
-
-    GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
-
-    GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericMipMappedTextureGroups>> mGenericMipMappedTextureAtlasMetadata;
-
-    GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
-
-    UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
-
-    //
-    // Misc Parameters
-    //
-
-    float mCurrentStormAmbientDarkening;
-    float mCurrentRainDensity;
-    float mEffectiveAmbientLightIntensity;
-
-    //
-    // Ships
-    //
-
-    std::vector<std::unique_ptr<ShipRenderContext>> mShips;
-
-    //
-    // HeatBlaster
-    //
-
-    std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
-
-    //
-    // Fire extinguisher
-    //
-
-    std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
-
-private:
-
-    //
-    // Managers
-    //
-
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
-    std::shared_ptr<TextRenderContext> mTextRenderContext;
 
     //
-    // The current render parameters
+    // Child contextes
     //
 
-    ViewModel mViewModel;
+    std::unique_ptr<GlobalRenderContext> mGlobalRenderContext;
+    std::unique_ptr<WorldRenderContext> mWorldRenderContext;
+    std::vector<std::unique_ptr<ShipRenderContext>> mShips;    
+    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;  
 
-    rgbColor mFlatSkyColor;
+    //
+    // Externally-controlled parameters that only affect Upload (i.e. that do
+    // not affect rendering directly), or that purely serve as input to calculated
+    // render parameters, or that only need storage here (e.g. being used in other 
+    // contexts to control upload's)
+    //
+
     float mAmbientLightIntensity;
-    float mOceanTransparency;
-    float mOceanDarkeningRate;
-    OceanRenderMode mOceanRenderMode;
-    std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
-    size_t mSelectedOceanTextureIndex;
-    rgbColor mDepthOceanColorStart;
-    rgbColor mDepthOceanColorEnd;
-    rgbColor mFlatOceanColor;
-    LandRenderMode mLandRenderMode;
-    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
-    size_t mSelectedLandTextureIndex;
-    rgbColor mFlatLandColor;
-
-    rgbColor mFlatLampLightColor;
-    rgbColor mDefaultWaterColor;
-    bool mShowShipThroughOcean;
-    float mWaterContrast;
-    float mWaterLevelOfDetail;
-    DebugShipRenderMode mDebugShipRenderMode;
-    VectorFieldRenderMode mVectorFieldRenderMode;
-    float mVectorFieldLengthMultiplier;
-    bool mShowStressedSprings;
-    bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;
-    ShipFlameRenderMode mShipFlameRenderMode;
     float mShipFlameSizeAdjustment;
+    rgbColor mShipDefaultWaterColor;
+    VectorFieldRenderModeType mVectorFieldRenderMode;
+    float mVectorFieldLengthMultiplier;
+
+
+    //
+    // Rendering externals
+    //
+
+    std::function<void()> const mSwapRenderBuffersFunction;
+
+
+    //
+    // Render parameters
+    //
+
+    RenderParameters mRenderParameters;
 
     //
     // Statistics
     //
 
-    RenderStatistics mRenderStatistics;
+    PerfStats & mPerfStats;
+    std::atomic<RenderStatistics> mRenderStats;
 };
 
 }

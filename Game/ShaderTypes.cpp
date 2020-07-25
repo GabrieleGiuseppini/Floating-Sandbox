@@ -15,7 +15,9 @@ namespace Render {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "clouds")
+    if (lstr == "am_bomb_preimplosion")
+        return ProgramType::AMBombPreImplosion;
+    else if (lstr == "clouds")
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
@@ -93,8 +95,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipVectors;
     else if (lstr == "stars")
         return ProgramType::Stars;
-    else if (lstr == "text_ndc")
-        return ProgramType::TextNDC;
+    else if (lstr == "text_notifications")
+        return ProgramType::TextNotifications;
+    else if (lstr == "texture_notifications")
+        return ProgramType::TextureNotifications;
     else if (lstr == "world_border")
         return ProgramType::WorldBorder;
     else
@@ -105,6 +109,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
+    case ProgramType::AMBombPreImplosion:
+        return "AMBombPreImplosion";
     case ProgramType::Clouds:
         return "Clouds";
     case ProgramType::CrossOfLight:
@@ -183,8 +189,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipVectors";
     case ProgramType::Stars:
         return "Stars";
-    case ProgramType::TextNDC:
-        return "TextNDC";
+    case ProgramType::TextNotifications:
+        return "TextNotifications";
+    case ProgramType::TextureNotifications:
+        return "TextureNotifications";
     case ProgramType::WorldBorder:
         return "WorldBorder";
     default:
@@ -233,6 +241,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::StarTransparency;
     else if (str == "TextLighteningStrength")
         return ProgramParameterType::TextLighteningStrength;
+    else if (str == "TextureLighteningStrength")
+        return ProgramParameterType::TextureLighteningStrength;
     else if (str == "TextureScaling")
         return ProgramParameterType::TextureScaling;
     else if (str == "Time")
@@ -310,6 +320,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "StarTransparency";
     case ProgramParameterType::TextLighteningStrength:
         return "TextLighteningStrength";
+    case ProgramParameterType::TextureLighteningStrength:
+        return "TextureLighteningStrength";
     case ProgramParameterType::TextureScaling:
         return "TextureScaling";
     case ProgramParameterType::Time:
@@ -364,6 +376,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
+        return VertexAttributeType::AMBombPreImplosion1;
+    else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
+        return VertexAttributeType::AMBombPreImplosion2;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
@@ -413,11 +429,15 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Highlight3;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
-    // Text
-    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
-        return VertexAttributeType::Text1;
-    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
-        return VertexAttributeType::Text2;
+    // Notifications
+    else if (Utils::CaseInsensitiveEquals(str, "TextNotification1"))
+        return VertexAttributeType::TextNotification1;
+    else if (Utils::CaseInsensitiveEquals(str, "TextNotification2"))
+        return VertexAttributeType::TextNotification2;
+    else if (Utils::CaseInsensitiveEquals(str, "TextureNotification1"))
+        return VertexAttributeType::TextureNotification1;
+    else if (Utils::CaseInsensitiveEquals(str, "TextureNotification2"))
+        return VertexAttributeType::TextureNotification2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

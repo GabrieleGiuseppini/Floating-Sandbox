@@ -380,7 +380,7 @@ enum class HeatBlasterActionType
 /*
  * The different auto-texturization modes for ships that don't have a texture layer.
  */
-enum class ShipAutoTexturizationMode : std::int64_t
+enum class ShipAutoTexturizationModeType : std::int64_t
 {
     FlatStructure = 1,      // Builds texture using structural materials' RenderColor
     MaterialTextures = 2    // Builds texture using materials' "Bump Maps"
@@ -391,12 +391,12 @@ enum class ShipAutoTexturizationMode : std::int64_t
  */
 struct ShipAutoTexturizationSettings
 {
-    ShipAutoTexturizationMode Mode;
+    ShipAutoTexturizationModeType Mode;
     float MaterialTextureMagnification;
     float MaterialTextureTransparency;
 
     ShipAutoTexturizationSettings(
-        ShipAutoTexturizationMode mode,
+        ShipAutoTexturizationModeType mode,
         float materialTextureMagnification,
         float materialTextureTransparency)
         : Mode(mode)
@@ -412,7 +412,7 @@ struct ShipAutoTexturizationSettings
 /*
  * The different visual ways in which we render highlights.
  */
-enum class HighlightMode : size_t
+enum class HighlightModeType : size_t
 {
     Circle = 0,
     ElectricalElement,
@@ -423,7 +423,7 @@ enum class HighlightMode : size_t
 /*
  * The debug ways in which ships may be rendered.
  */
-enum class DebugShipRenderMode
+enum class DebugShipRenderModeType
 {
     None,
     Wireframe,
@@ -437,7 +437,7 @@ enum class DebugShipRenderMode
 /*
  * The different ways in which the ocean may be rendered.
  */
-enum class OceanRenderMode
+enum class OceanRenderModeType
 {
     Texture,
     Depth,
@@ -447,7 +447,7 @@ enum class OceanRenderMode
 /*
  * The different ways in which the ocean floor may be rendered.
  */
-enum class LandRenderMode
+enum class LandRenderModeType
 {
     Texture,
     Flat
@@ -456,7 +456,7 @@ enum class LandRenderMode
 /*
  * The different vector fields that may be rendered.
  */
-enum class VectorFieldRenderMode
+enum class VectorFieldRenderModeType
 {
     None,
     PointVelocity,
@@ -468,7 +468,7 @@ enum class VectorFieldRenderMode
 /*
  * The different ways of rendering ship flames.
  */
-enum class ShipFlameRenderMode
+enum class ShipFlameRenderModeType
 {
     Mode1,
     Mode2,
@@ -539,30 +539,3 @@ namespace std {
     };
 
 }
-
-/*
- * The different fonts available.
- */
-enum class FontType
-{
-    // Indices must match suffix of filename
-    StatusText = 0,
-    GameText = 1
-};
-
-/*
- * The positions at which text may be rendered.
- */
-enum class TextPositionType
-{
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight
-};
-
-/*
- * The handle to "sticky" rendered text.
- */
-using RenderedTextHandle = uint32_t;
-static constexpr RenderedTextHandle NoneRenderedTextHandle = std::numeric_limits<RenderedTextHandle>::max();

@@ -18,7 +18,8 @@ namespace Render {
 
 enum class ProgramType
 {
-    Clouds = 0,
+    AMBombPreImplosion = 0,
+    Clouds,
     CrossOfLight,
     FireExtinguisherSpray,
     HeatBlasterFlameCool,
@@ -57,7 +58,8 @@ enum class ProgramType
     ShipTrianglesTextureWithTemperature,
     ShipVectors,
     Stars,
-    TextNDC,
+    TextNotifications,
+    TextureNotifications,
     WorldBorder,
 
     _Last = WorldBorder
@@ -88,6 +90,7 @@ enum class ProgramParameterType : uint8_t
 	RainDensity,
     StarTransparency,
     TextLighteningStrength,
+    TextureLighteningStrength,
     TextureScaling,
     Time,
     ViewportSize,
@@ -135,6 +138,9 @@ enum class VertexAttributeType : GLuint
 
     Ocean = 0,
 
+    AMBombPreImplosion1 = 0,
+    AMBombPreImplosion2 =1,
+
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
 
@@ -176,11 +182,14 @@ enum class VertexAttributeType : GLuint
     VectorArrow = 0,
 
     //
-    // Text
+    // Notifications
     //
 
-    Text1 = 0,
-    Text2 = 1
+    TextNotification1 = 0,
+    TextNotification2 = 1,
+
+    TextureNotification1 = 0,
+    TextureNotification2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

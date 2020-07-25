@@ -395,7 +395,7 @@ namespace Utils
         std::string regexPattern = FindAndReplaceAll(pattern, ".", "\\.");
         regexPattern = FindAndReplaceAll(regexPattern, "*", ".*");
 
-        return std::regex(regexPattern, std::regex::flag_type::icase);
+        return std::regex(regexPattern, std::regex_constants::icase);
     }
 
     inline std::string MakeNowDateAndTimeString()

@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GlobalRenderContext.h"
+#include "RenderParameters.h"
 #include "RenderTypes.h"
 #include "ShaderTypes.h"
 #include "ShipDefinition.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
-#include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/GameOpenGLMappedBuffer.h>
@@ -23,8 +24,10 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <optional>
 #include <string>
@@ -34,130 +37,44 @@ namespace Render {
 
 class ShipRenderContext
 {
+private:
+
+    // Base dimensions of flame quads
+    static float constexpr BasisHalfFlameQuadWidth = 10.5f * 2.0f;
+    static float constexpr BasisFlameQuadHeight = 7.5f * 2.0f;
+
 public:
 
     ShipRenderContext(
         ShipId shipId,
-        size_t shipCount,
         size_t pointCount,
+        size_t shipCount,
         RgbaImageData shipTexture,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        TextureAtlasMetadata<ExplosionTextureGroups> const & explosionTextureAtlasMetadata,
-        TextureAtlasMetadata<GenericLinearTextureGroups> const & genericLinearTextureAtlasMetadata,
-        TextureAtlasMetadata<GenericMipMappedTextureGroups> const & genericMipMappedTextureAtlasMetadata,
-        RenderStatistics & renderStatistics,
-        ViewModel const & viewModel,
-        float effectiveAmbientLightIntensity,
-        vec4f const & lampLightColor,
-        vec4f const & waterColor,
-        float waterContrast,
-        float waterLevelOfDetail,
-        DebugShipRenderMode debugShipRenderMode,
-        VectorFieldRenderMode vectorFieldRenderMode,
-        bool showStressedSprings,
-        bool drawHeatOverlay,
-        float heatOverlayTransparency,
-        ShipFlameRenderMode shipFlameRenderMode,
+        GlobalRenderContext const & globalRenderContext,
+        RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment);
 
     ~ShipRenderContext();
 
 public:
 
-    void OnViewModelUpdated();
-
     void SetShipCount(size_t shipCount)
     {
         mShipCount = shipCount;
-
-        // Recalculate ortho matrices
-        UpdateOrthoMatrices();
-    }
-
-    void SetEffectiveAmbientLightIntensity(float intensity)
-    {
-        mEffectiveAmbientLightIntensity = intensity;
-
-        // React
-        OnEffectiveAmbientLightIntensityUpdated();
-    }
-
-    void SetLampLightColor(vec4f lampLightColor)
-    {
-        mLampLightColor = lampLightColor;
-
-        // React
-        OnLampLightColorUpdated();
-    }
-
-    void SetWaterColor(vec4f waterColor)
-    {
-        mWaterColor = waterColor;
-
-        // React
-        OnWaterColorUpdated();
-    }
-
-    void SetWaterContrast(float waterContrast)
-    {
-        mWaterContrast = waterContrast;
-
-        // React
-        OnWaterContrastUpdated();
-    }
-
-    void SetWaterLevelThreshold(float waterLevelOfDetail)
-    {
-        mWaterLevelOfDetail = waterLevelOfDetail;
-
-        // React
-        OnWaterLevelOfDetailUpdated();
-    }
-
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode)
-    {
-        mDebugShipRenderMode = debugShipRenderMode;
-    }
-
-    void SetVectorFieldRenderMode(VectorFieldRenderMode vectorFieldRenderMode)
-    {
-        mVectorFieldRenderMode = vectorFieldRenderMode;
-    }
-
-    void SetShowStressedSprings(bool showStressedSprings)
-    {
-        mShowStressedSprings = showStressedSprings;
-    }
-
-    void SetDrawHeatOverlay(bool drawHeatOverlay)
-    {
-        mDrawHeatOverlay = drawHeatOverlay;
-    }
-
-    void SetHeatOverlayTransparency(float transparency)
-    {
-        mHeatOverlayTransparency = transparency;
-
-        // React
-        OnHeatOverlayTransparencyUpdated();
-    }
-
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode)
-    {
-        mShipFlameRenderMode = shipFlameRenderMode;
+        mIsViewModelDirty = true;
     }
 
     void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
     {
-        mShipFlameSizeAdjustment = shipFlameSizeAdjustment;
-
-        // React
-        OnShipFlameSizeAdjustmentUpdated();
+        // Recalculate quad dimensions
+        mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
+        mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
     }
-
+       
 public:
 
-    void RenderStart(PlaneId maxMaxPlaneId);
+    void UploadStart(PlaneId maxMaxPlaneId);
 
     //
     // Points
@@ -200,7 +117,7 @@ public:
     //
 
     /*
-     * Signals that all elements, except triangles, will be re-uploaded. If triangles have changed, they
+     * Signals that all elements, except may be triangles, will be re-uploaded. If triangles have changed, they
      * will also be uploaded; if they are not re-uploaded, then the last uploaded set is to be used.
      */
     void UploadElementsStart();
@@ -247,7 +164,7 @@ public:
 
     void UploadElementTrianglesEnd();
 
-    void UploadElementsEnd(bool doFinalizeEphemeralPoints);
+    void UploadElementsEnd();
 
     //
     // Stressed springs
@@ -283,7 +200,8 @@ public:
         vec2f const & flameVector,
         float scale,
         float flamePersonalitySeed,
-        bool isOnChain)
+        bool isOnChain,
+        RenderParameters const & renderParameters)
     {
         //
         // Calculate flame quad - encloses the flame vector
@@ -302,7 +220,7 @@ public:
         //
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (mShipFlameRenderMode == ShipFlameRenderMode::Mode1)
+        float const yOffset = (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
             ? 0.066666f
             : 0.013333f;
 
@@ -444,7 +362,7 @@ public:
         if (ExplosionType::Deflagration == explosionType)
         {
             // 0..2, randomly
-            explosionIndex = std::min(2.0f, floor(personalitySeed * 3.0f));
+            explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
         }
         else
         {
@@ -521,16 +439,11 @@ public:
             angleCcw,
             explosionIndex,
             progress);
-
-        // Update total count of vertices
-        mExplosionTotalPlaneVertexCount += 6;
     }
 
     //
     // Sparkles
     //
-
-    void UploadSparklesStart();
 
     inline void UploadSparkle(
         PlaneId planeId,
@@ -610,8 +523,6 @@ public:
             vec2f(1.0f, 1.0f));
     }
 
-    void UploadSparklesEnd();
-
     //
     // Air bubbles and generic textures
     //
@@ -632,7 +543,7 @@ public:
             scale,
             0.0f, // angle
             alpha,
-            mAirBubbleVertexBuffer);
+            mGenericMipMappedTextureAirBubbleVertexBuffer);
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
@@ -679,7 +590,7 @@ public:
         size_t const frameCount = mGenericMipMappedTextureAtlasMetadata.GetFrameCount(textureGroup);
         float frameIndexF = personalitySeed * frameCount;
         TextureFrameIndex const frameIndex = std::min(
-            static_cast<TextureFrameIndex>(floor(frameIndexF)),
+            static_cast<TextureFrameIndex>(std::floor(frameIndexF)),
             static_cast<TextureFrameIndex>(frameCount - 1));
 
         // Choose angle
@@ -719,9 +630,6 @@ public:
             angleCw,
             alpha,
             vertexBuffer);
-
-        // Update total count of vertices
-        mGenericMipMappedTextureTotalPlaneVertexCount += 6;
     }
 
     //
@@ -746,7 +654,7 @@ public:
     //
 
     inline void UploadHighlight(
-        HighlightMode highlightMode,
+        HighlightModeType highlightMode,
         PlaneId planeId,
         vec2f const & centerPosition,
         float halfQuadSize,
@@ -830,11 +738,15 @@ public:
         float lengthAdjustment,
         vec4f const & color);
 
+    void UploadEnd();
 
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
 
+    void RenderPrepare(RenderParameters const & renderParameters);
 
-    void RenderEnd();
-
+    void RenderDraw(
+        RenderParameters const & renderParameters,
+        RenderStatistics & renderStats);
 
 private:
 
@@ -938,33 +850,46 @@ private:
 
 private:
 
-    void UpdateOrthoMatrices();
-    void OnEffectiveAmbientLightIntensityUpdated();
-    void OnLampLightColorUpdated();
-    void OnWaterColorUpdated();
-    void OnWaterContrastUpdated();
-    void OnWaterLevelOfDetailUpdated();
-    void OnHeatOverlayTransparencyUpdated();
-    void OnShipFlameSizeAdjustmentUpdated();
+    void RenderPrepareFlames(RenderParameters const & renderParameters);
 
     template<ProgramType ShaderProgram>
-    void RenderFlames(
+    void RenderDrawFlames(
         size_t startFlameIndex,
-        size_t flameCount);
+        size_t flameCount,
+        RenderParameters const & renderParameters,
+        RenderStatistics & renderStats);
 
-    void RenderSparkles();
-    void RenderGenericMipMappedTextures();
-    void RenderExplosions();
-    void RenderHighlights();
-    void RenderVectorArrows();
+    void RenderPrepareSparkles(RenderParameters const & renderParameters);
+    void RenderDrawSparkles(RenderParameters const & renderParameters);
+
+    void RenderPrepareGenericMipMappedTextures(RenderParameters const & renderParameters);
+    void RenderDrawGenericMipMappedTextures(RenderParameters const & renderParameters, RenderStatistics & renderStats);
+
+    void RenderPrepareExplosions(RenderParameters const & renderParameters);
+    void RenderDrawExplosions(RenderParameters const & renderParameters);
+
+    void RenderPrepareHighlights(RenderParameters const & renderParameters);
+    void RenderDrawHighlights(RenderParameters const & renderParameters);
+
+    void RenderPrepareVectorArrows(RenderParameters const & renderParameters);
+    void RenderDrawVectorArrows(RenderParameters const & renderParameters);
+    
+    void ApplyViewModelChanges(RenderParameters const & renderParameters);
+    void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
+    void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
+    void ApplyWaterColorChanges(RenderParameters const & renderParameters);
+    void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
+    void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
+    void ApplyHeatOverlayTransparencyChanges(RenderParameters const & renderParameters);
 
 private:
 
     ShipId const mShipId;
-    size_t mShipCount;
     size_t const mPointCount;
-    PlaneId mMaxMaxPlaneId;
 
+    size_t mShipCount;
+    PlaneId mMaxMaxPlaneId; // Make plane ID ever
+    bool mIsViewModelDirty;
 
     //
     // Types
@@ -1155,35 +1080,41 @@ private:
 
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
+    size_t mStressedSpringElementVBOAllocatedElementSize;
 
-    GameOpenGLMappedBuffer<FlameVertex, GL_ARRAY_BUFFER> mFlameVertexBuffer;
-    size_t mFlameVertexBufferAllocatedSize;
+    BoundedVector<FlameVertex> mFlameVertexBuffer;    
     size_t mFlameBackgroundCount;
     size_t mFlameForegroundCount;
-    GameOpenGLVBO mFlameVertexVBO;
-    RunningAverage<18> mWindSpeedMagnitudeRunningAverage;
-    float mCurrentWindSpeedMagnitudeAverage;
+    GameOpenGLVBO mFlameVBO;
+    size_t mFlameVBOAllocatedVertexSize;
+    RunningAverage<18> mFlameWindSpeedMagnitudeRunningAverage;
+    float mFlameWindSpeedMagnitudeAverage;
+    bool mIsFlameWindSpeedMagnitudeAverageDirty;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
-    size_t mExplosionTotalPlaneVertexCount;
+    size_t mExplosionTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mExplosionVBO;
-    size_t mExplosionVBOAllocatedVertexCount;
+    size_t mExplosionVBOAllocatedVertexSize;
 
     std::vector<SparkleVertex> mSparkleVertexBuffer;
-    GameOpenGLVBO mSparkleVertexVBO;
+    GameOpenGLVBO mSparkleVBO;
+    size_t mSparkleVBOAllocatedVertexSize;
 
-    GameOpenGLMappedBuffer<GenericTextureVertex, GL_ARRAY_BUFFER> mAirBubbleVertexBuffer;
-    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers;
-    size_t mGenericMipMappedTextureTotalPlaneVertexCount;
+    std::vector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
+    std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
+    size_t mGenericMipMappedTextureTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mGenericMipMappedTextureVBO;
-    size_t mGenericMipMappedTextureVBOAllocatedVertexCount;
+    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;    
 
-    std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightMode::_Last) + 1> mHighlightVertexBuffers;
-    GameOpenGLVBO mHighlightVertexVBO;
+    std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightModeType::_Last) + 1> mHighlightVertexBuffers;
+    GameOpenGLVBO mHighlightVBO;
+    size_t mHighlightVBOAllocatedVertexSize;
 
     std::vector<vec3f> mVectorArrowVertexBuffer;
     GameOpenGLVBO mVectorArrowVBO;
-    std::optional<vec4f> mVectorArrowColor;
+    size_t mVectorArrowVBOAllocatedVertexSize;
+    vec4f mVectorArrowColor;
+    bool mIsVectorArrowColorDirty;
 
     //
     // Element (index) buffers
@@ -1196,8 +1127,9 @@ private:
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
     std::vector<TriangleElement> mTriangleElementBuffer;
-
+    bool mAreElementBuffersDirty;
     GameOpenGLVBO mElementVBO;
+    size_t mElementVBOAllocatedIndexSize;
 
     // Indices at which these elements begin in the VBO; populated
     // when we upload element indices to the VBO
@@ -1242,32 +1174,13 @@ private:
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
-    // Parameters
+    // Externally-controlled parameters that only affect Upload (i.e. that do
+    // not affect rendering directly) or that purely serve as input to calculated
+    // render parameters
     //
 
-    ViewModel const & mViewModel;
-
-    float mEffectiveAmbientLightIntensity;
-    vec4f mLampLightColor;
-    vec4f mWaterColor;
-    float mWaterContrast;
-    float mWaterLevelOfDetail;
-    DebugShipRenderMode mDebugShipRenderMode;
-    VectorFieldRenderMode mVectorFieldRenderMode;
-    bool mShowStressedSprings;
-    bool mDrawHeatOverlay;
-    float mHeatOverlayTransparency;
-    ShipFlameRenderMode mShipFlameRenderMode;
-    float mShipFlameSizeAdjustment;
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
-
-
-    //
-    // Statistics
-    //
-
-    RenderStatistics & mRenderStatistics;
 };
 
 }

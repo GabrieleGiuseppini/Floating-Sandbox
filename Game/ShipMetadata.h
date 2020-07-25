@@ -19,15 +19,15 @@ struct ShipMetadata
 {
 public:
 
-    std::string const ShipName;
+    std::string ShipName;
 
-    std::optional<std::string> const Author;
+    std::optional<std::string> Author;
 
-    std::optional<std::string> const YearBuilt;
+    std::optional<std::string> YearBuilt;
 
-    std::optional<std::string> const Description;
+    std::optional<std::string> Description;
 
-    vec2f const Offset;
+    vec2f Offset;
 
     std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> ElectricalPanelMetadata;
 

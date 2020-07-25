@@ -12,6 +12,7 @@
 #include "UnhandledExceptionHandler.h"
 
 #include <GameCore/FloatingPoint.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -43,6 +44,8 @@ class MainApp : public wxApp
 {
 public:
 
+    MainApp();
+
     virtual bool OnInit() override;
 
     virtual int FilterEvent(wxEvent & event) override;
@@ -65,6 +68,21 @@ private:
 };
 
 IMPLEMENT_APP(MainApp);
+
+#ifdef FS_OS_LINUX
+#include <X11/Xlib.h>
+#endif
+
+MainApp::MainApp()
+{
+#ifdef FS_OS_LINUX
+    //
+    // Initialize multi-threading in X-Windows
+    //
+
+    XInitThreads();
+#endif
+}
 
 bool MainApp::OnInit()
 {
@@ -96,6 +114,7 @@ bool MainApp::OnInit()
 #endif
 #endif
 
+
     //
     // Initialize floating point handling
     //
@@ -113,7 +132,6 @@ bool MainApp::OnInit()
     //
 
     wxInitAllImageHandlers();
-
 
 
     //

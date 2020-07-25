@@ -18,14 +18,6 @@
  * only care about a subset of the events.
  */
 
-struct IRenderGameEventHandler
-{
-    virtual void OnEffectiveAmbientLightIntensityUpdated(float /*effectiveAmbientLightIntensity*/)
-    {
-        // Default-implemented
-    }
-};
-
 struct ILifecycleGameEventHandler
 {
     virtual void OnGameReset()
@@ -123,8 +115,7 @@ struct IStatisticsGameEventHandler
         // Default-implemented
     }
 
-    virtual void OnUpdateToRenderRatioUpdated(
-        float /*immediateURRatio*/)
+    virtual void OnCurrentUpdateDurationUpdated(float /*currentUpdateDuration*/)
     {
         // Default-implemented
     }

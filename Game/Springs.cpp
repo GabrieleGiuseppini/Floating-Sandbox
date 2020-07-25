@@ -203,12 +203,12 @@ void Springs::UploadElements(
     Render::RenderContext & renderContext) const
 {
     // Either upload all springs, or just the edge springs
-    bool const doUploadAllSprings = (DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode());
+    bool const doUploadAllSprings = (DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode());
 
     // Ropes are uploaded as springs only if DebugRenderMode is springs or edge springs
     bool const doUploadRopesAsSprings = (
-        DebugShipRenderMode::Springs == renderContext.GetDebugShipRenderMode()
-        || DebugShipRenderMode::EdgeSprings == renderContext.GetDebugShipRenderMode());
+        DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode()
+        || DebugShipRenderModeType::EdgeSprings == renderContext.GetDebugShipRenderMode());
 
     for (ElementIndex i : *this)
     {

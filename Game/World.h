@@ -279,10 +279,14 @@ public:
 
 public:
 
-    void UpdateAndRender(
+    void Update(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext,
-        bool doUpdate,
+        PerfStats & perfStats);
+
+    void RenderUpload(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext,
         PerfStats & perfStats);
 
 private:

@@ -26,7 +26,7 @@
 #include <Game/ResourceLocator.h>
 
 #include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
-                                // so that wxGLCanvas ends up *not* including the system's OpenGL header
+                                // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 
 #include <wx/frame.h>
 #include <wx/menu.h>
@@ -108,7 +108,7 @@ private:
     // Dialogs
     //
 
-    std::unique_ptr<SplashScreenDialog> mSplashScreenDialog;
+    std::shared_ptr<SplashScreenDialog> mSplashScreenDialog;
     std::unique_ptr<AboutDialog> mAboutDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
@@ -291,6 +291,8 @@ private:
     {
         if (!mHasWindowBeenShown)
         {
+            LogMessage("MainFrame::AfterGameRender: showing frame");
+
             this->Show(true);
 
             if (StartInFullScreenMode)

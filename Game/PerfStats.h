@@ -7,32 +7,126 @@
 
 #include <GameCore/GameChronometer.h>
 
+#include <atomic>
+
 struct PerfStats
 {
-    // Update
-    GameChronometer::duration TotalUpdateDuration;
-    GameChronometer::duration TotalOceanSurfaceUpdateDuration;
-    GameChronometer::duration TotalShipsUpdateDuration;
+    struct Ratio
+    {
+    private:
 
-    // Render
-    GameChronometer::duration TotalRenderDuration;
-    GameChronometer::duration TotalSwapRenderBuffersDuration;
-    GameChronometer::duration TotalCloudRenderDuration;
-    GameChronometer::duration TotalOceanFloorRenderDuration;
-    GameChronometer::duration TotalShipsRenderDuration;
+        struct _Ratio
+        {
+            GameChronometer::duration Duration;
+            size_t Denominator;
+
+            _Ratio() noexcept
+                : Duration(GameChronometer::duration::zero())
+                , Denominator(0)
+            {}
+
+            _Ratio(
+                GameChronometer::duration duration,
+                size_t denominator)
+                : Duration(duration)
+                , Denominator(denominator)
+            {}
+        };
+
+        std::atomic<_Ratio> mRatio;
+
+    public:
+
+        Ratio()
+            : mRatio()
+        {}
+
+        Ratio(Ratio const & other)
+        {
+            mRatio.store(other.mRatio.load());
+        }
+
+        Ratio const & operator=(Ratio const & other)
+        {
+            mRatio.store(other.mRatio.load());
+            return *this;
+        }
+
+        inline void Update(GameChronometer::duration duration)
+        {
+            auto ratio = mRatio.load();
+            ratio.Duration += duration;
+            ratio.Denominator += 1;
+            mRatio.store(ratio);
+        }
+
+        template<typename TDuration>
+        inline float ToRatio() const
+        {
+            _Ratio const ratio = mRatio.load();
+
+            if (ratio.Denominator == 0)
+                return 0.0f;
+
+            auto fs = std::chrono::duration_cast<std::chrono::duration<float>>(ratio.Duration);
+            return fs.count() * static_cast<float>(TDuration::period::den) / static_cast<float>(TDuration::period::num)
+                / static_cast<float>(ratio.Denominator);
+        }
+
+        inline void Reset()
+        {
+            mRatio.store(_Ratio());
+        }
+
+        friend Ratio operator-(Ratio const & lhs, Ratio const & rhs)
+        {
+            auto const lRatio = lhs.mRatio.load();
+            auto const rRatio = rhs.mRatio.load();
+            _Ratio result(
+                lRatio.Duration - rRatio.Duration,
+                lRatio.Denominator - rRatio.Denominator);
+
+            Ratio res;
+            res.mRatio.store(result);
+            return res;
+        }
+    };
+
+    // Update
+    Ratio TotalUpdateDuration;
+    Ratio TotalOceanSurfaceUpdateDuration;
+    Ratio TotalShipsUpdateDuration;
+    Ratio TotalWaitForRenderUploadDuration;
+    Ratio TotalNetUpdateDuration; // = TotalUpdateDuration - TotalWaitForRenderUploadDuration
+
+    // Render-Upload
+    Ratio TotalWaitForRenderDrawDuration;
+    Ratio TotalNetRenderUploadDuration;
+
+    // Render-Draw
+    Ratio TotalMainThreadRenderDrawDuration;
+    Ratio TotalRenderDrawDuration; // In render thread
+    Ratio TotalUploadRenderDrawDuration;
 
     PerfStats()
-        //
-        : TotalUpdateDuration(0)
-        , TotalOceanSurfaceUpdateDuration(0)
-        , TotalShipsUpdateDuration(0)
-        //
-        , TotalRenderDuration(0)
-        , TotalSwapRenderBuffersDuration(0)
-        , TotalCloudRenderDuration(0)
-        , TotalOceanFloorRenderDuration(0)
-        , TotalShipsRenderDuration(0)
     {
+        Reset();
+    }
+
+    void Reset()
+    {
+        TotalUpdateDuration.Reset();
+        TotalOceanSurfaceUpdateDuration.Reset();
+        TotalShipsUpdateDuration.Reset();
+        TotalWaitForRenderUploadDuration.Reset();
+        TotalNetUpdateDuration.Reset();
+
+        TotalWaitForRenderDrawDuration.Reset();
+        TotalNetRenderUploadDuration.Reset();
+
+        TotalMainThreadRenderDrawDuration.Reset();
+        TotalRenderDrawDuration.Reset();
+        TotalUploadRenderDrawDuration.Reset();
     }
 
     PerfStats & operator=(PerfStats const & other) = default;
@@ -45,12 +139,15 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
     perfStats.TotalUpdateDuration = lhs.TotalUpdateDuration - rhs.TotalUpdateDuration;
     perfStats.TotalOceanSurfaceUpdateDuration = lhs.TotalOceanSurfaceUpdateDuration - rhs.TotalOceanSurfaceUpdateDuration;
     perfStats.TotalShipsUpdateDuration = lhs.TotalShipsUpdateDuration - rhs.TotalShipsUpdateDuration;
+    perfStats.TotalWaitForRenderUploadDuration = lhs.TotalWaitForRenderUploadDuration - rhs.TotalWaitForRenderUploadDuration;
+    perfStats.TotalNetUpdateDuration = lhs.TotalNetUpdateDuration - rhs.TotalNetUpdateDuration;
 
-    perfStats.TotalRenderDuration = lhs.TotalRenderDuration - rhs.TotalRenderDuration;
-    perfStats.TotalSwapRenderBuffersDuration = lhs.TotalSwapRenderBuffersDuration - rhs.TotalSwapRenderBuffersDuration;
-    perfStats.TotalCloudRenderDuration = lhs.TotalCloudRenderDuration - rhs.TotalCloudRenderDuration;
-    perfStats.TotalOceanFloorRenderDuration = lhs.TotalOceanFloorRenderDuration - rhs.TotalOceanFloorRenderDuration;
-    perfStats.TotalShipsRenderDuration = lhs.TotalShipsRenderDuration - rhs.TotalShipsRenderDuration;
+    perfStats.TotalWaitForRenderDrawDuration = lhs.TotalWaitForRenderDrawDuration - rhs.TotalWaitForRenderDrawDuration;
+    perfStats.TotalNetRenderUploadDuration = lhs.TotalNetRenderUploadDuration - rhs.TotalNetRenderUploadDuration;
+
+    perfStats.TotalMainThreadRenderDrawDuration = lhs.TotalMainThreadRenderDrawDuration - rhs.TotalMainThreadRenderDrawDuration;
+    perfStats.TotalRenderDrawDuration = lhs.TotalRenderDrawDuration - rhs.TotalRenderDrawDuration;
+    perfStats.TotalUploadRenderDrawDuration = lhs.TotalUploadRenderDrawDuration - rhs.TotalUploadRenderDrawDuration;
 
     return perfStats;
 }

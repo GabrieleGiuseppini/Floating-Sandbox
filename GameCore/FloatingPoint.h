@@ -10,27 +10,49 @@
 #include <cfloat>
 #include <limits>
 
+#if defined(FS_ARM)
+#include <fenv.h>
+#endif
+
 inline void EnableFloatingPointExceptions()
 {
-#ifdef _MSC_VER
-    // Enable all floating point exceptions except these
-    unsigned int fp_control_state = _controlfp(_EM_INEXACT | _EM_UNDERFLOW, _MCW_EM);
-    (void)fp_control_state;
+    // Enable all floating point exceptions except INEXACT and UNDERFLOW
+
+#if defined(FS_ARCHITECTURE_ARM)
+    fexcept_t excepts;
+    fegetexceptflag(&excepts, FE_ALL_EXCEPT);
+    fesetexceptflag(&excepts, FE_ALL_EXCEPT & ~(FE_INEXACT | FE_UNDERFLOW));
+#elif defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & (_MM_MASK_INEXACT | _MM_MASK_UNDERFLOW));
 #else
-    // Have no idea how to do this on other compilers...
+#pragma message ("WARNING: Unknown architecture - cannot set floating point exception mask")
 #endif
 }
 
 inline void EnableFloatingPointFlushToZero()
 {
+#if defined(FS_ARCHITECTURE_ARM)
+    asm volatile("vmsr fpscr,%0" :: "r" (1 << 24));
+#elif defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#elif defined(FS_ARM)
+    asm volatile("vmsr fpscr,%0" :: "r" (1 << 24));
+#else
+#pragma message ("WARNING: Unknown architecture - cannot set floating point flush-to-zero")
+#endif
 }
 
 inline void DisableFloatingPointFlushToZero()
 {
+#if defined(FS_ARCHITECTURE_ARM)
+    asm volatile("vmsr fpscr,%0" :: "r" (0 << 24));
+#elif defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
+#else
+#pragma message ("WARNING: Unknown architecture - cannot set floating point flush-to-zero")
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

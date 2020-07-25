@@ -101,7 +101,7 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     // Render
-    , mLastDebugShipRenderMode()
+    , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
     , mWindSpeedMagnitudeToRender(0.0)
 {
@@ -246,7 +246,7 @@ void Ship::Update(
     //
 
     // Check whether we need to save the non-spring force buffer before we zero it out
-    if (VectorFieldRenderMode::PointForce == renderContext.GetVectorFieldRenderMode())
+    if (VectorFieldRenderModeType::PointForce == renderContext.GetVectorFieldRenderMode())
     {
         mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
     }
@@ -491,7 +491,7 @@ void Ship::Update(
 #endif
 }
 
-void Ship::Render(
+void Ship::RenderUpload(
     GameParameters const & /*gameParameters*/,
     Render::RenderContext & renderContext)
 {
@@ -504,32 +504,29 @@ void Ship::Render(
         RunConnectivityVisit();
     }
 
-
     //
-    // Initialize render
+    // Initialize upload
     //
 
-    renderContext.RenderShipStart(
+    renderContext.UploadShipStart(
         mId,
         mMaxMaxPlaneId);
 
-
     //
-    // Upload points's attributes
+    // Upload points's immutable and mutable attributes
     //
 
     mPoints.UploadAttributes(
         mId,
         renderContext);
 
-
     //
     // Upload elements, if needed
     //
 
     if (mIsStructureDirty
-        || !mLastDebugShipRenderMode
-        || *mLastDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
+        || !mLastUploadedDebugShipRenderMode
+        || *mLastUploadedDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
         renderContext.UploadShipElementsStart(mId);
 
@@ -543,7 +540,8 @@ void Ship::Render(
             renderContext);
 
         //
-        // Upload all the spring elements (including ropes)
+        // Upload spring elements (including ropes) (edge or all, depending
+        // on the debug render mode)
         //
 
         mSprings.UploadElements(
@@ -572,11 +570,8 @@ void Ship::Render(
             renderContext.UploadShipElementTrianglesEnd(mId);
         }
 
-        renderContext.UploadShipElementsEnd(
-            mId,
-            !mPoints.AreEphemeralPointsDirtyForRendering()); // Finalize ephemeral points only if there are no subsequent ephemeral point uploads
+        renderContext.UploadShipElementsEnd(mId);
     }
-
 
     //
     // Upload stressed springs
@@ -596,7 +591,6 @@ void Ship::Render(
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
 
-
     //
     // Upload flames
     //
@@ -606,7 +600,6 @@ void Ship::Render(
         mWindSpeedMagnitudeToRender,
         renderContext);
 
-
     //
     // Upload bombs
     //
@@ -614,7 +607,6 @@ void Ship::Render(
     mBombs.Upload(
         mId,
         renderContext);
-
 
     //
     // Upload pinned points
@@ -624,7 +616,6 @@ void Ship::Render(
         mId,
         renderContext);
 
-
     //
     // Upload ephemeral points and textures
     //
@@ -632,7 +623,6 @@ void Ship::Render(
     mPoints.UploadEphemeralParticles(
         mId,
         renderContext);
-
 
     //
     // Upload highlights
@@ -642,7 +632,6 @@ void Ship::Render(
         mId,
         renderContext);
 
-
     //
     // Upload vector fields
     //
@@ -650,7 +639,6 @@ void Ship::Render(
     mPoints.UploadVectors(
         mId,
         renderContext);
-
 
     //
     // Upload state machines
@@ -660,18 +648,17 @@ void Ship::Render(
 
 
     //
-    // Finalize render
+    // Finalize upload
     //
 
-    renderContext.RenderShipEnd(mId);
-
+    renderContext.UploadShipEnd(mId);
 
     //
     // Reset render state
     //
 
     mIsStructureDirty = false;
-    mLastDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
+    mLastUploadedDebugShipRenderMode = renderContext.GetDebugShipRenderMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -2835,18 +2822,19 @@ void Ship::StartExplosion(
 
 void Ship::DoAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
-    float sequenceProgress,
+    float /*sequenceProgress*/,
+    float radius,
     GameParameters const & gameParameters)
 {
     float const strength =
-        100000.0f
+        130000.0f // Magic number
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Apply the force field
     ApplyRadialSpaceWarpForceField(
         centerPosition,
-        7.0f + sequenceProgress * 100.0f,
-        10.0f,
+        radius,
+        10.0f, // Thickness of radius, magic number
         strength);
 }
 

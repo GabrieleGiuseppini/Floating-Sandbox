@@ -13,8 +13,6 @@
 
 #include <Game/ImageFileTools.h>
 
-#include <GameOpenGL/GameOpenGL.h>
-
 #include <GameCore/GameException.h>
 #include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
@@ -667,37 +665,28 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create splash screen
     //
 
-    std::unique_ptr<SplashScreenDialog> splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
-
-    //
-    // Create OpenGL context, temporarily on the splash screen's canvas
-    //
-
-    mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
-
-    // Activate context on the splash window's canvas
-    mMainGLCanvasContext->SetCurrent(*splash->GetOpenGLCanvas());
-
-
-    //
-    // Initialize OpenGL
-    //
-
+    std::shared_ptr<SplashScreenDialog> splash;
+    
     try
     {
-        GameOpenGL::InitOpenGL();
+        splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
     }
     catch (std::exception const & e)
     {
-        splash.reset();
-
-        OnError("Error during OpenGL initialization: " + std::string(e.what()), true);
+        OnError("Error during game initialization: " + std::string(e.what()), true);
 
         return;
     }
 
+    //
+    // Create OpenGL context, temporarily on the splash screen's canvas, as we need
+    // the canvas to be visible at the moment the context is created
+    //
 
-#ifdef _DEBUG
+    mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
+
+#if defined(_DEBUG) && defined(_WIN32)
+    LogMessage("MainFrame::OnPostInitializeTrigger: Hiding SplashScreenDialog");
     // The guy is pesky while debugging
     splash->Hide();
 #endif
@@ -715,13 +704,32 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             ImageSize(
                 mMainGLCanvas->GetSize().GetWidth(),
                 mMainGLCanvas->GetSize().GetHeight()),
-            [this]()
+            [this, splash]() // Allow deferred execution, capturing splash dialog by value
             {
+                //
+                // Invoked on a different thread, but with synchronous
+                // execution
+                //
+
+                mMainGLCanvasContext->SetCurrent(*(splash->GetOpenGLCanvas()));
+
+            },
+            [this]()
+            {   
+                //
+                // Invoked by a different thread, with asynchronous
+                // execution
+                //
+
+                ////LogMessage("TODOTEST: Swapping buffers...");
+
                 assert(!!mMainGLCanvas);
                 mMainGLCanvas->SwapBuffers();
+
+                ////LogMessage("TODOTEST: ...buffers swapped.");
             },
             *mResourceLocator,
-            [&splash, this](float progress, std::string const & message)
+            [this, &splash](float progress, std::string const & message)
             {
                 // 0.0 -> 0.5
                 splash->UpdateProgress(progress / 2.0f, message);
@@ -893,7 +901,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
-    mToolController->RegisterEventHandler(*mGameController);
 
 
     //
@@ -1079,6 +1086,10 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         mToolController->UpdateSimulation();
 
         // Update game - will also render
+        ////LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
+        ////    !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
+        ////    " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
+        ////    " IsFrameShown=", std::to_string(this->IsShown()));
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
@@ -1184,9 +1195,15 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
         // Move OpenGL context to *our* canvas
         assert(!!mMainGLCanvas);
         assert(!!mMainGLCanvasContext);
-        mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+        assert(!!mGameController);
+        mGameController->RebindOpenGLContext(
+            [this]()
+            {
+                mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+            });        
 
         // Close splash screen
+        LogMessage("MainFrame::OnMainGLCanvasPaint(): Hiding SplashScreen");
         mSplashScreenDialog->Close();
         mSplashScreenDialog->Destroy();
         mSplashScreenDialog.reset();
@@ -1371,86 +1388,92 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     assert(!!mSoundController);
     mSoundController->PlaySnapshotSound();
 
-
-    //
-    // Take screenshot
-    //
-
-    assert(!!mGameController);
-    auto screenshotImage = mGameController->TakeScreenshot();
-
-
-    //
-    // Ensure pictures folder exists
-    //
-
-    assert(!!mUIPreferencesManager);
-    auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
-
-    if (!std::filesystem::exists(folderPath))
+    try
     {
+        //
+        // Take screenshot
+        //
+
+        assert(!!mGameController);
+        auto screenshotImage = mGameController->TakeScreenshot();
+
+        //
+        // Ensure pictures folder exists
+        //
+
+        assert(!!mUIPreferencesManager);
+        auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
+
+        if (!std::filesystem::exists(folderPath))
+        {
+            try
+            {
+                std::filesystem::create_directories(folderPath);
+            }
+            catch (std::filesystem::filesystem_error const & fex)
+            {
+                OnError(
+                    std::string("Could not save screenshot to path \"") + folderPath.string() + "\": " + fex.what(),
+                    false);
+
+                return;
+            }
+        }
+
+        //
+        // Choose filename
+        //
+
+        std::filesystem::path screenshotFilePath;
+
+        std::string shipName = mCurrentShipTitles.empty()
+            ? "NoShip"
+            : mCurrentShipTitles.back();
+
+        do
+        {
+            auto now = std::chrono::system_clock::now();
+            auto now_time_t = std::chrono::system_clock::to_time_t(now);
+            auto const tm = std::localtime(&now_time_t);
+
+            std::stringstream ssFilename;
+            ssFilename.fill('0');
+            ssFilename
+                << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
+                << "_"
+                << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
+                << "_"
+                << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
+                << "_"
+                << shipName
+                << ".png";
+
+            screenshotFilePath = folderPath / ssFilename.str();
+
+        } while (std::filesystem::exists(screenshotFilePath));
+
+
+        //
+        // Save screenshot
+        //
+
         try
         {
-            std::filesystem::create_directories(folderPath);
+            ImageFileTools::SaveImage(
+                screenshotFilePath,
+                screenshotImage);
         }
         catch (std::filesystem::filesystem_error const & fex)
         {
             OnError(
-                std::string("Could not save screenshot to path \"") + folderPath.string() + "\": " + fex.what(),
+                std::string("Could not save screenshot to file \"") + screenshotFilePath.string() + "\": " + fex.what(),
                 false);
-
-            return;
         }
     }
-
-    //
-    // Choose filename
-    //
-
-    std::filesystem::path screenshotFilePath;
-
-    std::string shipName = mCurrentShipTitles.empty()
-        ? "NoShip"
-        : mCurrentShipTitles.back();
-
-    do
+    catch (std::exception const & ex)
     {
-        auto now = std::chrono::system_clock::now();
-        auto now_time_t = std::chrono::system_clock::to_time_t(now);
-        auto const tm = std::localtime(&now_time_t);
-
-        std::stringstream ssFilename;
-        ssFilename.fill('0');
-        ssFilename
-            << std::setw(4) << (1900 + tm->tm_year) << std::setw(2) << (1 + tm->tm_mon) << std::setw(2) << tm->tm_mday
-            << "_"
-            << std::setw(2) << tm->tm_hour << std::setw(2) << tm->tm_min << std::setw(2) << tm->tm_sec
-            << "_"
-            << std::setw(3) << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1)).count()
-            << "_"
-            << shipName
-            << ".png";
-
-        screenshotFilePath = folderPath / ssFilename.str();
-
-    } while (std::filesystem::exists(screenshotFilePath));
-
-
-    //
-    // Save screenshot
-    //
-
-    try
-    {
-        ImageFileTools::SaveImage(
-            screenshotFilePath,
-            screenshotImage);
-    }
-    catch (std::filesystem::filesystem_error const & fex)
-    {
-        OnError(
-            std::string("Could not save screenshot to file \"") + screenshotFilePath.string() + "\": " + fex.what(),
-            false);
+        OnError(std::string("Could not take screenshot: ") + ex.what(), false);
+        return;
     }
 }
 
@@ -1795,7 +1818,7 @@ void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetGlobalMute(mMuteMenuItem->IsChecked());
+    mUIPreferencesManager->SetGlobalMute(mMuteMenuItem->IsChecked());    
 }
 
 void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)

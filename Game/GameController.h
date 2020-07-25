@@ -12,13 +12,13 @@
 #include "IGameControllerSettingsOptions.h"
 #include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
+#include "NotificationLayer.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
 #include "ShipTexturizer.h"
-#include "TextLayer.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameChronometer.h>
@@ -54,6 +54,7 @@ public:
 
     static std::unique_ptr<GameController> Create(
         ImageSize const & initialCanvasSize,
+        std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
@@ -63,12 +64,6 @@ public:
     /////////////////////////////////////////////////////////
     // IGameController
     /////////////////////////////////////////////////////////
-
-    void RegisterRenderEventHandler(IRenderGameEventHandler * handler) override
-    {
-        assert(!!mGameEventDispatcher);
-        mGameEventDispatcher->RegisterRenderEventHandler(handler);
-    }
 
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) override
     {
@@ -118,6 +113,8 @@ public:
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
 
+    void RebindOpenGLContext(std::function<void()> rebindContextFunction);
+
     ShipMetadata ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) override;
@@ -148,13 +145,16 @@ public:
     bool GetShowExtendedStatusText() const override;
     void SetShowExtendedStatusText(bool value) override;
 
+    void NotifySoundMuted(bool isSoundMuted) override;
+
     //
     // World probing
     //
 
-    float GetCurrentSimulationTime() const override;
-    bool IsUnderwater(vec2f const & screenCoordinates) const override;
-    bool IsUnderwater(ElementId elementId) const override;
+    float GetCurrentSimulationTime() const override { return mWorld->GetCurrentSimulationTime(); }
+    float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
+    bool IsUnderwater(vec2f const & screenCoordinates) const override { return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates)); }
+    bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
 
     //
     // Interactions
@@ -525,7 +525,7 @@ public:
     float GetMaxLightSpreadAdjustment() const override { return GameParameters::MaxLightSpreadAdjustment; }
 
     bool GetUltraViolentMode() const override { return mGameParameters.IsUltraViolentMode; }
-    void SetUltraViolentMode(bool value) override { mGameParameters.IsUltraViolentMode = value; }
+    void SetUltraViolentMode(bool value) override { mGameParameters.IsUltraViolentMode = value; mNotificationLayer.SetUltraViolentModeIndicator(value); }
 
     bool GetDoGenerateDebris() const override { return mGameParameters.DoGenerateDebris; }
     void SetDoGenerateDebris(bool value) override { mGameParameters.DoGenerateDebris = value; }
@@ -577,8 +577,6 @@ public:
     float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
     void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
 
-    float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
-
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
@@ -588,25 +586,25 @@ public:
     rgbColor const & GetFlatLampLightColor() const override { return mRenderContext->GetFlatLampLightColor(); }
     void SetFlatLampLightColor(rgbColor const & color) override { mRenderContext->SetFlatLampLightColor(color); }
 
-    rgbColor const & GetDefaultWaterColor() const override { return mRenderContext->GetDefaultWaterColor(); }
-    void SetDefaultWaterColor(rgbColor const & color) override { mRenderContext->SetDefaultWaterColor(color); }
+    rgbColor const & GetDefaultWaterColor() const override { return mRenderContext->GetShipDefaultWaterColor(); }
+    void SetDefaultWaterColor(rgbColor const & color) override { mRenderContext->SetShipDefaultWaterColor(color); }
 
-    float GetWaterContrast() const override { return mRenderContext->GetWaterContrast(); }
-    void SetWaterContrast(float value) override { mRenderContext->SetWaterContrast(value); }
+    float GetWaterContrast() const override { return mRenderContext->GetShipWaterContrast(); }
+    void SetWaterContrast(float value) override { mRenderContext->SetShipWaterContrast(value); }
 
-    float GetWaterLevelOfDetail() const override { return mRenderContext->GetWaterLevelOfDetail(); }
-    void SetWaterLevelOfDetail(float value) override { mRenderContext->SetWaterLevelOfDetail(value); }
-    float GetMinWaterLevelOfDetail() const override { return Render::RenderContext::MinWaterLevelOfDetail; }
-    float GetMaxWaterLevelOfDetail() const override { return Render::RenderContext::MaxWaterLevelOfDetail; }
+    float GetWaterLevelOfDetail() const override { return mRenderContext->GetShipWaterLevelOfDetail(); }
+    void SetWaterLevelOfDetail(float value) override { mRenderContext->SetShipWaterLevelOfDetail(value); }
+    float GetMinWaterLevelOfDetail() const override { return Render::RenderContext::MinShipWaterLevelOfDetail; }
+    float GetMaxWaterLevelOfDetail() const override { return Render::RenderContext::MaxShipWaterLevelOfDetail; }
 
     bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    DebugShipRenderMode GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
-    void SetDebugShipRenderMode(DebugShipRenderMode debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
+    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
-    OceanRenderMode GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
-    void SetOceanRenderMode(OceanRenderMode oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
+    OceanRenderModeType GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
+    void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const override { return mRenderContext->GetTextureOceanAvailableThumbnails(); }
     size_t GetTextureOceanTextureIndex() const override { return mRenderContext->GetTextureOceanTextureIndex(); }
@@ -621,8 +619,8 @@ public:
     rgbColor const & GetFlatOceanColor() const override { return mRenderContext->GetFlatOceanColor(); }
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
-    LandRenderMode GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
-    void SetLandRenderMode(LandRenderMode landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
+    LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
+    void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 
     std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureLandAvailableThumbnails() const override { return mRenderContext->GetTextureLandAvailableThumbnails(); }
     size_t GetTextureLandTextureIndex() const override { return mRenderContext->GetTextureLandTextureIndex(); }
@@ -631,8 +629,8 @@ public:
     rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
 
-    VectorFieldRenderMode GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
-    void SetVectorFieldRenderMode(VectorFieldRenderMode VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
+    VectorFieldRenderModeType GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
+    void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
 
     bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
@@ -643,8 +641,8 @@ public:
     float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
     void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
 
-    ShipFlameRenderMode GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
-    void SetShipFlameRenderMode(ShipFlameRenderMode shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
+    ShipFlameRenderModeType GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
+    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
 
     float GetShipFlameSizeAdjustment() const override { return mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
     void SetShipFlameSizeAdjustment(float value) override { mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }
@@ -672,9 +670,8 @@ private:
 
     GameController(
         std::unique_ptr<Render::RenderContext> renderContext,
-        std::function<void()> swapRenderBuffersFunction,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::unique_ptr<TextLayer> textLayer,
+        std::unique_ptr<PerfStats> perfStats,
         MaterialDatabase materialDatabase,
         ResourceLocator const & resourceLocator);
 
@@ -725,12 +722,6 @@ private:
     bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;
 
-    // When set, will be uploaded to the RenderContext to display the HeatBlaster flame
-    std::optional<std::tuple<vec2f, float, HeatBlasterActionType>> mHeatBlasterFlameToRender;
-
-    // When set, will be uploaded to the RenderContext to display the fire extinguisher spray
-    std::optional<std::tuple<vec2f, float>> mFireExtinguisherSprayToRender;
-
 
     //
     // The parameters that we own
@@ -746,9 +737,8 @@ private:
     //
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
-    std::function<void()> const mSwapRenderBuffersFunction;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-    std::shared_ptr<TextLayer> mTextLayer;
+    NotificationLayer mNotificationLayer;
     ShipTexturizer mShipTexturizer;
 
 
@@ -781,10 +771,10 @@ private:
     // Stats
     //
 
-    std::chrono::steady_clock::time_point mRenderStatsOriginTimestampReal;
-    std::chrono::steady_clock::time_point mRenderStatsLastTimestampReal;
+    std::chrono::steady_clock::time_point mStatsOriginTimestampReal;
+    std::chrono::steady_clock::time_point mStatsLastTimestampReal;
     GameWallClock::time_point mOriginTimestampGame;
-    PerfStats mTotalPerfStats;
+    std::unique_ptr<PerfStats> mTotalPerfStats;
     PerfStats mLastPublishedTotalPerfStats;
     uint64_t mTotalFrameCount;
     uint64_t mLastPublishedTotalFrameCount;
