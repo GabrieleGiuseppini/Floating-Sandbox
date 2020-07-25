@@ -569,7 +569,7 @@ Render:
 					+ Run debug
 					= Do APITrace, including shutdown
 						= Reduce calls
-							+ Start: 97, 101 when writing
+							+ Start: 97, 101 when status text updated
 							+ Move out glPolygonMode
 								+ Use RenderParameters::IsDebugSgipRenderModeDirty
 									+ Setter @ RenderContext, never give to Ship

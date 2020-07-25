@@ -1266,9 +1266,11 @@ public:
 
 private:
     
-    void ProcessParameterChanges(RenderParameters const & renderParameters);
+    void ProcessParameterChanges(RenderParameters const & renderParameters);    
     
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
+
+    void ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters);
 
     static float CalculateEffectiveAmbientLightIntensity(
         float ambientLightIntensity,

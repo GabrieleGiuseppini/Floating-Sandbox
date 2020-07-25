@@ -385,7 +385,6 @@ void RenderContext::UploadStart()
     mNotificationRenderContext->UploadStart();    
 }
 
-
 void RenderContext::UploadEnd()
 {
     mWorldRenderContext->UploadEnd();
@@ -433,15 +432,6 @@ void RenderContext::Draw()
             //
             // Initialize
             //
-
-            if (renderParameters.IsDebugShipRenderModeDirty)
-            {
-                // Set polygon mode
-                if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                else
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
 
             // Clear canvas - and depth buffer
             vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
@@ -551,6 +541,11 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyCanvasSizeChanges(renderParameters);
     }
+
+    if (renderParameters.IsDebugShipRenderModeDirty)
+    {
+        ApplyDebugShipRenderModeChanges(renderParameters);
+    }
 }
 
 void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
@@ -559,6 +554,15 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
 
     // Set viewport
     glViewport(0, 0, view.GetCanvasWidth(), view.GetCanvasHeight());
+}
+
+void RenderContext::ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters)
+{
+    // Set polygon mode
+    if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 float RenderContext::CalculateEffectiveAmbientLightIntensity(
