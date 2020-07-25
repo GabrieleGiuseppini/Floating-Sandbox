@@ -1,6 +1,10 @@
 =================================================
 Current perf:
 =================================================
+1.TODO
+- After multi-threaded rendering: FPS=TBD
+- Call tree TBD
+=================================================
 1.14
 - After forces rearc and iterations=30: FPS=30.16, Ums=22.5
 - Call tree (45 sec game play, w/out PostInitialize):
@@ -292,8 +296,7 @@ Render:
 			+ Calc millis for 1000/20 frames/sec and sleep by that
 				+ Verify no FPS changes afterwards
 		+ Parallelize OpenGL
-
-		- Merge
+		+ Merge
 
 		- Explore branch predictions:
 			- likely, unpredictable
@@ -3966,308 +3969,307 @@ IF WX:
 					+ Update+Render Stars
 					+ Update ...
 					+ Render Clouds
-		+ Parallelize OpenGL:
-			+ Start:
-				+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7) - 30.9 FPS
-				+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
-				+ HP: U:45-46 R:13.4-15 (SWP:1.1 SHP:4.5) - 16.9 FPS
-				- Bazzico: TODO
-			+ Spec:
-				+ Rendering runs entirely on separate thread
-					+ Context & SwapBuffers needs to made current in this thread
-			= Impl:
-				+ Branch
-				+ 0: Take measurements: UPL=30 R=13
-				+ 1: Split whole chain as Update(), RenderUpload(), and RenderDraw()
-					+ GameController retains current API: RunGameIteration() // Do same state machine, invoking (optionally) Update() and (always) RenderUpload() 
-						+ RenderContext::UpdateStart()
-							+ Wait for RenderUploadEnd // CPU buffers are then free to be used
-						+--- World, etc. Update()
-						+ RenderContext::UpdateEnd()
-							+ Nop
-						+ RenderContext::RenderStart()
-							+ Cleanup an eventual pending RenderUploadEnd - may be left behind if this cycle did not
-							  do an Update
-						+ RenderContext::RenderUploadStart()
-							+ Wait for RenderDraw // GPU buffers are then free to be used
-						+--- World, etc. RenderUpload()
-						+ RenderContext::RenderUploadEnd()
-							+ Store TaskCompletionIndicator as RenderUploadEnd
-						+ RenderContext::RenderDraw()							
-							+------------------ Do all rendering, including SwapBuffers
-							+ Store TaskCompletionIndicator as RenderDraw
-						+ RenderContext::RenderEnd()
-							+ Nop					
-					+ Add time measurements => Extended Status Text
-						+ Render stats: split into upload_time (including driving loops) and draw_time
-				+ 2: Take measurements UPD=22.3 UPL=0.34 DRW=10.45
-				+ 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
-					+ Intake ThreadTask
-						+ Make unit tests
-					+ Temporarily maim World::RenderUpload() and RenderContext::Draw() to do only Stars and Clouds
-					+ MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
-						+ MainFrame: no more making context current, & call RebindContext @ second bind
-						+ "RebindContext" RenderContext & IGameController methods & param names, taking lambda
-							+ Call it from MainFrame
-						+ Invoke them @ RenderContext
-							+ Figure when to do initial bind, from SpringLab
-						+ RebindContext
-						+ Test						
-					+ Implement multi-threaded RenderContext
-						+ RenderContext::cttor() (copy from SpringLab)
-						+ RenderContext::needed uploads (copy from SpringLab)
-							+ Stars
-							+ Clouds
-							+ Break RenderContext progress into smaller chunks for each progress report
-								+ Furhter break textures' initializations
-						+ RenderContext::Draw()
-						+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
-						+ All sync points from above
-						+ Add measurement of 2 wait times
-					+ Do TextRenderContext
-						+ TextLayer & TextContext: 
-							+ Split update & render into Update & RenderDraw
-							+ TextLayer only touches TextRenderContext::mLines @ TextLayer::Update(), not earlier
-								+ @ TextLayer::StatusText: like now, but not touching TextRenderContext::mLines
-								+ @ TextLayer::AddEphemeralTextLine: buffer lines
-								+ @ TextLayer::Update: collect all dirtinesses/buffered and send them to TextRenderContext::mLines
-								+ @ TextRenderContext::RenderDraw: mLines -> VBOs, draw 
-						+ Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
-							+ Do
-							+ Undo changes for NDC
-							+ Make sure vertex buffers are recalc'd immediately upon canvas size change
-							+ NotifLayer: separate uploads (& dirtyness) by font
-							+ Test:
-								+ Canvas resize
-								+ Reset during ephemeral lines
-						+ Print also 2 wait durations in extended status text
-					+ Take measurements: UPL=0.16 DRW=1.60 W(UPL=0.09 DRW=0.09)
-					+ Test
-						+ Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
-				+ 4: Continue RenderContext Implementation (2)
-					+ World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
-					+ Redo measurements
-						+ Re-check NotificationLayer code and two waits
-						+ Do other probed KPI: last update duration
-					+ Check numbers, especially for land
-					+ Test setters for ViewModel (with "dirty" flag)
-					+ Try other strategy for setters (queued and waited), see if stutters
-						+ AmbientLight
-							+ Also at NotificationRenderContext
-				+ Check on other laptops
-					+ Verify wait times ~= 0
-					+ Check stuttering
-				+ 4b: All setters	
-					+ Nuke GameDispatcher from RenderContext
-						+ ToolController::Update: gets effective ambient light intensity from GameController and,
-						  if different than mCurrent, acts on it
-					+ Improve "dirty flag" strategy
-					+ Flat sky color
-				+ 5: Continue RenderContext Implementation (3)					
-					+ Storm
-					+ Rain
-					+ Lightnings
-						! Always uploaded (like clouds), but most of the times empty
-					+ Issue with cam moving
-					+ WorldBorder
-					+ FireExtinguisher, HeatBlasterFlame
-						+ Make sure GameController uploads them at RenderUpload() time
-					! Upload & Render for all
-				+ 6: Continue RenderContext Implementation (4): Ship
-					+ Prep:
-						+ RenderContext: enable all
-							+ AddShip: queued and waited (does OpenGL)
-						+ World: enable all
-						+ Ship:
-							+ No uploads
-						+ ShipRenderContext:
-							+ No render
-						+ UploadShipStart, UploadShipEnd: comment out content
-					+ Run APITrace
-					+ Ship:			
-						+ ViewModel strategy: mAreOrthoMatricesDirty/ApplyOrthoMatricesChanges
-							+ UploadStart: ViewModel update for max plane ID
-							+ SetShipCount
-							+ OnViewModelUpdated
-						+ UploadPointMutableAttributes: move group1 buffer uploading to beginning of Draw()
-						+ UploadPointMutableAttributesEnd: move group2 buffer uploading to beginning of Draw()
-						+ UploadPointColors: asynchronous
-						+ UploadPointTemperature: asynchronous
-						+ Elements
-							+ UploadElementsEnd: set dirty flag, and move (conditional) load to beginning of Draw()
-								+ See if can avoid allocating buffer: use allocated VBO vertex buffer size
-								+ May get rid of "finalizeEphemerals" flag as we upload anyway at beginning of draw,
-								  well after ephemerals are (eventually) loaded
-					+ GenericMipMappedTextures, AirBubbles
-					+ ElementEphemeralPoints
-					+ CrossesOfLight
-						+ Upload
-					+ AMBombImplosion
-						+ Upload
-							+ Redo quad as with "radius"?
-						+ Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
-						+ Longer pause between pre-implosion and implosion
-						+ Debug series of radii produced
-						+ Stronger implosion force
-						+ Shader
-					+ Sparkles
-					+ Vectors
-						+ VectorColor setter strategy:
-							+ mIsVectorArrowColorDirty, but NO Apply...Changes()
-							+ Set color param in own Render method, if (mIsVectorArrowColorDirty)
-						+ Use different vector colors
-						+ See if vectors are reset when we stop uploading
-					+ Explosions
-					+ Highlights
-						+ Re-enable upload
-					+ See again issue with cam movement (via mouse pan) & ocean borders
-						+ All settings are in new RenderSettings struct, including ViewModel
-							+ Each setting that also requires OpenGL updates:
-								+ Also has a boolean
-								+ Draw(): still checks if individual settings are dirty, and if so, does updates
-						+ RenderContext::Draw: copy struct into another member, on main thread
-							+ Or, see if can copy in capture, & pass into Draw() lambda
-							+ Draw: use second struct recursively down - never reference mRenderSettings
-								+ Second struct passed to ShipRenderContext as arg of its Draw()
-							+ RenderContext::Draw(params) invokes ProcessSettingChanges(settings) without clearing dirty flags, 
-							  and later ShipRenderContext::Draw(settings) also invokes its own ProcessSettingChanges(settings)
-						+ Effective/AmbientLightIntensity:
-							+ RenderContext::SetAmbientLightIntensity & storm update:
-								+ mRenderSettings.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
-								  & mRenderSettings.IsEffectiveAmbientLightIntensityDirty=true
-					+ Flames
-						+ Re-enable upload
-						+ mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
-							+ Picked up (when dirty) at PrepareRenderFlames(.), together with buffers
-							+ Also at Lightnings
-						+ Buffers
-						+ FlameSizeAdjustment: keep as-is, confirming that it's only used for Ship::UploadFlames()
-							+ Setting is in new RenderContext section that has upload-only settings, or settings that
-							  are used to calculate RenderParameter values immediately
-							+ RenderContext::SetFlameSizeAdjustment(): - store; call all ships' UpdateFlameSizeAdjustment(adj)
-							  which calculates those two vals and stores them in the Ship's corresponding section
-								+ UpdateFlameSizeAdjustment also called by cctor on raw cctor arg
-							+ Move AmbientLightIntensity storage here
-						+ "TakeSnapshotAndClear()"
-						+ Test: wider flame
-					+ StressedSprings
-					+ Fix render stats
-						+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
-						  and then stores in own member, of type std::atomic
-						+ @ Use: get local copy
-				+ 6b: All setters
-					+ ShipRenderContext setters
-						+ FlatLampLightColor
-						+ ShowStressedSprings
-						+ WaterColor (default color; derivation from ocean rendering settings)
-						+ WaterContrast: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
-						+ WaterLevelOfDetail: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
-						+ VectorFieldRenderMode: pure storage, so member @ RenderContext and that's it
-						+ VectorLengthAdjustment: only at Update, so member @ RenderContext and used when forwarding Upload to ship (like now)
-						+ DrawHeatOverlay
-						+ HeatOverlayTransparency
-						+ DebugShipRenderMode
-					+ RenderContext setters
-						+ OceanTransparency
-						+ OceanDarkeningRate
-						+ All ocean rendering settings (render mode, colors, texture index)
-						+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
-						= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
-				+ 7: Complete RenderContext Implementation (5)
-					+ Reset: queued and waited (ShipRenderContext destructor does OpenGL)
-					+ Screenshot: queued and waited, like SpringLab
-					+ Destructor:
-						+ Make sure thread member is first, so its destructor gets called first
-						  waiting for pending operations
-						+ Split off WorldRenderContext
-								! RenderContext owns ShaderManager and WorldRenderContext and Ships and NotificationContext
-								! WorldRenderContext has ShaderManager reference like Ship, and copies own
-								  texture metadata (passed on by RenderContext via cctor)
-								! WorldRenderContext exposes detailed init and upload and draw methods
-							+ Initialization:
-								+ Textures:
-									+ Those textures that are exclusively for the world get moved
-									  to WorldRenderContext (Clouds, world)
-								+ RenderContext::cctor: 
-									+ Invoke both own and WorldRenderContext's initializations
-								+ Make sure ambient light intensity gets calculated
-								+ Make sure world border gets calculated
-									+ Via WorldRenderContext::ProcessParameterChanges
-								+ WorldRenderContext cctor also gets reference - and does own init'n - to:
-									+ Generic textures
-									+ mUploadedNoiseTexturesManager (like NotificationRenderContext below) for
-									  setting noise textures as needed
-							+ Hook all Upload() calls
-							+ Hook all Render calls
-							+ RenderContext::ApplyParamChanges: 
-								+ maintain those that affect two tools and generals
-								+ invoke child contexts'
-								+ Make sure world border gets calculated
-									+ Via WorldRenderContext::ProcessParameterChanges
-						+ Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
-							+ Pass then to child contexts as needed
-						+ Move out 2 tools to NotificationRenderContext
-							+ And do ProcessParameterChanges(.) on it
-								+ And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
-							+ And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
-							  that does own part of RenderContext::InitializeGenericTextures, which takes 
-							  mUploadedNoiseTexturesManager for setting noise textures as needed
-						+ Do correct destroy sequence						
-				+ Tests:
-					+ Number of stars changes
-					+ Number of clouds changes
-					+ Debug ship render mode
-				+ Perf on other laptops:
-					+ Samsung: 
-						- FPS: 10.5
-						- UPD: 94.7 (W=0.00) UPL: (W=0.01 + 0.32)
-						- RND: 3.07 (3.10) (MT=0.01)
-					+ HP:
-						- FPS: 20.7
-						- UPD: 47.3 (W=0.01) UPL: (W=0.00 + 0.24)
-						- RND: 4.00 (3.84) (MT=0.04)
-				+ Cleanup:
-					+ Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
-					+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
-					  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
-					+ Remove PerfStats' obsolete members
-					+ Test with OpenGL uploads all up-front
-						+ Perf before:
-							- UPL: W=0.0-0.5 + 0.16
-							- RND: 16.6-22.6 (MT=5 / 3.77-8.33)
-						+ New perf stat: portion of Render that is purely upload
-							+ Display						
-						+ Perf after:
-							- UPL: W=0.0-0.5 + 0.16
-							- RND: 13.4-22.6 (MT=10 / 5.77-8.33)
-					+ Run debug
-					+ Do APITrace, including shutdown
-						+ Reduce calls
-							+ Start: 97, 101 when status text updated
-							+ Move out glPolygonMode
-								+ Use RenderParameters::IsDebugSgipRenderModeDirty
-									+ Setter @ RenderContext, never give to Ship
-									+ Process @ render
-								+ Test
-							+ if all glBindVertexBuffer always end with zero, do once at end of Prepare
-							+ If all glBindVertexArray always end with zero, do once at end of Draw
-							+ Better rain parameter setting
-								+ Test rain
-							+ @ ShipRenderContext::RenderDrawFlames: VBO bind is not needed
-								+ Test flames & wind
-						+ Check shutdown
-					+ Test:
-						+ Screenshot-taking (w/Storm & lightnings)
-						+ World border
-						+ Stressed springs
-					+ Do NotificationRenderContext::UltraViolentModeIndicator
-						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
-						+ NotifRenderContext has vector of notification textures vertices
-						+ Redo icon with better spacing between U and bliksem
-						+ Test ambient light darkening
-					+ TaskThread optimization for single-core boxes
-						+ Verify no overhead anymore
-				+ changes.txt
+	+ Parallelize OpenGL:
+		+ Start:
+			+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7) - 30.9 FPS
+			+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
+			+ HP: U:45-46 R:13.4-15 (SWP:1.1 SHP:4.5) - 16.9 FPS
+		+ Spec:
+			+ Rendering runs entirely on separate thread
+				+ Context & SwapBuffers need to be made current in this thread
+		+ Impl:
+			+ Branch
+			+ 0: Take measurements: UPL=30 R=13
+			+ 1: Split whole chain as Update(), RenderUpload(), and RenderDraw()
+				+ GameController retains current API: RunGameIteration() // Do same state machine, invoking (optionally) Update() and (always) RenderUpload() 
+					+ RenderContext::UpdateStart()
+						+ Wait for RenderUploadEnd // CPU buffers are then free to be used
+					+--- World, etc. Update()
+					+ RenderContext::UpdateEnd()
+						+ Nop
+					+ RenderContext::RenderStart()
+						+ Cleanup an eventual pending RenderUploadEnd - may be left behind if this cycle did not
+						  do an Update
+					+ RenderContext::RenderUploadStart()
+						+ Wait for RenderDraw // GPU buffers are then free to be used
+					+--- World, etc. RenderUpload()
+					+ RenderContext::RenderUploadEnd()
+						+ Store TaskCompletionIndicator as RenderUploadEnd
+					+ RenderContext::RenderDraw()							
+						+------------------ Do all rendering, including SwapBuffers
+						+ Store TaskCompletionIndicator as RenderDraw
+					+ RenderContext::RenderEnd()
+						+ Nop					
+				+ Add time measurements => Extended Status Text
+					+ Render stats: split into upload_time (including driving loops) and draw_time
+			+ 2: Take measurements UPD=22.3 UPL=0.34 DRW=10.45
+			+ 3: Introduce ThreadTask, Re-implement RenderContext partially (1)
+				+ Intake ThreadTask
+					+ Make unit tests
+				+ Temporarily maim World::RenderUpload() and RenderContext::Draw() to do only Stars and Clouds
+				+ MainFrame: pass OpenGL context management lambdas down to RenderContext::cctor 
+					+ MainFrame: no more making context current, & call RebindContext @ second bind
+					+ "RebindContext" RenderContext & IGameController methods & param names, taking lambda
+						+ Call it from MainFrame
+					+ Invoke them @ RenderContext
+						+ Figure when to do initial bind, from SpringLab
+					+ RebindContext
+					+ Test						
+				+ Implement multi-threaded RenderContext
+					+ RenderContext::cttor() (copy from SpringLab)
+					+ RenderContext::needed uploads (copy from SpringLab)
+						+ Stars
+						+ Clouds
+						+ Break RenderContext progress into smaller chunks for each progress report
+							+ Furhter break textures' initializations
+					+ RenderContext::Draw()
+					+ ViewModel getters and setters (zoom, camera, ...) (copy from SpringLab)
+					+ All sync points from above
+					+ Add measurement of 2 wait times
+				+ Do TextRenderContext
+					+ TextLayer & TextContext: 
+						+ Split update & render into Update & RenderDraw
+						+ TextLayer only touches TextRenderContext::mLines @ TextLayer::Update(), not earlier
+							+ @ TextLayer::StatusText: like now, but not touching TextRenderContext::mLines
+							+ @ TextLayer::AddEphemeralTextLine: buffer lines
+							+ @ TextLayer::Update: collect all dirtinesses/buffered and send them to TextRenderContext::mLines
+							+ @ TextRenderContext::RenderDraw: mLines -> VBOs, draw 
+					+ Redo logic: NotificationLayer + NotificationRenderContext; Update, RenderUpload, RenderDraw
+						+ Do
+						+ Undo changes for NDC
+						+ Make sure vertex buffers are recalc'd immediately upon canvas size change
+						+ NotifLayer: separate uploads (& dirtyness) by font
+						+ Test:
+							+ Canvas resize
+							+ Reset during ephemeral lines
+					+ Print also 2 wait durations in extended status text
+				+ Take measurements: UPL=0.16 DRW=1.60 W(UPL=0.09 DRW=0.09)
+				+ Test
+					+ Verify exceptions during RenderContext::cctor are rethrown, e.g. shader syntax error
+			+ 4: Continue RenderContext Implementation (2)
+				+ World::RenderUpload() and RenderContext::Draw(): re-enable OceanSurface and OceanFloor
+				+ Redo measurements
+					+ Re-check NotificationLayer code and two waits
+					+ Do other probed KPI: last update duration
+				+ Check numbers, especially for land
+				+ Test setters for ViewModel (with "dirty" flag)
+				+ Try other strategy for setters (queued and waited), see if stutters
+					+ AmbientLight
+						+ Also at NotificationRenderContext
+			+ Check on other laptops
+				+ Verify wait times ~= 0
+				+ Check stuttering
+			+ 4b: All setters	
+				+ Nuke GameDispatcher from RenderContext
+					+ ToolController::Update: gets effective ambient light intensity from GameController and,
+					  if different than mCurrent, acts on it
+				+ Improve "dirty flag" strategy
+				+ Flat sky color
+			+ 5: Continue RenderContext Implementation (3)					
+				+ Storm
+				+ Rain
+				+ Lightnings
+					! Always uploaded (like clouds), but most of the times empty
+				+ Issue with cam moving
+				+ WorldBorder
+				+ FireExtinguisher, HeatBlasterFlame
+					+ Make sure GameController uploads them at RenderUpload() time
+				! Upload & Render for all
+			+ 6: Continue RenderContext Implementation (4): Ship
+				+ Prep:
+					+ RenderContext: enable all
+						+ AddShip: queued and waited (does OpenGL)
+					+ World: enable all
+					+ Ship:
+						+ No uploads
+					+ ShipRenderContext:
+						+ No render
+					+ UploadShipStart, UploadShipEnd: comment out content
+				+ Run APITrace
+				+ Ship:			
+					+ ViewModel strategy: mAreOrthoMatricesDirty/ApplyOrthoMatricesChanges
+						+ UploadStart: ViewModel update for max plane ID
+						+ SetShipCount
+						+ OnViewModelUpdated
+					+ UploadPointMutableAttributes: move group1 buffer uploading to beginning of Draw()
+					+ UploadPointMutableAttributesEnd: move group2 buffer uploading to beginning of Draw()
+					+ UploadPointColors: asynchronous
+					+ UploadPointTemperature: asynchronous
+					+ Elements
+						+ UploadElementsEnd: set dirty flag, and move (conditional) load to beginning of Draw()
+							+ See if can avoid allocating buffer: use allocated VBO vertex buffer size
+							+ May get rid of "finalizeEphemerals" flag as we upload anyway at beginning of draw,
+							  well after ephemerals are (eventually) loaded
+				+ GenericMipMappedTextures, AirBubbles
+				+ ElementEphemeralPoints
+				+ CrossesOfLight
+					+ Upload
+				+ AMBombImplosion
+					+ Upload
+						+ Redo quad as with "radius"?
+					+ Centralize radius calculation at AMBomb - pass to Ship::PhysicsHandler
+					+ Longer pause between pre-implosion and implosion
+					+ Debug series of radii produced
+					+ Stronger implosion force
+					+ Shader
+				+ Sparkles
+				+ Vectors
+					+ VectorColor setter strategy:
+						+ mIsVectorArrowColorDirty, but NO Apply...Changes()
+						+ Set color param in own Render method, if (mIsVectorArrowColorDirty)
+					+ Use different vector colors
+					+ See if vectors are reset when we stop uploading
+				+ Explosions
+				+ Highlights
+					+ Re-enable upload
+				+ See again issue with cam movement (via mouse pan) & ocean borders
+					+ All settings are in new RenderSettings struct, including ViewModel
+						+ Each setting that also requires OpenGL updates:
+							+ Also has a boolean
+							+ Draw(): still checks if individual settings are dirty, and if so, does updates
+					+ RenderContext::Draw: copy struct into another member, on main thread
+						+ Or, see if can copy in capture, & pass into Draw() lambda
+						+ Draw: use second struct recursively down - never reference mRenderSettings
+							+ Second struct passed to ShipRenderContext as arg of its Draw()
+						+ RenderContext::Draw(params) invokes ProcessSettingChanges(settings) without clearing dirty flags, 
+						  and later ShipRenderContext::Draw(settings) also invokes its own ProcessSettingChanges(settings)
+					+ Effective/AmbientLightIntensity:
+						+ RenderContext::SetAmbientLightIntensity & storm update:
+							+ mRenderSettings.EffectiveAmbientLightIntensity recalcd immediately, via RenderContext::CalculateEffectiveAmbientLightIntensity,
+							  & mRenderSettings.IsEffectiveAmbientLightIntensityDirty=true
+				+ Flames
+					+ Re-enable upload
+					+ mIsWindSpeedMagnitudeAverageDirty, ApplyWindSpeedMagnitudeAverageChanges
+						+ Picked up (when dirty) at PrepareRenderFlames(.), together with buffers
+						+ Also at Lightnings
+					+ Buffers
+					+ FlameSizeAdjustment: keep as-is, confirming that it's only used for Ship::UploadFlames()
+						+ Setting is in new RenderContext section that has upload-only settings, or settings that
+						  are used to calculate RenderParameter values immediately
+						+ RenderContext::SetFlameSizeAdjustment(): - store; call all ships' UpdateFlameSizeAdjustment(adj)
+						  which calculates those two vals and stores them in the Ship's corresponding section
+							+ UpdateFlameSizeAdjustment also called by cctor on raw cctor arg
+						+ Move AmbientLightIntensity storage here
+					+ "TakeSnapshotAndClear()"
+					+ Test: wider flame
+				+ StressedSprings
+				+ Fix render stats
+					+ RenderContext passes a new instance of RenderStats to all of Ship::Draw,
+					  and then stores in own member, of type std::atomic
+					+ @ Use: get local copy
+			+ 6b: All setters
+				+ ShipRenderContext setters
+					+ FlatLampLightColor
+					+ ShowStressedSprings
+					+ WaterColor (default color; derivation from ocean rendering settings)
+					+ WaterContrast: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+					+ WaterLevelOfDetail: used at Ship::Render (for params), so member @ RenderParameters w/IsDirty
+					+ VectorFieldRenderMode: pure storage, so member @ RenderContext and that's it
+					+ VectorLengthAdjustment: only at Update, so member @ RenderContext and used when forwarding Upload to ship (like now)
+					+ DrawHeatOverlay
+					+ HeatOverlayTransparency
+					+ DebugShipRenderMode
+				+ RenderContext setters
+					+ OceanTransparency
+					+ OceanDarkeningRate
+					+ All ocean rendering settings (render mode, colors, texture index)
+					+ ShowShipThroughOcean (simply in RenderParams, used only by Render)
+					= Land parameters & texture index (exactly like ocean, but without WaterColor complication)
+			+ 7: Complete RenderContext Implementation (5)
+				+ Reset: queued and waited (ShipRenderContext destructor does OpenGL)
+				+ Screenshot: queued and waited, like SpringLab
+				+ Destructor:
+					+ Make sure thread member is first, so its destructor gets called first
+					  waiting for pending operations
+					+ Split off WorldRenderContext
+							! RenderContext owns ShaderManager and WorldRenderContext and Ships and NotificationContext
+							! WorldRenderContext has ShaderManager reference like Ship, and copies own
+							  texture metadata (passed on by RenderContext via cctor)
+							! WorldRenderContext exposes detailed init and upload and draw methods
+						+ Initialization:
+							+ Textures:
+								+ Those textures that are exclusively for the world get moved
+								  to WorldRenderContext (Clouds, world)
+							+ RenderContext::cctor: 
+								+ Invoke both own and WorldRenderContext's initializations
+							+ Make sure ambient light intensity gets calculated
+							+ Make sure world border gets calculated
+								+ Via WorldRenderContext::ProcessParameterChanges
+							+ WorldRenderContext cctor also gets reference - and does own init'n - to:
+								+ Generic textures
+								+ mUploadedNoiseTexturesManager (like NotificationRenderContext below) for
+								  setting noise textures as needed
+						+ Hook all Upload() calls
+						+ Hook all Render calls
+						+ RenderContext::ApplyParamChanges: 
+							+ maintain those that affect two tools and generals
+							+ invoke child contexts'
+							+ Make sure world border gets calculated
+								+ Via WorldRenderContext::ProcessParameterChanges
+					+ Split off GlobalRenderContext for 2 generic textures, for explosion textures, for noise textures
+						+ Pass then to child contexts as needed
+					+ Move out 2 tools to NotificationRenderContext
+						+ And do ProcessParameterChanges(.) on it
+							+ And thus get rid of RenderContext::ApplyEffectiveAmbientLightIntensityChanges
+						+ And have own initialization method, invoked after RenderContext::InitializeGenericTextures,
+						  that does own part of RenderContext::InitializeGenericTextures, which takes 
+						  mUploadedNoiseTexturesManager for setting noise textures as needed
+					+ Do correct destroy sequence						
+			+ Tests:
+				+ Number of stars changes
+				+ Number of clouds changes
+				+ Debug ship render mode
+			+ Perf on other laptops:
+				+ Samsung: 
+					- FPS: 10.5
+					- UPD: 94.7 (W=0.00) UPL: (W=0.01 + 0.32)
+					- RND: 3.07 (3.10) (MT=0.01)
+				+ HP:
+					- FPS: 20.7
+					- UPD: 47.3 (W=0.01) UPL: (W=0.00 + 0.24)
+					- RND: 4.00 (3.84) (MT=0.04)
+			+ Cleanup:
+				+ Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
+				+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether
+				  anything at Upload() needs current ViewModel params), or if instead it's enough to do that before RenderDraw()					
+				+ Remove PerfStats' obsolete members
+				+ Test with OpenGL uploads all up-front
+					+ Perf before:
+						- UPL: W=0.0-0.5 + 0.16
+						- RND: 16.6-22.6 (MT=5 / 3.77-8.33)
+					+ New perf stat: portion of Render that is purely upload
+						+ Display						
+					+ Perf after:
+						- UPL: W=0.0-0.5 + 0.16
+						- RND: 13.4-22.6 (MT=10 / 5.77-8.33)
+				+ Run debug
+				+ Do APITrace, including shutdown
+					+ Reduce calls
+						+ Start: 97, 101 when status text updated
+						+ Move out glPolygonMode
+							+ Use RenderParameters::IsDebugSgipRenderModeDirty
+								+ Setter @ RenderContext, never give to Ship
+								+ Process @ render
+							+ Test
+						+ if all glBindVertexBuffer always end with zero, do once at end of Prepare
+						+ If all glBindVertexArray always end with zero, do once at end of Draw
+						+ Better rain parameter setting
+							+ Test rain
+						+ @ ShipRenderContext::RenderDrawFlames: VBO bind is not needed
+							+ Test flames & wind
+					+ Check shutdown
+				+ Test:
+					+ Screenshot-taking (w/Storm & lightnings)
+					+ World border
+					+ Stressed springs
+				+ Do NotificationRenderContext::UltraViolentModeIndicator
+					+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
+					+ NotifRenderContext has vector of notification textures vertices
+					+ Redo icon with better spacing between U and bliksem
+					+ Test ambient light darkening
+				+ TaskThread optimization for single-core boxes
+					+ Verify no overhead anymore
+			+ changes.txt
 
 + Dynamics
 	+ Try half of the relaxation iterations
