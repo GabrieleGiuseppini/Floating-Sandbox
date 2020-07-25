@@ -135,7 +135,7 @@ void SplashScreenDialog::UpdateProgress(
 
 void SplashScreenDialog::OnPaint(wxPaintEvent & event)
 {
-    LogMessage("TODOTEST: SplashScreenDialog::OnPaint()");
+    LogMessage("SplashScreenDialog::OnPaint()");
 
     event.Skip();
 }

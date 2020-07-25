@@ -15,8 +15,8 @@
 #include <thread>
 
 /*
- * A thread that runs tasks provided by the main thread. The "user" of this
- * class may simply queue-and-forget tasks, or queue-and-wait until those
+ * A thread that serially runs tasks provided by the main thread. The user
+ * of this class may simply queue-and-forget tasks, or queue-and-wait until those
  * tasks are completed.
  *
  * The implementation assumes that there is only one thread "using" this
@@ -33,8 +33,8 @@ public:
     // Note: instances of this class are owned by the main thread, which is
     // also responsible for invoking the destructor of TaskThread, hence if
     // we assume there won't be any Wait() calls after TaskThread has been destroyed,
-    // then there's no need for instances of this class to outlive the TaskThread
-    // instance that generated them.
+    // then there's no need for instances of _TaskCompletionIndicatorImpl to
+    // outlive the TaskThread instance that generated them.
     struct _TaskCompletionIndicatorImpl
     {
     public:
@@ -117,18 +117,43 @@ public:
      */
     TaskCompletionIndicator QueueTask(Task && task)
     {
-        std::unique_lock<std::mutex> lock(mThreadLock);
-
         auto taskCompletionIndicator = std::shared_ptr<_TaskCompletionIndicatorImpl>(
             new _TaskCompletionIndicatorImpl(
                 mThreadLock,
                 mThreadSignal));
 
-        mTaskQueue.emplace_back(
-            std::move(task),
-            taskCompletionIndicator);
+        if (mHasThread)
+        {
+            //
+            // Queue task
+            //
 
-        mThreadSignal.notify_one();
+            std::unique_lock<std::mutex> lock(mThreadLock);
+
+            mTaskQueue.emplace_back(
+                std::move(task),
+                taskCompletionIndicator);
+
+            mThreadSignal.notify_one();            
+        }
+        else
+        {
+            //
+            // Run task
+            //
+
+            try
+            {
+                task();
+            }
+            catch (std::runtime_error const & exc)
+            {
+                // Store in task completion indicator
+                taskCompletionIndicator->RegisterException(exc.what());
+            }
+
+            taskCompletionIndicator->MarkCompleted();
+        }
 
         return taskCompletionIndicator;
     }
@@ -180,6 +205,7 @@ private:
 private:
 
     std::thread mThread;
+    bool mHasThread; // Invariant: mHasThread==true <=> mThread.joinable(); we only use the flag as the perf impact of checking is_joinable() is unknown
 
     std::mutex mThreadLock;
     std::condition_variable mThreadSignal; // Just one, as each of {main thread, worker thread} can't be waiting and signaling at the same time

@@ -591,9 +591,8 @@ Render:
 						+ NotifRenderContext has vector of notification textures vertices
 						+ Redo icon with better spacing between U and bliksem
 						+ Test ambient light darkening
-					- TaskThread optimization for single-core boxes
-						- Watch out for wxMutexGuiLocker
-						- Verify no overhead anymore
+					+ TaskThread optimization for single-core boxes
+						+ Verify no overhead anymore
 					- changes.txt
 					- merge
 

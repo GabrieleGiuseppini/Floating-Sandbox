@@ -11,30 +11,51 @@
 TaskThread::TaskThread()
     : mIsStop(false)
 {
-    // Start thread
-    mThread = std::thread(&TaskThread::ThreadLoop, this);
+    // Only use a real thread on multi-core boxes; on single-core
+    // boxes, we'll just emulate multi-threading by running all
+    // tasks directly - and synchronously - on the caller's thread
+    mHasThread = std::thread::hardware_concurrency() > 1;
+
+    if (mHasThread)
+    {
+        LogMessage("TaskThread::TaskThread(): starting thread...");
+
+        // Start thread
+        mThread = std::thread(&TaskThread::ThreadLoop, this);
+    }
+    else
+    {
+        LogMessage("TaskThread::TaskThread(): not starting thread - will be simulating multi-threading");
+    }
 }
 
 TaskThread::~TaskThread()
 {
-    // Notify stop
+    if (mHasThread)
     {
-        std::unique_lock const lock{ mThreadLock };
+        assert(mThread.joinable());
 
-        mIsStop = true;
-        mThreadSignal.notify_one();
+        // Notify stop
+        {
+            std::unique_lock const lock{ mThreadLock };
+
+            mIsStop = true;
+            mThreadSignal.notify_one();
+        }
+
+        LogMessage("TaskThread::~TaskThread(): signaled stop; waiting for thread now...");
+
+        // Wait for thread
+        mThread.join();
+
+        LogMessage("TaskThread::~TaskThread(): ...thread stopped.");
     }
-
-    LogMessage("TaskThread::~TaskThread(): signaled stop; waiting for thread now...");
-
-    // Wait for thread
-    mThread.join();
-
-    LogMessage("TaskThread::~TaskThread(): ...thread stopped.");
 }
 
 void TaskThread::ThreadLoop()
 {
+    assert(mHasThread); // This method only runs if we're truly multi-threaded
+
     //
     // Initialize floating point handling
     //

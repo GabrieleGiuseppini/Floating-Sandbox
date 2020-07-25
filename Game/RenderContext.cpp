@@ -219,9 +219,11 @@ RenderContext::~RenderContext()
 
 void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
 {
-    LogMessage("TODOTEST: RenderContext::RebindContext: start");
+    LogMessage("RenderContext::RebindContext: start");
+
     mRenderThread.RunSynchronously(std::move(rebindContextFunction));
-    LogMessage("TODOTEST: RenderContext::RebindContext: end");
+
+    LogMessage("RenderContext::RebindContext: end");
 }
 
 void RenderContext::Reset()
