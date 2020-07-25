@@ -1216,6 +1216,9 @@ void ShipRenderContext::RenderDraw(
         {
             mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
 
+            // Bind stressed spring element VBO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
+
             // Bind stressed spring texture
             mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
             glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
@@ -1228,7 +1231,7 @@ void ShipRenderContext::RenderDraw(
                 GL_UNSIGNED_INT,
                 (GLvoid *)0);
 
-            // Bind again element VBO
+            // Bind again ship element VBO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
         }
 
@@ -1440,9 +1443,6 @@ void ShipRenderContext::RenderDrawFlames(
         mShaderManager.SetProgramParameter<ShaderProgram, ProgramParameterType::FlameSpeed>(
             GameWallClock::GetInstance().NowAsFloat() * 0.345f);
 
-        // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
-
         // Render
         if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
         {
@@ -1584,10 +1584,7 @@ void ShipRenderContext::RenderDrawGenericMipMappedTextures(
 
         glBindVertexArray(0);
 
-        //
         // Update stats
-        //
-
         renderStats.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalVertexCount / 6; // # of quads
     }
 }

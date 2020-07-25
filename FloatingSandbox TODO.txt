@@ -567,25 +567,25 @@ Render:
 							- UPL: W=0.0-0.5 + 0.16
 							- RND: 13.4-22.6 (MT=10 / 5.77-8.33)
 					+ Run debug
-					= Do APITrace, including shutdown
-						= Reduce calls
+					+ Do APITrace, including shutdown
+						+ Reduce calls
 							+ Start: 97, 101 when status text updated
 							+ Move out glPolygonMode
 								+ Use RenderParameters::IsDebugSgipRenderModeDirty
 									+ Setter @ RenderContext, never give to Ship
 									+ Process @ render
 								+ Test
-							- if all glBindVertexBuffer always end with zero, do once at end of Prepare
-							- If all glBindVertexArray always end with zero, do once at end of Draw
+							+ if all glBindVertexBuffer always end with zero, do once at end of Prepare
+							+ If all glBindVertexArray always end with zero, do once at end of Draw
 							+ Better rain parameter setting
 								+ Test rain
-							- Flame parameters: only set if will draw flames
-								- Also: @ ShipRenderContext::RenderDrawFlames: VBO bind is not needed
-								- Test flames & wind
+							+ @ ShipRenderContext::RenderDrawFlames: VBO bind is not needed
+								+ Test flames & wind
 						+ Check shutdown
-					- Test:
-						- World border
-						- Stressed springs
+					+ Test:
+						+ Screenshot-taking (w/Storm & lightnings)
+						+ World border
+						+ Stressed springs
 					+ Do NotificationRenderContext::UltraViolentModeIndicator
 						+ In generic non-mipmapped atlas, with atlas passed by RenderContext to NotificationRenderContext
 						+ NotifRenderContext has vector of notification textures vertices
@@ -619,6 +619,9 @@ Render:
 				- Ask to test
 			- Remove all TODOTEST logging		
 
+		- 32-bit build
+			- Need new build folder altogether, and new invocation of CMake with different generators
+
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
 			  ambient light to target ambient light (target based off next "12-hour")
@@ -643,8 +646,6 @@ Render:
 		- Frontier (*)
 
 		- Latest wxWidgets - Unicode 
-
-		- 32-bit build
 
 		- Spring relaxation with intrinsics
 
@@ -933,7 +934,6 @@ Render:
 	+ Ship: replace handler registrations with points, springs, etc. with IShipPhysicsHandler, declared in own .h
 	- Change splash screen to wxSplashScreen
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
-	- Try 32-bit build
 	- Translations:
 		- Make localizable
 		- Russian: steven6886@yandex.ru, rbugaev2@gmail.com

@@ -308,12 +308,6 @@ RgbImageData RenderContext::TakeScreenshot()
         [&]()
         {
             //
-            // Flush draw calls
-            //
-
-            glFinish();
-
-            //
             // Read pixels
             //
 
