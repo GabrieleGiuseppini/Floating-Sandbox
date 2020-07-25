@@ -625,7 +625,7 @@ void NotificationRenderContext::RenderDrawTextureNotifications()
 
 void NotificationRenderContext::RenderPrepareHeatBlasterFlame()
 {
-    if (!!mHeatBlasterFlameShaderToRender)
+    if (mHeatBlasterFlameShaderToRender.has_value())
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
 
@@ -641,11 +641,9 @@ void NotificationRenderContext::RenderPrepareHeatBlasterFlame()
 
 void NotificationRenderContext::RenderDrawHeatBlasterFlame()
 {
-    if (!!mHeatBlasterFlameShaderToRender)
+    if (mHeatBlasterFlameShaderToRender.has_value())
     {
         glBindVertexArray(*mHeatBlasterFlameVAO);
-
-        assert(!!mHeatBlasterFlameShaderToRender);
 
         mShaderManager.ActivateProgram(*mHeatBlasterFlameShaderToRender);
 
@@ -663,7 +661,7 @@ void NotificationRenderContext::RenderDrawHeatBlasterFlame()
 
 void NotificationRenderContext::RenderPrepareFireExtinguisherSpray()
 {
-    if (!!mFireExtinguisherSprayShaderToRender)
+    if (mFireExtinguisherSprayShaderToRender.has_value())
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
 
@@ -679,11 +677,9 @@ void NotificationRenderContext::RenderPrepareFireExtinguisherSpray()
 
 void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
 {
-    if (!!mFireExtinguisherSprayShaderToRender)
+    if (mFireExtinguisherSprayShaderToRender.has_value())
     {
         glBindVertexArray(*mFireExtinguisherSprayVAO);
-
-        assert(!!mFireExtinguisherSprayShaderToRender);
 
         mShaderManager.ActivateProgram(*mFireExtinguisherSprayShaderToRender);
 
