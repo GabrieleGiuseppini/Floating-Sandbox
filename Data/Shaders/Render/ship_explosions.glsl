@@ -46,7 +46,7 @@ void main()
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates; // (0.0, 0.0) (bottom-left) -> (1.0, 1.0)
 in float vertexExplosionIndex;
-in float vertexProgress;
+in float vertexProgress; // 0.0 -> 1.0
 
 // The texture
 uniform sampler2D paramExplosionsAtlasTexture;
@@ -90,10 +90,10 @@ void main()
 {
     //
     // At any given moment in time we draw two frames:
-    // - Frame 1: index=(bucket - 1.), alpha=(1. - inBucket)
-    // - Frame 2: index=(bucket), alpha=(inBucket)    
+    // - Frame 1: index=(bucket - 1.), alpha=(1. - inBucket) (1.0 -> 0.0), scale=(1. + Delta * inBucket) (1.0 -> 1.0+Delta)
+    // - Frame 2: index=(bucket), alpha=(inBucket) (0.0 -> 1.0), scale= (1. + Delta * inBucket - Delta) (1.0-Delta -> 1.0)
     //
-
+    
     float sigma = 1./(NExplosionFrames + 1.);
     float bucket = floor(vertexProgress / sigma);
     float inBucket = fract(vertexProgress / sigma);
@@ -103,7 +103,7 @@ void main()
     // Scale
     //
     
-    #define ScaleDelta .1
+    #define ScaleDelta .16
     float scale1 = 1. + ScaleDelta * inBucket;
     float scale2 = scale1 - ScaleDelta;       
     

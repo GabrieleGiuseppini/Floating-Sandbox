@@ -307,8 +307,9 @@ Render:
 		+ Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
 			+ Adjust stitch between Imploding_5 and PreExploding_6
 				+ Adjust progress @ shader
-
-		= Explosions: see with progress being sqrt
+		+ Explosions: 
+			X Try with progress being sqrt
+			+ More delta scale
 		
 		- Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
 			- Check assembly:
