@@ -296,12 +296,6 @@ Render:
 			+ Calc millis for 1000/20 frames/sec and sleep by that
 				+ Verify no FPS changes afterwards
 		+ Parallelize OpenGL
-		+ Merge
-
-		- Explore branch predictions:
-			- likely, unpredictable
-		- Run with address sanitizer
-
 		+ Bug: no terrain cursor appears if you are in tool 'M' and then hit 'J'
 		+ Hard error if Splash can't find image
 		+ Latest picojson
@@ -310,9 +304,19 @@ Render:
 			+ Test with both false and true loaded at startup
 			+ Test with ambient light
 			+ Test CTRL+M shortcut
+		+ Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
+			+ Adjust stitch between Imploding_5 and PreExploding_6
+				+ Adjust progress @ shader
 
-		- Do intrinsics only on FS_ARCHITECTURE_x86_64, else do C++
-			- Test with fake architecture detection
+		= Explosions: see with progress being sqrt
+		
+		- Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
+			- Check assembly:
+				- Before:
+				- After:
+			- If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
+		- Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
+			- Test with fake architecture detection, making sure not intrinsic header files are included
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
@@ -326,18 +330,17 @@ Render:
 		- 32-bit build
 			- Need new build folder altogether, and new invocation of CMake with different generators
 
+		- Run with address sanitizer
+			- Requires newer Windows
+
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
 			  ambient light to target ambient light (target based off next "12-hour")
 			- With texture notification when on
 
-		- Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
-
 		- More stress metal sounds, to dilute "cycle of sounds"
 			- New raw sounds are at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try not dispatching stress if also dispatching break's (or destroy's?)
-
-		- Explosions: see with progress being sqrt
 
 		- SWE: see if should damp waves, now that we have bubble waves
 			- Ideally we only damp small waves, not big ones (like Tsunami)
@@ -345,6 +348,10 @@ Render:
 		- GameController: just one special day?
 
 		- Frontier (*)
+
+		- Check new explosion animation
+			- If cool, replace the one with "three fingers"
+			- If not, adjust the one with "three fingers": its tail lasts too long
 
 		- Latest wxWidgets - Unicode 
 
@@ -365,8 +372,6 @@ Render:
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
 		
-		- Check new explosion animation
-
 		- Repair improvement:
 			- AAA) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index

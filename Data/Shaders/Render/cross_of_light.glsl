@@ -34,14 +34,15 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexCenterPosition;
-in float vertexProgress;
+in float vertexProgress; // [0.0, 1.0]
 
 // Parameters
 uniform vec2 paramViewportSize;
 
 void main()
 {
-    float progress = vertexProgress - 0.5; // (-0.5, 0.5]
+   // Map vertexProgress to -0.48 -> 0.48
+    float progress = -0.48 + vertexProgress/(2. * .48); // -0.48 -> 0.48
 
     // No rotation for the time being
     // float angle = progress;
@@ -62,17 +63,10 @@ void main()
     //
     // vec2 rotNdc = rotationMatrix * ndc;
     vec2 rotNdc = ndc;
+
+    progress = pow(1. - abs(progress), 9.0);
     
-    progress = pow(abs(progress), 3.0);
-        
-    // Calculate tapering along each arm
-    float taperX = pow(100000.0 * abs(rotNdc.x), 1.6) * progress;
-    float taperY = pow(100000.0 * abs(rotNdc.y), 1.6) * progress;
-    
-    // Calculate width along arm
-    float sx = max(0.0, (1.0 - rotNdc.x * rotNdc.x * taperY));
-    float sy = max(0.0, (1.0 - rotNdc.y * rotNdc.y * taperX));
-    float alpha = (sx + sy) / 2.0;
+    float alpha = 1.0 - smoothstep(0.0, progress, sqrt(abs(rotNdc.x * rotNdc.y)));
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
 }
