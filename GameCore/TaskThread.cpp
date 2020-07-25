@@ -16,6 +16,9 @@ TaskThread::TaskThread()
     // tasks directly - and synchronously - on the caller's thread
     mHasThread = std::thread::hardware_concurrency() > 1;
 
+    // TODOTEST
+    mHasThread = false;
+
     if (mHasThread)
     {
         LogMessage("TaskThread::TaskThread(): starting thread...");
