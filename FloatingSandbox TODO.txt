@@ -339,12 +339,16 @@ Render:
 					000000013F4FFE09  movaps      xmm3,xmm2  
 					000000013F4FFE0C  movss       xmm1,dword ptr [r10+rax*8+4]  
 			X If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
+		+ Add new detected characteristic: FS_REGISTER_WIDTH 32/64
+			+ Change and use FastTruncate accordingly
+
+		- Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
+			- Test with fake architecture detection, making sure no intrinsic header files are included
+			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
 
 		- 32-bit build
 			- Need new build folder altogether, and new invocation of CMake with different generators
-
-		- Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
-			- Test with fake architecture detection, making sure not intrinsic header files are included
+			- Verify SSE intrinsics are fine in 32-bit process
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc

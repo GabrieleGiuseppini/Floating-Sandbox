@@ -66,7 +66,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        int64_t const sampleIndexI = FastTruncateInt64(sampleIndexF);
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;

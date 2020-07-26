@@ -16,7 +16,7 @@
  * This class implements a buffer containing values of a pre-calculated function between
  * two user-specified extremes.
  */
-template<size_t SamplesCount>
+template<int64_t SamplesCount>
 class PrecalculatedFunction
 {
     static_assert(SamplesCount > 1);
@@ -48,7 +48,7 @@ public:
     {
         // Calculate sample index, minimizing error
         float const sampleIndexF = x / Dx;
-        int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
         return mSamples[sampleIndexI].SampleValue;
@@ -65,11 +65,11 @@ public:
 
         // Integral part - absolute, minimizing error
         // Note: -7.6 => -7
-        int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF + 0.5f);
+        auto const absoluteSampleIndexI = FastTruncateToArchInt(absoluteSampleIndexF + 0.5f);
 
         // Integral part - sample
         // Note: -7 % 3 == -1
-        int64_t sampleIndexI = absoluteSampleIndexI % static_cast<int64_t>(SamplesCount);
+        auto sampleIndexI = absoluteSampleIndexI % SamplesCount;
 
         if (sampleIndexI < 0)
         {
@@ -77,7 +77,7 @@ public:
             sampleIndexI += SamplesCount - 1; // Includes shift to left
         }
 
-        assert(sampleIndexI >= 0 && static_cast<size_t>(sampleIndexI) <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
         return mSamples[sampleIndexI].SampleValue;
     }
@@ -93,7 +93,7 @@ public:
         float const sampleIndexF = x / Dx;
 
         // Integral part
-        int64_t sampleIndexI = FastTruncateInt64(sampleIndexF);
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = sampleIndexF - sampleIndexI;
@@ -116,11 +116,11 @@ public:
 
         // Integral part
         // Note: -7.6 => -7
-        int64_t absoluteSampleIndexI = FastTruncateInt64(absoluteSampleIndexF);
+        auto const absoluteSampleIndexI = FastTruncateToArchInt(absoluteSampleIndexF);
 
         // Integral part - sample
         // Note: -7 % 3 == -1
-        int64_t sampleIndexI = absoluteSampleIndexI % static_cast<int64_t>(SamplesCount);
+        auto sampleIndexI = absoluteSampleIndexI % SamplesCount;
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
@@ -132,7 +132,7 @@ public:
             sampleIndexDx += 1.0f;
         }
 
-        assert(sampleIndexI >= 0 && static_cast<size_t>(sampleIndexI) < SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
@@ -150,7 +150,7 @@ private:
         // Samples 1...SamplesCount-1
         float x = Dx;
         float previousValue = sampleValue;
-        for (size_t i = 1; i < SamplesCount; ++i, x += Dx)
+        for (int64_t i = 1; i < SamplesCount; ++i, x += Dx)
         {
             sampleValue = calculator(x);
 

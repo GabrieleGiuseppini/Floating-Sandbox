@@ -41,9 +41,9 @@ public:
         assert(x >= 0.0f && x <= static_cast<float>(imageData.Size.Width));
         assert(y >= 0.0f && y <= static_cast<float>(imageData.Size.Height));
 
-        int32_t ix = FastTruncateInt32(x);
+        auto ix = FastTruncateToArchInt(x);
         float fx = x - static_cast<float>(ix);
-        int32_t iy = FastTruncateInt32(y);
+        auto iy = FastTruncateToArchInt(y);
         float fy = y - static_cast<float>(iy);
 
         vec4f resulty1 = imageData.Data[iy * imageData.Size.Width + ix].toVec4f() * (1.0f - fx);

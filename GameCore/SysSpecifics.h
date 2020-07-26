@@ -16,19 +16,29 @@
 #endif
 
 //
-// Architecture
+// Architecture and Width
 //
 
-#undef FS_ARCHITECTURE_ARM
+#undef FS_ARCHITECTURE_ARM_32
+#undef FS_ARCHITECTURE_ARM_64
 #undef FS_ARCHITECTURE_X86_32
 #undef FS_ARCHITECTURE_X86_64
 
-#if defined(__arm__) || defined(_ARM) || defined (_M_ARM) || defined(__arm) || defined(	__aarch64__)
-#define FS_ARCHITECTURE_ARM
+#undef FS_REGISTER_WIDTH_32
+#undef FS_REGISTER_WIDTH_64
+
+#if defined(__arm__) || defined(_ARM) || defined (_M_ARM) || defined(__arm)
+#define FS_ARCHITECTURE_ARM_32
+#define FS_REGISTER_WIDTH_32
+#elif defined(	__aarch64__)
+#define FS_ARCHITECTURE_ARM_64
+#undef FS_REGISTER_WIDTH_64
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined (_M_AMD64)
 #define FS_ARCHITECTURE_X86_64
+#define FS_REGISTER_WIDTH_64
 #elif defined(_M_IX86) || defined(i386)) || defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
 #define FS_ARCHITECTURE_X86_32
+#define FS_REGISTER_WIDTH_32
 #endif
 
 //
@@ -89,6 +99,7 @@ inline constexpr T ceil_square_power_of_two(T value)
 // Intrinsics
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#if defined(FS_ARCHITECTURE_X86_64) || defined(FS_ARCHITECTURE_X86_32)
 ////<mmintrin.h>  MMX
 ////<xmmintrin.h> SSE
 ////<emmintrin.h> SSE2
@@ -110,16 +121,7 @@ inline constexpr T ceil_square_power_of_two(T value)
 // MAC
 #include <pmmintrin.h>
 */
-
-#if defined(FS_ARCHITECTURE_X86_64)
 #include <pmmintrin.h>
-#elif defined(FS_ARCHITECTURE_ARM)
-#define SIMDE_ENABLE_NATIVE_ALIASES
-#define SIMDE_ENABLE_OPENMP
-#include "simde/simde/x86/mmx.h"
-#include "simde/simde/x86/sse.h"
-#include "simde/simde/x86/sse2.h"
-#include "simde/simde/x86/sse3.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -18,10 +18,16 @@ constexpr T Pi = T(3.1415926535897932385);
  * Converts the floating-point value to a 32-bit integer, truncating it down
  *
  * Assumes the result fits a 32-bit value. The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastTruncateToInt32(-7.6) == -7.
  */
-inline std::int32_t FastTruncateInt32(float value) noexcept
+inline std::int32_t FastTruncateToInt32(float value) noexcept
 {
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
     return _mm_cvtt_ss2si(_mm_load_ss(&value));
+#else
+    return static_cast<std::int32_t>(value);
+#endif
 }
 
 /*
@@ -31,9 +37,33 @@ inline std::int32_t FastTruncateInt32(float value) noexcept
  *
  * As one would expect, FastTruncateInt64(-7.6) == -7.
  */
-inline std::int64_t FastTruncateInt64(float value) noexcept
+inline std::int64_t FastTruncateToInt64(float value) noexcept
 {
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
     return _mm_cvttss_si64(_mm_load_ss(&value));
+#else
+    return static_cast<std::int64_t>(value);
+#endif
+}
+
+/*
+ * Converts the floating-point value to an integer of the same width as the
+ * architecture's registers, truncating it down. Used when the implementation
+ * doesn't really care about the returned type - for example because it needs
+ * to be used as an index.
+ *
+ * Assumes the result fits the integer. The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastTruncateToArchInt(-7.6) == -7.
+ */
+
+inline auto FastTruncateToArchInt(float value) noexcept
+{
+#if defined(FS_REGISTER_WIDTH_32)
+    return FastTruncateToInt32(value);
+#elif defined(FS_REGISTER_WIDTH_64)
+    return FastTruncateToInt64(value);
+#endif
 }
 
 /*

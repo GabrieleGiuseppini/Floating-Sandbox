@@ -303,8 +303,8 @@ vec3f ShipTexturizer::SampleTexture(
     float pixelY) const
 {
     // Integral part
-    int32_t pixelXI = FastTruncateInt32(pixelX);
-    int32_t pixelYI = FastTruncateInt32(pixelY);
+    auto pixelXI = FastTruncateToArchInt(pixelX);
+    auto pixelYI = FastTruncateToArchInt(pixelY);
 
     // Fractional part between index and next index
     float const pixelDx = pixelX - pixelXI;

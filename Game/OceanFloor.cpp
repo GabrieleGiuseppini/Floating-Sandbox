@@ -75,7 +75,7 @@ void OceanFloor::Upload(
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto sampleIndex = FastTruncateInt64((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
@@ -169,7 +169,7 @@ std::optional<bool> OceanFloor::AdjustTo(
 
     float const sampleIndexF = (leftX + GameParameters::HalfMaxWorldWidth) / Dx;
 
-    int64_t sampleIndex = FastTruncateInt64(sampleIndexF + 0.5f);
+    auto const sampleIndex = FastTruncateToArchInt(sampleIndexF + 0.5f);
 
     assert(sampleIndex >= 0 && sampleIndex <= SamplesCount);
 
@@ -216,7 +216,7 @@ void OceanFloor::DisplaceAt(
     float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
     // Integral part
-    int64_t const sampleIndexI = FastTruncateInt64(sampleIndexF);
+    auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
     // Fractional part within sample index and the next sample index
     float const sampleIndexDx = sampleIndexF - sampleIndexI;

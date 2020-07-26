@@ -222,7 +222,7 @@ void OceanSurface::Upload(
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto sampleIndex = FastTruncateInt64((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
@@ -297,11 +297,13 @@ void OceanSurface::AdjustTo(
 
             auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
 
+            int32_t const centerIndex = SWEOuterLayerSamples + static_cast<int32_t>(sampleIndex);
+
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
-                SWEOuterLayerSamples + sampleIndex,
-                mHeightField[SWEOuterLayerSamples + sampleIndex],   // LowHeight == current height
-                targetHeight,                                       // HighHeight == target
+                centerIndex,
+                mHeightField[centerIndex],  // LowHeight == current height
+                targetHeight,               // HighHeight == target
                 currentSimulationTime);
         }
         else
@@ -359,10 +361,11 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
 
     // (Re-)start state machine
+    int32_t const centerIndex = SWEOuterLayerSamples + static_cast<int32_t>(sampleIndex);
     mSWETsunamiWaveStateMachine.emplace(
-        SWEOuterLayerSamples + sampleIndex,
-        mHeightField[SWEOuterLayerSamples + sampleIndex],   // LowHeight == current height
-        tsunamiHeight,                                      // HighHeight == tsunami height
+        centerIndex,
+        mHeightField[centerIndex],  // LowHeight == current height
+        tsunamiHeight,              // HighHeight == tsunami height
         7.0f,
         5.0f,
         currentSimulationTime);

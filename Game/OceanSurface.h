@@ -33,6 +33,18 @@ public:
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
 
+private:
+
+    static inline auto ToSampleIndex(float x)
+    {
+        // Calculate sample index, minimizing error
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        return sampleIndexI;
+    }
+
 public:
 
     /*
@@ -51,7 +63,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        int64_t sampleIndexI = FastTruncateInt64(sampleIndexF);
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = sampleIndexF - sampleIndexI;
@@ -95,16 +107,6 @@ public:
     static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
 private:
-
-    static inline int32_t ToSampleIndex(float x)
-    {
-        // Calculate sample index, minimizing error
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-        int32_t sampleIndexI = FastTruncateInt32(sampleIndexF + 0.5f);
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-
-        return sampleIndexI;
-    }
 
     void SetSWEWaveHeight(
         int32_t centerIndex,
