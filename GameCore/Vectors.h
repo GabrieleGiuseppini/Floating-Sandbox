@@ -49,19 +49,19 @@ public:
     {
     }
 
-	inline vec2f operator+(vec2f const & other) const
-	{
-		return vec2f(
-			x + other.x,
-			y + other.y);
-	}
+    inline vec2f operator+(vec2f const & other) const
+    {
+        return vec2f(
+            x + other.x,
+            y + other.y);
+    }
 
-	inline vec2f operator-(vec2f const & other) const
-	{
-		return vec2f(
-			x - other.x,
-			y - other.y);
-	}
+    inline vec2f operator-(vec2f const & other) const
+    {
+        return vec2f(
+            x - other.x,
+            y - other.y);
+    }
 
     inline vec2f operator-() const
     {
@@ -70,47 +70,47 @@ public:
             -y);
     }
 
-	inline vec2f operator*(float other) const
-	{
-		return vec2f(
-			x * other,
-			y * other);
-	}
+    inline vec2f operator*(float other) const
+    {
+        return vec2f(
+            x * other,
+            y * other);
+    }
 
-	inline vec2f operator/(float other) const
-	{
-		return vec2f(
-			x / other,
-			y / other);
-	}
+    inline vec2f operator/(float other) const
+    {
+        return vec2f(
+            x / other,
+            y / other);
+    }
 
-	inline vec2f & operator+=(vec2f const & other)
-	{
-		x += other.x;
-		y += other.y;
-		return *this;
-	}
+    inline vec2f & operator+=(vec2f const & other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 
-	inline vec2f & operator-=(vec2f const & other)
-	{
-		x -= other.x;
-		y -= other.y;
-		return *this;
-	}
+    inline vec2f & operator-=(vec2f const & other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
 
-	inline vec2f & operator*=(float other)
-	{
-		x *= other;
-		y *= other;
-		return *this;
-	}
+    inline vec2f & operator*=(float other)
+    {
+        x *= other;
+        y *= other;
+        return *this;
+    }
 
-	inline vec2f & operator/=(float other)
-	{
-		x /= other;
-		y /= other;
-		return *this;
-	}
+    inline vec2f & operator/=(float other)
+    {
+        x /= other;
+        y /= other;
+        return *this;
+    }
 
     inline vec2f & clamp(float minX, float maxX, float minY, float maxY)
     {
@@ -119,46 +119,46 @@ public:
         return *this;
     }
 
-	inline bool operator==(vec2f const & other) const
-	{
-		return x == other.x && y == other.y;
-	}
+    inline bool operator==(vec2f const & other) const
+    {
+        return x == other.x && y == other.y;
+    }
 
     inline bool operator!=(vec2f const & other) const
     {
         return !(*this == other);
     }
 
-	// (lexicographic comparison only)
-	inline bool operator<(vec2f const & other) const
-	{
-		return x < other.x || (x == other.x && y < other.y);
-	}
+    // (lexicographic comparison only)
+    inline bool operator<(vec2f const & other) const
+    {
+        return x < other.x || (x == other.x && y < other.y);
+    }
 
-	inline float dot(vec2f const & other) const noexcept
-	{
-		return x * other.x + y * other.y;
-	}
+    inline float dot(vec2f const & other) const noexcept
+    {
+        return x * other.x + y * other.y;
+    }
 
     inline float cross(vec2f const & other) const noexcept
     {
         return x * other.y - y * other.x;
     }
 
-	inline float length() const noexcept
-	{
+    inline float length() const noexcept
+    {
         return sqrtf(x * x + y * y);
-	}
+    }
 
     inline float squareLength() const noexcept
     {
         return x * x + y * y;
     }
 
-	inline vec2f normalise() const noexcept
-	{
+    inline vec2f normalise() const noexcept
+    {
         float const squareLength = x * x + y * y;
-        if (squareLength > 0)
+        if (squareLength != 0)
         {
             return (*this) / sqrtf(squareLength);
         }
@@ -166,11 +166,11 @@ public:
         {
             return vec2f(0.0f, 0.0f);
         }
-	}
+    }
 
     inline vec2f normalise(float length) const noexcept
     {
-        if (length > 0)
+        if (length != 0)
         {
             return (*this) / length;
         }
@@ -283,21 +283,21 @@ public:
     {
     }
 
-	inline vec3f operator+(vec3f const & other) const
-	{
-		return vec3f(
-			x + other.x,
-			y + other.y,
-			z + other.z);
-	}
+    inline vec3f operator+(vec3f const & other) const
+    {
+        return vec3f(
+            x + other.x,
+            y + other.y,
+            z + other.z);
+    }
 
     inline vec3f operator-(vec3f const & other) const
-	{
-		return vec3f(
-			x - other.x,
-			y - other.y,
-			z - other.z);
-	}
+    {
+        return vec3f(
+            x - other.x,
+            y - other.y,
+            z - other.z);
+    }
 
     inline vec3f operator-() const
     {
@@ -307,89 +307,89 @@ public:
             -z);
     }
 
-	inline vec3f operator*(float other) const
-	{
-		return vec3f(
-			x * other,
-			y * other,
-			z * other);
-	}
+    inline vec3f operator*(float other) const
+    {
+        return vec3f(
+            x * other,
+            y * other,
+            z * other);
+    }
 
-	inline vec3f operator/(float other) const
-	{
-		return vec3f(
-			x / other,
-			y / other,
-			z / other);
-	}
+    inline vec3f operator/(float other) const
+    {
+        return vec3f(
+            x / other,
+            y / other,
+            z / other);
+    }
 
-	inline vec3f & operator+=(vec3f const & other)
-	{
-		x += other.x;
-		y += other.y;
-		z += other.z;
-		return *this;
-	}
+    inline vec3f & operator+=(vec3f const & other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
 
-	inline vec3f & operator-=(vec3f const & other)
-	{
-		x -= other.x;
-		y -= other.y;
-		z -= other.z;
-		return *this;
-	}
+    inline vec3f & operator-=(vec3f const & other)
+    {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
 
-	inline vec3f & operator*=(float other)
-	{
-		x *= other;
-		y *= other;
-		z *= other;
-		return *this;
-	}
+    inline vec3f & operator*=(float other)
+    {
+        x *= other;
+        y *= other;
+        z *= other;
+        return *this;
+    }
 
-	inline vec3f & operator/=(float other)
-	{
-		x /= other;
-		y /= other;
-		z /= other;
-		return *this;
-	}
+    inline vec3f & operator/=(float other)
+    {
+        x /= other;
+        y /= other;
+        z /= other;
+        return *this;
+    }
 
-	inline bool operator==(vec3f const & other) const
-	{
-		return x == other.x && y == other.y && z == other.z;
-	}
+    inline bool operator==(vec3f const & other) const
+    {
+        return x == other.x && y == other.y && z == other.z;
+    }
 
     inline bool operator!=(vec3f const & other) const
     {
         return !(*this == other);
     }
 
-	// (lexicographic comparison only)
-	inline bool operator<(vec3f const & other) const
-	{
-		return x < other.x || (x == other.x && (y < other.y || (y == other.y && z < other.z)));
-	}
+    // (lexicographic comparison only)
+    inline bool operator<(vec3f const & other) const
+    {
+        return x < other.x || (x == other.x && (y < other.y || (y == other.y && z < other.z)));
+    }
 
-	float dot(vec3f const & other) const noexcept
-	{
-		return x * other.x + y * other.y + z * other.z;
-	}
+    float dot(vec3f const & other) const noexcept
+    {
+        return x * other.x + y * other.y + z * other.z;
+    }
 
-	float length() const noexcept
-	{
-		return sqrtf(x * x + y * y + z * z);
-	}
+    float length() const noexcept
+    {
+        return sqrtf(x * x + y * y + z * z);
+    }
 
     float squareLength() const noexcept
     {
         return x * x + y * y + z * z;
     }
 
-	vec3f normalise() const noexcept
-	{
+    vec3f normalise() const noexcept
+    {
         float const squareLength = x * x + y * y + z * z;
-        if (squareLength > 0)
+        if (squareLength != 0)
         {
             return (*this) / sqrtf(squareLength);
         }
@@ -397,7 +397,7 @@ public:
         {
             return vec3f(0.0f, 0.0f, 0.0f);
         }
-	}
+    }
 
     vec3f ceilPositive() const noexcept
     {

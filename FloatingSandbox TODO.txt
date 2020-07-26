@@ -309,13 +309,40 @@ Render:
 				+ Adjust progress @ shader
 		+ Explosions: 
 			X Try with progress being sqrt
-			+ More delta scale
-		
-		- Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
-			- Check assembly:
-				- Before:
-				- After:
-			- If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
+			+ More delta scale		
+		X Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
+			+ Check assembly:
+				+ Before:
+					000000013F76F288  sqrtss      xmm7,xmm1  
+					000000013F76F28C  comiss      xmm7,xmm2  # xmm2=0
+					000000013F76F28F  jbe         Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F76F2A6h)  
+					000000013F76F291  movaps      xmm3,xmm8  # xmm8=1
+					000000013F76F295  divss       xmm3,xmm7  # xmm3=1/len
+					000000013F76F299  movaps      xmm6,xmm3  
+					000000013F76F29C  mulss       xmm3,xmm5  
+					000000013F76F2A0  mulss       xmm6,xmm4  
+					000000013F76F2A4  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F76F2ACh)  
+					000000013F76F2A6  movaps      xmm6,xmm2  
+					000000013F76F2A9  movaps      xmm3,xmm2  
+					000000013F76F2AC  movss       xmm1,dword ptr [r10+rax*8+4]  
+				+ After:
+					000000013F4FFDE8  sqrtss      xmm7,xmm1  
+					000000013F4FFDEC  ucomiss     xmm7,xmm2  
+					000000013F4FFDEF  je          Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F4FFE06h)  
+					000000013F4FFDF1  movaps      xmm3,xmm8  
+					000000013F4FFDF5  divss       xmm3,xmm7  
+					000000013F4FFDF9  movaps      xmm6,xmm3  
+					000000013F4FFDFC  mulss       xmm3,xmm5  
+					000000013F4FFE00  mulss       xmm6,xmm4  
+					000000013F4FFE04  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F4FFE0Ch)  
+					000000013F4FFE06  movaps      xmm6,xmm2  
+					000000013F4FFE09  movaps      xmm3,xmm2  
+					000000013F4FFE0C  movss       xmm1,dword ptr [r10+rax*8+4]  
+			X If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
+
+		- 32-bit build
+			- Need new build folder altogether, and new invocation of CMake with different generators
+
 		- Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
 			- Test with fake architecture detection, making sure not intrinsic header files are included
 
@@ -327,9 +354,6 @@ Render:
 			= Unalignment exception with ship database file
 				- Ask to test
 			+ Remove all TODOTEST logging		
-
-		- 32-bit build
-			- Need new build folder altogether, and new invocation of CMake with different generators
 
 		- Run with address sanitizer
 			- Requires newer Windows
