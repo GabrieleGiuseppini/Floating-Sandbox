@@ -18,6 +18,8 @@
 //
 // Architecture and Width
 //
+// None defined means "no specific code required"
+//
 
 #undef FS_ARCHITECTURE_ARM_32
 #undef FS_ARCHITECTURE_ARM_64
@@ -43,6 +45,8 @@
 
 //
 // OS
+//
+// None defined means "no specific code required"
 //
 
 #undef FS_OS_LINUX
@@ -110,7 +114,6 @@ inline constexpr T ceil_square_power_of_two(T value)
 ////<ammintrin.h> SSE4A
 ////<wmmintrin.h> AES
 ////<immintrin.h> AVX, AVX2, FMA
-
 /*
 // MSVC
 #include <intrin.h>

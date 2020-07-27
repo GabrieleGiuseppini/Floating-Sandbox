@@ -9,11 +9,15 @@
 #include "SysSpecifics.h"
 
 #include <algorithm>
+#include <array>
+#include <iterator>
 
 namespace Algorithms {
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 template<typename TVector>
-inline TVector NormalizeVector2(TVector const & v) noexcept
+inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
 {
     __m128 const Zero = _mm_setzero_ps();
     __m128 const One = _mm_set_ss(1.0f);
@@ -36,8 +40,12 @@ inline TVector NormalizeVector2(TVector const & v) noexcept
     return TVector(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
 }
 
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 template<typename TVector>
-inline TVector NormalizeVector2(TVector const & v, float length) noexcept
+inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
 {
     __m128 const Zero = _mm_setzero_ps();
     __m128 const One = _mm_set_ss(1.0f);
@@ -53,8 +61,12 @@ inline TVector NormalizeVector2(TVector const & v, float length) noexcept
     return TVector(_mm_cvtss_f32(_x), _mm_cvtss_f32(_y));
 }
 
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 template<typename EndpointStruct, typename TVector>
-inline void CalculateVectorDirsAndReciprocalLengths(
+inline void CalculateVectorDirsAndReciprocalLengths_SSE(
     TVector const * pointPositions,
     EndpointStruct const * endpoints,
     TVector * restrict outDirs,
@@ -114,10 +126,8 @@ inline void CalculateVectorDirsAndReciprocalLengths(
     }
 }
 
-/*
- * Diffuse light from each lamp to all points on the same or lower plane ID,
- * inverse-proportionally to the lamp-point distance
- */
+#endif
+
 template<typename TVector>
 inline void DiffuseLight_Naive(
     TVector const * pointPositions,
@@ -162,10 +172,6 @@ inline void DiffuseLight_Naive(
     }
 }
 
-/*
- * Diffuse light from each lamp to all points on the same or lower plane ID,
- * inverse-proportionally to the lamp-point distance
- */
 template<typename TVector>
 inline void DiffuseLight_Vectorized(
     TVector const * restrict pointPositions,
@@ -178,8 +184,91 @@ inline void DiffuseLight_Vectorized(
     ElementIndex const lampCount,
     float * restrict outLightBuffer)
 {
+    // This code is vectorized for 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+    assert(is_aligned_to_float_element_count(pointCount));
+    assert(is_aligned_to_float_element_count(lampCount));
+    assert(is_aligned_to_vectorization_word(pointPositions));
+    assert(is_aligned_to_vectorization_word(pointPlaneIds));
+    assert(is_aligned_to_vectorization_word(lampPositions));
+    assert(is_aligned_to_vectorization_word(lampPlaneIds));
+    assert(is_aligned_to_vectorization_word(lampDistanceCoeffs));
+    assert(is_aligned_to_vectorization_word(lampSpreadMaxDistances));
+    assert(is_aligned_to_vectorization_word(outLightBuffer));
+
+    // Caller is assumed to have skipped this when there are no lamps
+    assert(lampCount > 0);
+
+    // Clear all output lights
+    std::fill(
+        outLightBuffer,
+        outLightBuffer + pointCount,
+        0.0f);
+
+    //
+    // Visit all points, in groups of 4
+    //
+
+    for (ElementIndex p = 0; p < pointCount; p += 4)
+    {
+        TVector const * const restrict batchPointPositions = &(pointPositions[p]);
+        PlaneId const * const restrict batchPointPlaneIds = &(pointPlaneIds[p]);
+        float * const restrict batchOutLightBuffer = &(outLightBuffer[p]);
+
+        //
+        // Go through all lamps;
+        // can safely visit deleted lamps as their current will always be zero
+        //
+
+        for (ElementIndex l = 0; l < lampCount; ++l)
+        {         
+            // Calculate distances
+            std::array<float, 4> tmpPointDistances;
+            for (ElementIndex p2 = 0; p2 < 4; ++p2)
+                tmpPointDistances[p2] = (batchPointPositions[p2] - lampPositions[l]).length();
+
+            // Light from this lamp = max(0.0, lum*(spread-distance)/spread)
+            for (ElementIndex p2 = 0; p2 < 4; ++p2)
+            {
+                float newLight =
+                    lampDistanceCoeffs[l]
+                    * (lampSpreadMaxDistances[l] - tmpPointDistances[p2]); // If negative, max(.) below will clamp down to 0.0
+
+                // Obey plane ID constraints
+                if (batchPointPlaneIds[p2] > lampPlaneIds[l])
+                    newLight = 0.0f;
+
+                batchOutLightBuffer[p2] = std::max(
+                    newLight,
+                    batchOutLightBuffer[p2]);
+            }
+        }
+        
+        //
+        // Cap output lights
+        //
+
+        for (ElementIndex p2 = 0; p2 < 4; ++p2)
+            batchOutLightBuffer[p2] = std::min(1.0f, batchOutLightBuffer[p2]);
+    }
+}
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
+template<typename TVector>
+inline void DiffuseLight_SSEVectorized(
+    TVector const * restrict pointPositions,
+    PlaneId const * restrict pointPlaneIds,
+    ElementIndex const pointCount,
+    TVector const * restrict lampPositions,
+    PlaneId const * restrict lampPlaneIds,
+    float const * restrict lampDistanceCoeffs,
+    float const * restrict lampSpreadMaxDistances,
+    ElementIndex const lampCount,
+    float * restrict outLightBuffer)
+{
     // This code is vectorized for SSE = 4 floats
-    assert(vectorization_float_count<size_t> >= 4);
+    static_assert(vectorization_float_count<size_t> >= 4);
     assert(is_aligned_to_float_element_count(pointCount));
     assert(is_aligned_to_float_element_count(lampCount));
     assert(is_aligned_to_vectorization_word(pointPositions));
@@ -200,7 +289,8 @@ inline void DiffuseLight_Vectorized(
     for (ElementIndex p = 0; p < pointCount; p += 4)
     {
         //
-        // 1. Prepare point data at slots 0,1,2,3
+        // Prepare point data at slots 0,1,2,3
+        //
 
         // Point positions
         __m128 const pointPos01_4 = _mm_load_ps(reinterpret_cast<float const *>(pointPositions + p)); // x0,y0,x1,y1
@@ -214,8 +304,11 @@ inline void DiffuseLight_Vectorized(
         // Resultant point light
         __m128 pointLight_4 = _mm_setzero_ps();
 
+        //
         // Go through all lamps, 4 by 4;
         // can safely visit deleted lamps as their current will always be zero
+        //
+
         for (ElementIndex l = 0; l < lampCount; l += 4)
         {
             // Lamp positions
@@ -366,6 +459,49 @@ inline void DiffuseLight_Vectorized(
         pointLight_4 = _mm_min_ps(pointLight_4, _mm_set1_ps(1.0f));
         _mm_store_ps(outLightBuffer + p, pointLight_4);
     }
+}
+
+#endif
+
+/*
+ * Diffuse light from each lamp to all points on the same or lower plane ID,
+ * inverse-proportionally to the lamp-point distance
+ */
+template<typename TVector>
+inline void DiffuseLight(
+    TVector const * pointPositions,
+    PlaneId const * pointPlaneIds,
+    ElementIndex const pointCount,
+    TVector const * lampPositions,
+    PlaneId const * lampPlaneIds,
+    float const * lampDistanceCoeffs,
+    float const * lampSpreadMaxDistances,
+    ElementIndex const lampCount,
+    float * restrict outLightBuffer)
+{
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+    DiffuseLight_SSEVectorized(
+        pointPositions,
+        pointPlaneIds,
+        pointCount,
+        lampPositions,
+        lampPlaneIds,
+        lampDistanceCoeffs,
+        lampSpreadMaxDistances,
+        lampCount,
+        outLightBuffer);
+#else
+    DiffuseLight_Vectorized(
+        pointPositions,
+        pointPlaneIds,
+        pointCount,
+        lampPositions,
+        lampPlaneIds,
+        lampDistanceCoeffs,
+        lampSpreadMaxDistances,
+        lampCount,
+        outLightBuffer);
+#endif
 }
 
 }

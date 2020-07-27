@@ -650,8 +650,9 @@ public:
     }
 
     /*
-     * Gets a work buffer for populating lamp positions; size is
-     * BufferLampCount.
+     * Gets a work buffer for populating lamp positions.
+     *
+     * Size is BufferLampCount, padded to vectorization float count.
      */
     Buffer<vec2f> & GetLampPositionWorkBuffer()
     {
@@ -659,8 +660,9 @@ public:
     }
 
     /*
-     * Gets a work buffer for populating lamp plane IDs; size is
-     * BufferLampCount.
+     * Gets a work buffer for populating lamp plane IDs.
+     *
+     * Size is BufferLampCount, padded to vectorization float count.
      */
     Buffer<PlaneId> & GetLampPlaneIdWorkBuffer()
     {
@@ -668,8 +670,9 @@ public:
     }
 
     /*
-     * Gets a work buffer for populating complete distance coefficients; size is
-     * BufferLampCount.
+     * Gets a work buffer for populating complete distance coefficients.
+     *
+     * Size is BufferLampCount, padded to vectorization float count.
      */
     Buffer<float> & GetLampDistanceCoefficientWorkBuffer()
     {

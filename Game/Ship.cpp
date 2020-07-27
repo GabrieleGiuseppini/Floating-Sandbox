@@ -1701,9 +1701,9 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // 1. Prepare lamp data
     //
 
-    auto & lampPositions = mElectricalElements.GetLampPositionWorkBuffer();
-    auto & lampPlaneIds = mElectricalElements.GetLampPlaneIdWorkBuffer();
-    auto & lampDistanceCoeffs = mElectricalElements.GetLampDistanceCoefficientWorkBuffer();
+    auto & lampPositions = mElectricalElements.GetLampPositionWorkBuffer(); // Padded to vectorization float count
+    auto & lampPlaneIds = mElectricalElements.GetLampPlaneIdWorkBuffer(); // Padded to vectorization float count
+    auto & lampDistanceCoeffs = mElectricalElements.GetLampDistanceCoefficientWorkBuffer(); // Padded to vectorization float count
 
     for (ElementIndex l = 0; l < mElectricalElements.GetLampCount(); ++l)
     {
@@ -1721,7 +1721,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // 2. Diffuse light
     //
 
-    Algorithms::DiffuseLight_Vectorized(
+    Algorithms::DiffuseLight(
         mPoints.GetPositionBufferAsVec2(),
         mPoints.GetPlaneIdBufferAsPlaneId(),
         mPoints.GetAlignedShipPointCount(), // No real reason to skip ephemerals, other than they're not expected to have light

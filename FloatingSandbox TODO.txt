@@ -341,9 +341,15 @@ Render:
 			X If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
 		+ Add new detected characteristic: FS_REGISTER_WIDTH 32/64
 			+ Change and use FastTruncate accordingly
-
-		- Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
-			- Test with fake architecture detection, making sure no intrinsic header files are included
+		+ Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
+			+ Test with fake architecture detection, making sure no intrinsic header files are included
+			+ Implement lights vectorized
+				+ With unit tests
+			+ Test lights, ocean floor, ocean surface
+			+ Check speed of new vectorized one wrt naive, w/Szerszen
+				+ Vect: 10-10.3, 71ms
+				+ Naive: 9.7-10, 73ms
+			+ Undo fake architecture detection
 			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
 
 		- 32-bit build
@@ -359,9 +365,6 @@ Render:
 				- Ask to test
 			+ Remove all TODOTEST logging		
 
-		- Run with address sanitizer
-			- Requires newer Windows
-
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
 			  ambient light to target ambient light (target based off next "12-hour")
@@ -375,6 +378,9 @@ Render:
 			- Ideally we only damp small waves, not big ones (like Tsunami)
 
 		- GameController: just one special day?
+
+		- Run with address sanitizer
+			- Requires newer Windows
 
 		- Frontier (*)
 
@@ -598,6 +604,8 @@ Render:
 	- Meteorites
 	- Earthquake
 	- Add circular zones around bombs when placing showing what the expected blast radius should be. The circle should change in size when settings are tweaked. Much better than crunching numbers to figure out what's gonna happen.
+
+	- Update Idea: When we get collision detection AND the ability to spawn multiple ships can you make a "Magnet" colour for eletrical ships, where you can push a switch and it activates a magnet, and if two ships have close magnets, they connected? that would be amazing! We could have aircraft carriers acutally carry helicopters/planes, and tugboats rescuing ships!
 
 	- Ideas from the FS discord server:
 		-Whirpools
