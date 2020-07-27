@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -1979,7 +1980,7 @@ public:
                         auto const now = std::chrono::steady_clock::now();
 
                         if (!mPreviousScrub
-                            || abs(mPreviousScrub->angleCw(newScrub)) > Pi<float> / 2.0f    // Direction change
+                            || std::abs(mPreviousScrub->angleCw(newScrub)) > Pi<float> / 2.0f    // Direction change
                             || (now - mPreviousScrubTimestamp) > std::chrono::milliseconds(250))
                         {
                             // Play sound

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <cmath>
+
 namespace Physics {
 
 // The number of slices we want to render the ocean floor as;
@@ -186,7 +188,7 @@ std::optional<bool> OceanFloor::AdjustTo(
         float const newSampleValue = leftTargetY + slopeY * (x - leftX);
 
         // Decide whether it's a significant change
-        hasAdjusted |= abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
+        hasAdjusted |= std::abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
 
         // Translate sample value into terrain change
         // (inverse of CalculateResultantSampleValue(.))

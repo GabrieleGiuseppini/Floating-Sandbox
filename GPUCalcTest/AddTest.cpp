@@ -7,6 +7,7 @@
 
 #include <GPUCalc/GPUCalculatorFactory.h>
 
+#include <cmath>
 #include <vector>
 
 void AddTest::InternalRun()
@@ -54,10 +55,10 @@ void AddTest::InternalRun()
         TEST_VERIFY_FLOAT_EQ(results[i].x, expectedResult.x);
         TEST_VERIFY_FLOAT_EQ(results[i].y, expectedResult.y);
 
-        if (abs(results[i].x - expectedResult.x) > maxDelta)
-            maxDelta = abs(results[i].x - expectedResult.x);
-        if (abs(results[i].y - expectedResult.y) > maxDelta)
-            maxDelta = abs(results[i].y - expectedResult.y);
+        if (std::abs(results[i].x - expectedResult.x) > maxDelta)
+            maxDelta = std::abs(results[i].x - expectedResult.x);
+        if (std::abs(results[i].y - expectedResult.y) > maxDelta)
+            maxDelta = std::abs(results[i].y - expectedResult.y);
     }
 
     LogMessage("MaxDelta=", maxDelta);

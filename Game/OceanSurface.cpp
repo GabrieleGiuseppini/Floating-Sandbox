@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 
 namespace Physics {
 
@@ -441,10 +442,10 @@ void OceanSurface::RecalculateCoefficients(
     // Basal waves
     //
 
-    float baseWindSpeedMagnitude = abs(wind.GetBaseAndStormSpeedMagnitude()); // km/h
+    float baseWindSpeedMagnitude = std::abs(wind.GetBaseAndStormSpeedMagnitude()); // km/h
     if (baseWindSpeedMagnitude < 60)
         // y = 63.09401 - 63.09401*e^(-0.05025263*x)
-        baseWindSpeedMagnitude = 63.09401f - 63.09401f * exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
+        baseWindSpeedMagnitude = 63.09401f - 63.09401f * std::exp(-0.05025263f * baseWindSpeedMagnitude); // Dramatize
 
     float const baseWindSpeedSign = wind.GetBaseAndStormSpeedMagnitude() >= 0.0f ? 1.0f : -1.0f;
 
@@ -715,8 +716,8 @@ void OceanSurface::GenerateSamples(
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseAndStormSpeedMagnitude();
     float const rawWindNormalizedIncisiveness = (windSpeedGustRelativeAmplitude == 0.0f)
         ? 0.0f
-        : std::max(0.0f, windSpeedAbsoluteMagnitude - abs(wind.GetBaseAndStormSpeedMagnitude()))
-        / abs(windSpeedGustRelativeAmplitude);
+        : std::max(0.0f, windSpeedAbsoluteMagnitude - std::abs(wind.GetBaseAndStormSpeedMagnitude()))
+        / std::abs(windSpeedGustRelativeAmplitude);
 
     float const windRipplesAngularVelocity = (wind.GetBaseAndStormSpeedMagnitude() >= 0)
         ? 128.0f
@@ -898,7 +899,7 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
 {
     float const deltaH = std::min(
-        abs(mCurrentPhaseTargetHeight - mCurrentHeight),
+        std::abs(mCurrentPhaseTargetHeight - mCurrentHeight),
         SWEHeightFieldOffset / 5.0f);
 
     float delayTicks;

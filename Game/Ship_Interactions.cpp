@@ -659,7 +659,7 @@ void Ship::RepairAt(
                             auto const displacementVelocity =
                                 movementDir
                                 * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
-                                * pow(abs(movementMagnitude), 0.2f)
+                                * std::pow(std::abs(movementMagnitude), 0.2f)
                                 / GameParameters::SimulationStepTimeDuration<float>
                                 * 0.5f;
                             mPoints.SetVelocity(otherEndpointIndex,
@@ -1151,7 +1151,7 @@ bool Ship::ScrubThrough(
         if (boundingBox.Contains(pointPosition))
         {
             // Distance = projection of (start->point) vector on segment normal
-            float const distance = abs((pointPosition - startPos).dot(segmentNormal));
+            float const distance = std::abs((pointPosition - startPos).dot(segmentNormal));
 
             // Check whether this point is in the radius
             if (distance <= scrubRadius)

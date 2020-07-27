@@ -1,8 +1,10 @@
 #include "Utils.h"
 
+#include <cmath>
+
 ::testing::AssertionResult ApproxEquals(float a, float b, float tolerance)
 {
-    if (abs(a - b) < tolerance)
+    if (std::abs(a - b) < tolerance)
     {
         return ::testing::AssertionSuccess();
     }

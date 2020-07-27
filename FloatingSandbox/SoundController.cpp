@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <limits>
 #include <regex>
 
@@ -1438,11 +1439,11 @@ void SoundController::OnWindSpeedUpdated(
     //
 
     float windVolume;
-    if (windSpeedAbsoluteMagnitude >= abs(baseSpeedMagnitude))
+    if (windSpeedAbsoluteMagnitude >= std::abs(baseSpeedMagnitude))
     {
         // 20 -> 43:
         // 100 * (-1 / 1.1^(0.3 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - abs(baseSpeedMagnitude))) + 1.f);
+        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - std::abs(baseSpeedMagnitude))) + 1.f);
     }
     else
     {
@@ -1468,7 +1469,7 @@ void SoundController::OnWindSpeedUpdated(
     {
         // Detect first arrival to max (gust) level
         if (windSpeedAbsoluteMagnitude > mLastWindSpeedAbsoluteMagnitude
-            && abs(maxSpeedMagnitude) - windSpeedAbsoluteMagnitude < 0.001f)
+            && std::abs(maxSpeedMagnitude) - windSpeedAbsoluteMagnitude < 0.001f)
         {
             PlayOneShotMultipleChoiceSound(
                 SoundType::WindGust,
