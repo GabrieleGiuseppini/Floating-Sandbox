@@ -36,6 +36,8 @@ inline vec2f normalise_naive(vec2f const & v, float length) noexcept
     }
 }
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 inline vec2f normalise_SSEx2(vec2f const & v, float length) noexcept
 {
     float fResult[4];
@@ -51,6 +53,8 @@ inline vec2f normalise_SSEx2(vec2f const & v, float length) noexcept
     _mm_store_ps(reinterpret_cast<float * restrict>(fResult), _r);
     return *(reinterpret_cast<vec2f *>(fResult));
 }
+
+#endif
 
 static void SingleVectorNormalization_Naive_PreLength_ResultDiscarded(benchmark::State& state)
 {
@@ -74,6 +78,8 @@ static void SingleVectorNormalization_Naive_PreLength_ResultDiscarded(benchmark:
 }
 BENCHMARK(SingleVectorNormalization_Naive_PreLength_ResultDiscarded);
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded(benchmark::State& state)
 {
     auto lengths = MakeFloats(SampleSize);
@@ -86,7 +92,7 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded(benchmark:
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = Algorithms::NormalizeVector2(vectors[i], lengths[i]);
+            vec2f norm = Algorithms::NormalizeVector2_SSE(vectors[i], lengths[i]);
 
             results[i] = (norm.x > norm.y);
         }
@@ -95,6 +101,10 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded(benchmark:
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded);
+
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 
 static void SingleVectorNormalization_SSEX2_PreLength_ResultDiscarded(benchmark::State& state)
 {
@@ -117,6 +127,8 @@ static void SingleVectorNormalization_SSEX2_PreLength_ResultDiscarded(benchmark:
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(SingleVectorNormalization_SSEX2_PreLength_ResultDiscarded);
+
+#endif
 
 static void SingleVectorNormalization_Naive_PreLength_ResultStored(benchmark::State& state)
 {
@@ -141,6 +153,8 @@ static void SingleVectorNormalization_Naive_PreLength_ResultStored(benchmark::St
 }
 BENCHMARK(SingleVectorNormalization_Naive_PreLength_ResultStored);
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void SingleVectorNormalization_SSEX1_PreLength_ResultStored(benchmark::State& state)
 {
     auto lengths = MakeFloats(SampleSize);
@@ -154,7 +168,7 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultStored(benchmark::St
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = Algorithms::NormalizeVector2(vectors[i], lengths[i]);
+            vec2f norm = Algorithms::NormalizeVector2_SSE(vectors[i], lengths[i]);
 
             ptrResults[i] = norm;
         }
@@ -163,6 +177,10 @@ static void SingleVectorNormalization_SSEX1_PreLength_ResultStored(benchmark::St
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(SingleVectorNormalization_SSEX1_PreLength_ResultStored);
+
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 
 static void SingleVectorNormalization_SSEX2_PreLength_ResultStored(benchmark::State& state)
 {
@@ -187,6 +205,8 @@ static void SingleVectorNormalization_SSEX2_PreLength_ResultStored(benchmark::St
 }
 BENCHMARK(SingleVectorNormalization_SSEX2_PreLength_ResultStored);
 
+#endif
+
 ////////////////////////////////
 
 static void SingleVectorNormalization_Naive_NoLength_ResultDiscarded(benchmark::State& state)
@@ -210,6 +230,8 @@ static void SingleVectorNormalization_Naive_NoLength_ResultDiscarded(benchmark::
 }
 BENCHMARK(SingleVectorNormalization_Naive_NoLength_ResultDiscarded);
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded(benchmark::State& state)
 {
     auto vectors = MakeVectors(SampleSize);
@@ -221,7 +243,7 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded(benchmark::
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = Algorithms::NormalizeVector2(vectors[i]);
+            vec2f norm = Algorithms::NormalizeVector2_SSE(vectors[i]);
 
             results[i] = (norm.x > norm.y);
         }
@@ -230,6 +252,8 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded(benchmark::
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded);
+
+#endif
 
 static void SingleVectorNormalization_Naive_NoLength_ResultStored(benchmark::State& state)
 {
@@ -252,6 +276,8 @@ static void SingleVectorNormalization_Naive_NoLength_ResultStored(benchmark::Sta
 }
 BENCHMARK(SingleVectorNormalization_Naive_NoLength_ResultStored);
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::State& state)
 {
     auto vectors = MakeVectors(SampleSize);
@@ -263,7 +289,7 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::Sta
     {
         for (size_t i = 0; i < SampleSize; ++i)
         {
-            vec2f norm = Algorithms::NormalizeVector2(vectors[i]);
+            vec2f norm = Algorithms::NormalizeVector2_SSE(vectors[i]);
 
             results[i] = norm;
         }
@@ -272,3 +298,5 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::Sta
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(SingleVectorNormalization_SSEX1_NoLength_ResultStored);
+
+#endif

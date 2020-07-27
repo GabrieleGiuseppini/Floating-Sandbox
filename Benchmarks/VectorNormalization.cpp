@@ -111,6 +111,8 @@ BENCHMARK(VectorNormalization_Naive_AndLength_RestrictPointers);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void VectorNormalization_Vectorized_AndLength_FullInstrinsics(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
@@ -188,6 +190,10 @@ static void VectorNormalization_Vectorized_AndLength_FullInstrinsics(benchmark::
 }
 BENCHMARK(VectorNormalization_Vectorized_AndLength_FullInstrinsics);
 
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics(benchmark::State & state)
 {
     auto const size = MakeSize(SampleSize);
@@ -263,6 +269,10 @@ static void VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics(
 }
 BENCHMARK(VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics);
 
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
 static void VectorNormalization_Algorithm(benchmark::State & state)
 {
     auto const size = MakeSize(SampleSize);
@@ -284,7 +294,7 @@ static void VectorNormalization_Algorithm(benchmark::State & state)
 
     for (auto _ : state)
     {
-        Algorithms::CalculateVectorDirsAndReciprocalLengths(
+        Algorithms::CalculateVectorDirsAndReciprocalLengths_SSE(
             pointData,
             springData,
             resultData,
@@ -297,6 +307,7 @@ static void VectorNormalization_Algorithm(benchmark::State & state)
 }
 BENCHMARK(VectorNormalization_Algorithm);
 
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
