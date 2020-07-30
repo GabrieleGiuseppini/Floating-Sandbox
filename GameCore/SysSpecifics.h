@@ -38,7 +38,7 @@
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined (_M_AMD64)
 #define FS_ARCHITECTURE_X86_64
 #define FS_REGISTER_WIDTH_64
-#elif defined(_M_IX86) || defined(i386)) || defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
+#elif defined(_M_IX86) || defined(i386) || defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
 #define FS_ARCHITECTURE_X86_32
 #define FS_REGISTER_WIDTH_32
 #endif

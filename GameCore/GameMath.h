@@ -39,7 +39,7 @@ inline std::int32_t FastTruncateToInt32(float value) noexcept
  */
 inline std::int64_t FastTruncateToInt64(float value) noexcept
 {
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if defined(FS_ARCHITECTURE_X86_64)
     return _mm_cvttss_si64(_mm_load_ss(&value));
 #else
     return static_cast<std::int64_t>(value);

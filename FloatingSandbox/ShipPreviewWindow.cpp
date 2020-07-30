@@ -285,7 +285,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
     if (deltaElement != 0)
     {
         int const newIndex = static_cast<int>(*mSelectedInfoTileIndex) + deltaElement;
-        if (newIndex >= 0 && newIndex < mInfoTiles.size())
+        if (newIndex >= 0 && newIndex < static_cast<int>(mInfoTiles.size()))
         {
             Select(static_cast<size_t>(newIndex));
 

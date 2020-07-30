@@ -12,7 +12,7 @@ static constexpr size_t SampleSize = 200000;
 static void DiffuseLight_Naive(benchmark::State& state)
 {
     auto const pointsSize = MakeSize(SampleSize);
-    auto const lampsSize = state.range(0);
+    auto const lampsSize = static_cast<size_t>(state.range(0));
 
     auto pointPositions = MakeVectors(pointsSize);
     auto pointPlaneIds = MakePlaneIds(pointsSize);
@@ -44,7 +44,7 @@ BENCHMARK(DiffuseLight_Naive)->Arg(1)->Arg(2)->Arg(3)->Arg(4)->Arg(8)->Arg(16)->
 static void DiffuseLight_Vectorized(benchmark::State & state)
 {
     auto const pointsSize = MakeSize(SampleSize);
-    auto const lampsSize = state.range(0);
+    auto const lampsSize = static_cast<size_t>(state.range(0));
 
     auto pointPositions = MakeVectors(pointsSize);
     auto pointPlaneIds = MakePlaneIds(pointsSize);

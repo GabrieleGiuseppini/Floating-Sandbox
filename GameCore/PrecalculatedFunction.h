@@ -16,7 +16,7 @@
  * This class implements a buffer containing values of a pre-calculated function between
  * two user-specified extremes.
  */
-template<int64_t SamplesCount>
+template<size_t SamplesCount>
 class PrecalculatedFunction
 {
     static_assert(SamplesCount > 1);
@@ -69,7 +69,7 @@ public:
 
         // Integral part - sample
         // Note: -7 % 3 == -1
-        auto sampleIndexI = absoluteSampleIndexI % SamplesCount;
+        auto sampleIndexI = absoluteSampleIndexI % static_cast<decltype(absoluteSampleIndexI)>(SamplesCount);
 
         if (sampleIndexI < 0)
         {
@@ -120,7 +120,7 @@ public:
 
         // Integral part - sample
         // Note: -7 % 3 == -1
-        auto sampleIndexI = absoluteSampleIndexI % SamplesCount;
+        auto sampleIndexI = absoluteSampleIndexI % static_cast<decltype(absoluteSampleIndexI)>(SamplesCount);
 
         // Fractional part within sample index and the next sample index
         float sampleIndexDx = absoluteSampleIndexF - absoluteSampleIndexI;
@@ -150,7 +150,7 @@ private:
         // Samples 1...SamplesCount-1
         float x = Dx;
         float previousValue = sampleValue;
-        for (int64_t i = 1; i < SamplesCount; ++i, x += Dx)
+        for (size_t i = 1; i < SamplesCount; ++i, x += Dx)
         {
             sampleValue = calculator(x);
 

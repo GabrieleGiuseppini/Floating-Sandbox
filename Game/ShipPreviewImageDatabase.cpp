@@ -178,7 +178,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
 
                 // Load index
                 {
-                    size_t const indexSize = endIndexPosition - trailer.IndexOffset;
+                    size_t const indexSize = static_cast<size_t>(endIndexPosition - trailer.IndexOffset);
 
                     // Alloc buffer
                     std::vector<char> indexBuffer(indexSize);
@@ -360,7 +360,7 @@ bool NewShipPreviewImageDatabase::Commit(
     // 1) Process new index elements vs old index elements
     //
 
-    size_t currentNewDbPreviewImageOffset = DatabaseStructure::PreviewImageStartOffset;
+    std::istream::pos_type currentNewDbPreviewImageOffset = DatabaseStructure::PreviewImageStartOffset;
 
     auto newDbIt = mIndex.cbegin();
     auto oldDbIt = oldDatabase.mIndex.cbegin();
@@ -463,7 +463,7 @@ bool NewShipPreviewImageDatabase::Commit(
                 getOutputStream(),
                 *oldDatabase.mDatabaseFileStream,
                 copyOldDbStartOffset,
-                copyOldDbEndOffset - copyOldDbStartOffset);
+                static_cast<size_t>(copyOldDbEndOffset - copyOldDbStartOffset));
 
             // No need to advance preview image offset in new db,
             // we've been updating it all the time
@@ -498,7 +498,7 @@ bool NewShipPreviewImageDatabase::Commit(
     //
 
     // Save index start offset for later
-    size_t const newDbIndexStartOffset = currentNewDbPreviewImageOffset;
+    auto const newDbIndexStartOffset = currentNewDbPreviewImageOffset;
 
     WriteFromData(
         getOutputStream(),

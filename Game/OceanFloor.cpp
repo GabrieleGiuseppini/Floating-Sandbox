@@ -83,22 +83,22 @@ void OceanFloor::Upload(
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
     float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
-    auto const numberOfSamplesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
+    size_t const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
 
-    if (numberOfSamplesToRender >= RenderSlices<int64_t>)
+    if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
         //
         // Have to take more than 1 sample per slice
         //
 
-        renderContext.UploadLandStart(RenderSlices<int>);
+        renderContext.UploadLandStart(RenderSlices<size_t>);
 
         // Calculate dx between each pair of slices with want to upload
         float const sliceDx = coverageWidth / RenderSlices<float>;
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (int64_t s = 0; s <= RenderSlices<int64_t>; ++s, sampleIndexX += sliceDx)
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
         {
             renderContext.UploadLand(
                 sampleIndexX,
@@ -117,7 +117,7 @@ void OceanFloor::Upload(
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (std::int64_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
         {
             renderContext.UploadLand(
                 sampleIndexX,
@@ -182,7 +182,7 @@ std::optional<bool> OceanFloor::AdjustTo(
 
     bool hasAdjusted = false;
     float x = leftX;
-    for (int64_t s = sampleIndex; x <= rightX && s < SamplesCount; ++s, x += Dx)
+    for (auto s = sampleIndex; x <= rightX && s < SamplesCount; ++s, x += Dx)
     {
         // Calculate new sample value, i.e. trajectory's value
         float const newSampleValue = leftTargetY + slopeY * (x - leftX);
@@ -287,7 +287,7 @@ void OceanFloor::CalculateBumpProfile()
     static constexpr float BumpFrequency3 = 0.001f;
 
     float x = 0.0;
-    for (int64_t i = 0; i < SamplesCount; ++i, x += Dx)
+    for (size_t i = 0; i < SamplesCount; ++i, x += Dx)
     {
         float const c1 = sinf(x * BumpFrequency1) * 10.f;
         float const c2 = sinf(x * BumpFrequency2) * 6.f;
@@ -307,7 +307,7 @@ void OceanFloor::CalculateResultantSampleValues()
     }
 
     // sample index = 1...SamplesCount-1
-    for (int64_t i = 1; i < SamplesCount; ++i)
+    for (size_t i = 1; i < SamplesCount; ++i)
     {
         float const sampleValue = CalculateResultantSampleValue(i);
 

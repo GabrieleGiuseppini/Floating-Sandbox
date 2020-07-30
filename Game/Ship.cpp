@@ -1705,7 +1705,8 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     auto & lampPlaneIds = mElectricalElements.GetLampPlaneIdWorkBuffer(); // Padded to vectorization float count
     auto & lampDistanceCoeffs = mElectricalElements.GetLampDistanceCoefficientWorkBuffer(); // Padded to vectorization float count
 
-    for (ElementIndex l = 0; l < mElectricalElements.GetLampCount(); ++l)
+    auto const lampCount = mElectricalElements.GetLampCount();
+    for (ElementIndex l = 0; l < lampCount; ++l)
     {
         auto const lampElectricalElementIndex = mElectricalElements.Lamps()[l];
         auto const lampPointIndex = mElectricalElements.GetPointIndex(lampElectricalElementIndex);

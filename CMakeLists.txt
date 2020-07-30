@@ -49,7 +49,7 @@ find_package(benchmark) # Not required as benchmarks are optional and used only 
 #
 
 if(APPLE)
-	# find_package() on OSX does not use wxWidgets_ROOT_DIR, use intermediate wx-config exe instead...
+	# find_package() on OSX does not use wxWidgets_ROOT_DIR, uses intermediate wx-config exe instead...
 	set(wxWidgets_CONFIG_EXECUTABLE "${wxWidgets_ROOT_DIR}/wx-config")
 endif(APPLE)
 
@@ -69,6 +69,7 @@ if (WIN32)
 
 	file(GLOB DEVIL_RUNTIME_LIBRARIES
 		${DEVIL_LIB_DIR}/*.dll)
+
 endif()
 
 #

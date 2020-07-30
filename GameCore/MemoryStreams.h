@@ -86,10 +86,10 @@ private:
         if (pos < 0 || pos > static_cast<std::streampos>(mStreamBuffer.size()))
             return std::streampos(-1);
 
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data() + pos, mStreamBuffer.data() + mStreamBuffer.size());
+        this->setg(mStreamBuffer.data(), mStreamBuffer.data() + static_cast<size_t>(pos), mStreamBuffer.data() + mStreamBuffer.size());
         this->setp(nullptr, nullptr);
 
-        return std::streampos(pos);
+        return pos;
     }
 
     std::streampos seekoff(

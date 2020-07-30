@@ -333,7 +333,7 @@ void UIPreferencesManager::LoadPreferences()
             if (auto lastPlayedBackgroundMusicIt = preferencesRootObject.find("last_played_background_music");
                 lastPlayedBackgroundMusicIt != preferencesRootObject.end() && lastPlayedBackgroundMusicIt->second.is<int64_t>())
             {
-                mMusicController->SetLastPlayedBackgroundMusic(lastPlayedBackgroundMusicIt->second.get<int64_t>());
+                mMusicController->SetLastPlayedBackgroundMusic(static_cast<size_t>(lastPlayedBackgroundMusicIt->second.get<int64_t>()));
             }
 
             // Game music volume

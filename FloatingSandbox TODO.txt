@@ -352,9 +352,57 @@ Render:
 			+ Undo fake architecture detection
 			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
 
-		- 32-bit build
-			- Need new build folder altogether, and new invocation of CMake with different generators
-			- Verify SSE intrinsics are fine in 32-bit process
+		= 32-bit build
+			+ Prepare 32-bit SDK:
+				+ wxWidgets (UNICODE)
+					+ Release
+					+ Debug
+				+ SFML
+					+ Release
+					+ Debug
+				+ DevIL
+					+ Release
+			+ Need new build folder altogether, and new invocation of CMake with different generators
+				+ UserSettings.cmake: see if may switch based off bitness
+					+ https://cmake.org/cmake/help/latest/variable/CMAKE_SIZEOF_VOID_P.html#variable:CMAKE_SIZEOF_VOID_P
+				+ benchmark issue
+			+ Build:
+				+ RelWithDebInfo
+					+ Run unit tests
+					+ Fix issue with sfml-d
+					+ Rerun CMake
+					+ Test run
+				+ Debug
+					+ Run unit tests
+					+ Test run
+				+ Release
+					+ Test run
+			+ Verify SSE intrinsics are fine in 32-bit process
+				+ Run through them, and check assembly
+			+ Add Arch+OS to AboutBox
+			= Re-test 64-bit
+				+ Clear Data folder for all flavors
+				+ Redo CMake
+				+ Run unit tests Debug
+				+ Test run Debug
+				- Test run RelWithDebInfo
+				- Test run Release
+			- Remove all NUKEME SDK folders
+			- Check all png's for ocean and land
+			- Commit & push
+			- Send for testing
+			= If wxWidgets' Unicode is fine, re-build wxWidgets with Unicode for 64-bit as well
+				+ Build SDK
+				- Add wxS to:
+					- SliderControl (takes wxString's as args)
+					- SettingsDialog
+						- See speedup
+					- PreferencesDialog				
+			- Install GameJolt client and see user experience with MSI
+
+		- Test speed with ElementIndex/Count being 64-bit
+		- Check if any point and spring structs are aligned badly
+		- Run with address sanitizer (32-bit)
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
@@ -363,7 +411,14 @@ Render:
 			+ Ask to test
 			= Unalignment exception with ship database file
 				- Ask to test
+			= Menus
+				+ Running without GameIteration: works
+				- TODOHERE
 			+ Remove all TODOTEST logging		
+
+		- Add checkbox for bubble sounds
+			- Storage owned by SoundController
+			- Cutoff happens @ SoundController
 
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
@@ -379,21 +434,24 @@ Render:
 
 		- GameController: just one special day?
 
-		- Run with address sanitizer
-			- Requires newer Windows
-
 		- Frontier (*)
 
 		- Check new explosion animation
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
-		- Latest wxWidgets - Unicode 
-
 		- Spring relaxation with intrinsics
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
+
+		- Release:
+			- FS Site:
+			- "System Requirements" Readme section, @ GitHub & @ GameJolt
+				- Windows 64 & 32-bit, & perf difference
+				- OpenGL 2.1
+				- Link to FAQ - for issues like OpenGL... - on FS.com
+					- Restructure in sections, w/"Issues" & "System Requirements"
 
 		----------------------------------------------------------------------------------------
 
@@ -706,6 +764,9 @@ Render:
 				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)			
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
+	- Get rid of DevIL
+		- Need to take libpng and zlib from SDK
+		- Need to code own image manipulations
 	- See if may upgrade SFML to master (~2.6) with OPUS support
 		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)

@@ -90,7 +90,7 @@ Font Font::Load(std::filesystem::path const & filepath)
     //
 
     std::error_code ec;
-    size_t const fileSize = std::filesystem::file_size(filepath, ec);
+    size_t const fileSize = static_cast<size_t>(std::filesystem::file_size(filepath, ec));
     if (!!ec)
     {
         throw GameException("Cannot open file \"" + filepath.string() + "\"");

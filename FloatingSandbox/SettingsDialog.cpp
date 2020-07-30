@@ -77,12 +77,12 @@ SettingsDialog::SettingsDialog(
     Create(
         mParent,
         wxID_ANY,
-        _("Simulation Settings"),
+        wxS("Simulation Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
             | /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
-        _T("Settings Window"));
+        wxS("Settings Window"));
 
     this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
 
@@ -136,7 +136,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateMechanicsFluidsLightsPanel(mechanicsFluidsLightsPanel);
 
-    notebook->AddPage(mechanicsFluidsLightsPanel, "Mechanics, Fluids, and Lights");
+    notebook->AddPage(mechanicsFluidsLightsPanel, wxS("Mechanics, Fluids, and Lights"));
 
 
     //
@@ -147,7 +147,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateHeatPanel(heatPanel);
 
-    notebook->AddPage(heatPanel, "Heat and Combustion");
+    notebook->AddPage(heatPanel, wxS("Heat and Combustion"));
 
 
     //
@@ -158,7 +158,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateOceanSmokeSkyPanel(oceanAndSkyPanel);
 
-    notebook->AddPage(oceanAndSkyPanel, "Ocean, Smoke, and Sky");
+    notebook->AddPage(oceanAndSkyPanel, wxS("Ocean, Smoke, and Sky"));
 
 
     //
@@ -169,7 +169,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateWindAndWavesPanel(windAndWavesPanel);
 
-    notebook->AddPage(windAndWavesPanel, "Wind and Waves");
+    notebook->AddPage(windAndWavesPanel, wxS("Wind and Waves"));
 
 
     //
@@ -180,7 +180,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateInteractionsPanel(interactionsPanel);
 
-    notebook->AddPage(interactionsPanel, "Interactions");
+    notebook->AddPage(interactionsPanel, wxS("Interactions"));
 
 
     //
@@ -191,7 +191,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateRenderingPanel(renderingPanel);
 
-    notebook->AddPage(renderingPanel, "Rendering");
+    notebook->AddPage(renderingPanel, wxS("Rendering"));
 
 
     //
@@ -202,7 +202,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateSoundAndAdvancedPanel(soundAndAdvancedPanel);
 
-    notebook->AddPage(soundAndAdvancedPanel, "Sound and Advanced Settings");
+    notebook->AddPage(soundAndAdvancedPanel, wxS("Sound and Advanced Settings"));
 
 
     //
@@ -213,7 +213,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateSettingsManagementPanel(settingsManagementPanel);
 
-    notebook->AddPage(settingsManagementPanel, "Settings Management");
+    notebook->AddPage(settingsManagementPanel, wxS("Settings Management"));
 
 
 
@@ -229,29 +229,29 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
-        mRevertToDefaultsButton = new wxButton(this, wxID_ANY, "Revert to Defaults");
-        mRevertToDefaultsButton->SetToolTip("Resets all settings to their default values.");
+        mRevertToDefaultsButton = new wxButton(this, wxID_ANY, wxS("Revert to Defaults"));
+        mRevertToDefaultsButton->SetToolTip(wxS("Resets all settings to their default values."));
         mRevertToDefaultsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
         buttonsSizer->Add(mRevertToDefaultsButton, 0, 0, 0);
 
         buttonsSizer->AddStretchSpacer(1);
 
-        mOkButton = new wxButton(this, wxID_ANY, "OK");
-        mOkButton->SetToolTip("Closes the window keeping all changes.");
+        mOkButton = new wxButton(this, wxID_ANY, wxS("OK"));
+        mOkButton->SetToolTip(wxS("Closes the window keeping all changes."));
         mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
         buttonsSizer->Add(mOkButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        mCancelButton = new wxButton(this, wxID_ANY, "Cancel");
-        mCancelButton->SetToolTip("Reverts all changes effected since the window was last opened, and closes the window.");
+        mCancelButton = new wxButton(this, wxID_ANY, wxS("Cancel"));
+        mCancelButton->SetToolTip(wxS("Reverts all changes effected since the window was last opened, and closes the window."));
         mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
         buttonsSizer->Add(mCancelButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        mUndoButton = new wxButton(this, wxID_ANY, "Undo");
-        mUndoButton->SetToolTip("Reverts all changes effected since the window was last opened.");
+        mUndoButton = new wxButton(this, wxID_ANY, wxS("Undo"));
+        mUndoButton->SetToolTip(wxS("Reverts all changes effected since the window was last opened."));
         mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
         buttonsSizer->Add(mUndoButton, 0, 0, 0);
 
@@ -592,7 +592,7 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
 
         auto result = wxMessageBox(
             "Are you sure you want to replace settings \"" + metadata.Key.Name + "\" with the current settings?",
-            "Warning",
+            wxS("Warning"),
             wxCANCEL | wxOK);
 
         if (result == wxOK)
@@ -621,7 +621,7 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
         // Ask user whether they're sure
         auto result = wxMessageBox(
             "Are you sure you want to delete settings \"" + metadata.Key.Name + "\"?",
-            "Warning",
+            wxS("Warning"),
             wxCANCEL | wxOK);
 
         if (result == wxOK)
@@ -686,7 +686,7 @@ void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
             // Ask user if sure
             auto result = wxMessageBox(
                 "Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
-                "Warning",
+                wxS("Warning"),
                 wxCANCEL | wxOK);
 
             if (result == wxCANCEL)

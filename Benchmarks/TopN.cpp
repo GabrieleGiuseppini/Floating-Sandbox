@@ -146,7 +146,7 @@ static void TopN_BoundedVector_EmplaceAnd10thElement(benchmark::State& state)
     auto vals = MakeFloats(Size);
     size_t v = 0;
 
-    BoundedVector<Element> results(state.range(0));
+    BoundedVector<Element> results(static_cast<size_t>(state.range(0)));
 
     TupleComparer tc;
 
@@ -176,7 +176,7 @@ static void TopN_TemporallyCoherentPriorityQueue_Add(benchmark::State& state)
     auto vals = MakeFloats(Size);
     size_t v = 0;
 
-    TemporallyCoherentPriorityQueue<float> results(state.range(0));
+    TemporallyCoherentPriorityQueue<float> results(size_t(state.range(0)));
 
     for (auto _ : state)
     {
@@ -197,7 +197,7 @@ static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State&
 {
     auto vals = MakeFloats(Size);
 
-    TemporallyCoherentPriorityQueue<float> results(state.range(0));
+    TemporallyCoherentPriorityQueue<float> results(size_t(state.range(0)));
 
     size_t phase = 0;
     for (auto _ : state)
@@ -221,7 +221,7 @@ static void TopN_10TruncatedPriorityQueue_Emplace(benchmark::State& state)
     auto vals = MakeFloats(Size);
     size_t v = 0;
 
-    TruncatedPriorityQueue<float> results(state.range(0));
+    TruncatedPriorityQueue<float> results(size_t(state.range(0)));
 
     for (auto _ : state)
     {

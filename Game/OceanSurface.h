@@ -101,7 +101,7 @@ public:
 
     // The number of samples for the entire world width;
     // a higher value means more resolution at the expense of Update() and of cache misses
-    static int64_t constexpr SamplesCount = 8192;
+    static size_t constexpr SamplesCount = 8192;
 
     // The x step of the samples
     static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
@@ -109,7 +109,7 @@ public:
 private:
 
     void SetSWEWaveHeight(
-        int32_t centerIndex,
+        size_t centerIndex,
         float height);
 
     void RecalculateCoefficients(
@@ -161,20 +161,20 @@ private:
     static float constexpr SWEHeightFieldAmplification = 50.0f;
 
     // The number of samples we raise with a state machine
-    static int32_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
+    static size_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
 
     // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-    static int32_t constexpr SWEWaveGenerationSamples = 1;
+    static size_t constexpr SWEWaveGenerationSamples = 1;
 
     // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-    static int32_t constexpr SWEBoundaryConditionsSamples = 3;
+    static size_t constexpr SWEBoundaryConditionsSamples = 3;
 
-    static int32_t constexpr SWEOuterLayerSamples =
+    static size_t constexpr SWEOuterLayerSamples =
         SWEWaveGenerationSamples
         + SWEBoundaryConditionsSamples;
 
     // The total number of samples in the SWE buffers
-    static int32_t constexpr SWETotalSamples =
+    static size_t constexpr SWETotalSamples =
         SWEOuterLayerSamples
         + SamplesCount
         + SWEOuterLayerSamples;
@@ -226,7 +226,7 @@ private:
     public:
 
         SWEInteractiveWaveStateMachine(
-            int32_t centerIndex,
+            size_t centerIndex,
             float lowHeight,
             float highHeight,
             float currentSimulationTime);
@@ -259,7 +259,7 @@ private:
             Fall
         };
 
-        int32_t const mCenterIndex;
+        size_t const mCenterIndex;
         float const mLowHeight;
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
@@ -282,7 +282,7 @@ private:
     public:
 
         SWEAbnormalWaveStateMachine(
-            int32_t centerIndex,
+            size_t centerIndex,
             float lowHeight,
             float highHeight,
             float riseDelay, // sec
@@ -309,7 +309,7 @@ private:
             Fall
         };
 
-        int32_t const mCenterIndex;
+        size_t const mCenterIndex;
         float const mLowHeight;
         float const mHighHeight;
         float const mFallDelay; // sec

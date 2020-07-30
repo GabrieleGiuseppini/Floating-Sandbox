@@ -311,8 +311,8 @@ vec3f ShipTexturizer::SampleTexture(
     float const pixelDy = pixelY - pixelYI;
 
     // Wrap integral coordinates
-    pixelXI %= texture.Size.Width;
-    pixelYI %= texture.Size.Height;
+    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.Width);
+    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.Height);
 
     assert(pixelXI >= 0 && pixelXI < texture.Size.Width);
     assert(pixelDx >= 0.0f && pixelDx < 1.0f);
@@ -323,8 +323,8 @@ vec3f ShipTexturizer::SampleTexture(
     // Bilinear
     //
 
-    int const nextPixelXI = (pixelXI + 1) % texture.Size.Width;
-    int const nextPixelYI = (pixelYI + 1) % texture.Size.Height;
+    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.Width);
+    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.Height);
 
     // Linear interpolation between x samples at bottom
     vec3f const interpolatedXColorBottom = Mix(

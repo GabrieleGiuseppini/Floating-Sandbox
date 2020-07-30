@@ -54,7 +54,7 @@ OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatc
     // - Initialize *all* values - including extra unused sample
     //
 
-    for (int32_t i = 0; i <= SWETotalSamples; ++i)
+    for (size_t i = 0; i <= SWETotalSamples; ++i)
     {
         mHeightField[i] = SWEHeightFieldOffset;
         mVelocityField[i] = 0.0f;
@@ -196,7 +196,7 @@ void OceanSurface::Update(
 
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
-    ////for (int32_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
+    ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
     ////{
     ////    avgHeight += mHeightField[i];
     ////}
@@ -229,9 +229,9 @@ void OceanSurface::Upload(
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
     float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
-    auto const numberOfSamplesToRender = static_cast<int64_t>(ceil(coverageWidth / Dx));
+    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
 
-    if (numberOfSamplesToRender >= RenderSlices<int64_t>)
+    if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
         //
         // Have to take more than 1 sample per slice
@@ -244,7 +244,7 @@ void OceanSurface::Upload(
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (int64_t s = 0; s <= RenderSlices<int64_t>; ++s, sampleIndexX += sliceDx)
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
         {
             renderContext.UploadOcean(
                 sampleIndexX,
@@ -264,7 +264,7 @@ void OceanSurface::Upload(
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (std::int64_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
         {
             renderContext.UploadOcean(
                 sampleIndexX,
@@ -298,7 +298,7 @@ void OceanSurface::AdjustTo(
 
             auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
 
-            int32_t const centerIndex = SWEOuterLayerSamples + static_cast<int32_t>(sampleIndex);
+            size_t const centerIndex = SWEOuterLayerSamples + static_cast<size_t>(sampleIndex);
 
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
@@ -362,7 +362,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
 
     // (Re-)start state machine
-    int32_t const centerIndex = SWEOuterLayerSamples + static_cast<int32_t>(sampleIndex);
+    size_t const centerIndex = SWEOuterLayerSamples + static_cast<size_t>(sampleIndex);
     mSWETsunamiWaveStateMachine.emplace(
         centerIndex,
         mHeightField[centerIndex],  // LowHeight == current height
@@ -381,7 +381,7 @@ void OceanSurface::TriggerRogueWave(
     Wind const & wind)
 {
     // Choose locus
-    int32_t centerIndex;
+    size_t centerIndex;
     if (wind.GetBaseAndStormSpeedMagnitude() >= 0.0f)
     {
         // Left locus
@@ -418,14 +418,14 @@ void OceanSurface::TriggerRogueWave(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void OceanSurface::SetSWEWaveHeight(
-    int32_t centerIndex,
+    size_t centerIndex,
     float height)
 {
-    int32_t const firstSampleIndex = centerIndex - SWEWaveStateMachinePerturbedSamplesCount / 2;
+    int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
 
-    for (int32_t i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
+    for (int i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
     {
-        int32_t idx = firstSampleIndex + i;
+        int idx = firstSampleIndex + i;
         if (idx >= SWEBoundaryConditionsSamples
             && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
         {
@@ -570,7 +570,7 @@ void OceanSurface::AdvectHeightField()
     //
 
     // Process all height samples, except for boundary condition samples
-    for (int32_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // The height field values are at the center of the cell,
         // while velocities are at the edges - hence we need to take
@@ -589,7 +589,7 @@ void OceanSurface::AdvectHeightField()
             static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index
-        int32_t const prevCellIndexI = FastTruncateInt32(prevCellIndex2);
+        auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex2);
         float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
         assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
 
@@ -610,7 +610,7 @@ void OceanSurface::AdvectVelocityField()
     // Process all velocity samples, except for boundary condition samples
     //
     // Note: the last velocity sample is the one after the last height field sample
-    for (int32_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
         float const v = mCurrentVelocityField[i];
@@ -627,7 +627,7 @@ void OceanSurface::AdvectVelocityField()
             static_cast<float>(SWETotalSamples - 1));
 
         // Calculate integral and fractional parts of the index
-        int32_t const prevCellIndexI = FastTruncateInt32(prevCellIndex2);
+        auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex2);
         float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
         assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
 
@@ -677,7 +677,7 @@ void OceanSurface::UpdateFields()
         * (mVelocityField[0 + 1] - mVelocityField[0])
         * FactorH;
 
-    for (int32_t i = 1; i < SWETotalSamples; ++i)
+    for (size_t i = 1; i < SWETotalSamples; ++i)
     {
         mHeightField[i] -=
             mHeightField[i]
@@ -779,7 +779,7 @@ void OceanSurface::GenerateSamples(
     float const sinArgRippleDx = WindRippleWaveNumber * Dx / (2 * Pi<float>);
 
     // sample index = 1...SamplesCount - 1
-    for (int64_t i = 1; i < SamplesCount; ++i)
+    for (size_t i = 1; i < SamplesCount; ++i)
     {
         float const sweValue =
             (mHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
@@ -824,7 +824,7 @@ void OceanSurface::GenerateSamples(
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
-    int32_t centerIndex,
+    size_t centerIndex,
     float startHeight,
     float targetHeight,
     float currentSimulationTime)
@@ -942,7 +942,7 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 OceanSurface::SWEAbnormalWaveStateMachine::SWEAbnormalWaveStateMachine(
-    int32_t centerIndex,
+    size_t centerIndex,
     float lowHeight,
     float highHeight,
     float riseDelay, // sec

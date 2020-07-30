@@ -113,7 +113,7 @@ private:
     //
 
     // The number of samples
-    static constexpr int64_t SamplesCount = GameParameters::OceanFloorTerrainSamples<int64_t>;
+    static constexpr size_t SamplesCount = GameParameters::OceanFloorTerrainSamples<size_t>;
 
     // The x step of the samples
     static constexpr float Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
