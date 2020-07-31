@@ -115,7 +115,7 @@ SwitchboardPanel::SwitchboardPanel(
                 auto backgroundBitmapThumb2 = ImageTools::Truncate(std::move(backgroundBitmapThumb1), ImageSize(64, 32));
 
                 mBackgroundBitmapComboBox->Append(
-                    _(""),
+                    wxEmptyString,
                     WxHelpers::MakeBitmap(backgroundBitmapThumb2),
                     new wxStringClientData(backgroundBitmapFilepath.string()));
             }

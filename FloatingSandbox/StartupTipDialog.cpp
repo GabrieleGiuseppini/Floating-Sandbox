@@ -44,8 +44,8 @@ StartupTipDialog::StartupTipDialog(
         wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
 
         {
-            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, "Don't show this tip again");
-            dontChk->SetToolTip("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Preferences\" window.");
+            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, wxS("Don't show this tip again"));
+            dontChk->SetToolTip(wxS("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Preferences\" window."));
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &StartupTipDialog::OnDontShowAgainCheckboxChanged, this);
 

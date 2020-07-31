@@ -1,0 +1,41 @@
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:175
+msgid "At this moment it is not possible to check for updates; please try again later..."
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:172
+msgid "Cannot Check for Updates at This Moment"
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:20
+msgid "Checking for Updates..."
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:42
+msgid "Checking for updates..."
+msgstr ""
+
+#: ..\FloatingSandbox\HelpDialog.cpp:17
+msgid "Help"
+msgstr ""
+
+#: ..\FloatingSandbox\LoggingDialog.cpp:29
+msgid "Logging"
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:151
+msgid "No New Updates"
+msgstr ""
+
+#: ..\FloatingSandbox\ShipDescriptionDialog.cpp:67
+#: ..\FloatingSandbox\StartupTipDialog.cpp:58
+msgid "OK"
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:155
+#, c-format
+msgid "The latest available version is %s, and you are running version %s; there are no new updates..."
+msgstr ""
+
+#: ..\FloatingSandbox\StartupTipDialog.cpp:17
+msgid "Welcome!"
+msgstr ""

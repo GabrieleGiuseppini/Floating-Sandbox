@@ -17,7 +17,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
     : wxDialog(
         parent,
         wxID_ANY,
-        wxString(_("Checking for Updates...")),
+        _("Checking for Updates..."),
         wxDefaultPosition,
         wxDefaultSize,
         wxCAPTION | wxFRAME_SHAPED | wxSTAY_ON_TOP)
@@ -39,7 +39,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         vSizer->AddStretchSpacer(1);
 
         {
-            auto label = new wxStaticText(mCheckingPanel, wxID_ANY, "Checking for updates...", wxDefaultPosition,
+            auto label = new wxStaticText(mCheckingPanel, wxID_ANY, _("Checking for updates..."), wxDefaultPosition,
                 wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
             vSizer->Add(label, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 6);
@@ -70,14 +70,14 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         vSizer->AddStretchSpacer(1);
 
         {
-            mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, "", wxDefaultPosition,
+            mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
                 wxSize(-1, 30), wxALIGN_CENTER_HORIZONTAL);
 
             vSizer->Add(mNoUpdateMessage, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 6);
         }
 
         {
-            wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, _("OK"));
+            wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, wxS("OK"));
             okButton->SetDefault();
 
             vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
@@ -148,14 +148,16 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
                         // Notify user of no new version
                         //
 
-                        this->SetTitle("No New Updates");
+                        this->SetTitle(_("No New Updates"));
 
-                        ShowNoUpdateMessage(
-                            "The latest available version is "
-                            + outcome->LatestVersion->ToString()
-                            + ", while you are running version "
-                            + Version::CurrentVersion().ToString()
-                            + "; there are no new updates...");
+                        wxString message;
+                        message.Printf(_(
+                            "The latest available version is %s, and you are running version %s;"
+                            " there are no new updates..."),
+                            outcome->LatestVersion->ToString().c_str(),
+                            Version::CurrentVersion().ToString().c_str());
+
+                        ShowNoUpdateMessage(message);
                     }
 
                     break;
@@ -167,10 +169,10 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
                     // Notify user of error
                     //
 
-                    this->SetTitle("Cannot Check for Updates at This Moment");
+                    this->SetTitle(_("Cannot Check for Updates at This Moment"));
 
                     ShowNoUpdateMessage(
-                        "At this moment it is not possible to check for updates; please try again later...");
+                        _("At this moment it is not possible to check for updates; please try again later..."));
 
                     break;
                 }
@@ -183,7 +185,7 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
     }
 }
 
-void CheckForUpdatesDialog::ShowNoUpdateMessage(std::string message)
+void CheckForUpdatesDialog::ShowNoUpdateMessage(wxString const & message)
 {
     mNoUpdateMessage->SetLabelText(message);
     mNoUpdateMessage->Fit();

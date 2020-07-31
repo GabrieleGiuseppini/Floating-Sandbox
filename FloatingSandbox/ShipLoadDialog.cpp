@@ -139,7 +139,7 @@ ShipLoadDialog::ShipLoadDialog(
             mRecentDirectoriesComboBox = new wxComboBox(
                 this,
                 wxID_ANY,
-                "",
+                wxEmptyString,
                 wxDefaultPosition,
                 wxDefaultSize,
                 emptyComboChoices,
@@ -174,7 +174,7 @@ ShipLoadDialog::ShipLoadDialog(
             mShipSearchCtrl = new wxSearchCtrl(
                 this,
                 wxID_ANY,
-                "",
+                wxEmptyString,
                 wxDefaultPosition,
                 wxSize(-1, 24),
                 0);

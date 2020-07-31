@@ -31,7 +31,7 @@ private:
 
     void OnCheckCompletionTimer(wxTimerEvent & event);
 
-    void ShowNoUpdateMessage(std::string message);
+    void ShowNoUpdateMessage(wxString const & message);
 
 private:
 

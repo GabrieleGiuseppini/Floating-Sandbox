@@ -30,7 +30,7 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 		wxDefaultPosition,
         wxSize(800, 250),
 		wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER | wxMINIMIZE_BOX | wxFRAME_SHAPED,
-		_T("Logging Window"));
+		wxS("Logging Window"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 

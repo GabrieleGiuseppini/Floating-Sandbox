@@ -75,11 +75,11 @@ AboutDialog::AboutDialog(
 
 	mainSizer->AddSpacer(1);
 
-	wxStaticText * title2Label = new wxStaticText(this, wxID_ANY, wxS(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-	title2Label->SetLabelText(
-		wxS("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n")
-		wxS("(c) Gabriele Giuseppini 2018-2020\n")
-		wxS("This version licensed to Mattia, Elia, and all the others kids in the world"));
+	wxStaticText * title2Label = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+	title2Label->SetLabelText(wxS(
+		"Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n"
+		"(c) Gabriele Giuseppini 2018-2020\n"
+		"This version licensed to Mattia, Elia, and all the others kids in the world"));
 	mainSizer->Add(title2Label, 0, wxALIGN_CENTRE);
 
 	mainSizer->AddSpacer(5);
@@ -125,81 +125,81 @@ AboutDialog::AboutDialog(
 	// Populate credits
 	//
 
-	std::vector<std::tuple<std::string, std::string, std::string>> credits
+	std::vector<std::tuple<wxString, wxString, wxString>> credits
 	{
-		{"Ship engineers:", "TopHatLemons", "" },
-		{"\t\t\t\t", "Truce#3326", "" },
-		{"\t\t\t\t", "RetroGraczzPL", "" },
-		{"\t\t\t\t", "Nomadavid", "" },
-		{"\t\t\t\t", "Wreno", "" },
-		{"\t\t\t\t", "Pac0master", "" },
-		{"\t\t\t\t", "CorbinPasta93", "" },
-		{"\t\t\t\t", "Yorkie", "" },
-		{"\t\t\t\t", "Bluefox", "" },
-		{"\t\t\t\t", "KikoTheBoatBuilder", "" },
-		{"\t\t\t\t", "Albert Windsor", "" },
-		{"\t\t\t\t", "Takara", "" },
-		{"\t\t\t\t", "Michael Bozarth", "https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
-		{"\t\t\t\t", "Rockabilly Rebel", "" },
-		{"\t\t\t\t", "McShooter2018", "" },
-		{"\t\t\t\t", "Dumbphones", "" },
-		{"\t\t\t\t", "NotTelling", "" },
-		{"\t\t\t\t", "Hugo_2503", "" },
-		{"\t\t\t\t", "_ASTYuu_", "" },
-		{"\t\t\t\t", "Serhiiiihres", "" },
-		{"\t\t\t\t", "JackTheBrickfilmMaker", "https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ" },
-		{"\t\t\t\t", "Pandadude12345", "" },
-		{"\t\t\t\t", "John Smith", "" },
-		{"\t\t\t\t", "Dkuz", "" },
-		{"\t\t\t\t", "Loree", "" },
-		{"\t\t\t\t", "Daewoom", "" },
-		{"\t\t\t\t", "Aqua", "" },
-		{"\t\t\t\t", "MasterGarfield", "" },
-		{"\t\t\t\t", "Darek225", "https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w" },
-		{"\t\t\t\t", "Aur\xe9lien WOLFF", "" },
-		{"\t\t\t\t", "HummeL", "https://www.youtube.com/c/HummeL_Prog" },
-		{"\t\t\t\t", "Alex di Roma", "" },
-		{"\t\t\t\t", "Fox Assor", "https://vk.com/id448121270" },
-		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
-		{"\t\t\t\t", "2017 Leonardo", "" },
-		{"\t\t\t\t", "sinking_feeling", "" },
+		{wxS("Ship engineers:"), wxS("TopHatLemons"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Truce#3326"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("RetroGraczzPL"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Nomadavid"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Wreno"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Pac0master"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("CorbinPasta93"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Yorkie"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Bluefox"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("KikoTheBoatBuilder"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Albert Windsor"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Takara"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Michael Bozarth"), wxS("https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw") },
+		{wxS("\t\t\t\t"), wxS("Rockabilly Rebel"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("McShooter2018"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Dumbphones"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("NotTelling"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Hugo_2503"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("_ASTYuu_"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Serhiiiihres"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("JackTheBrickfilmMaker"), wxS("https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ") },
+		{wxS("\t\t\t\t"), wxS("Pandadude12345"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("John Smith"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Dkuz"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Loree"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Daewoom"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Aqua"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("MasterGarfield"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Darek225"), wxS("https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w") },
+		{wxS("\t\t\t\t"), wxS("Aur\xe9lien WOLFF"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("HummeL"), wxS("https://www.youtube.com/c/HummeL_Prog") },
+		{wxS("\t\t\t\t"), wxS("Alex di Roma"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("Fox Assor"), wxS("https://vk.com/id448121270") },
+		{wxS("\t\t\t\t"), wxS("Officer TimCan"), wxS("https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg") },
+		{wxS("\t\t\t\t"), wxS("2017 Leonardo"), wxEmptyString },
+		{wxS("\t\t\t\t"), wxS("sinking_feeling"), wxEmptyString },
 
-		{"Music:\t\t", "\"The Short Journey to the Seabed\", Soul Heater", "https://soundcloud.com/soul-heater" },
-		{"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
-		{"\t\t\t\t", "\"Long Note Four\", Kevin MacLeod", "https://incompetech.com" },
-		{"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
-		{"\t\t\t\t", "\"Symmetry\", Kevin MacLeod", "https://incompetech.com" },
-		{"\t\t\t\t", "> Licensed under Creative Commons: By Attribution 4.0 License", "https://creativecommons.org/licenses/by/4.0/" },
-		{"\t\t\t\t", "Michael Bozarth; Stuart's Piano World", "https://stuartspianoworld.com/" },
-		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
+		{wxS("Music:\t\t"), wxS("\"The Short Journey to the Seabed\", Soul Heater"), wxS("https://soundcloud.com/soul-heater")},
+		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{wxS("\t\t\t\t"), wxS("\"Long Note Four\", Kevin MacLeod"), wxS("https://incompetech.com")},
+		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{wxS("\t\t\t\t"), wxS("\"Symmetry\", Kevin MacLeod"), wxS("https://incompetech.com")},
+		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{wxS("\t\t\t\t"), wxS("Michael Bozarth; Stuart's Piano World"), wxS("https://stuartspianoworld.com/")},
+		{wxS("\t\t\t\t"), wxS("Officer TimCan"), wxS("https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg")},
 
-		{"Testing:\t\t", "Pac0master", "" },
-		{"\t\t\t\t", "McShooter2018", "" },
-		{"\t\t\t\t", "Wreno", "" },
-		{"\t\t\t\t", "Dkuz", "" },
-		{"\t\t\t\t", "Michael Bozarth", "https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw" },
-		{"\t\t\t\t", "_ASTYuu_", "" },
-		{"\t\t\t\t", "sinking_feeling", "" },
-		{"\t\t\t\t", "Officer TimCan", "https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg" },
-		{"\t\t\t\t", "KikoTheBoatBuilder", "" },
-		{"\t\t\t\t", "DioxCode ", "https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ" },
+		{wxS("Testing:\t\t"), wxS("Pac0master"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("McShooter2018"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("Wreno"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("Dkuz"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("Michael Bozarth"), wxS("https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw")},
+		{wxS("\t\t\t\t"), wxS("_ASTYuu_"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("sinking_feeling"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("Officer TimCan"), wxS("https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg")},
+		{wxS("\t\t\t\t"), wxS("KikoTheBoatBuilder"), wxEmptyString},
+		{wxS("\t\t\t\t"), wxS("DioxCode "), wxS("https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ")},
 
-		{"Factory of ideas:\t", "Mattia Giuseppini", "" },
+		{wxS("Factory of ideas:\t"), wxS("Mattia Giuseppini"), wxEmptyString},
 
-		{"macOS build engineer:\t", "The_SamminAter", "" },
+		{wxS("macOS build engineer:\t"), wxS("The_SamminAter"), wxEmptyString},
 
-		{"Chief ship literature officer:", "Maximord", "" },
+		{wxS("Chief ship literature officer:"), wxS("Maximord"), wxEmptyString},
 
-		{"", "", ""},
+		{wxEmptyString, wxEmptyString, wxEmptyString},
 
-		{"Textures:\t", "Tune 'Prototstar' Katerungroch", ""},
-		{"wxWidgets:\t", "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al", "https://www.wxwidgets.org/"},
-		{"SFML:\t\t", "Copyright (c) Laurent Gomila", "https://www.sfml-dev.org/"},
-		{"DevIL:\t\t", "Denton Woods et al", "http://openil.sourceforge.net/" },
-		{"picojson:\t", "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku", "https://github.com/kazuho/picojson"},
-		{"Bitmap Font Generator:\t\t", "Copyright (c) 2005-2011 Karl Walsh (Codehead)", "http://www.codehead.co.uk/cbfg/" },
-		{"OpenGL tutorial:\t", "Joey de Vries", "https://learnopengl.com/" },
-		{"Fast approx:\t", "Copyright (c) 2011 Paul Mineiro", "http://www.machinedlearnings.com/"}
+		{wxS("Textures:\t"), wxS("Tune 'Prototstar' Katerungroch"), wxEmptyString},
+		{wxS("wxWidgets:\t"), wxS("Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"), wxS("https://www.wxwidgets.org/")},
+		{wxS("SFML:\t\t"), wxS("Copyright (c) Laurent Gomila"), wxS("https://www.sfml-dev.org/")},
+		{wxS("DevIL:\t\t"), wxS("Denton Woods et al"), wxS("http://openil.sourceforge.net/")},
+		{wxS("picojson:\t"), wxS("Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"), wxS("https://github.com/kazuho/picojson")},
+		{wxS("Bitmap Font Generator:\t\t"), wxS("Copyright (c) 2005-2011 Karl Walsh (Codehead)"), wxS("http://www.codehead.co.uk/cbfg/")},
+		{wxS("OpenGL tutorial:\t"), wxS("Joey de Vries"), wxS("https://learnopengl.com/")},
+		{wxS("Fast approx:\t"), wxS("Copyright (c) 2011 Paul Mineiro"), wxS("http://www.machinedlearnings.com/")}
 	};
 
 	wxFont creditsTitleFont(wxFontInfo(8).Bold());
@@ -208,7 +208,7 @@ AboutDialog::AboutDialog(
 	wxFlexGridSizer * creditsSizer = new wxFlexGridSizer(4, 0, 2);
 	for (auto const & credit : credits)
 	{
-		if (std::get<0>(credit).empty() && std::get<1>(credit).empty() && std::get<2>(credit).empty())
+		if (std::get<0>(credit).IsEmpty() && std::get<1>(credit).IsEmpty() && std::get<2>(credit).IsEmpty())
 		{
 			// Spacer
 			creditsSizer->AddSpacer(5);
@@ -234,12 +234,12 @@ AboutDialog::AboutDialog(
 				wxStaticText * credits2Label = new wxStaticText(
 					credits23Panel,
 					wxID_ANY,
-					std::get<1>(credit) + (!std::get<2>(credit).empty() ? " - " : ""),
+					std::get<1>(credit) + (!std::get<2>(credit).IsEmpty() ? wxS(" - ") : wxS("")),
 					wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 				credits2Label->SetFont(creditsContentFont);
 				credits23Sizer->Add(credits2Label, 0, wxALIGN_LEFT | wxEXPAND);
 
-				if (!std::get<2>(credit).empty())
+				if (!std::get<2>(credit).IsEmpty())
 				{
 					wxHyperlinkCtrl * credits3Label = new wxHyperlinkCtrl(
 						credits23Panel,

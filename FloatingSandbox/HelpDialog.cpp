@@ -14,7 +14,7 @@
 HelpDialog::HelpDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
-    : wxDialog(parent, wxID_ANY, wxString(_("Help")))
+    : wxDialog(parent, wxID_ANY, _("Help"))
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
 

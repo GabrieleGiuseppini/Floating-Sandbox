@@ -398,7 +398,7 @@ Render:
 					+ ShipLoadDialog
 			+ Commit & push
 			
-		- Test localization
+		= Test localization
 
 		- Send for testing
 
