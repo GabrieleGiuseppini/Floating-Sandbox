@@ -24,13 +24,13 @@ ShipLoadDialog::ShipLoadDialog(
 	Create(
 		mParent,
 		wxID_ANY,
-		_("Load Ship"),
+        wxS("Load Ship"),
 		wxDefaultPosition,
         wxDefaultSize,
         wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED
             | wxSTAY_ON_TOP
             ,
-		_T("Load Ship Dialog"));
+        wxS("Load Ship Dialog"));
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
@@ -110,14 +110,14 @@ ShipLoadDialog::ShipLoadDialog(
         gridSizer->AddSpacer(10);
 
         {
-            wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, "Recent directories:");
+            wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, wxS("Recent directories:"));
             gridSizer->Add(recentDirsLabel, 4, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
 
         {
-            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, "Search in this folder:");
+            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, wxS("Search in this folder:"));
             gridSizer->Add(searchLabel, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
@@ -225,13 +225,13 @@ ShipLoadDialog::ShipLoadDialog(
 
         buttonsSizer->AddStretchSpacer(1);
 
-        mLoadButton = new wxButton(this, wxID_ANY, "Load");
+        mLoadButton = new wxButton(this, wxID_ANY, wxS("Load"));
         mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
         buttonsSizer->Add(mLoadButton, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        wxButton * cancelButton = new wxButton(this, wxID_ANY, "Cancel");
+        wxButton * cancelButton = new wxButton(this, wxID_ANY, wxS("Cancel"));
         cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
         buttonsSizer->Add(cancelButton, 0);
 

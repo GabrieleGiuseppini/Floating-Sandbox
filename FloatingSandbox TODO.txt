@@ -351,8 +351,7 @@ Render:
 				+ Naive: 9.7-10, 73ms
 			+ Undo fake architecture detection
 			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
-
-		= 32-bit build
+		+ 32-bit build
 			+ Prepare 32-bit SDK:
 				+ wxWidgets (UNICODE)
 					+ Release
@@ -380,25 +379,28 @@ Render:
 			+ Verify SSE intrinsics are fine in 32-bit process
 				+ Run through them, and check assembly
 			+ Add Arch+OS to AboutBox
-			= Re-test 64-bit
+			+ Re-test 64-bit
 				+ Clear Data folder for all flavors
 				+ Redo CMake
 				+ Run unit tests Debug
 				+ Test run Debug
-				- Test run RelWithDebInfo
-				- Test run Release
-			- Remove all NUKEME SDK folders
-			- Check all png's for ocean and land
-			- Commit & push
-			- Send for testing
-			= If wxWidgets' Unicode is fine, re-build wxWidgets with Unicode for 64-bit as well
+				+ Test run RelWithDebInfo
+			+ Check all png's for ocean and land
+			+ If wxWidgets' Unicode is fine, re-build wxWidgets with Unicode for 64-bit as well
 				+ Build SDK
-				- Add wxS to:
-					- SliderControl (takes wxString's as args)
-					- SettingsDialog
-						- See speedup
-					- PreferencesDialog				
-			- Install GameJolt client and see user experience with MSI
+				+ Add wxS to:
+					+ SliderControl (takes wxString's as args)
+					+ SettingsDialog
+						+ Test saving settings
+						+ See speedup
+					+ PreferencesDialog
+					+ MainFrame
+					+ ShipLoadDialog
+			+ Commit & push
+			
+		- Test localization
+
+		- Send for testing
 
 		- Test speed with ElementIndex/Count being 64-bit
 		- Check if any point and spring structs are aligned badly
@@ -413,12 +415,15 @@ Render:
 				- Ask to test
 			= Menus
 				+ Running without GameIteration: works
-				- TODOHERE
+				- Experiments:
+					- 
 			+ Remove all TODOTEST logging		
 
-		- Add checkbox for bubble sounds
-			- Storage owned by SoundController
-			- Cutoff happens @ SoundController
+		- Bubbles:
+			- Smaller wave
+			- Add checkbox for bubble sounds
+				- Storage owned by SoundController
+				- Cutoff happens @ SoundController
 
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
@@ -446,7 +451,8 @@ Render:
 			- If it works: do "reshader" type of work (*)
 
 		- Release:
-			- FS Site:
+			- Decide how to package 32-bit
+				- Install GameJolt client and see user experience with MSI
 			- "System Requirements" Readme section, @ GitHub & @ GameJolt
 				- Windows 64 & 32-bit, & perf difference
 				- OpenGL 2.1

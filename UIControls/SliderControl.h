@@ -83,8 +83,8 @@ public:
         wxWindow * parent,
         int width,
         int height,
-        std::string const & label,
-        std::string const & toolTipLabel,
+        wxString const & label,
+        wxString const & toolTipLabel,
         std::function<void(TValue)> onValueChanged,
         std::unique_ptr<ISliderCore<TValue>> sliderCore)
         : SliderControl(
@@ -103,8 +103,8 @@ public:
         wxWindow * parent,
         int width,
         int height,
-        std::string const & label,
-        std::string const & toolTipLabel,
+        wxString const & label,
+        wxString const & toolTipLabel,
         std::function<void(TValue)> onValueChanged,
         std::unique_ptr<ISliderCore<TValue>> sliderCore,
         wxBitmap const * warningIcon)
@@ -117,7 +117,7 @@ public:
         , mOnValueChanged(std::move(onValueChanged))
         , mSliderCore(std::move(sliderCore))
     {
-        if (!toolTipLabel.empty())
+        if (!toolTipLabel.IsEmpty())
             SetToolTip(toolTipLabel);
 
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
@@ -158,7 +158,7 @@ public:
 
         {
             wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
-            if (!toolTipLabel.empty())
+            if (!toolTipLabel.IsEmpty())
                 labelStaticText->SetToolTip(toolTipLabel);
 
             if (nullptr == warningIcon)
@@ -182,7 +182,7 @@ public:
                 // Icon
                 {
                     wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
-                    if (!toolTipLabel.empty())
+                    if (!toolTipLabel.IsEmpty())
                         icon->SetToolTip(toolTipLabel);
 
                     hSizer->Add(icon, 0, wxALIGN_CENTRE_VERTICAL);
@@ -208,7 +208,7 @@ public:
                 mTextCtrl = new wxTextCtrl(
                     this,
                     wxID_ANY,
-                    _(""),
+                    wxEmptyString,
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxTE_CENTRE | wxTE_PROCESS_ENTER,
@@ -219,7 +219,7 @@ public:
                 mTextCtrl->Bind(wxEVT_KILL_FOCUS, &SliderControl::OnKillFocus, this);
                 mTextCtrl->Bind(wxEVT_TEXT_ENTER, &SliderControl::OnTextEnter, this);
 
-                if (!toolTipLabel.empty())
+                if (!toolTipLabel.IsEmpty())
                     mTextCtrl->SetToolTip(toolTipLabel);
 
                 hSizer->Add(mTextCtrl, 0, wxALIGN_CENTER_VERTICAL);

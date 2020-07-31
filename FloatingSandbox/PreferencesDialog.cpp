@@ -35,11 +35,11 @@ PreferencesDialog::PreferencesDialog(
     Create(
         mParent,
         wxID_ANY,
-        _("Game Preferences"),
+        wxS("Game Preferences"),
         wxDefaultPosition,
         wxSize(400, -1),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
-        _T("Preferences Window"));
+        wxS("Preferences Window"));
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
@@ -65,7 +65,7 @@ PreferencesDialog::PreferencesDialog(
 
     PopulateGamePanel(gamePanel);
 
-    notebook->AddPage(gamePanel, "Game");
+    notebook->AddPage(gamePanel, wxS("Game"));
 
 
     //
@@ -76,7 +76,7 @@ PreferencesDialog::PreferencesDialog(
 
     PopulateShipPanel(shipsPanel);
 
-    notebook->AddPage(shipsPanel, "Ships");
+    notebook->AddPage(shipsPanel, wxS("Ships"));
 
 
     //
@@ -87,7 +87,7 @@ PreferencesDialog::PreferencesDialog(
 
     PopulateMusicPanel(musicPanel);
 
-    notebook->AddPage(musicPanel, "Global Sound and Music");
+    notebook->AddPage(musicPanel, wxS("Global Sound and Music"));
 
 
     dialogVSizer->Add(notebook, 1, wxEXPAND);
@@ -101,7 +101,7 @@ PreferencesDialog::PreferencesDialog(
 
     buttonsSizer->AddSpacer(20);
 
-    mOkButton = new wxButton(this, wxID_ANY, _("Done"));
+    mOkButton = new wxButton(this, wxID_ANY, wxS("Done"));
     mOkButton->Bind(wxEVT_BUTTON, &PreferencesDialog::OnOkButton, this);
     buttonsSizer->Add(mOkButton, 0);
 
@@ -321,7 +321,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, "Screenshot directory:");
+        wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, wxS("Screenshot directory:"));
 
         gridSizer->Add(
             screenshotDirStaticText,
@@ -339,12 +339,12 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
         mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
             panel,
             wxID_ANY,
-            _T(""),
-            _("Select directory that screenshots will be saved to:"),
+            wxEmptyString,
+            wxS("Select directory that screenshots will be saved to:"),
             wxDefaultPosition,
             wxSize(-1, -1),
             wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
-        mScreenshotDirPickerCtrl->SetToolTip("Sets the directory into which in-game screenshots are automatically saved.");
+        mScreenshotDirPickerCtrl->SetToolTip(wxS("Sets the directory into which in-game screenshots are automatically saved."));
         mScreenshotDirPickerCtrl->Bind(wxEVT_DIRPICKER_CHANGED, &PreferencesDialog::OnScreenshotDirPickerChanged, this);
 
         gridSizer->Add(
@@ -366,8 +366,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mShowTipOnStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowTipOnStartupCheckBox->SetToolTip("Enables or disables the tips shown when the game starts.");
+        mShowTipOnStartupCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowTipOnStartupCheckBox->SetToolTip(wxS("Enables or disables the tips shown when the game starts."));
         mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -379,10 +380,10 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
+        mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, wxS("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
             wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
         mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
-        mZoomIncrementSpinCtrl->SetToolTip("Changes the amount by which zoom changes when using the zoom controls.");
+        mZoomIncrementSpinCtrl->SetToolTip(wxS("Changes the amount by which zoom changes when using the zoom controls."));
         mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
 
         gridSizer->Add(
@@ -394,7 +395,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        auto label = new wxStaticText(panel, wxID_ANY, "Zoom Increment", wxDefaultPosition, wxDefaultSize,
+        auto label = new wxStaticText(panel, wxID_ANY, wxS("Zoom Increment"), wxDefaultPosition, wxDefaultSize,
             wxALIGN_LEFT);
 
         gridSizer->Add(
@@ -411,8 +412,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-        mCheckForUpdatesAtStartupCheckBox->SetToolTip("Enables or disables checking for new versions when the game starts.");
+        mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+        mCheckForUpdatesAtStartupCheckBox->SetToolTip(wxS("Enables or disables checking for new versions when the game starts."));
         mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -424,10 +426,10 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _T("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
+        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, wxS("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
             wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
         mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
-        mPanIncrementSpinCtrl->SetToolTip("Changes the amount by which the camera position changes when using the pan controls.");
+        mPanIncrementSpinCtrl->SetToolTip(wxS("Changes the amount by which the camera position changes when using the pan controls."));
         mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
 
         gridSizer->Add(
@@ -439,7 +441,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        auto label = new wxStaticText(panel, wxID_ANY, "Pan Increment", wxDefaultPosition, wxDefaultSize,
+        auto label = new wxStaticText(panel, wxID_ANY, wxS("Pan Increment"), wxDefaultPosition, wxDefaultSize,
             wxALIGN_LEFT);
 
         gridSizer->Add(
@@ -455,8 +457,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
-        mSaveSettingsOnExitCheckBox->SetToolTip("Enables or disables saving the last-modified settings when exiting the game.");
+        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+        mSaveSettingsOnExitCheckBox->SetToolTip(wxS("Enables or disables saving the last-modified settings when exiting the game."));
         mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -468,8 +471,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowStatusTextCheckBox->SetToolTip("Enables or disables the display of game performance information, such as frame rate and time elapsed.");
+        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowStatusTextCheckBox->SetToolTip(wxS("Enables or disables the display of game performance information, such as frame rate and time elapsed."));
         mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -485,8 +489,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     //
 
     {
-        mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowTsunamiNotificationsCheckBox->SetToolTip("Enables or disables notifications when a tsunami is being spawned.");
+        mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowTsunamiNotificationsCheckBox->SetToolTip(wxS("Enables or disables notifications when a tsunami is being spawned."));
         mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -498,8 +503,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     }
 
     {
-        mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowExtendedStatusTextCheckBox->SetToolTip("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered.");
+        mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, 
+            wxS("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+        mShowExtendedStatusTextCheckBox->SetToolTip(wxS("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered."));
         mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
 
         gridSizer->Add(
@@ -537,7 +543,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, _("Auto-Texturization"));
+        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, wxS("Auto-Texturization"));
 
         wxBoxSizer * autoTexturizationBoxSizer = new wxBoxSizer(wxVERTICAL);
         autoTexturizationBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -547,7 +553,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Texturization Mode
             {
-                wxStaticBox * texturizationModeBox = new wxStaticBox(autoTexturizationBox, wxID_ANY, _("Mode"));
+                wxStaticBox * texturizationModeBox = new wxStaticBox(autoTexturizationBox, wxID_ANY, wxS("Mode"));
 
                 wxBoxSizer * texturizationModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
                 texturizationModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -555,17 +561,17 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                 {
                     wxGridBagSizer * texturizationModeBoxSizer2 = new wxGridBagSizer(5, 3);
 
-                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Flat Structure"),
-                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting are only visible after a new ship is loaded.");
+                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, 
+                        wxS("Flat Structure"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(wxS("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting are only visible after a new ship is loaded."));
                     mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeBoxSizer2->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
-                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY, _("Material Textures"),
-                        wxDefaultPosition, wxDefaultSize);
-                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting are only visible after a new ship is loaded.");
+                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY,
+                        wxS("Material Textures"), wxDefaultPosition, wxDefaultSize);
+                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(wxS("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting are only visible after a new ship is loaded."));
                     mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeBoxSizer2->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -584,8 +590,9 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Force default settings onto ship
             {
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(autoTexturizationBox, wxID_ANY, _("Force Defaults onto Ships"), wxDefaultPosition, wxDefaultSize, 0);
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->SetToolTip("Override individual ships' auto-texturization settings with these defaults. This setting is not saved, and it will revert to OFF the next time the game is played.");
+                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(autoTexturizationBox, wxID_ANY, 
+                    wxS("Force Defaults onto Ships"), wxDefaultPosition, wxDefaultSize, 0);
+                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->SetToolTip(wxS("Override individual ships' auto-texturization settings with these defaults. This setting is not saved, and it will revert to OFF the next time the game is played."));
                 mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnForceDefaultAutoTexturizationSettingsOntoShipCheckBoxClicked, this);
 
                 autoTexturizationSizer->Add(
@@ -602,8 +609,8 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     autoTexturizationBox,
                     SliderWidth,
                     SliderHeight,
-                    "Texture Magnification",
-                    "Changes the level of detail of materials' textures. Changes to this setting are only visible after a new ship is loaded.",
+                    wxS("Texture Magnification"),
+                    wxS("Changes the level of detail of materials' textures. Changes to this setting are only visible after a new ship is loaded."),
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
@@ -629,8 +636,8 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     autoTexturizationBox,
                     SliderWidth,
                     SliderHeight,
-                    "Texture Transparency",
-                    "Changes the transparency of materials' textures. Changes to this setting are only visible after a new ship is loaded.",
+                    wxS("Texture Transparency"),
+                    wxS("Changes the transparency of materials' textures. Changes to this setting are only visible after a new ship is loaded."),
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
@@ -667,7 +674,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * miscBox = new wxStaticBox(panel, wxID_ANY, _("Miscellaneous"));
+        wxStaticBox * miscBox = new wxStaticBox(panel, wxID_ANY, wxS("Miscellaneous"));
 
         wxBoxSizer * miscBoxSizer = new wxBoxSizer(wxVERTICAL);
         miscBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -677,8 +684,9 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Show Ship Description at Ship Load
             {
-                mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowShipDescriptionAtShipLoadCheckBox->SetToolTip("Enables or disables the window showing ship descriptions when ships are loaded.");
+                mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY,                     
+                    wxS("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowShipDescriptionAtShipLoadCheckBox->SetToolTip(wxS("Enables or disables the window showing ship descriptions when ships are loaded."));
                 mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
 
                 miscSizer->Add(
@@ -691,8 +699,9 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Auto-Zoom
             {
-                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
-                mAutoZoomAtShipLoadCheckBox->SetToolTip("Enables or disables auto-zooming when loading a new ship.");
+                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY, 
+                    wxS("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoZoomAtShipLoadCheckBox->SetToolTip(wxS("Enables or disables auto-zooming when loading a new ship."));
                 mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
 
                 miscSizer->Add(
@@ -705,8 +714,9 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Auto-Show Switchboard
             {
-                mAutoShowSwitchboardCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
-                mAutoShowSwitchboardCheckBox->SetToolTip("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded.");
+                mAutoShowSwitchboardCheckBox = new wxCheckBox(miscBox, wxID_ANY, 
+                    wxS("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoShowSwitchboardCheckBox->SetToolTip(wxS("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded."));
                 mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
 
                 miscSizer->Add(
@@ -719,8 +729,9 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Show Electrical Notifications
             {
-                mShowElectricalNotificationsCheckBox = new wxCheckBox(miscBox, wxID_ANY, _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowElectricalNotificationsCheckBox->SetToolTip("Enables or disables visual notifications when an electrical element changes state.");
+                mShowElectricalNotificationsCheckBox = new wxCheckBox(miscBox, wxID_ANY, 
+                    wxS("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowElectricalNotificationsCheckBox->SetToolTip(wxS("Enables or disables visual notifications when an electrical element changes state."));
                 mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
 
                 miscSizer->Add(
@@ -760,10 +771,9 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
     {
         // Global mute
         {
-            mGlobalMuteCheckBox = new wxCheckBox(panel, wxID_ANY, _("Mute All Sounds"), wxDefaultPosition, wxDefaultSize, 0);
-
-            mGlobalMuteCheckBox->SetToolTip("Mutes or allows all sounds.");
-
+            mGlobalMuteCheckBox = new wxCheckBox(panel, wxID_ANY, 
+                wxS("Mute All Sounds"), wxDefaultPosition, wxDefaultSize, 0);
+            mGlobalMuteCheckBox->SetToolTip(wxS("Mutes or allows all sounds."));
             mGlobalMuteCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnGlobalMuteCheckBoxClicked, this);
 
             vSizer->Add(
@@ -794,8 +804,8 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         panel,
                         SliderWidth,
                         SliderHeight,
-                        "Background Music Volume",
-                        "Adjusts the volume of background music.",
+                        wxS("Background Music Volume"),
+                        wxS("Adjusts the volume of background music."),
                         [this](float value)
                         {
                             this->mUIPreferencesManager->SetBackgroundMusicVolume(value);
@@ -819,8 +829,8 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         panel,
                         SliderWidth,
                         SliderHeight,
-                        "Farewell Music Volume",
-                        "Adjusts the volume of the music played when a ship is sinking.",
+                        wxS("Farewell Music Volume"),
+                        wxS("Adjusts the volume of the music played when a ship is sinking."),
                         [this](float value)
                         {
                             this->mUIPreferencesManager->SetGameMusicVolume(value);
@@ -846,10 +856,9 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
             {
                 // Play background music
                 {
-                    mPlayBackgroundMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Background Music"), wxDefaultPosition, wxDefaultSize, 0);
-
-                    mPlayBackgroundMusicCheckBox->SetToolTip("Enables or disables background music while playing the game.");
-
+                    mPlayBackgroundMusicCheckBox = new wxCheckBox(panel, wxID_ANY, 
+                        wxS("Play Background Music"), wxDefaultPosition, wxDefaultSize, 0);
+                    mPlayBackgroundMusicCheckBox->SetToolTip(wxS("Enables or disables background music while playing the game."));
                     mPlayBackgroundMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked, this);
 
                     gridSizer->Add(
@@ -862,10 +871,9 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
 
                 // Play sinking music
                 {
-                    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, _("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0);
-
-                    mPlaySinkingMusicCheckBox->SetToolTip("Enables or disables playing sorrow music when a ship starts sinking.");
-
+                    mPlaySinkingMusicCheckBox = new wxCheckBox(panel, wxID_ANY, 
+                        wxS("Play Farewell Music"), wxDefaultPosition, wxDefaultSize, 0);
+                    mPlaySinkingMusicCheckBox->SetToolTip(wxS("Enables or disables playing sorrow music when a ship starts sinking."));
                     mPlaySinkingMusicCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked, this);
 
                     gridSizer->Add(
