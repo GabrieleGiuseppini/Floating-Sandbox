@@ -41,7 +41,7 @@ public:
 
     static MaterialDatabase Load(ResourceLocator const & resourceLocator)
     {
-        return Load(resourceLocator.GetMaterialDatabaseRootFilepath());
+        return Load(resourceLocator.GetMaterialDatabaseRootFilePath());
     }
 
     static MaterialDatabase Load(std::filesystem::path materialsRootDirectory)

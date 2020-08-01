@@ -26,7 +26,7 @@ HelpDialog::HelpDialog(
         wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
     html->SetBorders(0);
-    html->LoadPage(resourceLocator.GetHelpFilepath().string());
+    html->LoadPage(resourceLocator.GetHelpFilePath().string());
     html->SetSize(
         html->GetInternalRepresentation()->GetWidth(),
         html->GetInternalRepresentation()->GetHeight());

@@ -48,7 +48,7 @@ public:
     // Materials
     //
 
-    std::filesystem::path GetMaterialDatabaseRootFilepath() const;
+    std::filesystem::path GetMaterialDatabaseRootFilePath() const;
 
 
     //
@@ -57,7 +57,7 @@ public:
 
     std::vector<std::string> GetMusicNames() const;
 
-    std::filesystem::path GetMusicFilepath(std::string const & musicName) const;
+    std::filesystem::path GetMusicFilePath(std::string const & musicName) const;
 
 
     //
@@ -66,45 +66,45 @@ public:
 
     std::vector<std::string> GetSoundNames() const;
 
-    std::filesystem::path GetSoundFilepath(std::string const & soundName) const;
+    std::filesystem::path GetSoundFilePath(std::string const & soundName) const;
 
 
     //
     // Resources
     //
 
-    std::filesystem::path GetCursorFilepath(std::string const & cursorName) const;
+    std::filesystem::path GetCursorFilePath(std::string const & cursorName) const;
 
-    std::filesystem::path GetIconFilepath(std::string const & iconName) const;
+    std::filesystem::path GetIconFilePath(std::string const & iconName) const;
 
-    std::filesystem::path GetArtFilepath(std::string const & artName) const;
+    std::filesystem::path GetArtFilePath(std::string const & artName) const;
 
-    std::filesystem::path GetBitmapFilepath(std::string const & bitmapName) const;
+    std::filesystem::path GetBitmapFilePath(std::string const & bitmapName) const;
 
-    std::vector<std::filesystem::path> GetBitmapFilepaths(std::string const & bitmapNamePattern) const;
+    std::vector<std::filesystem::path> GetBitmapFilePaths(std::string const & bitmapNamePattern) const;
 
 
     //
     // Theme Settings
     //
 
-    std::filesystem::path GetThemeSettingsRootFilepath() const;
+    std::filesystem::path GetThemeSettingsRootFilePath() const;
 
 
     //
     // Misc
     //
 
-    std::filesystem::path GetDefaultOceanFloorTerrainFilepath() const;
+    std::filesystem::path GetDefaultOceanFloorTerrainFilePath() const;
 
 
     //
     // Help
     //
 
-    std::filesystem::path GetStartupTipFilepath() const;
+    std::filesystem::path GetStartupTipFilePath() const;
 
-    std::filesystem::path GetHelpFilepath() const;
+    std::filesystem::path GetHelpFilePath() const;
 
 
     //
@@ -114,4 +114,11 @@ public:
     std::filesystem::path GetRenderShadersRootPath() const;
 
     static std::filesystem::path GetGPUCalcShadersRootPath();
+
+
+    //
+    // Localization
+    //
+
+    static std::filesystem::path GetLanguagesRootPath();
 };

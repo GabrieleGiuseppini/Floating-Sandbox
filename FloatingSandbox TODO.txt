@@ -398,7 +398,18 @@ Render:
 					+ ShipLoadDialog
 			+ Commit & push
 			
-		= Test localization
+		= Localization
+			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
+			+ Fixup dir structures
+			+ Test w/manually setting language in ui_preferences.json
+			- Do UI preferences workflow
+				- With restart
+			- Mark all strings as _(
+			- Prepare final, complete pot file
+			- Mark TODO item under Technical Debt
+			- changes.txt
+			- Translations:
+				- Italian: accented letters
 
 		- Send for testing
 
@@ -420,7 +431,10 @@ Render:
 			+ Remove all TODOTEST logging		
 
 		- Bubbles:
-			- Smaller wave
+			- Look back at SWE's
+				- Try re-instating skipped steps
+				- Try with setting velocities only (towards L at L point, towards R at R point)
+			- Smaller wave (if nothing above works)
 			- Add checkbox for bubble sounds
 				- Storage owned by SoundController
 				- Cutoff happens @ SoundController

@@ -8,7 +8,9 @@
 // The main application. This journey begins from here.
 //
 
+#include "LocalizationHelpers.h"
 #include "MainFrame.h"
+#include "UIPreferencesManager.h"
 #include "UnhandledExceptionHandler.h"
 
 #include <GameCore/FloatingPoint.h>
@@ -131,7 +133,12 @@ bool MainApp::OnInit()
     // Initialize wxWidgets
     //
 
+    // Image handlers
     wxInitAllImageHandlers();
+
+    // Language
+    auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
+    LocalizationHelpers::GetInstance().SetLanguage(preferredLanguage);
 
 
     //

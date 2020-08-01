@@ -18,6 +18,7 @@
 #include <cassert>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <vector>
 
 /*
@@ -35,6 +36,8 @@ public:
         ResourceLocator const & resourceLocator);
 
     ~UIPreferencesManager();
+
+    static std::optional<int> LoadPreferredLanguage();
 
 public:
 
@@ -322,9 +325,11 @@ public:
 
 private:
 
+    static std::optional<picojson::object> LoadPreferencesRootObject();
+
     void LoadPreferences();
 
-    void SavePreferences() const;
+    void SavePreferences() const;    
 
 private:
 

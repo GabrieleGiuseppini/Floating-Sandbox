@@ -42,20 +42,20 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
             auto label = new wxStaticText(mCheckingPanel, wxID_ANY, _("Checking for updates..."), wxDefaultPosition,
                 wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
-            vSizer->Add(label, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 6);
+            vSizer->Add(label, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
         }
 
         {
             mCheckingGauge = new wxGauge(mCheckingPanel, wxID_ANY, 20, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
 
-            vSizer->Add(mCheckingGauge, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 6);
+            vSizer->Add(mCheckingGauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
         }
 
         vSizer->AddStretchSpacer(1);
 
         mCheckingPanel->SetSizer(vSizer);
 
-        mPanelSizer->Add(mCheckingPanel, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
+        mPanelSizer->Add(mCheckingPanel, 0, wxALIGN_CENTER_HORIZONTAL);
     }
 
     //
@@ -73,7 +73,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
             mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
                 wxSize(-1, 30), wxALIGN_CENTER_HORIZONTAL);
 
-            vSizer->Add(mNoUpdateMessage, 0, wxALL | wxEXPAND | wxALIGN_CENTER_HORIZONTAL, 6);
+            vSizer->Add(mNoUpdateMessage, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
         }
 
         {
@@ -87,7 +87,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
 
         mNoUpdatePanel->SetSizer(vSizer);
 
-        mPanelSizer->Add(mNoUpdatePanel, 0, wxEXPAND | wxALIGN_CENTER_HORIZONTAL);
+        mPanelSizer->Add(mNoUpdatePanel, 0, wxALIGN_CENTER_HORIZONTAL);
     }
 
     mPanelSizer->Hide(mNoUpdatePanel);

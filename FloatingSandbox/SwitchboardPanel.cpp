@@ -85,7 +85,7 @@ SwitchboardPanel::SwitchboardPanel(
 
     progressCallback(ProgressSteps/TotalProgressSteps, "Loading electrical panel...");
 
-    auto backgroundBitmapFilepaths = resourceLocator.GetBitmapFilepaths("switchboard_background_*");
+    auto backgroundBitmapFilepaths = resourceLocator.GetBitmapFilePaths("switchboard_background_*");
     if (backgroundBitmapFilepaths.empty())
     {
         throw GameException("There are no switchboard background bitmaps available");
@@ -168,85 +168,85 @@ SwitchboardPanel::SwitchboardPanel(
         ProgressSteps += 1.0f; // 1.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 2.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 3.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 4.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("ship_sound_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mShipSoundSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 5.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mPowerMonitorOnBitmap.LoadFile(resourceLocator.GetBitmapFilepath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
-        mPowerMonitorOffBitmap.LoadFile(resourceLocator.GetBitmapFilepath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
+        mPowerMonitorOnBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
+        mPowerMonitorOffBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 6.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorOpenDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_open_disabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorClosedDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorOpenDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_disabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mWatertightDoorOpenEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 7.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
-        mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
-        mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilepath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
+        mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
+        mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
+        mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 8.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilepath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilepath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
         ProgressSteps += 1.0f; // 9.0f
         progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
 
-        dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilepath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
-        dockCheckboxUncheckedBitmap.LoadFile(resourceLocator.GetBitmapFilepath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
+        dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
+        dockCheckboxUncheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
     }
 
     //

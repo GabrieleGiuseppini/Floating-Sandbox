@@ -71,7 +71,7 @@ MusicController::MusicController(
             // Background music
             //
 
-            mBackgroundMusic.AddToPlaylist(resourceLocator.GetMusicFilepath(musicName));
+            mBackgroundMusic.AddToPlaylist(resourceLocator.GetMusicFilePath(musicName));
         }
         else if (musicNameMatch[1].str() == "sinkingship")
         {
@@ -82,7 +82,7 @@ MusicController::MusicController(
 		    // Parse frequency
             bool isRare = (musicNameMatch[2].str() == "rare");
 
-            mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilepath(musicName), isRare);
+            mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilePath(musicName), isRare);
         }
     }
 }

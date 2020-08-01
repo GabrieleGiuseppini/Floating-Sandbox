@@ -78,7 +78,7 @@ GameController::GameController(
     , mNotificationLayer(mGameParameters.IsUltraViolentMode, false /*loaded value will come later*/)
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
-        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilepath()),
+        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
         mGameParameters))

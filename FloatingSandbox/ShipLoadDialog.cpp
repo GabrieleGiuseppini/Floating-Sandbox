@@ -155,7 +155,7 @@ ShipLoadDialog::ShipLoadDialog(
             // HomeDir button
 
             wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-            wxBitmap homeBitmap(resourceLocator.GetIconFilepath("home").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap homeBitmap(resourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
             homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
 
@@ -189,7 +189,7 @@ ShipLoadDialog::ShipLoadDialog(
 			// Search button
 
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
-            wxBitmap searchNextBitmap(resourceLocator.GetIconFilepath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap searchNextBitmap(resourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
             mSearchNextButton->SetBitmap(searchNextBitmap);
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
 
@@ -218,7 +218,7 @@ ShipLoadDialog::ShipLoadDialog(
         buttonsSizer->AddSpacer(10);
 
         mInfoButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-        wxBitmap infoBitmap(resourceLocator.GetIconFilepath("info").string(), wxBITMAP_TYPE_PNG);
+        wxBitmap infoBitmap(resourceLocator.GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
         mInfoButton->SetBitmap(infoBitmap);
         mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
         buttonsSizer->Add(mInfoButton, 0);

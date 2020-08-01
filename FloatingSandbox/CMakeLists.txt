@@ -14,6 +14,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	GLCanvas.h
 	HelpDialog.cpp
 	HelpDialog.h
+	LocalizationHelpers.cpp
+	LocalizationHelpers.h
 	LoggingDialog.cpp
 	LoggingDialog.h
 	MainApp.cpp

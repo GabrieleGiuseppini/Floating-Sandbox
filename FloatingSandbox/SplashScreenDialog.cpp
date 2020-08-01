@@ -39,7 +39,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     wxBitmap * bmp;
 
     {
-        bmp = new wxBitmap(resourceLocator.GetArtFilepath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+        bmp = new wxBitmap(resourceLocator.GetArtFilePath("splash_screen").string(), wxBITMAP_TYPE_PNG);
         if (!bmp->IsOk())
         { 
             // This is likely to be the first resource load of the game; if it's broken,

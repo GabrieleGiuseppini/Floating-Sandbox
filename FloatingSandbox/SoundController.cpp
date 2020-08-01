@@ -94,7 +94,7 @@ SoundController::SoundController(
         //
 
         std::unique_ptr<sf::SoundBuffer> soundBuffer = std::make_unique<sf::SoundBuffer>();
-        if (!soundBuffer->loadFromFile(resourceLocator.GetSoundFilepath(soundName).string()))
+        if (!soundBuffer->loadFromFile(resourceLocator.GetSoundFilePath(soundName).string()))
         {
             throw GameException("Cannot load sound \"" + soundName + "\"");
         }
@@ -318,7 +318,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 false, // IsUnderwater
-                resourceLocator.GetSoundFilepath(soundName));
+                resourceLocator.GetSoundFilePath(soundName));
         }
         else if (soundType == SoundType::Break
                 || soundType == SoundType::Destroy
@@ -644,7 +644,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 isUnderwater,
-                resourceLocator.GetSoundFilepath(soundName),
+                resourceLocator.GetSoundFilePath(soundName),
                 loopStartSample,
                 loopEndSample);
         }

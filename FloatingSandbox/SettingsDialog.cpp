@@ -108,7 +108,7 @@ SettingsDialog::SettingsDialog(
     //
 
     mWarningIcon = std::make_unique<wxBitmap>(
-        resourceLocator.GetIconFilepath("warning_icon").string(),
+        resourceLocator.GetIconFilePath("warning_icon").string(),
         wxBITMAP_TYPE_PNG);
 
 

@@ -815,7 +815,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mSettingsManager = std::make_shared<SettingsManager>(
         mGameController,
         mSoundController,
-        mResourceLocator->GetThemeSettingsRootFilepath(),
+        mResourceLocator->GetThemeSettingsRootFilePath(),
         StandardSystemPaths::GetInstance().GetUserGameSettingsRootFolderPath());
 
     // Enable "Reload Last Modified Settings" menu if we have last-modified settings
