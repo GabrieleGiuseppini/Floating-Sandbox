@@ -77,7 +77,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         }
 
         {
-            wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, wxS("OK"));
+            wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, _("OK"));
             okButton->SetDefault();
 
             vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);

@@ -402,7 +402,7 @@ Render:
 			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
 			+ Fixup dir structures
 			+ Test w/manually setting language in ui_preferences.json
-			= LocalizationManager:
+			+ LocalizationManager:
 				+ Created by MainApp (uq_ptr<> member) at OnInit() passing UIPreferencesManager::LoadPreferredLanguage() -> std::opt<lang>
 					+ Returned language type/cctor arg TBD
 					+ via Create() factory method, not cctor
@@ -411,17 +411,25 @@ Render:
 				+ Provides:
 					+ Language (type TBD, preferably 2-letter string)
 					+ DefaultLanguage - "en" (TBD: or whatever is the type above)
-			- Do UI preferences workflow
-				- UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
-					- Nuke own storage
-				- With restart				
-			- StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang and default_lang as args
+			= Do UI preferences workflow
+				+ UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
+					+ Nuke own storage
+				- Warning on change from current
+			- StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
 				- Checks internally if lang file exists before returning default (with logged warning)
 				- Move startup, help HTML files under language dirs
 					- Help folder: maintain resources here, see if may use relative paths in HTML links
-			- Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
+			+ Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
 			- Mark all strings as _(
-				+ Also labels at AboutDialog
+				+ AboutDialog
+					+ Also labels
+				+ CheckForUpdatesDialog
+				+ HelpDialog
+				+ LoggingDialog
+				+ PreferencesDialog
+				- TODO: others
+			- TODO: splash screen progress strings?
+
 			- Prepare final, complete pot file
 			- Mark TO-DO item under Technical Debt
 			- changes.txt

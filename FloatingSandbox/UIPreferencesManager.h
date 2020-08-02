@@ -329,14 +329,17 @@ public:
     // Language
     //
 
-    std::string const & GetLanguage() const
+    std::optional<std::string> GetDesiredLanguage() const
     {
-        return mLocalizationManager.GetCurrentLanguage().Identifier;
+        if (mLocalizationManager.GetDesiredLanguage().has_value())
+            return mLocalizationManager.GetDesiredLanguage()->Identifier;
+        else
+            return std::nullopt;
     }
 
-    void SetLanguage(std::string const & languageIdentifier)
+    void SetDesiredLanguage(std::optional<std::string> const & languageIdentifier)
     {
-        mLocalizationManager.StoreCurrentLanguage(languageIdentifier);
+        mLocalizationManager.StoreDesiredLanguage(languageIdentifier);
     }
 
     auto GetAvailableLanguages() const

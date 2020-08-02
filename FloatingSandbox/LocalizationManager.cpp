@@ -16,15 +16,81 @@ static wxLanguage constexpr TranslationsMsgIdLangId = wxLANGUAGE_ENGLISH; // The
 
 static std::string const TranslationsDomainName = "ui_strings";
 
-std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::optional<std::string> languageIdentifier)
+std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::optional<std::string> desiredLanguageIdentifier)
 {
     // Create list of available languages
     auto availableLanguages = MakeAvailableLanguages();
 
-    // Initialize as default language
-    wxLanguage languageId = TranslationsMsgIdLangId;
-    LanguageInfo const * languageInfo = FindLanguageInfo(TranslationsMsgIdLangId, availableLanguages);
-    assert(nullptr != languageInfo);
+    // See desired language
+    std::optional<LanguageInfo> desiredLanguageInfo;
+    wxLanguage localeLanguage = wxLANGUAGE_DEFAULT; // Let wxWidgets choose the language by default
+    if (desiredLanguageIdentifier.has_value())
+    {
+        // Make sure the specified identifier is a language supported by us
+        auto const it = std::find_if(
+            availableLanguages.cbegin(),
+            availableLanguages.cend(),
+            [&desiredLanguageIdentifier](auto const & al)
+            {
+                return al.Identifier == *desiredLanguageIdentifier;
+            });
+
+        if (it != availableLanguages.cend())
+        {
+            // Get the wxWidgets language ID, if any            
+            if (auto const wxLangInfo = wxLocale::FindLanguageInfo(*desiredLanguageIdentifier); 
+                wxLangInfo != nullptr)
+            {
+                localeLanguage = static_cast<wxLanguage>(wxLangInfo->Language);
+                desiredLanguageInfo = *it;
+            }
+        }
+        else
+        {
+            LogMessage("WARNING: language \"", desiredLanguageIdentifier.value_or("<N/A>"), "\" is not a language supported by Floating Sandbox");
+        }
+    }
+
+    // Create wxWidgets locale for this language
+    auto locale = std::make_unique<wxLocale>();
+    auto res = locale->Init(localeLanguage);
+    if (!res)
+    {
+        LogMessage("WARNING: failed locale initialization with language ", localeLanguage);
+    }
+    else
+    {
+        // Add our catalog
+        locale->AddCatalogLookupPathPrefix(ResourceLocator::GetLanguagesRootPath().string());
+        res = locale->AddCatalog(TranslationsDomainName, TranslationsMsgIdLangId);
+        if (!res && localeLanguage != TranslationsMsgIdLangId
+            && localeLanguage != wxLANGUAGE_DEFAULT) // AddCatalog returns false for msgIdLang & default
+        {
+            LogMessage("WARNING: failed locale catalog initialization with language ", localeLanguage);
+        }
+    }
+
+    // Get enforced language
+    if (auto const translations = wxTranslations::Get();
+        translations != nullptr)
+    {
+        auto enforcedLanguage = translations->GetBestTranslation(TranslationsDomainName, TranslationsMsgIdLangId);
+        LogMessage("Enforced language for desired language \"", desiredLanguageIdentifier.value_or("<N/A>"),
+            "\": \"", enforcedLanguage, "\"");
+    }
+
+    return std::unique_ptr<LocalizationManager>(
+        new LocalizationManager(
+            desiredLanguageInfo,
+            std::move(availableLanguages),
+            std::move(locale)));
+
+    // TODOOLD
+    /*
+    // Initialize enforced as default language
+    wxLanguage enforcedLanguageId = TranslationsMsgIdLangId;
+    LanguageInfo const * enforcedLanguageInfo = FindLanguageInfo(enforcedLanguageId, availableLanguages);
+    assert(nullptr != enforcedLanguageInfo);
 
     // Get wxWidgets language ID and LanguageInfo
     if (languageIdentifier.has_value())
@@ -81,23 +147,37 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
 
     return std::unique_ptr<LocalizationManager>(
         new LocalizationManager(
-            *languageInfo,
+            *languageInfo, // TODO
+            *languageInfo, // TODO
             std::move(availableLanguages),
             std::move(locale)));
+    */
 }
 
-void LocalizationManager::StoreCurrentLanguage(std::string const & languageIdentifier)
+void LocalizationManager::StoreDesiredLanguage(std::optional<std::string> const & languageIdentifier)
 {
-    auto languageInfo = FindLanguageInfo(
-        languageIdentifier,
-        mAvailableLanguages);
-
-    if (nullptr == languageInfo)
+    if (languageIdentifier.has_value())
     {
-        throw std::logic_error("Unrecognized language identifier \"" + languageIdentifier + "\"");
-    }
+        auto languageInfo = FindLanguageInfo(
+            *languageIdentifier,
+            mAvailableLanguages);
 
-    mCurrentLanguage = *languageInfo;
+        if (nullptr == languageInfo)
+        {
+            throw std::logic_error("Unrecognized language identifier \"" + *languageIdentifier + "\"");
+        }
+
+        mDesiredLanguage = *languageInfo;
+    }
+    else
+    {
+        mDesiredLanguage.reset();
+    }
+}
+
+std::string LocalizationManager::MakeLanguageIdentifier(wxString const & canonicalLanguageName)
+{
+    return canonicalLanguageName.BeforeFirst('_').ToStdString();
 }
 
 std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages()
@@ -124,7 +204,7 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
                 // Accepted as a valid language
                 languages.emplace_back(
                     wxLangInfo->Description.ToStdString(),
-                    wxLangInfo->CanonicalName.ToStdString(),
+                    MakeLanguageIdentifier(wxLangInfo->CanonicalName),
                     static_cast<wxLanguage>(wxLangInfo->Language));
             }
         }

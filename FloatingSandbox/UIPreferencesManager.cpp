@@ -482,7 +482,8 @@ void UIPreferencesManager::SavePreferences() const
     }
 
     // Language
-    preferencesRootObject["language"] = picojson::value(mLocalizationManager.GetCurrentLanguage().Identifier);
+    if (mLocalizationManager.GetDesiredLanguage().has_value())
+        preferencesRootObject["language"] = picojson::value(mLocalizationManager.GetDesiredLanguage()->Identifier);
 
     // Save
     Utils::SaveJSONFile(

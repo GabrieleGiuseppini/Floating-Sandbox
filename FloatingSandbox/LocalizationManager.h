@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <wx/xlocale.h>
+#include <wx/intl.h>
 
 #include <memory>
 #include <optional>
@@ -34,14 +34,22 @@ public:
 
 public:
 
-    static std::unique_ptr<LocalizationManager> CreateInstance(std::optional<std::string> languageIdentifier);
+    static std::unique_ptr<LocalizationManager> CreateInstance(std::optional<std::string> desiredLanguageIdentifier);
 
-    LanguageInfo const & GetCurrentLanguage() const
+    /*
+     * Returns the desired UI language - which is enforced only at startup.
+     * An empty language means "default", i.e. OS-driven.
+     */
+    std::optional<LanguageInfo> const & GetDesiredLanguage() const
     {
-        return mCurrentLanguage;
+        return mDesiredLanguage;
     }
 
-    void StoreCurrentLanguage(std::string const & languageIdentifier);
+    /*
+     * Stores - but doesn't change - the specified language as the new UI language.
+     * An empty argument implies "default", i.e. OS-driven.
+     */
+    void StoreDesiredLanguage(std::optional<std::string> const & languageIdentifier);
 
     LanguageInfo const & GetDefaultLanguage() const
     {
@@ -56,14 +64,16 @@ public:
 private:
 
     LocalizationManager(
-        LanguageInfo const & currentLanguage,
+        std::optional<LanguageInfo> desiredLanguage,
         std::vector<LanguageInfo> && availableLanguages,
         std::unique_ptr<wxLocale> && locale)
-        : mCurrentLanguage(currentLanguage)
+        : mDesiredLanguage(desiredLanguage)
         , mDefaultLanguage(MakeDefaultLanguage())
         , mAvailableLanguages(std::move(availableLanguages))
         , mLocale(std::move(locale))
     {}
+
+    static std::string MakeLanguageIdentifier(wxString const & canonicalLanguageName);
 
     static std::vector<LanguageInfo> MakeAvailableLanguages();
 
@@ -79,7 +89,7 @@ private:
 
 private:
 
-    LanguageInfo mCurrentLanguage; // Also storage of UI preference
+    std::optional<LanguageInfo> mDesiredLanguage; // Also storage of UI preference
 
     LanguageInfo const mDefaultLanguage;
     std::vector<LanguageInfo> const mAvailableLanguages;

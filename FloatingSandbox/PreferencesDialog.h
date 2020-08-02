@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "LocalizationManager.h"
 #include "UIPreferencesManager.h"
 
 #include <UIControls/SliderControl.h>
@@ -53,7 +54,7 @@ private:
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
 
-    // TODO: language list ctrl
+    void OnLanguagesListCtrlActivated(wxListEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -62,7 +63,7 @@ private:
     void PopulateGamePanel(wxPanel * panel);
     void PopulateShipPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
-    void PopulateLanguagesPanel(wxPanel * panel);
+    void PopulateLanguagePanel(wxPanel * panel);
 
     void ReadSettings();
 
@@ -74,6 +75,8 @@ private:
 
     void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();
+
+    int GetLanguagesListCtrlIndex(std::optional<std::string> languageIdentifier) const;
 
 private:
 
@@ -106,8 +109,8 @@ private:
     SliderControl<float> * mSinkingMusicVolumeSlider;
     wxCheckBox * mPlaySinkingMusicCheckBox;
 
-    // Languages panel
-    wxListCtrl * mLanguagesListCtrl; // TODO: implement
+    // Language panel
+    wxListCtrl * mLanguagesListCtrl;
 
     // Buttons
     wxButton * mOkButton;
@@ -117,4 +120,6 @@ private:
     wxWindow * const mParent;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
     std::function<void()> mOnChangeCallback;
+
+    std::vector<LocalizationManager::LanguageInfo> const mAvailableLanguages;
 };
