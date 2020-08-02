@@ -11,14 +11,14 @@
 
 #include <GameCore/Utils.h>
 
-const std::string Filename = "ui_preferences.json";
-
 UIPreferencesManager::UIPreferencesManager(
     std::shared_ptr<IGameController> gameController,
+    LocalizationManager & localizationManager,
     std::shared_ptr<MusicController> musicController,
     ResourceLocator const & resourceLocator)
     : mDefaultShipLoadDirectory(resourceLocator.GetInstalledShipFolderPath())
     , mGameController(std::move(gameController))
+    , mLocalizationManager(localizationManager)
     , mMusicController(std::move(musicController))
 {
     //
@@ -71,34 +71,41 @@ UIPreferencesManager::~UIPreferencesManager()
     }
 }
 
-std::optional<int> UIPreferencesManager::LoadPreferredLanguage()
+std::optional<std::string> UIPreferencesManager::LoadPreferredLanguage()
 {
     auto const preferencesRootObject = LoadPreferencesRootObject();
     if (preferencesRootObject.has_value())
     {
         if (auto it = preferencesRootObject->find("language");
-            it != preferencesRootObject->end() && it->second.is<std::int64_t>())
+            it != preferencesRootObject->end() && it->second.is<std::string>())
         {
-            return static_cast<int>(it->second.get<std::int64_t>());
+            return it->second.get<std::string>();
         }
     }
     
     return std::nullopt;
 }
 
+std::filesystem::path UIPreferencesManager::GetPreferencesFilePath()
+{
+    return StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / "ui_preferences.json";
+}
+
 std::optional<picojson::object> UIPreferencesManager::LoadPreferencesRootObject()
 {
-    auto const preferencesRootValue = Utils::ParseJSONFile(
-        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / Filename);
+    auto const preferencesFilePath = GetPreferencesFilePath();
 
-    if (preferencesRootValue.is<picojson::object>())
+    if (std::filesystem::exists(preferencesFilePath))
     {
-        return preferencesRootValue.get<picojson::object>();
+        auto const preferencesRootValue = Utils::ParseJSONFile(preferencesFilePath);
+
+        if (preferencesRootValue.is<picojson::object>())
+        {
+            return preferencesRootValue.get<picojson::object>();
+        }
     }
-    else
-    {
-        return std::nullopt;
-    }
+
+    return std::nullopt;
 }
 
 void UIPreferencesManager::LoadPreferences()
@@ -376,6 +383,9 @@ void UIPreferencesManager::LoadPreferences()
                 mMusicController->SetPlaySinkingMusic(playSinkingMusicIt->second.get<bool>());
             }
         }
+
+        // Note: we do not load language, as it has been loaded already and passed
+        // to the LocalizationManager
     }
 }
 
@@ -471,8 +481,11 @@ void UIPreferencesManager::SavePreferences() const
         preferencesRootObject["play_sinking_music"] = picojson::value(mMusicController->GetPlaySinkingMusic());
     }
 
+    // Language
+    preferencesRootObject["language"] = picojson::value(mLocalizationManager.GetCurrentLanguage().Identifier);
+
     // Save
     Utils::SaveJSONFile(
         picojson::value(preferencesRootObject),
-        StandardSystemPaths::GetInstance().GetUserGameRootFolderPath() / Filename);
+        GetPreferencesFilePath());
 }

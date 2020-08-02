@@ -23,10 +23,13 @@ AboutDialog::AboutDialog(
 	ResourceLocator const & resourceLocator)
 	: mParent(parent)
 {
+	wxString dialogTitle;
+	dialogTitle.Printf(_("About %s"), std::string(APPLICATION_NAME_WITH_SHORT_VERSION));
+
 	Create(
 		mParent,
 		wxID_ANY,
-		"About " + std::string(APPLICATION_NAME_WITH_SHORT_VERSION),
+		dialogTitle,
 		wxDefaultPosition,
 		wxSize(780, 620),
 		wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP,
@@ -76,7 +79,7 @@ AboutDialog::AboutDialog(
 	mainSizer->AddSpacer(1);
 
 	wxStaticText * title2Label = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-	title2Label->SetLabelText(wxS(
+	title2Label->SetLabelText(_(
 		"Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n"
 		"(c) Gabriele Giuseppini 2018-2020\n"
 		"This version licensed to Mattia, Elia, and all the others kids in the world"));
@@ -102,7 +105,7 @@ AboutDialog::AboutDialog(
 	// Credits title
 	//
 
-	wxStaticText * creditsTitleLabel = new wxStaticText(this, wxID_ANY, wxS("Credits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+	wxStaticText * creditsTitleLabel = new wxStaticText(this, wxID_ANY, _("Credits:"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 	creditsTitleLabel->SetFont(wxFont(wxFontInfo(14).Family(wxFONTFAMILY_MODERN)));
 	mainSizer->Add(creditsTitleLabel, 0, wxALIGN_CENTRE);
 
@@ -127,7 +130,7 @@ AboutDialog::AboutDialog(
 
 	std::vector<std::tuple<wxString, wxString, wxString>> credits
 	{
-		{wxS("Ship engineers:"), wxS("TopHatLemons"), wxEmptyString },
+		{_("Ship engineers:"), wxS("TopHatLemons"), wxEmptyString },
 		{wxS("\t\t\t\t"), wxS("Truce#3326"), wxEmptyString },
 		{wxS("\t\t\t\t"), wxS("RetroGraczzPL"), wxEmptyString },
 		{wxS("\t\t\t\t"), wxS("Nomadavid"), wxEmptyString },
@@ -164,16 +167,16 @@ AboutDialog::AboutDialog(
 		{wxS("\t\t\t\t"), wxS("2017 Leonardo"), wxEmptyString },
 		{wxS("\t\t\t\t"), wxS("sinking_feeling"), wxEmptyString },
 
-		{wxS("Music:\t\t"), wxS("\"The Short Journey to the Seabed\", Soul Heater"), wxS("https://soundcloud.com/soul-heater")},
-		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{_("Music:\t\t"), wxS("\"The Short Journey to the Seabed\", Soul Heater"), wxS("https://soundcloud.com/soul-heater")},
+		{wxS("\t\t\t\t"), _("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
 		{wxS("\t\t\t\t"), wxS("\"Long Note Four\", Kevin MacLeod"), wxS("https://incompetech.com")},
-		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{wxS("\t\t\t\t"), _("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
 		{wxS("\t\t\t\t"), wxS("\"Symmetry\", Kevin MacLeod"), wxS("https://incompetech.com")},
-		{wxS("\t\t\t\t"), wxS("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
+		{wxS("\t\t\t\t"), _("> Licensed under Creative Commons: By Attribution 4.0 License"), wxS("https://creativecommons.org/licenses/by/4.0/")},
 		{wxS("\t\t\t\t"), wxS("Michael Bozarth; Stuart's Piano World"), wxS("https://stuartspianoworld.com/")},
 		{wxS("\t\t\t\t"), wxS("Officer TimCan"), wxS("https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg")},
 
-		{wxS("Testing:\t\t"), wxS("Pac0master"), wxEmptyString},
+		{_("Testing:\t\t"), wxS("Pac0master"), wxEmptyString},
 		{wxS("\t\t\t\t"), wxS("McShooter2018"), wxEmptyString},
 		{wxS("\t\t\t\t"), wxS("Wreno"), wxEmptyString},
 		{wxS("\t\t\t\t"), wxS("Dkuz"), wxEmptyString},
@@ -184,15 +187,15 @@ AboutDialog::AboutDialog(
 		{wxS("\t\t\t\t"), wxS("KikoTheBoatBuilder"), wxEmptyString},
 		{wxS("\t\t\t\t"), wxS("DioxCode "), wxS("https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ")},
 
-		{wxS("Factory of ideas:\t"), wxS("Mattia Giuseppini"), wxEmptyString},
+		{_("Factory of ideas:\t"), wxS("Mattia Giuseppini"), wxEmptyString},
 
-		{wxS("macOS build engineer:\t"), wxS("The_SamminAter"), wxEmptyString},
+		{_("macOS build engineer:\t"), wxS("The_SamminAter"), wxEmptyString},
 
-		{wxS("Chief ship literature officer:"), wxS("Maximord"), wxEmptyString},
+		{_("Chief ship literature officer:"), wxS("Maximord"), wxEmptyString},
 
 		{wxEmptyString, wxEmptyString, wxEmptyString},
 
-		{wxS("Textures:\t"), wxS("Tune 'Prototstar' Katerungroch"), wxEmptyString},
+		{_("Textures:\t"), wxS("Tune 'Prototstar' Katerungroch"), wxEmptyString},
 		{wxS("wxWidgets:\t"), wxS("Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"), wxS("https://www.wxwidgets.org/")},
 		{wxS("SFML:\t\t"), wxS("Copyright (c) Laurent Gomila"), wxS("https://www.sfml-dev.org/")},
 		{wxS("DevIL:\t\t"), wxS("Denton Woods et al"), wxS("http://openil.sourceforge.net/")},

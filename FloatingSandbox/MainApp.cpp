@@ -8,7 +8,7 @@
 // The main application. This journey begins from here.
 //
 
-#include "LocalizationHelpers.h"
+#include "LocalizationManager.h"
 #include "MainFrame.h"
 #include "UIPreferencesManager.h"
 #include "UnhandledExceptionHandler.h"
@@ -20,6 +20,7 @@
 #include <wx/msgdlg.h>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -58,7 +59,8 @@ private:
 
 private:
 
-    MainFrame * mMainFrame{ nullptr };
+    MainFrame * mMainFrame;
+    std::unique_ptr<LocalizationManager> mLocalizationManager;
 
 
     //
@@ -76,6 +78,8 @@ IMPLEMENT_APP(MainApp);
 #endif
 
 MainApp::MainApp()
+    : mMainFrame(nullptr)
+    , mLocalizationManager()
 {
 #ifdef FS_OS_LINUX
     //
@@ -136,9 +140,9 @@ bool MainApp::OnInit()
     // Image handlers
     wxInitAllImageHandlers();
 
-    // Language
+    // Language    
     auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
-    LocalizationHelpers::GetInstance().SetLanguage(preferredLanguage);
+    mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage);
 
 
     //
@@ -147,7 +151,7 @@ bool MainApp::OnInit()
 
     try
     {
-        mMainFrame = new MainFrame(this);
+        mMainFrame = new MainFrame(this, *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
     }

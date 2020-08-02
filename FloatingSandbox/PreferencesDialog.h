@@ -10,6 +10,7 @@
 #include <UIControls/SliderControl.h>
 
 #include <wx/filepicker.h>
+#include <wx/listctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -21,7 +22,7 @@ class PreferencesDialog : public wxDialog
 public:
 
     PreferencesDialog(
-        wxWindow * parent,
+        wxWindow * parent,        
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         std::function<void()> onChangeCallback);
 
@@ -52,6 +53,8 @@ private:
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
     void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
 
+    // TODO: language list ctrl
+
     void OnOkButton(wxCommandEvent & event);
 
 private:
@@ -59,6 +62,7 @@ private:
     void PopulateGamePanel(wxPanel * panel);
     void PopulateShipPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
+    void PopulateLanguagesPanel(wxPanel * panel);
 
     void ReadSettings();
 
@@ -101,6 +105,9 @@ private:
     wxCheckBox * mPlayBackgroundMusicCheckBox;
     SliderControl<float> * mSinkingMusicVolumeSlider;
     wxCheckBox * mPlaySinkingMusicCheckBox;
+
+    // Languages panel
+    wxListCtrl * mLanguagesListCtrl; // TODO: implement
 
     // Buttons
     wxButton * mOkButton;

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "AudioController.h"
+#include "LocalizationManager.h"
 #include "MusicController.h"
 
 #include <Game/IGameController.h>
@@ -32,12 +33,13 @@ public:
 
     UIPreferencesManager(
         std::shared_ptr<IGameController> gameController,
+        LocalizationManager & localizationManager,
         std::shared_ptr<MusicController> musicController,
         ResourceLocator const & resourceLocator);
 
     ~UIPreferencesManager();
 
-    static std::optional<int> LoadPreferredLanguage();
+    static std::optional<std::string> LoadPreferredLanguage();
 
 public:
 
@@ -323,7 +325,28 @@ public:
         mMusicController->SetPlaySinkingMusic(value);
     }
 
+    //
+    // Language
+    //
+
+    std::string const & GetLanguage() const
+    {
+        return mLocalizationManager.GetCurrentLanguage().Identifier;
+    }
+
+    void SetLanguage(std::string const & languageIdentifier)
+    {
+        mLocalizationManager.StoreCurrentLanguage(languageIdentifier);
+    }
+
+    auto GetAvailableLanguages() const
+    {
+        return mLocalizationManager.GetAvailableLanguages();
+    }
+
 private:
+
+    static std::filesystem::path GetPreferencesFilePath();
 
     static std::optional<picojson::object> LoadPreferencesRootObject();
 
@@ -337,6 +360,7 @@ private:
 
     // The owners/storage of our properties
     std::shared_ptr<IGameController> mGameController;
+    LocalizationManager & mLocalizationManager;
     std::shared_ptr<MusicController> mMusicController;
 
     //

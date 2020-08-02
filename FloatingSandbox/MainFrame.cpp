@@ -109,8 +109,11 @@ long const ID_GAME_TIMER = wxNewId();
 long const ID_LOW_FREQUENCY_TIMER = wxNewId();
 long const ID_CHECK_UPDATES_TIMER = wxNewId();
 
-MainFrame::MainFrame(wxApp * mainApp)
+MainFrame::MainFrame(
+    wxApp * mainApp,
+    LocalizationManager & localizationManager)
     : mMainApp(mainApp)
+    , mLocalizationManager(localizationManager)
     , mResourceLocator(new ResourceLocator())
     , mGameController()
     , mSoundController()
@@ -828,6 +831,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
         mGameController,
+        mLocalizationManager,
         mMusicController,
         *mResourceLocator);
 

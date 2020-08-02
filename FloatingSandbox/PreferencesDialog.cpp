@@ -90,6 +90,18 @@ PreferencesDialog::PreferencesDialog(
     notebook->AddPage(musicPanel, wxS("Global Sound and Music"));
 
 
+    //
+    // Language Preferences
+    //
+
+    wxPanel * languagesPanel = new wxPanel(notebook);
+
+    PopulateLanguagesPanel(languagesPanel);
+
+    notebook->AddPage(languagesPanel, wxS("Languages"));
+
+
+
     dialogVSizer->Add(notebook, 1, wxEXPAND);
 
     dialogVSizer->AddSpacer(20);
@@ -928,6 +940,11 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
 
     // Finalize panel
     panel->SetSizerAndFit(vSizer);
+}
+
+void PreferencesDialog::PopulateLanguagesPanel(wxPanel * panel)
+{
+    // TODOHERE
 }
 
 void PreferencesDialog::ReadSettings()

@@ -8,6 +8,7 @@
 #include "AboutDialog.h"
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
+#include "LocalizationManager.h"
 #include "LoggingDialog.h"
 #include "MusicController.h"
 #include "PreferencesDialog.h"
@@ -54,7 +55,9 @@ private:
 
 public:
 
-    MainFrame(wxApp * mainApp);
+    MainFrame(
+        wxApp * mainApp,
+        LocalizationManager & localizationManager);
 
     virtual ~MainFrame();
 
@@ -320,12 +323,13 @@ private:
 
 private:
 
-    wxApp * const mMainApp;
+    wxApp * const mMainApp;    
 
     //
     // Helpers
     //
 
+    LocalizationManager & mLocalizationManager;
     std::shared_ptr<ResourceLocator> mResourceLocator;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
