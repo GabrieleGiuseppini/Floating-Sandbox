@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "LocalizationManager.h"
 #include "UIPreferencesManager.h"
 
 #include <Game/ResourceLocator.h>
@@ -20,7 +21,8 @@ public:
     StartupTipDialog(
         wxWindow* parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator,
+        LocalizationManager const & localizationManager);
 
     virtual ~StartupTipDialog();
 

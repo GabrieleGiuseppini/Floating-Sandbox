@@ -13,8 +13,9 @@
 StartupTipDialog::StartupTipDialog(
     wxWindow * parent,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLocator const & resourceLocator)
-    : wxDialog(parent, wxID_ANY, wxString(_("Welcome!")), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
+    ResourceLocator const & resourceLocator,
+    LocalizationManager const & localizationManager)
+    : wxDialog(parent, wxID_ANY, _("Welcome!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mUIPreferencesManager(std::move(uiPreferencesManager))
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
@@ -28,7 +29,10 @@ StartupTipDialog::StartupTipDialog(
             wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
         html->SetBorders(0);
-        html->LoadPage(resourceLocator.GetStartupTipFilePath().string());
+        html->LoadPage(
+            resourceLocator.GetStartupTipFilePath(
+                localizationManager.GetEnforcedLanguageIdentifier(),
+                localizationManager.GetDefaultLanguageIdentifier()).string());
         html->SetSize(
             html->GetInternalRepresentation()->GetWidth(),
             html->GetInternalRepresentation()->GetHeight());
@@ -44,8 +48,8 @@ StartupTipDialog::StartupTipDialog(
         wxBoxSizer * rowSizer = new wxBoxSizer(wxHORIZONTAL);
 
         {
-            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, wxS("Don't show this tip again"));
-            dontChk->SetToolTip(wxS("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Preferences\" window."));
+            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, _("Don't show this tip again"));
+            dontChk->SetToolTip(_("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Preferences\" window."));
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &StartupTipDialog::OnDontShowAgainCheckboxChanged, this);
 

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ResourceLocator.h"
 
+#include <GameCore/Log.h>
 #include <GameCore/Utils.h>
 
 #include <regex>
@@ -203,16 +204,40 @@ std::filesystem::path ResourceLocator::GetDefaultOceanFloorTerrainFilePath() con
 // Help
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLocator::GetStartupTipFilePath() const
+std::filesystem::path ResourceLocator::GetStartupTipFilePath(
+    std::string const & desiredLanguageIdentifier,
+    std::string const & defaultLanguageIdentifier)
 {
-    std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "startup_tip.html";
-    return std::filesystem::absolute(localPath);
+    static std::filesystem::path const Filename = std::filesystem::path("startup_tip.html");
+
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+
+    if (!std::filesystem::exists(localPath))
+    {
+        LogMessage("WARNING: cannot find startup tip file for language \"", desiredLanguageIdentifier, "\"");
+
+        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+    }
+
+    return localPath;
 }
 
-std::filesystem::path ResourceLocator::GetHelpFilePath() const
+std::filesystem::path ResourceLocator::GetHelpFilePath(
+    std::string const & desiredLanguageIdentifier,
+    std::string const & defaultLanguageIdentifier)
 {
-    std::filesystem::path localPath = std::filesystem::path("Data") / "Help" / "index.html";
-    return std::filesystem::absolute(localPath);
+    static std::filesystem::path const Filename = std::filesystem::path("help.html");
+
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+
+    if (!std::filesystem::exists(localPath))
+    {
+        LogMessage("WARNING: cannot find help file for language \"", desiredLanguageIdentifier, "\"");
+
+        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+    }
+
+    return localPath;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

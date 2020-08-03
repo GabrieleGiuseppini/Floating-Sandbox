@@ -51,9 +51,23 @@ public:
      */
     void StoreDesiredLanguage(std::optional<std::string> const & languageIdentifier);
 
+    /*
+     * Gets the identifier of the language currently enforced.
+     * Not guaranteed to be one of the "available languages" list.
+     */
+    std::string const & GetEnforcedLanguageIdentifier() const
+    {
+        return mEnforcedLanguageIdentifier;
+    }
+
     LanguageInfo const & GetDefaultLanguage() const
     {
         return mDefaultLanguage;
+    }
+
+    std::string const & GetDefaultLanguageIdentifier() const
+    {
+        return mDefaultLanguage.Identifier;
     }
 
     std::vector<LanguageInfo> const & GetAvailableLanguages() const
@@ -64,10 +78,12 @@ public:
 private:
 
     LocalizationManager(
-        std::optional<LanguageInfo> desiredLanguage,
+        std::optional<LanguageInfo> && desiredLanguage,
+        std::string && enforcedLanguageIdentifier,
         std::vector<LanguageInfo> && availableLanguages,
         std::unique_ptr<wxLocale> && locale)
-        : mDesiredLanguage(desiredLanguage)
+        : mDesiredLanguage(std::move(desiredLanguage))
+        , mEnforcedLanguageIdentifier(std::move(enforcedLanguageIdentifier))
         , mDefaultLanguage(MakeDefaultLanguage())
         , mAvailableLanguages(std::move(availableLanguages))
         , mLocale(std::move(locale))
@@ -91,6 +107,7 @@ private:
 
     std::optional<LanguageInfo> mDesiredLanguage; // Also storage of UI preference
 
+    std::string const mEnforcedLanguageIdentifier;
     LanguageInfo const mDefaultLanguage;
     std::vector<LanguageInfo> const mAvailableLanguages;
 

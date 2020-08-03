@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "LocalizationManager.h"
+
 #include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
@@ -15,7 +17,8 @@ public:
 
     HelpDialog(
         wxWindow* parent,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator,
+        LocalizationManager const & localizationManager);
 
 	virtual ~HelpDialog();
 };

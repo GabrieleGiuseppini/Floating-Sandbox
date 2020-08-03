@@ -13,7 +13,8 @@
 
 HelpDialog::HelpDialog(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+    ResourceLocator const & resourceLocator,
+    LocalizationManager const & localizationManager)
     : wxDialog(parent, wxID_ANY, _("Help"))
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
@@ -26,7 +27,10 @@ HelpDialog::HelpDialog(
         wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
     html->SetBorders(0);
-    html->LoadPage(resourceLocator.GetHelpFilePath().string());
+    html->LoadPage(
+        resourceLocator.GetHelpFilePath(
+            localizationManager.GetEnforcedLanguageIdentifier(),
+            localizationManager.GetDefaultLanguageIdentifier()).string());
     html->SetSize(
         html->GetInternalRepresentation()->GetWidth(),
         html->GetInternalRepresentation()->GetHeight());

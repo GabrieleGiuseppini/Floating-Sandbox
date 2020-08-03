@@ -411,6 +411,7 @@ Render:
 				+ Provides:
 					+ Language (type TBD, preferably 2-letter string)
 					+ DefaultLanguage - "en" (TBD: or whatever is the type above)
+				+ Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
 			+ Do UI preferences workflow
 				+ UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
 					+ Nuke own storage
@@ -419,11 +420,11 @@ Render:
 			+ Splash screen progress strings
 				+ "MessageType" enum at ProgressCallback, and methods take enum
 				+ SplashScreenDialog creates array of _() strings at cctor
-			- StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
-				- Checks internally if lang file exists before returning default (with logged warning)
-				- Move startup, help HTML files under language dirs
-					- Help folder: maintain resources here, see if may use relative paths in HTML links
-			+ Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
+			+ StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
+				+ Checks internally if lang file exists before returning default (with logged warning)
+				+ Move startup, help HTML files under language dirs
+					+ Help folder: maintain resources here, see if may use relative paths in HTML links
+
 			- Mark all strings as _(
 				+ AboutDialog
 					+ Also labels
@@ -431,13 +432,18 @@ Render:
 				+ HelpDialog
 				+ LoggingDialog
 				+ PreferencesDialog
+				+ StartupTipDialog
 				- TODO: others
 
 			- Prepare final, complete pot file
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 			- Translations:
-				- Italian: accented letters
+				= Italian:
+					= StartupTip
+					- Help
+					- po
+						- Accented letters
 
 		- Send for testing
 

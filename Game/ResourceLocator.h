@@ -102,9 +102,13 @@ public:
     // Help
     //
 
-    std::filesystem::path GetStartupTipFilePath() const;
+    static std::filesystem::path GetStartupTipFilePath(
+        std::string const & desiredLanguageIdentifier,
+        std::string const & defaultLanguageIdentifier);
 
-    std::filesystem::path GetHelpFilePath() const;
+    static std::filesystem::path GetHelpFilePath(
+        std::string const & desiredLanguageIdentifier,
+        std::string const & defaultLanguageIdentifier);
 
 
     //

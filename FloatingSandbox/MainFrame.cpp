@@ -1135,7 +1135,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
             StartupTipDialog startupTipDialog(
                 this,
                 mUIPreferencesManager,
-                *mResourceLocator);
+                *mResourceLocator,
+                mLocalizationManager);
 
             startupTipDialog.ShowModal();
         }
@@ -1831,7 +1832,8 @@ void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mHelpDialog = std::make_unique<HelpDialog>(
             this,
-            *mResourceLocator);
+            *mResourceLocator,
+            mLocalizationManager);
     }
 
     mHelpDialog->ShowModal();
