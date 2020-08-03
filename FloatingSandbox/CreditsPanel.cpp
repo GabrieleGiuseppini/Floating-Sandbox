@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "CreditsPanel.h"
 
+#include <utility>
+
 CreditsPanel::CreditsPanel(
     wxWindow* parent,
     wxString application,
@@ -17,6 +19,7 @@ CreditsPanel::CreditsPanel(
         wxBORDER_NONE)
     , mApplication(application)
     , mBuildInfo(buildInfo)
+    , mLastMousePosition(0, 0)
 {
     SetMinSize(parent->GetSize()); // Occupy all space
 
@@ -26,6 +29,8 @@ CreditsPanel::CreditsPanel(
 
     Bind(wxEVT_PAINT, (wxObjectEventFunction)&CreditsPanel::OnPaint, this);
     Bind(wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&CreditsPanel::OnEraseBackground, this);
+    Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&CreditsPanel::OnLeftDown, this);
+    Bind(wxEVT_MOTION, (wxObjectEventFunction)&CreditsPanel::OnMouseMove, this);
 
     //
     // Initialize look'n'feel
@@ -185,6 +190,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
     mCreditsBitmap = std::make_unique<wxBitmap>(wxSize(panelSize.GetWidth(), currentY));
     mCreditsBitmapBufferedPaintDC = std::make_unique<wxBufferedPaintDC>(this, *mCreditsBitmap);
+    mMaxScrollOffsetY = currentY - panelSize.GetHeight();
 
     mCreditsBitmapBufferedPaintDC->Clear();
     mCreditsBitmapBufferedPaintDC->SetTextForeground(wxColour("WHITE"));
@@ -251,6 +257,27 @@ void CreditsPanel::OnEraseBackground(wxPaintEvent & /*event*/)
     // Do nothing, eat event
 }
 
+void CreditsPanel::OnLeftDown(wxMouseEvent & event)
+{
+    mLastMousePosition = event.GetPosition();
+}
+
+void CreditsPanel::OnMouseMove(wxMouseEvent & event)
+{
+    if (event.LeftIsDown())
+    {
+        int deltaY = event.GetPosition().y - mLastMousePosition.y;
+
+        mCurrentScrollOffsetY = std::min(
+            std::max(
+                mCurrentScrollOffsetY - deltaY, 
+                0),
+            mMaxScrollOffsetY - 40);
+
+        mLastMousePosition = event.GetPosition();
+    }
+}
+
 void CreditsPanel::OnScrollTimer(wxTimerEvent & /*event*/)
 {
     if (!mCreditsBitmapBufferedPaintDC)
@@ -260,7 +287,7 @@ void CreditsPanel::OnScrollTimer(wxTimerEvent & /*event*/)
     if (now - mStartTimestamp > std::chrono::seconds(2))
     {
         mCurrentScrollOffsetY += 2;
-        if (mCurrentScrollOffsetY > mCreditsBitmapBufferedPaintDC->GetSize().GetHeight() - GetSize().GetHeight())
+        if (mCurrentScrollOffsetY > mMaxScrollOffsetY)
         {
             // Reset state
             mStartTimestamp = now;

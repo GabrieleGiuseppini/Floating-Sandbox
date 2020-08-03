@@ -30,7 +30,9 @@ private:
 
     void OnPaint(wxPaintEvent & event);
     void OnEraseBackground(wxPaintEvent & event);
-    void OnScrollTimer(wxTimerEvent & event);
+    void OnLeftDown(wxMouseEvent & event);
+    void OnMouseMove(wxMouseEvent & event);
+    void OnScrollTimer(wxTimerEvent & event);    
        
 private:
 
@@ -50,10 +52,12 @@ private:
 
     std::unique_ptr<wxBitmap> mCreditsBitmap;
     std::unique_ptr<wxBufferedPaintDC> mCreditsBitmapBufferedPaintDC;
+    int mMaxScrollOffsetY;
 
     std::unique_ptr<wxTimer> mScrollTimer;
 
     // State
     std::chrono::steady_clock::time_point mStartTimestamp;
     int mCurrentScrollOffsetY;
+    wxPoint mLastMousePosition;
 };
