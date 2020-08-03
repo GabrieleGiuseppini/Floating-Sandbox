@@ -57,7 +57,6 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
     mainSizer->AddSpacer(4);
 
-
     //
     // Create OpenGL canvas
     //
@@ -67,8 +66,6 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
         mainSizer->Add(mGLCanvas);
     }
-
-
 
     //
     // Create Progress Bar
@@ -108,6 +105,29 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     }
 
     //
+    // Populate progress strings
+    //
+
+    {
+        mProgressStrings.Add(wxEmptyString);
+        mProgressStrings.Add(_("Loading fonts..."));
+        mProgressStrings.Add(_("Initializing OpenGL..."));
+        mProgressStrings.Add(_("Loading shaders..."));
+        mProgressStrings.Add(_("Initializing noise..."));
+        mProgressStrings.Add(_("Loading generic textures..."));
+        mProgressStrings.Add(_("Loading explosion texture atlas..."));
+        mProgressStrings.Add(_("Loading cloud texture atlas..."));
+        mProgressStrings.Add(_("Loading world textures..."));
+        mProgressStrings.Add(_("Initializing graphics..."));
+        mProgressStrings.Add(_("Loading sounds..."));
+        mProgressStrings.Add(_("Loading music..."));
+        mProgressStrings.Add(_("Loading electrical panel..."));
+        mProgressStrings.Add(_("Ready!"));
+
+        assert(mProgressStrings.GetCount() == static_cast<size_t>(ProgressMessageType::_Last) + 1);
+    }
+
+    //
     // Finalize dialog
     //
 
@@ -126,11 +146,13 @@ SplashScreenDialog::~SplashScreenDialog()
 
 void SplashScreenDialog::UpdateProgress(
     float progress,
-    std::string const & message)
+    ProgressMessageType message)
 {
     mGauge->SetValue(1 + static_cast<int>(100.0f * progress));
 
-    mProgressText->SetLabelText(message);
+    assert(static_cast<size_t>(message) < mProgressStrings.GetCount());
+
+    mProgressText->SetLabelText(mProgressStrings[static_cast<size_t>(message)]);
 }
 
 void SplashScreenDialog::OnPaint(wxPaintEvent & event)

@@ -34,6 +34,7 @@ PreferencesDialog::PreferencesDialog(
     , mUIPreferencesManager(std::move(uiPreferencesManager))
     , mOnChangeCallback(std::move(onChangeCallback))
     , mAvailableLanguages(mUIPreferencesManager->GetAvailableLanguages())
+    , mHasWarnedAboutLanguageSettingChanges(false)
 {
     Create(
         mParent,
@@ -134,6 +135,8 @@ void PreferencesDialog::Open()
 {
     ReadSettings();
 
+    mHasWarnedAboutLanguageSettingChanges = false;
+
     this->Show();
 }
 
@@ -220,21 +223,33 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
     {
         size_t languageIndex = static_cast<size_t>(mLanguagesListBox->GetSelection());
 
-        // TODOHERE
-
         assert(!!mUIPreferencesManager);
+        std::optional<std::string> desiredLanguageIdentifier;
         if (languageIndex == 0)
         {
             // Default
-            mUIPreferencesManager->SetDesiredLanguage(std::nullopt);
+            desiredLanguageIdentifier = std::nullopt;
         }
         else
         {
             --languageIndex;
 
             assert(languageIndex < mAvailableLanguages.size());
-            mUIPreferencesManager->SetDesiredLanguage(mAvailableLanguages[languageIndex].Identifier);
-        }        
+            desiredLanguageIdentifier = mAvailableLanguages[languageIndex].Identifier;
+        }      
+
+        if (desiredLanguageIdentifier != mUIPreferencesManager->GetDesiredLanguage()
+            && !mHasWarnedAboutLanguageSettingChanges)
+        {
+            wxMessageBox(
+                _("Please note that a restart is required for language changes to take effect."), 
+                _T("Restart Required"), 
+                wxOK | wxICON_INFORMATION | wxCENTRE);
+
+            mHasWarnedAboutLanguageSettingChanges = true;
+        }
+
+        mUIPreferencesManager->SetDesiredLanguage(desiredLanguageIdentifier);
     }
 
     mOnChangeCallback();

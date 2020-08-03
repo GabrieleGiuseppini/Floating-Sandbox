@@ -9,6 +9,9 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/ProgressCallback.h>
+
+#include <wx/arrstr.h>
 #include <wx/frame.h>
 #include <wx/gauge.h>
 #include <wx/stattext.h>
@@ -38,7 +41,7 @@ public:
 
 	void UpdateProgress(
 		float progress,
-		std::string const & message);
+		ProgressMessageType message);
 
 private:
 
@@ -49,4 +52,6 @@ private:
 	GLCanvas * mGLCanvas;
 	wxGauge * mGauge;
 	wxStaticText * mProgressText;
+
+	wxArrayString mProgressStrings;
 };

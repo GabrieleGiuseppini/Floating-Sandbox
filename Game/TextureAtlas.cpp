@@ -628,7 +628,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     {
         progressCallback(
             static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TexturePositions.size()),
-            "Building texture atlas...");
+            ProgressMessageType::None);
 
         // Load frame
         TextureFrame<TextureGroups> textureFrame = frameLoader(texturePosition.FrameId);
@@ -673,9 +673,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
         ImageTools::AlphaPreMultiply(atlasImageData);
     }
 
-    progressCallback(
-        1.0f,
-        "Building texture atlas...");
+    progressCallback(1.0f, ProgressMessageType::None);
 
     // Return atlas
     return TextureAtlas<TextureGroups>(

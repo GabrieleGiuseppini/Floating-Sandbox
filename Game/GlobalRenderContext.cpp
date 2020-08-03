@@ -91,7 +91,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
         genericLinearTextureDatabase,
         AtlasOptions::None,
-        [](float, std::string const &) {});
+        [](float, ProgressMessageType) {});
 
     LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
 
@@ -164,7 +164,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
         genericMipMappedTextureDatabase,
         AtlasOptions::None,
-        [](float, std::string const &) {});
+        [](float, ProgressMessageType) {});
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
 

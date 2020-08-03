@@ -1,0 +1,434 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Floating Sandbox\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Gabriele Giuseppini\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ..\FloatingSandbox\AboutDialog.cpp:171
+#: ..\FloatingSandbox\AboutDialog.cpp:173
+#: ..\FloatingSandbox\AboutDialog.cpp:175
+msgid "> Licensed under Creative Commons: By Attribution 4.0 License"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:27
+#, c-format
+msgid "About %s"
+msgstr "Informazioni su %s"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:910
+msgid "Adjusts the volume of background music."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:935
+msgid "Adjusts the volume of the music played when a ship is sinking."
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:175
+msgid ""
+"At this moment it is not possible to check for updates; please try again "
+"later..."
+msgstr ""
+"Al momento non è possibile verificare la disponibilità di aggiornamenti; "
+"riprova più tardi..."
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:648
+msgid "Auto-Texturization"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:805
+msgid "Auto-Zoom at Ship Load"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:909
+msgid "Background Music Volume"
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:172
+msgid "Cannot Check for Updates at This Moment"
+msgstr "Impossibile verificare la disponibilità di aggiornamenti"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:442
+msgid ""
+"Changes the amount by which the camera position changes when using the pan "
+"controls."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:397
+msgid "Changes the amount by which zoom changes when using the zoom controls."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:715
+msgid ""
+"Changes the level of detail of materials' textures. Changes to this setting "
+"are only visible after a new ship is loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:742
+msgid ""
+"Changes the transparency of materials' textures. Changes to this setting are "
+"only visible after a new ship is loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:426
+#, fuzzy
+#| msgid "Checking for Updates..."
+msgid "Check for Updates on Startup"
+msgstr "Ricerca aggiornamenti..."
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:20
+msgid "Checking for Updates..."
+msgstr "Ricerca aggiornamenti..."
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:42
+msgid "Checking for updates..."
+msgstr "Verifica disponibilità aggiornamenti in corso..."
+
+#: ..\FloatingSandbox\AboutDialog.cpp:194
+msgid "Chief ship literature officer:"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:108
+msgid "Credits:"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:608
+msgid "Default Language (from system)"
+msgstr "Lingua del sistema"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:109
+msgid "Done"
+msgstr "Fatto"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:806
+msgid "Enables or disables auto-zooming when loading a new ship."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:821
+msgid ""
+"Enables or disables automatic showing of the ship's electrical panel when a "
+"ship with interactive electrical elements is loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:963
+msgid "Enables or disables background music while playing the game."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:427
+msgid "Enables or disables checking for new versions when the game starts."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:504
+msgid "Enables or disables notifications when a tsunami is being spawned."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:978
+msgid "Enables or disables playing sorrow music when a ship starts sinking."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:472
+msgid ""
+"Enables or disables saving the last-modified settings when exiting the game."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:518
+msgid ""
+"Enables or disables the display of extended game performance information, "
+"such as update/render ratio and counts of primitives being rendered."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:486
+msgid ""
+"Enables or disables the display of game performance information, such as "
+"frame rate and time elapsed."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:382
+msgid "Enables or disables the tips shown when the game starts."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:791
+msgid ""
+"Enables or disables the window showing ship descriptions when ships are "
+"loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:836
+msgid ""
+"Enables or disables visual notifications when an electrical element changes "
+"state."
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:190
+msgid "Factory of ideas:\t"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:934
+msgid "Farewell Music Volume"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:667
+msgid "Flat Structure"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:696
+msgid "Force Defaults onto Ships"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:72
+msgid "Game"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:42
+msgid "Game Preferences"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:94
+msgid "Global Sound and Music"
+msgstr ""
+
+#: ..\FloatingSandbox\HelpDialog.cpp:17
+msgid "Help"
+msgstr "Guida"
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:114
+msgid "Initializing OpenGL..."
+msgstr "Inizializzazione OpenGL..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:121
+msgid "Initializing graphics..."
+msgstr "Inizializzazione grafica..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:116
+msgid "Initializing noise..."
+msgstr "Inizializzazione rumore..."
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:592
+msgid "Language"
+msgstr "Lingua"
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:119
+msgid "Loading cloud texture atlas..."
+msgstr "Caricamento nuvole..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:124
+msgid "Loading electrical panel..."
+msgstr "Caricamento pannello elettrico..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:118
+msgid "Loading explosion texture atlas..."
+msgstr "Caricamento esplosioni..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:113
+msgid "Loading fonts..."
+msgstr "Caricamento font..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:117
+msgid "Loading generic textures..."
+msgstr "Caricamento textures generiche..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:123
+msgid "Loading music..."
+msgstr "Caricamento musica..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:115
+msgid "Loading shaders..."
+msgstr "Caricamento shaders..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:122
+msgid "Loading sounds..."
+msgstr "Caricamento suoni..."
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:120
+msgid "Loading world textures..."
+msgstr "Caricamento textures del mondo..."
+
+#: ..\FloatingSandbox\LoggingDialog.cpp:29
+msgid "Logging"
+msgstr "Finestra di log"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:675
+msgid "Material Textures"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:779
+msgid "Miscellaneous"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:658
+msgid "Mode"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:170
+msgid "Music:\t\t"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:877
+msgid "Mute All Sounds"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:878
+msgid "Mutes or allows all sounds."
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:151
+msgid "No New Updates"
+msgstr "Non ci sono nuovi aggiornamenti"
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:80
+#: ..\FloatingSandbox\ShipDescriptionDialog.cpp:67
+#: ..\FloatingSandbox\StartupTipDialog.cpp:58
+msgid "OK"
+msgstr "OK"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:820
+msgid "Open Electrical Panel at Load"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:83
+msgid ""
+"Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013\n"
+"(c) Gabriele Giuseppini 2018-2020\n"
+"This version licensed to Mattia, Elia, and all the others kids in the world"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:697
+msgid ""
+"Override individual ships' auto-texturization settings with these defaults. "
+"This setting is not saved, and it will revert to OFF the next time the game "
+"is played."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:439
+#: ..\FloatingSandbox\PreferencesDialog.cpp:454
+msgid "Pan Increment"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:962
+msgid "Play Background Music"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:977
+msgid "Play Farewell Music"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:245
+msgid ""
+"Please note that a restart is required for language changes to take effect."
+msgstr ""
+
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:125
+msgid "Ready!"
+msgstr "Pronti!"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:471
+msgid "Save Settings on Exit"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:534
+msgid "Screenshot directory:"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:553
+msgid "Select directory that screenshots will be saved to:"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:557
+msgid ""
+"Sets the directory into which in-game screenshots are automatically saved."
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:133
+msgid "Ship engineers:"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:83
+msgid "Ships"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:835
+msgid "Show Electrical Notifications"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:517
+msgid "Show Extended Status Text"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:790
+msgid "Show Ship Descriptions at Load"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:485
+msgid "Show Status Text"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:381
+msgid "Show Tips on Startup"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:503
+msgid "Show Tsunami Notifications"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:179
+msgid "Testing:\t\t"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:714
+msgid "Texture Magnification"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:741
+msgid "Texture Transparency"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:198
+msgid "Textures:\t"
+msgstr ""
+
+#: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:155
+#, c-format
+msgid ""
+"The latest available version is %s, and you are running version %s; there "
+"are no new updates..."
+msgstr ""
+"L'ultima versione disponibile e' %s, e voi state usando la versione %s; non "
+"ci sono nuovi aggiornamenti..."
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:360
+msgid "User Interface"
+msgstr ""
+
+#: ..\FloatingSandbox\StartupTipDialog.cpp:17
+msgid "Welcome!"
+msgstr "Benvenuti!"
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:676
+msgid ""
+"When a ship does not have a high-definition image, generates one using "
+"material-specific textures. Changes to this setting are only visible after a "
+"new ship is loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:668
+msgid ""
+"When a ship does not have a high-definition image, generates one using the "
+"materials' matte colors. Changes to this setting are only visible after a "
+"new ship is loaded."
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:394
+#: ..\FloatingSandbox\PreferencesDialog.cpp:409
+msgid "Zoom Increment"
+msgstr ""
+
+#: ..\FloatingSandbox\AboutDialog.cpp:192
+msgid "macOS build engineer:\t"
+msgstr ""

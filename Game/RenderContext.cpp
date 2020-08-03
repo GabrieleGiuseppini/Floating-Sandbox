@@ -47,7 +47,7 @@ RenderContext::RenderContext(
     , mPerfStats(perfStats)
     , mRenderStats()
 {
-    progressCallback(0.0f, "Initializing OpenGL...");
+    progressCallback(0.0f, ProgressMessageType::InitializingOpenGL);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -66,7 +66,7 @@ RenderContext::RenderContext(
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
         });
 
-    progressCallback(0.05f, "Loading shaders...");
+    progressCallback(0.05f, ProgressMessageType::LoadingShaders);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -78,7 +78,7 @@ RenderContext::RenderContext(
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
         });
 
-    progressCallback(0.1f, "Initializing noise...");
+    progressCallback(0.1f, ProgressMessageType::InitializingNoise);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -88,7 +88,7 @@ RenderContext::RenderContext(
             mGlobalRenderContext->InitializeNoiseTextures(resourceLocator);
         });
     
-    progressCallback(0.15f, "Loading generic textures...");
+    progressCallback(0.15f, ProgressMessageType::LoadingGenericTextures);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -96,7 +96,7 @@ RenderContext::RenderContext(
             mGlobalRenderContext->InitializeGenericTextures(resourceLocator);
         });
 
-    progressCallback(0.2f, "Loading explosion texture atlas...");
+    progressCallback(0.2f, ProgressMessageType::LoadingExplosionTextureAtlas);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -112,7 +112,7 @@ RenderContext::RenderContext(
                 *mGlobalRenderContext);
         });
 
-    progressCallback(0.45f, "Loading cloud texture atlas...");
+    progressCallback(0.45f, ProgressMessageType::LoadingCloudTextureAtlas);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -120,7 +120,7 @@ RenderContext::RenderContext(
             mWorldRenderContext->InitializeCloudTextures(resourceLocator);
         });
 
-    progressCallback(0.7f, "Loading world textures...");
+    progressCallback(0.7f, ProgressMessageType::LoadingWorldTextures);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -128,7 +128,7 @@ RenderContext::RenderContext(
             mWorldRenderContext->InitializeWorldTextures(resourceLocator);
         });
 
-    progressCallback(0.8f, "Loading fonts...");
+    progressCallback(0.8f, ProgressMessageType::LoadingFonts);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -143,7 +143,7 @@ RenderContext::RenderContext(
                 *mGlobalRenderContext);
         });
 
-    progressCallback(0.9f, "Initializing OpenGL...");
+    progressCallback(0.9f, ProgressMessageType::InitializingGraphics);
 
     mRenderThread.RunSynchronously(
         [&]()
@@ -199,7 +199,7 @@ RenderContext::RenderContext(
             glFinish();
         });
 
-    progressCallback(1.0f, "Initializing graphics...");
+    progressCallback(1.0f, ProgressMessageType::InitializingGraphics);
 }
 
 RenderContext::~RenderContext()

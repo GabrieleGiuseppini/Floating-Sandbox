@@ -344,7 +344,7 @@ void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourc
     auto cloudTextureAtlas = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlas(
         cloudTextureDatabase,
         AtlasOptions::None,
-        [](float, std::string const &) {});
+        [](float, ProgressMessageType) {});
 
     LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size.ToString());
 

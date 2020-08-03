@@ -87,7 +87,9 @@ SoundController::SoundController(
         std::string const & soundName = soundNames[i];
 
         // Notify progress
-        progressCallback(static_cast<float>(i + 1) / static_cast<float>(soundNames.size()), "Loading sounds...");
+        progressCallback(
+            static_cast<float>(i + 1) / static_cast<float>(soundNames.size()),
+            ProgressMessageType::LoadingSounds);
 
         //
         // Load sound buffer

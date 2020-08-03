@@ -43,7 +43,7 @@ NotificationRenderContext::NotificationRenderContext(
 
     std::vector<Font> fonts = Font::LoadAll(
         resourceLocator,
-        [](float, std::string const &) {});
+        [](float, ProgressMessageType) {});
 
 
     //

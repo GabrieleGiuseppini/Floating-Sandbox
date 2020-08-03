@@ -732,7 +732,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 ////LogMessage("TODOTEST: ...buffers swapped.");
             },
             *mResourceLocator,
-            [this, &splash](float progress, std::string const & message)
+            [this, &splash](float progress, ProgressMessageType message)
             {
                 // 0.0 -> 0.5
                 splash->UpdateProgress(progress / 2.0f, message);
@@ -761,7 +761,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mSoundController = std::make_shared<SoundController>(
             *mResourceLocator,
-            [&splash, this](float progress, std::string const & message)
+            [&splash, this](float progress, ProgressMessageType message)
             {
                 // 0.5 -> 0.66
                 splash->UpdateProgress(0.5f + progress / 6.0f, message);
@@ -790,7 +790,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mMusicController = std::make_shared<MusicController>(
             *mResourceLocator,
-            [&splash, this](float progress, std::string const & message)
+            [&splash, this](float progress, ProgressMessageType message)
             {
                 // 0.66 -> 0.83
                 splash->UpdateProgress(0.666f + progress / 6.0f, message);
@@ -853,7 +853,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mSoundController,
         mUIPreferencesManager,
         *mResourceLocator,
-        [&splash, this](float progress, std::string const & message)
+        [&splash, this](float progress, ProgressMessageType message)
         {
             // 0.83 -> 1.0
             splash->UpdateProgress(0.83f + progress / 6.0f, message);
@@ -924,7 +924,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mGameController->AddFallbackShip(*mResourceLocator);
     }
 
-    splash->UpdateProgress(1.0f, "Ready!");
+    splash->UpdateProgress(1.0f, ProgressMessageType::Ready);
 
     this->mMainApp->Yield();
 

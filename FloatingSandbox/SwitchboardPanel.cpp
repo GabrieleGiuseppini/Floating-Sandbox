@@ -83,7 +83,7 @@ SwitchboardPanel::SwitchboardPanel(
     // Setup background selector popup
     //
 
-    progressCallback(ProgressSteps/TotalProgressSteps, "Loading electrical panel...");
+    progressCallback(ProgressSteps/TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
     auto backgroundBitmapFilepaths = resourceLocator.GetBitmapFilePaths("switchboard_background_*");
     if (backgroundBitmapFilepaths.empty())
@@ -166,7 +166,7 @@ SwitchboardPanel::SwitchboardPanel(
 
     {
         ProgressSteps += 1.0f; // 1.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -175,7 +175,7 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 2.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -184,7 +184,7 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 3.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -193,7 +193,7 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 4.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -202,14 +202,14 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mShipSoundSwitchOnEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 5.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mPowerMonitorOnBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
         mPowerMonitorOffBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 6.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
         mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -218,7 +218,7 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mWatertightDoorOpenEnabledBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 7.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
         mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
@@ -226,7 +226,7 @@ SwitchboardPanel::SwitchboardPanel(
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 8.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
@@ -243,7 +243,7 @@ SwitchboardPanel::SwitchboardPanel(
         mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
         ProgressSteps += 1.0f; // 9.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, "Loading electrical panel...");
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
         dockCheckboxUncheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);

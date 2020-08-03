@@ -76,7 +76,7 @@ std::vector<Render::Font> Font::LoadAll(
 
         progressCallback(
             static_cast<float>(fonts.size()) / static_cast<float>(filepaths.size()),
-            "Loading fonts...");
+            ProgressMessageType::LoadingFonts);
     }
 
     return fonts;

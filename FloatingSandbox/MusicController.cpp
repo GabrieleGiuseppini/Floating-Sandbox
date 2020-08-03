@@ -49,7 +49,9 @@ MusicController::MusicController(
         std::string const & musicName = musicNames[i];
 
         // Notify progress
-        progressCallback(static_cast<float>(i + 1) / static_cast<float>(musicNames.size()), "Loading music...");
+        progressCallback(
+            static_cast<float>(i + 1) / static_cast<float>(musicNames.size()), 
+            ProgressMessageType::LoadingMusic);
 
         //
         // Parse filename

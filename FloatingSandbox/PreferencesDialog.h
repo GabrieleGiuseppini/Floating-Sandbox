@@ -118,4 +118,6 @@ private:
     std::function<void()> mOnChangeCallback;
 
     std::vector<LocalizationManager::LanguageInfo> const mAvailableLanguages;
+
+    bool mHasWarnedAboutLanguageSettingChanges = false;
 };

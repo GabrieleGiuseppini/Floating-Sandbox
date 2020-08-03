@@ -411,10 +411,14 @@ Render:
 				+ Provides:
 					+ Language (type TBD, preferably 2-letter string)
 					+ DefaultLanguage - "en" (TBD: or whatever is the type above)
-			= Do UI preferences workflow
+			+ Do UI preferences workflow
 				+ UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
 					+ Nuke own storage
-				- Warning on change from current
+				+ Warning on change from current
+				+ Test whole workflow
+			+ Splash screen progress strings
+				+ "MessageType" enum at ProgressCallback, and methods take enum
+				+ SplashScreenDialog creates array of _() strings at cctor
 			- StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
 				- Checks internally if lang file exists before returning default (with logged warning)
 				- Move startup, help HTML files under language dirs
@@ -428,7 +432,6 @@ Render:
 				+ LoggingDialog
 				+ PreferencesDialog
 				- TODO: others
-			- TODO: splash screen progress strings?
 
 			- Prepare final, complete pot file
 			- Mark TO-DO item under Technical Debt

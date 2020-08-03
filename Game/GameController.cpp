@@ -35,7 +35,7 @@ std::unique_ptr<GameController> GameController::Create(
         std::move(swapRenderBuffersFunction),
         *perfStats,
         resourceLocator,
-        [&progressCallback](float progress, std::string const & message)
+        [&progressCallback](float progress, ProgressMessageType message)
         {
             progressCallback(0.9f * progress, message);
         });
