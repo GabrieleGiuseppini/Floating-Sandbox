@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "AboutDialog.h"
 #include "CheckForUpdatesDialog.h"
 #include "NewVersionDisplayDialog.h"
 #include "ShipDescriptionDialog.h"
@@ -1841,14 +1842,9 @@ void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    if (!mAboutDialog)
-    {
-        mAboutDialog = std::make_unique<AboutDialog>(
-            this,
-            *mResourceLocator);
-    }
+    AboutDialog aboutDialog(this);
 
-    mAboutDialog->Open();
+    aboutDialog.ShowModal();
 }
 
 void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)

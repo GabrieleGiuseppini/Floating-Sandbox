@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #pragma once
 
-#include "AboutDialog.h"
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
 #include "LocalizationManager.h"
@@ -112,7 +111,6 @@ private:
     //
 
     std::shared_ptr<SplashScreenDialog> mSplashScreenDialog;
-    std::unique_ptr<AboutDialog> mAboutDialog;
     std::unique_ptr<HelpDialog> mHelpDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<PreferencesDialog> mPreferencesDialog;

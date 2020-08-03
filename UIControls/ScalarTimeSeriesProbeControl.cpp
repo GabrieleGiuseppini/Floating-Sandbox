@@ -108,7 +108,7 @@ void ScalarTimeSeriesProbeControl::OnPaint(wxPaintEvent & /*event*/)
 
 void ScalarTimeSeriesProbeControl::OnEraseBackground(wxPaintEvent & /*event*/)
 {
-    // Do nothing
+    // Do nothing, eat event
 }
 
 int ScalarTimeSeriesProbeControl::MapValueToY(float value) const

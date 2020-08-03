@@ -1,0 +1,272 @@
+/***************************************************************************************
+ * Original Author:		Gabriele Giuseppini
+ * Created:				2020-08-03
+ * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+ ***************************************************************************************/
+#include "CreditsPanel.h"
+
+CreditsPanel::CreditsPanel(
+    wxWindow* parent,
+    wxString application,
+    wxString buildInfo)
+    : wxPanel(
+        parent,
+        wxID_ANY,
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxBORDER_NONE)
+    , mApplication(application)
+    , mBuildInfo(buildInfo)
+{
+    SetMinSize(parent->GetSize()); // Occupy all space
+
+#ifdef __WXMSW__
+    SetDoubleBuffered(true);
+#endif
+
+    Bind(wxEVT_PAINT, (wxObjectEventFunction)&CreditsPanel::OnPaint, this);
+    Bind(wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&CreditsPanel::OnEraseBackground, this);
+
+    //
+    // Initialize look'n'feel
+    //    
+
+    SetBackgroundColour(wxColour("BLACK"));
+
+    mFonts = {
+        wxFont(wxFontInfo(20).Family(wxFONTFAMILY_ROMAN)),
+        wxFont(wxFontInfo(14).Family(wxFONTFAMILY_ROMAN)),
+        wxFont(wxFontInfo(10).Family(wxFONTFAMILY_ROMAN)),
+        wxFont(wxFontInfo(10).Family(wxFONTFAMILY_ROMAN).Italic()) };
+
+    //
+    // Start timer
+    //
+
+    mStartTimestamp = std::chrono::steady_clock::now();
+    mCurrentScrollOffsetY = 0;
+
+    mScrollTimer = std::make_unique<wxTimer>(this, wxID_ANY);
+    Bind(wxEVT_TIMER, &CreditsPanel::OnScrollTimer, this, mScrollTimer->GetId());
+    mScrollTimer->Start(16, false);
+}
+
+void CreditsPanel::RenderCredits(wxSize panelSize)
+{
+    int constexpr VMargin = 30;
+    int constexpr VMargin3 = VMargin * 3;
+
+    //
+    // Titles
+    //
+  
+    std::vector<Title> titles = {
+
+        {0, mApplication, 0},
+        {1, mBuildInfo, panelSize.GetHeight() / 2},
+
+        {1, _("(c) Gabriele Giuseppini 2018-2020"), 0},
+        {2, _("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"), VMargin},
+
+        {1, _("This software is licensed to Mattia, Elia, and all the others kids in the world!"), panelSize.GetHeight() / 2},
+
+        {0, _("PROGRAMMING"), 0},
+        {1, wxS("Gabriele Giuseppini"), VMargin3},
+
+        {0, _("TESTING"), 0},
+        {1, wxS("Pac0master"), 0},
+        {1, wxS("McShooter2018"), 0},
+        {1, wxS("Wreno"), 0},
+        {1, wxS("Dkuz"), 0},
+        {1, wxS("_ASTYuu_"), 0},
+        {1, wxS("sinking_feeling"), 0},
+        {1, wxS("KikoTheBoatBuilder"), 0},
+        {1, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
+        {1, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), 0},
+        {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), VMargin3},
+
+        {0, _("BUILD ENGINEERS"), 0},
+        {1, wxS("The_SamminAter (macOS)"), VMargin3},
+
+        {0, _("SHIP ENGINEERS"), 0},
+        {2, wxS("TopHatLemons   Truce#3326   RetroGraczzPL   Nomadavid   Wreno"), 0},
+        {2, wxS("Pac0master   CorbinPasta93   Yorkie   Bluefox   KikoTheBoatBuilder"), 0},
+        {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},        
+        {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres"), 0},
+        {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua"), 0},
+        {2, wxS("MasterGarfield   Aur\xe9lien WOLFF   Alex di Roma   2017 Leonardo"), 0},
+        {2, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
+        {2, wxS("JackTheBrickfilmMaker (https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ)"), 0},
+        {2, wxS("HummeL (https://www.youtube.com/c/HummeL_Prog)"), 0},
+        {2, wxS("Darek225 (https://www.youtube.com/channel/UC5l6t4P8NLA8n81XdX6yl6w)"), 0},
+        {2, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), 0},
+        {2, wxS("Fox Assor (https://vk.com/id448121270)"), VMargin3},
+
+        {0, _("FACTORY OF IDEAS"), 0},
+        {1, wxS("Mattia Giuseppini"), VMargin3},
+
+        {0, _("SHIP LITERATURE"), 0},
+        {1, wxS("Maximord"), VMargin3},
+
+        {0, _("MUSIC"), VMargin},
+
+        {1, wxS("\"The Short Journey to the Seabed\""), 0},
+        {3, wxS("Soul Heater (https://soundcloud.com/soul-heater)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
+        {1, wxS("\"Long Note Four\""), 0},
+        {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
+        {1, wxS("\"Symmetry\""), 0},
+        {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
+        {1, wxS("\"Untitled #1\""), 0},
+        {3, wxS("Michael Bozarth; Stuart's Piano World (https://stuartspianoworld.com/)"), VMargin},
+
+        {1, wxS("\"Untitled #2\""), 0},
+        {3, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), VMargin3},
+
+        {0, _("3RD-PARTY SOFTWARE"), VMargin},
+
+        {1, wxS("wxWidgets (https://www.wxwidgets.org/)"), 0},
+        {2, _("Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"), VMargin},
+
+        {1, wxS("SFML (https://www.sfml-dev.org/)"), 0},
+        {2, _("Copyright (c) Laurent Gomila"), VMargin},
+
+        {1, wxS("DevIL (http://openil.sourceforge.net/)"), 0},
+        {2, _("Denton Woods et al"), VMargin},
+
+        {1, wxS("picojson (https://github.com/kazuho/picojson)"), 0},
+        {2, _("Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"), VMargin},
+
+        {1, wxS("Bitmap Font Generator (http://www.codehead.co.uk/cbfg/)"), 0},
+        {2, _("Copyright (c) 2005-2011 Karl Walsh (Codehead)"), VMargin},
+
+        {1, wxS("Fast approx routines (http://www.machinedlearnings.com/)"), 0},
+        {2, _("Copyright (c) 2011 Paul Mineiro"), VMargin3},
+
+        { 0, _("SPECIAL THANKS"), 0 },
+        { 1, wxS("Monica, Mattia, and Mattia Giuseppini"), 0 },
+        { 1, wxS("Joey de Vries (OpenGL tutorial, http://openil.sourceforge.net/)"), 0 }
+    };
+
+    //
+    // Calculate size needed to render all titles
+    //
+
+    int const centerX = panelSize.GetWidth() / 2;
+    int const startY = panelSize.GetHeight() / 2;
+
+    int currentY = startY;
+    {
+        auto tmpBitmap = std::make_unique<wxBitmap>(wxSize(panelSize.GetWidth(), 100));
+        auto tmpBitmapBufferedPaintDC = std::make_unique<wxBufferedPaintDC>(this, *tmpBitmap);
+
+        for (auto const & title : titles)
+        {
+            RenderTitle(
+                title,
+                centerX,
+                currentY,
+                *tmpBitmapBufferedPaintDC,
+                false);
+        }
+    }
+
+    // Final full-page blank
+    currentY += panelSize.GetHeight();
+
+    //
+    // Render onto bitmap
+    //
+
+    mCreditsBitmap = std::make_unique<wxBitmap>(wxSize(panelSize.GetWidth(), currentY));
+    mCreditsBitmapBufferedPaintDC = std::make_unique<wxBufferedPaintDC>(this, *mCreditsBitmap);
+
+    mCreditsBitmapBufferedPaintDC->Clear();
+    mCreditsBitmapBufferedPaintDC->SetTextForeground(wxColour("WHITE"));
+
+    currentY = startY;
+    for (auto const & title : titles)
+    {
+        RenderTitle(
+            title,
+            centerX,
+            currentY,
+            *mCreditsBitmapBufferedPaintDC,
+            true);
+    }
+}
+
+void CreditsPanel::RenderTitle(
+    Title const & title, 
+    int centerX,
+    int & currentY, // @ vertical middle of line
+    wxDC & dc,
+    bool doRender)
+{
+    dc.SetFont(mFonts[title.FontIndex]);
+    auto const extent = dc.GetTextExtent(title.Text);
+
+    int const y = currentY - extent.GetHeight() / 2;
+
+    if(doRender)
+        dc.DrawText(title.Text, centerX - extent.GetWidth() / 2, y);
+
+    currentY =
+        y
+        + extent.GetHeight()
+        + 10 // Fixed under-row margin
+        + title.BottomMargin;
+}
+
+void CreditsPanel::OnPaint(wxPaintEvent & /*event*/)
+{
+    auto const paintSize = this->GetSize();
+
+    if (!mCreditsBitmapBufferedPaintDC
+        || mCreditsBitmapBufferedPaintDC->GetSize().GetWidth() != paintSize.GetWidth())
+    {
+        RenderCredits(paintSize);
+    }
+
+    //
+    // Blit the bitmap to its location
+    //
+    
+    wxPaintDC dc(this);
+    dc.Blit(
+        0, 0, // Dest coords
+        paintSize.GetWidth(), paintSize.GetHeight(), // Dest size
+        mCreditsBitmapBufferedPaintDC.get(),
+        0, mCurrentScrollOffsetY, // Src coords
+        wxCOPY);
+}
+
+void CreditsPanel::OnEraseBackground(wxPaintEvent & /*event*/)
+{
+    // Do nothing, eat event
+}
+
+void CreditsPanel::OnScrollTimer(wxTimerEvent & /*event*/)
+{
+    if (!mCreditsBitmapBufferedPaintDC)
+        return;
+
+    auto now = std::chrono::steady_clock::now();
+    if (now - mStartTimestamp > std::chrono::seconds(2))
+    {
+        mCurrentScrollOffsetY += 2;
+        if (mCurrentScrollOffsetY > mCreditsBitmapBufferedPaintDC->GetSize().GetHeight() - GetSize().GetHeight())
+        {
+            // Reset state
+            mStartTimestamp = now;
+            mCurrentScrollOffsetY = 0;
+        }
+
+        this->Refresh();
+    }
+}

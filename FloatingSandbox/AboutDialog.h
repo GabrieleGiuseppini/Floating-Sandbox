@@ -5,32 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
+#include "CreditsPanel.h"
 
 #include <wx/dialog.h>
-#include <wx/scrolwin.h>
 
 class AboutDialog : public wxDialog
 {
 public:
 
-    AboutDialog(
-        wxWindow* parent,
-        ResourceLocator const & resourceLocator);
-
-	virtual ~AboutDialog();
-
-    void Open();
-
-private:
-
-	void OnClose(wxCloseEvent& event);
-
-private:
-
-	wxWindow * const mParent;
-
-    wxScrolled<wxPanel> * mCreditsPanel;
-
-	DECLARE_EVENT_TABLE()
+    AboutDialog(wxWindow * parent);
 };

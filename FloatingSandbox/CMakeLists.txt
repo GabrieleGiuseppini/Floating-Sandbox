@@ -9,6 +9,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	AudioController.h
 	CheckForUpdatesDialog.cpp
 	CheckForUpdatesDialog.h
+	CreditsPanel.cpp
+	CreditsPanel.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	GLCanvas.h
