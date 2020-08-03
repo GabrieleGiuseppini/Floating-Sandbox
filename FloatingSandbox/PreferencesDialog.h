@@ -11,7 +11,7 @@
 #include <UIControls/SliderControl.h>
 
 #include <wx/filepicker.h>
-#include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -42,7 +42,7 @@ private:
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
     void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
-    void OnLanguagesListCtrlActivated(wxListEvent & event);
+    void OnLanguagesListBoxSelected(wxCommandEvent & event);
 
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
@@ -74,7 +74,7 @@ private:
     void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();
 
-    int GetLanguagesListCtrlIndex(std::optional<std::string> languageIdentifier) const;
+    int GetLanguagesListBoxIndex(std::optional<std::string> languageIdentifier) const;
 
 private:
 
@@ -88,7 +88,7 @@ private:
     wxSpinCtrl * mPanIncrementSpinCtrl;
     wxCheckBox * mShowStatusTextCheckBox;
     wxCheckBox * mShowExtendedStatusTextCheckBox;
-    wxListCtrl * mLanguagesListCtrl;
+    wxListBox * mLanguagesListBox;
 
     // Ships panel
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;

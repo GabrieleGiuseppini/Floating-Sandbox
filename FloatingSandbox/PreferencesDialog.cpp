@@ -214,23 +214,27 @@ void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent &
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnLanguagesListCtrlActivated(wxListEvent & event)
+void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
 {
-    assert(event.GetIndex() != wxNOT_FOUND);
-    size_t languageIndex = static_cast<size_t>(event.GetIndex());
-
-    assert(!!mUIPreferencesManager);
-    if (languageIndex == 0)
+    if (mLanguagesListBox->GetSelection() != wxNOT_FOUND)
     {
-        // Default
-        mUIPreferencesManager->SetDesiredLanguage(std::nullopt);
-    }
-    else
-    {
-        --languageIndex;
+        size_t languageIndex = static_cast<size_t>(mLanguagesListBox->GetSelection());
 
-        assert(languageIndex < mAvailableLanguages.size());
-        mUIPreferencesManager->SetDesiredLanguage(mAvailableLanguages[languageIndex].Identifier);
+        // TODOHERE
+
+        assert(!!mUIPreferencesManager);
+        if (languageIndex == 0)
+        {
+            // Default
+            mUIPreferencesManager->SetDesiredLanguage(std::nullopt);
+        }
+        else
+        {
+            --languageIndex;
+
+            assert(languageIndex < mAvailableLanguages.size());
+            mUIPreferencesManager->SetDesiredLanguage(mAvailableLanguages[languageIndex].Identifier);
+        }        
     }
 
     mOnChangeCallback();
@@ -394,7 +398,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     label,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
@@ -439,7 +443,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     label,
                     wxGBPosition(1, 3),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
@@ -533,8 +537,6 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     wxEmptyString,
                     _("Select directory that screenshots will be saved to:"),
                     wxDefaultPosition,
-                    // TODOTEST
-                    //wxSize(440, -1),
                     wxDefaultSize,
                     wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
                 mScreenshotDirPickerCtrl->SetToolTip(_("Sets the directory into which in-game screenshots are automatically saved."));
@@ -579,36 +581,27 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
         // Language list
         {
-            mLanguagesListCtrl = new wxListCtrl(
+            mLanguagesListBox = new wxListBox(
                 languageBox,
                 wxID_ANY,
                 wxDefaultPosition,
                 wxDefaultSize,
-                wxBORDER_STATIC /* https://trac.wxwidgets.org/ticket/18549 */ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
-
-            mLanguagesListCtrl->AppendColumn(
-                wxEmptyString,
-                wxLIST_FORMAT_LEFT,
-                wxLIST_AUTOSIZE);            
-
-            mLanguagesListCtrl->InsertItem(
                 0,
-                _("Default Language (from system)"));
+                NULL,
+                wxLB_SINGLE | wxLB_NEEDED_SB);
+
+            mLanguagesListBox->Append(_("Default Language (from system)"));
 
             for (size_t l = 0; l < mAvailableLanguages.size(); ++l)
             {
-                mLanguagesListCtrl->InsertItem(
-                    l + 1,
-                    mAvailableLanguages[l].Name);
+                mLanguagesListBox->Append(mAvailableLanguages[l].Name);
             }
 
-            mLanguagesListCtrl->SetColumnWidth(0, wxLIST_AUTOSIZE);
-
-            mLanguagesListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &PreferencesDialog::OnLanguagesListCtrlActivated, this);
+            mLanguagesListBox->Bind(wxEVT_LISTBOX, &PreferencesDialog::OnLanguagesListBoxSelected, this);
 
             languageBoxSizer->Add(
-                mLanguagesListCtrl,
-                0,
+                mLanguagesListBox,
+                1,
                 wxALL,
                 Border);
         }
@@ -619,7 +612,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             languageBox,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            wxALL,
+            wxEXPAND | wxALL,
             CellBorder);
     }
 
@@ -1067,10 +1060,7 @@ void PreferencesDialog::ReadSettings()
     mSinkingMusicVolumeSlider->SetValue(mUIPreferencesManager->GetGameMusicVolume());
     mPlaySinkingMusicCheckBox->SetValue(mUIPreferencesManager->GetPlaySinkingMusic());
 
-    mLanguagesListCtrl->SetItemState(
-        GetLanguagesListCtrlIndex(mUIPreferencesManager->GetDesiredLanguage()),
-        wxLIST_STATE_SELECTED, 
-        wxLIST_STATE_SELECTED);
+    mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager->GetDesiredLanguage()));
 
     ReconcileSoundSettings();
 }
@@ -1107,7 +1097,7 @@ void PreferencesDialog::ReconcileSoundSettings()
     mSinkingMusicVolumeSlider->Enable(!mGlobalMuteCheckBox->GetValue() && mPlaySinkingMusicCheckBox->GetValue());
 }
 
-int PreferencesDialog::GetLanguagesListCtrlIndex(std::optional<std::string> languageIdentifier) const
+int PreferencesDialog::GetLanguagesListBoxIndex(std::optional<std::string> languageIdentifier) const
 {
     if (languageIdentifier.has_value())
     {
