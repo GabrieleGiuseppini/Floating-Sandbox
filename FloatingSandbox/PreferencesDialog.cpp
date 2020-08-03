@@ -40,7 +40,7 @@ PreferencesDialog::PreferencesDialog(
         wxID_ANY,
         _("Game Preferences"),
         wxDefaultPosition,
-        wxSize(400, -1),
+        wxDefaultSize,
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_SHAPED,
         wxS("Preferences Window"));
 
@@ -91,17 +91,6 @@ PreferencesDialog::PreferencesDialog(
     PopulateMusicPanel(musicPanel);
 
     notebook->AddPage(musicPanel, _("Global Sound and Music"));
-
-
-    //
-    // Language Preferences
-    //
-
-    wxPanel * languagePanel = new wxPanel(notebook);
-
-    PopulateLanguagePanel(languagePanel);
-
-    notebook->AddPage(languagePanel, _("Language"));
 
 
 
@@ -225,6 +214,28 @@ void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent &
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnLanguagesListCtrlActivated(wxListEvent & event)
+{
+    assert(event.GetIndex() != wxNOT_FOUND);
+    size_t languageIndex = static_cast<size_t>(event.GetIndex());
+
+    assert(!!mUIPreferencesManager);
+    if (languageIndex == 0)
+    {
+        // Default
+        mUIPreferencesManager->SetDesiredLanguage(std::nullopt);
+    }
+    else
+    {
+        --languageIndex;
+
+        assert(languageIndex < mAvailableLanguages.size());
+        mUIPreferencesManager->SetDesiredLanguage(mAvailableLanguages[languageIndex].Identifier);
+    }
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -312,28 +323,6 @@ void PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & /*eve
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnLanguagesListCtrlActivated(wxListEvent & event)
-{
-    assert(event.GetIndex() != wxNOT_FOUND);
-    size_t languageIndex = static_cast<size_t>(event.GetIndex());
-
-    assert(!!mUIPreferencesManager);
-    if (languageIndex == 0)
-    {
-        // Default
-        mUIPreferencesManager->SetDesiredLanguage(std::nullopt);
-    }
-    else
-    {
-        --languageIndex;
-
-        assert(languageIndex < mAvailableLanguages.size());
-        mUIPreferencesManager->SetDesiredLanguage(mAvailableLanguages[languageIndex].Identifier);
-    }
-
-    mOnChangeCallback();
-}
-
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
     // Close ourselves
@@ -342,229 +331,297 @@ void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 
 void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 {
-    //
-    // | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-    //     | X |       | X   X |
-    //
-
-    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
-
-    gridSizer->SetFlexibleDirection(wxHORIZONTAL);
-    gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
-
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
-    // Row 1
+    // User interface
     //
 
     {
-        wxStaticText * screenshotDirStaticText = new wxStaticText(panel, wxID_ANY, _("Screenshot directory:"));
+        wxStaticBox * userInterfaceBox = new wxStaticBox(panel, wxID_ANY, _("User Interface"));
+
+        wxBoxSizer * userInterfaceBoxSizer = new wxBoxSizer(wxVERTICAL);
+        userInterfaceBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * userInterfaceSizer = new wxGridBagSizer(0, 0);
+
+            userInterfaceSizer->SetFlexibleDirection(wxHORIZONTAL);
+            userInterfaceSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_NONE);
+            int constexpr UserInterfaceBorder = 3;
+
+            // | 0 | 1 | 2 | 3 |
+            // | X |   | X   X |
+
+            //
+            // Row 1
+            //
+
+            {
+                mShowTipOnStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
+                mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mShowTipOnStartupCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
+                mZoomIncrementSpinCtrl = new wxSpinCtrl(userInterfaceBox, wxID_ANY, _("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
+                    wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+                mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
+                mZoomIncrementSpinCtrl->SetToolTip(_("Changes the amount by which zoom changes when using the zoom controls."));
+                mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
+
+                userInterfaceSizer->Add(
+                    mZoomIncrementSpinCtrl,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            {
+                auto label = new wxStaticText(userInterfaceBox, wxID_ANY, _("Zoom Increment"), wxDefaultPosition, wxDefaultSize,
+                    wxALIGN_LEFT);
+
+                userInterfaceSizer->Add(
+                    label,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 2
+            //
+
+            {
+                mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
+                mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mCheckForUpdatesAtStartupCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
+                mPanIncrementSpinCtrl = new wxSpinCtrl(userInterfaceBox, wxID_ANY, _("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
+                    wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+                mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
+                mPanIncrementSpinCtrl->SetToolTip(_("Changes the amount by which the camera position changes when using the pan controls."));
+                mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
+
+                userInterfaceSizer->Add(
+                    mPanIncrementSpinCtrl,
+                    wxGBPosition(1, 2),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            {
+                auto label = new wxStaticText(userInterfaceBox, wxID_ANY, _("Pan Increment"), wxDefaultPosition, wxDefaultSize,
+                    wxALIGN_LEFT);
+
+                userInterfaceSizer->Add(
+                    label,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 3
+            //
+
+            {
+                mSaveSettingsOnExitCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+                mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
+                mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mSaveSettingsOnExitCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
+                mShowStatusTextCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowStatusTextCheckBox->SetToolTip(_("Enables or disables the display of game performance information, such as frame rate and time elapsed."));
+                mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mShowStatusTextCheckBox,
+                    wxGBPosition(2, 2),
+                    wxGBSpan(1, 2),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 4
+            //
+
+            {
+                mShowTsunamiNotificationsCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
+                mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mShowTsunamiNotificationsCheckBox,
+                    wxGBPosition(3, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
+                mShowExtendedStatusTextCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowExtendedStatusTextCheckBox->SetToolTip(_("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered."));
+                mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
+
+                userInterfaceSizer->Add(
+                    mShowExtendedStatusTextCheckBox,
+                    wxGBPosition(3, 2),
+                    wxGBSpan(1, 2),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 5
+            //
+
+            {
+                wxStaticText * screenshotDirStaticText = new wxStaticText(userInterfaceBox, wxID_ANY, _("Screenshot directory:"));
+
+                userInterfaceSizer->Add(
+                    screenshotDirStaticText,
+                    wxGBPosition(4, 0),
+                    wxGBSpan(1, 4),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 6
+            //
+
+            {
+                mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
+                    userInterfaceBox,
+                    wxID_ANY,
+                    wxEmptyString,
+                    _("Select directory that screenshots will be saved to:"),
+                    wxDefaultPosition,
+                    // TODOTEST
+                    //wxSize(440, -1),
+                    wxDefaultSize,
+                    wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
+                mScreenshotDirPickerCtrl->SetToolTip(_("Sets the directory into which in-game screenshots are automatically saved."));
+                mScreenshotDirPickerCtrl->Bind(wxEVT_DIRPICKER_CHANGED, &PreferencesDialog::OnScreenshotDirPickerChanged, this);
+
+                userInterfaceSizer->Add(
+                    mScreenshotDirPickerCtrl,
+                    wxGBPosition(5, 0),
+                    wxGBSpan(1, 4),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            // Add spacer column
+            {
+                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(6, 1), wxEXPAND);
+                userInterfaceSizer->AddGrowableCol(1, 1);
+            }
+
+            userInterfaceBoxSizer->Add(userInterfaceSizer, 0, wxEXPAND | wxALL, StaticBoxInsetMargin);
+        }
+
+        userInterfaceBox->SetSizerAndFit(userInterfaceBoxSizer);
 
         gridSizer->Add(
-            screenshotDirStaticText,
+            userInterfaceBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
+    // Language
+    //
+
+    {
+        wxStaticBox * languageBox = new wxStaticBox(panel, wxID_ANY, _("Language"));
+
+        wxBoxSizer * languageBoxSizer = new wxBoxSizer(wxVERTICAL);
+        languageBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        // Language list
+        {
+            mLanguagesListCtrl = new wxListCtrl(
+                languageBox,
+                wxID_ANY,
+                wxDefaultPosition,
+                wxDefaultSize,
+                wxBORDER_STATIC /* https://trac.wxwidgets.org/ticket/18549 */ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+
+            mLanguagesListCtrl->AppendColumn(
+                wxEmptyString,
+                wxLIST_FORMAT_LEFT,
+                wxLIST_AUTOSIZE);            
+
+            mLanguagesListCtrl->InsertItem(
+                0,
+                _("Default Language (from system)"));
+
+            for (size_t l = 0; l < mAvailableLanguages.size(); ++l)
+            {
+                mLanguagesListCtrl->InsertItem(
+                    l + 1,
+                    mAvailableLanguages[l].Name);
+            }
+
+            mLanguagesListCtrl->SetColumnWidth(0, wxLIST_AUTOSIZE);
+
+            mLanguagesListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &PreferencesDialog::OnLanguagesListCtrlActivated, this);
+
+            languageBoxSizer->Add(
+                mLanguagesListCtrl,
+                0,
+                wxALL,
+                Border);
+        }
+
+        languageBox->SetSizerAndFit(languageBoxSizer);
+
+        gridSizer->Add(
+            languageBox,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 5), // Take entire row
-            wxRIGHT | wxLEFT | wxEXPAND | wxALIGN_BOTTOM,
-            Border);
-    }
-
-    //
-    // Row 2
-    //
-
-    {
-        mScreenshotDirPickerCtrl = new wxDirPickerCtrl(
-            panel,
-            wxID_ANY,
-            wxEmptyString,
-            _("Select directory that screenshots will be saved to:"),
-            wxDefaultPosition,
-            wxSize(-1, -1),
-            wxDIRP_DIR_MUST_EXIST | wxDIRP_USE_TEXTCTRL);
-        mScreenshotDirPickerCtrl->SetToolTip(_("Sets the directory into which in-game screenshots are automatically saved."));
-        mScreenshotDirPickerCtrl->Bind(wxEVT_DIRPICKER_CHANGED, &PreferencesDialog::OnScreenshotDirPickerChanged, this);
-
-        gridSizer->Add(
-            mScreenshotDirPickerCtrl,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 5), // Take entire row
-            wxRIGHT | wxLEFT | wxEXPAND,
-            Border);
-    }
-
-    //
-    // Row 3
-    //
-
-    gridSizer->Add(1, 15, wxGBPosition(2, 0), wxGBSpan(7, 1), wxEXPAND);
-
-    //
-    // Row 4
-    //
-
-    {
-        mShowTipOnStartupCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
-        mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowTipOnStartupCheckBox,
-            wxGBPosition(3, 1),
             wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
+            wxALL,
+            CellBorder);
     }
-
-    {
-        mZoomIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _("Zoom Increment"), wxDefaultPosition, wxSize(75, -1),
-            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-        mZoomIncrementSpinCtrl->SetRange(1, MaxZoomIncrementPosition);
-        mZoomIncrementSpinCtrl->SetToolTip(_("Changes the amount by which zoom changes when using the zoom controls."));
-        mZoomIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnZoomIncrementSpinCtrl, this);
-
-        gridSizer->Add(
-            mZoomIncrementSpinCtrl,
-            wxGBPosition(3, 4),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-    {
-        auto label = new wxStaticText(panel, wxID_ANY, _("Zoom Increment"), wxDefaultPosition, wxDefaultSize,
-            wxALIGN_LEFT);
-
-        gridSizer->Add(
-            label,
-            wxGBPosition(3, 5),
-            wxGBSpan(1, 1),
-            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-
-    //
-    // Row 5
-    //
-
-    {
-        mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-        mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
-        mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mCheckForUpdatesAtStartupCheckBox,
-            wxGBPosition(4, 1),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    {
-        mPanIncrementSpinCtrl = new wxSpinCtrl(panel, wxID_ANY, _("Pan Increment"), wxDefaultPosition, wxSize(75, -1),
-            wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-        mPanIncrementSpinCtrl->SetRange(1, MaxPanIncrementPosition);
-        mPanIncrementSpinCtrl->SetToolTip(_("Changes the amount by which the camera position changes when using the pan controls."));
-        mPanIncrementSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnPanIncrementSpinCtrl, this);
-
-        gridSizer->Add(
-            mPanIncrementSpinCtrl,
-            wxGBPosition(4, 4),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-    {
-        auto label = new wxStaticText(panel, wxID_ANY, _("Pan Increment"), wxDefaultPosition, wxDefaultSize,
-            wxALIGN_LEFT);
-
-        gridSizer->Add(
-            label,
-            wxGBPosition(4, 5),
-            wxGBSpan(1, 1),
-            wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
-            Border);
-    }
-
-    //
-    // Row 6
-    //
-
-    {
-        mSaveSettingsOnExitCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
-        mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
-        mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mSaveSettingsOnExitCheckBox,
-            wxGBPosition(5, 1),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    {
-        mShowStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowStatusTextCheckBox->SetToolTip(_("Enables or disables the display of game performance information, such as frame rate and time elapsed."));
-        mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowStatusTextCheckBox,
-            wxGBPosition(5, 4),
-            wxGBSpan(1, 2),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Row 7
-    //
-
-    {
-        mShowTsunamiNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
-        mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowTsunamiNotificationsCheckBox,
-            wxGBPosition(6, 1),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    {
-        mShowExtendedStatusTextCheckBox = new wxCheckBox(panel, wxID_ANY, 
-            _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-        mShowExtendedStatusTextCheckBox->SetToolTip(_("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered."));
-        mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
-
-        gridSizer->Add(
-            mShowExtendedStatusTextCheckBox,
-            wxGBPosition(6, 4),
-            wxGBSpan(1, 2),
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT | wxBOTTOM,
-            Border);
-    }
-
-    //
-    // Add spacers
-    //
-
-    gridSizer->Add(1, 1, wxGBPosition(0, 0), wxGBSpan(7, 1), wxEXPAND);
-    gridSizer->AddGrowableCol(0, 1);
-    gridSizer->AddGrowableCol(2, 1);
-
-    gridSizer->AddGrowableCol(3, 1);
-    gridSizer->Add(1, 1, wxGBPosition(0, 6), wxGBSpan(7, 1), wxEXPAND);
-    gridSizer->AddGrowableCol(6, 1);
-
 
     // Finalize panel
 
@@ -961,48 +1018,6 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
             1,
             wxEXPAND,
             0);
-    }
-
-    // Finalize panel
-    panel->SetSizerAndFit(vSizer);
-}
-
-void PreferencesDialog::PopulateLanguagePanel(wxPanel * panel)
-{
-    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-    // Language list
-    {
-        mLanguagesListCtrl = new wxListCtrl(
-            panel,
-            wxID_ANY,
-            wxDefaultPosition,
-            wxSize(250, 370),
-            wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
-
-        mLanguagesListCtrl->AppendColumn(
-            wxEmptyString,
-            wxLIST_FORMAT_LEFT,
-            wxLIST_AUTOSIZE_USEHEADER);
-
-        mLanguagesListCtrl->InsertItem(
-            0,
-            _("Default Language (from system)"));
-
-        for (size_t l = 0; l < mAvailableLanguages.size(); ++l)
-        {
-            mLanguagesListCtrl->InsertItem(
-                l + 1,
-                mAvailableLanguages[l].Name);
-        }
-
-        mLanguagesListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &PreferencesDialog::OnLanguagesListCtrlActivated, this);
-
-        vSizer->Add(
-            mLanguagesListCtrl,
-            0,
-            wxALIGN_CENTER_HORIZONTAL | wxALL,
-            Border);
     }
 
     // Finalize panel

@@ -42,6 +42,7 @@ private:
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
     void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
+    void OnLanguagesListCtrlActivated(wxListEvent & event);
 
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
@@ -52,9 +53,7 @@ private:
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
-    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
-
-    void OnLanguagesListCtrlActivated(wxListEvent & event);
+    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);    
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -63,7 +62,6 @@ private:
     void PopulateGamePanel(wxPanel * panel);
     void PopulateShipPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
-    void PopulateLanguagePanel(wxPanel * panel);
 
     void ReadSettings();
 
@@ -90,6 +88,7 @@ private:
     wxSpinCtrl * mPanIncrementSpinCtrl;
     wxCheckBox * mShowStatusTextCheckBox;
     wxCheckBox * mShowExtendedStatusTextCheckBox;
+    wxListCtrl * mLanguagesListCtrl;
 
     // Ships panel
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
@@ -108,10 +107,7 @@ private:
     wxCheckBox * mPlayBackgroundMusicCheckBox;
     SliderControl<float> * mSinkingMusicVolumeSlider;
     wxCheckBox * mPlaySinkingMusicCheckBox;
-
-    // Language panel
-    wxListCtrl * mLanguagesListCtrl;
-
+   
     // Buttons
     wxButton * mOkButton;
 

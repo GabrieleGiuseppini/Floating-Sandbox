@@ -68,6 +68,12 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
         {
             LogMessage("WARNING: failed locale catalog initialization with language ", localeLanguage);
         }
+
+        if (auto const translations = wxTranslations::Get();
+            translations != nullptr)
+        {
+            translations->AddStdCatalog();
+        }
     }
 
     // Get enforced language
