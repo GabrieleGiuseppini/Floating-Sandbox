@@ -16,7 +16,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
     Version const & version,
     std::vector<std::vector<std::string>> const & features,
     UIPreferencesManager * uiPreferencesManager)
-    : wxDialog(parent, wxID_ANY, wxS("A New Version Is Available!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
+    : wxDialog(parent, wxID_ANY, _("A New Version Is Available!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mVersion(version)
     , mUIPreferencesManager(uiPreferencesManager)
 {
@@ -41,7 +41,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
 #endif // wxUSE_STATLINE
 
     {
-        wxButton * goToDownloadPageButton = new wxButton(this, wxID_ANY, wxS("Go to the Download Page!"), wxDefaultPosition, wxSize(160, -1));
+        wxButton * goToDownloadPageButton = new wxButton(this, wxID_ANY, _("Go to the Download Page!"), wxDefaultPosition, wxSize(160, -1));
         goToDownloadPageButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&NewVersionDisplayDialog::OnGoToDownloadPageButtonClicked, this);
 
         topSizer->Add(goToDownloadPageButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
@@ -50,9 +50,9 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
     if (nullptr != uiPreferencesManager)
     {
         {
-            wxCheckBox * dontNotifyChk = new wxCheckBox(this, wxID_ANY, wxS("Don't notify about this version again"));
+            wxCheckBox * dontNotifyChk = new wxCheckBox(this, wxID_ANY, _("Don't notify about this version again"));
             wxString message;
-            message.Printf(wxS("Prevents the automatic update check from notifying about version % again."), version.ToString());
+            message.Printf(_("Prevents the automatic update check from notifying about version % again."), version.ToString());
             dontNotifyChk->SetToolTip(message);
             dontNotifyChk->SetValue(false);
             dontNotifyChk->Bind(wxEVT_CHECKBOX, &NewVersionDisplayDialog::OnDoNotNotifyAboutThisVersionAgainCheckboxChanged, this);
@@ -61,21 +61,14 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
         }
 
         {
-            wxCheckBox * dontCheckChk = new wxCheckBox(this, wxID_ANY, wxS("Don't check for updates at startup"));
-            dontCheckChk->SetToolTip(wxS("Prevents the automatic update check from running at startup."));
+            wxCheckBox * dontCheckChk = new wxCheckBox(this, wxID_ANY, _("Don't check for updates at startup"));
+            dontCheckChk->SetToolTip(_("Prevents the automatic update check from running at startup."));
             dontCheckChk->SetValue(false);
             dontCheckChk->Bind(wxEVT_CHECKBOX, &NewVersionDisplayDialog::OnDoNotCheckForUpdatesAtStartupCheckboxChanged, this);
 
             topSizer->Add(dontCheckChk, 0, wxALL | wxALIGN_LEFT, 6);
         }
     }
-
-    ////{
-    ////    wxButton * okButton = new wxButton(this, wxID_OK, _("OK"), wxDefaultPosition, wxSize(100, -1));
-    ////    okButton->SetDefault();
-
-    ////    topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
-    ////}
 
     this->SetSizerAndFit(topSizer);
 

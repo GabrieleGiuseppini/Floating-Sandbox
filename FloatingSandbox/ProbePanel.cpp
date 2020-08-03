@@ -34,13 +34,13 @@ ProbePanel::ProbePanel(wxWindow* parent)
 
     mProbesSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    mFrameRateProbe = AddScalarTimeSeriesProbe("Frame Rate", 200);
-    mCurrentUpdateDurationProbe = AddScalarTimeSeriesProbe("Update Time", 200);
+    mFrameRateProbe = AddScalarTimeSeriesProbe(_("Frame Rate"), 200);
+    mCurrentUpdateDurationProbe = AddScalarTimeSeriesProbe(_("Update Time"), 200);
 
-    mWaterTakenProbe = AddScalarTimeSeriesProbe("Water Inflow", 120);
-    mWaterSplashProbe = AddScalarTimeSeriesProbe("Water Splash", 200);
+    mWaterTakenProbe = AddScalarTimeSeriesProbe(_("Water Inflow"), 120);
+    mWaterSplashProbe = AddScalarTimeSeriesProbe(_("Water Splash"), 200);
 
-    mWindSpeedProbe = AddScalarTimeSeriesProbe("Wind Speed", 200);
+    mWindSpeedProbe = AddScalarTimeSeriesProbe(_("Wind Speed"), 200);
 
     //
     // Finalize
@@ -75,7 +75,7 @@ void ProbePanel::UpdateSimulation()
 }
 
 std::unique_ptr<ScalarTimeSeriesProbeControl> ProbePanel::AddScalarTimeSeriesProbe(
-    std::string const & name,
+    wxString const & name,
     int sampleCount)
 {
     wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);

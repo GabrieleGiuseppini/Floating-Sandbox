@@ -24,7 +24,7 @@ ShipLoadDialog::ShipLoadDialog(
 	Create(
 		mParent,
 		wxID_ANY,
-        wxS("Load Ship"),
+        _("Load Ship"),
 		wxDefaultPosition,
         wxDefaultSize,
         wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED
@@ -110,14 +110,14 @@ ShipLoadDialog::ShipLoadDialog(
         gridSizer->AddSpacer(10);
 
         {
-            wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, wxS("Recent directories:"));
+            wxStaticText * recentDirsLabel = new wxStaticText(this, wxID_ANY, _("Recent directories:"));
             gridSizer->Add(recentDirsLabel, 4, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
         gridSizer->AddSpacer(10);
 
         {
-            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, wxS("Search in this folder:"));
+            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, _("Search in this folder:"));
             gridSizer->Add(searchLabel, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
 
@@ -157,6 +157,7 @@ ShipLoadDialog::ShipLoadDialog(
             wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
             wxBitmap homeBitmap(resourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
+            homeDirButton->SetToolTip(_("Go to the default Ships folder"));
             homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
 
             hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
@@ -191,6 +192,7 @@ ShipLoadDialog::ShipLoadDialog(
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
             wxBitmap searchNextBitmap(resourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
             mSearchNextButton->SetBitmap(searchNextBitmap);
+            mSearchNextButton->SetToolTip(_("Go to the next search result"));
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
 
             hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
@@ -225,13 +227,13 @@ ShipLoadDialog::ShipLoadDialog(
 
         buttonsSizer->AddStretchSpacer(1);
 
-        mLoadButton = new wxButton(this, wxID_ANY, wxS("Load"));
+        mLoadButton = new wxButton(this, wxID_ANY, _("Load"));
         mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
         buttonsSizer->Add(mLoadButton, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        wxButton * cancelButton = new wxButton(this, wxID_ANY, wxS("Cancel"));
+        wxButton * cancelButton = new wxButton(this, wxID_ANY, _("Cancel"));
         cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
         buttonsSizer->Add(cancelButton, 0);
 

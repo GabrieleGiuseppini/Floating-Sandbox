@@ -55,8 +55,8 @@ ShipDescriptionDialog::ShipDescriptionDialog(
     {
         if (isAutomatic)
         {
-            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, wxS("Don't show descriptions when ships are loaded"));
-            dontChk->SetToolTip(wxS("Prevents ship descriptions from being shown each time a ship is loaded. You can always change this setting later from the \"Preferences\" window."));
+            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, _("Don't show descriptions when ships are loaded"));
+            dontChk->SetToolTip(_("Prevents ship descriptions from being shown each time a ship is loaded. You can always change this setting later from the \"Preferences\" window."));
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged, this);
 

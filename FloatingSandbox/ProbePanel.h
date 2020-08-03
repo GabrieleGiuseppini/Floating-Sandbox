@@ -78,7 +78,7 @@ private:
     }
 
     std::unique_ptr<ScalarTimeSeriesProbeControl> AddScalarTimeSeriesProbe(
-        std::string const & name,
+        wxString const & name,
         int sampleCount);
 
 private:

@@ -425,15 +425,21 @@ Render:
 				+ Move startup, help HTML files under language dirs
 					+ Help folder: maintain resources here, see if may use relative paths in HTML links
 
-			- Mark all strings as _(
+			= Mark all strings as _(
 				+ AboutDialog
 					+ Also labels
 				+ CheckForUpdatesDialog
 				+ HelpDialog
 				+ LoggingDialog
+				+ MainFrame
+				+ NewVersionDisplayDialog
 				+ PreferencesDialog
+				+ ProbePanel
+				- SettingsDialog
+				+ ShipDescriptionDialog
+				+ ShipLoadDialog
+				+ SplashScreenDialog
 				+ StartupTipDialog
-				- TODO: others
 
 			- Prepare final, complete pot file
 			- Mark TO-DO item under Technical Debt
