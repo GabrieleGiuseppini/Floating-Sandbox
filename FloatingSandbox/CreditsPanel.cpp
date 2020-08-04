@@ -90,10 +90,14 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), 0},
         {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), VMargin3},
 
-        {0, _("BUILD ENGINEERS"), 0},
+        {0, _("TRANSLATION"), 0},
+        {1, wxS("Gabriele Giuseppini (Italian)"), 0},
+        {1, wxS("Ilya Voloshin (Russian)"), VMargin3},
+
+        {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), VMargin3},
 
-        {0, _("SHIP ENGINEERS"), 0},
+        {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("TopHatLemons   Truce#3326   RetroGraczzPL   Nomadavid   Wreno"), 0},
         {2, wxS("Pac0master   CorbinPasta93   Yorkie   Bluefox   KikoTheBoatBuilder"), 0},
         {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},        
@@ -155,7 +159,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         { 0, _("SPECIAL THANKS"), 0 },
         { 1, wxS("Monica, Mattia, and Mattia Giuseppini"), 0 },
-        { 1, wxS("Joey de Vries (OpenGL tutorial, http://openil.sourceforge.net/)"), 0 }
+        { 1, wxS("Joey de Vries (OpenGL tutorial, http://openil.sourceforge.net/)"), 0 },
+        { 1, wxS("Mart Slot"), 0 },
+        { 1, wxS("Mathias Garbe"), 0 }
     };
 
     //
