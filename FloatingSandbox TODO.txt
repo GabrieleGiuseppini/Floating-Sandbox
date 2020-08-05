@@ -431,7 +431,8 @@ Render:
 				+ CheckForUpdatesDialog
 				+ HelpDialog
 				+ LoggingDialog
-				+ MainFrame
+				= MainFrame
+					- Error messages
 				+ NewVersionDisplayDialog
 				+ PreferencesDialog
 				+ ProbePanel
@@ -455,7 +456,7 @@ Render:
 
 		- Test speed with ElementIndex/Count being 64-bit
 		- Check if any point and spring structs are aligned badly
-		- Run with address sanitizer (32-bit)
+		+ Run with address sanitizer (32-bit)
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
