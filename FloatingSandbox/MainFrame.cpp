@@ -1928,7 +1928,7 @@ void MainFrame::OnError(
     // Show message
     //
 
-    wxMessageBox(message, wxT("Maritime Disaster"), wxICON_ERROR);
+    wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 
     if (die)
     {

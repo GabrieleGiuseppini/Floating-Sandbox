@@ -433,10 +433,17 @@ Render:
 				+ LoggingDialog
 				= MainFrame
 					- Error messages
+						- Requires:
+							- GameCore/Messages.h w/MessageType enum
+							- GameException taking MessageType
+							- LocalizationManager implementing all strings:
+								- TODO
+							- Move progress strings from SplashDialog to here
+
 				+ NewVersionDisplayDialog
 				+ PreferencesDialog
 				+ ProbePanel
-				- SettingsDialog
+				+ SettingsDialog
 				+ ShipDescriptionDialog
 				+ ShipLoadDialog
 				+ SplashScreenDialog
@@ -476,9 +483,9 @@ Render:
 				- Try re-instating skipped steps
 				- Try with setting velocities only (towards L at L point, towards R at R point)
 			- Smaller wave (if nothing above works)
-			- Add checkbox for bubble sounds
-				- Storage owned by SoundController
-				- Cutoff happens @ SoundController
+			+ Add checkbox for bubble sounds
+				+ Storage owned by SoundController
+				+ Cutoff happens @ SoundController
 
 		- Day/night cycle
 			- New GameController state machine, running every X seconds (LowFreq update?) and taking current

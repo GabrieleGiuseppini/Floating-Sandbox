@@ -77,7 +77,7 @@ SettingsDialog::SettingsDialog(
     Create(
         mParent,
         wxID_ANY,
-        wxS("Simulation Settings"),
+        _("Simulation Settings"),
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
@@ -136,7 +136,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateMechanicsFluidsLightsPanel(mechanicsFluidsLightsPanel);
 
-    notebook->AddPage(mechanicsFluidsLightsPanel, wxS("Mechanics, Fluids, and Lights"));
+    notebook->AddPage(mechanicsFluidsLightsPanel, _("Mechanics, Fluids, and Lights"));
 
 
     //
@@ -147,7 +147,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateHeatPanel(heatPanel);
 
-    notebook->AddPage(heatPanel, wxS("Heat and Combustion"));
+    notebook->AddPage(heatPanel, _("Heat and Combustion"));
 
 
     //
@@ -158,7 +158,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateOceanSmokeSkyPanel(oceanAndSkyPanel);
 
-    notebook->AddPage(oceanAndSkyPanel, wxS("Ocean, Smoke, and Sky"));
+    notebook->AddPage(oceanAndSkyPanel, _("Ocean, Smoke, and Sky"));
 
 
     //
@@ -169,7 +169,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateWindAndWavesPanel(windAndWavesPanel);
 
-    notebook->AddPage(windAndWavesPanel, wxS("Wind and Waves"));
+    notebook->AddPage(windAndWavesPanel, _("Wind and Waves"));
 
 
     //
@@ -180,7 +180,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateInteractionsPanel(interactionsPanel);
 
-    notebook->AddPage(interactionsPanel, wxS("Interactions"));
+    notebook->AddPage(interactionsPanel, _("Interactions"));
 
 
     //
@@ -191,7 +191,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateRenderingPanel(renderingPanel);
 
-    notebook->AddPage(renderingPanel, wxS("Rendering"));
+    notebook->AddPage(renderingPanel, _("Rendering"));
 
 
     //
@@ -202,7 +202,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateSoundAndAdvancedPanel(soundAndAdvancedPanel);
 
-    notebook->AddPage(soundAndAdvancedPanel, wxS("Sound and Advanced Settings"));
+    notebook->AddPage(soundAndAdvancedPanel, _("Sound and Advanced Settings"));
 
 
     //
@@ -213,7 +213,7 @@ SettingsDialog::SettingsDialog(
 
     PopulateSettingsManagementPanel(settingsManagementPanel);
 
-    notebook->AddPage(settingsManagementPanel, wxS("Settings Management"));
+    notebook->AddPage(settingsManagementPanel, _("Settings Management"));
 
 
 
@@ -229,29 +229,29 @@ SettingsDialog::SettingsDialog(
 
         buttonsSizer->AddSpacer(20);
 
-        mRevertToDefaultsButton = new wxButton(this, wxID_ANY, wxS("Revert to Defaults"));
-        mRevertToDefaultsButton->SetToolTip(wxS("Resets all settings to their default values."));
+        mRevertToDefaultsButton = new wxButton(this, wxID_ANY, _("Revert to Defaults"));
+        mRevertToDefaultsButton->SetToolTip(_("Resets all settings to their default values."));
         mRevertToDefaultsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToDefaultsButton, this);
         buttonsSizer->Add(mRevertToDefaultsButton, 0, 0, 0);
 
         buttonsSizer->AddStretchSpacer(1);
 
-        mOkButton = new wxButton(this, wxID_ANY, wxS("OK"));
-        mOkButton->SetToolTip(wxS("Closes the window keeping all changes."));
+        mOkButton = new wxButton(this, wxID_ANY, _("OK"));
+        mOkButton->SetToolTip(_("Closes the window keeping all changes."));
         mOkButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnOkButton, this);
         buttonsSizer->Add(mOkButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        mCancelButton = new wxButton(this, wxID_ANY, wxS("Cancel"));
-        mCancelButton->SetToolTip(wxS("Reverts all changes effected since the window was last opened, and closes the window."));
+        mCancelButton = new wxButton(this, wxID_ANY, _("Cancel"));
+        mCancelButton->SetToolTip(_("Reverts all changes effected since the window was last opened, and closes the window."));
         mCancelButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnCancelButton, this);
         buttonsSizer->Add(mCancelButton, 0, 0, 0);
 
         buttonsSizer->AddSpacer(20);
 
-        mUndoButton = new wxButton(this, wxID_ANY, wxS("Undo"));
-        mUndoButton->SetToolTip(wxS("Reverts all changes effected since the window was last opened."));
+        mUndoButton = new wxButton(this, wxID_ANY, _("Undo"));
+        mUndoButton->SetToolTip(_("Reverts all changes effected since the window was last opened."));
         mUndoButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnUndoButton, this);
         buttonsSizer->Add(mUndoButton, 0, 0, 0);
 
@@ -590,9 +590,11 @@ void SettingsDialog::OnReplacePersistedSettingsButton(wxCommandEvent & /*event*/
     {
         auto const & metadata = mPersistedSettings[selectedIndex];
 
+        wxString message;
+        message.Printf(_("Are you sure you want to replace settings \"%s\" with the current settings?"), metadata.Key.Name.c_str());
         auto result = wxMessageBox(
-            "Are you sure you want to replace settings \"" + metadata.Key.Name + "\" with the current settings?",
-            wxS("Warning"),
+            message,
+            _("Warning"),
             wxCANCEL | wxOK);
 
         if (result == wxOK)
@@ -619,9 +621,11 @@ void SettingsDialog::OnDeletePersistedSettingsButton(wxCommandEvent & /*event*/)
         auto const & metadata = mPersistedSettings[selectedIndex];
 
         // Ask user whether they're sure
+        wxString message;
+        message.Printf(_("Are you sure you want to delete settings \"%s\"?"), metadata.Key.Name.c_str());
         auto result = wxMessageBox(
-            "Are you sure you want to delete settings \"" + metadata.Key.Name + "\"?",
-            wxS("Warning"),
+            message,
+            _("Warning"),
             wxCANCEL | wxOK);
 
         if (result == wxOK)
@@ -684,9 +688,11 @@ void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
         if (it != mPersistedSettings.cend())
         {
             // Ask user if sure
+            wxString message;
+            message.Printf(_("Settings \"%s\" already exist; do you want to replace them with the current settings?"), settingsMetadata.Key.Name.c_str());
             auto result = wxMessageBox(
-                "Settings \"" + settingsMetadata.Key.Name + "\" already exist; do you want to replace them with the current settings?",
-                wxS("Warning"),
+                message,
+                _("Warning"),
                 wxCANCEL | wxOK);
 
             if (result == wxCANCEL)
@@ -859,7 +865,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * mechanicsBox = new wxStaticBox(panel, wxID_ANY, wxS("Mechanics"));
+        wxStaticBox * mechanicsBox = new wxStaticBox(panel, wxID_ANY, _("Mechanics"));
 
         wxBoxSizer * mechanicsBoxSizer = new wxBoxSizer(wxVERTICAL);
         mechanicsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -873,8 +879,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Simulation Quality"),
-                    wxS("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
+                    _("Simulation Quality"),
+                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
@@ -900,8 +906,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Strength Adjust"),
-                    wxS("Adjusts the breaking point of springs under stress. Has no effect on the rigidity of a ship."),
+                    _("Strength Adjust"),
+                    _("Adjusts the breaking point of springs under stress. Has no effect on the rigidity of a ship."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringStrengthAdjustment, value);
@@ -926,8 +932,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Global Damping Adjust"),
-                    wxS("Adjusts the global damping of velocities."),
+                    _("Global Damping Adjust"),
+                    _("Adjusts the global damping of velocities."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::GlobalDampingAdjustment, value);
@@ -952,8 +958,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     mechanicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Rot Acceler8r"),
-                    wxS("Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether."),
+                    _("Rot Acceler8r"),
+                    _("Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
@@ -990,7 +996,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, wxS("Lights"));
+        wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, _("Lights"));
 
         wxBoxSizer * lightsBoxSizer = new wxBoxSizer(wxVERTICAL);
         lightsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1004,8 +1010,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Luminiscence Adjust"),
-                    wxS("Adjusts the quantity of light emitted by luminiscent materials."),
+                    _("Luminiscence Adjust"),
+                    _("Adjusts the quantity of light emitted by luminiscent materials."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
@@ -1030,8 +1036,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     lightsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Light Spread Adjust"),
-                    wxS("Adjusts how wide light emitted by luminiscent materials spreads out."),
+                    _("Light Spread Adjust"),
+                    _("Adjusts how wide light emitted by luminiscent materials spreads out."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
@@ -1067,7 +1073,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * fluidsBox = new wxStaticBox(panel, wxID_ANY, wxS("Fluids"));
+        wxStaticBox * fluidsBox = new wxStaticBox(panel, wxID_ANY, _("Fluids"));
 
         wxBoxSizer * fluidsBoxSizer = new wxBoxSizer(wxVERTICAL);
         fluidsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1081,8 +1087,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Density Adjust"),
-                    wxS("Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies."),
+                    _("Water Density Adjust"),
+                    _("Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
@@ -1106,8 +1112,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Drag Adjust"),
-                    wxS("Adjusts the drag force exerted by sea water on physical bodies."),
+                    _("Water Drag Adjust"),
+                    _("Adjusts the drag force exerted by sea water on physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
@@ -1132,8 +1138,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Intake Adjust"),
-                    wxS("Adjusts the speed with which sea water enters or leaves a physical body."),
+                    _("Water Intake Adjust"),
+                    _("Adjusts the speed with which sea water enters or leaves a physical body."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
@@ -1158,8 +1164,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Crazyness"),
-                    wxS("Adjusts how \"splashy\" water flows inside a physical body."),
+                    _("Water Crazyness"),
+                    _("Adjusts how \"splashy\" water flows inside a physical body."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
@@ -1183,8 +1189,8 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Diffusion Speed"),
-                    wxS("Adjusts the speed with which water propagates within a physical body."),
+                    _("Water Diffusion Speed"),
+                    _("Adjusts the speed with which water propagates within a physical body."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDiffusionSpeedAdjustment, value);
@@ -1230,7 +1236,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
     // Physics
     {
-        wxStaticBox * physicsBox = new wxStaticBox(panel, wxID_ANY, wxS("Physics"));
+        wxStaticBox * physicsBox = new wxStaticBox(panel, wxID_ANY, _("Physics"));
 
         wxBoxSizer * physicsBoxSizer = new wxBoxSizer(wxVERTICAL);
         physicsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1244,8 +1250,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Thermal Conductivity Adjust"),
-                    wxS("Adjusts the speed with which heat propagates along materials."),
+                    _("Thermal Conductivity Adjust"),
+                    _("Adjusts the speed with which heat propagates along materials."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
@@ -1270,8 +1276,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Heat Dissipation Adjust"),
-                    wxS("Adjusts the speed with which materials dissipate or accumulate heat to or from air and water."),
+                    _("Heat Dissipation Adjust"),
+                    _("Adjusts the speed with which materials dissipate or accumulate heat to or from air and water."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
@@ -1296,8 +1302,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Burning Point Adjust"),
-                    wxS("Adjusts the temperature at which materials ignite."),
+                    _("Burning Point Adjust"),
+                    _("Adjusts the temperature at which materials ignite."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::IgnitionTemperatureAdjustment, value);
@@ -1322,8 +1328,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Melting Point Adjust"),
-                    wxS("Adjusts the temperature at which materials melt."),
+                    _("Melting Point Adjust"),
+                    _("Adjusts the temperature at which materials melt."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MeltingTemperatureAdjustment, value);
@@ -1348,8 +1354,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Combustion Speed Adjust"),
-                    wxS("Adjusts the rate with which materials consume when burning."),
+                    _("Combustion Speed Adjust"),
+                    _("Adjusts the rate with which materials consume when burning."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionSpeedAdjustment, value);
@@ -1374,8 +1380,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     physicsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Combustion Heat Adjust"),
-                    wxS("Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles."),
+                    _("Combustion Heat Adjust"),
+                    _("Adjusts the heat generated by fire; together with the maximum number of burning particles, determines the speed with which fire spreads to adjacent particles."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::CombustionHeatAdjustment, value);
@@ -1411,7 +1417,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
     // World
     {
-        wxStaticBox * worldBox = new wxStaticBox(panel, wxID_ANY, wxS("World"));
+        wxStaticBox * worldBox = new wxStaticBox(panel, wxID_ANY, _("World"));
 
         wxBoxSizer * worldBoxSizer = new wxBoxSizer(wxVERTICAL);
         worldBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1425,8 +1431,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     worldBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Air Temperature"),
-                    wxS("The temperature of air (K)."),
+                    _("Air Temperature"),
+                    _("The temperature of air (K)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
@@ -1450,8 +1456,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     worldBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Temperature"),
-                    wxS("The temperature of water (K)."),
+                    _("Water Temperature"),
+                    _("The temperature of water (K)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterTemperature, value);
@@ -1484,7 +1490,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
     // Electrical
     {
-        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, wxS("Electrical"));
+        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, _("Electrical"));
 
         wxBoxSizer * electricalBoxSizer = new wxBoxSizer(wxVERTICAL);
         electricalBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1498,8 +1504,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     electricalBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Heat Generation Adjust"),
-                    wxS("Adjusts the amount of heat generated by working electrical elements, such as lamps and generators."),
+                    _("Heat Generation Adjust"),
+                    _("Adjusts the amount of heat generated by working electrical elements, such as lamps and generators."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
@@ -1533,7 +1539,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
     // HeatBlaster
     {
-        wxStaticBox * heatBlasterBox = new wxStaticBox(panel, wxID_ANY, wxS("HeatBlaster"));
+        wxStaticBox * heatBlasterBox = new wxStaticBox(panel, wxID_ANY, _("HeatBlaster"));
 
         wxBoxSizer * heatBlasterBoxSizer = new wxBoxSizer(wxVERTICAL);
         heatBlasterBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1547,8 +1553,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     heatBlasterBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Radius"),
-                    wxS("The radius of HeatBlaster tool (m)."),
+                    _("Radius"),
+                    _("The radius of HeatBlaster tool (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatBlasterRadius, value);
@@ -1572,8 +1578,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     heatBlasterBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Heat"),
-                    wxS("The heat produced by the HeatBlaster tool (KJ/s)."),
+                    _("Heat"),
+                    _("The heat produced by the HeatBlaster tool (KJ/s)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatBlasterHeatFlow, value);
@@ -1607,7 +1613,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
     // Fire
     {
-        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, wxS("Fire"));
+        wxStaticBox * fireBox = new wxStaticBox(panel, wxID_ANY, _("Fire"));
 
         wxBoxSizer * fireBoxSizer = new wxBoxSizer(wxVERTICAL);
         fireBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1621,8 +1627,8 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     fireBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Max Burning Particles"),
-                    wxS("The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
+                    _("Max Burning Particles"),
+                    _("The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MaxBurningParticles, value);
@@ -1673,7 +1679,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, wxS("Ocean"));
+        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, _("Ocean"));
 
         wxBoxSizer * oceanBoxSizer = new wxBoxSizer(wxVERTICAL);
         oceanBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1689,8 +1695,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Ocean Depth"),
-                    wxS("The ocean depth (m)."),
+                    _("Ocean Depth"),
+                    _("The ocean depth (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
@@ -1715,8 +1721,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Ocean Floor Bumpiness"),
-                    wxS("Adjusts how much the ocean floor rolls up and down."),
+                    _("Ocean Floor Bumpiness"),
+                    _("Adjusts how much the ocean floor rolls up and down."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorBumpiness, value);
@@ -1740,8 +1746,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     -1,
-                    wxS("Ocean Floor Detail"),
-                    wxS("Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to zero disables the ability to adjust the ocean floor."),
+                    _("Ocean Floor Detail"),
+                    _("Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to zero disables the ability to adjust the ocean floor."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);
@@ -1762,8 +1768,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 
             // Restore Ocean Floor Terrain
             {
-                wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, wxS("Restore Default Terrain"));
-                restoreDefaultTerrainButton->SetToolTip(wxS("Reverts the user-drawn ocean floor terrain to the default terrain."));
+                wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, _("Restore Default Terrain"));
+                restoreDefaultTerrainButton->SetToolTip(_("Reverts the user-drawn ocean floor terrain to the default terrain."));
                 restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
 
                 oceanSizer->Add(
@@ -1780,8 +1786,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Ocean Floor Elasticity"),
-                    wxS("Adjusts the elasticity of collisions with the ocean floor."),
+                    _("Ocean Floor Elasticity"),
+                    _("Adjusts the elasticity of collisions with the ocean floor."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticity, value);
@@ -1805,8 +1811,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Ocean Floor Friction"),
-                    wxS("Adjusts the friction exherted by the ocean floor."),
+                    _("Ocean Floor Friction"),
+                    _("Adjusts the friction exherted by the ocean floor."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanFloorFriction, value);
@@ -1842,7 +1848,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * smokeBox = new wxStaticBox(panel, wxID_ANY, wxS("Smoke"));
+        wxStaticBox * smokeBox = new wxStaticBox(panel, wxID_ANY, _("Smoke"));
 
         wxBoxSizer * smokeBoxSizer = new wxBoxSizer(wxVERTICAL);
         smokeBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1856,8 +1862,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     smokeBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Smoke Density Adjust"),
-                    wxS("Adjusts the density of smoke particles."),
+                    _("Smoke Density Adjust"),
+                    _("Adjusts the density of smoke particles."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SmokeEmissionDensityAdjustment, value);
@@ -1882,8 +1888,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     smokeBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Smoke Persistence Adjust"),
-                    wxS("Adjusts how long it takes for smoke to vanish."),
+                    _("Smoke Persistence Adjust"),
+                    _("Adjusts how long it takes for smoke to vanish."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SmokeParticleLifetimeAdjustment, value);
@@ -1924,7 +1930,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * stormBox = new wxStaticBox(panel, wxID_ANY, wxS("Storms"));
+        wxStaticBox * stormBox = new wxStaticBox(panel, wxID_ANY, _("Storms"));
 
         wxBoxSizer * stormBoxSizer = new wxBoxSizer(wxVERTICAL);
         stormBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -1940,8 +1946,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     stormBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Storm Strength Adjust"),
-                    wxS("Adjusts the strength of storms."),
+                    _("Storm Strength Adjust"),
+                    _("Adjusts the strength of storms."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
@@ -1963,8 +1969,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
             // Do rain with storm
             {
                 mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, 
-                    wxS("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-                mDoRainWithStormCheckBox->SetToolTip(wxS("Enables or disables generation of rain during a storm."));
+                    _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
                 mDoRainWithStormCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -1989,8 +1995,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     stormBox,
                     SliderWidth,
                     -1,
-                    wxS("Rain Flood Adjust"),
-                    wxS("Adjusts the extent to which rain floods exposed areas of a ship."),
+                    _("Rain Flood Adjust"),
+                    _("Adjusts the extent to which rain floods exposed areas of a ship."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
@@ -2015,8 +2021,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     stormBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Storm Duration"),
-                    wxS("The duration of a storm (s)."),
+                    _("Storm Duration"),
+                    _("The duration of a storm (s)."),
                     [this](std::chrono::seconds::rep value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
@@ -2040,8 +2046,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     stormBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Storm Rate"),
-                    wxS("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
+                    _("Storm Rate"),
+                    _("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
                     [this](std::chrono::minutes::rep value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
@@ -2077,7 +2083,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, wxS("Sky"));
+        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
 
         wxBoxSizer * skyBoxSizer = new wxBoxSizer(wxVERTICAL);
         skyBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2091,8 +2097,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     skyBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Number of Stars"),
-                    wxS("The number of stars in the sky."),
+                    _("Number of Stars"),
+                    _("The number of stars in the sky."),
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
@@ -2116,8 +2122,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     skyBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Number of Clouds"),
-                    wxS("The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value."),
+                    _("Number of Clouds"),
+                    _("The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value."),
                     [this](unsigned int value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
@@ -2162,7 +2168,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * windBox = new wxStaticBox(panel, wxID_ANY, wxS("Wind"));
+        wxStaticBox * windBox = new wxStaticBox(panel, wxID_ANY, _("Wind"));
 
         wxBoxSizer * windBoxSizer = new wxBoxSizer(wxVERTICAL);
         windBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2176,8 +2182,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     windBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Wind Speed Base"),
-                    wxS("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
+                    _("Wind Speed Base"),
+                    _("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
@@ -2201,8 +2207,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 // Modulate Wind
                 {
-                    mModulateWindCheckBox = new wxCheckBox(windBox, wxID_ANY, wxS("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxEmptyString);
-                    mModulateWindCheckBox->SetToolTip(wxS("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts."));
+                    mModulateWindCheckBox = new wxCheckBox(windBox, wxID_ANY, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxEmptyString);
+                    mModulateWindCheckBox->SetToolTip(_("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts."));
                     mModulateWindCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
@@ -2222,8 +2228,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                         windBox,
                         SliderWidth,
                         -1,
-                        wxS("Wind Gust Amplitude"),
-                        wxS("The amplitude of wind gusts, as a multiplier of the base wind speed."),
+                        _("Wind Gust Amplitude"),
+                        _("The amplitude of wind gusts, as a multiplier of the base wind speed."),
                         [this](float value)
                         {
                             this->mLiveSettings.SetValue(GameSettings::WindSpeedMaxFactor, value);
@@ -2262,7 +2268,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * basalWavesBox = new wxStaticBox(panel, wxID_ANY, wxS("Basal Waves"));
+        wxStaticBox * basalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Basal Waves"));
 
         wxBoxSizer * basalWavesBoxSizer = new wxBoxSizer(wxVERTICAL);
         basalWavesBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2276,8 +2282,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Wave Height Adjust"),
-                    wxS("Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    _("Wave Height Adjust"),
+                    _("Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveHeightAdjustment, value);
@@ -2301,8 +2307,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Wave Width Adjust"),
-                    wxS("Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    _("Wave Width Adjust"),
+                    _("Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveLengthAdjustment, value);
@@ -2327,8 +2333,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     basalWavesBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Wave Speed Adjust"),
-                    wxS("Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    _("Wave Speed Adjust"),
+                    _("Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BasalWaveSpeedAdjustment, value);
@@ -2364,7 +2370,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * abnormalWavesBox = new wxStaticBox(panel, wxID_ANY, wxS("Wave Phenomena"));
+        wxStaticBox * abnormalWavesBox = new wxStaticBox(panel, wxID_ANY, _("Wave Phenomena"));
 
         wxBoxSizer * abnormalWavesBoxSizer = new wxBoxSizer(wxVERTICAL);
         abnormalWavesBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2378,8 +2384,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Tsunami Rate"),
-                    wxS("The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether."),
+                    _("Tsunami Rate"),
+                    _("The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether."),
                     [this](std::chrono::minutes::rep value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::TsunamiRate, std::chrono::minutes(value));
@@ -2403,8 +2409,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     abnormalWavesBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Rogue Wave Rate"),
-                    wxS("The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether."),
+                    _("Rogue Wave Rate"),
+                    _("The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether."),
                     [this](std::chrono::minutes::rep value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::minutes(value));
@@ -2451,7 +2457,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * toolsBox = new wxStaticBox(panel, wxID_ANY, wxS("Tools"));
+        wxStaticBox * toolsBox = new wxStaticBox(panel, wxID_ANY, _("Tools"));
 
         wxBoxSizer * toolsBoxSizer = new wxBoxSizer(wxVERTICAL);
         toolsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2471,8 +2477,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Destroy Radius"),
-                    wxS("The starting radius of the damage caused by destructive tools (m)."),
+                    _("Destroy Radius"),
+                    _("The starting radius of the damage caused by destructive tools (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
@@ -2496,8 +2502,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Bomb Blast Radius"),
-                    wxS("The radius of bomb explosions (m)."),
+                    _("Bomb Blast Radius"),
+                    _("The radius of bomb explosions (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
@@ -2521,8 +2527,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Bomb Blast Heat"),
-                    wxS("The heat generated by bomb explosions (KJ/s)."),
+                    _("Bomb Blast Heat"),
+                    _("The heat generated by bomb explosions (KJ/s)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
@@ -2547,8 +2553,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("AM Bomb Implosion Strength"),
-                    wxS("Adjusts the strength of the initial anti-matter bomb implosion."),
+                    _("AM Bomb Implosion Strength"),
+                    _("Adjusts the strength of the initial anti-matter bomb implosion."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
@@ -2576,8 +2582,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Flood Radius"),
-                    wxS("How wide an area is flooded or drained by the flood tool (m)."),
+                    _("Flood Radius"),
+                    _("How wide an area is flooded or drained by the flood tool (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
@@ -2601,8 +2607,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Flood Quantity"),
-                    wxS("How much water is injected or drained by the flood tool (m3)."),
+                    _("Flood Quantity"),
+                    _("How much water is injected or drained by the flood tool (m3)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
@@ -2626,8 +2632,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Repair Radius"),
-                    wxS("Adjusts the radius of the repair tool (m)."),
+                    _("Repair Radius"),
+                    _("Adjusts the radius of the repair tool (m)."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
@@ -2651,8 +2657,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     toolsBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Repair Speed Adjust"),
-                    wxS("Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!"),
+                    _("Repair Speed Adjust"),
+                    _("Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!"),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
@@ -2688,7 +2694,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * airBubblesBox = new wxStaticBox(panel, wxID_ANY, wxS("Air Bubbles"));
+        wxStaticBox * airBubblesBox = new wxStaticBox(panel, wxID_ANY, _("Air Bubbles"));
 
         wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
         airBubblesBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2698,8 +2704,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Generate Air Bubbles
             {
-                mGenerateAirBubblesCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, wxS("Generate Air Bubbles"));
-                mGenerateAirBubblesCheckBox->SetToolTip(wxS("Enables or disables generation of air bubbles when water enters a physical body."));
+                mGenerateAirBubblesCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, _("Generate Air Bubbles"));
+                mGenerateAirBubblesCheckBox->SetToolTip(_("Enables or disables generation of air bubbles when water enters a physical body."));
                 mGenerateAirBubblesCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2718,8 +2724,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
             // Displace ocean surface at air bubble surfacing
             {
-                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, wxS("Generate Waves"));
-                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetToolTip(wxS("Enables or disables generation of waves when air bubbles surface above water."));
+                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox = new wxCheckBox(airBubblesBox, wxID_ANY, _("Generate Waves"));
+                mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetToolTip(_("Enables or disables generation of waves when air bubbles surface above water."));
                 mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2737,8 +2743,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     airBubblesBox,
                     SliderWidth,
                     -1,
-                    wxS("Air Bubbles Density"),
-                    wxS("The density of air bubbles generated when water enters a ship."),
+                    _("Air Bubbles Density"),
+                    _("The density of air bubbles generated when water enters a ship."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
@@ -2769,7 +2775,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * sideEffectsBox = new wxStaticBox(panel, wxID_ANY, wxS("Side-Effects"));
+        wxStaticBox * sideEffectsBox = new wxStaticBox(panel, wxID_ANY, _("Side-Effects"));
 
         wxBoxSizer * sideEffectsBoxSizer = new wxBoxSizer(wxVERTICAL);
         sideEffectsBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2778,8 +2784,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             wxBoxSizer * sideEffectsCheckboxSizer = new wxBoxSizer(wxVERTICAL);
 
             {
-                mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, wxS("Generate Debris"));
-                mGenerateDebrisCheckBox->SetToolTip(wxS("Enables or disables generation of debris when using destructive tools."));
+                mGenerateDebrisCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Debris"));
+                mGenerateDebrisCheckBox->SetToolTip(_("Enables or disables generation of debris when using destructive tools."));
                 mGenerateDebrisCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2794,8 +2800,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             sideEffectsCheckboxSizer->AddSpacer(5);
 
             {
-                mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, wxS("Generate Sparkles"));
-                mGenerateSparklesForCutsCheckBox->SetToolTip(wxS("Enables or disables generation of sparkles when using the saw tool on metal."));
+                mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
+                mGenerateSparklesForCutsCheckBox->SetToolTip(_("Enables or disables generation of sparkles when using the saw tool on metal."));
                 mGenerateSparklesForCutsCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2810,8 +2816,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             sideEffectsCheckboxSizer->AddSpacer(5);
 
             {
-                mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, wxS("Generate Engine Wake"));
-                mGenerateEngineWakeCheckBox->SetToolTip(wxS("Enables or disables generation of wakes when engines are running underwater."));
+                mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
+                mGenerateEngineWakeCheckBox->SetToolTip(_("Enables or disables generation of wakes when engines are running underwater."));
                 mGenerateEngineWakeCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2826,8 +2832,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
             sideEffectsCheckboxSizer->AddSpacer(40);
 
             {
-                mUltraViolentCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, wxS("Ultra-Violent Mode"));
-                mUltraViolentCheckBox->SetToolTip(wxS("Enables or disables amplification of tool forces and inflicted damages."));
+                mUltraViolentCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Ultra-Violent Mode"));
+                mUltraViolentCheckBox->SetToolTip(_("Enables or disables amplification of tool forces and inflicted damages."));
                 mUltraViolentCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -2859,7 +2865,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, wxS("Electrical"));
+        wxStaticBox * electricalBox = new wxStaticBox(panel, wxID_ANY, _("Electrical"));
 
         wxBoxSizer * electricalBoxSizer = new wxBoxSizer(wxVERTICAL);
         electricalBoxSizer->AddSpacer(StaticBoxTopMargin);
@@ -2873,8 +2879,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     electricalBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Engine Thrust Adjust"),
-                    wxS("Adjusts the thrust exerted by engines."),
+                    _("Engine Thrust Adjust"),
+                    _("Adjusts the thrust exerted by engines."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
@@ -2899,8 +2905,8 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     electricalBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Pump Power Adjust"),
-                    wxS("Adjusts the power of water pumps."),
+                    _("Water Pump Power Adjust"),
+                    _("Adjusts the power of water pumps."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterPumpPowerAdjustment, value);
@@ -2948,7 +2954,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Sea
     {
-        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, wxS("Sea"));
+        wxStaticBox * oceanBox = new wxStaticBox(panel, wxID_ANY, _("Sea"));
 
         wxBoxSizer * oceanBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         oceanBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -2958,7 +2964,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Ocean Render Mode
             {
-                wxStaticBox * oceanRenderModeBox = new wxStaticBox(oceanBox, wxID_ANY, wxS("Draw Mode"));
+                wxStaticBox * oceanRenderModeBox = new wxStaticBox(oceanBox, wxID_ANY, _("Draw Mode"));
 
                 wxBoxSizer * oceanRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
                 oceanRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -2966,9 +2972,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 {
                     wxGridBagSizer * oceanRenderModeBoxSizer2 = new wxGridBagSizer(3, 3);
 
-                    mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, wxS("Texture"),
+                    mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureOceanRenderModeRadioButton->SetToolTip(wxS("Draws the ocean using a static pattern."));
+                    mTextureOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a static pattern."));
                     mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -2980,7 +2986,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             entry.first,
                             WxHelpers::MakeBitmap(entry.second));
                     }
-                    mTextureOceanComboBox->SetToolTip(wxS("Sets the texture to use for the ocean."));
+                    mTextureOceanComboBox->SetToolTip(_("Sets the texture to use for the ocean."));
                     mTextureOceanComboBox->Bind(
                         wxEVT_COMBOBOX,
                         [this](wxCommandEvent & /*event*/)
@@ -2992,35 +2998,35 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     //
 
-                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, wxS("Depth Gradient"),
+                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Depth Gradient"),
                         wxDefaultPosition, wxDefaultSize);
-                    mDepthOceanRenderModeRadioButton->SetToolTip(wxS("Draws the ocean using a vertical color gradient."));
+                    mDepthOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a vertical color gradient."));
                     mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
-                    mDepthOceanColorStartPicker->SetToolTip(wxS("Sets the starting (top) color of the gradient."));
+                    mDepthOceanColorStartPicker->SetToolTip(_("Sets the starting (top) color of the gradient."));
                     mDepthOceanColorStartPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorStartChanged, this);
                     oceanRenderModeBoxSizer2->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
 
                     mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
-                    mDepthOceanColorEndPicker->SetToolTip(wxS("Sets the ending (bottom) color of the gradient."));
+                    mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
                     mDepthOceanColorEndPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDepthOceanColorEndChanged, this);
                     oceanRenderModeBoxSizer2->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL, 0);
 
                     //
 
-                    mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, wxS("Flat"),
+                    mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
-                    mFlatOceanRenderModeRadioButton->SetToolTip(wxS("Draws the ocean using a single color."));
+                    mFlatOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a single color."));
                     mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
                     oceanRenderModeBoxSizer2->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBox, wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
-                    mFlatOceanColorPicker->SetToolTip(wxS("Sets the single color of the ocean."));
+                    mFlatOceanColorPicker->SetToolTip(_("Sets the single color of the ocean."));
                     mFlatOceanColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatOceanColorChanged, this);
                     oceanRenderModeBoxSizer2->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALL, 0);
 
@@ -3040,8 +3046,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // See Ship Through Water
             {
                 mSeeShipThroughOceanCheckBox = new wxCheckBox(oceanBox, wxID_ANY,
-                    wxS("See Ship Through Water"), wxDefaultPosition, wxDefaultSize);
-                mSeeShipThroughOceanCheckBox->SetToolTip(wxS("Shows the ship either behind the sea water or in front of it."));
+                    _("See Ship Through Water"), wxDefaultPosition, wxDefaultSize);
+                mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
                 mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
                     {
@@ -3063,8 +3069,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Transparency"),
-                    wxS("Adjusts the transparency of sea water."),
+                    _("Transparency"),
+                    _("Adjusts the transparency of sea water."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanTransparency, value);
@@ -3088,8 +3094,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     oceanBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Darkening Rate"),
-                    wxS("Adjusts the rate at which the ocean darkens with depth."),
+                    _("Darkening Rate"),
+                    _("Adjusts the rate at which the ocean darkens with depth."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
@@ -3123,7 +3129,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Land
     {
-        wxStaticBox * landBox = new wxStaticBox(panel, wxID_ANY, wxS("Land"));
+        wxStaticBox * landBox = new wxStaticBox(panel, wxID_ANY, _("Land"));
 
         wxBoxSizer * landBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         landBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3133,7 +3139,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Land Render Mode
             {
-                wxStaticBox * landRenderModeBox = new wxStaticBox(landBox, wxID_ANY, wxS("Draw Mode"));
+                wxStaticBox * landRenderModeBox = new wxStaticBox(landBox, wxID_ANY, _("Draw Mode"));
 
                 wxBoxSizer * landRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
                 landRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3141,9 +3147,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 {
                     wxGridBagSizer* landRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
 
-                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, wxS("Texture"),
+                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureLandRenderModeRadioButton->SetToolTip(wxS("Draws the ocean floor using a static image."));
+                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
                     mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
                     landRenderModeBoxSizer2->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -3155,7 +3161,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             entry.first,
                             WxHelpers::MakeBitmap(entry.second));
                     }
-                    mTextureLandComboBox->SetToolTip(wxS("Sets the texture to use for the ocean floor."));
+                    mTextureLandComboBox->SetToolTip(_("Sets the texture to use for the ocean floor."));
                     mTextureLandComboBox->Bind(
                         wxEVT_COMBOBOX,
                         [this](wxCommandEvent & /*event*/)
@@ -3165,14 +3171,14 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         });
                     landRenderModeBoxSizer2->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
 
-                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, wxS("Flat"),
+                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Flat"),
                         wxDefaultPosition, wxDefaultSize);
-                    mFlatLandRenderModeRadioButton->SetToolTip(wxS("Draws the ocean floor using a static color."));
+                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
                     mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
                     landRenderModeBoxSizer2->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBox, wxID_ANY);
-                    mFlatLandColorPicker->SetToolTip(wxS("Sets the single color of the ocean floor."));
+                    mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
                     mFlatLandColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatLandColorChanged, this);
                     landRenderModeBoxSizer2->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
 
@@ -3204,7 +3210,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Sky
     {
-        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, wxS("Sky"));
+        wxStaticBox * skyBox = new wxStaticBox(panel, wxID_ANY, _("Sky"));
 
         wxBoxSizer * skyBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         skyBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3215,7 +3221,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Sky color
             {
                 mFlatSkyColorPicker = new wxColourPickerCtrl(skyBox, wxID_ANY);
-                mFlatSkyColorPicker->SetToolTip(wxS("Sets the color of the sky. Duh."));
+                mFlatSkyColorPicker->SetToolTip(_("Sets the color of the sky. Duh."));
                 mFlatSkyColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatSkyColorChanged, this);
 
                 skySizer->Add(
@@ -3241,7 +3247,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Lamp Light
     {
-        wxStaticBox * lampLightBox = new wxStaticBox(panel, wxID_ANY, wxS("Lamp Light"));
+        wxStaticBox * lampLightBox = new wxStaticBox(panel, wxID_ANY, _("Lamp Light"));
 
         wxBoxSizer * lampLightBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         lampLightBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3252,7 +3258,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Lamp Light color
             {
                 mFlatLampLightColorPicker = new wxColourPickerCtrl(lampLightBox, wxID_ANY);
-                mFlatLampLightColorPicker->SetToolTip(wxS("Sets the color of lamp lights."));
+                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
                 mFlatLampLightColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnFlatLampLightColorChanged, this);
 
                 lampLightSizer->Add(
@@ -3278,7 +3284,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Heat
     {
-        wxStaticBox * heatBox = new wxStaticBox(panel, wxID_ANY, wxS("Heat"));
+        wxStaticBox * heatBox = new wxStaticBox(panel, wxID_ANY, _("Heat"));
 
         wxBoxSizer * heatBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         heatBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3289,8 +3295,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Draw heat overlay
             {
                 mDrawHeatOverlayCheckBox = new wxCheckBox(heatBox, wxID_ANY,
-                    wxS("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
-                mDrawHeatOverlayCheckBox->SetToolTip(wxS("Renders heat over ships."));
+                    _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
+                mDrawHeatOverlayCheckBox->SetToolTip(_("Renders heat over ships."));
                 mDrawHeatOverlayCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -3309,7 +3315,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
             // Fire Render Mode
             {
-                wxStaticBox * fireRenderModeBox = new wxStaticBox(heatBox, wxID_ANY, wxS("Fire Draw Mode"));
+                wxStaticBox * fireRenderModeBox = new wxStaticBox(heatBox, wxID_ANY, _("Fire Draw Mode"));
 
                 wxBoxSizer * fireRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
                 fireRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3318,27 +3324,27 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     wxFlexGridSizer* fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
                     fireRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
 
-                    mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, wxS("Mode 1"),
+                    mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 1"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mMode1ShipFlameRenderModeRadioButton->SetToolTip(wxS("Changes the way flames are drawn."));
+                    mMode1ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
                     mMode1ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode1ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    mMode2ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, wxS("Mode 2"),
+                    mMode2ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 2"),
                         wxDefaultPosition, wxDefaultSize);
-                    mMode2ShipFlameRenderModeRadioButton->SetToolTip(wxS("Changes the way flames are drawn."));
+                    mMode2ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
                     mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode2ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    mMode3ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, wxS("Mode 3"),
+                    mMode3ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 3"),
                         wxDefaultPosition, wxDefaultSize);
-                    mMode3ShipFlameRenderModeRadioButton->SetToolTip(wxS("Changes the way flames are drawn."));
+                    mMode3ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
                     mMode3ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mMode3ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    mNoDrawShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, wxS("Not Drawn"),
+                    mNoDrawShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Not Drawn"),
                         wxDefaultPosition, wxDefaultSize);
-                    mNoDrawShipFlameRenderModeRadioButton->SetToolTip(wxS("Changes the way flames are drawn."));
+                    mNoDrawShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
                     mNoDrawShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
                     fireRenderModeBoxSizer2->Add(mNoDrawShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -3358,8 +3364,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Heat blaster flame
             {
                 mDrawHeatBlasterFlameCheckBox = new wxCheckBox(heatBox, wxID_ANY,
-                    wxS("Draw HeatBlaster Flame"), wxDefaultPosition, wxDefaultSize);
-                mDrawHeatBlasterFlameCheckBox->SetToolTip(wxS("Renders flames out of the HeatBlaster tool."));
+                    _("Draw HeatBlaster Flame"), wxDefaultPosition, wxDefaultSize);
+                mDrawHeatBlasterFlameCheckBox->SetToolTip(_("Renders flames out of the HeatBlaster tool."));
                 mDrawHeatBlasterFlameCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -3382,8 +3388,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     heatBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Heat Overlay Transparency"),
-                    wxS("Adjusts the transparency of the heat overlay."),
+                    _("Heat Overlay Transparency"),
+                    _("Adjusts the transparency of the heat overlay."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatOverlayTransparency, value);
@@ -3407,8 +3413,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     heatBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Flame Size Adjust"),
-                    wxS("Adjusts the size of flames."),
+                    _("Flame Size Adjust"),
+                    _("Adjusts the size of flames."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
@@ -3442,7 +3448,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Ship
     {
-        wxStaticBox * shipBox = new wxStaticBox(panel, wxID_ANY, wxS("Ship"));
+        wxStaticBox * shipBox = new wxStaticBox(panel, wxID_ANY, _("Ship"));
 
         wxBoxSizer * shipBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         shipBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3453,8 +3459,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Show Stress
             {
                 mShowStressCheckBox = new wxCheckBox(shipBox, wxID_ANY,
-                    wxS("Show Stress"), wxDefaultPosition, wxDefaultSize);
-                mShowStressCheckBox->SetToolTip(wxS("Enables or disables highlighting of the springs that are under heavy stress and close to rupture."));
+                    _("Show Stress"), wxDefaultPosition, wxDefaultSize);
+                mShowStressCheckBox->SetToolTip(_("Enables or disables highlighting of the springs that are under heavy stress and close to rupture."));
                 mShowStressCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
@@ -3484,7 +3490,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * waterBox = new wxStaticBox(panel, wxID_ANY, wxS("Water"));
+        wxStaticBox * waterBox = new wxStaticBox(panel, wxID_ANY, _("Water"));
 
         wxBoxSizer * waterBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         waterBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3500,8 +3506,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     waterBox,
                     SliderWidth,
                     -1,
-                    wxS("Water Contrast"),
-                    wxS("Adjusts the contrast of water inside physical bodies."),
+                    _("Water Contrast"),
+                    _("Adjusts the contrast of water inside physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterContrast, value);
@@ -3522,7 +3528,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             // Default Water Color
             {
                 mDefaultWaterColorPicker = new wxColourPickerCtrl(waterBox, wxID_ANY);
-                mDefaultWaterColorPicker->SetToolTip(wxS("Sets the color of water which is used when ocean render mode is set to 'Texture'."));
+                mDefaultWaterColorPicker->SetToolTip(_("Sets the color of water which is used when ocean render mode is set to 'Texture'."));
                 mDefaultWaterColorPicker->Bind(wxEVT_COLOURPICKER_CHANGED, &SettingsDialog::OnDefaultWaterColorChanged, this);
 
                 waterSizer->Add(
@@ -3539,8 +3545,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     waterBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Water Level of Detail"),
-                    wxS("Adjusts how detailed water inside a physical body looks."),
+                    _("Water Level of Detail"),
+                    _("Adjusts how detailed water inside a physical body looks."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterLevelOfDetail, value);
@@ -3587,7 +3593,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
     // Sounds
     {
-        wxStaticBox * soundBox = new wxStaticBox(panel, wxID_ANY, wxS("Sound"));
+        wxStaticBox * soundBox = new wxStaticBox(panel, wxID_ANY, _("Sound"));
 
         wxBoxSizer * soundBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         soundBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3601,8 +3607,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     soundBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Effects Volume"),
-                    wxS("Adjusts the volume of sounds generated by the simulation."),
+                    _("Effects Volume"),
+                    _("Adjusts the volume of sounds generated by the simulation."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MasterEffectsVolume, value);
@@ -3626,8 +3632,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     soundBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Tools Volume"),
-                    wxS("Adjusts the volume of sounds generated by interactive tools."),
+                    _("Tools Volume"),
+                    _("Adjusts the volume of sounds generated by interactive tools."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::MasterToolsVolume, value);
@@ -3651,8 +3657,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
                 {
                     mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
-                        wxS("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-                    mPlayBreakSoundsCheckBox->SetToolTip(wxS("Enables or disables the generation of sounds when materials break."));
+                        _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                    mPlayBreakSoundsCheckBox->SetToolTip(_("Enables or disables the generation of sounds when materials break."));
                     mPlayBreakSoundsCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
@@ -3666,8 +3672,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
                 {
                     mPlayStressSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY,
-                        wxS("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-                    mPlayStressSoundsCheckBox->SetToolTip(wxS("Enables or disables the generation of sounds when materials are under stress."));
+                        _("Play Stress Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                    mPlayStressSoundsCheckBox->SetToolTip(_("Enables or disables the generation of sounds when materials are under stress."));
                     mPlayStressSoundsCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
@@ -3681,8 +3687,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
                 {
                     mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
-                        wxS("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
-                    mPlayWindSoundCheckBox->SetToolTip(wxS("Enables or disables the generation of wind sounds."));
+                        _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                    mPlayWindSoundCheckBox->SetToolTip(_("Enables or disables the generation of wind sounds."));
                     mPlayWindSoundCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
@@ -3692,6 +3698,21 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                         });
 
                     checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+                }
+
+                {
+                    mPlayAirBubbleSurfaceSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY,
+                        _("Play Bubbles' Surface Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                    mPlayAirBubbleSurfaceSoundCheckBox->SetToolTip(_("Enables or disables the bubbling sound when air bubbles come to the surface."));
+                    mPlayAirBubbleSurfaceSoundCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayAirBubbleSurfaceSound, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    checkboxesSizer->Add(mPlayAirBubbleSurfaceSoundCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
                 }
 
                 soundSizer->Add(
@@ -3717,7 +3738,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
     // Advanced
     {
-        wxStaticBox * advancedBox = new wxStaticBox(panel, wxID_ANY, wxS("Advanced"));
+        wxStaticBox * advancedBox = new wxStaticBox(panel, wxID_ANY, _("Advanced"));
 
         wxBoxSizer * advancedBoxSizer1 = new wxBoxSizer(wxVERTICAL);
         advancedBoxSizer1->AddSpacer(StaticBoxTopMargin);
@@ -3731,8 +3752,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     advancedBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Spring Stiffness Adjust"),
-                    wxS("This setting is for testing physical instability of the mass-spring network with high stiffness values;"
+                    _("Spring Stiffness Adjust"),
+                    _("This setting is for testing physical instability of the mass-spring network with high stiffness values;"
                     " it is not meant for improving the rigidity of physical bodies."),
                     [this](float value)
                     {
@@ -3758,8 +3779,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     advancedBox,
                     SliderWidth,
                     SliderHeight,
-                    wxS("Spring Damping Adjust"),
-                    wxS("This setting is for testing physical instability of the mass-spring network with different damping values;"
+                    _("Spring Damping Adjust"),
+                    _("This setting is for testing physical instability of the mass-spring network with different damping values;"
                     " it is not meant for improving the rigidity of physical bodies."),
                     [this](float value)
                     {
@@ -3786,16 +3807,16 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 {
                     wxString debugShipRenderModeChoices[] =
                     {
-                        wxS("No Debug"),
-                        wxS("Draw in Wireframe Mode"),
-                        wxS("Draw Only Points"),
-                        wxS("Draw Only Springs"),
-                        wxS("Draw Only Edge Springs"),
-                        wxS("Draw Decay"),
-                        wxS("Draw Structure")
+                        _("No Debug"),
+                        _("Draw in Wireframe Mode"),
+                        _("Draw Only Points"),
+                        _("Draw Only Springs"),
+                        _("Draw Only Edge Springs"),
+                        _("Draw Decay"),
+                        _("Draw Structure")
                     };
 
-                    mDebugShipRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, wxS("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
+                    mDebugShipRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
                         WXSIZEOF(debugShipRenderModeChoices), debugShipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
                     Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
 
@@ -3805,16 +3826,16 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 {
                     wxString vectorFieldRenderModeChoices[] =
                     {
-                        wxS("None"),
-                        wxS("Point Velocities"),
-                        wxS("Point Forces"),
-                        wxS("Point Water Velocities"),
-                        wxS("Point Water Momenta")
+                        _("None"),
+                        _("Point Velocities"),
+                        _("Point Forces"),
+                        _("Point Water Velocities"),
+                        _("Point Water Momenta")
                     };
 
-                    mVectorFieldRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, wxS("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
+                    mVectorFieldRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
                         WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-                    mVectorFieldRenderModeRadioBox->SetToolTip(wxS("Enables or disables rendering of vector fields."));
+                    mVectorFieldRenderModeRadioBox->SetToolTip(_("Enables or disables rendering of vector fields."));
                     Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
 
                     checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
@@ -3855,7 +3876,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * loadSettingsBox = new wxStaticBox(panel, wxID_ANY, wxS("Load Settings"));
+        wxStaticBox * loadSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Load Settings"));
 
         wxBoxSizer * loadSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
         loadSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
@@ -3901,7 +3922,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
 
                 {
-                    auto label = new wxStaticText(loadSettingsBox, wxID_ANY, wxS("Description:"));
+                    auto label = new wxStaticText(loadSettingsBox, wxID_ANY, _("Description:"));
 
                     col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
                 }
@@ -3919,26 +3940,26 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 }
 
                 {
-                    mApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, wxS("Apply Saved Settings"));
-                    mApplyPersistedSettingsButton->SetToolTip(wxS("Loads the selected settings and applies them on top of the current settings."));
+                    mApplyPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, _("Apply Saved Settings"));
+                    mApplyPersistedSettingsButton->SetToolTip(_("Loads the selected settings and applies them on top of the current settings."));
                     mApplyPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnApplyPersistedSettingsButton, this);
 
                     col2BoxSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-                    mRevertToPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, wxS("Revert to Saved Settings"));
-                    mRevertToPersistedSettingsButton->SetToolTip(wxS("Reverts all settings to the selected settings."));
+                    mRevertToPersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, _("Revert to Saved Settings"));
+                    mRevertToPersistedSettingsButton->SetToolTip(_("Reverts all settings to the selected settings."));
                     mRevertToPersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRevertToPersistedSettingsButton, this);
 
                     col2BoxSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-                    mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, wxS("Replace Saved Settings with Current"));
-                    mReplacePersistedSettingsButton->SetToolTip(wxS("Overwrites the selected settings with the current settings."));
+                    mReplacePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, _("Replace Saved Settings with Current"));
+                    mReplacePersistedSettingsButton->SetToolTip(_("Overwrites the selected settings with the current settings."));
                     mReplacePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnReplacePersistedSettingsButton, this);
 
                     col2BoxSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
 
-                    mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, wxS("Delete Saved Settings"));
-                    mDeletePersistedSettingsButton->SetToolTip(wxS("Deletes the selected settings."));
+                    mDeletePersistedSettingsButton = new wxButton(loadSettingsBox, wxID_ANY, _("Delete Saved Settings"));
+                    mDeletePersistedSettingsButton->SetToolTip(_("Deletes the selected settings."));
                     mDeletePersistedSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnDeletePersistedSettingsButton, this);
 
                     col2BoxSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
@@ -3967,7 +3988,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, wxS("Save Settings"));
+        wxStaticBox * saveSettingsBox = new wxStaticBox(panel, wxID_ANY, _("Save Settings"));
 
         wxBoxSizer * saveSettingsBoxVSizer = new wxBoxSizer(wxVERTICAL);
         saveSettingsBoxVSizer->AddSpacer(StaticBoxTopMargin);
@@ -3979,7 +4000,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 wxBoxSizer * col2BoxSizer = new wxBoxSizer(wxVERTICAL);
 
                 {
-                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, wxS("Name:"));
+                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, _("Name:"));
 
                     col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
                 }
@@ -4009,7 +4030,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 }
 
                 {
-                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, wxS("Description:"));
+                    auto label = new wxStaticText(saveSettingsBox, wxID_ANY, _("Description:"));
 
                     col2BoxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
                 }
@@ -4029,8 +4050,8 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 }
 
                 {
-                    mSaveSettingsButton = new wxButton(saveSettingsBox, wxID_ANY, wxS("Save Current Settings"));
-                    mSaveSettingsButton->SetToolTip(wxS("Saves the current settings using the specified name."));
+                    mSaveSettingsButton = new wxButton(saveSettingsBox, wxID_ANY, _("Save Current Settings"));
+                    mSaveSettingsButton->SetToolTip(_("Saves the current settings using the specified name."));
                     mSaveSettingsButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnSaveSettingsButton, this);
 
                     col2BoxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
@@ -4318,6 +4339,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mPlayWindSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayWindSound));
 
+    mPlayAirBubbleSurfaceSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayAirBubbleSurfaceSound));
+
     // Advanced
 
     mSpringStiffnessSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStiffnessAdjustment));
@@ -4584,5 +4607,5 @@ void SettingsDialog::ReconciliateSavePersistedSettings()
 
 void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
 {
-    wxMessageBox(errorMessage, wxS("Error"), wxICON_ERROR);
+    wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
 }

@@ -38,6 +38,7 @@ SoundController::SoundController(
     , mPlayBreakSounds(true)
     , mPlayStressSounds(true)
     , mPlayWindSound(true)
+    , mPlayAirBubbleSurfaceSound(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
@@ -934,6 +935,20 @@ void SoundController::SetPlayWindSound(bool playWindSound)
     else
     {
         mWindSound.SetMuted(false);
+    }
+}
+
+void SoundController::SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSound)
+{
+    mPlayAirBubbleSurfaceSound = playAirBubbleSurfaceSound;
+
+    if (!mPlayAirBubbleSurfaceSound)
+    {
+        mAirBubblesSurfacingSound.SetMuted(true);
+    }
+    else
+    {
+        mAirBubblesSurfacingSound.SetMuted(false);
     }
 }
 

@@ -16,7 +16,7 @@ std::string MangleSettingName(std::string && settingName);
         MangleSettingName(#name),                       \
         [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
         [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
-		[gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
+        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
 
 #define ADD_GC_SETTING_WITH_IMMEDIATE(type, name)       \
     factory.AddSetting<type>(                           \
@@ -24,7 +24,7 @@ std::string MangleSettingName(std::string && settingName);
         MangleSettingName(#name),                       \
         [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
         [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
-		[gameControllerSettings](auto const & v) { gameControllerSettings->Set##name ## Immediate(v); });
+        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name ## Immediate(v); });
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
@@ -32,7 +32,7 @@ std::string MangleSettingName(std::string && settingName);
         MangleSettingName(#name),                       \
         [soundController]() -> type { return soundController->Get##name(); },	\
         [soundController](auto const & v) { soundController->Set##name(v); },	\
-		[soundController](auto const & v) { soundController->Set##name(v); });
+        [soundController](auto const & v) { soundController->Set##name(v); });
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
     std::shared_ptr<IGameControllerSettings> gameControllerSettings,
@@ -63,11 +63,11 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WindSpeedBase);
     ADD_GC_SETTING(float, WindSpeedMaxFactor);
 
-	// Storm
-	ADD_GC_SETTING(std::chrono::minutes, StormRate);
-	ADD_GC_SETTING(std::chrono::seconds, StormDuration);
-	ADD_GC_SETTING(float, StormStrengthAdjustment);
-	ADD_GC_SETTING(bool, DoRainWithStorm);
+    // Storm
+    ADD_GC_SETTING(std::chrono::minutes, StormRate);
+    ADD_GC_SETTING(std::chrono::seconds, StormDuration);
+    ADD_GC_SETTING(float, StormStrengthAdjustment);
+    ADD_GC_SETTING(bool, DoRainWithStorm);
     ADD_GC_SETTING(float, RainFloodAdjustment);
 
     // Heat
@@ -94,7 +94,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
     ADD_GC_SETTING(float, OceanFloorBumpiness);
-	ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
+    ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
     ADD_GC_SETTING(float, OceanFloorElasticity);
     ADD_GC_SETTING(float, OceanFloorFriction);
     ADD_GC_SETTING(float, DestroyRadius);
@@ -141,7 +141,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, HeatOverlayTransparency);
     ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);
-	ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
+    ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
 
     // Sound
     ADD_SC_SETTING(float, MasterEffectsVolume);
@@ -149,6 +149,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayBreakSounds);
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
+    ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);    
 
     return factory;
 }

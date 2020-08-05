@@ -36,11 +36,11 @@ enum class GameSettings : size_t
     WindSpeedBase,
     WindSpeedMaxFactor,
 
-	// Storm
-	StormRate,
-	StormDuration,
-	StormStrengthAdjustment,
-	DoRainWithStorm,
+    // Storm
+    StormRate,
+    StormDuration,
+    StormStrengthAdjustment,
+    DoRainWithStorm,
     RainFloodAdjustment,
 
     // Heat
@@ -114,7 +114,7 @@ enum class GameSettings : size_t
     HeatOverlayTransparency,
     ShipFlameRenderMode,
     ShipFlameSizeAdjustment,
-	DrawHeatBlasterFlame,
+    DrawHeatBlasterFlame,
 
     // Sound
     MasterEffectsVolume,
@@ -122,8 +122,9 @@ enum class GameSettings : size_t
     PlayBreakSounds,
     PlayStressSounds,
     PlayWindSound,
+    PlayAirBubbleSurfaceSound,
 
-    _Last = PlayWindSound
+    _Last = PlayAirBubbleSurfaceSound
 };
 
 class SettingsManager final : public BaseSettingsManager<GameSettings>

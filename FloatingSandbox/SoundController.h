@@ -106,6 +106,13 @@ public:
 
     void SetPlayWindSound(bool playWindSound);
 
+    bool GetPlayAirBubbleSurfaceSound() const
+    {
+        return mPlayAirBubbleSurfaceSound;
+    }
+
+    void SetPlayAirBubbleSurfaceSound(bool playAirBubbleSurfaceSound);
+
     void PlayDrawSound(bool isUnderwater);
     void StopDrawSound();
 
@@ -416,6 +423,7 @@ private:
     bool mPlayBreakSounds;
     bool mPlayStressSounds;
     bool mPlayWindSound;
+    bool mPlayAirBubbleSurfaceSound;
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
