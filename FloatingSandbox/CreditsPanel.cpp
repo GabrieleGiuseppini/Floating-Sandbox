@@ -92,7 +92,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("TRANSLATION"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
-        {1, wxS("Ilya Voloshin (Russian)"), VMargin3},
+        {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), VMargin3},

@@ -424,22 +424,13 @@ Render:
 				+ Checks internally if lang file exists before returning default (with logged warning)
 				+ Move startup, help HTML files under language dirs
 					+ Help folder: maintain resources here, see if may use relative paths in HTML links
-
-			= Mark all strings as _(
+			+ Mark all strings as _(
 				+ AboutDialog
 					+ Also labels
 				+ CheckForUpdatesDialog
 				+ HelpDialog
 				+ LoggingDialog
-				= MainFrame
-					- Error messages
-						- Requires:
-							- GameCore/Messages.h w/MessageType enum
-							- GameException taking MessageType
-							- LocalizationManager implementing all strings:
-								- TODO
-							- Move progress strings from SplashDialog to here
-
+				+ MainFrame
 				+ NewVersionDisplayDialog
 				+ PreferencesDialog
 				+ ProbePanel
@@ -448,18 +439,28 @@ Render:
 				+ ShipLoadDialog
 				+ SplashScreenDialog
 				+ StartupTipDialog
-
-			- Prepare final, complete pot file
-			- Mark TO-DO item under Technical Debt
-			- changes.txt
+			+ Prepare final, complete pot file
 			- Translations:
 				= Italian:
-					= StartupTip
+					+ StartupTip
 					- Help
-					- po
-						- Accented letters
+					= po
+				= Russian:
+					+ Prepare po
+					+ Test HTMLs
+						+ Put content-encoding in master (en) as well
+			- Mark TO-DO item under Technical Debt
+			- changes.txt
 
-		- Send for testing
+		+ Texture notifications: recalc vertices at view model changes
+			+ Store raw data, just like font
+			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
+			+ Test w/panel
+
+		- Fix & test Hesleden
+			- Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default.
+
+		- Send for testing (32-bit)
 
 		- Test speed with ElementIndex/Count being 64-bit
 		- Check if any point and spring structs are aligned badly
@@ -478,6 +479,8 @@ Render:
 					- 
 			+ Remove all TODOTEST logging		
 
+		- Add whistle: pipe_steam_whistle_for_fs.mp3
+
 		- Bubbles:
 			- Look back at SWE's
 				- Try re-instating skipped steps
@@ -493,8 +496,8 @@ Render:
 			- With texture notification when on
 
 		- More stress metal sounds, to dilute "cycle of sounds"
-			- New raw sounds are at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
-			- Also try not dispatching stress if also dispatching break's (or destroy's?)
+			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
+			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- SWE: see if should damp waves, now that we have bubble waves
 			- Ideally we only damp small waves, not big ones (like Tsunami)

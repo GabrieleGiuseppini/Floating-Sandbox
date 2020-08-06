@@ -23,9 +23,10 @@ NotificationRenderContext::NotificationRenderContext(
     , mFontRenderContexts()
     // Test notifications
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
+    , mTextureNotifications()
+    , mIsTextureNotificationDataDirty(false)
     , mTextureNotificationVAO()
     , mTextureNotificationVertexBuffer()
-    , mIsTextureNotificationVertexBufferDirty(false)
     , mTextureNotificationVBO()
     // Tool notifications
     , mHeatBlasterFlameVAO()
@@ -228,111 +229,6 @@ void NotificationRenderContext::UploadStart()
     mFireExtinguisherSprayShaderToRender.reset();
 }
 
-void NotificationRenderContext::UploadTextureNotification(
-    TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
-    AnchorPositionType anchor,
-    vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
-    float alpha)
-{
-    //
-    // Populate the texture quad
-    //
-
-    TextureAtlasFrameMetadata<GenericLinearTextureGroups> const & frame =
-        mGenericLinearTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
-
-    ImageSize const & frameSize = frame.FrameMetadata.Size;
-
-    vec2f quadTopLeft( // Start with offset
-        screenOffset.x * static_cast<float>(frameSize.Width) * mScreenToNdcX,
-        -screenOffset.y * static_cast<float>(frameSize.Height) * mScreenToNdcY);
-
-    switch (anchor)
-    {
-        case AnchorPositionType::BottomLeft:
-        {
-            quadTopLeft += vec2f(
-                -1.f + MarginScreen * mScreenToNdcX,
-                -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
-
-            break;
-        }
-
-        case AnchorPositionType::BottomRight:
-        {
-            quadTopLeft += vec2f(
-                1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
-                -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
-
-            break;
-        }
-
-        case AnchorPositionType::TopLeft:
-        {
-            quadTopLeft += vec2f(
-                -1.f + MarginScreen * mScreenToNdcX,
-                1.f - MarginTopScreen * mScreenToNdcY);
-
-            break;
-        }
-
-        case AnchorPositionType::TopRight:
-        {
-            quadTopLeft += vec2f(
-                1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
-                1.f - MarginTopScreen * mScreenToNdcY);
-
-            break;
-        }
-    }
-
-    vec2f quadBottomRight = quadTopLeft + vec2f(
-        static_cast<float>(frameSize.Width) * mScreenToNdcX,
-        -static_cast<float>(frameSize.Height) * mScreenToNdcY);
-
-    // Append vertices - two triangles
-
-    // Triangle 1
-
-    // Top-left
-    mTextureNotificationVertexBuffer.emplace_back(
-        quadTopLeft,
-        vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
-        alpha);
-
-    // Top-Right
-    mTextureNotificationVertexBuffer.emplace_back(
-        vec2f(quadBottomRight.x, quadTopLeft.y),
-        frame.TextureCoordinatesTopRight,
-        alpha);
-
-    // Bottom-left
-    mTextureNotificationVertexBuffer.emplace_back(
-        vec2f(quadTopLeft.x, quadBottomRight.y),
-        frame.TextureCoordinatesBottomLeft,
-        alpha);
-
-    // Triangle 2
-
-    // Top-Right
-    mTextureNotificationVertexBuffer.emplace_back(
-        vec2f(quadBottomRight.x, quadTopLeft.y),
-        frame.TextureCoordinatesTopRight,
-        alpha);
-
-    // Bottom-left
-    mTextureNotificationVertexBuffer.emplace_back(
-        vec2f(quadTopLeft.x, quadBottomRight.y),
-        frame.TextureCoordinatesBottomLeft,
-        alpha);
-
-    // Bottom-right
-    mTextureNotificationVertexBuffer.emplace_back(
-        quadBottomRight,
-        vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
-        alpha);
-}
-
 void NotificationRenderContext::UploadEnd()
 {
     // Nop
@@ -380,84 +276,6 @@ void NotificationRenderContext::RenderDraw()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context)
-{
-    FontMetadata const & fontMetadata = context.GetFontMetadata();
-
-    context.GetVertexBuffer().clear();
-
-    for (auto const & textLine : context.GetTextLines())
-    {
-        //
-        // Calculate line position in NDC coordinates
-        //
-
-        vec2f linePositionNdc( // Top-left of quads; start with offset
-            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCharScreenWidth()) * mScreenToNdcX,
-            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetLineScreenHeight()) * mScreenToNdcY);
-
-        switch (textLine.Anchor)
-        {
-            case AnchorPositionType::BottomLeft:
-            {
-                linePositionNdc += vec2f(
-                    -1.f + MarginScreen * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
-
-                break;
-            }
-
-            case AnchorPositionType::BottomRight:
-            {
-                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-                    textLine.Text.c_str(),
-                    textLine.Text.length());
-
-                linePositionNdc += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
-
-                break;
-            }
-
-            case AnchorPositionType::TopLeft:
-            {
-                linePositionNdc += vec2f(
-                    -1.f + MarginScreen * mScreenToNdcX,
-                    1.f - MarginTopScreen * mScreenToNdcY);
-
-                break;
-            }
-
-            case AnchorPositionType::TopRight:
-            {
-                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
-                    textLine.Text.c_str(),
-                    textLine.Text.length());
-
-                linePositionNdc += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-                    1.f - MarginTopScreen * mScreenToNdcY);
-
-                break;
-            }
-        }
-
-        //
-        // Emit quads for this line
-        //
-
-        fontMetadata.EmitQuadVertices(
-            textLine.Text.c_str(),
-            textLine.Text.length(),
-            linePositionNdc,
-            textLine.Alpha,
-            mScreenToNdcX,
-            mScreenToNdcY,
-            context.GetVertexBuffer());
-    }
-}
-
 void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
 {
     //
@@ -491,12 +309,16 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasWidth());
     mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasHeight());
 
-    // Make sure we re-calculate (and re-upload) all vertices
+    // Make sure we re-calculate (and re-upload) all text vertices
     // at the next iteration
     for (auto & fc : mFontRenderContexts)
     {
         fc.SetLineDataDirty(true);
     }
+
+    // Make sure we re-calculate (and re-upload) all texture notification vertices
+    // at the next iteration
+    mIsTextureNotificationDataDirty = true;
 }
 
 void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -591,8 +413,22 @@ void NotificationRenderContext::RenderDrawTextNotifications()
 
 void NotificationRenderContext::RenderPrepareTextureNotifications()
 {
-    if (mIsTextureNotificationVertexBufferDirty)
+    //
+    // Re-generate and upload vertex buffer if dirty
+    //
+
+    if (mIsTextureNotificationDataDirty)
     {
+        //
+        // Generate vertices
+        //
+
+        GenerateTextureNotificationVertices();
+
+        //
+        // Upload buffer
+        //
+
         glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
 
         glBufferData(
@@ -604,7 +440,7 @@ void NotificationRenderContext::RenderPrepareTextureNotifications()
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        mIsTextureNotificationVertexBufferDirty = false;
+        mIsTextureNotificationDataDirty = false;
     }
 }
 
@@ -693,6 +529,190 @@ void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
 
         glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::GenerateTextVertices(FontRenderContext & context)
+{
+    FontMetadata const & fontMetadata = context.GetFontMetadata();
+
+    context.GetVertexBuffer().clear();
+
+    for (auto const & textLine : context.GetTextLines())
+    {
+        //
+        // Calculate line position in NDC coordinates
+        //
+
+        vec2f linePositionNdc( // Top-left of quads; start with offset
+            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCharScreenWidth()) * mScreenToNdcX,
+            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetLineScreenHeight()) * mScreenToNdcY);
+
+        switch (textLine.Anchor)
+        {
+            case AnchorPositionType::BottomLeft:
+            {
+                linePositionNdc += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::BottomRight:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::TopLeft:
+            {
+                linePositionNdc += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::TopRight:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+        }
+
+        //
+        // Emit quads for this line
+        //
+
+        fontMetadata.EmitQuadVertices(
+            textLine.Text.c_str(),
+            textLine.Text.length(),
+            linePositionNdc,
+            textLine.Alpha,
+            mScreenToNdcX,
+            mScreenToNdcY,
+            context.GetVertexBuffer());
+    }
+}
+
+void NotificationRenderContext::GenerateTextureNotificationVertices()
+{
+    mTextureNotificationVertexBuffer.clear();
+
+    for (auto const & textureNotification : mTextureNotifications)
+    {
+        //
+        // Populate the texture quad
+        //
+
+        TextureAtlasFrameMetadata<GenericLinearTextureGroups> const & frame =
+            mGenericLinearTextureAtlasMetadata.GetFrameMetadata(textureNotification.FrameId);
+
+        ImageSize const & frameSize = frame.FrameMetadata.Size;
+
+        vec2f quadTopLeft( // Start with offset
+            textureNotification.ScreenOffset.x * static_cast<float>(frameSize.Width) * mScreenToNdcX,
+            -textureNotification.ScreenOffset.y * static_cast<float>(frameSize.Height) * mScreenToNdcY);
+
+        switch (textureNotification.Anchor)
+        {
+            case AnchorPositionType::BottomLeft:
+            {
+                quadTopLeft += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::BottomRight:
+            {
+                quadTopLeft += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::TopLeft:
+            {
+                quadTopLeft += vec2f(
+                    -1.f + MarginScreen * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+
+            case AnchorPositionType::TopRight:
+            {
+                quadTopLeft += vec2f(
+                    1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
+                    1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+        }
+
+        vec2f quadBottomRight = quadTopLeft + vec2f(
+            static_cast<float>(frameSize.Width) * mScreenToNdcX,
+            -static_cast<float>(frameSize.Height) * mScreenToNdcY);
+
+        // Append vertices - two triangles
+
+        // Triangle 1
+
+        // Top-left
+        mTextureNotificationVertexBuffer.emplace_back(
+            quadTopLeft,
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            textureNotification.Alpha);
+
+        // Top-Right
+        mTextureNotificationVertexBuffer.emplace_back(
+            vec2f(quadBottomRight.x, quadTopLeft.y),
+            frame.TextureCoordinatesTopRight,
+            textureNotification.Alpha);
+
+        // Bottom-left
+        mTextureNotificationVertexBuffer.emplace_back(
+            vec2f(quadTopLeft.x, quadBottomRight.y),
+            frame.TextureCoordinatesBottomLeft,
+            textureNotification.Alpha);
+
+        // Triangle 2
+
+        // Top-Right
+        mTextureNotificationVertexBuffer.emplace_back(
+            vec2f(quadBottomRight.x, quadTopLeft.y),
+            frame.TextureCoordinatesTopRight,
+            textureNotification.Alpha);
+
+        // Bottom-left
+        mTextureNotificationVertexBuffer.emplace_back(
+            vec2f(quadTopLeft.x, quadBottomRight.y),
+            frame.TextureCoordinatesBottomLeft,
+            textureNotification.Alpha);
+
+        // Bottom-right
+        mTextureNotificationVertexBuffer.emplace_back(
+            quadBottomRight,
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            textureNotification.Alpha);
     }
 }
 

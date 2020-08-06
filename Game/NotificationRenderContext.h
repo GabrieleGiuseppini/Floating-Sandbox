@@ -95,16 +95,27 @@ public:
 		// continue drawing the same buffer
 		//
 
-		// Cleanup buffer
-		mTextureNotificationVertexBuffer.clear();
-		mIsTextureNotificationVertexBufferDirty = true;
+		// Cleanup buffers
+		mTextureNotifications.clear();
+		mIsTextureNotificationDataDirty = true;
 	}
 
-    void UploadTextureNotification(
-        TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+	void UploadTextureNotification(
+		TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
 		AnchorPositionType anchor,
-        vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
-        float alpha);
+		vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
+		float alpha)
+	{
+		//
+		// Store notification data
+		//
+
+		mTextureNotifications.emplace_back(
+			textureFrameId,
+			anchor,
+			screenOffset,
+			alpha);
+	}
 
 	inline void UploadTextureNotificationEnd()
 	{
@@ -221,10 +232,6 @@ public:
 
 private:
 
-	class FontRenderContext;
-
-	void GenerateTextVertices(FontRenderContext & context);
-
 	void ApplyViewModelChanges(RenderParameters const & renderParameters);
 	void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);	
 	void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
@@ -240,6 +247,11 @@ private:
 
 	void RenderPrepareFireExtinguisherSpray();
 	void RenderDrawFireExtinguisherSpray();
+
+	class FontRenderContext;
+	void GenerateTextVertices(FontRenderContext & context);
+
+	void GenerateTextureNotificationVertices();
 
 private:
 
@@ -412,9 +424,30 @@ private:
 
 	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
 
+	struct TextureNotification
+	{
+		TextureFrameId<GenericLinearTextureGroups> FrameId;
+		AnchorPositionType Anchor;
+		vec2f ScreenOffset; // In texture-size fraction (0.0 -> 1.0)
+		float Alpha;
+
+		TextureNotification(
+			TextureFrameId<GenericLinearTextureGroups> const & frameId,
+			AnchorPositionType anchor,
+			vec2f const & screenOffset,
+			float alpha)
+			: FrameId(frameId)
+			, Anchor(anchor)
+			, ScreenOffset(screenOffset)
+			, Alpha(alpha)
+		{}
+	};
+
+	std::vector<TextureNotification> mTextureNotifications;
+	bool mIsTextureNotificationDataDirty; // When dirty, we'll re-build and re-upload the vertex data
+
 	GameOpenGLVAO mTextureNotificationVAO;
 	std::vector<TextureNotificationVertex> mTextureNotificationVertexBuffer;
-	bool mIsTextureNotificationVertexBufferDirty;
 	GameOpenGLVBO mTextureNotificationVBO;
 
 	//
