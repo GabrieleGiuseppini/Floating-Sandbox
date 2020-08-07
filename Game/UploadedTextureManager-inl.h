@@ -78,7 +78,7 @@ void UploadedTextureManager<TextureGroups>::UploadGroup(
 
         // Notify progress
         currentFramesCount += 1.0f;
-        progressCallback(currentFramesCount / totalFramesCount, "Loading texture group...");
+        progressCallback(currentFramesCount / totalFramesCount, ProgressMessageType::None);
     }
 }
 
@@ -103,7 +103,7 @@ void UploadedTextureManager<TextureGroups>::UploadMipmappedGroup(
 
         // Notify progress
         currentFramesCount += 1.0f;
-        progressCallback(currentFramesCount / totalFramesCount, "Loading textures...");
+        progressCallback(currentFramesCount / totalFramesCount, ProgressMessageType::None);
 
         // Create OpenGL handle
         GLuint openGLHandle;
