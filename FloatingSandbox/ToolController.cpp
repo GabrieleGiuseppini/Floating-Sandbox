@@ -28,7 +28,7 @@ ToolController::ToolController(
     , mSoundController(soundController)
     // Cursor
     , mCurrentToolCursor()
-    , mCurrentEffectiveAmbientLightIntensity(initialEffectiveAmbientLightIntensity)
+    , mCurrentToolCursorBrightness(CalculateCursorBrightness(initialEffectiveAmbientLightIntensity))
 {
     //
     // Initialize all tools
@@ -291,6 +291,11 @@ void ToolController::SetToolCursor(wxImage const & basisImage, float strength)
     InternalSetCurrentToolCursor();
 }
 
+float ToolController::CalculateCursorBrightness(float effectiveAmbientLightIntensity)
+{
+    return Step(0.5f, 1.0f - effectiveAmbientLightIntensity);
+}
+
 void ToolController::InternalSetCurrentToolCursor()
 {
     //
@@ -315,8 +320,7 @@ void ToolController::InternalSetCurrentToolCursor()
         : rgbColor(0xDB, 0x0F, 0x0F);
 
     // Target color when the scene is dark
-    vec3f const lightenedCursorColor(0.8f, 0.8f, 0.8f);
-    float const lighteningStrength = Step(0.5f, 1.0f - mCurrentEffectiveAmbientLightIntensity);
+    vec3f constexpr LightenedCursorColor(0.8f, 0.8f, 0.8f);
 
     // Start from top
     for (int y = 0; y < imageHeight; ++y)
@@ -346,8 +350,8 @@ void ToolController::InternalSetCurrentToolCursor()
                 // Linear interpolation
                 vec3f targetColor = Mix(
                     originalColor,
-                    lightenedCursorColor,
-                    lighteningStrength);
+                    LightenedCursorColor,
+                    mCurrentToolCursorBrightness);
 
                 rgbColor targetRgbColor = rgbColor(targetColor);
 

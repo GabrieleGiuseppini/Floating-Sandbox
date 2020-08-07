@@ -397,6 +397,10 @@ Render:
 					+ MainFrame
 					+ ShipLoadDialog
 			+ Commit & push
+		+ Texture notifications: recalc vertices at view model changes
+			+ Store raw data, just like font
+			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
+			+ Test w/panel
 			
 		= Localization
 			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
@@ -440,27 +444,44 @@ Render:
 				+ SplashScreenDialog
 				+ StartupTipDialog
 			+ Prepare final, complete pot file
-			- Translations:
+			= Translations:
 				= Italian:
 					+ StartupTip
-					- Help
+					+ Help
 					= po
+					- Cross-reference Help with Menus
 				= Russian:
 					+ Prepare po
 					+ Test HTMLs
 						+ Put content-encoding in master (en) as well
+					= po
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 
-		+ Texture notifications: recalc vertices at view model changes
-			+ Store raw data, just like font
-			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
-			+ Test w/panel
+		= Day/night cycle
+			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
+			  ambient light to target ambient light (target based off next "12-hour")
+			+ With texture notification when on
+				+ Code
+				+ Texture
+			+ SettingsDialog: duration
+			= Issue: cursor of tool over SettingsDialog
+			- Better (inverte-able) curve?
+			- changes.txt
+
+		- Bubbles:
+			- Look back at SWE's
+				- Try re-instating skipped steps
+				- Try with setting velocities only (towards L at L point, towards R at R point)
+			- Smaller wave (if nothing above works)
+			+ Add checkbox for bubble sounds
+				+ Storage owned by SoundController
+				+ Cutoff happens @ SoundController
+
+		- Send for testing (32-bit)
 
 		- Fix & test Hesleden
 			- Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default.
-
-		- Send for testing (32-bit)
 
 		- Test speed with ElementIndex/Count being 64-bit
 		- Check if any point and spring structs are aligned badly
@@ -481,21 +502,9 @@ Render:
 
 		- Add whistle: pipe_steam_whistle_for_fs.mp3
 
-		- Bubbles:
-			- Look back at SWE's
-				- Try re-instating skipped steps
-				- Try with setting velocities only (towards L at L point, towards R at R point)
-			- Smaller wave (if nothing above works)
-			+ Add checkbox for bubble sounds
-				+ Storage owned by SoundController
-				+ Cutoff happens @ SoundController
-
-		- Day/night cycle
-			- New GameController state machine, running every X seconds (LowFreq update?) and taking current
-			  ambient light to target ambient light (target based off next "12-hour")
-			- With texture notification when on
-
 		- More stress metal sounds, to dilute "cycle of sounds"
+			- Repro first and detect chain of noise
+			- See if longer relax interval for stress sounds does the trick
 			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 

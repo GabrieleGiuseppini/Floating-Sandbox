@@ -74,6 +74,8 @@ GameParameters::GameParameters()
     , OceanFloorFriction(0.25f)
     , NumberOfStars(1536)
     , NumberOfClouds(48)
+    , DoDayLightCycle(false)
+    , DayLightCycleDuration(std::chrono::minutes(4))
     // Interactions
     , ToolSearchRadius(2.0f)
     , DestroyRadius(8.0f)

@@ -349,7 +349,7 @@ msgstr ""
 #: ..\FloatingSandbox\SettingsDialog.cpp:246
 #: ..\FloatingSandbox\ShipLoadDialog.cpp:236
 msgid "Cancel"
-msgstr ""
+msgstr "Annulla"
 
 #: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:172
 msgid "Cannot Check for Updates at This Moment"
@@ -414,24 +414,25 @@ msgstr ""
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:143
 msgid "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
-msgstr ""
+msgstr "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:155
 msgid "Copyright (c) 2005-2011 Karl Walsh (Codehead)"
-msgstr ""
+msgstr "Copyright (c) 2005-2011 Karl Walsh (Codehead)"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:152
 msgid ""
 "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"
 msgstr ""
+"Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:158
 msgid "Copyright (c) 2011 Paul Mineiro"
-msgstr ""
+msgstr "Copyright (c) 2011 Paul Mineiro"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:146
 msgid "Copyright (c) Laurent Gomila"
-msgstr ""
+msgstr "Copyright (c) Laurent Gomila"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3097
 msgid "Darkening Rate"
@@ -1812,7 +1813,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:253
 msgid "Undo"
-msgstr ""
+msgstr "Ripristina"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:38
 msgid "Update Time"

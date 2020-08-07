@@ -390,6 +390,12 @@ struct GameParameters
     static constexpr unsigned int MinNumberOfClouds = 0;
     static constexpr unsigned int MaxNumberOfClouds = 500;
 
+    bool DoDayLightCycle;
+
+    std::chrono::minutes DayLightCycleDuration;
+    static std::chrono::minutes constexpr MinDayLightCycleDuration = std::chrono::minutes(1);
+    static std::chrono::minutes constexpr MaxDayLightCycleDuration = std::chrono::minutes(60);
+
     // Interactions
 
     float ToolSearchRadius;

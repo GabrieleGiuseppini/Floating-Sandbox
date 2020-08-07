@@ -95,7 +95,8 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
-        {1, wxS("The_SamminAter (macOS)"), VMargin3},
+        {1, wxS("The_SamminAter (macOS)"), 0},
+        {1, wxS("Daniel Tammeling (linux)"), VMargin3},
 
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("TopHatLemons   Truce#3326   RetroGraczzPL   Nomadavid   Wreno"), 0},
@@ -158,7 +159,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, _("Copyright (c) 2011 Paul Mineiro"), VMargin3},
 
         { 0, _("SPECIAL THANKS"), 0 },
-        { 1, wxS("Monica, Mattia, and Mattia Giuseppini"), 0 },
+        { 1, wxS("Monica, Mattia, and Elia Giuseppini"), 0 },
         { 1, wxS("Joey de Vries (OpenGL tutorial, http://openil.sourceforge.net/)"), 0 },
         { 1, wxS("Bas van den Berg"), 0 },
         { 1, wxS("Mart Slot"), 0 },

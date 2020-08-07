@@ -89,6 +89,8 @@ enum class GameSettings : size_t
     DoGenerateEngineWakeParticles,
     NumberOfStars,
     NumberOfClouds,
+    DoDayLightCycle,
+    DayLightCycleDuration,
 
     // Render
     FlatSkyColor,

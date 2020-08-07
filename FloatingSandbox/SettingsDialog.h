@@ -124,6 +124,8 @@ private:
 	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
     SliderControl<unsigned int> * mNumberOfStarsSlider;
     SliderControl<unsigned int> * mNumberOfCloudsSlider;
+    wxCheckBox * mDoDayLightCycleCheckBox;
+    SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
     // Wind and Waves
     SliderControl<float> * mWindSpeedBaseSlider;

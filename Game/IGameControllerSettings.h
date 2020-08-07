@@ -237,6 +237,12 @@ struct IGameControllerSettings
     virtual unsigned int GetNumberOfClouds() const = 0;
     virtual void SetNumberOfClouds(unsigned int value) = 0;
 
+    virtual bool GetDoDayLightCycle() const = 0;
+    virtual void SetDoDayLightCycle(bool value) = 0;
+
+    virtual std::chrono::minutes GetDayLightCycleDuration() const = 0;
+    virtual void SetDayLightCycleDuration(std::chrono::minutes value) = 0;
+
     //
     // Render parameters
     //

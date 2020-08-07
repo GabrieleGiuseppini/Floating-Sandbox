@@ -23,7 +23,8 @@ public:
 
 	NotificationLayer(
 		bool isUltraViolentMode,
-		bool isSoundMuted);
+		bool isSoundMuted,
+		bool isDayLightCycleOn);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -49,6 +50,8 @@ public:
 	void SetUltraViolentModeIndicator(bool isUltraViolentMode);
 
 	void SetSoundMuteIndicator(bool isSoundMuted);
+
+	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
 
 	// One frame only; after RenderUpload() it's gone
 	// (special case as this is really UI)
@@ -142,6 +145,7 @@ private:
 
 	bool mIsUltraViolentModeIndicatorOn;
 	bool mIsSoundMuteIndicatorOn;
+	bool mIsDayLightCycleOn;
 
 	//
 	// Interactions

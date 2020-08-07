@@ -116,6 +116,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoGenerateEngineWakeParticles);
     ADD_GC_SETTING(unsigned int, NumberOfStars);
     ADD_GC_SETTING(unsigned int, NumberOfClouds);
+    ADD_GC_SETTING(bool, DoDayLightCycle);
+    ADD_GC_SETTING(std::chrono::minutes, DayLightCycleDuration);
 
     // Render
     ADD_GC_SETTING(rgbColor, FlatSkyColor);

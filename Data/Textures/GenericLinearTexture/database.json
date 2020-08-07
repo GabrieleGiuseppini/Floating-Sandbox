@@ -1,6 +1,18 @@
 [
 
 {
+	"groupName": "DaylightCycleNotification",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"filename": "daylight_cycle_notification_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "Fire",
 	"hasOwnAmbientLight": false,
 	"frames":[

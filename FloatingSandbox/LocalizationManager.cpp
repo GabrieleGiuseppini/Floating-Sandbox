@@ -63,7 +63,8 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
         // Add our catalog
         locale->AddCatalogLookupPathPrefix(ResourceLocator::GetLanguagesRootPath().string());
         res = locale->AddCatalog(TranslationsDomainName, TranslationsMsgIdLangId);
-        if (!res && localeLanguage != TranslationsMsgIdLangId
+        if (!res 
+            && localeLanguage != TranslationsMsgIdLangId
             && localeLanguage != wxLANGUAGE_DEFAULT) // AddCatalog returns false for msgIdLang & default
         {
             LogMessage("WARNING: failed locale catalog initialization with language ", localeLanguage);

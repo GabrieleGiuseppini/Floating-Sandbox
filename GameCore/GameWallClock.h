@@ -25,7 +25,7 @@ public:
 
 public:
 
-    static GameWallClock & GetInstance()
+    static inline GameWallClock & GetInstance()
     {
         static GameWallClock * instance = new GameWallClock();
 
@@ -127,7 +127,7 @@ public:
      * specified interval.
      */
     template<typename TDuration>
-    inline static float_time Progress(
+    static inline float_time Progress(
         float_time time,
         float_time previousTime,
         TDuration interval)

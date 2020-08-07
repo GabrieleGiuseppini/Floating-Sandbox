@@ -207,6 +207,9 @@ struct IGameControllerSettingsOptions
 	virtual unsigned int GetMinNumberOfClouds() const = 0;
 	virtual unsigned int GetMaxNumberOfClouds() const = 0;
 
+	virtual std::chrono::minutes GetMinDayLightCycleDuration() const = 0;
+	virtual std::chrono::minutes GetMaxDayLightCycleDuration() const = 0;
+
 	//
 	// Render parameters
 	//

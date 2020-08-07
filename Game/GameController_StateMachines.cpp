@@ -270,6 +270,137 @@ bool GameController::UpdateThanosSnapStateMachine(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Daylight cycle
+////////////////////////////////////////////////////////////////////////
+
+struct GameController::DayLightCycleStateMachine
+{
+    DayLightCycleStateMachine(
+        GameParameters const & gameParameters,
+        std::shared_ptr<Render::RenderContext> renderContext);
+
+    ~DayLightCycleStateMachine();
+
+    /*
+     * When returns false, the state machine is over.
+     */
+    void Update();
+
+private:
+
+    GameParameters const & mGameParameters;
+    std::shared_ptr<Render::RenderContext> mRenderContext;
+
+    enum class StateType
+    {
+        SunRising,
+        SunSetting
+    };
+
+    StateType mCurrentState;
+    GameWallClock::float_time mLastChangeTimestamp;
+    int mSkipCounter;
+};
+
+void GameController::DayLightCycleStateMachineDeleter::operator()(DayLightCycleStateMachine * ptr) const
+{
+    delete ptr;
+}
+
+GameController::DayLightCycleStateMachine::DayLightCycleStateMachine(
+    GameParameters const & gameParameters,
+    std::shared_ptr<Render::RenderContext> renderContext)
+    : mGameParameters(gameParameters)
+    , mRenderContext(std::move(renderContext))
+    , mCurrentState(StateType::SunSetting)
+    , mLastChangeTimestamp(GameWallClock::GetInstance().NowAsFloat())
+    , mSkipCounter(0)
+{
+}
+
+GameController::DayLightCycleStateMachine::~DayLightCycleStateMachine()
+{
+}
+
+void GameController::DayLightCycleStateMachine::Update()
+{
+    // We don't want to run at each and every frame
+    ++mSkipCounter;
+    if (mSkipCounter < 3)
+        return;
+    mSkipCounter = 0;
+
+    // We are stateless wrt ambient light intensity: we check each time where
+    // we are at and compute the next step, based exclusively on the current 
+    // rising/setting state. This allows the user to change the current
+    // ambient light intensity concurrently to this state machine
+
+    assert(!!mRenderContext);
+
+    // Calculate fraction of half-cycle elapsed since last time
+    auto const now = GameWallClock::GetInstance().NowAsFloat();
+    auto const elapsedFraction = GameWallClock::Progress(
+        now,
+        mLastChangeTimestamp,
+        mGameParameters.DayLightCycleDuration)
+        * 2.0f;
+    
+    // Update ambient light
+    float ambientLightIntensity = mRenderContext->GetAmbientLightIntensity();
+    if (StateType::SunRising == mCurrentState)
+    {
+        ambientLightIntensity += elapsedFraction;
+        if (ambientLightIntensity >= 1.0f)
+        {
+            // Climax
+            ambientLightIntensity = 1.0f;
+            mCurrentState = StateType::SunSetting;
+        }
+    }
+    else
+    {
+        assert(StateType::SunSetting == mCurrentState);
+
+        ambientLightIntensity -= elapsedFraction;
+        if (ambientLightIntensity <= 0.0f)
+        {
+            // Anticlimax
+            ambientLightIntensity = 0.0f;
+            mCurrentState = StateType::SunRising;
+        }
+    }
+
+    mRenderContext->SetAmbientLightIntensity(ambientLightIntensity);
+
+    // Update last change timestamp
+    mLastChangeTimestamp = now;
+}
+
+void GameController::StartDayLightCycleStateMachine()
+{
+    if (!mDayLightCycleStateMachine)
+    {
+        // Start state machine
+        mDayLightCycleStateMachine.reset(
+            new DayLightCycleStateMachine(
+                mGameParameters,
+                mRenderContext));
+
+        mNotificationLayer.SetDayLightCycleIndicator(true);
+    }
+}
+
+void GameController::StopDayLightCycleStateMachine()
+{
+    if (!!mDayLightCycleStateMachine)
+    {
+        mDayLightCycleStateMachine.reset();
+
+        mNotificationLayer.SetDayLightCycleIndicator(false);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
 // All state machines
 ////////////////////////////////////////////////////////////////////////
 
@@ -302,6 +433,12 @@ void GameController::UpdateStateMachines(float currentSimulationTime)
         else
             ++it;
     }
+
+    // Daylight cycle
+    if (!!mDayLightCycleStateMachine)
+    {
+        mDayLightCycleStateMachine->Update();
+    }
 }
 
 void GameController::ResetStateMachines()
@@ -309,4 +446,6 @@ void GameController::ResetStateMachines()
     mTsunamiNotificationStateMachine.reset();
 
     mThanosSnapStateMachines.clear();
+
+    // Nothing to do for daylight cycle state machine
 }

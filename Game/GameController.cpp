@@ -62,6 +62,7 @@ GameController::GameController(
     // State machines
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
+    , mDayLightCycleStateMachine()
     // State
     , mGameParameters()
     , mLastShipLoadedFilepath()
@@ -75,7 +76,10 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mNotificationLayer(mGameParameters.IsUltraViolentMode, false /*loaded value will come later*/)
+    , mNotificationLayer(
+        mGameParameters.IsUltraViolentMode, 
+        false /*loaded value will come later*/, 
+        mGameParameters.DoDayLightCycle)
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
@@ -1199,6 +1203,21 @@ vec2f GameController::ScreenOffsetToWorldOffset(vec2f const & screenOffset) cons
     return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+
+void GameController::SetDoDayLightCycle(bool value)
+{
+    mGameParameters.DoDayLightCycle = value;
+
+    if (value)
+    {
+        StartDayLightCycleStateMachine();
+    }
+    else
+    {
+        StopDayLightCycleStateMachine();
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::OnTsunami(float x)

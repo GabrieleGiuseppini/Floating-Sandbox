@@ -15,7 +15,8 @@ using namespace std::literals::chrono_literals;
 
 NotificationLayer::NotificationLayer(
 	bool isUltraViolentMode,
-	bool isSoundMuted)
+	bool isSoundMuted,
+	bool isDayLightCycleOn)
     : // StatusText
 	  mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
@@ -25,6 +26,7 @@ NotificationLayer::NotificationLayer(
 	// Indicators
 	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
 	, mIsSoundMuteIndicatorOn(isSoundMuted)
+	, mIsDayLightCycleOn(isDayLightCycleOn)
 	// State
 	, mIsStatusTextDirty(true)
 	, mIsGameTextDirty(true)
@@ -166,6 +168,14 @@ void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
 void NotificationLayer::SetSoundMuteIndicator(bool isSoundMuted)
 {
 	mIsSoundMuteIndicatorOn = isSoundMuted;
+
+	// Indicator needs to be re-uploaded
+	mAreTextureNotificationsDirty = true;
+}
+
+void NotificationLayer::SetDayLightCycleIndicator(bool isDayLightCycleOn)
+{
+	mIsDayLightCycleOn = isDayLightCycleOn;
 
 	// Indicator needs to be re-uploaded
 	mAreTextureNotificationsDirty = true;
@@ -426,6 +436,15 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				TextureFrameId(Render::GenericLinearTextureGroups::SoundMuteNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(-1.5f, 0.0f),
+				1.0f);
+		}
+
+		if (mIsDayLightCycleOn)
+		{
+			renderContext.UploadTextureNotification(
+				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
+				Render::AnchorPositionType::BottomRight,
+				vec2f(-3.0f, 0.0f),
 				1.0f);
 		}
 

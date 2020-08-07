@@ -92,6 +92,9 @@ MainApp::MainApp()
 
 bool MainApp::OnInit()
 {
+    if(!wxApp::OnInit())
+        return false;
+
     //
     // Install handler for unhandled exceptions
     //

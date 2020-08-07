@@ -557,6 +557,14 @@ public:
     unsigned int GetMinNumberOfClouds() const override { return GameParameters::MinNumberOfClouds; }
     unsigned int GetMaxNumberOfClouds() const override { return GameParameters::MaxNumberOfClouds; }
 
+    bool GetDoDayLightCycle() const override { return mGameParameters.DoDayLightCycle; }
+    void SetDoDayLightCycle(bool value) override;
+
+    std::chrono::minutes GetDayLightCycleDuration() const override { return mGameParameters.DayLightCycleDuration; }
+    void SetDayLightCycleDuration(std::chrono::minutes value) override { mGameParameters.DayLightCycleDuration = value; }
+    std::chrono::minutes GetMinDayLightCycleDuration() const override { return GameParameters::MinDayLightCycleDuration; }
+    std::chrono::minutes GetMaxDayLightCycleDuration() const override { return GameParameters::MaxDayLightCycleDuration; }
+
     float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
     void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
     float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
@@ -702,10 +710,18 @@ private:
 
     struct ThanosSnapStateMachine;
     struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
-    std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter >> mThanosSnapStateMachines;
+    std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter>> mThanosSnapStateMachines;
 
     void StartThanosSnapStateMachine(float x, float currentSimulationTime);
     bool UpdateThanosSnapStateMachine(ThanosSnapStateMachine & stateMachine, float currentSimulationTime);
+
+    struct DayLightCycleStateMachine;
+    struct DayLightCycleStateMachineDeleter { void operator()(DayLightCycleStateMachine *) const; };
+    std::unique_ptr<DayLightCycleStateMachine, DayLightCycleStateMachineDeleter> mDayLightCycleStateMachine;
+
+    void StartDayLightCycleStateMachine();
+    void StopDayLightCycleStateMachine();
+    bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
 
     void ResetStateMachines();
     void UpdateStateMachines(float currentSimulationTime);

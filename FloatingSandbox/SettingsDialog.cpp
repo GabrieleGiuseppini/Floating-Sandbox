@@ -2091,6 +2091,8 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
         {
             wxGridBagSizer * skySizer = new wxGridBagSizer(0, 0);
 
+            skySizer->AddGrowableRow(1, 1); // Slider below checkbox
+
             // Number of Stars
             {
                 mNumberOfStarsSlider = new SliderControl<unsigned int>(
@@ -2111,7 +2113,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                 skySizer->Add(
                     mNumberOfStarsSlider,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -2136,6 +2138,54 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                 skySizer->Add(
                     mNumberOfCloudsSlider,
                     wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Do daylight cycle
+            {
+                mDoDayLightCycleCheckBox = new wxCheckBox(skyBox, wxID_ANY,
+                    _("Automatic Daylight Cycle"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                mDoDayLightCycleCheckBox->SetToolTip(_("Enables or disables automatic cycling of daylight."));
+                mDoDayLightCycleCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mDayLightCycleDurationSlider->Enable(event.IsChecked());
+                    });
+
+                skySizer->Add(
+                    mDoDayLightCycleCheckBox,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Daylight Cycle Duration
+            {
+                mDayLightCycleDurationSlider = new SliderControl<std::chrono::minutes::rep>(
+                    skyBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Daylight Cycle Duration"),
+                    _("The duration of a full daylight cycle (minutes)."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinDayLightCycleDuration().count(),
+                        mGameControllerSettingsOptions->GetMaxDayLightCycleDuration().count()));
+
+                skySizer->Add(
+                    mDayLightCycleDurationSlider,
+                    wxGBPosition(1, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2149,7 +2199,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
         gridSizer->Add(
             skyBox,
             wxGBPosition(1, 4),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -4152,6 +4202,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
     mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
+    mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
+    mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
+    mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
     // Wind and Waves
 

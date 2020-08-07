@@ -59,11 +59,11 @@ public:
 
     void UpdateSimulation()
     {
-        // See if effective ambient light has changed
-        auto const newEffectiveAmbientLightIntensity = mGameController->GetEffectiveAmbientLightIntensity();
-        if (newEffectiveAmbientLightIntensity != mCurrentEffectiveAmbientLightIntensity)
+        // See if cursor brightness has changed
+        float const newCurrentToolCursorBrightness = CalculateCursorBrightness(mGameController->GetEffectiveAmbientLightIntensity());
+        if (newCurrentToolCursorBrightness != mCurrentToolCursorBrightness)
         {
-            mCurrentEffectiveAmbientLightIntensity = newEffectiveAmbientLightIntensity;
+            mCurrentToolCursorBrightness = newCurrentToolCursorBrightness;
             InternalSetCurrentToolCursor();
         }
 
@@ -111,6 +111,8 @@ public:
 
 private:
 
+    static float CalculateCursorBrightness(float effectiveAmbientLightIntensity);
+    
     void InternalSetCurrentToolCursor();
 
 private:
@@ -154,6 +156,5 @@ private:
     };
 
     ToolCursor mCurrentToolCursor;
-
-    float mCurrentEffectiveAmbientLightIntensity;
+    float mCurrentToolCursorBrightness;
 };
