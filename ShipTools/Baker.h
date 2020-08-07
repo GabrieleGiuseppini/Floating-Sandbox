@@ -44,7 +44,7 @@ public:
         auto textureAtlas = Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
             textureDatabase,
             doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
-            [](float, std::string const &)
+            [](float, ProgressMessageType)
             {
                 std::cout << ".";
             });
