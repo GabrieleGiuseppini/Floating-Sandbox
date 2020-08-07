@@ -403,6 +403,14 @@ RgbImageData GameController::TakeScreenshot()
 
 void GameController::RunGameIteration()
 {
+    static bool hasLogged = false;
+    if (!hasLogged)
+    {
+        LogMessage("TODOTEST II: Disabled GameController::RunGameIteration() completely");
+        hasLogged = true;
+    }
+    return;
+
     //
     // Initialize stats, if needed
     //

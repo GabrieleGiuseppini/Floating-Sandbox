@@ -497,7 +497,9 @@ Render:
 			= Menus
 				+ Running without GameIteration: works
 				- Experiments:
-					- 
+					+ Running without invoking GameController::RunGameIteration: works
+					+ Running with disabled rendering (upload+rendering) @ GameController::RunGameIteration: doesn't work
+					- Running with disabled everything @ GameController::RunGameIteration: 
 			+ Remove all TODOTEST logging		
 
 		- Add whistle: pipe_steam_whistle_for_fs.mp3
