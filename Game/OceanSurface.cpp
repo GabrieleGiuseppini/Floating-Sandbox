@@ -21,7 +21,7 @@ T constexpr RenderSlices = 500;
 
 OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventHandler(std::move(gameEventDispatcher))
-    , mSamples(new Sample[SamplesCount + 1])
+    , mSamples(new Sample[SamplesCount + 1]) // One extra sample for the rightmost X
     ////////
     , mBasalWaveAmplitude1(0.0f)
     , mBasalWaveAmplitude2(0.0f)
@@ -280,7 +280,7 @@ void OceanSurface::AdjustTo(
     std::optional<vec2f> const & worldCoordinates,
     float currentSimulationTime)
 {
-    if (!!worldCoordinates)
+    if (worldCoordinates.has_value())
     {
         // Calculate target height
         float constexpr MaxRelativeHeight = 4.0f; // Carefully selected; 4.5 makes waves unstable (velocities oscillating around 0.5 and diverging) after a while
@@ -561,7 +561,7 @@ GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
 }
 
 /* Note: in this implementation we let go of the field advections,
-   as they dont's seem to improve the simulation in a visible way.
+   as they dont's seem to improve the simulation in any visible way.
 
 void OceanSurface::AdvectHeightField()
 {

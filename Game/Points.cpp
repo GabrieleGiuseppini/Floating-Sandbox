@@ -1236,7 +1236,7 @@ void Points::UpdateEphemeralParticles(
     // Ocean surface displacement at bubbles surfacing
     float const oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset =
         (gameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing ? 1.0f : 0.0f)
-        * 0.5f; // Magic number
+        * 1.0f;
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
@@ -1256,7 +1256,7 @@ void Points::UpdateEphemeralParticles(
                     {
                         auto const & position = GetPosition(pointIndex);
                         float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(position.x);
-                        float const deltaY = waterHeight - position.y;
+                        float const deltaY = waterHeight - position.y; // Positive when point _below_ surface
                         if (deltaY <= 0.0f)
                         {
                             // Got to the surface, expire
@@ -1285,9 +1285,10 @@ void Points::UpdateEphemeralParticles(
 
                             float const vortexAmplitude = state.VortexAmplitude + state.Progress;
 
-                            float vortexValue =
+                            float const vortexValue =
                                 vortexAmplitude
-                                * PrecalcLoFreqSin.GetNearestPeriodic(state.NormalizedVortexAngularVelocity * simulationLifetime);
+                                * PrecalcLoFreqSin.GetNearestPeriodic(
+                                    state.NormalizedVortexAngularVelocity * simulationLifetime);
 
                             // Update position with delta
                             mPositionBuffer[pointIndex].x += vortexValue - state.LastVortexValue;
@@ -1301,8 +1302,8 @@ void Points::UpdateEphemeralParticles(
                             if (deltaY < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
-                                    position.x,
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 2.0f);
+                                    mPositionBuffer[pointIndex].x,
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 6.0f); // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }
@@ -1759,7 +1760,7 @@ void Points::UploadEphemeralParticles(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     scale,
-                    std::min(1.0f, state.CurrentDeltaY / 4.0f)); // Alpha
+                    std::min(1.0f, state.CurrentDeltaY)); // Alpha
 
                 break;
             }

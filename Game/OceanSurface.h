@@ -66,7 +66,7 @@ public:
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
-        float sampleIndexDx = sampleIndexF - sampleIndexI;
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
@@ -80,11 +80,31 @@ public:
         float currentSimulationTime);
 
     inline void DisplaceAt(
-        float x,
-        float yOffset)
+        float const x,
+        float const yOffset)
     {
-        auto const sampleIndex = ToSampleIndex(x);
-        mHeightField[sampleIndex] += yOffset / SWEHeightFieldAmplification;
+        assert(x >= -GameParameters::HalfMaxWorldWidth
+            && x <= GameParameters::HalfMaxWorldWidth + 0.01f); // Allow for derivative taking
+
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+        // Distribute among the two samples
+        mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
+        mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
     }
 
     void ApplyThanosSnap(
@@ -122,6 +142,7 @@ private:
         TDuration rate);
 
     void ApplyDampingBoundaryConditions();
+
     void UpdateFields();
 
     void GenerateSamples(

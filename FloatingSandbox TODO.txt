@@ -401,6 +401,7 @@ Render:
 			+ Store raw data, just like font
 			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
 			+ Test w/panel
+		+ GameController: just one special day
 			
 		= Localization
 			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
@@ -465,15 +466,12 @@ Render:
 				+ Code
 				+ Texture
 			+ SettingsDialog: duration
-			= Issue: cursor of tool over SettingsDialog
+			+ Issue: cursor of tool over SettingsDialog
 			- Better (inverte-able) curve?
 			- changes.txt
 
-		- Bubbles:
-			- Look back at SWE's
-				- Try re-instating skipped steps
-				- Try with setting velocities only (towards L at L point, towards R at R point)
-			- Smaller wave (if nothing above works)
+		+ Bubbles:
+			+ Smaller wave
 			+ Add checkbox for bubble sounds
 				+ Storage owned by SoundController
 				+ Cutoff happens @ SoundController
@@ -500,29 +498,19 @@ Render:
 					- 
 			+ Remove all TODOTEST logging		
 
-		- Add whistle: pipe_steam_whistle_for_fs.mp3
-
 		- More stress metal sounds, to dilute "cycle of sounds"
 			- Repro first and detect chain of noise
 			- See if longer relax interval for stress sounds does the trick
 			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
-		- SWE: see if should damp waves, now that we have bubble waves
-			- Ideally we only damp small waves, not big ones (like Tsunami)
-
-		- GameController: just one special day?
-
 		- Frontier (*)
+
+		- Add whistle: pipe_steam_whistle_for_fs.mp3
 
 		- Check new explosion animation
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
-
-		- Spring relaxation with intrinsics
-
-		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
-			- If it works: do "reshader" type of work (*)
 
 		- Release:
 			- Decide how to package 32-bit
@@ -535,7 +523,15 @@ Render:
 
 		----------------------------------------------------------------------------------------
 
+		- Spring relaxation with intrinsics
+
+		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
+			- If it works: do "reshader" type of work (*)
+
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+
+		- Look back at SWE's
+			- Try re-instating skipped steps
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
