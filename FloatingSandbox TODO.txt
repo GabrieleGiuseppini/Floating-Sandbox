@@ -467,7 +467,9 @@ Render:
 				+ Texture
 			+ SettingsDialog: duration
 			+ Issue: cursor of tool over SettingsDialog
-			- Better (inverte-able) curve?
+			+ Try better (inverte-able) curve
+				+ Move inverse to GameMath
+			- See slowdown
 			- changes.txt
 
 		+ Bubbles:
@@ -475,6 +477,7 @@ Render:
 			+ Add checkbox for bubble sounds
 				+ Storage owned by SoundController
 				+ Cutoff happens @ SoundController
+			+ Try vortex amplitude: random sign
 
 		- Send for testing (32-bit)
 

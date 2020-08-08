@@ -5,7 +5,10 @@
 ***************************************************************************************/
 #include "GameController.h"
 
+#include <GameCore/GameMath.h>
+
 #include <cassert>
+#include <cmath>
 
 ////////////////////////////////////////////////////////////////////////
 // Tsunami Notifications
@@ -324,19 +327,71 @@ GameController::DayLightCycleStateMachine::~DayLightCycleStateMachine()
 
 void GameController::DayLightCycleStateMachine::Update()
 {
+    assert(!!mRenderContext);
+
     // We don't want to run at each and every frame
     ++mSkipCounter;
-    if (mSkipCounter < 3)
+    if (mSkipCounter < 4) // Magic number
         return;
+
     mSkipCounter = 0;
 
     // We are stateless wrt ambient light intensity: we check each time where
     // we are at and compute the next step, based exclusively on the current 
     // rising/setting state. This allows the user to change the current
-    // ambient light intensity concurrently to this state machine
+    // ambient light intensity concurrently to this state machine.
+    //
+    // Our daylight curve is a SmoothStep, with time-of-day between 0.0 and 1.0;
+    // given the current ambient light intensity, we invert the curve to calculate
+    // the corresponding implied time-of-day, and we increment that by the time
+    // that has elapsed since the previous time.
 
-    assert(!!mRenderContext);
+    float timeOfDay = InverseSmoothStep(mRenderContext->GetAmbientLightIntensity());
+    
+    // Calculate fraction of half-cycle elapsed since last time
+    auto const now = GameWallClock::GetInstance().NowAsFloat();
+    auto const elapsedFraction = GameWallClock::Progress(
+        now,
+        mLastChangeTimestamp,
+        mGameParameters.DayLightCycleDuration)
+        * 2.0f;
 
+    // Calculate new time of day
+    if (StateType::SunRising == mCurrentState)
+    {
+        timeOfDay += elapsedFraction;
+        if (timeOfDay >= 1.0f)
+        {
+            // Climax
+            timeOfDay = 1.0f;
+            mCurrentState = StateType::SunSetting;
+        }
+    }
+    else
+    {
+        assert(StateType::SunSetting == mCurrentState);
+
+        timeOfDay -= elapsedFraction;
+        if (timeOfDay <= 0.0f)
+        {
+            // Anticlimax
+            timeOfDay = 0.0f;
+            mCurrentState = StateType::SunRising;
+        }
+    }
+
+    // Calculate new ambient light
+    mRenderContext->SetAmbientLightIntensity(
+        SmoothStep(
+            0.0f,
+            1.0f,
+            timeOfDay));
+
+    // Update last change timestamp
+    mLastChangeTimestamp = now;
+
+
+    /* TODOOLD
     // Calculate fraction of half-cycle elapsed since last time
     auto const now = GameWallClock::GetInstance().NowAsFloat();
     auto const elapsedFraction = GameWallClock::Progress(
@@ -374,6 +429,7 @@ void GameController::DayLightCycleStateMachine::Update()
 
     // Update last change timestamp
     mLastChangeTimestamp = now;
+    */
 }
 
 void GameController::StartDayLightCycleStateMachine()

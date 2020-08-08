@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 
 template<typename T>
@@ -184,6 +185,11 @@ inline float SmoothStep(
     x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 
     return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
+}
+
+inline float InverseSmoothStep(float x) noexcept
+{
+    return 0.5f - std::sin(std::asin(1.0f - 2.0f * x) / 3.0f);
 }
 
 /*

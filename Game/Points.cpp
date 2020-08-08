@@ -1271,7 +1271,7 @@ void Points::UpdateEphemeralParticles(
                             auto & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
                             state.CurrentDeltaY = deltaY;
-                            state.Progress =
+                            state.Progress = // 0.00..001 (@ way below surface) -> 1.0 (@ surface)
                                 -1.0f
                                 / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
 
@@ -1283,7 +1283,9 @@ void Points::UpdateEphemeralParticles(
                                 currentSimulationTime
                                 - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
 
-                            float const vortexAmplitude = state.VortexAmplitude + state.Progress;
+                            float const vortexAmplitude = 
+                                state.VortexAmplitude 
+                                * std::min(1.0f, simulationLifetime / 5.0f);
 
                             float const vortexValue =
                                 vortexAmplitude
