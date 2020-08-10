@@ -34,11 +34,11 @@ protected:
 
             std::array<char, 32> Title;
             Version GameVersion;
-            size_t SizeOfInt;
+            size_t SizeOfSizeT;
 
             FileHeader(Version gameVersion)
                 : GameVersion(gameVersion)
-                , SizeOfInt(sizeof(int))
+                , SizeOfSizeT(sizeof(size_t))
             {
                 std::memcpy(Title.data(), StockTitle.data(), Title.size());
             }

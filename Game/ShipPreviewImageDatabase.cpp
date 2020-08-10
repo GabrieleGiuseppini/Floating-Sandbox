@@ -145,7 +145,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                     throw std::runtime_error("Database file was generated on a more recent version of the simulator");
                 }
 
-                if (header.SizeOfInt != sizeof(int))
+                if (header.SizeOfSizeT != sizeof(size_t))
                 {
                     throw std::runtime_error("Database file was generated on a different platform");
                 }
