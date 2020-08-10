@@ -28,7 +28,9 @@ ShipLoadDialog::ShipLoadDialog(
 		wxDefaultPosition,
         wxDefaultSize,
         wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED
+#if !defined(_DEBUG) || !defined(_WIN32)
             | wxSTAY_ON_TOP
+#endif
             ,
         wxS("Load Ship Dialog"));
 

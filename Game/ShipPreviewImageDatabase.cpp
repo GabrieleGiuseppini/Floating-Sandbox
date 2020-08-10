@@ -394,7 +394,7 @@ bool NewShipPreviewImageDatabase::Commit(
     while (newDbIt != mIndex.cend() && oldDbIt != oldDatabase.mIndex.cend())
     {
         //
-        // Catch-up old to new
+        // Catch-up old to new (i.e. skip old deleted files)
         //
 
         while (oldDbIt != oldDatabase.mIndex.cend() && oldDbIt->first < newDbIt->first)
@@ -406,7 +406,7 @@ bool NewShipPreviewImageDatabase::Commit(
             break; // No more reason to continue here; may jump to streaming new
 
         //
-        // Calc longest streak of old preview images
+        // Calc longest streak of old preview images matching new preview images
         //
 
         std::streampos copyOldDbStartOffset = oldDbIt->second.Position;
@@ -452,7 +452,7 @@ bool NewShipPreviewImageDatabase::Commit(
         }
 
         //
-        // Copy preview images from old DB
+        // Copy this streak of preview images from old DB
         //
 
         if (copyOldDbEndOffset > copyOldDbStartOffset)
@@ -470,16 +470,41 @@ bool NewShipPreviewImageDatabase::Commit(
         }
 
         //
-        // Save this single new entry
+        // At this moment, we have on of these options:
+        //  - New DB is finished, or
+        //  - Old DB is finished, or
+        //  - New DB.Key > Old DB.Key [because of deleted files], or
+        //  - New DB.Key < Old DB.Key [because of new files], or
+        //  - New DB.Key == Old DB.Key [because new DB has newer image]
         //
 
-        if (newDbIt == mIndex.cend())
+        if (newDbIt == mIndex.cend()
+            || oldDbIt == oldDatabase.mIndex.cend())
+        {
+            // No more reason to continue here; may jump to streaming 
+            // new and/or saving index
             break;
+        }
 
-        saveNewEntry();
+        assert(newDbIt != mIndex.cend() && oldDbIt != oldDatabase.mIndex.cend());
 
-        // Advance new
-        ++newDbIt;
+        if (newDbIt->first <= oldDbIt->first)
+        {
+            //
+            // Save this single new entry
+            //
+
+            saveNewEntry();
+
+            // Advance new
+            ++newDbIt;
+        }
+        else
+        {
+            assert(newDbIt->first > oldDbIt->first);
+
+            // Will catch up old to new at next iteration
+        }
     }
 
     //

@@ -127,6 +127,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         }
     }
 
+    if (pointInfos.empty())
+    {
+        throw GameException("The ship structure contains no pixels that may be recognized as structural material");
+    }
 
     //
     // Process the rope layer - if any - and append rope endpoints

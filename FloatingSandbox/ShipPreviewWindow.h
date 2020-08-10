@@ -332,17 +332,23 @@ private:
         enum class MessageType
         {
             SetDirectory,
+            InterruptScan,
             Exit
         };
-
-        static PanelToThreadMessage MakeExitMessage()
-        {
-            return PanelToThreadMessage(MessageType::Exit, std::filesystem::path());
-        }
 
         static PanelToThreadMessage MakeSetDirectoryMessage(std::filesystem::path const & directoryPath)
         {
             return PanelToThreadMessage(MessageType::SetDirectory, directoryPath);
+        }
+
+        static PanelToThreadMessage MakeInterruptScanMessage()
+        {
+            return PanelToThreadMessage(MessageType::InterruptScan, std::filesystem::path());
+        }
+
+        static PanelToThreadMessage MakeExitMessage()
+        {
+            return PanelToThreadMessage(MessageType::Exit, std::filesystem::path());
         }
 
         PanelToThreadMessage(PanelToThreadMessage && other)
@@ -378,7 +384,6 @@ private:
 
     // Locks for the panel-to-thread message
     std::mutex mPanelToThreadMessageMutex;
-    std::unique_lock<std::mutex> mPanelToThreadMessageLock;
     std::condition_variable mPanelToThreadMessageEvent;
 
     //
@@ -510,4 +515,9 @@ private:
 
     // Locks for the thread-to-panel message queue
     std::mutex mThreadToPanelMessageQueueMutex;
+
+    // Scan interrupted ack
+    bool mThreadToPanelScanInterruptAck;
+    std::mutex mThreadToPanelScanInterruptAckMutex;    
+    std::condition_variable mThreadToPanelScanInterruptAckEvent;
 };

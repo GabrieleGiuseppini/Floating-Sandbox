@@ -48,10 +48,12 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mPreviewThread()
     , mPanelToThreadMessage()
     , mPanelToThreadMessageMutex()
-    , mPanelToThreadMessageLock(mPanelToThreadMessageMutex, std::defer_lock)
     , mPanelToThreadMessageEvent()
     , mThreadToPanelMessageQueue()
     , mThreadToPanelMessageQueueMutex()
+    , mThreadToPanelScanInterruptAck(false)
+    , mThreadToPanelScanInterruptAckMutex()    
+    , mThreadToPanelScanInterruptAckEvent()
 {
     SetScrollRate(0, 20);
 
@@ -134,6 +136,37 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
     if (directoryPath != mCurrentlyCompletedDirectory)
     {
         //
+        // Stop thread's scan (if thread it's running)
+        //
+
+        if (mPreviewThread.joinable())
+        {
+            // Send InterruptScan
+            {
+                std::lock_guard<std::mutex> lock(mPanelToThreadMessageMutex);
+
+                mThreadToPanelScanInterruptAck = false;
+                mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeInterruptScanMessage()));
+                mPanelToThreadMessageEvent.notify_one();
+            }
+
+            // Wait for ack
+            {
+                std::unique_lock<std::mutex> lock(mThreadToPanelScanInterruptAckMutex, std::defer_lock);
+                lock.lock();
+
+                mThreadToPanelScanInterruptAckEvent.wait(
+                    lock,
+                    [this]()
+                    {
+                        return mThreadToPanelScanInterruptAck;
+                    });
+
+                lock.unlock();
+            }
+        }
+
+        //
         // Change directory
         //
 
@@ -143,11 +176,13 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
         mInfoTiles.clear();
         mSelectedInfoTileIndex.reset();
 
-        // Tell thread (if it's running)
-        mPanelToThreadMessageLock.lock();
-        mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(directoryPath)));
-        mPanelToThreadMessageEvent.notify_one();
-        mPanelToThreadMessageLock.unlock();
+        // Start thread's scan (if thread is not running now, it'll pick it up when it starts)
+        {
+            std::lock_guard<std::mutex> lock(mPanelToThreadMessageMutex);
+
+            mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(directoryPath)));
+            mPanelToThreadMessageEvent.notify_one();
+        }
     }
 }
 
@@ -787,10 +822,12 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
 void ShipPreviewWindow::ShutdownPreviewThread()
 {
-    mPanelToThreadMessageLock.lock();
-    mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeExitMessage()));
-    mPanelToThreadMessageEvent.notify_one();
-    mPanelToThreadMessageLock.unlock();
+    {
+        std::lock_guard<std::mutex> lock(mPanelToThreadMessageMutex);
+
+        mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeExitMessage()));
+        mPanelToThreadMessageEvent.notify_one();
+    }
 
     // Wait for thread to be done
     mPreviewThread.join();
@@ -804,8 +841,6 @@ void ShipPreviewWindow::RunPreviewThread()
 {
     LogMessage("PreviewThread::Enter");
 
-    std::unique_lock<std::mutex> messageThreadLock(mPanelToThreadMessageMutex, std::defer_lock);
-
     while (true)
     {
         //
@@ -816,40 +851,27 @@ void ShipPreviewWindow::RunPreviewThread()
 
         std::unique_ptr<PanelToThreadMessage> message;
 
-        // Lock now so that we can guarantee that the condition variable
-        // won't be set before we're waiting for it
-        messageThreadLock.lock();
-        if (!mPanelToThreadMessage)
         {
-            // No message, wait
-            // Mutex is currently locked, and it will be unlocked while we are waiting
-            mPanelToThreadMessageEvent.wait(messageThreadLock);
-            // Mutex is now locked again
+            std::unique_lock<std::mutex> lock(mPanelToThreadMessageMutex, std::defer_lock);
+            lock.lock();
+
+            mPanelToThreadMessageEvent.wait(
+                lock,
+                [this] {return !!mPanelToThreadMessage; });
+
+            // Got a message, extract it (we're holding the lock)
+            assert(!!mPanelToThreadMessage);
+            message = std::move(mPanelToThreadMessage);
+
+            lock.unlock();
         }
-
-        // Got a message, extract it (we're holding the lock)
-        assert(!!mPanelToThreadMessage);
-        message = std::move(mPanelToThreadMessage);
-
-        // Unlock while we process
-        messageThreadLock.unlock();
 
         //
         // Process Message
         //
 
-        if (PanelToThreadMessage::MessageType::Exit == message->GetMessageType())
+        if (PanelToThreadMessage::MessageType::SetDirectory == message->GetMessageType())
         {
-            //
-            // Exit
-            //
-
-            break;
-        }
-        else
-        {
-            assert(PanelToThreadMessage::MessageType::SetDirectory == message->GetMessageType());
-
             //
             // Scan directory
             //
@@ -865,6 +887,27 @@ void ShipPreviewWindow::RunPreviewThread()
                     ThreadToPanelMessage::MakeDirScanErrorMessage(
                         ex.what()));
             }
+        }
+        else if (PanelToThreadMessage::MessageType::InterruptScan == message->GetMessageType())
+        {
+            //
+            // Scan interrupted
+            //
+
+            // Notify ack
+            std::lock_guard<std::mutex> lock(mThreadToPanelScanInterruptAckMutex);
+            mThreadToPanelScanInterruptAck = true;
+            mThreadToPanelScanInterruptAckEvent.notify_one();
+        }
+        else 
+        {
+            assert(PanelToThreadMessage::MessageType::Exit == message->GetMessageType());
+
+            //
+            // Exit
+            //
+
+            break;
         }
     }
 
