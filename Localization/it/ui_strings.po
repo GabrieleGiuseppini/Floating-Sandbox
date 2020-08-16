@@ -1529,15 +1529,15 @@ msgstr "Imposta il colore a tinta unita dell'oceano."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3059
 msgid "Sets the starting (top) color of the gradient."
-msgstr ""
+msgstr "Imposta il colore iniziale del gradiente."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3214
 msgid "Sets the texture to use for the ocean floor."
-msgstr ""
+msgstr "Imposta la texture per il fondale oceanico."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3039
 msgid "Sets the texture to use for the ocean."
-msgstr ""
+msgstr "Imposta la texture per l'oceano."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:692
 #, c-format
@@ -1545,10 +1545,12 @@ msgid ""
 "Settings \"%s\" already exist; do you want to replace them with the current "
 "settings?"
 msgstr ""
+"Esiste già un set di parametri chiamato \"%s\"; volete sostituirli con i "
+"parametri correnti?"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:216
 msgid "Settings Management"
-msgstr ""
+msgstr "Gestione parametri salvati"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3501
 msgid "Ship"
@@ -1556,7 +1558,7 @@ msgstr "Nave"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3869
 msgid "Ship Debug Draw Options"
-msgstr ""
+msgstr "Visualizzazione debug navi"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:83
 msgid "Ships"
@@ -1564,49 +1566,49 @@ msgstr "Navi"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:835
 msgid "Show Electrical Notifications"
-msgstr ""
+msgstr "Mostra notifiche elementi elettrici"
 
 #: ..\FloatingSandbox\MainFrame.cpp:403
 msgid "Show Event Ticker"
-msgstr ""
+msgstr "Event ticker"
 
 #: ..\FloatingSandbox\MainFrame.cpp:417
 #: ..\FloatingSandbox\PreferencesDialog.cpp:517
 msgid "Show Extended Status Text"
-msgstr ""
+msgstr "Informazioni diagnostiche addizionali"
 
 #: ..\FloatingSandbox\MainFrame.cpp:408
 msgid "Show Probe Panel"
-msgstr ""
+msgstr "Mostra grafici"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:790
 msgid "Show Ship Descriptions at Load"
-msgstr ""
+msgstr "Mostra descrizioni navi"
 
 #: ..\FloatingSandbox\MainFrame.cpp:413
 #: ..\FloatingSandbox\PreferencesDialog.cpp:485
 msgid "Show Status Text"
-msgstr ""
+msgstr "Informazioni diagnostiche"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3512
 msgid "Show Stress"
-msgstr ""
+msgstr "Visualizza stress"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:381
 msgid "Show Tips on Startup"
-msgstr ""
+msgstr "Mostra suggerimenti all'avvio"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:503
 msgid "Show Tsunami Notifications"
-msgstr ""
+msgstr "Mostra notifiche tsunami"
 
 #: ..\FloatingSandbox\MainFrame.cpp:451
 msgid "Show credits and other I'vedunnit stuff"
-msgstr ""
+msgstr "Mostra i titoli di coda"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3100
 msgid "Shows the ship either behind the sea water or in front of it."
-msgstr ""
+msgstr "Visualizza la nave dietro all'acqua del mare o di fronte ad essa."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2828
 msgid "Side-Effects"
@@ -1728,7 +1730,7 @@ msgstr "Snap di Thanos"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2282
 msgid "The amplitude of wind gusts, as a multiplier of the base wind speed."
-msgstr ""
+msgstr "L'ampiezza delle raffiche di vento."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2236
 msgid ""
@@ -1736,6 +1738,8 @@ msgid ""
 "turn determines ocean wave characteristics such as their height, speed, and "
 "width."
 msgstr ""
+"La velocità base del vento (Km/h), sulla quale avviene la modulazione con "
+"raffiche e folate."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2797
 msgid "The density of air bubbles generated when water enters a ship."
@@ -1743,10 +1747,8 @@ msgstr ""
 "La densità delle bolle d'aria prodotte quando l'acqua penetra una nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2176
-#, fuzzy
-#| msgid "The duration of a storm (s)."
 msgid "The duration of a full daylight cycle (minutes)."
-msgstr "La durata di una tempesta (s)."
+msgstr "La durata di un ciclo giornaliero intero (minuti)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2025
 msgid "The duration of a storm (s)."
@@ -1757,12 +1759,16 @@ msgid ""
 "The expected time between two automatically-generated rogue waves (minutes). "
 "Set to zero to disable automatic generation of rogue waves altogether."
 msgstr ""
+"L'intervallo di tempo medio tra due onde anomale (minuti). Impostate a zero "
+"per disabilitare completamente le onde anomale spontanee."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2050
 msgid ""
 "The expected time between two automatically-generated storms (minutes). Set "
 "to zero to disable automatic generation of storms altogether."
 msgstr ""
+"L'intervallo di tempo medio tra due tempeste (minuti). Impostate a zero per "
+"disabilitare completamente le tempeste spontanee."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2438
 msgid ""
@@ -1770,6 +1776,8 @@ msgid ""
 "(minutes). Set to zero to disable automatic generation of tsunami waves "
 "altogether."
 msgstr ""
+"L'intervallo di tempo medio tra due tsunami (minuti). Impostate a zero per "
+"disabilitare completamente gli tsunami spontanei."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2581
 msgid "The heat generated by bomb explosions (KJ/s)."
@@ -1795,6 +1803,10 @@ msgid ""
 "which fire spreads to adjacent particles. Warning: higher values require "
 "more computing resources, with the risk of slowing the simulation down!"
 msgstr ""
+"Il numero massimo di particelle che possono bruciare in ogni istante. "
+"Insieme al parametro \"Calore di combustione\", determina la velocità di "
+"propagazione del fuoco. Attenzione: valori elevati richiedono l'uso di "
+"maggiori risorse di calcolo, con il rischio di rallentare la simulazione!"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2128
 msgid ""
