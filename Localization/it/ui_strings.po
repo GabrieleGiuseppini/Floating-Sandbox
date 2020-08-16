@@ -141,7 +141,7 @@ msgstr "Regola l'attrito esercitato dal fondale oceanico."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:936
 msgid "Adjusts the global damping of velocities."
-msgstr ""
+msgstr "Regola lo smorzamento globale delle velocità."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1384
 msgid ""
@@ -149,123 +149,144 @@ msgid ""
 "burning particles, determines the speed with which fire spreads to adjacent "
 "particles."
 msgstr ""
+"Regola il calore generato dal fuoco; insieme al numero massimo di particelle "
+"bruciate, determina la velocità con cui il fuoco si diffonde alle particelle "
+"adiacenti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2286
 msgid ""
 "Adjusts the height of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
 msgstr ""
+"Regola l'altezza delle onde rispetto al loro valore ottimale, il quale è "
+"determinato dalla velocità del vento."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2909
 msgid "Adjusts the power of water pumps."
-msgstr ""
+msgstr "Regola la potenza delle pompe dell'acqua."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1014
 msgid "Adjusts the quantity of light emitted by luminiscent materials."
-msgstr ""
+msgstr "Regola la quantità di luce emessa dai materiali luminiscenti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2636
 msgid "Adjusts the radius of the repair tool (m)."
-msgstr ""
+msgstr "Regola il raggio dello strumento riparatore (m)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3098
 msgid "Adjusts the rate at which the ocean darkens with depth."
 msgstr ""
+"Regola il gradiente di oscuramento del mare con la profondità dell'oceano."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1358
 msgid "Adjusts the rate with which materials consume when burning."
-msgstr ""
+msgstr "Regola la velocità con cui i materiali si consumano mentre bruciano."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3417
 msgid "Adjusts the size of flames."
-msgstr ""
+msgstr "Regola le dimensioni delle fiamme."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2337
 msgid ""
 "Adjusts the speed of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
 msgstr ""
+"Regola la velocità delle onde rispetto al loro valore ottimale, il quale è "
+"determinato dalla velocità del vento."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1254
 msgid "Adjusts the speed with which heat propagates along materials."
-msgstr ""
+msgstr "Regola la velocità con cui il calore si propaga nei materiali."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1280
 msgid ""
 "Adjusts the speed with which materials dissipate or accumulate heat to or "
 "from air and water."
 msgstr ""
+"Regola la velocità con cui i materiali dissipano o catturano calore "
+"dall'aria o dal mare."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:962
 msgid ""
 "Adjusts the speed with which materials rot when exposed to sea water. Set to "
 "zero to disable rotting altogether."
 msgstr ""
+"Regola la velocità con cui i materiali marciscono quando sono esposti "
+"all'acqua del mare. Impostate a zero per disabilitare completamente la "
+"putrefazione."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1142
 msgid ""
 "Adjusts the speed with which sea water enters or leaves a physical body."
 msgstr ""
+"Regola la velocità con cui l'acqua del mare entra o esce dagli oggetti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2661
 msgid ""
 "Adjusts the speed with which the repair tool attracts particles to repair "
 "damage. Warning: at high speeds the repair tool might become destructive!"
 msgstr ""
+"Regola la velocità con cui lo strumento riparatore attrae particelle per "
+"riparare danni. Attenzione: velocità troppo alte possono distruggere, più "
+"che riparare!"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1193
 msgid "Adjusts the speed with which water propagates within a physical body."
-msgstr ""
+msgstr "Regola la velocità con cui l'acqua si propaga negli oggetti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1950
 msgid "Adjusts the strength of storms."
-msgstr ""
+msgstr "Regola la potenza delle tempeste."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2557
 msgid "Adjusts the strength of the initial anti-matter bomb implosion."
-msgstr ""
+msgstr "Regola la potenza dell'implosione iniziale delle bombe anti-materia."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1306
 msgid "Adjusts the temperature at which materials ignite."
-msgstr ""
+msgstr "Regola la temperatura a cui i materiali prendono fuoco."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1332
 msgid "Adjusts the temperature at which materials melt."
-msgstr ""
+msgstr "Regola la temperatura a cui i materiali iniziano a fondersi."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2883
 msgid "Adjusts the thrust exerted by engines."
-msgstr ""
+msgstr "Regola la spinta esercitata dai motori."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3073
 msgid "Adjusts the transparency of sea water."
-msgstr ""
+msgstr "Regola la trasparenza del mare."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3392
 msgid "Adjusts the transparency of the heat overlay."
-msgstr ""
+msgstr "Regola la trasparenza della visualizzazione del calore."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:910
 msgid "Adjusts the volume of background music."
-msgstr ""
+msgstr "Regola il volume della musica di sottofondo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3636
 msgid "Adjusts the volume of sounds generated by interactive tools."
-msgstr ""
+msgstr "Regola il volume dei suoni prodotti dagli strumenti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3611
 msgid "Adjusts the volume of sounds generated by the simulation."
-msgstr ""
+msgstr "Regola il volume dei suoni prodotti dal simulatore."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:935
 msgid "Adjusts the volume of the music played when a ship is sinking."
 msgstr ""
+"Regola il volume della musica che viene riprodotta quando una nave inizia ad "
+"affondare."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2311
 msgid ""
 "Adjusts the width of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
 msgstr ""
+"Regola l'ampiezza delle onde rispetto al loro valore ottimale, il quale è "
+"determinato dalla velocità del vento."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3741
 msgid "Advanced"
@@ -309,43 +330,43 @@ msgstr ""
 
 #: ..\FloatingSandbox\MainFrame.cpp:291
 msgid "Attract/Repel"
-msgstr ""
+msgstr "Attrai/respingi"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:648
 msgid "Auto-Texturization"
-msgstr ""
+msgstr "Auto-texturizzazione"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:805
 msgid "Auto-Zoom at Ship Load"
-msgstr ""
+msgstr "Auto-zoom al caricamento della nave"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:97
 msgid "BUILD ENGINEERING"
-msgstr "INGEGNERIA COMPILAZIONE"
+msgstr "INGEGNERIA DI COMPILAZIONE"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:909
 msgid "Background Music Volume"
-msgstr ""
+msgstr "Volume della musica di sottofondo"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2271
 msgid "Basal Waves"
-msgstr ""
+msgstr "Onde basali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2530
 msgid "Bomb Blast Heat"
-msgstr ""
+msgstr "Calore esplosione bombe"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2505
 msgid "Bomb Blast Radius"
-msgstr ""
+msgstr "Raggio esplosione bombe"
 
 #: ..\FloatingSandbox\MainFrame.cpp:232
 msgid "Bright Ambient Light"
-msgstr ""
+msgstr "Aumenta luminosità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1305
 msgid "Burning Point Adjust"
-msgstr ""
+msgstr "Punto di combustione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:246
 #: ..\FloatingSandbox\ShipLoadDialog.cpp:236
@@ -361,29 +382,36 @@ msgid ""
 "Changes the amount by which the camera position changes when using the pan "
 "controls."
 msgstr ""
+"Regola di quanto cambia la posizione della camera quando si usano i "
+"controlli per la panoramica."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:397
 msgid "Changes the amount by which zoom changes when using the zoom controls."
 msgstr ""
+"Regola di quanto cambia lo zoom quando si usano i controlli per lo zoom."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:715
 msgid ""
 "Changes the level of detail of materials' textures. Changes to this setting "
 "are only visible after a new ship is loaded."
 msgstr ""
+"Regola il livello di dettaglio delle texture dei materiali. Le modifiche a "
+"questa impostazione sono visibili solo dopo il caricamento di una nave."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:742
 msgid ""
 "Changes the transparency of materials' textures. Changes to this setting are "
 "only visible after a new ship is loaded."
 msgstr ""
+"Regola la trasparenza delle texture dei materiali. Le modifiche a questa "
+"impostazione sono visibili solo dopo il caricamento di una nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3329
 #: ..\FloatingSandbox\SettingsDialog.cpp:3335
 #: ..\FloatingSandbox\SettingsDialog.cpp:3341
 #: ..\FloatingSandbox\SettingsDialog.cpp:3347
 msgid "Changes the way flames are drawn."
-msgstr ""
+msgstr "Cambia il modo in cui le fiamme vengono renderizzate."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:426
 msgid "Check for Updates on Startup"
@@ -407,11 +435,11 @@ msgstr "Chiude la finestra mantenendo i nuovi parametri."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1383
 msgid "Combustion Heat Adjust"
-msgstr ""
+msgstr "Calore generato dalla combustione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1357
 msgid "Combustion Speed Adjust"
-msgstr ""
+msgstr "Velocità di combustione"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:143
 msgid "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
@@ -437,7 +465,7 @@ msgstr "Copyright (c) Laurent Gomila"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3097
 msgid "Darkening Rate"
-msgstr ""
+msgstr "Gradiente di oscuramento"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:608
 msgid "Default Language (from system)"
@@ -457,7 +485,7 @@ msgstr "Denton Woods et al"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3001
 msgid "Depth Gradient"
-msgstr ""
+msgstr "Gradiente profondità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3925
 #: ..\FloatingSandbox\SettingsDialog.cpp:4033
@@ -466,19 +494,19 @@ msgstr "Descrizione:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2480
 msgid "Destroy Radius"
-msgstr ""
+msgstr "Raggio distruzione"
 
 #: ..\FloatingSandbox\MainFrame.cpp:356
 msgid "Detonate Anti-Matter Bombs"
-msgstr ""
+msgstr "Innesca bombe anti-materia"
 
 #: ..\FloatingSandbox\MainFrame.cpp:351
 msgid "Detonate RC Bombs"
-msgstr ""
+msgstr "Innesca bombe telecomandate"
 
 #: ..\FloatingSandbox\MainFrame.cpp:236
 msgid "Dim Ambient Light"
-msgstr ""
+msgstr "Diminuisci luminosità"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:64
 msgid "Don't check for updates at startup"
@@ -486,19 +514,19 @@ msgstr "Non controllare nuovi aggiornamenti all'avvio"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:53
 msgid "Don't notify about this version again"
-msgstr ""
+msgstr "Ignora questa versione nel futuro"
 
 #: ..\FloatingSandbox\ShipDescriptionDialog.cpp:58
 msgid "Don't show descriptions when ships are loaded"
-msgstr ""
+msgstr "Non mostrare descrizioni quando le navi vengono caricate"
 
 #: ..\FloatingSandbox\StartupTipDialog.cpp:51
 msgid "Don't show this tip again"
-msgstr ""
+msgstr "Non mostrare più questo suggerimento"
 
 #: ..\FloatingSandbox\MainFrame.cpp:461
 msgid "Donate..."
-msgstr ""
+msgstr "Dona..."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:109
 msgid "Done"
@@ -506,60 +534,60 @@ msgstr "Fatto"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3815
 msgid "Draw Decay"
-msgstr ""
+msgstr "Mostra il livello di putrefazione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3298
 msgid "Draw Heat Overlay"
-msgstr ""
+msgstr "Mostra il calore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3367
 msgid "Draw HeatBlaster Flame"
-msgstr ""
+msgstr "Mostra la fiamma dell'HeatBlaster"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2967
 #: ..\FloatingSandbox\SettingsDialog.cpp:3142
 msgid "Draw Mode"
-msgstr ""
+msgstr "Modalita' rendering"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3814
 msgid "Draw Only Edge Springs"
-msgstr ""
+msgstr "Mostra solamente molle esterne"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3812
 msgid "Draw Only Points"
-msgstr ""
+msgstr "Mostra solamente particelle"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3813
 msgid "Draw Only Springs"
-msgstr ""
+msgstr "Mostra solamente molle"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3816
 msgid "Draw Structure"
-msgstr ""
+msgstr "Mostra struttura"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3811
 msgid "Draw in Wireframe Mode"
-msgstr ""
+msgstr "Disegna wireframe"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3176
 msgid "Draws the ocean floor using a static color."
-msgstr ""
+msgstr "Disegna il fondale oceanico a tinta unita."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3152
 msgid "Draws the ocean floor using a static image."
-msgstr ""
+msgstr "Disegna il fondale oceanico con una texture."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3023
 msgid "Draws the ocean using a single color."
-msgstr ""
+msgstr "Disegna l'oceano a tinta unita."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2977
 msgid "Draws the ocean using a static pattern."
-msgstr ""
+msgstr "Disegna l'oceano con una texture."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3003
 msgid "Draws the ocean using a vertical color gradient."
-msgstr ""
+msgstr "Disegna l'oceano con un gradiente verticale."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3610
 msgid "Effects Volume"
@@ -568,133 +596,166 @@ msgstr "Volume effetti sonori"
 #: ..\FloatingSandbox\SettingsDialog.cpp:1493
 #: ..\FloatingSandbox\SettingsDialog.cpp:2868
 msgid "Electrical"
-msgstr ""
+msgstr "Elettrotecnica"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2836
 msgid "Enables or disables amplification of tool forces and inflicted damages."
-msgstr ""
+msgstr "Abilita o disabilita amplificazione di strumenti e danni."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:806
 msgid "Enables or disables auto-zooming when loading a new ship."
-msgstr ""
+msgstr "Abilita o disabilita l'auto-zoom quando una nave viene caricata."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:821
 msgid ""
 "Enables or disables automatic showing of the ship's electrical panel when a "
 "ship with interactive electrical elements is loaded."
 msgstr ""
+"Abilita o disabilita l'apertura del pannello elettrico quando viene caricata "
+"una nave con elementi elettrici."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:963
 msgid "Enables or disables background music while playing the game."
-msgstr ""
+msgstr "Abilita o disabilita la musica di sottofondo."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:427
 msgid "Enables or disables checking for new versions when the game starts."
 msgstr ""
+"Abilita o disabilita il controllo automatico degli aggiornamenti all'avvio "
+"del simulatore."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2708
 msgid ""
 "Enables or disables generation of air bubbles when water enters a physical "
 "body."
 msgstr ""
+"Abilita o disabilita la produzione di bolle d'aria quando l'acqua penetra un "
+"oggetto."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2788
 msgid "Enables or disables generation of debris when using destructive tools."
 msgstr ""
+"Abilita o disabilita la produzione di detriti quando si usano strumenti di "
+"distruzione."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1973
 msgid "Enables or disables generation of rain during a storm."
-msgstr ""
+msgstr "Abilita o disabilita la pioggia durante una tempesta."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2804
 msgid ""
 "Enables or disables generation of sparkles when using the saw tool on metal."
 msgstr ""
+"Abilita o disabilita la produzione di scintille quandi si sega il metallo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2820
 msgid ""
 "Enables or disables generation of wakes when engines are running underwater."
 msgstr ""
+"Abilita o disabilita la produzione di scie quando i motori girano sott'acqua."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2728
 msgid ""
 "Enables or disables generation of waves when air bubbles surface above water."
 msgstr ""
+"Abilita o disabilita la produzione di onde quando le bolle d'aria arrivano "
+"in superficie."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3463
 msgid ""
 "Enables or disables highlighting of the springs that are under heavy stress "
 "and close to rupture."
 msgstr ""
+"Abilita o disabilita l'evidenziazione delle molle che sono sotto stress e "
+"vicine al punto di rottura."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:504
 msgid "Enables or disables notifications when a tsunami is being spawned."
-msgstr ""
+msgstr "Abilita o disabilita notifiche quando vengono generati gli tsunami ."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:978
 msgid "Enables or disables playing sorrow music when a ship starts sinking."
 msgstr ""
+"Abilita o disabilita la produzione della musica d'addio quando una nave "
+"inizia ad affondare."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3838
 msgid "Enables or disables rendering of vector fields."
-msgstr ""
+msgstr "Abilita o disabilita il rendering dei campi vettoriali."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:472
 msgid ""
 "Enables or disables saving the last-modified settings when exiting the game."
 msgstr ""
+"Abilita o disabilita il salvataggio automatico dei parametri quando si esce "
+"dal simulatore."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2211
 msgid ""
 "Enables or disables simulation of wind variations, alternating between dead "
 "calm and high-speed gusts."
 msgstr ""
+"Abilita o disabilita le variazioni del vento, che alternano tra calma piatta "
+"e raffiche ad alta velocità."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3706
 msgid ""
 "Enables or disables the bubbling sound when air bubbles come to the surface."
 msgstr ""
+"Abilita o disabilita il suono prodotto dalle bolle d'aria quando raggiungono "
+"la superficie del mare."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:518
 msgid ""
 "Enables or disables the display of extended game performance information, "
 "such as update/render ratio and counts of primitives being rendered."
 msgstr ""
+"Abilita o disabilita il rendering di informazioni diagnostiche aggiuntive."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:486
 msgid ""
 "Enables or disables the display of game performance information, such as "
 "frame rate and time elapsed."
 msgstr ""
+"Abilita o disabilita il rendering di informazioni diagnostiche sulla "
+"performance del simulatore."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3676
 msgid ""
 "Enables or disables the generation of sounds when materials are under stress."
 msgstr ""
+"Abilita o disabilita la produzione di effetti sonori quando i materiali sono "
+"sotto stress."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3661
 msgid "Enables or disables the generation of sounds when materials break."
 msgstr ""
+"Abilita o disabilita la produzione di effetti sonori quando i materiali si "
+"rompono."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3691
 msgid "Enables or disables the generation of wind sounds."
-msgstr ""
+msgstr "Abilita o disabilita la produzione di effetti sonori per il vento."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:382
 msgid "Enables or disables the tips shown when the game starts."
-msgstr ""
+msgstr "Abilita o disabilita suggerimenti all'avvio del simulatore."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:791
 msgid ""
 "Enables or disables the window showing ship descriptions when ships are "
 "loaded."
 msgstr ""
+"Abilita o disabilita la finestra che mostra le descrizioni delle navi al "
+"loro caricamento."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:836
 msgid ""
 "Enables or disables visual notifications when an electrical element changes "
 "state."
 msgstr ""
+"Abilita o disabilita notifiche visive quando i materiali elettrici cambiano "
+"stato."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2882
 msgid "Engine Thrust Adjust"
@@ -718,7 +779,7 @@ msgstr "Fuoco"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3318
 msgid "Fire Draw Mode"
-msgstr ""
+msgstr "Modalità visualizzazionefiamme"
 
 #: ..\FloatingSandbox\MainFrame.cpp:287
 msgid "Fire Extinguisher"
@@ -731,23 +792,23 @@ msgstr "Dimensioni fiamme"
 #: ..\FloatingSandbox\SettingsDialog.cpp:3021
 #: ..\FloatingSandbox\SettingsDialog.cpp:3174
 msgid "Flat"
-msgstr ""
+msgstr "Tinta unita"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:667
 msgid "Flat Structure"
-msgstr ""
+msgstr "Struttura a tinta unita"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2610
 msgid "Flood Quantity"
-msgstr ""
+msgstr "Quantità inondazione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2585
 msgid "Flood Radius"
-msgstr ""
+msgstr "Raggio inondazione"
 
 #: ..\FloatingSandbox\MainFrame.cpp:309
 msgid "Flood/Dry"
-msgstr ""
+msgstr "Inonda/asciuga"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1076
 msgid "Fluids"
@@ -755,11 +816,11 @@ msgstr "Fluidi"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:696
 msgid "Force Defaults onto Ships"
-msgstr ""
+msgstr "Imponi default alle navi"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:37
 msgid "Frame Rate"
-msgstr ""
+msgstr "Velocità frame"
 
 #: ..\FloatingSandbox\MainFrame.cpp:423
 msgid "Full Screen"
@@ -771,11 +832,11 @@ msgstr "Gioco"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:42
 msgid "Game Preferences"
-msgstr ""
+msgstr "Preferenze"
 
 #: ..\FloatingSandbox\MainFrame.cpp:393
 msgid "Game Preferences..."
-msgstr ""
+msgstr "Preferenze..."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2707
 msgid "Generate Air Bubbles"
@@ -807,11 +868,11 @@ msgstr "Mostra la guida del simulatore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:935
 msgid "Global Damping Adjust"
-msgstr ""
+msgstr "Smorzamento velocità"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:94
 msgid "Global Sound and Music"
-msgstr ""
+msgstr "Suono e musica"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:44
 msgid "Go to the Download Page!"
@@ -819,11 +880,11 @@ msgstr "Vai alla pagina per scaricarlo!"
 
 #: ..\FloatingSandbox\ShipLoadDialog.cpp:160
 msgid "Go to the default Ships folder"
-msgstr ""
+msgstr "Vai alla cartella delle navi di default"
 
 #: ..\FloatingSandbox\ShipLoadDialog.cpp:195
 msgid "Go to the next search result"
-msgstr ""
+msgstr "Vai al prossimo risultato della ricerca"
 
 #: ..\FloatingSandbox\MainFrame.cpp:447
 msgid "Guide"
@@ -840,11 +901,11 @@ msgstr "Dissipazione calore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1507
 msgid "Heat Generation Adjust"
-msgstr ""
+msgstr "Generazione calore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3391
 msgid "Heat Overlay Transparency"
-msgstr ""
+msgstr "Trasparenza calore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:150
 msgid "Heat and Combustion"
@@ -867,14 +928,17 @@ msgid ""
 "Higher values improve the rigidity of simulated structures, at the expense "
 "of longer computation times."
 msgstr ""
+"Valori elevati migliorano la rigidità delle strutture, a discapito dei tempi "
+"di calcolo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2611
 msgid "How much water is injected or drained by the flood tool (m3)."
 msgstr ""
+"La quantità d'acqua che viene immessa o rimossa dal tool Inonda/asciuga (m3)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2586
 msgid "How wide an area is flooded or drained by the flood tool (m)."
-msgstr ""
+msgstr "L'ampiezza dell'area interessata dal tool Inonda/asciuga (m)."
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:114
 msgid "Initializing OpenGL..."
@@ -908,11 +972,11 @@ msgstr "Lingua"
 #: ..\FloatingSandbox\CreditsPanel.cpp:128
 #: ..\FloatingSandbox\CreditsPanel.cpp:132
 msgid "Licensed under Creative Commons: By Attribution 4.0 License"
-msgstr ""
+msgstr "Rilasciato sotto licenza Creative Commons: By Attribution 4.0 License"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1039
 msgid "Light Spread Adjust"
-msgstr ""
+msgstr "Diffusione luce"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:999
 msgid "Lights"
@@ -970,7 +1034,7 @@ msgstr "Caricamento textures del mondo..."
 #: ..\FloatingSandbox\SettingsDialog.cpp:3944
 msgid ""
 "Loads the selected settings and applies them on top of the current settings."
-msgstr ""
+msgstr "Carica i parametri selezionati e li applica."
 
 #: ..\FloatingSandbox\LoggingDialog.cpp:29
 msgid "Logging"
@@ -978,7 +1042,7 @@ msgstr "Finestra di log"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1013
 msgid "Luminiscence Adjust"
-msgstr ""
+msgstr "Luminiscenza"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:120
 msgid "MUSIC"
@@ -986,15 +1050,15 @@ msgstr "MUSICA"
 
 #: ..\FloatingSandbox\MainFrame.cpp:1931
 msgid "Maritime Disaster"
-msgstr ""
+msgstr "Disastro marittimo"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:675
 msgid "Material Textures"
-msgstr ""
+msgstr "Texture dei materiali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1630
 msgid "Max Burning Particles"
-msgstr ""
+msgstr "Numero massimo particelle che bruciano"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:868
 msgid "Mechanics"
@@ -1014,19 +1078,19 @@ msgstr "Vari"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:658
 msgid "Mode"
-msgstr ""
+msgstr "Modalità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3327
 msgid "Mode 1"
-msgstr ""
+msgstr "Modalità 1"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3333
 msgid "Mode 2"
-msgstr ""
+msgstr "Modalità 2"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3339
 msgid "Mode 3"
-msgstr ""
+msgstr "Modalità 3"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2210
 msgid "Modulate Wind"
@@ -1034,23 +1098,23 @@ msgstr "Modula vento"
 
 #: ..\FloatingSandbox\MainFrame.cpp:267
 msgid "Move All/Rotate All"
-msgstr ""
+msgstr "Muovi tutto/ruota tutto"
 
 #: ..\FloatingSandbox\MainFrame.cpp:263
 msgid "Move/Rotate"
-msgstr ""
+msgstr "Muovi/ruota"
 
 #: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "Mute"
-msgstr ""
+msgstr "Silenziamento audio"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:877
 msgid "Mute All Sounds"
-msgstr ""
+msgstr "Nessun suono"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:878
 msgid "Mutes or allows all sounds."
-msgstr ""
+msgstr "Abilita o disabilita tutti i suoni."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4003
 msgid "Name:"
@@ -1058,7 +1122,7 @@ msgstr "Nome:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3810
 msgid "No Debug"
-msgstr ""
+msgstr "No debug"
 
 #: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:151
 msgid "No New Updates"
@@ -1074,7 +1138,7 @@ msgstr "Schermo normale"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3345
 msgid "Not Drawn"
-msgstr ""
+msgstr "Non disegnato"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2125
 msgid "Number of Clouds"
@@ -1101,19 +1165,19 @@ msgstr "Profondità oceano"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1724
 msgid "Ocean Floor Bumpiness"
-msgstr ""
+msgstr "Articolazione fondale oceanico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1749
 msgid "Ocean Floor Detail"
-msgstr ""
+msgstr "Dettaglio fondale oceanico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1789
 msgid "Ocean Floor Elasticity"
-msgstr ""
+msgstr "Elasticità fondale oceanico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1814
 msgid "Ocean Floor Friction"
-msgstr ""
+msgstr "Attrito fondale oceanico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:161
 msgid "Ocean, Smoke, and Sky"
@@ -1125,11 +1189,11 @@ msgstr "Apri pagina per il download"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:820
 msgid "Open Electrical Panel at Load"
-msgstr ""
+msgstr "Apri pannello elettrico automaticamente"
 
 #: ..\FloatingSandbox\MainFrame.cpp:467
 msgid "Open Home Page"
-msgstr ""
+msgstr "Apri pagina home"
 
 #: ..\FloatingSandbox\MainFrame.cpp:399
 msgid "Open Log Window"
@@ -1145,10 +1209,13 @@ msgid ""
 "This setting is not saved, and it will revert to OFF the next time the game "
 "is played."
 msgstr ""
+"Sostituisci parametri individuali di auto-texturizzazione con questi "
+"default. Questo parametro non viene salvato, e tornerà ad essere OFF al "
+"prossimo avvio del simulatore."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3956
 msgid "Overwrites the selected settings with the current settings."
-msgstr ""
+msgstr "Sostituisci i parametri selezionati con i parametri correnti."
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:78
 msgid "PROGRAMMING"
@@ -1157,7 +1224,7 @@ msgstr "PROGRAMMAZIONE"
 #: ..\FloatingSandbox\PreferencesDialog.cpp:439
 #: ..\FloatingSandbox\PreferencesDialog.cpp:454
 msgid "Pan Increment"
-msgstr ""
+msgstr "Incremento panoramica"
 
 #: ..\FloatingSandbox\MainFrame.cpp:240
 msgid "Pause"
@@ -1165,7 +1232,7 @@ msgstr "Pausa"
 
 #: ..\FloatingSandbox\MainFrame.cpp:240
 msgid "Pause the game"
-msgstr ""
+msgstr "Pausa simulatore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1239
 msgid "Physics"
@@ -1173,64 +1240,69 @@ msgstr "Fisica"
 
 #: ..\FloatingSandbox\MainFrame.cpp:271
 msgid "Pick-n-Pull"
-msgstr ""
+msgstr "Pinza"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:962
 msgid "Play Background Music"
-msgstr ""
+msgstr "Musica di sottofondo"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3660
 msgid "Play Break Sounds"
-msgstr ""
+msgstr "Effetti sonori distruzione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3705
 msgid "Play Bubbles' Surface Sounds"
-msgstr ""
+msgstr "Effetti sonori bolle d'acqua"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:977
 msgid "Play Farewell Music"
-msgstr ""
+msgstr "Musica d'addio"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3675
 msgid "Play Stress Sounds"
-msgstr ""
+msgstr "Effetti sonori stress"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3690
 msgid "Play Wind Sounds"
-msgstr ""
+msgstr "Effetti sonori vento"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:245
 msgid ""
 "Please note that a restart is required for language changes to take effect."
 msgstr ""
+"Nota: la modifica della lingua avrà effetto solamente al prossimo avvio del "
+"simulatore."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3831
 msgid "Point Forces"
-msgstr ""
+msgstr "Forze particelle"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3830
 msgid "Point Velocities"
-msgstr ""
+msgstr "Velocità particelle"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3833
 msgid "Point Water Momenta"
-msgstr ""
+msgstr "Quantità moto acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3832
 msgid "Point Water Velocities"
-msgstr ""
+msgstr "Velocità acqua"
 
 #: ..\FloatingSandbox\ShipDescriptionDialog.cpp:59
 msgid ""
 "Prevents ship descriptions from being shown each time a ship is loaded. You "
 "can always change this setting later from the \"Preferences\" window."
 msgstr ""
+"Evita la visualizzazione delle descrizioni delle navi ad ogni caricamento. "
+"Questa preferenza può essere modificata ad ogni momento selezionando il menu "
+"\"Preferenze\"."
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:55
 #, c-format
 msgid ""
 "Prevents the automatic update check from notifying about version % again."
-msgstr ""
+msgstr "Impedisce ulteriori notifiche per la versione %s."
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:65
 msgid "Prevents the automatic update check from running at startup."
@@ -1518,11 +1590,11 @@ msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2778
 msgid "Side-Effects"
-msgstr ""
+msgstr "Effetti collaterali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:882
 msgid "Simulation Quality"
-msgstr ""
+msgstr "Qualità simulazione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:80
 msgid "Simulation Settings"
@@ -1539,11 +1611,11 @@ msgstr "Cielo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:279
 msgid "Slice"
-msgstr ""
+msgstr "Taglia"
 
 #: ..\FloatingSandbox\MainFrame.cpp:275
 msgid "Smash"
-msgstr ""
+msgstr "Distruggi"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1851
 msgid "Smoke"
@@ -1567,23 +1639,23 @@ msgstr "Suoni e parametri speciali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1972
 msgid "Spawn Rain"
-msgstr ""
+msgstr "Pioggia"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3782
 msgid "Spring Damping Adjust"
-msgstr ""
+msgstr "Smorzamento molle"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3755
 msgid "Spring Stiffness Adjust"
-msgstr ""
+msgstr "Rigidità molle"
 
 #: ..\FloatingSandbox\MainFrame.cpp:245
 msgid "Step"
-msgstr ""
+msgstr "Passo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:245
 msgid "Step one frame at a time"
-msgstr ""
+msgstr "Incrementa un frame alla volta"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2024
 msgid "Storm Duration"
@@ -1595,7 +1667,7 @@ msgstr "Frequenza tempeste"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1949
 msgid "Storm Strength Adjust"
-msgstr ""
+msgstr "Potenza tempeste"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1933
 msgid "Storms"
@@ -1603,11 +1675,11 @@ msgstr "Tempeste"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:909
 msgid "Strength Adjust"
-msgstr ""
+msgstr "Resistenza"
 
 #: ..\FloatingSandbox\MainFrame.cpp:295
 msgid "Swirl/Counterswirl"
-msgstr ""
+msgstr "Vortice/anti-vortice"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:81
 msgid "TESTING"
@@ -1620,15 +1692,15 @@ msgstr "TRADUZIONE"
 #: ..\FloatingSandbox\SettingsDialog.cpp:2975
 #: ..\FloatingSandbox\SettingsDialog.cpp:3150
 msgid "Texture"
-msgstr ""
+msgstr "Texture"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:714
 msgid "Texture Magnification"
-msgstr ""
+msgstr "Scala texture"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:741
 msgid "Texture Transparency"
-msgstr ""
+msgstr "Trasparenza texture"
 
 #: ..\FloatingSandbox\MainFrame.cpp:329
 msgid "Thanos' Snap"
@@ -1648,6 +1720,7 @@ msgstr ""
 #: ..\FloatingSandbox\SettingsDialog.cpp:2747
 msgid "The density of air bubbles generated when water enters a ship."
 msgstr ""
+"La densità delle bolle d'aria prodotte quando l'acqua penetra una nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2025
 msgid "The duration of a storm (s)."
@@ -1674,7 +1747,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2531
 msgid "The heat generated by bomb explosions (KJ/s)."
-msgstr ""
+msgstr "Il calore generato dalle esplosioni delle bombe (KJ/s)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1582
 msgid "The heat produced by the HeatBlaster tool (KJ/s)."
@@ -1703,6 +1776,9 @@ msgid ""
 "in the world; at any moment in time, the number of clouds that are visible "
 "will be less than or equal to this value."
 msgstr ""
+"Il numero di nuvole. Questo parametro rappresenta la quantità totale di "
+"nuvole nel mondo; il numero di nuvole visibili sarà sempre minore o uguale a "
+"questo parametro."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2101
 msgid "The number of stars in the sky."
@@ -1718,23 +1794,23 @@ msgstr "Il raggio di azione dell'HeatBlaster (m)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2506
 msgid "The radius of bomb explosions (m)."
-msgstr ""
+msgstr "Il raggio di azione delle esplosioni delle bombe (m)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2481
 msgid "The starting radius of the damage caused by destructive tools (m)."
-msgstr ""
+msgstr "Il raggio iniziale del danno causato dagli strumenti distruttivi (m)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1435
 msgid "The temperature of air (K)."
-msgstr ""
+msgstr "La temperatura dell'aria (K)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1460
 msgid "The temperature of water (K)."
-msgstr ""
+msgstr "La temperatura dell'acqua (K)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1253
 msgid "Thermal Conductivity Adjust"
-msgstr ""
+msgstr "Conduttività termica"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3783
 msgid ""
@@ -1742,6 +1818,9 @@ msgid ""
 "with different damping values; it is not meant for improving the rigidity of "
 "physical bodies."
 msgstr ""
+"Questo parametro serve per divertirsi con l'instabilità delle strutture "
+"aventi alti smorzamenti di velocità; il parametro non è utile per migliorare "
+"la rigidità degli oggetti."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3756
 msgid ""
@@ -1749,32 +1828,37 @@ msgid ""
 "with high stiffness values; it is not meant for improving the rigidity of "
 "physical bodies."
 msgstr ""
+"Questo parametro serve per divertirsi con l'instabilità delle strutture "
+"aventi alte rigidità; il parametro non è utile per migliorare la rigidità "
+"degli oggetti."
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:76
 msgid ""
 "This software is licensed to Mattia, Elia, and all the others kids in the "
 "world!"
 msgstr ""
+"Questo software è dato in licenza a Mattia, Elia, e a tutti gli altri "
+"bambini del mondo!"
 
 #: ..\FloatingSandbox\MainFrame.cpp:325
 msgid "Toggle Anti-Matter Bomb"
-msgstr ""
+msgstr "Commuta bomba anti-materia"
 
 #: ..\FloatingSandbox\MainFrame.cpp:321
 msgid "Toggle Impact Bomb"
-msgstr ""
+msgstr "Commuta bomba a impatto"
 
 #: ..\FloatingSandbox\MainFrame.cpp:299
 msgid "Toggle Pin"
-msgstr ""
+msgstr "Commuta spillo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:317
 msgid "Toggle RC Bomb"
-msgstr ""
+msgstr "Commuta bomba telecomandata"
 
 #: ..\FloatingSandbox\MainFrame.cpp:313
 msgid "Toggle Timer Bomb"
-msgstr ""
+msgstr "Commuta bomba ad orologeria"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2460
 msgid "Tools"
@@ -1790,19 +1874,19 @@ msgstr "Trasparenza"
 
 #: ..\FloatingSandbox\MainFrame.cpp:374
 msgid "Trigger Lightning"
-msgstr ""
+msgstr "Provoca fulmine"
 
 #: ..\FloatingSandbox\MainFrame.cpp:365
 msgid "Trigger Rogue Wave"
-msgstr ""
+msgstr "Provoca onda anomala"
 
 #: ..\FloatingSandbox\MainFrame.cpp:369
 msgid "Trigger Storm"
-msgstr ""
+msgstr "Provoca tempesta"
 
 #: ..\FloatingSandbox\MainFrame.cpp:361
 msgid "Trigger Tsunami"
-msgstr ""
+msgstr "Provoca tsunami"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2387
 msgid "Tsunami Rate"
@@ -1810,7 +1894,7 @@ msgstr "Frequenza tsunami"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2835
 msgid "Ultra-Violent Mode"
-msgstr ""
+msgstr "Modo ultra-violento"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:253
 msgid "Undo"
@@ -1826,7 +1910,7 @@ msgstr "Interfaccia grafica"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3836
 msgid "Vector Field Draw Options"
-msgstr ""
+msgstr "Opzioni rendering campi vettoriali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:597
 #: ..\FloatingSandbox\SettingsDialog.cpp:628
@@ -1840,63 +1924,63 @@ msgstr "Acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3509
 msgid "Water Contrast"
-msgstr ""
+msgstr "Contrasto acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1167
 msgid "Water Crazyness"
-msgstr ""
+msgstr "Vivacità acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1090
 msgid "Water Density Adjust"
-msgstr ""
+msgstr "Densità acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1192
 msgid "Water Diffusion Speed"
-msgstr ""
+msgstr "Velocità diffusione acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1115
 msgid "Water Drag Adjust"
-msgstr ""
+msgstr "Resistenza acqua"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:40
 msgid "Water Inflow"
-msgstr ""
+msgstr "Influsso acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1141
 msgid "Water Intake Adjust"
-msgstr ""
+msgstr "Influsso acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3548
 msgid "Water Level of Detail"
-msgstr ""
+msgstr "Livello dettaglio acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2908
 msgid "Water Pump Power Adjust"
-msgstr ""
+msgstr "Potenza pompe acqua"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:41
 msgid "Water Splash"
-msgstr ""
+msgstr "Potenza acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1459
 msgid "Water Temperature"
-msgstr ""
+msgstr "Temperatura acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2285
 msgid "Wave Height Adjust"
-msgstr ""
+msgstr "Altezza onde"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2373
 msgid "Wave Phenomena"
-msgstr ""
+msgstr "Fenomeni marini"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2336
 msgid "Wave Speed Adjust"
-msgstr ""
+msgstr "Velocità onde"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2310
 msgid "Wave Width Adjust"
-msgstr ""
+msgstr "Larghezza onde"
 
 #: ..\FloatingSandbox\MainFrame.cpp:333
 msgid "WaveMaker"
@@ -1912,6 +1996,9 @@ msgid ""
 "material-specific textures. Changes to this setting are only visible after a "
 "new ship is loaded."
 msgstr ""
+"Genera automaticamente un'immagine ad alta definizione - per le navi che non "
+"ne possiedono una - utilizzando le texture dei materiali. Le modifiche a "
+"questa impostazione sono visibili solo dopo il caricamento di una nave."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:668
 msgid ""
@@ -1919,6 +2006,9 @@ msgid ""
 "materials' matte colors. Changes to this setting are only visible after a "
 "new ship is loaded."
 msgstr ""
+"Genera automaticamente un'immagine ad alta definizione - per le navi che non "
+"ne possiedono una - utilizzando le tinte dei materiali. Le modifiche a "
+"questa impostazione sono visibili solo dopo il caricamento di una nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2171
 msgid "Wind"
@@ -1951,8 +2041,8 @@ msgstr "Ingrandisci"
 #: ..\FloatingSandbox\PreferencesDialog.cpp:394
 #: ..\FloatingSandbox\PreferencesDialog.cpp:409
 msgid "Zoom Increment"
-msgstr ""
+msgstr "Incremento di zoom"
 
 #: ..\FloatingSandbox\MainFrame.cpp:228
 msgid "Zoom Out"
-msgstr ""
+msgstr "Rimpicciolisci"

@@ -52,7 +52,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
         {
             wxCheckBox * dontNotifyChk = new wxCheckBox(this, wxID_ANY, _("Don't notify about this version again"));
             wxString message;
-            message.Printf(_("Prevents the automatic update check from notifying about version % again."), version.ToString());
+            message.Printf(_("Prevents the automatic update check from notifying about version %s again."), version.ToString());
             dontNotifyChk->SetToolTip(message);
             dontNotifyChk->SetValue(false);
             dontNotifyChk->Bind(wxEVT_CHECKBOX, &NewVersionDisplayDialog::OnDoNotNotifyAboutThisVersionAgainCheckboxChanged, this);
