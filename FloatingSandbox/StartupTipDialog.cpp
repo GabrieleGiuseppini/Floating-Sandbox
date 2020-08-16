@@ -49,7 +49,7 @@ StartupTipDialog::StartupTipDialog(
 
         {
             wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, _("Don't show this tip again"));
-            dontChk->SetToolTip(_("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Preferences\" window."));
+            dontChk->SetToolTip(_("Prevents these tips from being shown each time the game starts. You can always change this setting later from the \"Game Preferences\" window."));
             dontChk->SetValue(false);
             dontChk->Bind(wxEVT_CHECKBOX, &StartupTipDialog::OnDontShowAgainCheckboxChanged, this);
 
