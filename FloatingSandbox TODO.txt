@@ -478,15 +478,14 @@ Render:
 				+ Storage owned by SoundController
 				+ Cutoff happens @ SoundController
 			+ Try vortex amplitude: random sign
-
-		- Send for testing (32-bit)
-
-		- Fix & test Hesleden
-			- Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default.
-
-		- Test speed with ElementIndex/Count being 64-bit
-		- Check if any point and spring structs are aligned badly
+		X Test speed with ElementIndex/Count being 64-bit
 		+ Run with address sanitizer (32-bit)
+		+ Send for testing (32-bit)
+
+		- Ships:
+			- Fix & test Hesleden
+				- "Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default"
+			- See two ships from Officer TimCan's
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc

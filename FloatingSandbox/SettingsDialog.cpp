@@ -2748,6 +2748,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
         wxBoxSizer * airBubblesBoxSizer = new wxBoxSizer(wxVERTICAL);
         airBubblesBoxSizer->AddSpacer(StaticBoxTopMargin);
+        airBubblesBoxSizer->AddSpacer(3);
 
         {
             wxBoxSizer * airBubblesSizer = new wxBoxSizer(wxVERTICAL);
@@ -2770,7 +2771,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 airBubblesSizer->Add(mGenerateAirBubblesCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
-            airBubblesSizer->AddSpacer(5);
+            airBubblesSizer->AddSpacer(3);
 
             // Displace ocean surface at air bubble surfacing
             {
@@ -2829,6 +2830,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 
         wxBoxSizer * sideEffectsBoxSizer = new wxBoxSizer(wxVERTICAL);
         sideEffectsBoxSizer->AddSpacer(StaticBoxTopMargin);
+        sideEffectsBoxSizer->AddSpacer(3);
 
         {
             wxBoxSizer * sideEffectsCheckboxSizer = new wxBoxSizer(wxVERTICAL);
@@ -2847,7 +2849,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 sideEffectsCheckboxSizer->Add(mGenerateDebrisCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
-            sideEffectsCheckboxSizer->AddSpacer(5);
+            sideEffectsCheckboxSizer->AddSpacer(3);
 
             {
                 mGenerateSparklesForCutsCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Sparkles"));
@@ -2863,7 +2865,7 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                 sideEffectsCheckboxSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALIGN_LEFT, 0);
             }
 
-            sideEffectsCheckboxSizer->AddSpacer(5);
+            sideEffectsCheckboxSizer->AddSpacer(3);
 
             {
                 mGenerateEngineWakeCheckBox = new wxCheckBox(sideEffectsBox, wxID_ANY, _("Generate Engine Wake"));
@@ -2996,11 +2998,6 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
-
-
-    //
-    // Row 1
-    //
 
     // Sea
     {
@@ -3369,6 +3366,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 wxBoxSizer * fireRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
                 fireRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
+                fireRenderModeBoxSizer1->AddSpacer(3);
 
                 {
                     wxFlexGridSizer* fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
@@ -3407,7 +3405,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     fireRenderModeBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -3495,7 +3493,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorder);
     }
 
-
     // Ship
     {
         wxStaticBox * shipBox = new wxStaticBox(panel, wxID_ANY, _("Ship"));
@@ -3535,10 +3532,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorder);
     }
 
-    //
     // Water
-    //
-
     {
         wxStaticBox * waterBox = new wxStaticBox(panel, wxID_ANY, _("Water"));
 
@@ -3870,7 +3864,11 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                         WXSIZEOF(debugShipRenderModeChoices), debugShipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
                     Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
 
-                    checkboxesSizer->Add(mDebugShipRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+                    checkboxesSizer->Add(
+                        mDebugShipRenderModeRadioBox, 
+                        0, 
+                        wxEXPAND | wxALL, 
+                        5);
                 }
 
                 {
@@ -3888,7 +3886,11 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     mVectorFieldRenderModeRadioBox->SetToolTip(_("Enables or disables rendering of vector fields."));
                     Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
 
-                    checkboxesSizer->Add(mVectorFieldRenderModeRadioBox, 0, wxALL | wxALIGN_LEFT, 5);
+                    checkboxesSizer->Add(
+                        mVectorFieldRenderModeRadioBox, 
+                        0, 
+                        wxEXPAND | wxALL, 
+                        5);
                 }
 
                 advancedSizer->Add(
