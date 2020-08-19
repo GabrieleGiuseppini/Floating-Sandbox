@@ -1,0 +1,6 @@
+1) Make it seamless if needed:
+	- Sample Size 10, generate until good
+2) Saturation to zero - w/clipping mask
+3) Brightness+Contrast until OK - w/clipping mask
+4) Preview: blend mode to multiply
+5) Resize down if needed
