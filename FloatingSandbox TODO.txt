@@ -469,15 +469,15 @@ Render:
 			+ Issue: cursor of tool over SettingsDialog
 			+ Try better (inverte-able) curve
 				+ Move inverse to GameMath
-			- See slowdown
 			- changes.txt
 
-		+ Bubbles:
+		= Bubbles:
 			+ Smaller wave
 			+ Add checkbox for bubble sounds
 				+ Storage owned by SoundController
 				+ Cutoff happens @ SoundController
 			+ Try vortex amplitude: random sign
+			- Limit derivative
 		X Test speed with ElementIndex/Count being 64-bit
 		+ Run with address sanitizer (32-bit)
 		+ Send for testing (32-bit)
@@ -9604,8 +9604,8 @@ IF WX:
 			+ Circa sinkingship_4.ogg (violini) vedi tu, potrebbe anche essere passabile.
 			Per quanto riguarda le altre:
 			+ sinkingship_5.ogg e sinkingship_6.ogg (non mi piace quasi per niente. le note sembrano le stesse della mia ma pare una sveglia in entrambi i casi)
-			+ sinkingship_7.ogg (non capisco se è originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola più "seriamente orchestrale" può andare bene)
-			+ sinkingship_8.ogg (è una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti può essere interessante, ma la sposterei nella musica del gioco vero e proprio).
+			+ sinkingship_7.ogg (non capisco se ï¿½ originale o presa da qualcosa. Non male, a parte qualche insolita stonatura all'inizio. Se fai mettere mano agli strumenti rendendola piï¿½ "seriamente orchestrale" puï¿½ andare bene)
+			+ sinkingship_8.ogg (ï¿½ una melodia carina, ma non mi sembra una musica giusta per l'affondamento. Come sopra, se riescono a rivedere gli strumenti puï¿½ essere interessante, ma la sposterei nella musica del gioco vero e proprio).
 		+ Commit & Merge
 		+ Send for testing
 		+ Bump-up version

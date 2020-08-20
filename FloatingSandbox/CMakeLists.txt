@@ -29,8 +29,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	MusicController.h
 	NewVersionDisplayDialog.cpp
 	NewVersionDisplayDialog.h
-	OpenGLContext.cpp
-	OpenGLContext.h
 	PreferencesDialog.cpp
 	PreferencesDialog.h
 	ProbePanel.cpp
