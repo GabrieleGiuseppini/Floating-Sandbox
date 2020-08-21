@@ -459,6 +459,11 @@ Render:
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 
+		- Fix crash with exit from full screen
+			- It's just a FP exception
+
+		- See if may avoid green lines
+
 		= Day/night cycle
 			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
 			  ambient light to target ambient light (target based off next "12-hour")
@@ -481,6 +486,8 @@ Render:
 		X Test speed with ElementIndex/Count being 64-bit
 		+ Run with address sanitizer (32-bit)
 		+ Send for testing (32-bit)
+
+		- Figure out how to select gfx card
 
 		- Ships:
 			- Fix & test Hesleden

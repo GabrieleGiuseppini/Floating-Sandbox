@@ -321,7 +321,7 @@ private:
 
 private:
 
-    wxApp * const mMainApp;    
+    wxApp * const mMainApp;
 
     //
     // Helpers

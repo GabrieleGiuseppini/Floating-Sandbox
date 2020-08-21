@@ -29,7 +29,7 @@ RenderContext::RenderContext(
     // Child contextes
     , mGlobalRenderContext()
     , mWorldRenderContext()
-    , mShips()    
+    , mShips()
     , mNotificationRenderContext()
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
@@ -40,7 +40,7 @@ RenderContext::RenderContext(
     // Rendering externals
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     // Shader manager
-    , mShaderManager()    
+    , mShaderManager()
     // Render parameters
     , mRenderParameters(initialCanvasSize)
     // Statistics
@@ -87,7 +87,7 @@ RenderContext::RenderContext(
 
             mGlobalRenderContext->InitializeNoiseTextures(resourceLocator);
         });
-    
+
     progressCallback(0.15f, ProgressMessageType::LoadingGenericTextures);
 
     mRenderThread.RunSynchronously(
@@ -267,7 +267,7 @@ void RenderContext::AddShip(
     assert(shipId == mShips.size());
 
     size_t const newShipCount = mShips.size() + 1;
-    
+
     // Tell all ships
     for (auto const & ship : mShips)
     {
@@ -378,7 +378,7 @@ void RenderContext::UploadStart()
 
     mWorldRenderContext->UploadStart();
 
-    mNotificationRenderContext->UploadStart();    
+    mNotificationRenderContext->UploadStart();
 }
 
 void RenderContext::UploadEnd()
@@ -432,7 +432,7 @@ void RenderContext::Draw()
             // Clear canvas - and depth buffer
             vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
             glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);           
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             //
             // Prepare
