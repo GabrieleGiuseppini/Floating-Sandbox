@@ -188,7 +188,7 @@ MainFrame::MainFrame(
 
     wxMenu * fileMenu = new wxMenu();
 
-    wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, ID_LOAD_SHIP_MENUITEM, _("Load Ship") + wxS("\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
+    wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, ID_LOAD_SHIP_MENUITEM, _("Load Ship...") + wxS("\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
     fileMenu->Append(loadShipMenuItem);
     Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
 
@@ -670,7 +670,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     std::shared_ptr<SplashScreenDialog> splash;
-    
+
     try
     {
         splash = std::make_unique<SplashScreenDialog>(*mResourceLocator);
@@ -719,7 +719,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
             },
             [this]()
-            {   
+            {
                 //
                 // Invoked by a different thread, with asynchronous
                 // execution
@@ -1206,7 +1206,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
             [this]()
             {
                 mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
-            });        
+            });
 
         // Close splash screen
         LogMessage("MainFrame::OnMainGLCanvasPaint(): Hiding SplashScreen");
@@ -1824,7 +1824,7 @@ void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetGlobalMute(mMuteMenuItem->IsChecked());    
+    mUIPreferencesManager->SetGlobalMute(mMuteMenuItem->IsChecked());
 }
 
 void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
