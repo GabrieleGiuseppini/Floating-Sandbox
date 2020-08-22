@@ -1436,7 +1436,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)
 {
-    auto const volume = std::min(100.0f, static_cast<float>(size) * 20.0f);
+    auto const volume = std::min(25.0f, static_cast<float>(size) * 10.0f);
 
     mAirBubblesSurfacingSound.Pulse(volume);
 }
