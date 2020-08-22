@@ -446,11 +446,11 @@ Render:
 				+ StartupTipDialog
 			+ Prepare final, complete pot file
 			= Translations:
-				= Italian:
+				+ Italian:
 					+ StartupTip
 					+ Help
-					= po
-					- Cross-reference Help with Menus
+					+ po
+					+ Cross-reference Help with Menus
 				= Russian:
 					+ Prepare po
 					+ Test HTMLs
@@ -459,10 +459,8 @@ Render:
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 
-		- Fix crash with exit from full screen
-			- It's just a FP exception
-
-		- See if may avoid green lines
+		= See if may avoid green lines
+			- Wait for answer from Intel
 
 		= Day/night cycle
 			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
