@@ -29,10 +29,14 @@ TaskThreadPool::TaskThreadPool(size_t hardwareThreads)
 {
     assert(hardwareThreads > 0);
 
-    LogMessage("Number of hardware threads: ", hardwareThreads);
+    // Cap threads to 2 as we don't need more than those
+    size_t const threadCount = std::min(size_t(2), hardwareThreads - 1);
+
+    LogMessage("TaskThreadPool: number of hardware threads: ", hardwareThreads,
+        " number of threads in pool: ", threadCount);
 
     // Start threads
-    for (size_t i = 0; i < hardwareThreads - 1; ++i)
+    for (size_t i = 0; i < threadCount; ++i)
     {
         mThreads.emplace_back(&TaskThreadPool::ThreadLoop, this);
     }
