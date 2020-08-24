@@ -37,8 +37,8 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
 
         if (it != availableLanguages.cend())
         {
-            // Get the wxWidgets language ID, if any            
-            if (auto const wxLangInfo = wxLocale::FindLanguageInfo(*desiredLanguageIdentifier); 
+            // Get the wxWidgets language ID, if any
+            if (auto const wxLangInfo = wxLocale::FindLanguageInfo(*desiredLanguageIdentifier);
                 wxLangInfo != nullptr)
             {
                 localeLanguage = static_cast<wxLanguage>(wxLangInfo->Language);
@@ -72,7 +72,7 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
 
         // Add our own catalog
         res = locale->AddCatalog(TranslationsDomainName, TranslationsMsgIdLangId);
-        if (!res 
+        if (!res
             && localeLanguage != TranslationsMsgIdLangId
             && localeLanguage != wxLANGUAGE_DEFAULT) // AddCatalog returns false for msgIdLang & default
         {
@@ -86,7 +86,7 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
         translations != nullptr)
     {
         auto enforcedLanguage = translations->GetBestTranslation(TranslationsDomainName, TranslationsMsgIdLangId);
-        LogMessage("Enforced language for desired language \"", desiredLanguageIdentifier.value_or("<N/A>"),
+        LogMessage("Enforced language for desired identifier \"", desiredLanguageIdentifier.value_or("<N/A>"),
             "\": \"", enforcedLanguage, "\"");
 
         enforcedLanguageIdentifier = MakeLanguageIdentifier(enforcedLanguage);

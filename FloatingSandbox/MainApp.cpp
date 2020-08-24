@@ -143,7 +143,7 @@ bool MainApp::OnInit()
     // Image handlers
     wxInitAllImageHandlers();
 
-    // Language    
+    // Language
     auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
     mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage);
 
