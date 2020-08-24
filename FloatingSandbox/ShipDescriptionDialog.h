@@ -9,11 +9,12 @@
 
 #include <Game/ShipMetadata.h>
 
+#include <wx/custombgwin.h>
 #include <wx/dialog.h>
 
 #include <memory>
 
-class ShipDescriptionDialog : public wxDialog
+class ShipDescriptionDialog : public wxCustomBackgroundWindow<wxDialog>
 {
 public:
 
@@ -21,7 +22,8 @@ public:
         wxWindow* parent,
         ShipMetadata const & shipMetadata,
         bool isAutomatic,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager);
+        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+        ResourceLocator & resourceLocator);
 
     virtual ~ShipDescriptionDialog();
 
