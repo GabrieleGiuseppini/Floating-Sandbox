@@ -122,6 +122,7 @@ private:
     //
 
     std::unique_ptr<wxTimer> mPostInitializeTimer;
+    std::chrono::milliseconds mGameTimerDuration;
     std::unique_ptr<wxTimer> mGameTimer;
     std::unique_ptr<wxTimer> mLowFrequencyTimer;
     std::unique_ptr<wxTimer> mCheckUpdatesTimer;

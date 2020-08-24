@@ -27,7 +27,7 @@ public:
     ShipLoadDialog(
         wxWindow* parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLocator const & resourceLocator);
+        std::shared_ptr<ResourceLocator> const & resourceLocator);
 
 	virtual ~ShipLoadDialog();
 
@@ -69,6 +69,7 @@ private:
 
 	wxWindow * const mParent;
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    std::shared_ptr<ResourceLocator> mResourceLocator;
 
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewWindow * mShipPreviewWindow;

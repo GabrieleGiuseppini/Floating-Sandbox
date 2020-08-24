@@ -929,6 +929,12 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     this->mMainApp->Yield();
 
+    for (int i = 0; i < 5; ++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        this->mMainApp->Yield();
+    }
+
 
     //
     // Start check update timer
@@ -959,6 +965,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
     // Start game timer
     //
+
+    // Ensure 1 second of real time is (no less than) 1 second of simulation
+    mGameTimerDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::duration<float>(mGameController->GetSimulationStepTimeDuration()));
 
     mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
     Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
@@ -1025,7 +1035,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     if (!!mUpdateChecker)
     {
         // We are checking for updates...
-        // ...check whether the check has completed
+        // ...check whether the...check has completed
         auto outcome = mUpdateChecker->GetOutcome();
         if (!!outcome)
         {
@@ -1328,7 +1338,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
             mUIPreferencesManager,
-            *mResourceLocator);
+            mResourceLocator);
     }
 
     // Open dialog
@@ -1356,7 +1366,8 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
                     this,
                     shipMetadata,
                     true,
-                    mUIPreferencesManager);
+                    mUIPreferencesManager,
+                    *mResourceLocator);
 
                 shipDescriptionDialog.ShowModal();
             }
@@ -1958,16 +1969,18 @@ void MainFrame::PostGameStepTimer()
 {
     assert(!!mGameTimer);
 
-    // On Windows the timer resolution is 15.something ms,
-    // so we use a slightly smaller delay to shoot for a maximum of ~64 frames/sec
-    mGameTimer->Start(15, true);
+    mGameTimer->Start(
+        mGameTimerDuration.count(),
+        true); // One-shot
 }
 
 void MainFrame::StartLowFrequencyTimer()
 {
     assert(!!mLowFrequencyTimer);
 
-    mLowFrequencyTimer->Start(1000, false);
+    mLowFrequencyTimer->Start(
+        1000,
+        false); // Continuous
 }
 
 void MainFrame::SetPaused(bool isPaused)

@@ -1,4 +1,3 @@
-
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
 * Created:              2018-01-19
@@ -23,7 +22,7 @@ struct GameParameters
     //
 
     template <typename T>
-    static constexpr T SimulationStepTimeDuration = 0.02f;
+    static constexpr T SimulationStepTimeDuration = 1.0f / 64.0f; // 64 frames/sec == 1 second, matches Windows' timer resolution
 
     template <typename T>
     inline T MechanicalSimulationStepTimeDuration() const

@@ -25,6 +25,8 @@
  */
 struct IGameControllerSettings
 {
+    virtual float GetSimulationStepTimeDuration() const = 0;
+
     virtual float GetNumMechanicalDynamicsIterationsAdjustment() const = 0;
     virtual void SetNumMechanicalDynamicsIterationsAdjustment(float value) = 0;
 
@@ -92,19 +94,19 @@ struct IGameControllerSettings
     virtual float GetWindSpeedMaxFactor() const = 0;
     virtual void SetWindSpeedMaxFactor(float value) = 0;
 
-	// Storm
+    // Storm
 
-	virtual std::chrono::minutes GetStormRate() const = 0;
-	virtual void SetStormRate(std::chrono::minutes value) = 0;
+    virtual std::chrono::minutes GetStormRate() const = 0;
+    virtual void SetStormRate(std::chrono::minutes value) = 0;
 
-	virtual std::chrono::seconds GetStormDuration() const = 0;
-	virtual void SetStormDuration(std::chrono::seconds value) = 0;
+    virtual std::chrono::seconds GetStormDuration() const = 0;
+    virtual void SetStormDuration(std::chrono::seconds value) = 0;
 
-	virtual float GetStormStrengthAdjustment() const = 0;
-	virtual void SetStormStrengthAdjustment(float value) = 0;
+    virtual float GetStormStrengthAdjustment() const = 0;
+    virtual void SetStormStrengthAdjustment(float value) = 0;
 
-	virtual bool GetDoRainWithStorm() const = 0;
-	virtual void SetDoRainWithStorm(bool value) = 0;
+    virtual bool GetDoRainWithStorm() const = 0;
+    virtual void SetDoRainWithStorm(bool value) = 0;
 
     virtual float GetRainFloodAdjustment() const = 0;
     virtual void SetRainFloodAdjustment(float value) = 0;
@@ -168,14 +170,14 @@ struct IGameControllerSettings
 
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;
-	virtual void SetSeaDepthImmediate(float value) = 0;
+    virtual void SetSeaDepthImmediate(float value) = 0;
 
     virtual float GetOceanFloorBumpiness() const = 0;
     virtual void SetOceanFloorBumpiness(float value) = 0;
 
     virtual float GetOceanFloorDetailAmplification() const = 0;
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
-	virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
+    virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
 
     virtual float GetOceanFloorElasticity() const = 0;
     virtual void SetOceanFloorElasticity(float value) = 0;

@@ -247,6 +247,8 @@ public:
     // Game parameters
     //
 
+    float GetSimulationStepTimeDuration() const override { return GameParameters::SimulationStepTimeDuration<float>; }
+
     float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
     void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mGameParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }

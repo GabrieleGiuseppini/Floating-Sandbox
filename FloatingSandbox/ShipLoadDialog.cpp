@@ -17,9 +17,10 @@ constexpr int MaxDirComboWidth = 650;
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLocator const & resourceLocator)
+    std::shared_ptr<ResourceLocator> const & resourceLocator)
 	: mParent(parent)
     , mUIPreferencesManager(std::move(uiPreferencesManager))
+    , mResourceLocator(std::move(resourceLocator))
 {
 	Create(
 		mParent,
@@ -76,7 +77,7 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Preview
         {
-            mShipPreviewWindow = new ShipPreviewWindow(this, resourceLocator);
+            mShipPreviewWindow = new ShipPreviewWindow(this, *mResourceLocator);
 
             mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
             mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
@@ -157,7 +158,7 @@ ShipLoadDialog::ShipLoadDialog(
             // HomeDir button
 
             wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-            wxBitmap homeBitmap(resourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap homeBitmap(mResourceLocator->GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
             homeDirButton->SetToolTip(_("Go to the default Ships folder"));
             homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
@@ -192,7 +193,7 @@ ShipLoadDialog::ShipLoadDialog(
 			// Search button
 
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
-            wxBitmap searchNextBitmap(resourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap searchNextBitmap(mResourceLocator->GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
             mSearchNextButton->SetBitmap(searchNextBitmap);
             mSearchNextButton->SetToolTip(_("Go to the next search result"));
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
@@ -222,7 +223,7 @@ ShipLoadDialog::ShipLoadDialog(
         buttonsSizer->AddSpacer(10);
 
         mInfoButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-        wxBitmap infoBitmap(resourceLocator.GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
+        wxBitmap infoBitmap(mResourceLocator->GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
         mInfoButton->SetBitmap(infoBitmap);
         mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
         buttonsSizer->Add(mInfoButton, 0);
@@ -393,7 +394,8 @@ void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
             this,
             *mSelectedShipMetadata,
             false,
-            mUIPreferencesManager);
+            mUIPreferencesManager,
+            *mResourceLocator);
 
         shipDescriptionDialog.ShowModal();
     }

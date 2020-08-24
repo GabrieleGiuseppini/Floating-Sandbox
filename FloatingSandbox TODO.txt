@@ -485,6 +485,35 @@ Render:
 		+ Run with address sanitizer (32-bit)
 		+ Send for testing (32-bit)
 
+		= Fix 1 second == 1 second
+			+ Change simulation time step
+			+ Fix calculation of timer step: round correctly!
+			= Test Titanic
+				+ Find new strength: 0.643389
+				- Test balls, etc.
+				- Test bombs
+				- Tet melting
+			+ Fix splash screen - Ready!
+			- Increase rigidity:
+				- SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names if "stiff")
+				- Test Titanic
+					- Find new strength
+					- Test balls, etc.
+			= Test on old dell
+
+		- Test szerszen
+
+		- Try with bigger spring adjustment
+		- Adjust flames
+			- Thicker flames: texture or shader?
+			- Resolution
+
+			
+
+		- MSBuild:
+			- Test /MP
+			- If ok: in CMake
+
 		- Figure out how to select gfx card
 
 		- Ships:
