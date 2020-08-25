@@ -73,7 +73,7 @@ struct GameParameters
 
     // Fraction of a spring displacement that is removed during a spring relaxation
     // iteration. The remaining spring displacement is (1.0 - this fraction).
-    static float constexpr SpringReductionFraction = 0.4f;
+    static float constexpr SpringReductionFraction = 0.5f; // Before 1.15.2 was 0.4, and materials stiffnesses were higher
 
     // The empirically-determined constant for the spring damping.
     // The simulation is quite sensitive to this value:

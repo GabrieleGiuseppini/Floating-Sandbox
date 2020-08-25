@@ -488,18 +488,26 @@ Render:
 		= Fix 1 second == 1 second
 			+ Change simulation time step
 			+ Fix calculation of timer step: round correctly!
-			= Test Titanic
+			+ Test Titanic
 				+ Find new strength: 0.643389
-				- Test balls, etc.
-				- Test bombs
-				- Tet melting
 			+ Fix splash screen - Ready!
-			- Increase rigidity:
-				- SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names if "stiff")
-				- Test Titanic
-					- Find new strength
-					- Test balls, etc.
-			= Test on old dell
+			+ Increase rigidity:
+				+ SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names when "stiff")
+				+ Ropes are at 2.0
+			+ Test Titanic
+				+ Lower strength even more: less than 0.643389
+					+ Or: lower strength of Titanic's breaking material - try first removing strength "version multiplier"
+			+ Test ropes
+				+ With Titanic cutting
+			+ Test balls, etc.
+			- Test bombs
+				- Lower strength of: 
+					- RC
+			- Test melting
+				- Increase strenghtening
+			- Test on old dell
+			- Build new material template
+			- changes.txt: "Recalibrated..."
 
 		- Test szerszen
 
@@ -1296,7 +1304,10 @@ Render:
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
 	- EMP tool
-		- Better after electrical "expansion"
+		! Better after electrical "expansion"
+		- Better after frontier
+		- Visualization:			
+			- N electric arcs between N pairs of (far apart) frontier points, moving along frontier
 
 	- Lights/materials breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
