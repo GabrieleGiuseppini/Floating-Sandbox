@@ -101,7 +101,7 @@ struct GameParameters
 
     float SpringStiffnessAdjustment;
     static float constexpr MinSpringStiffnessAdjustment = 0.001f;
-    static float constexpr MaxSpringStiffnessAdjustment = 2.4f;
+    static float constexpr MaxSpringStiffnessAdjustment = 2.0f;
 
     float SpringDampingAdjustment;
     static float constexpr MinSpringDampingAdjustment = 0.001f;

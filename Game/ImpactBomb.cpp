@@ -73,7 +73,7 @@ bool ImpactBomb::Update(
 
             // Blast strength
             float const blastStrength =
-                65.0f // Magic number
+                60.0f // Magic number
                 * gameParameters.BombBlastForceAdjustment;
 
             // Blast heat

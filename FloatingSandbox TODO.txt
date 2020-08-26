@@ -500,18 +500,19 @@ Render:
 			+ Test ropes
 				+ With Titanic cutting
 			+ Test balls, etc.
-			- Test bombs
-				- Lower strength of: 
-					- RC
-			- Test melting
-				- Increase strenghtening
+			+ Test melting
+				+ Increase strenghtening
+			+ Test bombs
+				+ Adjust strengths
+			+ Test rotting speed (and gfx)
+			+ Test repairing
+			+ See if max StiffnessAdjust needs to be changed (so that spring displacement max is 1.0)
 			- Test on old dell
 			- Build new material template
 			- changes.txt: "Recalibrated..."
 
 		- Test szerszen
 
-		- Try with bigger spring adjustment
 		- Adjust flames
 			- Thicker flames: texture or shader?
 			- Resolution
@@ -543,7 +544,9 @@ Render:
 			+ Remove all TODOTEST logging		
 
 		- More stress metal sounds, to dilute "cycle of sounds"
-			- Repro first and detect chain of noise
+			- Repro first and detect chain of noise:
+				- 1) Melted metal that cools in water
+				- 2) After bomb?
 			- See if longer relax interval for stress sounds does the trick
 			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)

@@ -1283,8 +1283,8 @@ void Points::UpdateEphemeralParticles(
                                 currentSimulationTime
                                 - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
 
-                            float const vortexAmplitude = 
-                                state.VortexAmplitude 
+                            float const vortexAmplitude =
+                                state.VortexAmplitude
                                 * std::min(1.0f, simulationLifetime / 5.0f);
 
                             float const vortexValue =
@@ -1752,7 +1752,7 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
-                float constexpr ScaleMax = 0.3f;
+                float constexpr ScaleMax = 0.275f;
                 float constexpr ScaleMin = 0.1f;
                 float const scale =
                     ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY));

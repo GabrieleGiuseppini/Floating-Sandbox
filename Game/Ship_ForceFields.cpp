@@ -81,8 +81,10 @@ void Ship::ApplyBlastForceField(
                 closestPointIndex = pointIndex;
             }
 
-            // Create acceleration to flip the point
-            vec2f flippedRadius = pointRadius.normalise() * (blastRadius + (blastRadius - pointRadius.length()));
+            // Create acceleration to flip the point to the other side
+            // of the radius
+            float const pointRadiusLength = std::sqrt(squarePointDistance);
+            vec2f flippedRadius = pointRadius.normalise(pointRadiusLength) * (blastRadius + (blastRadius - pointRadiusLength));
             vec2f newPosition = centerPosition + flippedRadius;
             mPoints.GetNonSpringForce(pointIndex) +=
                 (newPosition - mPoints.GetPosition(pointIndex))

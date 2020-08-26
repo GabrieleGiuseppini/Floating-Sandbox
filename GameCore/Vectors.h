@@ -31,8 +31,8 @@ public:
         float angle) // Angle is CW, starting FROM E (1.0, 0.0); angle 0.0 <=> (1.0, 0.0); angle +PI/2 <=> (0.0, -1.0)
     {
         return vec2f(
-            magnitude * cos(angle),
-            -magnitude * sin(angle)); // Angle is CW and our positive points up
+            magnitude * std::cos(angle),
+            -magnitude * std::sin(angle)); // Angle is CW and our positive points up
     }
 
     inline constexpr vec2f()
@@ -147,7 +147,7 @@ public:
 
     inline float length() const noexcept
     {
-        return sqrtf(x * x + y * y);
+        return std::sqrt(x * x + y * y);
     }
 
     inline float squareLength() const noexcept
@@ -160,7 +160,7 @@ public:
         float const squareLength = x * x + y * y;
         if (squareLength != 0)
         {
-            return (*this) / sqrtf(squareLength);
+            return (*this) / std::sqrt(squareLength);
         }
         else
         {
@@ -192,7 +192,7 @@ public:
      */
     inline float angleCw(vec2f const & other) const
     {
-        return -atan2f(
+        return -std::atan2(
             x * other.y - y * other.x,
             x * other.x + y * other.y);
     }
@@ -378,7 +378,7 @@ public:
 
     float length() const noexcept
     {
-        return sqrtf(x * x + y * y + z * z);
+        return std::sqrt(x * x + y * y + z * z);
     }
 
     float squareLength() const noexcept
@@ -391,7 +391,7 @@ public:
         float const squareLength = x * x + y * y + z * z;
         if (squareLength != 0)
         {
-            return (*this) / sqrtf(squareLength);
+            return (*this) / std::sqrt(squareLength);
         }
         else
         {

@@ -117,7 +117,7 @@ bool RCBomb::Update(
 
                 // Blast strength
                 float const blastStrength =
-                    75.0f // Magic number
+                    70.0f // Magic number
                     * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat

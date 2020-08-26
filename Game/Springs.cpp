@@ -421,17 +421,17 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     // If the endpoints are melting, their temperature also controls the stiffness - the higher the temperature,
     // above the melting point, the lower the stiffness; this is achieved with a smoothed multiplier with the following
     // edges:
-    //  T - Tm <= 0.0 :                 1.0
-    //  T - Tm >= DeltaMeltingTMax :    < 1.0 (== MinStiffnessFraction, asymptote)
+    //  T <= Tm                    :    1.0
+    //  T >= Tm + DeltaMeltingTMax :    ~< 1.0 (== MinStiffnessFraction, asymptote)
     //
 
     // Asymptote
     // NOTE: This value should be adjusted based on the number of spring iterations we perform
     // per simulation step
-    float constexpr MinStiffnessFraction = 0.0008f;
+    float constexpr MinStiffnessFraction = 0.0002f;
 
-    // We reach max softness at T+100
-    float const meltDepthFraction = SmoothStep(0.0f, 100.0f, meltingOverheat);
+    // We reach max softness at T+200
+    float const meltDepthFraction = SmoothStep(0.0f, 200.0f, meltingOverheat);
 
     // 1.0 when not melting, MinStiffnessFraction when melting "a lot"
     float const meltMultiplier = Mix(1.0f, MinStiffnessFraction, meltDepthFraction);
@@ -451,7 +451,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     if (desiredStiffnessCoefficient > mCoefficientsBuffer[springIndex].StiffnessCoefficient)
     {
         mCoefficientsBuffer[springIndex].StiffnessCoefficient +=
-            0.05f // 0.05: ~43 steps to 1/10th off target
+            0.03f // 0.03: ~76 steps to 1/10th off target
             * (desiredStiffnessCoefficient - mCoefficientsBuffer[springIndex].StiffnessCoefficient);
     }
     else
@@ -499,10 +499,9 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     {
         SetRestLength(
             springIndex,
-            std::min(
-                std::max(
-                    GetRestLength(springIndex),
-                    GetLength(springIndex, points)),
+            Clamp(
+                GetLength(springIndex, points),
+                GetRestLength(springIndex),
                 mFactoryRestLengthBuffer[springIndex] * 2.0f));
     }
 
