@@ -402,6 +402,50 @@ Render:
 			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
 			+ Test w/panel
 		+ GameController: just one special day
+		+ Fix 1 second == 1 second
+			+ Change simulation time step
+			+ Fix calculation of timer step: round correctly!
+			+ Test Titanic
+				+ Find new strength: 0.643389
+			+ Fix splash screen - Ready!
+			+ Increase rigidity:
+				+ SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names when "stiff")
+				+ Ropes are at 2.0
+			+ Test Titanic
+				+ Lower strength even more: less than 0.643389
+					+ Or: lower strength of Titanic's breaking material - try first removing strength "version multiplier"
+			+ Test ropes
+				+ With Titanic cutting
+			+ Test balls, etc.
+			+ Test melting
+				+ Increase strenghtening
+			+ Test bombs
+				+ Adjust strengths
+			+ Test rotting speed (and gfx)
+			+ Test repairing
+			+ See if max StiffnessAdjust needs to be changed (so that spring displacement max is 1.0)
+			+ Test on old dell
+			+ Build new material template
+			+ changes.txt: "Recalibrated..."
+		+ Test szerszen
+		+ See if may avoid green lines
+			+ Wait for answer from Intel
+		+ Day/night cycle
+			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
+			  ambient light to target ambient light (target based off next "12-hour")
+			+ With texture notification when on
+				+ Code
+				+ Texture
+			+ SettingsDialog: duration
+			+ Issue: cursor of tool over SettingsDialog
+			+ Try better (inverte-able) curve
+				+ Move inverse to GameMath
+			+ changes.txt
+		+ MSBuild:
+			+ Test /MP
+			+ If ok: in CMake
+
+
 			
 		= Localization
 			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
@@ -459,21 +503,6 @@ Render:
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 
-		= See if may avoid green lines
-			- Wait for answer from Intel
-
-		= Day/night cycle
-			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
-			  ambient light to target ambient light (target based off next "12-hour")
-			+ With texture notification when on
-				+ Code
-				+ Texture
-			+ SettingsDialog: duration
-			+ Issue: cursor of tool over SettingsDialog
-			+ Try better (inverte-able) curve
-				+ Move inverse to GameMath
-			- changes.txt
-
 		= Bubbles:
 			+ Smaller wave
 			+ Add checkbox for bubble sounds
@@ -485,45 +514,10 @@ Render:
 		+ Run with address sanitizer (32-bit)
 		+ Send for testing (32-bit)
 
-		= Fix 1 second == 1 second
-			+ Change simulation time step
-			+ Fix calculation of timer step: round correctly!
-			+ Test Titanic
-				+ Find new strength: 0.643389
-			+ Fix splash screen - Ready!
-			+ Increase rigidity:
-				+ SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names when "stiff")
-				+ Ropes are at 2.0
-			+ Test Titanic
-				+ Lower strength even more: less than 0.643389
-					+ Or: lower strength of Titanic's breaking material - try first removing strength "version multiplier"
-			+ Test ropes
-				+ With Titanic cutting
-			+ Test balls, etc.
-			+ Test melting
-				+ Increase strenghtening
-			+ Test bombs
-				+ Adjust strengths
-			+ Test rotting speed (and gfx)
-			+ Test repairing
-			+ See if max StiffnessAdjust needs to be changed (so that spring displacement max is 1.0)
-			- Test on old dell
-			- Build new material template
-			- changes.txt: "Recalibrated..."
-
-		- Test szerszen
 
 		- Adjust flames
 			- Thicker flames: texture or shader?
-			- Resolution
-
-			
-
-		- MSBuild:
-			- Test /MP
-			- If ok: in CMake
-
-		- Figure out how to select gfx card
+			- Resolution			
 
 		- Ships:
 			- Fix & test Hesleden
@@ -574,6 +568,8 @@ Render:
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
+
+		- Figure out how to select gfx card
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 

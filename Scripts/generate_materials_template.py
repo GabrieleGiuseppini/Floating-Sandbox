@@ -65,7 +65,7 @@ def main():
     # Generate HTML
     #
 
-    html = "<html><head><title>Materials Template</title>"
+    html = "<html><head><title>Floating Sandbox Materials Template</title>"
     html += "<style>tr.border_top td { border-top:1pt solid black;}</style>"
     html += "</head><body>"
 
@@ -133,7 +133,7 @@ def main():
                 if type(c) != tuple:
                     html += "<td/>"
                 else:
-                    html += "<td style='font-size:8px;'>"
+                    html += "<td style='font-size:9px;'>"
                     if is_structural:
                         html += "{:.2f}".format(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
                     html += "</td>"
