@@ -47,7 +47,7 @@ public:
 
     void InitializeCloudTextures(ResourceLocator const & resourceLocator);
 
-    void InitializeWorldTextures(ResourceLocator const & resourceLocator);    
+    void InitializeWorldTextures(ResourceLocator const & resourceLocator);
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
@@ -199,7 +199,7 @@ public:
 
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
-        auto cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
+        auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
@@ -563,14 +563,14 @@ private:
             personalitySeed);
     }
 
-private:    
+private:
 
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
-    void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);    
+    void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
 
@@ -800,8 +800,8 @@ private:
     //
 
     std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
-    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;    
-    
+    GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+
     UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;

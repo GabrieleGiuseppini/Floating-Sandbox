@@ -32,19 +32,6 @@ public:
     void Upload(
         GameParameters const & gameParameters,
         Render::RenderContext & renderContext) const;
-
-private:
-
-    static inline auto ToSampleIndex(float x)
-    {
-        // Calculate sample index, minimizing error
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-
-        return sampleIndexI;
-    }
-
 public:
 
     /*
@@ -102,9 +89,15 @@ public:
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
-        // Distribute among the two samples
-        mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
-        mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
+        // Distribute the displacement offset among the two samples
+
+        ChangeHeightSmooth(
+            SWEOuterLayerSamples + sampleIndexI,
+            (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification);
+
+        ChangeHeightSmooth(
+            SWEOuterLayerSamples + sampleIndexI + 1,
+            sampleIndexDx * yOffset / SWEHeightFieldAmplification);
     }
 
     void ApplyThanosSnap(
@@ -117,16 +110,56 @@ public:
         float currentSimulationTime,
         Wind const & wind);
 
-public:
-
-    // The number of samples for the entire world width;
-    // a higher value means more resolution at the expense of Update() and of cache misses
-    static size_t constexpr SamplesCount = 8192;
-
-    // The x step of the samples
-    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
-
 private:
+
+    static inline auto ToSampleIndex(float x)
+    {
+        // Calculate sample index, minimizing error
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        return sampleIndexI;
+    }
+
+    // Adds to a height field sample, ensuring we don't excdeed
+    // a maximum slope to keep surface perturbations "smooth"
+    inline void ChangeHeightSmooth(
+        size_t heightFieldIndex,
+        float delta)
+    {
+        // The index is within the "workable" mid-section of the height field
+        assert(heightFieldIndex >= SWEOuterLayerSamples && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount);
+
+        // This is the maximum derivative we allow,
+        // based on empirical observations of (hf[i] - hf[i+/-1]) / Dx
+        float constexpr MaxDerivative = 0.01f;
+
+        if (delta >= 0.0f)
+        {
+            // Left derivative
+            mHeightField[heightFieldIndex] = std::min(
+                mHeightField[heightFieldIndex] + delta,
+                mHeightField[heightFieldIndex - 1] + MaxDerivative * Dx);
+
+            // Right derivative
+            mHeightField[heightFieldIndex] = std::min(
+                mHeightField[heightFieldIndex],
+                mHeightField[heightFieldIndex + 1] + MaxDerivative * Dx);
+        }
+        else
+        {
+            // Left derivative
+            mHeightField[heightFieldIndex] = std::max(
+                mHeightField[heightFieldIndex] + delta,
+                mHeightField[heightFieldIndex - 1] - MaxDerivative * Dx);
+
+            // Right derivative
+            mHeightField[heightFieldIndex] = std::max(
+                mHeightField[heightFieldIndex],
+                mHeightField[heightFieldIndex + 1] - MaxDerivative * Dx);
+        }
+    }
 
     void SetSWEWaveHeight(
         size_t centerIndex,
@@ -166,6 +199,17 @@ private:
 
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
+
+    //
+    // Constants
+    //
+
+    // The number of samples for the entire world width;
+    // a higher value means more resolution at the expense of Update() and of cache misses
+    static size_t constexpr SamplesCount = 8192;
+
+    // The x step of the samples
+    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
 
     //
     // SWE Layer constants
@@ -223,9 +267,8 @@ private:
     std::chrono::minutes mTsunamiRate;
     std::chrono::minutes mRogueWaveRate;
 
-
     //
-    // Shallow water equations
+    // SWE buffers
     //
 
     // Height field

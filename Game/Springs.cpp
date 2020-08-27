@@ -494,7 +494,8 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
 
     // If we're melting, the current spring length, when longer than the
     // previous rest length, is also its new rest length - but no more than a few times
-    // the factory rest length, or else springs become abnormally-long spikes
+    // the factory rest length, or else springs become abnormally-long spikes.
+    // When cooling again, we leave the rest length at its maximum - modeling permanent deformation.
     if (meltingOverheat > 0.0f)
     {
         SetRestLength(

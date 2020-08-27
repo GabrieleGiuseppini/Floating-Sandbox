@@ -444,6 +444,9 @@ Render:
 		+ MSBuild:
 			+ Test /MP
 			+ If ok: in CMake
+		X Test speed with ElementIndex/Count being 64-bit
+		+ Run with address sanitizer (32-bit)
+		+ Send for testing (32-bit)
 
 
 			
@@ -503,17 +506,26 @@ Render:
 			- Mark TO-DO item under Technical Debt
 			- changes.txt
 
+		- TODO:
+			- Discord:
+				- Wreno for ship winner of contest
+				- DioxCode
+			- Ask GameJolt forum for disabling client
+				- If no answer, send e-mail
+
 		= Bubbles:
 			+ Smaller wave
 			+ Add checkbox for bubble sounds
 				+ Storage owned by SoundController
 				+ Cutoff happens @ SoundController
 			+ Try vortex amplitude: random sign
-			- Limit derivative
-		X Test speed with ElementIndex/Count being 64-bit
-		+ Run with address sanitizer (32-bit)
-		+ Send for testing (32-bit)
+			= Limit derivative
 
+		- Logging & threads
+
+		- Lava preset:
+			- Water density
+			- Heat coeffs? For smooth melting, aka Lord of the Rings
 
 		- Adjust flames
 			- Thicker flames: texture or shader?
@@ -523,6 +535,20 @@ Render:
 			- Fix & test Hesleden
 				- "Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default"
 			- See two ships from Officer TimCan's
+
+		- Run in Debug
+		- Test perf on Dell, before & after
+
+		- Release 1.15.2
+			- Decide how to package 32-bit
+				- Install GameJolt client and see user experience with MSI
+			- "System Requirements" Readme section, @ GitHub & @ GameJolt
+				- Windows 64 & 32-bit, & perf difference
+				- OpenGL 2.1
+				- Link to FAQ - for issues like OpenGL... - on FS.com
+					- Restructure in sections, w/"Issues" & "System Requirements"
+
+		----------------------------------------------------------------------------------------
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
@@ -538,9 +564,12 @@ Render:
 			+ Remove all TODOTEST logging		
 
 		- More stress metal sounds, to dilute "cycle of sounds"
-			- Repro first and detect chain of noise:
+			- Repro first and detect chain of noise, in these two situations:
 				- 1) Melted metal that cools in water
 				- 2) After bomb?
+			- Try spreading out spring coeffs' recalculations - also for better look'n'feel
+				- Test look'n'feel
+				- Test perf on Dell, before & after
 			- See if longer relax interval for stress sounds does the trick
 			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
@@ -553,16 +582,11 @@ Render:
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
-		- Release:
-			- Decide how to package 32-bit
-				- Install GameJolt client and see user experience with MSI
-			- "System Requirements" Readme section, @ GitHub & @ GameJolt
-				- Windows 64 & 32-bit, & perf difference
-				- OpenGL 2.1
-				- Link to FAQ - for issues like OpenGL... - on FS.com
-					- Restructure in sections, w/"Issues" & "System Requirements"
+		- Release
 
 		----------------------------------------------------------------------------------------
+
+		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
 
 		- Spring relaxation with intrinsics
 
@@ -752,6 +776,8 @@ Render:
 
 
 - Suggestions to spec:
+	- Shockwave bomb
+		- When detonated the area destroyed is quite small but it sends out a shock wave with a pretty big radius that can cause things to break or collapse and stuff like that. Also maybe it could be very damaging to rotted materials, causing it to shatter like the thanos snap thing.
 	- Temperature tool - to get temperature of points
 	- Make lights not propagate through hull
 	- Sun rays

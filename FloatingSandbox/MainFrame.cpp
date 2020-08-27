@@ -970,6 +970,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mGameTimerDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<float>(mGameController->GetSimulationStepTimeDuration()));
 
+    LogMessage("Game timer duration: ", mGameTimerDuration.count());
+
     mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
     Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
 

@@ -137,6 +137,29 @@ bool MainApp::OnInit()
 
 
     //
+    // Dump system timer resolution
+    //
+
+#ifdef _MSC_VER
+    HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
+    if (hNtDll != NULL)
+    {
+        ULONG nMinRes, nMaxRes, nCurRes;
+        typedef NTSTATUS(CALLBACK * LPFN_NtQueryTimerResolution)(PULONG, PULONG, PULONG);
+        auto const pQueryResolution = (LPFN_NtQueryTimerResolution)::GetProcAddress(hNtDll, "NtQueryTimerResolution");
+        if (pQueryResolution != nullptr &&
+            pQueryResolution(&nMinRes, &nMaxRes, &nCurRes) == ERROR_SUCCESS)
+        {
+            LogMessage("Windows timer resolution (min/max/cur): ",
+                nMinRes / 10000, ".", (nMinRes % 10000) / 10, " / ",
+                nMaxRes / 10000, ".", (nMaxRes % 10000) / 10, " / ",
+                nCurRes / 10000, ".", (nCurRes % 10000) / 10, " ms");
+        }
+    }
+#endif
+
+
+    //
     // Initialize wxWidgets
     //
 

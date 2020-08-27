@@ -332,14 +332,6 @@ SwitchboardPanel::~SwitchboardPanel()
 {
 }
 
-void SwitchboardPanel::UpdateSimulation()
-{
-    for (auto ctrl : mUpdateableElements)
-    {
-        ctrl->UpdateSimulation();
-    }
-}
-
 bool SwitchboardPanel::ProcessKeyDown(
     int keyCode,
     int keyModifiers)

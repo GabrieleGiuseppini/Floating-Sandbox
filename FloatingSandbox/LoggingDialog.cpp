@@ -60,14 +60,15 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 
 LoggingDialog::~LoggingDialog()
 {
+    Logger::Instance.UnregisterListener();
 }
 
 void LoggingDialog::Open()
 {
 	Logger::Instance.RegisterListener(
-		[this](std::string const & message)
+		[this, windowId = this->GetId()](std::string const & message)
 		{
-            fsLogMessageEvent * event = new fsLogMessageEvent(fsEVT_LOG_MESSAGE, this->GetId(), message);
+            fsLogMessageEvent * event = new fsLogMessageEvent(fsEVT_LOG_MESSAGE, windowId, message);
             QueueEvent(event);
 		});
 

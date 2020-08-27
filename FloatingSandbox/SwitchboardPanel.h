@@ -54,7 +54,13 @@ public:
 
     virtual ~SwitchboardPanel();
 
-    void UpdateSimulation();
+    void UpdateSimulation()
+    {
+        for (auto ctrl : mUpdateableElements)
+        {
+            ctrl->UpdateSimulation();
+        }
+    }
 
     bool ProcessKeyDown(
         int keyCode,
