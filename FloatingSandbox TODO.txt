@@ -520,6 +520,10 @@ Render:
 				+ Cutoff happens @ SoundController
 			+ Try vortex amplitude: random sign
 			= Limit derivative
+				+ Do
+				+ Test with one-sided derivative
+				+ Test - in Debug - at world boundaries
+				- Test on Dell
 
 		- Logging & threads
 

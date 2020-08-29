@@ -1283,19 +1283,18 @@ void Points::UpdateEphemeralParticles(
                                 currentSimulationTime
                                 - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
 
-                            float const vortexAmplitude =
-                                state.VortexAmplitude
-                                * std::min(1.0f, simulationLifetime / 5.0f);
-
                             float const vortexValue =
-                                vortexAmplitude
+                                state.VortexAmplitude
                                 * PrecalcLoFreqSin.GetNearestPeriodic(
                                     state.NormalizedVortexAngularVelocity * simulationLifetime);
 
-                            // Update position with delta
-                            mPositionBuffer[pointIndex].x += vortexValue - state.LastVortexValue;
+                            //
+                            // Apply vortex to bubble
+                            //
 
-                            state.LastVortexValue = vortexValue;
+                            mNonSpringForceBuffer[pointIndex] += vec2f(
+                                vortexValue,
+                                0.0f);
 
                             //
                             // Displace ocean surface, if surfacing

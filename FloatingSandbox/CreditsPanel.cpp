@@ -34,7 +34,7 @@ CreditsPanel::CreditsPanel(
 
     //
     // Initialize look'n'feel
-    //    
+    //
 
     SetBackgroundColour(wxColour("BLACK"));
 
@@ -64,7 +64,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
     //
     // Titles
     //
-  
+
     std::vector<Title> titles = {
 
         {0, mApplication, 0},
@@ -92,7 +92,8 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("TRANSLATION"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
-        {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), VMargin3},
+        {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
+        {1, wxS("Roman Shavernew (Russian)"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), 0},
@@ -101,7 +102,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("TopHatLemons   Truce#3326   RetroGraczzPL   Nomadavid   Wreno"), 0},
         {2, wxS("Pac0master   CorbinPasta93   Yorkie   Bluefox   KikoTheBoatBuilder"), 0},
-        {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},        
+        {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},
         {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres"), 0},
         {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua"), 0},
         {2, wxS("MasterGarfield   Aur\xe9lien WOLFF   Alex di Roma   2017 Leonardo"), 0},
@@ -216,7 +217,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 }
 
 void CreditsPanel::RenderTitle(
-    Title const & title, 
+    Title const & title,
     int centerX,
     int & currentY, // @ vertical middle of line
     wxDC & dc,
@@ -250,7 +251,7 @@ void CreditsPanel::OnPaint(wxPaintEvent & /*event*/)
     //
     // Blit the bitmap to its location
     //
-    
+
     wxPaintDC dc(this);
     dc.Blit(
         0, 0, // Dest coords
@@ -278,7 +279,7 @@ void CreditsPanel::OnMouseMove(wxMouseEvent & event)
 
         mCurrentScrollOffsetY = std::min(
             std::max(
-                mCurrentScrollOffsetY - deltaY, 
+                mCurrentScrollOffsetY - deltaY,
                 0),
             mMaxScrollOffsetY - 40);
 

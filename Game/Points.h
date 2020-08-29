@@ -265,7 +265,6 @@ private:
 
             float CurrentDeltaY;
             float Progress;
-            float LastVortexValue;
 
             AirBubbleState()
             {}
@@ -277,7 +276,6 @@ private:
                 , NormalizedVortexAngularVelocity(1.0f / vortexPeriod) // (2PI/vortexPeriod)/2PI
                 , CurrentDeltaY(0.0f)
                 , Progress(0.0f)
-                , LastVortexValue(0.0f)
             {}
         };
 

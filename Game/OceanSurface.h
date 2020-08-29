@@ -71,7 +71,7 @@ public:
         float const yOffset)
     {
         assert(x >= -GameParameters::HalfMaxWorldWidth
-            && x <= GameParameters::HalfMaxWorldWidth + 0.01f); // Allow for derivative taking
+            && x <= GameParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and interpolate in-between that sample and the next
@@ -93,10 +93,12 @@ public:
 
         ChangeHeightSmooth(
             SWEOuterLayerSamples + sampleIndexI,
+            SWEOuterLayerSamples + sampleIndexI - 1, // Left derivative
             (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification);
 
         ChangeHeightSmooth(
             SWEOuterLayerSamples + sampleIndexI + 1,
+            SWEOuterLayerSamples + sampleIndexI + 2, // Right derivative
             sampleIndexDx * yOffset / SWEHeightFieldAmplification);
     }
 
@@ -126,10 +128,12 @@ private:
     // a maximum slope to keep surface perturbations "smooth"
     inline void ChangeHeightSmooth(
         size_t heightFieldIndex,
+        size_t heightFieldIndexDerivative,
         float delta)
     {
         // The index is within the "workable" mid-section of the height field
-        assert(heightFieldIndex >= SWEOuterLayerSamples && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount);
+        assert(heightFieldIndex >= SWEOuterLayerSamples - 1 && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount + 1);
+        assert(heightFieldIndexDerivative >= SWEOuterLayerSamples - 2 && heightFieldIndexDerivative <= SWEOuterLayerSamples + SamplesCount + 2);
 
         // This is the maximum derivative we allow,
         // based on empirical observations of (hf[i] - hf[i+/-1]) / Dx
@@ -137,27 +141,16 @@ private:
 
         if (delta >= 0.0f)
         {
-            // Left derivative
             mHeightField[heightFieldIndex] = std::min(
                 mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex - 1] + MaxDerivative * Dx);
-
-            // Right derivative
-            mHeightField[heightFieldIndex] = std::min(
-                mHeightField[heightFieldIndex],
-                mHeightField[heightFieldIndex + 1] + MaxDerivative * Dx);
+                mHeightField[heightFieldIndexDerivative] + MaxDerivative * Dx);
         }
         else
         {
             // Left derivative
             mHeightField[heightFieldIndex] = std::max(
                 mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex - 1] - MaxDerivative * Dx);
-
-            // Right derivative
-            mHeightField[heightFieldIndex] = std::max(
-                mHeightField[heightFieldIndex],
-                mHeightField[heightFieldIndex + 1] - MaxDerivative * Dx);
+                mHeightField[heightFieldIndexDerivative] - MaxDerivative * Dx);
         }
     }
 
