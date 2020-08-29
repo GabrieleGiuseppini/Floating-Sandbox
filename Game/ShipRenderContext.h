@@ -71,7 +71,7 @@ public:
         mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
         mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
     }
-       
+
 public:
 
     void UploadStart(PlaneId maxMaxPlaneId);
@@ -237,7 +237,8 @@ public:
 
         // Qhw = vector delineating one half of the quad width, the one to the left;
         // its length is not affected by velocity, only its direction
-        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale;
+        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale
+            * ((renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1) ? 1.5f : 1.0f);
 
         // A, B = left-bottom, right-bottom
         vec2f const A = Pp + Qhw;
@@ -873,7 +874,7 @@ private:
 
     void RenderPrepareVectorArrows(RenderParameters const & renderParameters);
     void RenderDrawVectorArrows(RenderParameters const & renderParameters);
-    
+
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
@@ -1082,7 +1083,7 @@ private:
     GameOpenGLVBO mStressedSpringElementVBO;
     size_t mStressedSpringElementVBOAllocatedElementSize;
 
-    BoundedVector<FlameVertex> mFlameVertexBuffer;    
+    BoundedVector<FlameVertex> mFlameVertexBuffer;
     size_t mFlameBackgroundCount;
     size_t mFlameForegroundCount;
     GameOpenGLVBO mFlameVBO;
@@ -1104,7 +1105,7 @@ private:
     std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
     size_t mGenericMipMappedTextureTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mGenericMipMappedTextureVBO;
-    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;    
+    size_t mGenericMipMappedTextureVBOAllocatedVertexSize;
 
     std::array<std::vector<HighlightVertex>, static_cast<size_t>(HighlightModeType::_Last) + 1> mHighlightVertexBuffers;
     GameOpenGLVBO mHighlightVBO;

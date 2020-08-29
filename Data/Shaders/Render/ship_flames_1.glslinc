@@ -122,25 +122,36 @@ void main()
         discard;   
    
     //
-    // Emit
+    // Sample alpha
     //
 
-    vec2 virtualTextureCoords = (uv + vec2(1.0, 1.0)) / 2.0;
+    vec2 alphaVirtualTextureCoords = vec2(
+        ((uv.x + 1.0) / 2.0 + noiseOffset.x) / 2.0, // For alpha sampling we halve x
+        (uv.y + 1.0) / 2.0);
 
-    // Sample flame texture alpha        
-    virtualTextureCoords.x = 
-        (virtualTextureCoords.x + noiseOffset.x) / 2.0; // For alpha sampling we halve x
-
-    vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * virtualTextureCoords;
+    vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
     vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
 
-    // Sample flame texture color - sample coords change with time      
-    virtualTextureCoords.y = fract(
-        (uv.y - paramFlameSpeed * 4.0) / 2.0 // For color sampling we halve y and wrap
-        + noiseOffset.x); // Randomize Y displacement per-flame
-    virtualTextureCoords.y = clamp(virtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y); // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
-    vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * virtualTextureCoords;
+    //
+	// Sample color
+    //
+
+    vec2 colorVirtualTextureCoords = fract(
+        vec2(
+            uv.x + 1.0,
+            (uv.y - paramFlameSpeed * 4.0) / 2.0 // For color sampling we halve y and wrap
+            + noiseOffset.x)); // Randomize Y displacement per-flame
+
+    // Clamp in order to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
+    colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
+
+    vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorVirtualTextureCoords;
     vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
+
+
+    //
+    // Emit
+    //
 
     // Calculate final alpha
     float finalAlpha = sampledAlpha.w * implicitAlpha;
