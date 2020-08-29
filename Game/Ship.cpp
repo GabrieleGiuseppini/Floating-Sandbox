@@ -2216,7 +2216,7 @@ void Ship::GenerateAirBubbles(
     float currentSimulationTime,
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
-{   
+{
     float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
     float const vortexAmplitude = GameRandomEngine::GetInstance().GenerateUniformReal(
         -MaxAirBubblesVortexAmplitude, MaxAirBubblesVortexAmplitude);

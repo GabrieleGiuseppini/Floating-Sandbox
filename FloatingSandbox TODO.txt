@@ -525,7 +525,7 @@ Render:
 				+ Test - in Debug - at world boundaries
 				- Test on Dell
 
-		- Logging & threads
+		+ Logging & threads
 
 		- Lava preset:
 			- Water density

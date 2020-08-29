@@ -56,7 +56,7 @@ public:
 	Logger()
 		: mCurrentListener()
 		, mStoredMessages()
-        , mStoredMessagesMutex()
+        , mMutex()
 	{
 	}
 
@@ -69,22 +69,25 @@ public:
 		std::function<void(std::string const & message)> listener)
 	{
 		assert(!mCurrentListener);
-		mCurrentListener = std::move(listener);
 
-		// Publish all the messages so far
+        std::scoped_lock lock(mMutex);
+
+        // Register listener
+        mCurrentListener = std::move(listener);
+
+        // Publish all the messages so far
+        for (std::string const & message : mStoredMessages)
         {
-            std::scoped_lock lock(mStoredMessagesMutex);
-
-            for (std::string const & message : mStoredMessages)
-            {
-                mCurrentListener(message);
-            }
+            mCurrentListener(message);
         }
 	}
 
 	void UnregisterListener()
 	{
 		assert(!!mCurrentListener);
+
+        std::scoped_lock lock(mMutex);
+
 		mCurrentListener = {};
 	}
 
@@ -105,24 +108,24 @@ public:
 
 		std::string const & message = ss.str();
 
-		// Store
+		// Store and publish
         {
-            std::scoped_lock lock(mStoredMessagesMutex);
+            std::scoped_lock lock(mMutex);
 
             mStoredMessages.push_back(message);
             if (mStoredMessages.size() > MaxStoredMessages)
             {
                 mStoredMessages.pop_front();
             }
+
+            // Publish
+            if (!!mCurrentListener)
+            {
+                mCurrentListener(message);
+            }
         }
 
-		// Publish
-		if (!!mCurrentListener)
-		{
-			mCurrentListener(message);
-		}
-
-        // Output
+        // Output to stdout
         std::cout << message << std::endl;
 	}
 
@@ -140,9 +143,13 @@ public:
 
         std::ofstream outputFile(logFilePath, std::ios_base::out | std::ios_base::trunc);
 
-        for (auto const & s : mStoredMessages)
         {
-            outputFile << s;
+            std::scoped_lock lock(mMutex);
+
+            for (auto const & s : mStoredMessages)
+            {
+                outputFile << s;
+            }
         }
 
         outputFile.flush();
@@ -162,8 +169,8 @@ private:
 	std::deque<std::string> mStoredMessages;
 	static constexpr size_t MaxStoredMessages = 1000;
 
-    // The mutex for the message queue
-    std::mutex mStoredMessagesMutex;
+    // The mutex for multi-threaded access
+    std::mutex mMutex;
 };
 
 //
