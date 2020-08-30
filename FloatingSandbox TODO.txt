@@ -522,9 +522,13 @@ Render:
 			+ Water density
 			+ Heat coeffs? For smooth melting, aka Lord of the Rings
 
+		- ShipLoadDialog:
+			- Clear line from BG
+			- Re-adjust color
+			- Add border to HTML
 
-		- TODO:
-			- Discord:
+		= TODO:
+			= Discord:
 				= Wreno: asked for ship winner of contest
 				= Fernando:
 					= An 12, Boeing DreamLifter: asked for latest files
@@ -532,7 +536,7 @@ Render:
 				+ If no answer, send e-mail
 
 
-		- Ships:
+		= Ships:
 			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
 				+ Credits: "Matthew Anderson"
 				+ changes.txt
