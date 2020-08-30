@@ -35,7 +35,7 @@ def parse_ship_file(ship_folder_path, ship_file_name):
     ship_file_path = os.path.join(ship_folder_path, ship_file_name)
     with open(ship_file_path, "rt") as json_file:  
         try:
-            data = json.load(json_file, "ascii")
+            data = json.load(json_file, strict=False)
             return data
         except Exception as e:
             print("ERROR: {}: {}".format(ship_file_name, str(e)))
@@ -124,7 +124,7 @@ def main():
             continue
 
         ### Check json fields
-        for k in ship_definition.iterkeys():
+        for k in ship_definition.keys():
             if not k in JSON_FIELD_NAMES:
                 print("ERROR: {}: unrecognized json field '{}'".format(file_name, k))
                 unrecognized_json_fields += 1

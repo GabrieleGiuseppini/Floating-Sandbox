@@ -447,10 +447,23 @@ Render:
 		X Test speed with ElementIndex/Count being 64-bit
 		+ Run with address sanitizer (32-bit)
 		+ Send for testing (32-bit)
-
-
-			
-		= Localization
+		+ Bubbles:
+			+ Smaller wave
+			+ Add checkbox for bubble sounds
+				+ Storage owned by SoundController
+				+ Cutoff happens @ SoundController
+			+ Try vortex amplitude: random sign
+			+ Limit derivative
+				+ Do
+				+ Test with one-sided derivative
+				+ Test - in Debug - at world boundaries
+				+ Test on Dell
+		+ Logging & threads
+		+ Adjust flames
+			+ Thicker flames at texture
+			+ Resolution			
+		+ Add latest Songe d'Automne
+		+ Localization
 			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
 			+ Fixup dir structures
 			+ Test w/manually setting language in ui_preferences.json
@@ -492,56 +505,58 @@ Render:
 				+ SplashScreenDialog
 				+ StartupTipDialog
 			+ Prepare final, complete pot file
-			= Translations:
+			+ Translations:
 				+ Italian:
 					+ StartupTip
 					+ Help
 					+ po
 					+ Cross-reference Help with Menus
-				= Russian:
+				+ Russian:
 					+ Prepare po
 					+ Test HTMLs
 						+ Put content-encoding in master (en) as well
-					= po
-			- Mark TO-DO item under Technical Debt
-			- changes.txt
+					+ po
+			+ Mark TO-DO item under Technical Debt
+			+ changes.txt
+
 
 		- TODO:
 			- Discord:
-				- Wreno for ship winner of contest
-				- DioxCode
-			- Ask GameJolt forum for disabling client
+				= Contact Portuguese (Kiko)
+				= Contact Polish (MemeMachine#2510)
+				- Contact other localizers
+				- Figure out where 3316570-ukteh26u-v4.png comes from
+				= Wreno: asked for ship winner of contest
+				= Fernando:
+					= An 12, Boeing DreamLifter: asked for latest files
+				= Officer:
+					= M.S. Estonia: straight?
+			= Ask GameJolt forum for disabling client
 				- If no answer, send e-mail
-
-		= Bubbles:
-			+ Smaller wave
-			+ Add checkbox for bubble sounds
-				+ Storage owned by SoundController
-				+ Cutoff happens @ SoundController
-			+ Try vortex amplitude: random sign
-			= Limit derivative
-				+ Do
-				+ Test with one-sided derivative
-				+ Test - in Debug - at world boundaries
-				- Test on Dell
-
-		+ Logging & threads
 
 		- Lava preset:
 			- Water density
 			- Heat coeffs? For smooth melting, aka Lord of the Rings
 
-		- Adjust flames
-			- Thicker flames: texture or shader?
-			- Resolution			
 
 		- Ships:
-			- Fix & test Hesleden
+			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
+				+ Credits: "Matthew Anderson"
+				+ changes.txt
+			= Check out Floeddys Fictional Ship Pack (in Contrib's folder)
+				+ Nice; asked permission on Discord - OK
+				= Asked credits
+				- Take ships in "OK" folder
+				- changes.tst
+			- Fix & test Hesleden (in Contrib's folder)
 				- "Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default"
-			- See two ships from Officer TimCan's
+			- Add engines to two ships with tugs (in Contrib's folder)
+				- By: Takara
+			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
+				- Asked whether he has permission
 
 		- Run in Debug
-		- Test perf on Dell, before & after
+		+ Test perf on Dell, before & after
 
 		- Release 1.15.2
 			- Decide how to package 32-bit
@@ -687,6 +702,14 @@ Render:
 		- Underwater currents (*)		
 		
 		- Continuous Auto-focus (*)
+
+- Localization:
+	- Russian: DioxCode
+		+ 1.15.2
+	- Indonesian: Adli
+		= Doing HTMLs
+	- Hungarian: S.S. Atlantic
+		= Doing HTMLs
 
 - Ship making:
 	# Credit names:
@@ -885,9 +908,8 @@ Render:
 	+ Ship: replace handler registrations with points, springs, etc. with IShipPhysicsHandler, declared in own .h
 	- Change splash screen to wxSplashScreen
 	- GameEventDispatcher: set mIsXYZHandlerDirty at event publishing and consume at Flush()
-	- Translations:
-		- Make localizable
-		- Russian: steven6886@yandex.ru, rbugaev2@gmail.com
+	+ Translations
+		+ Make localizable
 	+ SSL cert: https://www.sslforfree.com/
 	= Sign with certificate
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
@@ -1257,12 +1279,6 @@ Render:
 			- Make ship with lifeboats, using multiple clamps to keep it
 		- Flickering lights
 			- Lights that flicker forever
-		- Fireworks
-			- New emitter material, much like smoke emitter
-				- Or just new electrical material ?
-			- Fires when wet for the first time
-				- Or when powered?
-			- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 		- Logic Gates
 			- ...to be worked on...
 		- Delayed switch
@@ -1270,6 +1286,23 @@ Render:
 			- Simple state machine @ UpdateAutomaticConductivity
 			- Gfx: Clock dial (normalized on duration), new ElectricalControl
 			- Sound: clock
+
+	- Fireworks
+		- "Bombs" become "Gadgets", as well as "IBomb"
+		- "Firework" is new gadget
+		- Placed by new "Firework" tool, clicking on same rotates through all types + removal
+			- Type enum at GameTypes
+		- State machine:
+			- Ignited by heat
+			- Creates ephemeral particles as needed, and tracks them (remembers their ElementIndex)
+			- Also expires ephemeral particles
+
+		- OLD
+		- New emitter material, much like smoke emitter
+			- Or just new electrical material ?
+		- Fires when wet for the first time
+			- Or when powered?
+		- "Whatever color block it's on it explodes that color" (AwesomeYorkie)
 
 	- Superheated pulverization
 		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets

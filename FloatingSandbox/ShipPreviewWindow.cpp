@@ -52,7 +52,7 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mThreadToPanelMessageQueue()
     , mThreadToPanelMessageQueueMutex()
     , mThreadToPanelScanInterruptAck(false)
-    , mThreadToPanelScanInterruptAckMutex()    
+    , mThreadToPanelScanInterruptAckMutex()
     , mThreadToPanelScanInterruptAckEvent()
 {
     SetScrollRate(0, 20);
@@ -899,7 +899,7 @@ void ShipPreviewWindow::RunPreviewThread()
             mThreadToPanelScanInterruptAck = true;
             mThreadToPanelScanInterruptAckEvent.notify_one();
         }
-        else 
+        else
         {
             assert(PanelToThreadMessage::MessageType::Exit == message->GetMessageType());
 
@@ -968,7 +968,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
         }
         catch (std::exception const & ex)
         {
-            LogMessage("PreviewThread::ScanDirectory(): encountered error, notifying...");
+            LogMessage("PreviewThread::ScanDirectory(): encountered error (", std::string(ex.what()), "), notifying...");
 
             // Notify
             QueueThreadToPanelMessage(

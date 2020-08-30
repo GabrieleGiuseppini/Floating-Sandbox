@@ -77,6 +77,7 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     auto const previewImageFilename = shipPreview.PreviewImageFilePath.filename();
 
     // Get last-modified of preview image file
+    // (will throw if the file does not exist)
     auto const previewImageFileLastModified = mFileSystem->GetLastModifiedTime(shipPreview.PreviewImageFilePath);
 
     // See if this preview file may be served by old database

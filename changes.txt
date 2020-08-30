@@ -11,6 +11,7 @@ TODO
 - Added automatic day/night cycle
 	- Off by default; may be enabled via "Simulation Settings"
 - Improved performance of Ship Explorer window when loading often from the same folder
+- Added 5 new ships
 - ...and a few more small improvements here and there
 
 1.15.1.1
