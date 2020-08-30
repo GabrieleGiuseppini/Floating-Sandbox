@@ -1,0 +1,53 @@
+{
+	"structure_image":"mv_kalakala_wsf_structure.png.dat",
+	"texture_image":"mv_kalakala_wsf_texture.png.dat",
+	"electrical_image":"mv_kalakala_wsf_electrical.png.dat",
+	"ship_name":"M.V. Kalakala - Washington State Ferries",
+	"offset":{"x":0.0, "y":-5.0},
+	"created_by":"Matthew Anderson",
+	"year_built":"1935",
+"description":
+		"Kalakala was one of only two streamlined passenger vessels ever built in the United States, the other being the Mississippi River steamboat, S.S. Admiral.<br/>
+Originally built in 1926 as the steam turbine driven ferry T.E.V. Peralta, she carried passengers across the bay from trollies in Oakland to the San Francisco waterfront for the Key System Transportation Company along with her sister ship, Yerba Buena. 
+Peralta's days were numbered as the Oakland Bay Bridge was under construction to replace the ferry systems of San Francisco. Though a premature retirement was on the table, fate had other plans. When arsonists lit the Key Systems pier in Oakland on fire in 1932. 
+Peralta was stuck at the pier with her boilers cold for the night. The blaze destroyed the ferry, leaving only the hull intact. Peralta's remains were put up for sale and was purchased by Alexander Peabody in 1934.<br/>
+Peabody, owner of the Black Ball Ferry Line in Seattle, Washington, had Peralta's remains towed to Kirkland, Washington where she was heavily rebuilt into a single engined diesel ferry with a streamlined art deco superstructure.<br/>
+Black Ball renamed Peralta the Kalakala, which means ''Flying Bird'' in Chinook Jargon, a native language of the region. Kalakala re-entered service in 1935 crossing the Puget Sound between Seattle and Bremerton, replacing the older M.V. Chippewa as the Black Ball flagship. 
+Though ever popular with her unique art deco interior and appearance as well as a large compliment in car carrying capacity, Kalakala's new Busch Sulzer engine had been mis-aligned during installation and as a result, she was known to rattle like a tin can. 
+Though she was rated at 18 knots, most times she could only muster 15 due to mechanical issues within the vessel's propulsion system. Nevertheless, Kalakala became a very popular vessel and became the geographic icon of Seattle, long before the Space Needle was constructed. 
+Kalakala also doubled as a local cruise ship, hosting ''Moonlight Cruises'' up and down Puget Sound featuring her very own orchestra, which was broadcast nationwide by radio.<br/>
+During World War II, Kalakala carried thousands of workers to the Bremerton Naval Yard from Seattle. Bremerton was the most advanced naval yard on the Pacific coast during the war and was used for all major repairs to U.S. Naval vessels. 
+Kalakala carried up to 2,000 men per trip, aided by sister ferries Chippewa, Enetai, Willapa, Mallahat and City of Sacramento. Following war's end, Kalakala became the first civilian ship in the world to use radar.<br/>
+After continuous labor disputes with local unions, the state of Washington took over the Black Ball Line from Peabody and reworked it into the Washington State Ferry system. Whatever remained of Black Ball was taken by a bitter Peabody to Canada. 
+Peabody axed the international service Black Ball operated between Seattle and Victoria, causing widespread problems for international merchants. As a result, the state moved Kalakala to the international route from Port Angeles, Washington to Victoria, B.C. 
+During this time, Kalakala was also refitted with a five bladed propeller, reducing vibration by up to 40 percent. Her interiors were also re-upholstered and a green band was painted across her lower superstructure.<br/>
+Kalakala continued to serve admirably for Washington State Ferries throughout the 1950s into the 1960s, being voted the second most popular attraction at the 1962 Seattle World's Fair. However, her age was catching up to her and as a result, her engine became far less reliable and was prone to brekdowns. 
+Due to the rapidly increasing size of cars and automobiles, her auto carrying capacity was also greatly reduced. The state resorted to cutting a ''gaping maw'' where her bow doors had been to try and allow two lanes of traffic to enter the vessel at a time. 
+Despite the modification, Kalakala's age and restrictive size were too much. She was retired in 1967 when the new super ferry Hyak took her place. She was sold to become a mobile fish cannery in Alaska, being converted to her new role in Ballard, Washington before leaving her home for the great frontier. 
+In 1970, Kalakala's engine broke down for the final time. She would never again sail under her own power. Her propeller was removed and engine incapacitated forever. The vessel was then buried inland at Kodiak, Alaska to serve as a building. 
+The cannery operation eventually folded and Kalakala sat abandoned and decaying until a Seattle based artist named Pete Bevis purchased her and moved her back to Washington state. Restoration began, but was cut off in 2004. She went through several owners after this and was left to rot in a salt water channel in Tacoma. 
+In 2008, the Kalakala nearly sank at her mooring, prompting the Coast Guard to seize the vessel. With no viable future in sight, her final owner, Karl Anderson, had the ferry scrapped in early 2015, ending an nearly 80 year history of the ship. Today, only large sections and fond memories of the Kalakala still exist.",
+	"electrical_panel":{
+
+		"1": {"panel_x":-3, "panel_y":0, "label":"Engine" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Engine Control" },
+		"3": {"panel_x":-1, "panel_y":0, "label":"Horn" },
+		"4": {"panel_x":0, "panel_y":0, "label":"Bell" },
+		"5": {"panel_x":1, "panel_y":0, "label":"Watertight Doors On/Off" },
+		"6": {"panel_x":2, "panel_y":0, "label":"Watertight Doors Indicator" },
+		"7": {"panel_x":3, "panel_y":0, "label":"Watertight Door 1", "is_hidden": true },
+		"8": {"panel_x":4, "panel_y":0, "label":"Watertight Door 2", "is_hidden": true },
+		"9": {"panel_x":5, "panel_y":0, "label":"Watertight Door 3", "is_hidden": true },
+		"10": {"panel_x":6, "panel_y":0, "label":"Watertight Door 4", "is_hidden": true },
+		"11": {"panel_x":7, "panel_y":0, "label":"Watertight Door 5", "is_hidden": true },
+		"12": {"panel_x":8, "panel_y":0, "label":"Watertight Door 6", "is_hidden": true },
+		"13": {"panel_x":9, "panel_y":0, "label":"Watertight Door 7", "is_hidden": true },
+		"14": {"panel_x":10, "panel_y":0, "label":"Watertight Door 8", "is_hidden": true },
+		"15": {"panel_x":11, "panel_y":0, "label":"Watertight Door 9", "is_hidden": true },
+		"16": {"panel_x":12, "panel_y":0, "label":"Watertight Door 10", "is_hidden": true },
+		"17": {"panel_x":13, "panel_y":0, "label":"Watertight Door 11", "is_hidden": true },
+		"18": {"panel_x":14, "panel_y":0, "label":"Watertight Door 12", "is_hidden": true },
+		"19": {"panel_x":15, "panel_y":0, "label":"Watertight Door 13", "is_hidden": true },
+		"20": {"panel_x":16, "panel_y":0, "label":"Watertight Door 14", "is_hidden": true }
+	}
+}

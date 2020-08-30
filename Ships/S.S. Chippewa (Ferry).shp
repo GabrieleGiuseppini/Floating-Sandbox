@@ -1,0 +1,52 @@
+{
+	"structure_image":"ss_chippewa_ferry_structure.png.dat",
+	"texture_image":"ss_chippewa_ferry_texture.png.dat",
+	"electrical_image":"ss_chippewa_ferry_electrical.png.dat",
+	"ship_name":"S.S. Chippewa (Ferry)",
+	"offset":{"x":0.0, "y":-4.7},
+	"created_by":"Matthew Anderson",
+	"year_built":"1900",
+"description":
+	"S.S. ''Chippewa'' was originally constructed in Toledo, Ohio in the year 1900 for service as a small passenger steamer on the Great Lakes along with her sister ship the ''Iroquois''.<br/>
+In their original guise, the ''Chippewa'' and ''Iroquois'' were largely unsuccessful and most times failed to turn a profit.<br/>
+The problem was remedied in 1907, when the Washington state based Puget Sound Navigation Company, also known as the Black Ball Line, purchased both the ''Chippewa'' and ''Iroquois'' along with a fellow Great Lakes steamer, the ''Indianapolis''.<br/>
+The journey for all three steamers around Cape Horn was unpleasant and anything but smooth. ''Chippewa's'' crew had nearly committed mutiny due to the unsavory conditions of the repositioning voyage.<br/>
+After entering service, ''Chippewa'' served multiple communities, towns and cities across Washington state's Puget Sound inland waterway and the Strait of Georgia in British Columbia.<br/>
+Being a steel steamer of modern construction, ''Chippewa'' was a welcome addition to Black Ball's fleet, which was in dire need of modernization and change from smaller wooden steamers to larger steel steamers following the ''Clallam'' disaster in 1904.<br/>
+''Iroquois'' settled into a similar routine, while ''Indianapolis'' was placed on the crack run from Seattle to Tacoma, competing with the rival S.S. ''Flyer''.<br/>
+In the 1920s, cars became a more popular mode of transportation between destinations, putting most of the passenger steamship trade in a rapid decline. As a direct result, Black Ball opted to reduce the number of steamship routes and experiment with car ferry operations.<br/>
+A large portion of Black Ball's fleet was hastily converted to this new role. Much to the delight and relief of the company, ferry operations were largely successful.<br/>
+Due to the ferry routes being able to carry cars a shorter distance across Puget Sound rather than having to drive completely around it, most motorists preferred the ferry over the all road alternatives.<br/>
+Other towns on islands in the middle of the sound had no connections to the mainland by road, necessitating a ferry service. Where ''Iroquois'' and ''Indianapolis'' recieved more modest modifications to the new role, both leading to their sooner demise, ''Chippewa'' was almost entirely rebuilt. Save for the lower part of the hull and minor elements of the superstructure, including the iconic twin smokestacks, most of the vessel was brand new when ''Chippewa'' left the shipyard as a car ferry in 1926.<br/>
+The passenger capacity had been reduced by 60 people, but the new vessel could now carry 90 cars fully loaded. This made ''Chippewa'' immediately the largest and most successful ferry in the Black Ball fleet.<br/>
+''Chippewa'' became the flagship of the adapated Black Ball Line and offered the first ''Moonlight Cruises'' in the company's history, complete with a nationwide radio broadcast and the ferry's very own big band orchestra. However, the company was also in dire need of larger vessels.<br/>
+The demand for car and passenger travel greatly exceeded Black Ball's existing fleet of converted steamships. Furthermore, the steam engines on these vessels were not constructed for the car ferry purpose and thus were highly inneficient for the job at hand.<br/>
+A large fleet of retired ferries was growing within San Francisco Bay, following the construction of the Golden Gate Bridge and Oakland Bay Bridge. Furthermore, these ferries were over twice the size and capacity of Black Ball's current fleet, and most had far more efficient diesel powerplants rather than steam.<br/>
+Black Ball purchased the majority of these second hand vessels, bringing the new ships to Seattle by tug boats. Newer diesel ferries such as the M.V. ''Chetzemoka'' and M.V. ''Klickitat'' quickly replaced older vessels such as the ''Indianapolis'' and ''Seattle'', which were quickly retired and scrapped.<br/>
+However, due to her more purpose built conversion and auto capacity, ''Chippewa'' was spared the fate of her old fleet mates, but had her steam engine and boilers removed in favor of a new Busch Sulzer diesel engine during a 1932 refit.
+''Chippewa's'' superstructure was altered again, her twin smoke stacks being replaced by a single squat funnel and more modern wheel house as well as a fully enclosed promenade deck. The conversion also reduced her auto capacity from 90 to 75 cars.<br/>
+In 1936, ''Chippewa'' resigned her role as Black Ball's flagship to the new streamlined ferryboat ''Kalakala'', which also took over all Moonlight Cruises and her orchestra. ''Chippewa'' however, continued to serve on the Seattle to Bremerton run, serving along side the new ''Kalakala''.<br/>
+The peak of ''Chippewa's'' career was during World War II, when the ferry carried thousands of workers and soldiers between Seattle and the Bremerton Naval Yard, along with fellow ferries, the ''Kalakala'', ''Willapa'', ''Enetai'', ''City of Sacramento'' and ''Mallahat''.<br/>
+In 1951, ''Chippewa'' was transferred to the ownership of Washington State Ferries when the state government took over ferry operations and ran the Black Ball Line out of the country. Chippewa's operating life began to sharply decline during the 1950s.<br/>
+Her engine became far less efficient to operate, her low vehicle deck clearance of 9 1/2 feet posed a significant reduction in types of vehicles the ferry was able to carry and the ever increasing size of vehicles caused her car carrying capacity to drop from 75 to 52 vehicles.<br/>
+''Chippewa'' was commonly seen on the Seattle to Winslow route and the less busy Anacortes to the San Juan Islands run throughout the decade, occassionally serving her original Seattle to Bremerton route again between 1956 and 1960.
+From 1960 onward, ''Chippewa'' was used mainly in the San Juan islands, where her small size better met the demand in vehicles. In 1964, during a routine inspection, ''Chippewa's'' hull was found to be in unncacceptable and unseaworthy condition.<br/>
+The state retired ''Chippewa'' from service uncerimoniously and she was sold to a businessman named Donald Clair to serve as a museum and shopping mall in Oakland, California. While undergoing conversion, the ''Chippewa'' was destroyed by arson and became a total loss.<br/>
+From 1965 onward, her remains were resold on several different occasions, with her entire strutucture above the car deck being scrapped at one point during a failed conversion into a replica of another ferry boat.<br/>
+''Chippewa's'' remains were last seen in Collinsville, California on the San Joaquin River during the early 1970s, with conflicting reports also placing her as a sewage plant on the Sacramento River in an entirely different area of the state.<br/>
+Following these reports, the whereabouts of ''Chippewa's'' hull remains a mystery, with the old ferry either having been scrapped or surviving as a neglected 120+ year old shipwreck.",
+	"electrical_panel":{
+
+		"1": {"panel_x":-3, "panel_y":0, "label":"Engine Control" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Engine" },
+		"3": {"panel_x":-1, "panel_y":0, "label":"Boilers On/Off" },
+		"4": {"panel_x":0, "panel_y":0, "label":"Bell" },
+		"5": {"panel_x":1, "panel_y":0, "label":"Whistle" },
+		"6": {"panel_x":2, "panel_y":0, "label":"Lights On/Off" },
+		"7": {"panel_x":3, "panel_y":0, "label":"Watertight Door Switch" },
+		"11": {"panel_x":4, "panel_y":0, "label":"Watertight Door Indicator" },
+		"8": {"panel_x":5, "panel_y":0, "label":"Watertight Door 1", "is_hidden": true },
+		"9": {"panel_x":6, "panel_y":0, "label":"Watertight Door 2", "is_hidden": true },
+		"10": {"panel_x":7, "panel_y":0, "label":"Watertight Door 3", "is_hidden": true }
+	}
+}
