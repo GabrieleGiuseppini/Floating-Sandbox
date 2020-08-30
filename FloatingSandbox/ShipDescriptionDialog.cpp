@@ -57,24 +57,22 @@ ShipDescriptionDialog::ShipDescriptionDialog(
         topSizer->Add(html, 1, wxALL | wxEXPAND, 10);
     }
 
+    if (isAutomatic)
     {
-        if (isAutomatic)
-        {
-            wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, _("Don't show descriptions when ships are loaded"));
-            dontChk->SetForegroundColour(wxColour(79, 63, 49));
-            dontChk->SetToolTip(_("Prevents ship descriptions from being shown each time a ship is loaded. You can always change this setting later from the \"Game Preferences\" window."));
-            dontChk->SetValue(false);
-            dontChk->Bind(wxEVT_CHECKBOX, &ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged, this);
+        wxCheckBox * dontChk = new wxCheckBox(this, wxID_ANY, _("Don't show descriptions when ships are loaded"));
+        dontChk->SetForegroundColour(wxColour(79, 63, 49));
+        dontChk->SetToolTip(_("Prevents ship descriptions from being shown each time a ship is loaded. You can always change this setting later from the \"Game Preferences\" window."));
+        dontChk->SetValue(false);
+        dontChk->Bind(wxEVT_CHECKBOX, &ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged, this);
 
-            topSizer->Add(dontChk, 0, wxLEFT | wxRIGHT | wxALIGN_LEFT, 10);
-        }
+        topSizer->Add(dontChk, 0, wxLEFT | wxRIGHT | wxALIGN_LEFT, 10);
+    }
 
-        {
-            wxButton * okButton = new wxButton(this, wxID_OK, _("OK"));
-            okButton->SetDefault();
+    {
+        wxButton * okButton = new wxButton(this, wxID_OK, _("OK"));
+        okButton->SetDefault();
 
-            topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
-        }
+        topSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
     }
 
     this->SetSizer(topSizer);
