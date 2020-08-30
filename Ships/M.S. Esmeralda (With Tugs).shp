@@ -1,0 +1,19 @@
+{
+	"structure_image":"ms_esmeralda_with_tugs_structural.png.dat",
+	"electrical_image":"ms_esmeralda_with_tugs_electrical.png.dat",
+	"ship_name":"M.S. Esmeralda (With Tugs)",
+	"offset":{"x":0.0, "y":-16.0},
+	"created_by":"Takara; Gabriele Giuseppini",
+	"year_built":"1966",
+
+	"electrical_panel":{
+
+		"200": {"panel_x":-7, "panel_y":0, "label":"Takara Horn" },
+
+		"0": {"panel_x":2, "panel_y":0, "label":"Engine Tug #1" },
+		"1": {"panel_x":3, "panel_y":0, "label":"Engine Tug #1" },
+
+		"100": {"panel_x":5, "panel_y":0, "label":"Engine Tug #2" },
+		"101": {"panel_x":6, "panel_y":0, "label":"Engine Tug #2" }
+	}
+}
