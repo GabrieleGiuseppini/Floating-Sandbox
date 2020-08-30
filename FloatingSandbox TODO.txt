@@ -1447,11 +1447,13 @@ Render:
 			- With stiffness going marginally up
 		- Shader?
 
-	- Frontier:
-		- Only for non-rope points - rope points never take part in frontier
+	- Frontier (*):
+		! Only for non-rope points - rope points never take part in frontier
 		- Preliminaries:
 			- Make sure endpoints in triangle are always in CW order
-			- Problem with rendering frontier in "Render Frontier" mode:
+				- From ShipBuilder
+				- From Triangles::RepairTriangles
+			- TODOHERE: Problem with rendering frontier in "Render Frontier" mode:
 				- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
 				  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
 				  not follow ropes _at_all_ (no matter the transition type) during connected component detection, and allow those 
@@ -1472,8 +1474,13 @@ Render:
 			- Maintain at repair
 		- Impl:
 			- Data structures
-				- FrontierManager class
-					- Kinda like 'ship' but for frontiers only; contains data structures (merged in one) and logic
+				- GameTypes:
+					- FrontierIndex + None
+				- Frontiers class
+					- TO TEST: Cctor takes Triangles
+						- Makes frontier with triangles, and also makes all the other structures
+					- TODOHERE
+					- Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
 						- Including update and rendering logic
 					- Owned and maintained by Ship
 					- Logic that requires points/springs/triangles takes those as args

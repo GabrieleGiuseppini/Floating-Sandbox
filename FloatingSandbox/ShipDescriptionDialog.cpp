@@ -52,7 +52,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
 
         html->SetPage(MakeHtml(shipMetadata));
         html->SetFonts("Georgia", "");
-        html->SetBackgroundColour(wxColour(189, 176, 162));
+        html->SetBackgroundColour(wxColour(158, 141, 121));
 
         topSizer->Add(html, 1, wxALL | wxEXPAND, 10);
     }
