@@ -1,10 +1,16 @@
 {
   "description": "Make your ship float in an ocean of scorching hot lava!",
   "settings": {
+    "default_water_color": "c6 1f 6",
+    "do_generate_air_bubbles": false,
     "flat_sky_color": "ff c4 9f",
     "heat_dissipation_adjustment": 9.7450218200683594,
     "texture_land_texture_index": 11,
     "texture_ocean_texture_index": 10,
+    "thermal_conductivity_adjustment": 100,
+    "water_density_adjustment": 4,
+    "water_diffusion_speed_adjustment": 0.5,
+    "water_drag_adjustment": 20.892959594726563,
     "water_temperature": 1824
   },
   "version": "1.13.0.4"
