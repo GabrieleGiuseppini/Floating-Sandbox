@@ -114,15 +114,20 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
                     throw GameException("Key of electrical panel element '" + it.first + "' is not a valid integer");
 
                 picojson::object const & elementMetadataObject = Utils::GetJsonValueAs<picojson::object>(it.second, it.first);
-                auto const panelX = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_x");
-                auto const panelY = Utils::GetMandatoryJsonMember<std::int64_t>(elementMetadataObject, "panel_y");
-                auto const label = Utils::GetMandatoryJsonMember<std::string>(elementMetadataObject, "label");
+                auto const panelX = Utils::GetOptionalJsonMember<std::int64_t>(elementMetadataObject, "panel_x");
+                auto const panelY = Utils::GetOptionalJsonMember<std::int64_t>(elementMetadataObject, "panel_y");
+                if (panelX.has_value() != panelY.has_value())
+                    throw GameException("Found only one of 'panel_x' or 'panel_y' in the electrical panel; either none of both of them must be specified");
+                auto const label = Utils::GetOptionalJsonMember<std::string>(elementMetadataObject, "label");
                 auto const isHidden = Utils::GetOptionalJsonMember<bool>(elementMetadataObject, "is_hidden", false);
 
                 auto const res = electricalPanelMetadata.emplace(
                     std::piecewise_construct,
                     std::forward_as_tuple(instanceIndex),
-                    std::forward_as_tuple(IntegralPoint(int(panelX), int(panelY)), label, isHidden));
+                    std::forward_as_tuple(
+                        panelX.has_value() ? IntegralPoint(int(*panelX), int(*panelY)) : std::optional<IntegralPoint>(),
+                        label,
+                        isHidden));
 
                 if (!res.second)
                     throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");

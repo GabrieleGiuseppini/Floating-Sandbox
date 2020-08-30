@@ -518,25 +518,18 @@ Render:
 					+ po
 			+ Mark TO-DO item under Technical Debt
 			+ changes.txt
+		+ Lava preset:
+			+ Water density
+			+ Heat coeffs? For smooth melting, aka Lord of the Rings
 
 
 		- TODO:
 			- Discord:
-				= Contact Portuguese (Kiko)
-				= Contact Polish (MemeMachine#2510)
-				- Contact other localizers
-				- Figure out where 3316570-ukteh26u-v4.png comes from
 				= Wreno: asked for ship winner of contest
 				= Fernando:
 					= An 12, Boeing DreamLifter: asked for latest files
-				= Officer:
-					= M.S. Estonia: straight?
 			= Ask GameJolt forum for disabling client
-				- If no answer, send e-mail
-
-		- Lava preset:
-			- Water density
-			- Heat coeffs? For smooth melting, aka Lord of the Rings
+				+ If no answer, send e-mail
 
 
 		- Ships:
@@ -548,19 +541,19 @@ Render:
 				= Asked credits
 				- Take ships in "OK" folder
 				- changes.tst
-			- Fix & test Hesleden (in Contrib's folder)
-				- "Like only one engine gauge (Engines #1 and maybe #2), the buttons, and switches to them; everything else should be hidden by default"
-			- Add engines to two ships with tugs (in Contrib's folder)
-				- By: Takara
 			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 				- Asked whether he has permission
+			- Take all the "Ship Contribs TODO\Ready" ones
+				- changes.txt
+			- SpaceX ships from KazindelProductions (GameJolt)
 
 		- Run in Debug
 		+ Test perf on Dell, before & after
 
 		- Release 1.15.2
+			- 32-bit MSI
 			- Decide how to package 32-bit
-				- Install GameJolt client and see user experience with MSI
+				+ Install GameJolt client and see user experience with MSI
 			- "System Requirements" Readme section, @ GitHub & @ GameJolt
 				- Windows 64 & 32-bit, & perf difference
 				- OpenGL 2.1
@@ -708,8 +701,17 @@ Render:
 		+ 1.15.2
 	- Indonesian: Adli
 		= Doing HTMLs
+		- Add to credits:
+		- Invite to server
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs
+		- Add to credits:
+		- Invite to server
+	- Portuguese: Kiko
+		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
+	- Polish: MemeMachine
+		- Add to credits:
+		- Invite to server
 
 - Ship making:
 	# Credit names:
@@ -1389,7 +1391,8 @@ Render:
 
 	- Rot tool: rots without having to flood it
 		- Then merge scrub tool into this one, with SHIFT 
-		- Icon: ?
+		- Icon: 
+			- https://cdn0.iconfinder.com/data/icons/poison-symbol/66/22-512.png
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise

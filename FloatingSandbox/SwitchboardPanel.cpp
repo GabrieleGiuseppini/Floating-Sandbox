@@ -461,25 +461,24 @@ void SwitchboardPanel::OnSwitchCreated(
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
-    // Make label, if needed
+    // Take element metadata
     //
 
-    std::string label;
-    bool isHidden;
-    if (!!panelElementMetadata)
+    std::optional<std::string> label;
+    bool isHidden = false; // Shown by default
+
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
     }
-    else
+
+    if (!label.has_value())
     {
         // Make label
         std::stringstream ss;
         ss << "Switch " << " #" << static_cast<int>(instanceIndex);
         label = ss.str();
-
-        // Shown by default
-        isHidden = false;
     }
 
     //
@@ -501,7 +500,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mInteractivePushSwitchOffEnabledBitmap,
                     mInteractivePushSwitchOnDisabledBitmap,
                     mInteractivePushSwitchOffDisabledBitmap,
-                    label,
+                    *label,
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
@@ -523,7 +522,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mInteractiveToggleSwitchOffEnabledBitmap,
                     mInteractiveToggleSwitchOnDisabledBitmap,
                     mInteractiveToggleSwitchOffDisabledBitmap,
-                    label,
+                    *label,
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
@@ -545,7 +544,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mAutomaticSwitchOffEnabledBitmap,
                     mAutomaticSwitchOnDisabledBitmap,
                     mAutomaticSwitchOffDisabledBitmap,
-                    label,
+                    *label,
                     mPassiveCursor,
                     [this, electricalElementId]()
                     {
@@ -567,7 +566,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mShipSoundSwitchOffEnabledBitmap,
                     mShipSoundSwitchOnDisabledBitmap,
                     mShipSoundSwitchOffDisabledBitmap,
-                    label,
+                    *label,
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
@@ -607,17 +606,13 @@ void SwitchboardPanel::OnPowerProbeCreated(
     // Create power monitor control
     //
 
-    std::string label;
-    bool isHidden;
+    std::optional<std::string> label;
+    bool isHidden = false;
 
-    if (!!panelElementMetadata)
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
-    }
-    else
-    {
-        isHidden = false;
     }
 
     ElectricalElementControl * ctrl = nullptr;
@@ -628,7 +623,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
         {
             case PowerProbeType::Generator:
             {
-                if (!panelElementMetadata)
+                if (!label.has_value())
                 {
                     // Make label
                     std::stringstream ss;
@@ -644,7 +639,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
                     36.0f,
                     -Pi<float> / 4.0f,
                     Pi<float> * 5.0f / 4.0f,
-                    label,
+                    *label,
                     mPassiveCursor,
                     [this, electricalElementId]()
                     {
@@ -662,7 +657,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
             case PowerProbeType::PowerMonitor:
             {
-                if (!panelElementMetadata)
+                if (!label.has_value())
                 {
                     // Make label
                     std::stringstream ss;
@@ -674,7 +669,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
                     mSwitchPanel,
                     mPowerMonitorOnBitmap,
                     mPowerMonitorOffBitmap,
-                    label,
+                    *label,
                     mPassiveCursor,
                     [this, electricalElementId]()
                     {
@@ -712,25 +707,24 @@ void SwitchboardPanel::OnEngineControllerCreated(
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
-    // Create label
+    // Take metadata
     //
 
-    std::string label;
-    bool isHidden;
-    if (!!panelElementMetadata)
+    std::optional<std::string> label;
+    bool isHidden = false;
+
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
     }
-    else
+
+    if (!label.has_value())
     {
         // Make label
         std::stringstream ss;
         ss << "EngineControl #" << static_cast<int>(instanceIndex);
         label = ss.str();
-
-        // Not hidden
-        isHidden = false;
     }
 
     //
@@ -749,7 +743,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
             wxPoint(47, 48),
             3.90f,
             -0.75f,
-            label,
+            *label,
             mInteractiveCursor,
             [this, electricalElementId](unsigned int controllerValue)
             {
@@ -780,25 +774,24 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
-    // Create label
+    // Take metadata
     //
 
-    std::string label;
-    bool isHidden;
-    if (!!panelElementMetadata)
+    std::optional<std::string> label;
+    bool isHidden = false;
+
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
     }
-    else
+
+    if (!label.has_value())
     {
         // Make label
         std::stringstream ss;
         ss << "Engine #" << static_cast<int>(instanceIndex);
         label = ss.str();
-
-        // Not hidden
-        isHidden = false;
     }
 
     //
@@ -816,7 +809,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
             36.0f,
             Pi<float> / 4.0f - 0.06f,
             2.0f * Pi<float> -Pi<float> / 4.0f,
-            label,
+            *label,
             mPassiveCursor,
             [this, electricalElementId]()
             {
@@ -847,25 +840,24 @@ void SwitchboardPanel::OnWaterPumpCreated(
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
-    // Create label
+    // Take metadata
     //
 
-    std::string label;
-    bool isHidden;
-    if (!!panelElementMetadata)
+    std::optional<std::string> label;
+    bool isHidden = false;
+
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
     }
-    else
+
+    if (!label.has_value())
     {
         // Make label
         std::stringstream ss;
         ss << "Pump #" << static_cast<int>(instanceIndex);
         label = ss.str();
-
-        // Not hidden
-        isHidden = false;
     }
 
     //
@@ -883,7 +875,7 @@ void SwitchboardPanel::OnWaterPumpCreated(
             36.0f,
             Pi<float> / 4.0f - 0.02f,
             Pi<float> - Pi<float> / 4.0f + 0.01f,
-            label,
+            *label,
             mPassiveCursor,
             [this, electricalElementId]()
             {
@@ -914,25 +906,24 @@ void SwitchboardPanel::OnWatertightDoorCreated(
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
-    // Create label
+    // Take metadata
     //
 
-    std::string label;
-    bool isHidden;
-    if (!!panelElementMetadata)
+    std::optional<std::string> label;
+    bool isHidden = false;
+
+    if (panelElementMetadata.has_value())
     {
         label = panelElementMetadata->Label;
         isHidden = panelElementMetadata->IsHidden;
     }
-    else
+
+    if (!label.has_value())
     {
         // Make label
         std::stringstream ss;
         ss << "WaterDoor #" << static_cast<int>(instanceIndex);
         label = ss.str();
-
-        // Not hidden
-        isHidden = false;
     }
 
     //
@@ -949,7 +940,7 @@ void SwitchboardPanel::OnWatertightDoorCreated(
             mWatertightDoorClosedEnabledBitmap,
             mWatertightDoorOpenDisabledBitmap,
             mWatertightDoorClosedDisabledBitmap,
-            label,
+            *label,
             mPassiveCursor,
             [this, electricalElementId]()
             {

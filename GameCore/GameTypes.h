@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -342,16 +343,16 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
  */
 struct ElectricalPanelElementMetadata
 {
-    IntegralPoint PanelCoordinates;
-    std::string Label;
+    std::optional<IntegralPoint> PanelCoordinates;
+    std::optional<std::string> Label;
     bool IsHidden;
 
     ElectricalPanelElementMetadata(
-        IntegralPoint panelCoordinates,
-        std::string const & label,
+        std::optional<IntegralPoint> panelCoordinates,
+        std::optional<std::string> label,
         bool isHidden)
-        : PanelCoordinates(panelCoordinates)
-        , Label(label)
+        : PanelCoordinates(std::move(panelCoordinates))
+        , Label(std::move(label))
         , IsHidden(isHidden)
     {}
 };
