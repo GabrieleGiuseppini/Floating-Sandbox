@@ -521,11 +521,9 @@ Render:
 		+ Lava preset:
 			+ Water density
 			+ Heat coeffs? For smooth melting, aka Lord of the Rings
-
-		- ShipLoadDialog:
-			- Clear line from BG
-			- Re-adjust color
-			- Add border to HTML
+		+ ShipLoadDialog:
+			+ Clear line from BG
+			+ Add border to HTML
 
 		= TODO:
 			= Discord:
@@ -1480,9 +1478,20 @@ Render:
 			- Data structures
 				- GameTypes:
 					- FrontierIndex + None
+					- FrontierType enum (External, Internal)
 				- Frontiers class
-					- TO TEST: Cctor takes Triangles
-						- Makes frontier with triangles, and also makes all the other structures
+					- Structs:
+						- FrontierEdge: contains edge metadata only needed for physics
+							- Cardinality: Edge
+							- NextEdge(..Element...Index?) (index of edges)
+							- Point indices in frontier order
+						- Frontier:
+							- Cardinality: any
+							- StartingEdge(...Element...Index?)
+							- FrontierType
+					- Cctor takes Springs, Triangles
+						- Makes edges (with springs' SuperTriangles?)
+						- Makes frontier with triangles
 					- TODOHERE
 					- Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
 						- Including update and rendering logic

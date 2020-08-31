@@ -46,7 +46,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
             wxID_ANY,
             wxDefaultPosition,
             wxDefaultSize,
-            wxHW_SCROLLBAR_AUTO);
+            wxHW_SCROLLBAR_AUTO | wxBORDER_SUNKEN);
 
         html->SetBorders(5);
 
