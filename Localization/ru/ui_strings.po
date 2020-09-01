@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-30 12:13+0200\n"
+"PO-Revision-Date: 2020-08-31 19:32+0200\n"
 "Last-Translator: Gabriele Giuseppini\n"
 "Language-Team: Ilya Voloshin\n"
 "Language: ru\n"
@@ -1295,6 +1295,7 @@ msgstr ""
 msgid "Point Forces"
 msgstr "Точечная сила"
 
+# Возможно не правильно
 #: ..\FloatingSandbox\SettingsDialog.cpp:3878
 msgid "Point Velocities"
 msgstr "Точечная скорость"
@@ -1388,7 +1389,7 @@ msgstr "Регулировка скорости ремонта"
 
 #: ..\FloatingSandbox\MainFrame.cpp:341
 msgid "Repair Structure"
-msgstr "Ремонтная структура"
+msgstr "Гаечный ключ (Ремонт)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4007
 msgid "Replace Saved Settings with Current"
@@ -1643,7 +1644,7 @@ msgstr "Резать"
 
 #: ..\FloatingSandbox\MainFrame.cpp:275
 msgid "Smash"
-msgstr "Громить"
+msgstr "Молоток"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1851
 msgid "Smoke"
@@ -1889,11 +1890,11 @@ msgstr ""
 
 #: ..\FloatingSandbox\MainFrame.cpp:325
 msgid "Toggle Anti-Matter Bomb"
-msgstr "Переключить антиматериальную бомбу"
+msgstr "Антиматериальная бомба"
 
 #: ..\FloatingSandbox\MainFrame.cpp:321
 msgid "Toggle Impact Bomb"
-msgstr "Переключить ударную бомбу"
+msgstr "Граната"
 
 #: ..\FloatingSandbox\MainFrame.cpp:299
 msgid "Toggle Pin"

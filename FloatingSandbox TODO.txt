@@ -240,15 +240,6 @@ Render:
 ====================================================
 ====================================================
 
-- Testers:
-	- Maximord - "Maximord" (Parallels)
-	- Pac0master - "<Same as now>" (Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070)
-	- The_SamminAter - "The_SamminAter" (Parallels)
-
-- Marketing:
-	- www.floatingsandbox.com:
-		- Try to change white BG to another color
-
 - Roadmap:
 		
 		+ Blog:
@@ -535,19 +526,20 @@ Render:
 
 
 		= Ships:
+			+ Add new variation of M.V. Chippewa (in Contrib's folder)
 			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
 				+ Credits: "Matthew Anderson"
 				+ changes.txt
-			= Check out Floeddys Fictional Ship Pack (in Contrib's folder)
+			+ Check out Floeddys Fictional Ship Pack (in Contrib's folder)
 				+ Nice; asked permission on Discord - OK
-				= Asked credits
-				- Take ships in "OK" folder
-				- changes.tst
+				+ Credits: "Floeddy"
+				+ Take ships in "OK" folder
+				+ changes.txt
 			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 				- Asked whether he has permission
-			- Take all the "Ship Contribs TODO\Ready" ones
-				- changes.txt
 			- SpaceX ships from KazindelProductions (GameJolt)
+			- Take all the "Ship Contribs TODO\Ready" ones
+				-changes.txt
 
 		- Run in Debug
 		+ Test perf on Dell, before & after
@@ -1491,6 +1483,7 @@ Render:
 							- FrontierType
 					- Cctor takes Springs, Triangles
 						- Makes edges (with springs' SuperTriangles?)
+							- ...nah, complicated to figure out external & internal, plus need for octants...revert to doing first pass in ShipBuilder
 						- Makes frontier with triangles
 					- TODOHERE
 					- Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
@@ -4286,6 +4279,10 @@ IF WX:
 			+ Dell: U:21-23 R:11 (SWP:0.6 SHP:7.7) - 30.9 FPS
 			+ Samsung: U:93-94 R:11-12 (SWP:1.1 SHP:3.5) - 9.4 FPS
 			+ HP: U:45-46 R:13.4-15 (SWP:1.1 SHP:4.5) - 16.9 FPS
+			+ Dario:
+				- 2011: U:14 R:7.36 - 45.28 FPS
+				- 2015: U:10.95 R:4.50 - 61.23 FPS
+				- 2020: U:9.08 R:6.69 - 64 FPS
 		+ Spec:
 			+ Rendering runs entirely on separate thread
 				+ Context & SwapBuffers need to be made current in this thread
@@ -4540,6 +4537,10 @@ IF WX:
 					- FPS: 20.7
 					- UPD: 47.3 (W=0.01) UPL: (W=0.00 + 0.24)
 					- RND: 4.00 (3.84) (MT=0.04)
+				+ Dario:
+					- 2011: U:14 R:7.36 - 45.28 FPS	=> U:28.17 R:20.02 - 28.28 FPS
+					- 2015: U:10.95 R:4.50 - 61.23 FPS => U:9.57 R:5.75 - 64.08 FPS
+					- 2020: U:9.08 R:6.69 - 64 FPS => U:8.46 R:4.82 - 62 FPS
 			+ Cleanup:
 				+ Move uploading of 2 tools @ GameController from RenderContext to NotifLayer
 				+ GameController: see if we need to do render control smoothing before RenderUpload() (i.e. whether

@@ -93,7 +93,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, _("TRANSLATION"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
-        {1, wxS("Roman Shavernew (Russian)"), VMargin3},
+        {1, wxS("Roman Shavernew (DioxCode) (Russian)"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), 0},
@@ -103,7 +103,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, wxS("TopHatLemons   Truce#3326   RetroGraczzPL   Nomadavid   Wreno"), 0},
         {2, wxS("Pac0master   CorbinPasta93   Yorkie   Bluefox   KikoTheBoatBuilder"), 0},
         {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},
-        {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres"), 0},
+        {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres   Floeddy"), 0},
         {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua   Matthew Anderson"), 0},
         {2, wxS("MasterGarfield   Aur\xe9lien WOLFF   Alex di Roma   2017 Leonardo"), 0},
         {2, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
