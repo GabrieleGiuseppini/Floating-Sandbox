@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-31 19:32+0200\n"
+"PO-Revision-Date: 2020-09-03 19:22+0200\n"
 "Last-Translator: Gabriele Giuseppini\n"
 "Language-Team: Ilya Voloshin\n"
 "Language: ru\n"
@@ -372,7 +372,7 @@ msgstr "Осветлить Окружающий Свет"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1305
 msgid "Burning Point Adjust"
-msgstr "Регулировка Точки Горения"
+msgstr "Точка горения"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:246
 #: ..\FloatingSandbox\ShipLoadDialog.cpp:238
@@ -442,11 +442,11 @@ msgstr "Закрывает окно, сохраняя все изменения.
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1383
 msgid "Combustion Heat Adjust"
-msgstr "Регулировка Температуры Горения"
+msgstr "Температура горения"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1357
 msgid "Combustion Speed Adjust"
-msgstr "Регулировка Скорости Горения"
+msgstr "Скорость горения"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:144
 msgid "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
@@ -800,7 +800,7 @@ msgstr "Огнетушитель"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3464
 msgid "Flame Size Adjust"
-msgstr "Регулировка Размера Пламени"
+msgstr "Размер пламени"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3068
 #: ..\FloatingSandbox\SettingsDialog.cpp:3221
@@ -910,11 +910,11 @@ msgstr "Высокая температура"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1279
 msgid "Heat Dissipation Adjust"
-msgstr "Регулировка потери тепла. (Остывание материала)"
+msgstr "Потеря тепла. (Остывание материала)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1507
 msgid "Heat Generation Adjust"
-msgstr "Регулировка Тепловыделения (Нагрев материала)"
+msgstr "Тепловыделение (Нагрев материала)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3439
 msgid "Heat Overlay Transparency"
@@ -991,7 +991,7 @@ msgstr "Лицензия Creative Commons: By Attribution 4.0 License"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1039
 msgid "Light Spread Adjust"
-msgstr "Регулировка распространения света"
+msgstr "Распространения света"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:999
 msgid "Lights"
@@ -1060,7 +1060,7 @@ msgstr "Логирование"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1013
 msgid "Luminiscence Adjust"
-msgstr "Регулировка свечения"
+msgstr "Свечение"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:121
 msgid "MUSIC"
@@ -1088,7 +1088,7 @@ msgstr "Механика, жидкости и освещение"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1331
 msgid "Melting Point Adjust"
-msgstr "Регулировка точки плавления"
+msgstr "Точка плавления"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:779
 msgid "Miscellaneous"
@@ -1349,7 +1349,7 @@ msgstr "Радиус"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1998
 msgid "Rain Flood Adjust"
-msgstr "Регулировка дождя и наводнения"
+msgstr "Дождь и наводнение"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:125
 msgid "Ready!"
@@ -1385,7 +1385,7 @@ msgstr "Радиус ремонта"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2710
 msgid "Repair Speed Adjust"
-msgstr "Регулировка скорости ремонта"
+msgstr "Скорость ремонта"
 
 #: ..\FloatingSandbox\MainFrame.cpp:341
 msgid "Repair Structure"
@@ -1652,11 +1652,11 @@ msgstr "Дым"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1865
 msgid "Smoke Density Adjust"
-msgstr "Регулировка плотности дыма"
+msgstr "Плотность дыма"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1891
 msgid "Smoke Persistence Adjust"
-msgstr "Регулировка стойкости дыма"
+msgstr "Стойкость дыма"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3640
 msgid "Sound"
@@ -1672,11 +1672,11 @@ msgstr "Создать дождь"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3826
 msgid "Spring Damping Adjust"
-msgstr "Регулировка демпфирования пружины"
+msgstr "Демпфирования пружины"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3799
 msgid "Spring Stiffness Adjust"
-msgstr "Регулировка жесткости пружины"
+msgstr "Жесткость пружинности"
 
 #: ..\FloatingSandbox\MainFrame.cpp:245
 msgid "Step"
@@ -1696,7 +1696,7 @@ msgstr "Скорость Шторма"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1949
 msgid "Storm Strength Adjust"
-msgstr "Регулировка силы шторма"
+msgstr "Сила шторма"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1933
 msgid "Storms"
@@ -1704,7 +1704,7 @@ msgstr "Шторм"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:909
 msgid "Strength Adjust"
-msgstr "Регулировка силы"
+msgstr "Сила"
 
 #: ..\FloatingSandbox\MainFrame.cpp:295
 msgid "Swirl/Counterswirl"
@@ -1858,7 +1858,7 @@ msgstr "Температура воды (К)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1253
 msgid "Thermal Conductivity Adjust"
-msgstr "Регулировка теплопроводности"
+msgstr "Теплопроводность"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3827
 msgid ""
@@ -1980,7 +1980,7 @@ msgstr "Водное безумие"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1090
 msgid "Water Density Adjust"
-msgstr "Регулировка Плотности Воды"
+msgstr "Плотность воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1192
 msgid "Water Diffusion Speed"
@@ -1988,7 +1988,7 @@ msgstr "Скорость Диффузии Воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1115
 msgid "Water Drag Adjust"
-msgstr "Регулировка сопротивления воды"
+msgstr "Сопротивление воды"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:40
 msgid "Water Inflow"
@@ -1996,7 +1996,7 @@ msgstr "Приток воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1141
 msgid "Water Intake Adjust"
-msgstr "Регулировка забора воды"
+msgstr "Забор воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3592
 msgid "Water Level of Detail"
@@ -2004,7 +2004,7 @@ msgstr "Уровень детализации воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2960
 msgid "Water Pump Power Adjust"
-msgstr "Регулировка мощности водяного насоса"
+msgstr "Мощность водяного насоса"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:41
 msgid "Water Splash"
@@ -2016,7 +2016,7 @@ msgstr "Температура воды"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2335
 msgid "Wave Height Adjust"
-msgstr "Регулировка высоты волны"
+msgstr "Высота волн"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2423
 msgid "Wave Phenomena"
@@ -2024,11 +2024,11 @@ msgstr "Волновые явления"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2386
 msgid "Wave Speed Adjust"
-msgstr "Регулировка скорости волны"
+msgstr "Скорость волн"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2360
 msgid "Wave Width Adjust"
-msgstr "Регулировка ширины волны"
+msgstr "Ширина волн"
 
 #: ..\FloatingSandbox\MainFrame.cpp:333
 msgid "WaveMaker"

@@ -516,14 +516,6 @@ Render:
 			+ Clear line from BG
 			+ Add border to HTML
 
-		= TODO:
-			= Discord:
-				= Wreno: asked for ship winner of contest
-				= Fernando:
-					= An 12, Boeing DreamLifter: asked for latest files
-			= Ask GameJolt forum for disabling client
-				+ If no answer, send e-mail
-
 
 		= Ships:
 			+ Add new variation of M.V. Chippewa (in Contrib's folder)
@@ -535,22 +527,32 @@ Render:
 				+ Credits: "Floeddy"
 				+ Take ships in "OK" folder
 				+ changes.txt
+			- M.V. panagiotis (sinking feeling)
+				- Tidy up electrical panel
+					- Test on Dell
 			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 				- Asked whether he has permission
 			- SpaceX ships from KazindelProductions (GameJolt)
 			- Take all the "Ship Contribs TODO\Ready" ones
 				-changes.txt
 
-		- Run in Debug
+		= Check Russian
+			- ask if comes immediately
+			- reduce "Mattia, Elia"...
+		+ Run in Debug
+			+ Bubbles
+		- Run on Dell
+			- Both rel and debug
 		+ Test perf on Dell, before & after
 
 		- Release 1.15.2
 			- 32-bit MSI
+			- Try package instructions to prevent using GameJolt client
 			- Decide how to package 32-bit
 				+ Install GameJolt client and see user experience with MSI
+				- Two MSI's, no zips
 			- "System Requirements" Readme section, @ GitHub & @ GameJolt
-				- Windows 64 & 32-bit, & perf difference
-				- OpenGL 2.1
+				- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
 				- Link to FAQ - for issues like OpenGL... - on FS.com
 					- Restructure in sections, w/"Issues" & "System Requirements"
 
@@ -572,7 +574,7 @@ Render:
 		- More stress metal sounds, to dilute "cycle of sounds"
 			- Repro first and detect chain of noise, in these two situations:
 				- 1) Melted metal that cools in water
-				- 2) After bomb?
+				- 2) Cardboard tower pushed down
 			- Try spreading out spring coeffs' recalculations - also for better look'n'feel
 				- Test look'n'feel
 				- Test perf on Dell, before & after
@@ -581,6 +583,8 @@ Render:
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- Frontier (*)
+
+		- Try ocean rendering with concentration of waves at top
 
 		- Add whistle: pipe_steam_whistle_for_fs.mp3
 
@@ -753,6 +757,8 @@ Render:
 			- Meta: <asked>
 	- New ships:
 		- Next ship made: "Turbentiy Banalniy"
+		= Fernando:
+			= "An 12", "Boeing DreamLifter": asked for latest files
 		- To test:
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -764,8 +770,6 @@ Render:
 			- Death stars (Nomadavid)
 				- He'll fix
 		- To take:
-			- S.S. Ariara
-				- Asked CPM if he's ok; if so, need URL for About box
 			- S.S. Triatic
 				- Do ropes however
 				
@@ -941,6 +945,16 @@ Render:
 
 
 - Simulation Optimizations:
+
+	- Calibration
+		- Executed by GameController 
+			- After RenderingContext initialized (for OpenGL capabilities)
+			- OpenGL: based off capabilities
+			- CPU: based off loops
+		- Produces CalibrationScore
+			- GameController::TuneParameters(CalibrationScore const &)
+				- Sets GameParameters and RenderContext's parameters
+				- Happens before SettingsManager samples defaults, so these are the defaults
 
 	- See if additional springs (e.g. between i and i+2) help
 
@@ -4538,7 +4552,7 @@ IF WX:
 					- UPD: 47.3 (W=0.01) UPL: (W=0.00 + 0.24)
 					- RND: 4.00 (3.84) (MT=0.04)
 				+ Dario:
-					- 2011: U:14 R:7.36 - 45.28 FPS	=> U:28.17 R:20.02 - 28.28 FPS
+					- 2011: U:14 R:7.36 - 45.28 FPS	=> U:14.86 R:25.25 - 39.32 FPS
 					- 2015: U:10.95 R:4.50 - 61.23 FPS => U:9.57 R:5.75 - 64.08 FPS
 					- 2020: U:9.08 R:6.69 - 64 FPS => U:8.46 R:4.82 - 62 FPS
 			+ Cleanup:
