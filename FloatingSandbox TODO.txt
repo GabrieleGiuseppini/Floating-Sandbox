@@ -538,19 +538,25 @@ Render:
 
 		= Check Russian
 			- ask if comes immediately
-			- reduce "Mattia, Elia"...
+			= Ask to reduce "Mattia, Elia"...
 		+ Run in Debug
 			+ Bubbles
-		- Run on Dell
-			- Both rel and debug
+		+ Run on Dell
+			+ x64 rel 
+			+ x64 debug
+			+ x32 rel
 		+ Test perf on Dell, before & after
+		+ M.S. Esmeralda's horn name
 
 		- Release 1.15.2
 			- 32-bit MSI
+				- Test on Dell
+				- Test on Discord
+			- 64-bit MSI
+				- Test on Dell
+				- Test on Discord
+
 			- Try package instructions to prevent using GameJolt client
-			- Decide how to package 32-bit
-				+ Install GameJolt client and see user experience with MSI
-				- Two MSI's, no zips
 			- "System Requirements" Readme section, @ GitHub & @ GameJolt
 				- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
 				- Link to FAQ - for issues like OpenGL... - on FS.com

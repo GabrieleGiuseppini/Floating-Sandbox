@@ -8,7 +8,7 @@
 
 	"electrical_panel":{
 
-		"200": {"panel_x":-7, "panel_y":0, "label":"Takara Horn" },
+		"200": {"panel_x":-7, "panel_y":0, "label":"Esmeralda Horn" },
 
 		"0": {"panel_x":2, "panel_y":0, "label":"Engine Tug #1" },
 		"1": {"panel_x":3, "panel_y":0, "label":"Engine Tug #1" },
