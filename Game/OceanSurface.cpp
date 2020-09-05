@@ -81,11 +81,15 @@ void OceanSurface::Update(
     if (mWindBaseAndStormSpeedMagnitude != wind.GetBaseAndStormSpeedMagnitude()
         || mBasalWaveHeightAdjustment != gameParameters.BasalWaveHeightAdjustment
         || mBasalWaveLengthAdjustment != gameParameters.BasalWaveLengthAdjustment
-        || mBasalWaveSpeedAdjustment != gameParameters.BasalWaveSpeedAdjustment
-        || mTsunamiRate != gameParameters.TsunamiRate
+        || mBasalWaveSpeedAdjustment != gameParameters.BasalWaveSpeedAdjustment)
+    {
+        RecalculateWaveCoefficients(wind, gameParameters);
+    }
+
+    if (mTsunamiRate != gameParameters.TsunamiRate
         || mRogueWaveRate != gameParameters.RogueWaveRate)
     {
-        RecalculateCoefficients(wind, gameParameters);
+        RecalculateAbnormalWaveTimestamps(gameParameters);
     }
 
 
@@ -434,7 +438,7 @@ void OceanSurface::SetSWEWaveHeight(
     }
 }
 
-void OceanSurface::RecalculateCoefficients(
+void OceanSurface::RecalculateWaveCoefficients(
     Wind const & wind,
     GameParameters const & gameParameters)
 {
@@ -508,9 +512,17 @@ void OceanSurface::RecalculateCoefficients(
 
 
     //
-    // Abnormal wave timestamps
+    // Store new parameter values that we are now current with
     //
 
+    mWindBaseAndStormSpeedMagnitude = wind.GetBaseAndStormSpeedMagnitude();
+    mBasalWaveHeightAdjustment = gameParameters.BasalWaveHeightAdjustment;
+    mBasalWaveLengthAdjustment = gameParameters.BasalWaveLengthAdjustment;
+    mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
+}
+
+void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & gameParameters)
+{
     if (gameParameters.TsunamiRate.count() > 0)
     {
         mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
@@ -538,10 +550,6 @@ void OceanSurface::RecalculateCoefficients(
     // Store new parameter values that we are now current with
     //
 
-    mWindBaseAndStormSpeedMagnitude = wind.GetBaseAndStormSpeedMagnitude();
-    mBasalWaveHeightAdjustment = gameParameters.BasalWaveHeightAdjustment;
-    mBasalWaveLengthAdjustment = gameParameters.BasalWaveLengthAdjustment;
-    mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
     mTsunamiRate = gameParameters.TsunamiRate;
     mRogueWaveRate = gameParameters.RogueWaveRate;
 }

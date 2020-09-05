@@ -169,9 +169,11 @@ private:
         size_t centerIndex,
         float height);
 
-    void RecalculateCoefficients(
+    void RecalculateWaveCoefficients(
         Wind const & wind,
         GameParameters const & gameParameters);
+
+    void RecalculateAbnormalWaveTimestamps(GameParameters const & gameParameters);
 
     template<typename TDuration>
     static GameWallClock::time_point CalculateNextAbnormalWaveTimestamp(

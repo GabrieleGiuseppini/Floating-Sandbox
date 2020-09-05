@@ -539,10 +539,10 @@ Render:
 			+ M.V. panagiotis (sinking feeling)
 				+ Tidy up electrical panel
 
-		+ Fix Storm+Tsunami issue
+		= Fix Storm+Tsunami issue
 			+ Test at world boundaries in Debug
-
-		- Raise tsunami rate
+			= Test perf on Dell
+		+ Fix tsunami rate
 
 		- Release 1.15.2
 			- 32-bit MSI
