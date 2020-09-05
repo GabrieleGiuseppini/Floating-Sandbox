@@ -2,11 +2,17 @@
 <Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
     <!-- Change at each release!!! -->
-    <?define ProductCode = "C274BEF6-ACB7-40AF-ABDE-5C6708E9BA0A"?> <!-- 1.15.1 -->
+    <?define ProductCode = "B2C71939-3A80-4B84-969E-6E0AFCA39F5D"?> <!-- 1.15.2 -->
 
     <!-- Static properties -->
     <?define UpgradeCode = "2DDDB95C-9D3E-4EFE-95BC-FD06A2F33FA7"?> <!-- First used in 1.12.0 -->
-    <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox\Install"?>
+    <?if $(var.Platform) = x64 ?>
+      <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox\Install"?>
+      <?define IsWin64 = "yes" ?>
+    <?else ?>
+      <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox-32\Install"?>
+      <?define IsWin64 = "no" ?>
+    <?endif ?>
     <?define FloatingSandboxVersion = "!(bind.FileVersion.FloatingSandboxExe)"?>
     <?define ShortApplicationName = "Floating Sandbox"?>
     <?define FullApplicationName = "$(var.ShortApplicationName) $(var.FloatingSandboxVersion)"?>

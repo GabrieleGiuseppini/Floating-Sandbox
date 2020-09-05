@@ -540,10 +540,16 @@ Render:
 				+ Tidy up electrical panel
 
 		- Release 1.15.2
-			- 32-bit MSI
+			= 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test on New
 				- Test on Dell
 				- Test on Discord
-			- 64-bit MSI
+			= 64-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test on New
 				- Test on Dell
 				- Test on Discord
 

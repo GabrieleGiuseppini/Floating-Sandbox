@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <InstallerPlatform>x64</InstallerPlatform>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>   
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x64' ">
+	<InstallerPlatform>x64</InstallerPlatform>
+	<FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>	
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+	<InstallerPlatform>x86</InstallerPlatform>
+	<FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox-32\Install</FloatingSandboxInstallDirectory>
+  </PropertyGroup>
+  <PropertyGroup>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>80bd56c1-4720-4a46-b78f-900cd19f2434</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>Floating-Sandbox</OutputName>
-    <OutputType>Package</OutputType>
-    <FloatingSandboxInstallDirectory>C:\Users\Neurodancer\source\build\Floating-Sandbox\Install</FloatingSandboxInstallDirectory>
+    <OutputType>Package</OutputType>    
+	<OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox-Installer-$(Platform)\$(Configuration)\</OutputPath>
+	<IntermediateOutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox-Installer-$(Platform)\obj\$(Configuration)\</IntermediateOutputPath>
     <DataDirChildRemovalCompGuid>{2D814796-75F6-4E8D-B8A1-9674BF647292}</DataDirChildRemovalCompGuid>
     <GuidesDirChildRemovalCompGuid>{A82277D0-665F-4072-965D-E89D46AF0FD1}</GuidesDirChildRemovalCompGuid>
     <ShipsDirChildRemovalCompGuid>{9D3F4F3C-811C-4C45-A85E-CC55A2395BD1}</ShipsDirChildRemovalCompGuid>
-    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathGuides=$(FloatingSandboxInstallDirectory)\Guides;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships;DataDirChildRemovalCompGuid=$(DataDirChildRemovalCompGuid);GuidesDirChildRemovalCompGuid=$(GuidesDirChildRemovalCompGuid);ShipsDirChildRemovalCompGuid=$(ShipsDirChildRemovalCompGuid)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\obj\$(Configuration)\</IntermediateOutputPath>
-    <LinkerAdditionalOptions>-ext WixUIExtension</LinkerAdditionalOptions>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>C:\Users\Neurodancer\source\build\Floating-Sandbox\Windows Installer\obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>HarvestPathData=$(FloatingSandboxInstallDirectory)\Data;HarvestPathGuides=$(FloatingSandboxInstallDirectory)\Guides;HarvestPathShips=$(FloatingSandboxInstallDirectory)\Ships;DataDirChildRemovalCompGuid=$(DataDirChildRemovalCompGuid);GuidesDirChildRemovalCompGuid=$(GuidesDirChildRemovalCompGuid);ShipsDirChildRemovalCompGuid=$(ShipsDirChildRemovalCompGuid)</DefineConstants>    
     <LinkerAdditionalOptions>-ext WixUIExtension</LinkerAdditionalOptions>
     <SuppressIces>ICE61;ICE69;ICE91</SuppressIces>
-  </PropertyGroup>
+  </PropertyGroup>  
   <ItemGroup>
     <Compile Include="FloatingSandbox.wxs" />
     <Compile Include="DataGeneratedFileList.wxs" />
@@ -47,4 +48,7 @@
     <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Guides" PreprocessorVariable="var.HarvestPathGuides" OutputFile="GuidesGeneratedFileList.wxs" ComponentGroupName="Guides_generated_comp" DirectoryRefId="GuidesDir" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" AutogenerateGuids="false" Transforms="HeatPerUser.xslt" />
     <HeatDirectory Directory="$(FloatingSandboxInstallDirectory)\Ships" PreprocessorVariable="var.HarvestPathShips" OutputFile="ShipsGeneratedFileList.wxs" ComponentGroupName="Ships_generated_comp" DirectoryRefId="ShipsDir" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" GenerateGuidsNow="true" AutogenerateGuids="false" Transforms="HeatPerUser.xslt" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>ren "!(TargetPath)" "$(TargetName)-$(PlatformName)$(TargetExt)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

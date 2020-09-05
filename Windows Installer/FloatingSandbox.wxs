@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-    <?include Include.wxi ?>
+  <?include Include.wxi ?>
 
-	<Product Id="$(var.ProductCode)"
+  <Product Id="$(var.ProductCode)"
              Name="$(var.FullApplicationName)" Language="1033"
              Version="$(var.FloatingSandboxVersion)"
              Manufacturer="Gabriele Giuseppini" UpgradeCode="$(var.UpgradeCode)">
 
         <Package
-            Comments="This package installs Floating Sandbox $(var.FloatingSandboxVersion) on your computer."
+            Comments="This package installs $(var.FullApplicationName) $(var.Platform) on your computer."
             Description="$(var.FullApplicationName)"
-            Platform="x64"
+            Platform="$(var.Platform)"
             InstallerVersion="400"
             Compressed="yes"
             InstallScope="perUser"
@@ -39,12 +39,12 @@
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="FloatingSandboxExe_comp" Guid="861CEF76-5773-4736-A6D4-C6CB50112C3A" Win64="yes">
+                    <Component Id="FloatingSandboxExe_comp" Guid="861CEF76-5773-4736-A6D4-C6CB50112C3A" Win64="$(var.IsWin64)">
                         <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="no" />
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
-                    <Component Id="RuntimeBinaries_comp" Guid="E6862ECF-0527-478C-B756-E66E2B493474" Win64="yes">
+                    <Component Id="RuntimeBinaries_comp" Guid="E6862ECF-0527-478C-B756-E66E2B493474" Win64="$(var.IsWin64)">
                         <File Source="$(var.SourceInstallFolderPath)\DevIL.dll" Id="DevILdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILU.dll" Id="ILUdll" />
                         <File Source="$(var.SourceInstallFolderPath)\ILUT.dll" Id="ILUTdll" />
@@ -127,7 +127,7 @@
             <ComponentRef Id="MiscFiles_comp" />
 
             <ComponentRef Id="DataDir_comp" />
-			<ComponentGroupRef Id="Data_generated_comp" />
+            <ComponentGroupRef Id="Data_generated_comp" />
             <ComponentRef Id="DataDir_children_removal_comp" />
 
             <ComponentRef Id="GuidesDir_comp" />
@@ -140,12 +140,12 @@
 
             <ComponentRef Id="FloatingSandboxDesktopShortcut_comp" />
             <ComponentRef Id="FloatingSandboxProgramMenuShortcut_comp" />
-		</Feature>
+        </Feature>
 
 
         <UIRef Id="FloatingSandboxUI" />
 
 
-	</Product>
+  </Product>
 
 </Wix>
