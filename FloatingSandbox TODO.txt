@@ -515,6 +515,17 @@ Render:
 		+ ShipLoadDialog:
 			+ Clear line from BG
 			+ Add border to HTML
+		+ Check Russian
+			+ ask if comes immediately
+			+ Ask to reduce "Mattia, Elia"...
+		+ Run in Debug
+			+ Bubbles
+		+ Run on Dell
+			+ x64 rel 
+			+ x64 debug
+			+ x32 rel
+		+ Test perf on Dell, before & after
+		+ M.S. Esmeralda's horn name
 
 
 		= Ships:
@@ -529,24 +540,11 @@ Render:
 				+ changes.txt
 			- M.V. panagiotis (sinking feeling)
 				- Tidy up electrical panel
-					- Test on Dell
+					- Test on smaller width (Dell?)
 			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 				- Asked whether he has permission
-			- SpaceX ships from KazindelProductions (GameJolt)
 			- Take all the "Ship Contribs TODO\Ready" ones
 				-changes.txt
-
-		= Check Russian
-			- ask if comes immediately
-			= Ask to reduce "Mattia, Elia"...
-		+ Run in Debug
-			+ Bubbles
-		+ Run on Dell
-			+ x64 rel 
-			+ x64 debug
-			+ x32 rel
-		+ Test perf on Dell, before & after
-		+ M.S. Esmeralda's horn name
 
 		- Release 1.15.2
 			- 32-bit MSI
@@ -778,7 +776,8 @@ Render:
 		- To take:
 			- S.S. Triatic
 				- Do ropes however
-				
+		- SpaceX ships from KazindelProductions (asked on GameJolt)				
+
 	- Descriptions:
 		+ Tell maximord about new ships - give him names
 		= Copy all descriptions into their respective .shp files
