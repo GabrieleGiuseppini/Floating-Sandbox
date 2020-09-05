@@ -43,7 +43,7 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementVBO()
     , mStressedSpringElementVBOAllocatedElementSize(0u)
     //
-    , mFlameVertexBuffer()    
+    , mFlameVertexBuffer()
     , mFlameBackgroundCount(0u)
     , mFlameForegroundCount(0u)
     , mFlameVBO()
@@ -455,7 +455,7 @@ ShipRenderContext::ShipRenderContext(
     //
     // Update parameters for initial values
     //
-    
+
     ApplyViewModelChanges(renderParameters);
     ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     ApplyFlatLampLightColorChanges(renderParameters);
@@ -743,7 +743,7 @@ void ShipRenderContext::UploadFlamesEnd()
 {
     assert((mFlameBackgroundCount + mFlameForegroundCount) * 6u == mFlameVertexBuffer.size());
 
-    // Nop    
+    // Nop
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
@@ -1344,7 +1344,7 @@ void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParam
     {
         // Calculate wind angle: we do this here once instead of doing it for each and every pixel
         float const windRotationAngle = std::copysign(
-            0.6f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitudeAverage)),
+            0.5f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitudeAverage)),
             -mFlameWindSpeedMagnitudeAverage);
 
         switch (renderParameters.ShipFlameRenderMode)
@@ -1400,7 +1400,7 @@ void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParam
     //
     // Upload buffers, if needed
     //
-    
+
     if (!mFlameVertexBuffer.empty())
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
