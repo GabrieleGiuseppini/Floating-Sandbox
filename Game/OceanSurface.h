@@ -93,12 +93,10 @@ public:
 
         ChangeHeightSmooth(
             SWEOuterLayerSamples + sampleIndexI,
-            SWEOuterLayerSamples + sampleIndexI - 1, // Left derivative
             (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification);
 
         ChangeHeightSmooth(
             SWEOuterLayerSamples + sampleIndexI + 1,
-            SWEOuterLayerSamples + sampleIndexI + 2, // Right derivative
             sampleIndexDx * yOffset / SWEHeightFieldAmplification);
     }
 
@@ -128,12 +126,10 @@ private:
     // a maximum slope to keep surface perturbations "smooth"
     inline void ChangeHeightSmooth(
         size_t heightFieldIndex,
-        size_t heightFieldIndexDerivative,
         float delta)
     {
         // The index is within the "workable" mid-section of the height field
-        assert(heightFieldIndex >= SWEOuterLayerSamples - 1 && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount + 1);
-        assert(heightFieldIndexDerivative >= SWEOuterLayerSamples - 2 && heightFieldIndexDerivative <= SWEOuterLayerSamples + SamplesCount + 2);
+        assert(heightFieldIndex >= SWEOuterLayerSamples && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount + 1);
 
         // This is the maximum derivative we allow,
         // based on empirical observations of (hf[i] - hf[i+/-1]) / Dx
@@ -141,16 +137,31 @@ private:
 
         if (delta >= 0.0f)
         {
-            mHeightField[heightFieldIndex] = std::min(
+            float const leftMin = std::min(
                 mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndexDerivative] + MaxDerivative * Dx);
+                mHeightField[heightFieldIndex - 1] + MaxDerivative * Dx);
+
+            float const rightMin = std::min(
+                mHeightField[heightFieldIndex] + delta,
+                mHeightField[heightFieldIndex + 1] + MaxDerivative * Dx);
+
+            mHeightField[heightFieldIndex] = std::max( // We don't want to lower the current height
+                mHeightField[heightFieldIndex],
+                std::min(leftMin, rightMin));
         }
         else
         {
-            // Left derivative
-            mHeightField[heightFieldIndex] = std::max(
+            float const leftMax = std::max(
                 mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndexDerivative] - MaxDerivative * Dx);
+                mHeightField[heightFieldIndex - 1] - MaxDerivative * Dx);
+
+            float const rightMax = std::max(
+                mHeightField[heightFieldIndex] + delta,
+                mHeightField[heightFieldIndex + 1] - MaxDerivative * Dx);
+
+            mHeightField[heightFieldIndex] = std::min( // We don't want to raise the current height
+                mHeightField[heightFieldIndex],
+                std::max(leftMax, rightMax));
         }
     }
 

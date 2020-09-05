@@ -539,25 +539,41 @@ Render:
 			+ M.V. panagiotis (sinking feeling)
 				+ Tidy up electrical panel
 
-		- Release 1.15.2
-			= 32-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test on New
-				- Test on Dell
-				- Test on Discord
-			= 64-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test on New
-				- Test on Dell
-				- Test on Discord
+		+ Fix Storm+Tsunami issue
+			+ Test at world boundaries in Debug
 
-			- Try package instructions to prevent using GameJolt client
-			- "System Requirements" Readme section, @ GitHub & @ GameJolt
-				- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
-				- Link to FAQ - for issues like OpenGL... - on FS.com
-					- Restructure in sections, w/"Issues" & "System Requirements"
+		- Raise tsunami rate
+
+		- Release 1.15.2
+			- 32-bit MSI
+				- Build Install
+				- Make MSI
+				- Test on New
+				- Test on Discord
+				- Test on old Dell
+			- 64-bit MSI
+				- Build Install
+				- Make MSI
+				- Test on New
+				- Test on Discord
+				- Test on old Dell
+			+ Test upgrade from 1.15.1
+			- Cut tag on github
+
+			- "System Requirements" Readme section
+				+ GitHub
+				- GameJolt:
+					- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
+					- Link to FAQ - for issues like OpenGL... - on FS.com
+						- Restructure in sections, w/"Issues" & "System Requirements"
+
+			- Publish packages on GameJolt
+				- Test package instructions (on old package first) to prevent using GameJolt client
+			- www.floatingsandbox.com:
+				- changes.txt
+				- FAQ:
+					- Current version
+					- 32-bit
 
 		----------------------------------------------------------------------------------------
 
@@ -586,6 +602,9 @@ Render:
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- Frontier (*)
+
+		- Ships:
+			- HMS Victoria: make yourself w/texture from ShipBucket or else
 
 		- Try ocean rendering with concentration of waves at top
 
@@ -1633,6 +1652,9 @@ Render:
 		- How to Guide
 
 - UI:
+
+	- Also "clock time since last reload" would be helpful
+		- Add two Game Preferences checkboxes to select each
 
 	- ShipLoadDialog: display also folders
 
