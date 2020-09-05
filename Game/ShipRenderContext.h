@@ -1088,7 +1088,7 @@ private:
     size_t mFlameForegroundCount;
     GameOpenGLVBO mFlameVBO;
     size_t mFlameVBOAllocatedVertexSize;
-    RunningAverage<24> mFlameWindSpeedMagnitudeRunningAverage;
+    RunningAverage<32> mFlameWindSpeedMagnitudeRunningAverage;
     float mFlameWindSpeedMagnitudeAverage;
     bool mIsFlameWindSpeedMagnitudeAverageDirty;
 
