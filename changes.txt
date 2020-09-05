@@ -1,4 +1,4 @@
-TODO
+1.15.2.4
 - Enabled localization
 	- This version ships with English, Italian, and Russian; more languages to follow in future versions
 - Recalibrated simulation parameters
@@ -11,8 +11,9 @@ TODO
 - Added automatic day/night cycle
 	- Off by default; may be enabled via "Simulation Settings"
 - Improved performance of Ship Explorer window when loading often from the same folder
-- Added 12 new ships
+- Added 13 new ships
 - ...and a few more small improvements here and there
+- Musical theme for this release: Faithless
 
 1.15.1.1
 - Fixed issue with mouse wheel/zoom stopping working - this time for real!

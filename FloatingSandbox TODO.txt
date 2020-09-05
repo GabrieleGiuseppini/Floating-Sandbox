@@ -524,11 +524,9 @@ Render:
 			+ x64 rel 
 			+ x64 debug
 			+ x32 rel
-		+ Test perf on Dell, before & after
-		+ M.S. Esmeralda's horn name
-
-
-		= Ships:
+		+ Test perf on Dell, before & after		
+		+ Ships:
+			+ M.S. Esmeralda's horn name
 			+ Add new variation of M.V. Chippewa (in Contrib's folder)
 			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
 				+ Credits: "Matthew Anderson"
@@ -538,13 +536,8 @@ Render:
 				+ Credits: "Floeddy"
 				+ Take ships in "OK" folder
 				+ changes.txt
-			- M.V. panagiotis (sinking feeling)
-				- Tidy up electrical panel
-					- Test on smaller width (Dell?)
-			= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
-				- Asked whether he has permission
-			- Take all the "Ship Contribs TODO\Ready" ones
-				-changes.txt
+			+ M.V. panagiotis (sinking feeling)
+				+ Tidy up electrical panel
 
 		- Release 1.15.2
 			- 32-bit MSI
@@ -777,6 +770,8 @@ Render:
 			- S.S. Triatic
 				- Do ropes however
 		- SpaceX ships from KazindelProductions (asked on GameJolt)				
+		= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
+			- Asked whether he has permission
 
 	- Descriptions:
 		+ Tell maximord about new ships - give him names

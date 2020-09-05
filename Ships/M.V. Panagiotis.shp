@@ -1,0 +1,34 @@
+{
+	"structure_image":"mv_panagiotis_structure.png.dat",
+	"electrical_image":"mv_panagiotis_electric.png.dat",
+	"texture_image":"mv_panagiotis_texture.png.dat",
+	"ropes_image":"mv_panagiotis_ropes.png.dat",
+	"ship_name":"M.V. Panagiotis",
+	"offset":{"x":0.0, "y":-22.0},
+	"created_by":"sinking_feeling",
+	"electrical_panel":{
+
+		"7": {"panel_x":-7, "panel_y":0, "label":"Engine Room 1" },
+		"4": {"panel_x":-6, "panel_y":0, "label":"Engine 1" },
+		"5": {"panel_x":-5, "panel_y":0, "label":"Engine 2" },
+		"13": {"panel_x":-4, "panel_y":0, "label":"Engine 3" },
+		"14": {"panel_x":-3, "panel_y":0, "label":"Engine 4" },
+		"15": {"panel_x":-2, "panel_y":0, "label":"Engine 5" },
+
+		"16": {"panel_x":0, "panel_y":0, "label":"Engine Room 2" },
+		"17": {"panel_x":1, "panel_y":0, "label":"Engine 1" },
+		"18": {"panel_x":2, "panel_y":0, "label":"Engine 2" },
+		"19": {"panel_x":3, "panel_y":0, "label":"Engine 3" },
+		"20": {"panel_x":4, "panel_y":0, "label":"Engine 4" },
+		"21": {"panel_x":5, "panel_y":0, "label":"Engine 5" },
+
+		"9": {"panel_x":-7, "panel_y":1, "label":"Mains" },
+
+		"0": {"panel_x":-3, "panel_y":1, "label":"Lights Aft" },
+		"2": {"panel_x":-2, "panel_y":1, "label":"Mast Aft" },
+		"10": {"panel_x":-1, "panel_y":1, "label":"Horn" },
+		"1": {"panel_x":0, "panel_y":1, "label":"Lights Deck" },
+		"3": {"panel_x":1, "panel_y":1, "label":"Mast Fore" }
+		
+	}
+}
