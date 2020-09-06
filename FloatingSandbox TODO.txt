@@ -242,345 +242,7 @@ Render:
 
 - Roadmap:
 		
-		+ Blog:
-			+ all new electrical elements
-
-		+ Bump up version
-		+ Cleanup plan
-		+ Load ship dialog:
-			+ Ship Preview Cache (*)
-			+ Arrow keys on ShipPreview window
-			+ Text serch also on year, author
-		+ #pragma pack(push, 1) // @ all instances
-			+ See perf afterwards
-		+ OpenGL:
-			+ Remove stencil from context requirements
-				+ And check all references to "stencil"
-			+ Run w/OpenGL tracing to see if there's any errors
-		+ SettingsDialog: move ship render mode to Debug
-			+ As new "Ship Render Mode" radio option
-				+ If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
-					+ See if e.g. we do "springs only" with both nowadays: NO, only with "structure (color)"
-			+ Use lambdas at checkboxes
-		+ Sparkles:
-			+ Growing and then shrinking
-		+ Water bubbles:
-			+ Bigger as goes up
-			+ Waves at surfacing
-				+ Boolean flag => Points::m (or local?) AirBubblesOceanSurfaceDisplacementSurfaceOffsetThreshold = 0.5/0.0
-				+ SettingsDialog
-			+ Sound
-		+ ARM OpenGL issue
-			+ See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
-			+ Ccontext is bound early to a temporary canvas that is shown, and after initialization it is 
-			  bound to the actual game canvas
-				+ See if need to SetCurrent again
-				+ See if new DC needs also to be visible
-					+ SplashDialog needs to become member; OnPaint checks for it and if so, 1) transfers, and 2) destroy
-					  mSplashDialog
-				+ Test:
-					+ Start w/elec panel
-					+ Force Paint - minimize+maximize, move, close dialog, etc.
-				+ Cleanup:
-					+ Make Splash's canvas inconspicuous
-		+ MacOS zero timeout issue:
-			+ Calc millis for 1000/20 frames/sec and sleep by that
-				+ Verify no FPS changes afterwards
-		+ Parallelize OpenGL
-		+ Bug: no terrain cursor appears if you are in tool 'M' and then hit 'J'
-		+ Hard error if Splash can't find image
-		+ Latest picojson
-		+ Default ship @ Install: Titanic with Power
-		+ Notification for muted sound
-			+ Test with both false and true loaded at startup
-			+ Test with ambient light
-			+ Test CTRL+M shortcut
-		+ Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
-			+ Adjust stitch between Imploding_5 and PreExploding_6
-				+ Adjust progress @ shader
-		+ Explosions: 
-			X Try with progress being sqrt
-			+ More delta scale		
-		X Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
-			+ Check assembly:
-				+ Before:
-					000000013F76F288  sqrtss      xmm7,xmm1  
-					000000013F76F28C  comiss      xmm7,xmm2  # xmm2=0
-					000000013F76F28F  jbe         Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F76F2A6h)  
-					000000013F76F291  movaps      xmm3,xmm8  # xmm8=1
-					000000013F76F295  divss       xmm3,xmm7  # xmm3=1/len
-					000000013F76F299  movaps      xmm6,xmm3  
-					000000013F76F29C  mulss       xmm3,xmm5  
-					000000013F76F2A0  mulss       xmm6,xmm4  
-					000000013F76F2A4  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F76F2ACh)  
-					000000013F76F2A6  movaps      xmm6,xmm2  
-					000000013F76F2A9  movaps      xmm3,xmm2  
-					000000013F76F2AC  movss       xmm1,dword ptr [r10+rax*8+4]  
-				+ After:
-					000000013F4FFDE8  sqrtss      xmm7,xmm1  
-					000000013F4FFDEC  ucomiss     xmm7,xmm2  
-					000000013F4FFDEF  je          Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F4FFE06h)  
-					000000013F4FFDF1  movaps      xmm3,xmm8  
-					000000013F4FFDF5  divss       xmm3,xmm7  
-					000000013F4FFDF9  movaps      xmm6,xmm3  
-					000000013F4FFDFC  mulss       xmm3,xmm5  
-					000000013F4FFE00  mulss       xmm6,xmm4  
-					000000013F4FFE04  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F4FFE0Ch)  
-					000000013F4FFE06  movaps      xmm6,xmm2  
-					000000013F4FFE09  movaps      xmm3,xmm2  
-					000000013F4FFE0C  movss       xmm1,dword ptr [r10+rax*8+4]  
-			X If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
-		+ Add new detected characteristic: FS_REGISTER_WIDTH 32/64
-			+ Change and use FastTruncate accordingly
-		+ Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
-			+ Test with fake architecture detection, making sure no intrinsic header files are included
-			+ Implement lights vectorized
-				+ With unit tests
-			+ Test lights, ocean floor, ocean surface
-			+ Check speed of new vectorized one wrt naive, w/Szerszen
-				+ Vect: 10-10.3, 71ms
-				+ Naive: 9.7-10, 73ms
-			+ Undo fake architecture detection
-			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
-		+ 32-bit build
-			+ Prepare 32-bit SDK:
-				+ wxWidgets (UNICODE)
-					+ Release
-					+ Debug
-				+ SFML
-					+ Release
-					+ Debug
-				+ DevIL
-					+ Release
-			+ Need new build folder altogether, and new invocation of CMake with different generators
-				+ UserSettings.cmake: see if may switch based off bitness
-					+ https://cmake.org/cmake/help/latest/variable/CMAKE_SIZEOF_VOID_P.html#variable:CMAKE_SIZEOF_VOID_P
-				+ benchmark issue
-			+ Build:
-				+ RelWithDebInfo
-					+ Run unit tests
-					+ Fix issue with sfml-d
-					+ Rerun CMake
-					+ Test run
-				+ Debug
-					+ Run unit tests
-					+ Test run
-				+ Release
-					+ Test run
-			+ Verify SSE intrinsics are fine in 32-bit process
-				+ Run through them, and check assembly
-			+ Add Arch+OS to AboutBox
-			+ Re-test 64-bit
-				+ Clear Data folder for all flavors
-				+ Redo CMake
-				+ Run unit tests Debug
-				+ Test run Debug
-				+ Test run RelWithDebInfo
-			+ Check all png's for ocean and land
-			+ If wxWidgets' Unicode is fine, re-build wxWidgets with Unicode for 64-bit as well
-				+ Build SDK
-				+ Add wxS to:
-					+ SliderControl (takes wxString's as args)
-					+ SettingsDialog
-						+ Test saving settings
-						+ See speedup
-					+ PreferencesDialog
-					+ MainFrame
-					+ ShipLoadDialog
-			+ Commit & push
-		+ Texture notifications: recalc vertices at view model changes
-			+ Store raw data, just like font
-			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
-			+ Test w/panel
-		+ GameController: just one special day
-		+ Fix 1 second == 1 second
-			+ Change simulation time step
-			+ Fix calculation of timer step: round correctly!
-			+ Test Titanic
-				+ Find new strength: 0.643389
-			+ Fix splash screen - Ready!
-			+ Increase rigidity:
-				+ SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names when "stiff")
-				+ Ropes are at 2.0
-			+ Test Titanic
-				+ Lower strength even more: less than 0.643389
-					+ Or: lower strength of Titanic's breaking material - try first removing strength "version multiplier"
-			+ Test ropes
-				+ With Titanic cutting
-			+ Test balls, etc.
-			+ Test melting
-				+ Increase strenghtening
-			+ Test bombs
-				+ Adjust strengths
-			+ Test rotting speed (and gfx)
-			+ Test repairing
-			+ See if max StiffnessAdjust needs to be changed (so that spring displacement max is 1.0)
-			+ Test on old dell
-			+ Build new material template
-			+ changes.txt: "Recalibrated..."
-		+ Test szerszen
-		+ See if may avoid green lines
-			+ Wait for answer from Intel
-		+ Day/night cycle
-			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
-			  ambient light to target ambient light (target based off next "12-hour")
-			+ With texture notification when on
-				+ Code
-				+ Texture
-			+ SettingsDialog: duration
-			+ Issue: cursor of tool over SettingsDialog
-			+ Try better (inverte-able) curve
-				+ Move inverse to GameMath
-			+ changes.txt
-		+ MSBuild:
-			+ Test /MP
-			+ If ok: in CMake
-		X Test speed with ElementIndex/Count being 64-bit
-		+ Run with address sanitizer (32-bit)
-		+ Send for testing (32-bit)
-		+ Bubbles:
-			+ Smaller wave
-			+ Add checkbox for bubble sounds
-				+ Storage owned by SoundController
-				+ Cutoff happens @ SoundController
-			+ Try vortex amplitude: random sign
-			+ Limit derivative
-				+ Do
-				+ Test with one-sided derivative
-				+ Test - in Debug - at world boundaries
-				+ Test on Dell
-		+ Logging & threads
-		+ Adjust flames
-			+ Thicker flames at texture
-			+ Resolution			
-		+ Add latest Songe d'Automne
-		+ Localization
-			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
-			+ Fixup dir structures
-			+ Test w/manually setting language in ui_preferences.json
-			+ LocalizationManager:
-				+ Created by MainApp (uq_ptr<> member) at OnInit() passing UIPreferencesManager::LoadPreferredLanguage() -> std::opt<lang>
-					+ Returned language type/cctor arg TBD
-					+ via Create() factory method, not cctor
-					+ Sets wxWidgets' wxLocale and language
-				+ Passed as ref to MainFrame, which stores as member
-				+ Provides:
-					+ Language (type TBD, preferably 2-letter string)
-					+ DefaultLanguage - "en" (TBD: or whatever is the type above)
-				+ Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
-			+ Do UI preferences workflow
-				+ UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
-					+ Nuke own storage
-				+ Warning on change from current
-				+ Test whole workflow
-			+ Splash screen progress strings
-				+ "MessageType" enum at ProgressCallback, and methods take enum
-				+ SplashScreenDialog creates array of _() strings at cctor
-			+ StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
-				+ Checks internally if lang file exists before returning default (with logged warning)
-				+ Move startup, help HTML files under language dirs
-					+ Help folder: maintain resources here, see if may use relative paths in HTML links
-			+ Mark all strings as _(
-				+ AboutDialog
-					+ Also labels
-				+ CheckForUpdatesDialog
-				+ HelpDialog
-				+ LoggingDialog
-				+ MainFrame
-				+ NewVersionDisplayDialog
-				+ PreferencesDialog
-				+ ProbePanel
-				+ SettingsDialog
-				+ ShipDescriptionDialog
-				+ ShipLoadDialog
-				+ SplashScreenDialog
-				+ StartupTipDialog
-			+ Prepare final, complete pot file
-			+ Translations:
-				+ Italian:
-					+ StartupTip
-					+ Help
-					+ po
-					+ Cross-reference Help with Menus
-				+ Russian:
-					+ Prepare po
-					+ Test HTMLs
-						+ Put content-encoding in master (en) as well
-					+ po
-			+ Mark TO-DO item under Technical Debt
-			+ changes.txt
-		+ Lava preset:
-			+ Water density
-			+ Heat coeffs? For smooth melting, aka Lord of the Rings
-		+ ShipLoadDialog:
-			+ Clear line from BG
-			+ Add border to HTML
-		+ Check Russian
-			+ ask if comes immediately
-			+ Ask to reduce "Mattia, Elia"...
-		+ Run in Debug
-			+ Bubbles
-		+ Run on Dell
-			+ x64 rel 
-			+ x64 debug
-			+ x32 rel
-		+ Test perf on Dell, before & after		
-		+ Ships:
-			+ M.S. Esmeralda's horn name
-			+ Add new variation of M.V. Chippewa (in Contrib's folder)
-			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
-				+ Credits: "Matthew Anderson"
-				+ changes.txt
-			+ Check out Floeddys Fictional Ship Pack (in Contrib's folder)
-				+ Nice; asked permission on Discord - OK
-				+ Credits: "Floeddy"
-				+ Take ships in "OK" folder
-				+ changes.txt
-			+ M.V. panagiotis (sinking feeling)
-				+ Tidy up electrical panel
-		+ Fix Storm+Tsunami issue
-			+ Test at world boundaries in Debug
-			+ Test perf of bubbles on Dell
-				+ Also test look'n'feel of flames at slower fps
-		+ Fix tsunami rate
-
-		= Release 1.15.2
-			= 32-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test on New
-				= Test on Discord
-				+ Test on old Dell
-			= 64-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test on New
-				= Test on Discord
-				+ Test on old Dell
-			+ Test upgrade from 1.15.1
-			- Cut tag on github
-
-			- Publish packages on GameJolt
-				- With package instructions
-
-			- Post:
-				- Link to premiere from theDARKTURRET: https://www.youtube.com/watch?v=UCEvFRpRv-0
-
-				Dear Shipmates, It's finally time for 1.15.2 to come out and find its rightful place on your computers!
-				As previously anticipated, this release consists of mostly technical improvements across the board, which smooth out some rough edges of Floating Sandbox and pave the way for fantastic improvements in the future. 
-				Here's the list of changes in this release:
-
-
-			- Add 32-bit to GameJolt's "System Requirements" section
-			
-			- www.floatingsandbox.com:
-				- changes.txt
-				- FAQ:
-					- Current version
-					- 32-bit
-				- Embed GameJolt Widget
-
-		----------------------------------------------------------------------------------------
+		- Frontier (*)
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -608,8 +270,6 @@ Render:
 			- See if longer relax interval for stress sounds does the trick
 			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
-
-		- Frontier (*)
 
 		- Try ocean rendering with concentration of waves at top
 
@@ -829,6 +489,10 @@ Render:
 		= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 			- Asked whether he has permission
 
+
+- Marketing:
+	- www.floatingsandbox.com:
+		- Embed GameJolt Widget
 
 - Suggestions to spec:
 	- Shockwave bomb
@@ -10103,7 +9767,338 @@ IF WX:
 				+ upload package x 2 & release
 				+ post
 			+ changes.txt up to fs.com
-
+	+ 1.15.2
+		+ Blog:
+			+ all new electrical elements
+		+ Bump up version
+		+ Cleanup plan
+		+ Load ship dialog:
+			+ Ship Preview Cache (*)
+			+ Arrow keys on ShipPreview window
+			+ Text serch also on year, author
+		+ #pragma pack(push, 1) // @ all instances
+			+ See perf afterwards
+		+ OpenGL:
+			+ Remove stencil from context requirements
+				+ And check all references to "stencil"
+			+ Run w/OpenGL tracing to see if there's any errors
+		+ SettingsDialog: move ship render mode to Debug
+			+ As new "Ship Render Mode" radio option
+				+ If we do so, do we need any of the debug ship draw options to support "color" instead of "texture"?
+					+ See if e.g. we do "springs only" with both nowadays: NO, only with "structure (color)"
+			+ Use lambdas at checkboxes
+		+ Sparkles:
+			+ Growing and then shrinking
+		+ Water bubbles:
+			+ Bigger as goes up
+			+ Waves at surfacing
+				+ Boolean flag => Points::m (or local?) AirBubblesOceanSurfaceDisplacementSurfaceOffsetThreshold = 0.5/0.0
+				+ SettingsDialog
+			+ Sound
+		+ ARM OpenGL issue
+			+ See https://groups.google.com/forum/#!topic/wx-users/sOuPgaB_uXo
+			+ Ccontext is bound early to a temporary canvas that is shown, and after initialization it is 
+			  bound to the actual game canvas
+				+ See if need to SetCurrent again
+				+ See if new DC needs also to be visible
+					+ SplashDialog needs to become member; OnPaint checks for it and if so, 1) transfers, and 2) destroy
+					  mSplashDialog
+				+ Test:
+					+ Start w/elec panel
+					+ Force Paint - minimize+maximize, move, close dialog, etc.
+				+ Cleanup:
+					+ Make Splash's canvas inconspicuous
+		+ MacOS zero timeout issue:
+			+ Calc millis for 1000/20 frames/sec and sleep by that
+				+ Verify no FPS changes afterwards
+		+ Parallelize OpenGL
+		+ Bug: no terrain cursor appears if you are in tool 'M' and then hit 'J'
+		+ Hard error if Splash can't find image
+		+ Latest picojson
+		+ Default ship @ Install: Titanic with Power
+		+ Notification for muted sound
+			+ Test with both false and true loaded at startup
+			+ Test with ambient light
+			+ Test CTRL+M shortcut
+		+ Redo cross of light (use new one at https://www.shadertoy.com/view/Wt2czz)
+			+ Adjust stitch between Imploding_5 and PreExploding_6
+				+ Adjust progress @ shader
+		+ Explosions: 
+			X Try with progress being sqrt
+			+ More delta scale		
+		X Try [[likely/unlikely]] - checking assembly (and perf impact) of norm vector calculation
+			+ Check assembly:
+				+ Before:
+					000000013F76F288  sqrtss      xmm7,xmm1  
+					000000013F76F28C  comiss      xmm7,xmm2  # xmm2=0
+					000000013F76F28F  jbe         Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F76F2A6h)  
+					000000013F76F291  movaps      xmm3,xmm8  # xmm8=1
+					000000013F76F295  divss       xmm3,xmm7  # xmm3=1/len
+					000000013F76F299  movaps      xmm6,xmm3  
+					000000013F76F29C  mulss       xmm3,xmm5  
+					000000013F76F2A0  mulss       xmm6,xmm4  
+					000000013F76F2A4  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F76F2ACh)  
+					000000013F76F2A6  movaps      xmm6,xmm2  
+					000000013F76F2A9  movaps      xmm3,xmm2  
+					000000013F76F2AC  movss       xmm1,dword ptr [r10+rax*8+4]  
+				+ After:
+					000000013F4FFDE8  sqrtss      xmm7,xmm1  
+					000000013F4FFDEC  ucomiss     xmm7,xmm2  
+					000000013F4FFDEF  je          Physics::Ship::ApplySpringsForces_BySprings+0F6h (013F4FFE06h)  
+					000000013F4FFDF1  movaps      xmm3,xmm8  
+					000000013F4FFDF5  divss       xmm3,xmm7  
+					000000013F4FFDF9  movaps      xmm6,xmm3  
+					000000013F4FFDFC  mulss       xmm3,xmm5  
+					000000013F4FFE00  mulss       xmm6,xmm4  
+					000000013F4FFE04  jmp         Physics::Ship::ApplySpringsForces_BySprings+0FCh (013F4FFE0Ch)  
+					000000013F4FFE06  movaps      xmm6,xmm2  
+					000000013F4FFE09  movaps      xmm3,xmm2  
+					000000013F4FFE0C  movss       xmm1,dword ptr [r10+rax*8+4]  
+			X If wanna keep it: CMakeLists: if MSVC, set /std::latest, else CMAKE_CPP=17
+		+ Add new detected characteristic: FS_REGISTER_WIDTH 32/64
+			+ Change and use FastTruncate accordingly
+		+ Do intrinsics only on FS_ARCHITECTURE_x86_64 (& 32?), else do C++
+			+ Test with fake architecture detection, making sure no intrinsic header files are included
+			+ Implement lights vectorized
+				+ With unit tests
+			+ Test lights, ocean floor, ocean surface
+			+ Check speed of new vectorized one wrt naive, w/Szerszen
+				+ Vect: 10-10.3, 71ms
+				+ Naive: 9.7-10, 73ms
+			+ Undo fake architecture detection
+			+ Verify that, without intrinsics, FastTruncateInt64(-7.6) == -7
+		+ 32-bit build
+			+ Prepare 32-bit SDK:
+				+ wxWidgets (UNICODE)
+					+ Release
+					+ Debug
+				+ SFML
+					+ Release
+					+ Debug
+				+ DevIL
+					+ Release
+			+ Need new build folder altogether, and new invocation of CMake with different generators
+				+ UserSettings.cmake: see if may switch based off bitness
+					+ https://cmake.org/cmake/help/latest/variable/CMAKE_SIZEOF_VOID_P.html#variable:CMAKE_SIZEOF_VOID_P
+				+ benchmark issue
+			+ Build:
+				+ RelWithDebInfo
+					+ Run unit tests
+					+ Fix issue with sfml-d
+					+ Rerun CMake
+					+ Test run
+				+ Debug
+					+ Run unit tests
+					+ Test run
+				+ Release
+					+ Test run
+			+ Verify SSE intrinsics are fine in 32-bit process
+				+ Run through them, and check assembly
+			+ Add Arch+OS to AboutBox
+			+ Re-test 64-bit
+				+ Clear Data folder for all flavors
+				+ Redo CMake
+				+ Run unit tests Debug
+				+ Test run Debug
+				+ Test run RelWithDebInfo
+			+ Check all png's for ocean and land
+			+ If wxWidgets' Unicode is fine, re-build wxWidgets with Unicode for 64-bit as well
+				+ Build SDK
+				+ Add wxS to:
+					+ SliderControl (takes wxString's as args)
+					+ SettingsDialog
+						+ Test saving settings
+						+ See speedup
+					+ PreferencesDialog
+					+ MainFrame
+					+ ShipLoadDialog
+			+ Commit & push
+		+ Texture notifications: recalc vertices at view model changes
+			+ Store raw data, just like font
+			+ Mark dirty at ApplyCanvasSizeChanges and recalc vertices @ RenderPrepareTextureNotifications
+			+ Test w/panel
+		+ GameController: just one special day
+		+ Fix 1 second == 1 second
+			+ Change simulation time step
+			+ Fix calculation of timer step: round correctly!
+			+ Test Titanic
+				+ Find new strength: 0.643389
+			+ Fix splash screen - Ready!
+			+ Increase rigidity:
+				+ SpringReduction Coeff = 0.5 + all materials' stiffness max=1.0 (change names when "stiff")
+				+ Ropes are at 2.0
+			+ Test Titanic
+				+ Lower strength even more: less than 0.643389
+					+ Or: lower strength of Titanic's breaking material - try first removing strength "version multiplier"
+			+ Test ropes
+				+ With Titanic cutting
+			+ Test balls, etc.
+			+ Test melting
+				+ Increase strenghtening
+			+ Test bombs
+				+ Adjust strengths
+			+ Test rotting speed (and gfx)
+			+ Test repairing
+			+ See if max StiffnessAdjust needs to be changed (so that spring displacement max is 1.0)
+			+ Test on old dell
+			+ Build new material template
+			+ changes.txt: "Recalibrated..."
+		+ Test szerszen
+		+ See if may avoid green lines
+			+ Wait for answer from Intel
+		+ Day/night cycle
+			+ New GameController state machine, running every X seconds (LowFreq update?) and taking current
+			  ambient light to target ambient light (target based off next "12-hour")
+			+ With texture notification when on
+				+ Code
+				+ Texture
+			+ SettingsDialog: duration
+			+ Issue: cursor of tool over SettingsDialog
+			+ Try better (inverte-able) curve
+				+ Move inverse to GameMath
+			+ changes.txt
+		+ MSBuild:
+			+ Test /MP
+			+ If ok: in CMake
+		X Test speed with ElementIndex/Count being 64-bit
+		+ Run with address sanitizer (32-bit)
+		+ Send for testing (32-bit)
+		+ Bubbles:
+			+ Smaller wave
+			+ Add checkbox for bubble sounds
+				+ Storage owned by SoundController
+				+ Cutoff happens @ SoundController
+			+ Try vortex amplitude: random sign
+			+ Limit derivative
+				+ Do
+				+ Test with one-sided derivative
+				+ Test - in Debug - at world boundaries
+				+ Test on Dell
+		+ Logging & threads
+		+ Adjust flames
+			+ Thicker flames at texture
+			+ Resolution			
+		+ Add latest Songe d'Automne
+		+ Localization
+			+ static std::opt<lang> UIPreferencesManager::LoadPreferredLanguage()
+			+ Fixup dir structures
+			+ Test w/manually setting language in ui_preferences.json
+			+ LocalizationManager:
+				+ Created by MainApp (uq_ptr<> member) at OnInit() passing UIPreferencesManager::LoadPreferredLanguage() -> std::opt<lang>
+					+ Returned language type/cctor arg TBD
+					+ via Create() factory method, not cctor
+					+ Sets wxWidgets' wxLocale and language
+				+ Passed as ref to MainFrame, which stores as member
+				+ Provides:
+					+ Language (type TBD, preferably 2-letter string)
+					+ DefaultLanguage - "en" (TBD: or whatever is the type above)
+				+ Log language identifier that we would choose at startup, when LocMgr::cctor gets nullopt
+			+ Do UI preferences workflow
+				+ UIPreferencesManager takes LocalizationManager as ref, which stores as member and uses it for storage
+					+ Nuke own storage
+				+ Warning on change from current
+				+ Test whole workflow
+			+ Splash screen progress strings
+				+ "MessageType" enum at ProgressCallback, and methods take enum
+				+ SplashScreenDialog creates array of _() strings at cctor
+			+ StartupTip, Help: ResourceLocator::GetXXXFilePath: static, & take lang_identifier and default_lang_identifier as args
+				+ Checks internally if lang file exists before returning default (with logged warning)
+				+ Move startup, help HTML files under language dirs
+					+ Help folder: maintain resources here, see if may use relative paths in HTML links
+			+ Mark all strings as _(
+				+ AboutDialog
+					+ Also labels
+				+ CheckForUpdatesDialog
+				+ HelpDialog
+				+ LoggingDialog
+				+ MainFrame
+				+ NewVersionDisplayDialog
+				+ PreferencesDialog
+				+ ProbePanel
+				+ SettingsDialog
+				+ ShipDescriptionDialog
+				+ ShipLoadDialog
+				+ SplashScreenDialog
+				+ StartupTipDialog
+			+ Prepare final, complete pot file
+			+ Translations:
+				+ Italian:
+					+ StartupTip
+					+ Help
+					+ po
+					+ Cross-reference Help with Menus
+				+ Russian:
+					+ Prepare po
+					+ Test HTMLs
+						+ Put content-encoding in master (en) as well
+					+ po
+			+ Mark TO-DO item under Technical Debt
+			+ changes.txt
+		+ Lava preset:
+			+ Water density
+			+ Heat coeffs? For smooth melting, aka Lord of the Rings
+		+ ShipLoadDialog:
+			+ Clear line from BG
+			+ Add border to HTML
+		+ Check Russian
+			+ ask if comes immediately
+			+ Ask to reduce "Mattia, Elia"...
+		+ Run in Debug
+			+ Bubbles
+		+ Run on Dell
+			+ x64 rel 
+			+ x64 debug
+			+ x32 rel
+		+ Test perf on Dell, before & after		
+		+ Ships:
+			+ M.S. Esmeralda's horn name
+			+ Add new variation of M.V. Chippewa (in Contrib's folder)
+			+ Add Ferries_Of_The_Pacific (MatthewAnderson707)
+				+ Credits: "Matthew Anderson"
+				+ changes.txt
+			+ Check out Floeddys Fictional Ship Pack (in Contrib's folder)
+				+ Nice; asked permission on Discord - OK
+				+ Credits: "Floeddy"
+				+ Take ships in "OK" folder
+				+ changes.txt
+			+ M.V. panagiotis (sinking feeling)
+				+ Tidy up electrical panel
+		+ Fix Storm+Tsunami issue
+			+ Test at world boundaries in Debug
+			+ Test perf of bubbles on Dell
+				+ Also test look'n'feel of flames at slower fps
+		+ Fix tsunami rate
+		+ Release 1.15.2
+			+ 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test on New
+				+ Test on Discord
+				+ Test on old Dell
+			+ 64-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test on New
+				+ Test on Discord
+				+ Test on old Dell
+			+ Test upgrade from 1.15.1
+			+ Cut tag on github
+			+ Publish packages on GameJolt, scheduled
+			+ After schedule:
+				+ Post:					
+					Dear Shipmates, It's finally time for 1.15.2 to come out and find its rightful place on your computers!
+					As previously anticipated, this release consists of mostly technical improvements across the board, which smooth out some rough edges of Floating Sandbox and pave the way for fantastic improvements in the future. 
+					Here's the list of changes in this release:
+					...
+					P.S.: this release was timed with theDARKTURRET's YouTube premiere: https://www.youtube.com/watch?v=UCEvFRpRv-0
+				+ Update package instructions
+			+ Add 32-bit to GameJolt's "System Requirements" section			
+			+ www.floatingsandbox.com:
+				+ changes.txt
+					+ Test
+				+ FAQ:
+					+ Current version
+					+ 32-bit
 
 
 
