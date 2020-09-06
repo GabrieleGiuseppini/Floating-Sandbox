@@ -542,6 +542,7 @@ Render:
 		= Fix Storm+Tsunami issue
 			+ Test at world boundaries in Debug
 			= Test perf on Dell
+				- Also test look'n'feel of flames at slower fps
 		+ Fix tsunami rate
 
 		- Release 1.15.2

@@ -98,7 +98,7 @@ void main()
     angle *= smoothstep(-1.0, 0.3, flameSpacePosition.y);    
     
     // Smooth the angle
-    angle *= 0.45;
+    angle *= 0.35;
     
     // Rotate and add!
     uv += GetRotationMatrix(angle) * uv;    
