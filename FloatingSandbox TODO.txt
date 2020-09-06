@@ -545,21 +545,24 @@ Render:
 				- Also test look'n'feel of flames at slower fps
 		+ Fix tsunami rate
 
-		- Release 1.15.2
-			- 32-bit MSI
-				- Build Install
-				- Make MSI
+		= Release 1.15.2
+			= 32-bit MSI
+				+ Build Install
+				+ Make MSI
 				- Test on New
-				- Test on Discord
+				= Test on Discord
 				- Test on old Dell
-			- 64-bit MSI
-				- Build Install
-				- Make MSI
+			= 64-bit MSI
+				+ Build Install
+				+ Make MSI
 				- Test on New
-				- Test on Discord
+				= Test on Discord
 				- Test on old Dell
 			+ Test upgrade from 1.15.1
 			- Cut tag on github
+
+			- Publish packages on GameJolt
+				- Test package instructions (on old package first) to prevent using GameJolt client
 
 			- "System Requirements" Readme section
 				+ GitHub
@@ -567,9 +570,7 @@ Render:
 					- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
 					- Link to FAQ - for issues like OpenGL... - on FS.com
 						- Restructure in sections, w/"Issues" & "System Requirements"
-
-			- Publish packages on GameJolt
-				- Test package instructions (on old package first) to prevent using GameJolt client
+			
 			- www.floatingsandbox.com:
 				- changes.txt
 				- FAQ:
