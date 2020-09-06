@@ -578,6 +578,9 @@ Render:
 
 		----------------------------------------------------------------------------------------
 
+		- Flames: make sampling resolution independent from dimensions
+			- Need to pass width and height of flame quad, and divide texture coords by these
+
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
 			+ Crash because SplashScreen not shown
