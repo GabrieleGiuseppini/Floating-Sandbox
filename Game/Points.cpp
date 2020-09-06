@@ -1049,15 +1049,15 @@ void Points::UpdateCombustionHighFrequency(
                 //
                 // Develop
                 //
-                // f(n-1) + 0.105*f(n-1): when starting from 0.1, after 25 steps (0.5s) it's 1.21
+                // f(n-1) + 0.04*f(n-1): when starting from 0.1, after 61 steps (~1s) it's 1.1
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.1,%22valid%22:true}]&expression=f(n-1)%20+%200.105*f(n-1)&target=0&endTarget=25&range=true
                 //
 
                 pointCombustionState.FlameDevelopment +=
-                    0.105f * pointCombustionState.FlameDevelopment;
+                    0.04f * pointCombustionState.FlameDevelopment;
 
                 // Check whether it's time to transition to the next development phase
-                if (pointCombustionState.FlameDevelopment > pointCombustionState.MaxFlameDevelopment + 0.2f)
+                if (pointCombustionState.FlameDevelopment > pointCombustionState.MaxFlameDevelopment + 0.1f)
                 {
                     pointCombustionState.State = CombustionState::StateType::Developing_2;
                 }
@@ -1074,7 +1074,7 @@ void Points::UpdateCombustionHighFrequency(
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.2,%22valid%22:true}]&expression=f(n-1)%20-%200.2*f(n-1)&target=0&endTarget=25&range=true
                 //
 
-                // FlameDevelopment is now in the (MFD + 0.2, MFD) range
+                // FlameDevelopment is now in the (MFD + epsilon, MFD) range
                 auto extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
                 extraFlameDevelopment =
                     extraFlameDevelopment
