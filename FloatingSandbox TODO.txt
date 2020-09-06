@@ -538,26 +538,25 @@ Render:
 				+ changes.txt
 			+ M.V. panagiotis (sinking feeling)
 				+ Tidy up electrical panel
-
-		= Fix Storm+Tsunami issue
+		+ Fix Storm+Tsunami issue
 			+ Test at world boundaries in Debug
-			= Test perf on Dell
-				- Also test look'n'feel of flames at slower fps
+			+ Test perf of bubbles on Dell
+				+ Also test look'n'feel of flames at slower fps
 		+ Fix tsunami rate
 
 		= Release 1.15.2
 			= 32-bit MSI
 				+ Build Install
 				+ Make MSI
-				- Test on New
+				+ Test on New
 				= Test on Discord
-				- Test on old Dell
+				+ Test on old Dell
 			= 64-bit MSI
 				+ Build Install
 				+ Make MSI
-				- Test on New
+				+ Test on New
 				= Test on Discord
-				- Test on old Dell
+				+ Test on old Dell
 			+ Test upgrade from 1.15.1
 			- Cut tag on github
 
@@ -607,9 +606,6 @@ Render:
 			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- Frontier (*)
-
-		- Ships:
-			- HMS Victoria: make yourself w/texture from ShipBucket or else
 
 		- Try ocean rendering with concentration of waves at top
 
@@ -738,7 +734,7 @@ Render:
 		- Add to credits:
 		- Invite to server
 
-- Ship making:
+- Ships:
 	# Credit names:
 		# ShippyMcJerry: ShipBuilder1912 
 		# Coolman115: CorbinPasta93
@@ -783,6 +779,11 @@ Render:
 			- Test
 			- Meta: <asked>
 	- New ships:
+		- Check out Architect Creations from FS server
+		- Ships:
+			- HMS Victoria: make yourself w/texture from ShipBucket or else
+				- Needs to sink vertically!
+		- Check out Klickitat (Matthew Anderson 707)
 		- Next ship made: "Turbentiy Banalniy"
 		= Fernando:
 			= "An 12", "Boeing DreamLifter": asked for latest files
@@ -796,40 +797,11 @@ Render:
 			- Pac0master's Structures
 			- Death stars (Nomadavid)
 				- He'll fix
-		- To take:
-			- S.S. Triatic
-				- Do ropes however
+		- S.S. Triatic
+			- Do ropes however
 		- SpaceX ships from KazindelProductions (asked on GameJolt)				
 		= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
 			- Asked whether he has permission
-
-	- Descriptions:
-		+ Tell maximord about new ships - give him names
-		= Copy all descriptions into their respective .shp files
-			# From https://docs.google.com/document/d/1niiB9AaqMAzThTY-pGjU3-qxIywKR8-nw_JDiOWcj1o/edit?usp=sharing_eil&ts=5c929c19
-			+ Done:
-				+ RMS Queen Mary
-				+ Black Titan
-				+ SS Germanic
-				+ Circuit Test
-				+ Flood Test
-				+ Hindenburg
-				+ HMHS Britannic (X3)
-			- Ask ship owners
-				= mrpasta: wants to see them first
-				+ kikotheshipbuilder: all except HMS Thunderchild
-				+ Nomadavid: fine
-				+ Pac0: will do own
-			- Shippymcjerry does:
-				- HMS Thunderchild
-				+ Karaboudjan
-			+ Add Maximord to About box
-
-	- Michael Bozarth
-		+ https://drive.google.com/drive/u/0/folders/1VUNnoO81GBejcdXgvQAt9siL4MnhkBBf (latest)
-		+ https://drive.google.com/drive/u/0/folders/1k-A4SE8mMp2j_A3nH3gnl6SvYF9bnWoU (older)
-		+ Add "Michael Bozarth" to About box (link: https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)
-		- Test his "Splitable Titanic"
 
 
 - Suggestions to spec:
@@ -1304,6 +1276,8 @@ Render:
 
 - Dynamics:
 
+	- Rework explosion dynamics: they are too inconsistent at this moment
+
 	- New structural materials:
 		- Helium: ~like Hydrogen, but not combusting
 		- Sodium: explodes when particle's water > threshold
@@ -1663,7 +1637,13 @@ Render:
 
 	- ShipLoadDialog: display also folders
 
-	- Localization
+	- Localization:
+		- Make NotificationLayer text translatable too
+			- Requires a LocalizedText instance, passed to GameController from MainFrame
+				- At this point, replace "ProgressMessage" enum with simply "Message" enum, and move localization of progress messages from splash screen to LocalizedText
+		- Ships' electrical panel labels:
+			- First off, verify JSON can contain UTF-8 chars
+			- Then, allow multi-language labels: label value is either string or {Lang, String}
 
 	- Customizable key bindings for settings
 
@@ -1674,9 +1654,11 @@ Render:
 
 - Sounds:
 
-	- Ship may come with custom sound(s) for horns
-		- Figure out how to play them, may be like switchboard or *via* switchboard, or with just one horn sound
-		- Ships could also come with their own sounds; if not, default seounds are provided
+	- Ship may come with custom sound(s) for horns et al
+		- New electrical material: "Custom sound switch"; first one plays sound #1, second one play sound #2, etc.
+		- Need to find way for ship-loading process to communicate sound file (buffer) to SoundController
+			- At Electrical announcement! passing buffer as MemoryStream
+		- Might be better done after ship builder, so that we may package sounds better in .shp2 files
 
 	- Sounds that play before ship starts sinking
 		- SOS, bell, sailor screaming, etc.
