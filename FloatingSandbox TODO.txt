@@ -561,20 +561,24 @@ Render:
 			- Cut tag on github
 
 			- Publish packages on GameJolt
-				- Test package instructions (on old package first) to prevent using GameJolt client
+				- With package instructions
 
-			- "System Requirements" Readme section
-				+ GitHub
-				- GameJolt:
-					- Windows 64 & 32-bit (7,8,10), OpenGL 2.1
-					- Link to FAQ - for issues like OpenGL... - on FS.com
-						- Restructure in sections, w/"Issues" & "System Requirements"
+			- Post:
+				- Link to premiere from theDARKTURRET: https://www.youtube.com/watch?v=UCEvFRpRv-0
+
+				Dear Shipmates, It's finally time for 1.15.2 to come out and find its rightful place on your computers!
+				As previously anticipated, this release consists of mostly technical improvements across the board, which smooth out some rough edges of Floating Sandbox and pave the way for fantastic improvements in the future. 
+				Here's the list of changes in this release:
+
+
+			- Add 32-bit to GameJolt's "System Requirements" section
 			
 			- www.floatingsandbox.com:
 				- changes.txt
 				- FAQ:
 					- Current version
 					- 32-bit
+				- Embed GameJolt Widget
 
 		----------------------------------------------------------------------------------------
 
@@ -716,6 +720,28 @@ Render:
 		- Underwater currents (*)		
 		
 		- Continuous Auto-focus (*)
+
+- Release cheatsheet:	
+	- 32-bit MSI
+		- Build Install
+		- Make MSI
+		- Test
+		- Test on Discord
+	- 64-bit MSI
+		- Build Install
+		- Make MSI
+		- Test
+		- Test on Discord
+	- Cut tag on github
+	- Upload packages to GameJolt
+		- Package instructions:
+			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
+		- Post
+	- www.floatingsandbox.com:
+		- Upload changes.txt
+			- Test w/old FS
+		- Update current version in FAQ
+		- Update GameJolt Widget
 
 - Localization:
 	- Russian: DioxCode

@@ -1,13 +1,12 @@
 1.15.2.4
-- Enabled localization
-	- This version ships with English, Italian, and Russian; more languages to follow in future versions
 - Recalibrated simulation parameters
 	- The rigidity of structures has greatly improved
 	- At high frame rates the simulation now advances at a correct physical speed 
 		- In earlier versions the simulation was advancing too fast on fast computers
-- Re-architected rendering sub-system to take advantage of multi-core machines
+- Re-architected rendering sub-system to take advantage of multi-core CPUs
 	- Rendering now takes place on a separate thread on multi-core computers; performance gains range from 10% to 25%, and there is now _plenty_ of headroom for more advanced graphical features in future versions
-- Enabled 32-bit builds on Windows
+- Made available a 32-bit version for those of you on 32-bit Windows
+- Localized the main UI in English, Italian, and Russian - more languages to follow in future versions!
 - Added automatic day/night cycle
 	- Off by default; may be enabled via "Simulation Settings"
 - Improved performance of Ship Explorer window when loading often from the same folder

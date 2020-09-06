@@ -19,15 +19,16 @@ The game currently comes with a few example objects - mostly ships - and I'm alw
 The original idea for the game is from Luke Wren, who wrote a Sinking Ship Simulator to simulate sinking ships. I have adopted his idea, completely reimplemented his simulator, and revamped its feature set; at this moment it is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
 
 There are lots of improvements that I'm currently working on; some of these are:
-- Water drag to simulate parts gliding underwater
+- In-game Ship Builder
+- Improved rigid body simulation algorithm
+- Hydrodynamics - to simulate parts gliding underwater
 	- Requires maintaining convex hull and ship perimeter normals
 - Waves and splashes originating from collisions with water
 - Smoke from fire
 - Multiple ships and collision detection among parts of the ships
-- Ocean floor that gets dents when an impact occurs (Louis Benedict's idea)
-- Time-of-day cycle (i.e. day light change during the game)
+- Ocean floor getting dents upon impact
+- Morse code sound before sinking, and ship horns
 - NPC's that move freely within ships
-- In-game ship editor
 
 These and other ideas will come out with frequent releases.
 
