@@ -241,6 +241,11 @@ Render:
 ====================================================
 
 - Roadmap:
+		- Intel HD 2000
+		- Melting point adjust
+
+
+
 		
 		- Frontier (*)
 
@@ -278,6 +283,8 @@ Render:
 		- Check new explosion animation
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
+
+		- Sign executable and installer (*)
 
 		- Release
 
@@ -495,6 +502,7 @@ Render:
 		- Embed GameJolt Widget
 
 - Suggestions to spec:
+	- Speedometer
 	- Shockwave bomb
 		- When detonated the area destroyed is quite small but it sends out a shock wave with a pretty big radius that can cause things to break or collapse and stuff like that. Also maybe it could be very damaging to rotted materials, causing it to shatter like the thanos snap thing.
 	- Temperature tool - to get temperature of points
@@ -603,7 +611,7 @@ Render:
 	+ Translations
 		+ Make localizable
 	+ SSL cert: https://www.sslforfree.com/
-	= Sign with certificate
+	= Sign with certificate (*)
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
 		- Reasons:
@@ -966,6 +974,15 @@ Render:
 
 - Dynamics:
 
+	- Ropes 2 layer
+		- json only allows one ropes layer
+		- With this key name, the rope pixels' blue component is the index of a Rope element
+			- Material: new 'rope_index' optional attrib
+			- MaterialsDB has rope material getter by index
+			- New rope materials:
+				- Strong, very strong
+				- Elastic
+
 	- Rework explosion dynamics: they are too inconsistent at this moment
 
 	- New structural materials:
@@ -1189,7 +1206,8 @@ Render:
 							- Cardinality: any
 							- StartingEdge(...Element...Index?)
 							- FrontierType
-					- Cctor takes Springs, Triangles
+					- Cctor takes point_count, Springs, Triangles
+						- Makes point frontier color buffer
 						- Makes edges (with springs' SuperTriangles?)
 							- ...nah, complicated to figure out external & internal, plus need for octants...revert to doing first pass in ShipBuilder
 						- Makes frontier with triangles
@@ -1209,8 +1227,8 @@ Render:
 							- Content:
 								- Frontier ID
 								- Index of edge in frontier container(s)
+						- mIsDirtyForRendering
 			- Jumpstart algo:
-				- TODO: rewrite in terms of points, springs, and triangles, so it may be buried in FrontierManager @ Ship finalization time
 				-	5	6	7
 					4	*	0
 					3	2	1
@@ -1227,6 +1245,17 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
+			- Rendering:
+				- TODO
+				- Frontiers class:
+					- "Sliding" colors along frontier
+						- Upload to RenderContext: 
+							- vec3f frontierBaseColor
+							- float positionalProgress
+				- ShipRenderContext:
+					- TODO: upload methods
+					- At Prepare() (or wherever we do others), set progress
+				- Shader:
 			- Maintenance at destroy:
 				- TODO
 			- Maintenance at repair:
@@ -1334,6 +1363,7 @@ Render:
 		- Ships' electrical panel labels:
 			- First off, verify JSON can contain UTF-8 chars
 			- Then, allow multi-language labels: label value is either string or {Lang, String}
+		- MSI Installer
 
 	- Customizable key bindings for settings
 

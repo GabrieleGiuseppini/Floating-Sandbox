@@ -25,6 +25,10 @@ void GameOpenGL::InitOpenGL()
         throw GameException("We are sorry, but this game requires OpenGL and it seems your graphics driver does not support it; the error is: failed to initialize GLAD");
     }
 
+    //
+    // Log some useful info
+    //
+
     LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
 
     char const * const vendor = (const char *)glGetString(GL_VENDOR);
