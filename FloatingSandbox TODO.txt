@@ -242,8 +242,8 @@ Render:
 
 - Roadmap:
 		+ Version bump
-		= Add tester X 2
-		= Intel HD 2000
+		+ Add tester X 2
+		+ Intel HD 2000
 			+ Investigate:
 				- No threading: lags
 				- SwapBuffers log (@MainFrame, 3): lag (not swapbuffers)
@@ -254,8 +254,9 @@ Render:
 				- GameController::RunGameIteration::4 steps: lag (Render Draw -> end of function: takes 4 secs)
 				- RenderContext::Draw: glFinish_start/glFinish_end/swapbuffers_end: NO lag
 				- RenderContext::Draw: glFinish_end/swapbuffers_end: lag, none of these
-			= OpenGL switch
-		- Melting point adjust
+			+ OpenGL switch
+		+ Melting point adjust
+		- Run in debug
 		- Release
 
 

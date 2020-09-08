@@ -142,6 +142,7 @@ public:
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
         , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
         , mCurrentSpringStrengthAdjustment(gameParameters.SpringStrengthAdjustment)
+        , mCurrentMeltingTemperatureAdjustment(gameParameters.MeltingTemperatureAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
     {
@@ -193,6 +194,7 @@ public:
             mCurrentSpringDampingAdjustment,
             mCurrentSpringStrengthAdjustment,
             CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 
@@ -208,6 +210,7 @@ public:
             mCurrentSpringDampingAdjustment,
             mCurrentSpringStrengthAdjustment,
             CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 
@@ -610,6 +613,7 @@ private:
         float stiffnessAdjustment,
         float dampingAdjustment,
         float strengthAdjustment,
+        float meltingTemperatureAdjustment,
         Points const & points);
 
     void UpdateForDecayAndTemperatureAndGameParameters(
@@ -619,6 +623,7 @@ private:
         float dampingAdjustment,
         float strengthAdjustment,
         float strengthIterationsAdjustment,
+        float meltingTemperatureAdjustment,
         Points const & points);
 
     inline void inline_UpdateForDecayAndTemperatureAndGameParameters(
@@ -628,6 +633,7 @@ private:
         float dampingAdjustment,
         float strengthAdjustment,
         float strengthIterationsAdjustment,
+        float meltingTemperatureAdjustment,
         Points const & points);
 
 private:
@@ -712,6 +718,7 @@ private:
     float mCurrentSpringStiffnessAdjustment;
     float mCurrentSpringDampingAdjustment;
     float mCurrentSpringStrengthAdjustment;
+    float mCurrentMeltingTemperatureAdjustment;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;

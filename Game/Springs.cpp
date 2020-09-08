@@ -86,6 +86,7 @@ void Springs::Add(
         mCurrentSpringDampingAdjustment,
         mCurrentSpringStrengthAdjustment,
         CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+        mCurrentMeltingTemperatureAdjustment,
         points);
 }
 
@@ -141,6 +142,7 @@ void Springs::Restore(
         mCurrentSpringDampingAdjustment,
         mCurrentSpringStrengthAdjustment,
         CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+        mCurrentMeltingTemperatureAdjustment,
         points);
 
     // Invoke restore handler
@@ -158,7 +160,8 @@ void Springs::UpdateForGameParameters(
         || gameParameters.NumMechanicalDynamicsIterationsAdjustment != mCurrentNumMechanicalDynamicsIterationsAdjustment
         || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
         || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment
-        || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment)
+        || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment
+        || gameParameters.MeltingTemperatureAdjustment != mCurrentMeltingTemperatureAdjustment)
     {
         // Recalc
         UpdateForDecayAndTemperatureAndGameParameters(
@@ -170,6 +173,7 @@ void Springs::UpdateForGameParameters(
         assert(mCurrentSpringStiffnessAdjustment == gameParameters.SpringStiffnessAdjustment);
         assert(mCurrentSpringDampingAdjustment == gameParameters.SpringDampingAdjustment);
         assert(mCurrentSpringStrengthAdjustment == gameParameters.SpringStrengthAdjustment);
+        assert(mCurrentMeltingTemperatureAdjustment == gameParameters.MeltingTemperatureAdjustment);
     }
 }
 
@@ -188,6 +192,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
         gameParameters.SpringStiffnessAdjustment,
         gameParameters.SpringDampingAdjustment,
         gameParameters.SpringStrengthAdjustment,
+        gameParameters.MeltingTemperatureAdjustment,
         points);
 
     // Remember the new values
@@ -196,6 +201,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
     mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
     mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
+    mCurrentMeltingTemperatureAdjustment = gameParameters.MeltingTemperatureAdjustment;
 }
 
 void Springs::UploadElements(
@@ -328,6 +334,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     float stiffnessAdjustment,
     float dampingAdjustment,
     float strengthAdjustment,
+    float meltingTemperatureAdjustment,
     Points const & points)
 {
     float const strengthIterationsAdjustment
@@ -345,6 +352,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
                 dampingAdjustment,
                 strengthAdjustment,
                 strengthIterationsAdjustment,
+                meltingTemperatureAdjustment,
                 points);
         }
     }
@@ -357,6 +365,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     float dampingAdjustment,
     float strengthAdjustment,
     float strengthIterationsAdjustment,
+    float meltingTemperatureAdjustment,
     Points const & points)
 {
     inline_UpdateForDecayAndTemperatureAndGameParameters(
@@ -366,6 +375,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
         dampingAdjustment,
         strengthAdjustment,
         strengthIterationsAdjustment,
+        meltingTemperatureAdjustment,
         points);
 }
 
@@ -376,6 +386,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
     float dampingAdjustment,
     float strengthAdjustment,
     float strengthIterationsAdjustment,
+    float meltingTemperatureAdjustment,
     Points const & points)
 {
     auto const endpointAIndex = GetEndpointAIndex(springIndex);
@@ -399,7 +410,9 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
 
     // Excedence of temperature over melting temperature; might be negative
     // if we're below the melting temperature
-    float const meltingOverheat = springTemperature - GetMaterialMeltingTemperature(springIndex);
+    float const meltingOverheat =
+        springTemperature
+        - GetMaterialMeltingTemperature(springIndex) * meltingTemperatureAdjustment;
 
     //
     // Stiffness coefficient
