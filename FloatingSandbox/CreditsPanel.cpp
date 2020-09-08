@@ -88,7 +88,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("KikoTheBoatBuilder"), 0},
         {1, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
         {1, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), 0},
-        {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), VMargin3},
+        {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), 0},
+        {1, wxS("m2"), 0},
+        {1, wxS("Oxurus"), VMargin3},
 
         {0, _("TRANSLATION"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},

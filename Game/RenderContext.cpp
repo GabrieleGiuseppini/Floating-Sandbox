@@ -512,8 +512,11 @@ void RenderContext::Draw()
             // Wrap up
             //
 
-            // Flush all pending operations
-            glFinish();
+            if (!GameOpenGL::AvoidGlFinish)
+            {
+                // Flush all pending operations
+                glFinish();
+            }
 
             // Flip the back buffer onto the screen
             mSwapRenderBuffersFunction();

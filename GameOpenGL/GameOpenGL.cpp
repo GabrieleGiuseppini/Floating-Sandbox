@@ -17,6 +17,8 @@ int GameOpenGL::MaxViewportHeight = 0;
 int GameOpenGL::MaxTextureSize = 0;
 int GameOpenGL::MaxRenderbufferSize = 0;
 
+bool GameOpenGL::AvoidGlFinish = false;
+
 void GameOpenGL::InitOpenGL()
 {
     int status = gladLoadGL();
@@ -31,11 +33,13 @@ void GameOpenGL::InitOpenGL()
 
     LogMessage("OpenGL version: ", GLVersion.major, ".", GLVersion.minor);
 
-    char const * const vendor = (const char *)glGetString(GL_VENDOR);
-    LogMessage("GL_VENDOR=", (vendor != nullptr) ? vendor : "N/A");
+    char const * const szVendor = (const char *)glGetString(GL_VENDOR);
+    std::string const vendor = (szVendor != nullptr) ? szVendor : "N/A";
+    LogMessage("GL_VENDOR=", vendor);
 
-    char const * const renderer = (const char *)glGetString(GL_RENDERER);
-    LogMessage("GL_RENDERER=", (renderer != nullptr) ? renderer : "N/A");
+    char const * const szRenderer = (const char *)glGetString(GL_RENDERER);
+    std::string const renderer = (szRenderer != nullptr) ? szRenderer : "N/A";
+    LogMessage("GL_RENDERER=", renderer);
 
 
     //
@@ -84,6 +88,24 @@ void GameOpenGL::InitOpenGL()
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &tmpConstant);
     MaxRenderbufferSize = tmpConstant;
     LogMessage("GL_MAX_RENDERBUFFER_SIZE=", MaxRenderbufferSize);
+
+
+    //
+    // Initialize switches
+    //
+
+    // Avoid calling glFinish() on Intel HD Graphics (at least 2000 and 4000) cards
+
+    if (0 == renderer.find("Intel(R) HD Graphics "))
+    {
+        AvoidGlFinish = true;
+    }
+    else
+    {
+        AvoidGlFinish = false;
+    }
+
+    LogMessage("AvoidGlFinish=", AvoidGlFinish);
 }
 
 void GameOpenGL::CompileShader(

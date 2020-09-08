@@ -241,8 +241,22 @@ Render:
 ====================================================
 
 - Roadmap:
-		- Intel HD 2000
+		+ Version bump
+		= Add tester X 2
+		= Intel HD 2000
+			+ Investigate:
+				- No threading: lags
+				- SwapBuffers log (@MainFrame, 3): lag (not swapbuffers)
+				- SwapBuffers + UploadStart log (4): lag (neither of them)
+				- UploadStart + Draw: 
+				- OnGameTimerTrigger: lag (one timer tick every 5 s) 05:05:43.515398:OnGameTimerTrigger; 05:05:47.873422:OnGameTimerTrigger; 05:05:52.227233:OnGameTimerTrigger
+				- OnGameTimerTrigger (start and GameController::RunGameIteration) + PostGameTimer: lag (RunGameIteration takes 4 secs)
+				- GameController::RunGameIteration::4 steps: lag (Render Draw -> end of function: takes 4 secs)
+				- RenderContext::Draw: glFinish_start/glFinish_end/swapbuffers_end: NO lag
+				- RenderContext::Draw: glFinish_end/swapbuffers_end: lag, none of these
+			= OpenGL switch
 		- Melting point adjust
+		- Release
 
 
 
@@ -593,6 +607,10 @@ Render:
 			- sea water: the default
 			- lake water: a brownish color; not as good as decaying ships, they turn brown but don't break apart
 			- river water: a constant turbulent water that flows along the contour of the terrain much like a river does
+
+- Testers:
+	- Pac0master: Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070
+	- Oxurus: Intel i3, Intel(R) HD Graphics 2000, OpenGL 3.1
 
 ======================================================================================================================
 ======================================================================================================================

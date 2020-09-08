@@ -76,7 +76,7 @@ public:
         {
             TDeleter::Delete(mValue);
             mValue = T();
-        }        
+        }
     }
 
     [[nodiscard]] T release() noexcept
@@ -193,6 +193,8 @@ public:
     static int MaxViewportHeight;
     static int MaxTextureSize;
     static int MaxRenderbufferSize;
+
+    static bool AvoidGlFinish;
 
 public:
 
