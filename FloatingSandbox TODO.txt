@@ -241,6 +241,7 @@ Render:
 ====================================================
 
 - Roadmap:
+	= 1.15.3
 		+ Version bump
 		+ Add tester X 2
 		+ Intel HD 2000
@@ -256,9 +257,29 @@ Render:
 				- RenderContext::Draw: glFinish_end/swapbuffers_end: lag, none of these
 			+ OpenGL switch
 		+ Melting point adjust
-		- Run in debug
-		- Release
-
+		+ Run in debug
+		= Release:
+			+ MSI variables
+			= 64-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test
+				= Test on Discord
+			= 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test
+				= Test on Discord
+			
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Package instructions:
+					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ	
 
 
 		
@@ -403,7 +424,8 @@ Render:
 		
 		- Continuous Auto-focus (*)
 
-- Release cheatsheet:	
+- Release template:
+	- MSI variables
 	- 32-bit MSI
 		- Build Install
 		- Make MSI
@@ -422,8 +444,7 @@ Render:
 	- www.floatingsandbox.com:
 		- Upload changes.txt
 			- Test w/old FS
-		- Update current version in FAQ
-		- Update GameJolt Widget
+		- Update current version in FAQ		
 
 - Localization:
 	- Russian: DioxCode
