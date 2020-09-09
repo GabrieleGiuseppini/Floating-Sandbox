@@ -126,19 +126,19 @@ private:
     // Building helpers
     /////////////////////////////////////////////////////////////////
 
-    struct Edge
+    struct PointPair
     {
         ElementIndex Endpoint1Index;
         ElementIndex Endpoint2Index;
 
-        Edge(
+        PointPair(
             ElementIndex endpoint1Index,
             ElementIndex endpoint2Index)
             : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
             , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
         {}
 
-        bool operator==(Edge const & other) const
+        bool operator==(PointPair const & other) const
         {
             return this->Endpoint1Index == other.Endpoint1Index
                 && this->Endpoint2Index == other.Endpoint2Index;
@@ -146,15 +146,15 @@ private:
 
         struct Hasher
         {
-            size_t operator()(Edge const & edge) const
+            size_t operator()(PointPair const & p) const
             {
-                return edge.Endpoint1Index * 23
-                    + edge.Endpoint2Index;
+                return p.Endpoint1Index * 23
+                    + p.Endpoint2Index;
             }
         };
     };
 
-    using EdgeToIndexMap = std::unordered_map<Edge, ElementIndex, Edge::Hasher>;
+    using PointPairToIndexMap = std::unordered_map<PointPair, ElementIndex, PointPair::Hasher>;
 
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
@@ -215,7 +215,7 @@ private:
         ImageSize const & structureImageSize,
         std::vector<ShipBuildPoint> & pointInfos1,
         std::vector<ShipBuildSpring> & springInfos1,
-        EdgeToIndexMap & edgeToSpringIndex1Map,
+        PointPairToIndexMap & pointPairToSpringIndex1Map,
         std::vector<ShipBuildTriangle> & triangleInfos1,
         size_t & leakingPointsCount);
 
@@ -266,7 +266,7 @@ private:
         std::vector<ElementIndex> const & pointIndexRemap2,
         Physics::Points const & points,
         Physics::Springs const & springs,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2,
         Physics::Triangles const & triangles);
 
@@ -280,7 +280,7 @@ private:
         Physics::Points const & points,
         std::set<ElementIndex> & frontierPoints,
         Physics::Springs const & springs,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2,
         Physics::Triangles const & triangles);
 
@@ -303,7 +303,7 @@ private:
     static ReorderingResults ReorderPointsAndSpringsOptimally_Stripes(
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
@@ -316,7 +316,7 @@ private:
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
         std::vector<ShipBuildSpring> & springInfos2,
@@ -325,7 +325,7 @@ private:
     static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
@@ -337,7 +337,7 @@ private:
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
         std::vector<ShipBuildSpring> & springInfos2,

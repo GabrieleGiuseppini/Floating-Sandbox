@@ -24,7 +24,7 @@ class Triangles : public ElementContainer
 private:
 
     /*
-    * The endpoints of a triangle.
+    * The endpoints of a triangle, in CW order.
     */
     struct Endpoints
     {
