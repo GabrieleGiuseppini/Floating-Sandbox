@@ -153,6 +153,8 @@ private:
         };
     };
 
+    using EdgeToIndexMap = std::unordered_map<Edge, ElementIndex, Edge::Hasher>;
+
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         Physics::Points const & points,
@@ -212,6 +214,7 @@ private:
         ImageSize const & structureImageSize,
         std::vector<ShipBuildPoint> & pointInfos1,
         std::vector<ShipBuildSpring> & springInfos1,
+        EdgeToIndexMap & edgeToSpringIndex1Map,
         std::vector<ShipBuildTriangle> & triangleInfos1,
         size_t & leakingPointsCount);
 
@@ -256,6 +259,20 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
 
+    static Physics::Frontiers CreateFrontiers(
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        Physics::Points const & points,
+        Physics::Springs const & springs,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        Physics::Triangles const & triangles);
+
+#ifdef _DEBUG
+    static void VerifyShipInvariants(
+        Physics::Points const & points,
+        Physics::Springs const & springs,
+        Physics::Triangles const & triangles);
+#endif
+
 private:
 
     using ReorderingResults = std::tuple<std::vector<ShipBuildPoint>, std::vector<ElementIndex>, std::vector<ShipBuildSpring>>;
@@ -268,6 +285,7 @@ private:
     static ReorderingResults ReorderPointsAndSpringsOptimally_Stripes(
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
@@ -280,7 +298,7 @@ private:
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
         std::vector<ShipBuildSpring> & springInfos2);
@@ -288,6 +306,7 @@ private:
     static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize);
 
@@ -299,7 +318,7 @@ private:
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         ImageSize const & structureImageSize,
-        std::unordered_map<Edge, ElementIndex, Edge::Hasher> const & edgeToSpringIndex1Map,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
         std::vector<ShipBuildSpring> & springInfos2);

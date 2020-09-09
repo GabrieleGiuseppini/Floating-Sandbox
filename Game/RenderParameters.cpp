@@ -14,7 +14,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	// World
-	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)	
+	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.356993f)
 	, IsOceanDarkeningRateDirty(true)
@@ -26,7 +26,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, OceanTextureIndex(0) // Wavy Clear Thin
 	, IsOceanTextureIndexDirty(true)
 	, ShowShipThroughOcean(false)
-	, LandRenderMode(LandRenderModeType::Texture)	
+	, LandRenderMode(LandRenderModeType::Texture)
 	, FlatLandColor(0x72, 0x46, 0x05)
 	, AreLandRenderParametersDirty(true)
 	, LandTextureIndex(3) // Rock Coarse 3
@@ -36,6 +36,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, IsFlatLampLightColorDirty(true)
 	, ShipFlameRenderMode(ShipFlameRenderModeType::Mode1)
 	, ShowStressedSprings(false)
+	, ShowFrontiers(false)
 	, ShipWaterColor(vec4f::zero()) // Calculated
 	, IsShipWaterColorDirty(true)
 	, ShipWaterContrast(0.71875f)
@@ -45,7 +46,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, DrawHeatOverlay(false)
 	, HeatOverlayTransparency(0.1875f)
 	, IsHeatOverlayTransparencyDirty(true)
-	, DebugShipRenderMode(DebugShipRenderModeType::None)	
+	, DebugShipRenderMode(DebugShipRenderModeType::None)
 	, IsDebugShipRenderModeDirty(true)
 {
 }

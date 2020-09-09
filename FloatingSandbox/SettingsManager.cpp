@@ -139,6 +139,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, FlatLandColor);
     ADD_GC_SETTING(VectorFieldRenderModeType, VectorFieldRenderMode);
     ADD_GC_SETTING(bool, ShowShipStress);
+    ADD_GC_SETTING(bool, ShowShipFrontiers);
     ADD_GC_SETTING(bool, DrawHeatOverlay);
     ADD_GC_SETTING(float, HeatOverlayTransparency);
     ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);
@@ -151,7 +152,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayBreakSounds);
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
-    ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);    
+    ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);
 
     return factory;
 }

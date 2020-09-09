@@ -40,6 +40,7 @@ enum class ProgramType
     ShipFlamesForeground1,
     ShipFlamesForeground2,
     ShipFlamesForeground3,
+    ShipFrontierEdges,
     ShipGenericMipMappedTextures,
     ShipPointsColor,
     ShipPointsColorWithTemperature,
@@ -160,6 +161,7 @@ enum class VertexAttributeType : GLuint
     ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
     ShipPointColor = 2,
     ShipPointTemperature = 3,
+    ShipPointFrontierColor = 4,
 
     Explosion1 = 0,
     Explosion2 = 1,

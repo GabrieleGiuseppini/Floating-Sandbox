@@ -66,7 +66,8 @@ Ship::Ship(
     Points && points,
     Springs && springs,
     Triangles && triangles,
-    ElectricalElements && electricalElements)
+    ElectricalElements && electricalElements,
+    Frontiers && frontiers)
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
@@ -77,6 +78,7 @@ Ship::Ship(
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mFrontiers(std::move(frontiers))
     , mPinnedPoints(
         mParentWorld,
         mGameEventHandler,
@@ -590,6 +592,14 @@ void Ship::RenderUpload(
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
+
+    //
+    // Upload frontiers
+    //
+
+    mFrontiers.Upload(
+        mId,
+        renderContext);
 
     //
     // Upload flames

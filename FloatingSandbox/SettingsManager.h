@@ -112,6 +112,7 @@ enum class GameSettings : size_t
     FlatLandColor,
     VectorFieldRenderMode,
     ShowShipStress,
+    ShowShipFrontiers,
     DrawHeatOverlay,
     HeatOverlayTransparency,
     ShipFlameRenderMode,

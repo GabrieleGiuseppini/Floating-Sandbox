@@ -112,6 +112,8 @@ public:
         size_t startDst,
         size_t count);
 
+    void UploadPointFrontierColors(FrontierColor const * colors);
+
     //
     // Elements
     //
@@ -182,6 +184,23 @@ public:
     }
 
     void UploadElementStressedSpringsEnd();
+
+    //
+    // Frontiers
+    //
+
+    void UploadElementFrontierEdgesStart();
+
+    inline void UploadElementFrontierEdge(
+        int pointIndex1,
+        int pointIndex2)
+    {
+        mFrontierEdgeElementBuffer.emplace_back(
+            pointIndex1,
+            pointIndex2);
+    }
+
+    void UploadElementFrontierEdgesEnd();
 
     //
     // Flames
@@ -1079,9 +1098,15 @@ private:
 
     GameOpenGLVBO mPointTemperatureVBO;
 
+    GameOpenGLVBO mPointFrontierColorVBO;
+
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
     size_t mStressedSpringElementVBOAllocatedElementSize;
+
+    std::vector<LineElement> mFrontierEdgeElementBuffer;
+    GameOpenGLVBO mFrontierEdgeElementVBO;
+    size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
     BoundedVector<FlameVertex> mFlameVertexBuffer;
     size_t mFlameBackgroundCount;

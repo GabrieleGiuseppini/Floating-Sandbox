@@ -47,7 +47,7 @@ namespace Render {
 /*
  * This class is the entry point of the entire rendering subsystem, providing
  * the API for rendering, which is agnostic about the render platform implementation.
- * 
+ *
  * This class is in turn a coordinator of a number of child contextes, each focusing
  * on a different subset of the rendering universe (world, ships, UI); this class
  * dispatches all externally-invoked API calls to the child contexts implementing
@@ -214,7 +214,7 @@ public:
     {
         mRenderParameters.FlatSkyColor = color;
         // No need to set dirty, this is picked up at each cycle anyway
-    }    
+    }
 
     float GetOceanTransparency() const
     {
@@ -222,7 +222,7 @@ public:
     }
 
     void SetOceanTransparency(float transparency)
-    {        
+    {
         mRenderParameters.OceanTransparency = transparency;
         // No need to set dirty, this is picked up at each cycle anway
     }
@@ -414,6 +414,17 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
+    bool GetShowFrontiers() const
+    {
+        return mRenderParameters.ShowFrontiers;
+    }
+
+    void SetShowFrontiers(bool showFrontiers)
+    {
+        mRenderParameters.ShowFrontiers = showFrontiers;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     rgbColor const & GetShipDefaultWaterColor() const
     {
         return mShipDefaultWaterColor;
@@ -575,13 +586,13 @@ public:
     }
 
     inline void UploadStormAmbientDarkening(float darkening)
-    {        
+    {
         if (mWorldRenderContext->UploadStormAmbientDarkening(darkening))
         {
             mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
                 mAmbientLightIntensity,
                 mWorldRenderContext->GetStormAmbientDarkening());
-            
+
             mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
     }
@@ -862,6 +873,23 @@ public:
             });
     }
 
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointFrontierColors(
+        ShipId shipId,
+        FrontierColor const * colors)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointFrontierColors(colors);
+            });
+    }
+
+
     inline void UploadShipElementsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -966,6 +994,32 @@ public:
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementStressedSpringsEnd();
+    }
+
+    inline void UploadShipElementFrontierEdgesStart(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdgesStart();
+    }
+
+    inline void UploadShipElementFrontierEdge(
+        ShipId shipId,
+        int shipPointIndex1,
+        int shipPointIndex2)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdge(
+            shipPointIndex1,
+            shipPointIndex2);
+    }
+
+    inline void UploadShipElementFrontierEdgesEnd(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdgesEnd();
     }
 
     inline void UploadShipFlamesStart(
@@ -1265,9 +1319,9 @@ public:
     void RenderEnd();
 
 private:
-    
-    void ProcessParameterChanges(RenderParameters const & renderParameters);    
-    
+
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 
     void ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters);
@@ -1304,13 +1358,13 @@ private:
 
     std::unique_ptr<GlobalRenderContext> mGlobalRenderContext;
     std::unique_ptr<WorldRenderContext> mWorldRenderContext;
-    std::vector<std::unique_ptr<ShipRenderContext>> mShips;    
-    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;  
+    std::vector<std::unique_ptr<ShipRenderContext>> mShips;
+    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly), or that purely serve as input to calculated
-    // render parameters, or that only need storage here (e.g. being used in other 
+    // render parameters, or that only need storage here (e.g. being used in other
     // contexts to control upload's)
     //
 

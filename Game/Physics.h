@@ -10,6 +10,7 @@ namespace Physics
     class Bombs;
     class Clouds;
     class ElectricalElements;
+    class Frontiers;
     class OceanFloor;
     class OceanSurface;
     class PinnedPoints;
@@ -33,6 +34,7 @@ namespace Physics
 #include "Springs.h"
 #include "Triangles.h"
 #include "ElectricalElements.h"
+#include "Frontiers.h"
 
 #include "Clouds.h"
 #include "Stars.h"

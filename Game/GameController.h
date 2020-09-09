@@ -645,6 +645,9 @@ public:
     bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
 
+    bool GetShowShipFrontiers() const override { return mRenderContext->GetShowFrontiers(); }
+    void SetShowShipFrontiers(bool value) override { mRenderContext->SetShowFrontiers(value); }
+
     bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
     void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
 

@@ -1210,12 +1210,11 @@ Render:
 			- With stiffness going marginally up
 		- Shader?
 
-	- Frontier (*):
+	= Frontier (*):
 		! Only for non-rope points - rope points never take part in frontier
-		- Preliminaries:
-			- Make sure endpoints in triangle are always in CW order
-				- From ShipBuilder
-				- From Triangles::RepairTriangles
+		= Preliminaries:
+			+ Make sure endpoints in triangle are always in CW order
+				+ From ShipBuilder
 			- TODOHERE: Problem with rendering frontier in "Render Frontier" mode:
 				- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
 				  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
@@ -1226,8 +1225,8 @@ Render:
 				- Might get away with drawing frontiers - *enlarged* - before all of the rest? What is left of the enlarged part 
 				  would be the rendered frontier, as it would be visible only around external frontiers (and through holes)
 				- TODO: isn't this taken care of by Z work?
-		- Plan:
-			- Data structures
+		= Plan:
+			= Data structures
 			- Initial frontiers at ShipBuilder
 			- Render frontiers: 
 				- New render setting
@@ -1235,26 +1234,22 @@ Render:
 				- New shader (red/green/etc. with 0.5 alpha, thick line width)
 			- Maintain at destroy
 			- Maintain at repair
-		- Impl:
-			- Data structures
-				- GameTypes:
-					- FrontierIndex + None
-					- FrontierType enum (External, Internal)
+		= Impl:
+			= Data structures
+				+ GameTypes:
+					+ FrontierIndex + None
+					+ FrontierType enum (External, Internal)
 				- Frontiers class
-					- Structs:
-						- FrontierEdge: contains edge metadata only needed for physics
-							- Cardinality: Edge
-							- NextEdge(..Element...Index?) (index of edges)
-							- Point indices in frontier order
-						- Frontier:
-							- Cardinality: any
-							- StartingEdge(...Element...Index?)
-							- FrontierType
-					- Cctor takes point_count, Springs, Triangles
-						- Makes point frontier color buffer
-						- Makes edges (with springs' SuperTriangles?)
-							- ...nah, complicated to figure out external & internal, plus need for octants...revert to doing first pass in ShipBuilder
-						- Makes frontier with triangles
+					+ Structs:
+						+ FrontierEdge: contains edge metadata only needed for physics
+							+ Cardinality: Edge
+							+ NextEdge(..Element...Index?) (index of edges)
+							+ Point indices in frontier order
+						+ Frontier:
+							+ Cardinality: any
+							+ StartingEdge(...Element...Index?)
+							+ FrontierType
+					+ Cctor takes point_count, Springs, Triangles
 					- TODOHERE
 					- Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
 						- Including update and rendering logic
@@ -1290,19 +1285,17 @@ Render:
 							- if p' == p0: break
 						- continue to next flip point on same scan line
 			- Rendering:
-				- TODO
-				- Frontiers class:
-					- "Sliding" colors along frontier
-						- Upload to RenderContext: 
-							- vec3f frontierBaseColor
-							- float positionalProgress
+				- Decide whether we want to announce frontier edge size
+				+ SettingsDialog flag
+					+ Expose via GameController
 				- ShipRenderContext:
-					- TODO: upload methods
-					- At Prepare() (or wherever we do others), set progress
-				- Shader:
+					- At Prepare() (or wherever we do others), set progress parameter
+				- Shader
 			- Maintenance at destroy:
+				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- TODO
 			- Maintenance at repair:
+				- Ship's triangle restore handler invokes new Frontier::<OnTriangleRestore or whatever naming convention we use>
 				- TODO
 		- Cleanups:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 

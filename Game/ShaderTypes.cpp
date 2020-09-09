@@ -31,16 +31,16 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
-	else if (lstr == "lightning")
-		return ProgramType::Lightning;
+    else if (lstr == "lightning")
+        return ProgramType::Lightning;
     else if (lstr == "ocean_depth")
         return ProgramType::OceanDepth;
     else if (lstr == "ocean_flat")
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
-	else if (lstr == "rain")
-		return ProgramType::Rain;
+    else if (lstr == "rain")
+        return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
         return ProgramType::ShipCircleHighlights;
     else if (lstr == "ship_electrical_element_highlights")
@@ -59,6 +59,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFlamesForeground2;
     else if (lstr == "ship_flames_foreground_3")
         return ProgramType::ShipFlamesForeground3;
+    else if (lstr == "ship_frontier_edges")
+        return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
         return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_points_color")
@@ -153,6 +155,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFlamesForeground2";
     case ProgramType::ShipFlamesForeground3:
         return "ShipFlamesForeground3";
+    case ProgramType::ShipFrontierEdges:
+        return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:
         return "ShipGenericMipMappedTextures";
     case ProgramType::ShipPointsColor:
@@ -401,6 +405,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
         return VertexAttributeType::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
+        return VertexAttributeType::ShipPointFrontierColor;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
         return VertexAttributeType::Explosion1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion2"))

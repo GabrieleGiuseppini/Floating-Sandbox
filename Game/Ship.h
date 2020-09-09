@@ -38,7 +38,8 @@ public:
         Points && points,
         Springs && springs,
         Triangles && triangles,
-        ElectricalElements && electricalElements);
+        ElectricalElements && electricalElements,
+        Frontiers && frontiers);
 
     void Announce();
 
@@ -498,6 +499,7 @@ private:
     Springs mSprings;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
+    Frontiers mFrontiers;
 
     // Pinned points
     PinnedPoints mPinnedPoints;

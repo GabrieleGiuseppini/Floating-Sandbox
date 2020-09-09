@@ -53,6 +53,8 @@ set  (PHYSICS_SOURCES
 	Clouds.h
 	ElectricalElements.cpp
 	ElectricalElements.h
+	Frontiers.cpp
+	Frontiers.h
 	ImpactBomb.cpp
 	ImpactBomb.h
 	IShipPhysicsHandler.h

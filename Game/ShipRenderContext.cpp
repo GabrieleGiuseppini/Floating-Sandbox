@@ -38,10 +38,15 @@ ShipRenderContext::ShipRenderContext(
     , mPointAttributeGroup2VBO()
     , mPointColorVBO()
     , mPointTemperatureVBO()
+    , mPointFrontierColorVBO()
     //
     , mStressedSpringElementBuffer()
     , mStressedSpringElementVBO()
     , mStressedSpringElementVBOAllocatedElementSize(0u)
+    //
+    , mFrontierEdgeElementBuffer()
+    , mFrontierEdgeElementVBO()
+    , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
     , mFlameVertexBuffer()
     , mFlameBackgroundCount(0u)
@@ -119,8 +124,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[11];
-    glGenBuffers(11, vbos);
+    GLuint vbos[13];
+    glGenBuffers(13, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -143,21 +148,28 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mStressedSpringElementVBO = vbos[4];
+    mPointFrontierColorVBO = vbos[4];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(FrontierColor), nullptr, GL_STATIC_DRAW);
+
+    mStressedSpringElementVBO = vbos[5];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
-    mFlameVBO = vbos[5];
+    mFrontierEdgeElementVBO = vbos[6];
+    mFrontierEdgeElementBuffer.reserve(1024); // Arbitrary - TODO: if we go for announcing size, we reserve at UploadStart time and this goes
 
-    mExplosionVBO = vbos[6];
+    mFlameVBO = vbos[7];
 
-    mSparkleVBO = vbos[7];
+    mExplosionVBO = vbos[8];
+
+    mSparkleVBO = vbos[9];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[8];
+    mGenericMipMappedTextureVBO = vbos[10];
 
-    mHighlightVBO = vbos[9];
+    mHighlightVBO = vbos[11];
 
-    mVectorArrowVBO = vbos[10];
+    mVectorArrowVBO = vbos[12];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -209,6 +221,11 @@ ShipRenderContext::ShipRenderContext(
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointFrontierColor));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(FrontierColor), (void *)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -662,6 +679,20 @@ void ShipRenderContext::UploadPointTemperature(
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void ShipRenderContext::UploadPointFrontierColors(FrontierColor const * colors)
+{
+    // Uploaded sparingly
+
+    // We've been invoked on the render thread
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(FrontierColor), colors);
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void ShipRenderContext::UploadElementsStart()
 {
     // Elements are uploaded sparingly
@@ -707,6 +738,21 @@ void ShipRenderContext::UploadElementStressedSpringsStart()
 }
 
 void ShipRenderContext::UploadElementStressedSpringsEnd()
+{
+    // Nop
+}
+
+void ShipRenderContext::UploadElementFrontierEdgesStart()
+{
+    //
+    // Frontier points are sticky: we upload them once in a while and reuse
+    // them as needed
+    //
+
+    mFrontierEdgeElementBuffer.clear();
+}
+
+void ShipRenderContext::UploadElementFrontierEdgesEnd()
 {
     // Nop
 }
@@ -982,8 +1028,38 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
             CheckOpenGLError();
         }
 
-        // Bind again element VBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    //
+    // Prepare frontiers
+    //
+
+    if (renderParameters.ShowFrontiers
+        && !mFrontierEdgeElementBuffer.empty())
+    {
+        //
+        // Upload buffer
+        //
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);
+
+        if (mFrontierEdgeElementBuffer.size() > mFrontierEdgeElementVBOAllocatedElementSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data(), GL_STATIC_DRAW);
+            CheckOpenGLError();
+
+            mFrontierEdgeElementVBOAllocatedElementSize = mFrontierEdgeElementBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     //
@@ -1228,6 +1304,29 @@ void ShipRenderContext::RenderDraw(
             glDrawElements(
                 GL_LINES,
                 static_cast<GLsizei>(2 * mStressedSpringElementBuffer.size()),
+                GL_UNSIGNED_INT,
+                (GLvoid *)0);
+
+            // Bind again ship element VBO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mElementVBO);
+        }
+
+        //
+        // Draw frontiers
+        //
+
+        if (renderParameters.ShowFrontiers
+            && !mFrontierEdgeElementBuffer.empty())
+        {
+            mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
+
+            // Bind frontier edge element VBO
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);
+
+            // Draw
+            glDrawElements(
+                GL_LINES,
+                static_cast<GLsizei>(2 * mFrontierEdgeElementBuffer.size()),
                 GL_UNSIGNED_INT,
                 (GLvoid *)0);
 
@@ -1790,7 +1889,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //      - 2: Springs
     //      - 3: Triangles
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
-    //      - 4: Stressed springs
+    //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
     //      - 6: Flames - foreground
     //      - 7: Sparkles
@@ -1923,7 +2022,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 4: Stressed Springs
+    // Layer 4: Stressed Springs, Frontier Edges
     //
 
     view.CalculateShipOrthoMatrix(
@@ -1938,6 +2037,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipStressedSprings>();
     mShaderManager.SetProgramParameter<ProgramType::ShipStressedSprings, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //

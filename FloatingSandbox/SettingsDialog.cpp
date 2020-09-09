@@ -1968,7 +1968,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 
             // Do rain with storm
             {
-                mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, 
+                mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY,
                     _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                 mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
                 mDoRainWithStormCheckBox->Bind(
@@ -3519,6 +3519,22 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 shipSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
             }
 
+            // Show Frontiers
+            {
+                mShowFrontiersCheckBox = new wxCheckBox(shipBox, wxID_ANY,
+                    _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
+                mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
+                mShowFrontiersCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                shipSizer->Add(mShowFrontiersCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+            }
+
             shipBoxSizer1->Add(shipSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -3700,7 +3716,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, soundBox);
 
                 {
-                    mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
+                    mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY,
                         _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                     mPlayBreakSoundsCheckBox->SetToolTip(_("Enables or disables the generation of sounds when materials break."));
                     mPlayBreakSoundsCheckBox->Bind(
@@ -3730,7 +3746,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 }
 
                 {
-                    mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
+                    mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY,
                         _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                     mPlayWindSoundCheckBox->SetToolTip(_("Enables or disables the generation of wind sounds."));
                     mPlayWindSoundCheckBox->Bind(
@@ -3865,9 +3881,9 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
 
                     checkboxesSizer->Add(
-                        mDebugShipRenderModeRadioBox, 
-                        0, 
-                        wxEXPAND | wxALL, 
+                        mDebugShipRenderModeRadioBox,
+                        0,
+                        wxEXPAND | wxALL,
                         5);
                 }
 
@@ -3887,9 +3903,9 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
 
                     checkboxesSizer->Add(
-                        mVectorFieldRenderModeRadioBox, 
-                        0, 
-                        wxEXPAND | wxALL, 
+                        mVectorFieldRenderModeRadioBox,
+                        0,
+                        wxEXPAND | wxALL,
                         5);
                 }
 
@@ -4335,6 +4351,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
     mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
+
+    mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
 
     auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
     mFlatLampLightColorPicker->SetColour(wxColor(flatLampLightColor.r, flatLampLightColor.g, flatLampLightColor.b));

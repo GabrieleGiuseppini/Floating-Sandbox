@@ -112,6 +112,14 @@ using ElectricalElementInstanceIndex = std::uint8_t; // Max 255 instances
 static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
 
 /*
+ * Frontier identifiers.
+ *
+ * Not comparable and not ordered.
+ */
+using FrontierId = std::uint32_t;
+static constexpr FrontierId NoneFrontierId = std::numeric_limits<FrontierId>::max();
+
+/*
  * Various other identifiers.
  */
 using LocalBombId = std::uint32_t;
@@ -264,7 +272,16 @@ private:
 };
 
 /*
- * Types of bombs (duh).
+ * Types of frontiers (duh).
+ */
+enum class FrontierType
+{
+    External,
+    Internal
+};
+
+/*
+ * Types of bombs.
  */
 enum class BombType
 {
@@ -275,7 +292,7 @@ enum class BombType
 };
 
 /*
- * Types of explosions (duh).
+ * Types of explosions.
  */
 enum class ExplosionType
 {

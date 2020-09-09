@@ -309,6 +309,9 @@ struct IGameControllerSettings
     virtual bool GetShowShipStress() const = 0;
     virtual void SetShowShipStress(bool value) = 0;
 
+    virtual bool GetShowShipFrontiers() const = 0;
+    virtual void SetShowShipFrontiers(bool value) = 0;
+
     virtual bool GetDrawHeatOverlay() const = 0;
     virtual void SetDrawHeatOverlay(bool value) = 0;
 

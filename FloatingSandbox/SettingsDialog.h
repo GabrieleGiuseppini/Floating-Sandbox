@@ -173,6 +173,7 @@ private:
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxCheckBox* mShowStressCheckBox;
+    wxCheckBox * mShowFrontiersCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
