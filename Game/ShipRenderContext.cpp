@@ -156,7 +156,6 @@ ShipRenderContext::ShipRenderContext(
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
     mFrontierEdgeElementVBO = vbos[6];
-    mFrontierEdgeElementBuffer.reserve(1024); // Arbitrary - TODO: if we go for announcing size, we reserve at UploadStart time and this goes
 
     mFlameVBO = vbos[7];
 
@@ -742,14 +741,15 @@ void ShipRenderContext::UploadElementStressedSpringsEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadElementFrontierEdgesStart()
+void ShipRenderContext::UploadElementFrontierEdgesStart(size_t edgesCount)
 {
     //
     // Frontier points are sticky: we upload them once in a while and reuse
     // them as needed
     //
 
-    mFrontierEdgeElementBuffer.clear();
+    // No need to clear, we'll repopulate everything
+    mFrontierEdgeElementBuffer.reset(edgesCount);
 }
 
 void ShipRenderContext::UploadElementFrontierEdgesEnd()

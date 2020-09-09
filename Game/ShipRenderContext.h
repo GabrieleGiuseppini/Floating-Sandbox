@@ -189,7 +189,7 @@ public:
     // Frontiers
     //
 
-    void UploadElementFrontierEdgesStart();
+    void UploadElementFrontierEdgesStart(size_t edgesCount);
 
     inline void UploadElementFrontierEdge(
         int pointIndex1,
@@ -1104,7 +1104,7 @@ private:
     GameOpenGLVBO mStressedSpringElementVBO;
     size_t mStressedSpringElementVBOAllocatedElementSize;
 
-    std::vector<LineElement> mFrontierEdgeElementBuffer;
+    BoundedVector<LineElement> mFrontierEdgeElementBuffer;
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 

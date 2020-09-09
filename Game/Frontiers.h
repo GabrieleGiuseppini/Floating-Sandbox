@@ -38,6 +38,15 @@ public:
         FrontierType Type;
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
+
+        Frontier(
+            FrontierType type,
+            ElementIndex startingEdgeIndex,
+            ElementCount size)
+            : Type(type)
+            , StartingEdgeIndex(startingEdgeIndex)
+            , Size(size)
+        {}
     };
 
 public:
@@ -49,7 +58,8 @@ public:
 
     void AddFrontier(
         FrontierType type,
-        std::vector<ElementIndex> edgeIndices);
+        std::vector<ElementIndex> edgeIndices,
+        Springs const & springs);
 
     void Upload(
         ShipId shipId,

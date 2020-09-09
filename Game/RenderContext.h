@@ -996,11 +996,13 @@ public:
         mShips[shipId]->UploadElementStressedSpringsEnd();
     }
 
-    inline void UploadShipElementFrontierEdgesStart(ShipId shipId)
+    inline void UploadShipElementFrontierEdgesStart(
+        ShipId shipId,
+        size_t edgesCount)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadElementFrontierEdgesStart();
+        mShips[shipId]->UploadElementFrontierEdgesStart(edgesCount);
     }
 
     inline void UploadShipElementFrontierEdge(
