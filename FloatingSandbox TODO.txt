@@ -1215,23 +1215,24 @@ Render:
 		= Preliminaries:
 			+ Make sure endpoints in triangle are always in CW order
 				+ From ShipBuilder
-			- TODOHERE: Problem with rendering frontier in "Render Frontier" mode:
+			- Problem with rendering frontier in "Render Frontier" mode:
 				- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
 				  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
 				  not follow ropes _at_all_ (no matter the transition type) during connected component detection, and allow those 
 				  ropes to belong to the next connected component
 					- Still vulnerable to dangling parts not connected via ropes (e.g. masts) though: 
 					  frontier would still be drawn on top of it
-				- Might get away with drawing frontiers - *enlarged* - before all of the rest? What is left of the enlarged part 
+				- Might get away with drawing frontiers - *enlarged* - before (temporally) all of the rest? What is left of the enlarged part 
 				  would be the rendered frontier, as it would be visible only around external frontiers (and through holes)
 				- TODO: isn't this taken care of by Z work?
+				- TODO: don't we have this same problem with edge springs? It seems not, why?
 		= Plan:
 			= Data structures
 			- Initial frontiers at ShipBuilder
 			- Render frontiers: 
-				- New render setting
+				+ New render setting
 				- New ship upload 
-				- New shader (red/green/etc. with 0.5 alpha, thick line width)
+				- New shader
 			- Maintain at destroy
 			- Maintain at repair
 		= Impl:
@@ -1239,7 +1240,11 @@ Render:
 				+ GameTypes:
 					+ FrontierIndex + None
 					+ FrontierType enum (External, Internal)
-				- Frontiers class
+				= Frontiers class
+					! Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
+						! Including update and rendering logic
+					! Logic that requires points/springs/triangles takes those as args
+					+ Owned and maintained by Ship
 					+ Structs:
 						+ FrontierEdge: contains edge metadata only needed for physics
 							+ Cardinality: Edge
@@ -1250,24 +1255,9 @@ Render:
 							+ StartingEdge(...Element...Index?)
 							+ FrontierType
 					+ Cctor takes point_count, Springs, Triangles
-					- TODOHERE
-					- Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
-						- Including update and rendering logic
-					- Owned and maintained by Ship
-					- Logic that requires points/springs/triangles takes those as args
-					- Contains:
-						- Frontier stuff:
-							- Ad-hoc container (TBD)
-							- Ad-hoc container (for each frontier) of ad-hoc containers (for each edge) of point indices
-								- Directly uploaded for rendering
-								- Last point == first point 
-						- Edges stuff:
-							- Indexed by same spring indices
-							- Content:
-								- Frontier ID
-								- Index of edge in frontier container(s)
-						- mIsDirtyForRendering
-			- Jumpstart algo:
+					- AddFrontier()
+						- Invoked by ShipBuilder
+			- ShipBuilder: jumpstart algo:
 				-	5	6	7
 					4	*	0
 					3	2	1
@@ -1285,9 +1275,10 @@ Render:
 							- if p' == p0: break
 						- continue to next flip point on same scan line
 			- Rendering:
-				- Decide whether we want to announce frontier edge size
+				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
 					+ Expose via GameController
+				+ Frontiers::Upload
 				- ShipRenderContext:
 					- At Prepare() (or wherever we do others), set progress parameter
 				- Shader
@@ -1299,9 +1290,10 @@ Render:
 				- TODO
 		- Cleanups:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
-			  now use edges - as long as springs remember their edges
+			  now use edges
 				- If so, we could now only upload springs that have 0 or 1 edges
 		- Enabled features:
+			- TODO: Spec these elsewhere
 			- Waves: 
 				- Generate wave (change height) when frontier (points) touch water for the first time
 			- Water drag 

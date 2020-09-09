@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include <algorithm>
+#include <array>
 
 namespace Physics {
 
@@ -18,7 +19,6 @@ Frontiers::Frontiers(
     , mPointColors(pointCount)
     , mIsDirtyForRendering(true)
 {
-    // TODO
 }
 
 void Frontiers::AddFrontier(
@@ -122,9 +122,49 @@ void Frontiers::Upload(
 
 void Frontiers::RegeneratePointColors() const
 {
+    std::array<rgbColor, 4> const ExternalColors
+    {
+        rgbColor(0, 153, 0),
+        rgbColor(0, 51, 204),
+        rgbColor(51, 153, 51),
+        rgbColor(0, 0, 204)
+    };
+
+    std::array<rgbColor, 4> const InternalColors
+    {
+        rgbColor(204, 51, 0),
+        rgbColor(255, 204, 0),
+        rgbColor(255, 0, 0),
+        rgbColor(255, 255, 0)
+    };
+
+    size_t externalUsed = 0;
+    size_t internalUsed = 0;
+
     for (auto const & frontier : mFrontiers)
     {
-        // TODOHERE
+        vec3f const baseColor = (frontier.Type == FrontierType::External)
+            ? ExternalColors[(externalUsed++) % ExternalColors.size()].toVec3f()
+            : InternalColors[(internalUsed++) % InternalColors.size()].toVec3f();
+
+        ElementIndex const startingEdgeIndex = frontier.StartingEdgeIndex;
+        ElementIndex edgeIndex = startingEdgeIndex;
+
+
+        float const positionalProgressDx = 1.0f / static_cast<float>(frontier.Size);
+        float positionalProgress = positionalProgressDx;
+
+        do
+        {
+            mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
+            mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
+
+            positionalProgress += positionalProgressDx;
+
+            // Advance
+            edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+
+        } while (edgeIndex != startingEdgeIndex);
     }
 }
 

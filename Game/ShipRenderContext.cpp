@@ -1246,7 +1246,7 @@ void ShipRenderContext::RenderDraw(
         // - DebugRenderMode is springs|edgeSprings, in which case we use colors - so to show
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
-        // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains
+        // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
