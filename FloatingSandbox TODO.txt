@@ -274,7 +274,7 @@ Render:
 			- Cut tag on github
 			- Upload packages to GameJolt
 				- Package instructions:
-					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
+					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
 				- Post
 			- www.floatingsandbox.com:
 				- Upload changes.txt
@@ -439,7 +439,7 @@ Render:
 	- Cut tag on github
 	- Upload packages to GameJolt
 		- Package instructions:
-			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
+			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
 		- Post
 	- www.floatingsandbox.com:
 		- Upload changes.txt
@@ -511,12 +511,14 @@ Render:
 		- Check out Architect Creations from FS server
 		- Ships:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
-				- Needs to sink vertically!
-		- Check out Klickitat (Matthew Anderson 707)
+				- Needs to sink vertically!		
 		- Next ship made: "Turbentiy Banalniy"
 		= Fernando:
 			= "An 12", "Boeing DreamLifter": asked for latest files
 		- To test:
+			- An-225_Mria (Roman Kakshin)
+			- Klickitat (Matthew Anderson 707)
+
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Graza's from awesomeyorkie
@@ -657,9 +659,11 @@ Render:
 		- Reasons:
 			- Anti-virus complains of saving
 		- Buy certificate
-			- https://comodosslstore.com/code-signing/microsoft-authenticode
-			- https://comodosslstore.com/codesigning.aspx
-			- Print receipt and store in Taxes 2019
+			- https://www.leaderssl.nl/suppliers/sectigo/products/code_signing
+			- Plan B:
+				- https://comodosslstore.com/code-signing/microsoft-authenticode
+				- https://comodosslstore.com/codesigning.aspx
+			- Print receipt and store in Taxes
 		- Sign exe
 		- Sign MSI
 			- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603		
