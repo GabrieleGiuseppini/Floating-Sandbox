@@ -281,9 +281,12 @@ Render:
 					- Test w/old FS
 				- Update current version in FAQ	
 
-
+	= 1.16.0
 		
-		- Frontier (*)
+		= Frontier (*)
+
+		- See why log diagnostics is not written
+			- Missing folder?
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -1227,8 +1230,8 @@ Render:
 				- TODO: isn't this taken care of by Z work?
 				- TODO: don't we have this same problem with edge springs? It seems not, why?
 		= Plan:
-			= Data structures
-			- Initial frontiers at ShipBuilder
+			+ Data structures
+			= Initial frontiers at ShipBuilder
 			- Render frontiers: 
 				+ New render setting
 				- New ship upload 
@@ -1236,11 +1239,11 @@ Render:
 			- Maintain at destroy
 			- Maintain at repair
 		= Impl:
-			= Data structures
+			+ Data structures
 				+ GameTypes:
 					+ FrontierIndex + None
 					+ FrontierType enum (External, Internal)
-				= Frontiers class
+				+ Frontiers class
 					! Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
 						! Including update and rendering logic
 					! Logic that requires points/springs/triangles takes those as args
@@ -1255,13 +1258,13 @@ Render:
 							+ StartingEdge(...Element...Index?)
 							+ FrontierType
 					+ Cctor takes point_count, Springs, Triangles
-					- AddFrontier()
-						- Invoked by ShipBuilder
-			- ShipBuilder: jumpstart algo:
+					+ AddFrontier()
+						+ Invoked by ShipBuilder
+			= ShipBuilder: jumpstart algo:
 				-	5	6	7
 					4	*	0
 					3	2	1
-				- For each scan line:
+				= For each scan line:
 					- For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
 						- fId = new frontier ID
 						- p = p0; k = 4|0 (depending on flip type)
@@ -1274,6 +1277,11 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
+				- Tests:
+					- Scan line finds first a chain point, then a triangle
+					- Scan line ends on a triangle vertex followed by a chain point
+				- Cleanup
+					- Remove unused args
 			- Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag

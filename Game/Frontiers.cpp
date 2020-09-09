@@ -28,37 +28,53 @@ void Frontiers::AddFrontier(
 {
     assert(edgeIndices.size() > 0);
 
-    ElementIndex const firstEdgeIndex = edgeIndices[0];
-
+    //
     // Add frontier head
+    //
+
     mFrontiers.emplace_back(
         type,
-        firstEdgeIndex,
+        edgeIndices[0],
         static_cast<ElementIndex>(edgeIndices.size()));
 
-    /* TODOHERE: this is broken
+    //
     // Concatenate all edges
-    ElementIndex previousEdgeIndex = firstEdgeIndex;
-    for (size_t e = 1; e < edgeIndices.size(); ++e)
+    //
+
+    // First off, find point in common between last and first edge; this point
+    // will be the first point of the first edge
+
+    ElementIndex previousEdgeIndex = edgeIndices[edgeIndices.size() - 1];
+
+    ElementIndex edgeIndex = edgeIndices[0];
+
+    ElementIndex point1Index =
+        (springs.GetEndpointAIndex(edgeIndex) == springs.GetEndpointAIndex(previousEdgeIndex)
+            || springs.GetEndpointAIndex(edgeIndex) == springs.GetEndpointBIndex(previousEdgeIndex))
+        ? springs.GetEndpointAIndex(edgeIndex)
+        : springs.GetEndpointBIndex(edgeIndex);
+
+    for (size_t e = 0; e < edgeIndices.size(); ++e)
     {
-        ElementIndex const edgeIndex = edgeIndices[e];
+        edgeIndex = edgeIndices[e];
 
-        mFrontierEdges[e - 1].NextEdgeIndex = edgeIndex;
+        // point1Index is in common between these two edges
+        assert((springs.GetEndpointAIndex(previousEdgeIndex) == point1Index || springs.GetEndpointBIndex(previousEdgeIndex) == point1Index)
+            && (springs.GetEndpointAIndex(edgeIndex) == point1Index || springs.GetEndpointBIndex(edgeIndex) == point1Index));
 
-        // Point 1 of this edge is the endpoint that is common with the previous edge
-        ElementIndex point1Index =
-            (springs.GetEndpointAIndex(edgeIndex) == springs.GetEndpointAIndex(previousEdgeIndex)
-                || springs.GetEndpointAIndex(edgeIndex) == springs.GetEndpointBIndex(previousEdgeIndex))
-            ? springs.GetEndpointAIndex(edgeIndex)
-            : springs.GetEndpointBIndex(edgeIndex);
+        // Set point indices
+        mFrontierEdges[previousEdgeIndex].PointBIndex = point1Index;
+        mFrontierEdges[edgeIndex].PointAIndex = point1Index;
 
+        // Concatenate edges
+        mFrontierEdges[previousEdgeIndex].NextEdgeIndex = edgeIndex;
 
-        // TODOHERE
+        // Advance
+        previousEdgeIndex = edgeIndex;
     }
 
-    // Last
-    mFrontierEdges[edgeIndices[edgeIndices.size() - 1]].NextEdgeIndex = firstEdgeIndex;
-    */
+    // Concatenate last
+    mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
 }
 
 void Frontiers::Upload(
@@ -159,7 +175,7 @@ void Frontiers::RegeneratePointColors() const
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
 
-            positionalProgress += positionalProgressDx;
+            positionalProgress += std::min(positionalProgressDx, 1.0f);
 
             // Advance
             edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;

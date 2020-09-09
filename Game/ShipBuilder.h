@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 /*
@@ -261,9 +262,26 @@ private:
 
     static Physics::Frontiers CreateFrontiers(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::vector<ElementIndex> const & pointIndexRemap2,
         Physics::Points const & points,
         Physics::Springs const & springs,
         EdgeToIndexMap const & edgeToSpringIndex1Map,
+        std::vector<ElementIndex> const & springIndexRemap2,
+        Physics::Triangles const & triangles);
+
+    static std::vector<ElementIndex> PropagateFrontier(
+        ElementIndex startPointIndex1,
+        int startPointX,
+        int startPointY,
+        Octant startOctant,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        std::vector<ElementIndex> const & pointIndexRemap2,
+        Physics::Points const & points,
+        std::set<ElementIndex> & frontierPoints,
+        Physics::Springs const & springs,
+        EdgeToIndexMap const & edgeToSpringIndex1Map,
+        std::vector<ElementIndex> const & springIndexRemap2,
         Physics::Triangles const & triangles);
 
 #ifdef _DEBUG
@@ -275,7 +293,7 @@ private:
 
 private:
 
-    using ReorderingResults = std::tuple<std::vector<ShipBuildPoint>, std::vector<ElementIndex>, std::vector<ShipBuildSpring>>;
+    using ReorderingResults = std::tuple<std::vector<ShipBuildPoint>, std::vector<ElementIndex>, std::vector<ShipBuildSpring>, std::vector<ElementIndex>>;
 
     //
     // Reordering
@@ -301,7 +319,8 @@ private:
         EdgeToIndexMap const & edgeToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<ShipBuildSpring> & springInfos2);
+        std::vector<ShipBuildSpring> & springInfos2,
+        std::vector<ElementIndex> & springIndexRemap);
 
     static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
         std::vector<ShipBuildPoint> const & pointInfos1,
@@ -321,7 +340,8 @@ private:
         EdgeToIndexMap const & edgeToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<ShipBuildSpring> & springInfos2);
+        std::vector<ShipBuildSpring> & springInfos2,
+        std::vector<ElementIndex> & springIndexRemap);
 
     template <int BlockSize>
     static ReorderingResults ReorderPointsAndSpringsOptimally_Tiling(

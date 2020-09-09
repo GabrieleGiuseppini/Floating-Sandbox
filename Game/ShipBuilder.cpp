@@ -14,12 +14,27 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
-#include <map>
+#include <set>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
 
 using namespace Physics;
+
+//////////////////////////////////////////////////////////////////////////////
+
+// This is our local circular order (clockwise, starting from E)
+// Note: cardinal directions are labeled according to y growing upwards
+static const int TessellationCircularOrderDirections[8][2] = {
+    {  1,  0 },  // 0: E
+    {  1, -1 },  // 1: SE
+    {  0, -1 },  // 2: S
+    { -1, -1 },  // 3: SW
+    { -1,  0 },  // 4: W
+    { -1,  1 },  // 5: NW
+    {  0,  1 },  // 6: N
+    {  1,  1 }   // 7: NE
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -205,6 +220,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     //  - Set non-fully-surrounded ShipBuildPoint's as "leaking"
     //  - Detect springs and create ShipBuildSpring's for them (additional to ropes)
     //  - Do tessellation and create ShipBuildTriangle's
+    //  - Create map from edges to spring indices 1
     //
 
     EdgeToIndexMap edgeToSpringIndex1Map;
@@ -228,8 +244,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     float originalSpringACMR = CalculateACMR(springInfos);
 
     // Tiling algorithm
-    //auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
-    auto [pointInfos2, pointIndexRemap2, springInfos2] = ReorderPointsAndSpringsOptimally_Stripes<4>(
+    //auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
+    auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Stripes<4>(
         pointInfos,
         springInfos,
         edgeToSpringIndex1Map,
@@ -339,9 +355,12 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     Frontiers frontiers = CreateFrontiers(
         pointIndexMatrix,
+        shipDefinition.StructuralLayerImage.Size,
+        pointIndexRemap2,
         points,
         springs,
         edgeToSpringIndex1Map,
+        springIndexRemap2,
         triangles);
 
 
@@ -798,18 +817,6 @@ void ShipBuilder::CreateShipElementInfos(
     // Initialize count of leaking points
     leakingPointsCount = 0;
 
-    // This is our local circular order (clockwise, starting from E)
-    static const int Directions[8][2] = {
-        {  1,  0 },  // 0: E
-        {  1, -1 },  // 1: SE
-        {  0, -1 },  // 2: S
-        { -1, -1 },  // 3: SW
-        { -1,  0 },  // 4: W
-        { -1,  1 },  // 5: NW
-        {  0,  1 },  // 6: N
-        {  1,  1 }   // 7: NE
-    };
-
     // From bottom to top - excluding extras at boundaries
     for (int y = 1; y <= structureImageSize.Height; ++y)
     {
@@ -852,8 +859,8 @@ void ShipBuilder::CreateShipElementInfos(
                 // i.e. E, SE, S, SW - this covers each pair of points in each direction
                 for (int i = 0; i < 4; ++i)
                 {
-                    int adjx1 = x + Directions[i][0];
-                    int adjy1 = y + Directions[i][1];
+                    int adjx1 = x + TessellationCircularOrderDirections[i][0];
+                    int adjy1 = y + TessellationCircularOrderDirections[i][1];
 
                     if (!!pointIndexMatrix[adjx1][adjy1])
                     {
@@ -893,8 +900,8 @@ void ShipBuilder::CreateShipElementInfos(
                         //
 
                         // Check adjacent point in next CW direction
-                        int adjx2 = x + Directions[i + 1][0];
-                        int adjy2 = y + Directions[i + 1][1];
+                        int adjx2 = x + TessellationCircularOrderDirections[i + 1][0];
+                        int adjy2 = y + TessellationCircularOrderDirections[i + 1][1];
                         if ((!isInShip || i < 2)
                             && !!pointIndexMatrix[adjx2][adjy2])
                         {
@@ -919,11 +926,11 @@ void ShipBuilder::CreateShipElementInfos(
                         // We do this so that we can forget the entire W side for inner points and yet ensure
                         // full coverage of the area
                         if (i == 0
-                            && !pointIndexMatrix[x + Directions[1][0]][y + Directions[1][1]]
-                            && !!pointIndexMatrix[x + Directions[2][0]][y + Directions[2][1]])
+                            && !pointIndexMatrix[x + TessellationCircularOrderDirections[1][0]][y + TessellationCircularOrderDirections[1][1]]
+                            && !!pointIndexMatrix[x + TessellationCircularOrderDirections[2][0]][y + TessellationCircularOrderDirections[2][1]])
                         {
                             // If we're here, the point at E exists
-                            assert(!!pointIndexMatrix[x + Directions[0][0]][y + Directions[0][1]]);
+                            assert(!!pointIndexMatrix[x + TessellationCircularOrderDirections[0][0]][y + TessellationCircularOrderDirections[0][1]]);
 
                             //
                             // Create ShipBuildTriangle
@@ -933,8 +940,8 @@ void ShipBuilder::CreateShipElementInfos(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
                                         pointIndex,
-                                        *pointIndexMatrix[x + Directions[0][0]][y + Directions[0][1]],
-                                        *pointIndexMatrix[x + Directions[2][0]][y + Directions[2][1]]
+                                        *pointIndexMatrix[x + TessellationCircularOrderDirections[0][0]][y + TessellationCircularOrderDirections[0][1]],
+                                        *pointIndexMatrix[x + TessellationCircularOrderDirections[2][0]][y + TessellationCircularOrderDirections[2][1]]
                                     }));
                         }
                     }
@@ -1396,16 +1403,236 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 
 Physics::Frontiers ShipBuilder::CreateFrontiers(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::vector<ElementIndex> const & pointIndexRemap2,
     Physics::Points const & points,
     Physics::Springs const & springs,
     EdgeToIndexMap const & edgeToSpringIndex1Map,
+    std::vector<ElementIndex> const & springIndexRemap2,
     Physics::Triangles const & triangles)
 {
-    // TODOHERE
-    return Frontiers(
+    //
+    // Create Frontiers container
+    //
+
+    Frontiers frontiers = Frontiers(
         points.GetElementCount(),
         springs,
         triangles);
+
+    //
+    // Detect and create frontiers
+    //
+
+    struct ShipBuildFrontier
+    {
+        FrontierType Type;
+        std::vector<ElementIndex> EdgeIndices;
+
+        ShipBuildFrontier(
+            FrontierType type,
+            std::vector<ElementIndex> && edgeIndices)
+            : Type(type)
+            , EdgeIndices(std::move(edgeIndices))
+        {}
+    };
+
+    std::vector<ShipBuildFrontier> shipBuildFrontiers;
+
+    // Set flagging points that have become frontiers
+    std::set<ElementIndex> frontierPoints;
+
+    // From left to right, skipping padding columns
+    for (int x = 1; x <= structureImageSize.Width; ++x)
+    {
+        // Frontierable points are points on border edges of triangles
+        bool isInFrontierablePointsRegion = false;
+
+        // From bottom to top, skipping padding columns
+        for (int y = 1; y <= structureImageSize.Height; ++y)
+        {
+            if (!isInFrontierablePointsRegion && pointIndexMatrix[x][y].has_value())
+            {
+                ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
+
+                // A point may only be a frontier if it's on a triangle
+                // (and in this case, it would be on a border edge)
+                if (!points.GetConnectedTriangles(pointIndexRemap2[pointIndex1]).ConnectedTriangles.empty())
+                {
+                    // Entered the region of frontierable points
+                    isInFrontierablePointsRegion = true;
+
+                    // Check if point is already a frontier
+                    if (auto [_, isInserted] = frontierPoints.insert(pointIndex1);
+                        isInserted)
+                    {
+                        // Create new external frontier
+                        shipBuildFrontiers.emplace_back(
+                            FrontierType::External,
+                            PropagateFrontier(
+                                pointIndex1,
+                                x,
+                                y,
+                                2, // S: the external point is at S of starting point
+                                pointIndexMatrix,
+                                pointIndexRemap2,
+                                points,
+                                frontierPoints,
+                                springs,
+                                edgeToSpringIndex1Map,
+                                springIndexRemap2,
+                                triangles));
+                    }
+                }
+            }
+            else if (isInFrontierablePointsRegion &&
+                (!pointIndexMatrix[x][y].has_value() || points.GetConnectedTriangles(pointIndexRemap2 [*pointIndexMatrix[x][y]]).ConnectedTriangles.empty()))
+            {
+                // Left the region of frontierable points
+                isInFrontierablePointsRegion = false;
+
+                assert(pointIndexMatrix[x][y - 1].has_value()); // We come from a frontierable region
+                ElementIndex const previousPointIndex1 = *pointIndexMatrix[x][y - 1];
+
+                assert(!points.GetConnectedTriangles(pointIndexRemap2[previousPointIndex1]).ConnectedTriangles.empty()); // We come from a frontierable region
+
+                // Check if point is already a frontier
+                if (auto [_, isInserted] = frontierPoints.insert(previousPointIndex1);
+                    isInserted)
+                {
+                    // Create new internal frontier
+                    shipBuildFrontiers.emplace_back(
+                        FrontierType::Internal,
+                        PropagateFrontier(
+                            previousPointIndex1,
+                            x,
+                            y - 1,
+                            6, // N: the external point is at N of starting point
+                            pointIndexMatrix,
+                            pointIndexRemap2,
+                            points,
+                            frontierPoints,
+                            springs,
+                            edgeToSpringIndex1Map,
+                            springIndexRemap2,
+                            triangles));
+                }
+            }
+        }
+    }
+
+    //
+    // Add all frontiers
+    //
+
+    for (auto const & sbf : shipBuildFrontiers)
+    {
+        frontiers.AddFrontier(
+            sbf.Type,
+            sbf.EdgeIndices,
+            springs);
+    }
+
+    return frontiers;
+}
+
+std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
+    ElementIndex startPointIndex1,
+    int startPointX,
+    int startPointY,
+    Octant startOctant, // Relative to starting point
+    ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    std::vector<ElementIndex> const & pointIndexRemap2,
+    Physics::Points const & points,
+    std::set<ElementIndex> & frontierPoints,
+    Physics::Springs const & springs,
+    EdgeToIndexMap const & edgeToSpringIndex1Map,
+    std::vector<ElementIndex> const & springIndexRemap2,
+    Physics::Triangles const & triangles)
+{
+    // TODO: check if all args needed
+
+    std::vector<ElementIndex> edgeIndices;
+
+    //
+    // March until we get back to the starting point
+    //
+
+    ElementIndex pointIndex1 = startPointIndex1;
+    int pointX = startPointX;
+    int pointY = startPointY;
+
+    Octant octant = startOctant;
+
+    while (true)
+    {
+        //
+        // From the octant next to the starting octant, walk CW until we find
+        // a frontierable point
+        //
+
+        int nextPointX;
+        int nextPointY;
+        while (true)
+        {
+            // Advance to next octant
+            octant = (octant + 1) % 8;
+
+            // We are guaranteed to find another point, as the starting point is on a triangle
+            assert(octant != startOctant);
+
+            nextPointX = pointX + TessellationCircularOrderDirections[octant][0];
+            nextPointY = pointY + TessellationCircularOrderDirections[octant][1];
+
+            // Check whether it's a frontierable point
+            if (pointIndexMatrix[nextPointX][nextPointY].has_value()
+                && !points.GetConnectedTriangles(pointIndexRemap2[*pointIndexMatrix[nextPointX][nextPointY]]).ConnectedTriangles.empty())
+            {
+                // Found it!
+                break;
+            }
+        }
+
+        assert(pointIndexMatrix[nextPointX][nextPointY].has_value());
+        ElementIndex const nextPointIndex1 = *pointIndexMatrix[nextPointX][nextPointY];
+
+        //
+        // Flag point as frontier
+        //
+
+        assert(frontierPoints.count(nextPointIndex1) == 0);
+        frontierPoints.insert(nextPointIndex1);
+
+        //
+        // Store the index of the spring containing these two points
+        //
+
+        auto const springIndex1It = edgeToSpringIndex1Map.find(Edge(pointIndex1, nextPointIndex1));
+        assert(springIndex1It != edgeToSpringIndex1Map.cend()); // The points lie on a triangle edge
+
+        // Store edge
+        edgeIndices.push_back(springIndexRemap2[springIndex1It->second]);
+
+        //
+        // See whether we have closed the loop
+        //
+
+        if (nextPointIndex1 == startPointIndex1)
+            break;
+
+        //
+        // Advance
+        //
+
+        pointIndex1 = nextPointIndex1;
+        pointX = nextPointX;
+        pointY = nextPointY;
+        octant = (octant + 4) % 8; // Flip 180
+    }
+
+    assert(edgeIndices.size() >= 3);
+
+    return edgeIndices;
 }
 
 #ifdef _DEBUG
@@ -1448,15 +1675,14 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
     //
 
     std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-
     std::vector<ShipBuildPoint> pointInfos2;
     pointInfos2.reserve(pointInfos1.size());
-
     std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
 
+    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
     std::vector<ShipBuildSpring> springInfos2;
     springInfos2.reserve(springInfos1.size());
+    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From top to bottom, starting at second row from top (i.e. first real row)
     for (int y = structureImageSize.Height; y >= 1; y -= (StripeLength - 1))
@@ -1472,7 +1698,8 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
             edgeToSpringIndex1Map,
             pointInfos2,
             pointIndexRemap,
-            springInfos2);
+            springInfos2,
+            springIndexRemap);
     }
 
 
@@ -1502,6 +1729,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
                 if (!reorderedSpringInfos1[springIndex1])
                 {
                     // Add/sort spring
+                    springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
                     springInfos2.push_back(springInfos1[springIndex1]);
 
                     // Don't reorder this spring again
@@ -1517,6 +1745,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
         if (!reorderedSpringInfos1[springIndex1])
         {
             // Add/sort spring
+            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
             springInfos2.push_back(springInfos1[springIndex1]);
         }
     }
@@ -1528,8 +1757,9 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
     assert(pointInfos2.size() == pointInfos1.size());
     assert(pointIndexRemap.size() == pointInfos1.size());
     assert(springInfos2.size() == springInfos1.size());
+    assert(springIndexRemap.size() == springInfos1.size());
 
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2);
+    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
 }
 
 template <int StripeLength>
@@ -1544,7 +1774,8 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
     EdgeToIndexMap const & edgeToSpringIndex1Map,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
-    std::vector<ShipBuildSpring> & springInfos2)
+    std::vector<ShipBuildSpring> & springInfos2,
+    std::vector<ElementIndex> & springIndexRemap)
 {
     //
     // Collect points in a vertical stripe - 2 cols wide, StripeLength high
@@ -1592,6 +1823,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
                     ElementIndex const springIndex1 = springIndexIt->second;
                     if (!reorderedSpringInfos1[springIndex1])
                     {
+                        springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
                         springInfos2.push_back(springInfos1[springIndex1]);
 
                         // Don't reorder this spring again
@@ -1632,15 +1864,14 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
     //
 
     std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-
     std::vector<ShipBuildPoint> pointInfos2;
     pointInfos2.reserve(pointInfos1.size());
-
     std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
 
+    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
     std::vector<ShipBuildSpring> springInfos2;
     springInfos2.reserve(springInfos1.size());
+    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From top to bottom, starting at second row from top (i.e. first real row),
     // skipping one row of points to ensure full squares
@@ -1657,7 +1888,8 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
             edgeToSpringIndex1Map,
             pointInfos2,
             pointIndexRemap,
-            springInfos2);
+            springInfos2,
+            springIndexRemap);
     }
 
 
@@ -1685,6 +1917,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
                 if (!reorderedSpringInfos1[springIndex1])
                 {
                     // Add/sort spring
+                    springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
                     springInfos2.push_back(springInfos1[springIndex1]);
 
                     // Don't reorder this spring again
@@ -1700,6 +1933,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
         if (!reorderedSpringInfos1[springIndex1])
         {
             // Add/sort spring
+            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
             springInfos2.push_back(springInfos1[springIndex1]);
         }
     }
@@ -1711,8 +1945,9 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
     assert(pointInfos2.size() == pointInfos1.size());
     assert(pointIndexRemap.size() == pointInfos1.size());
     assert(springInfos2.size() == springInfos1.size());
+    assert(springIndexRemap.size() == springInfos1.size());
 
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2);
+    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
 }
 
 void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
@@ -1726,7 +1961,8 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
     EdgeToIndexMap const & edgeToSpringIndex1Map,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
-    std::vector<ShipBuildSpring> & springInfos2)
+    std::vector<ShipBuildSpring> & springInfos2,
+    std::vector<ElementIndex> & springIndexRemap)
 {
     //
     // Visit each square as follows:
@@ -1780,6 +2016,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
                         ElementIndex const springIndex1 = springIndexIt->second;
                         if (!reorderedSpringInfos1[springIndex1])
                         {
+                            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos1.size());
                             springInfos2.push_back(springInfos1[springIndex1]);
 
                             // Don't reorder this spring again
@@ -1822,9 +2059,9 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
     //
 
     std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-
     std::vector<ShipBuildSpring> springInfos2;
     springInfos2.reserve(springInfos1.size());
+    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From bottom to top
     for (int y = 1; y <= structureImageSize.Height; y += BlockSize)
@@ -1844,6 +2081,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
                         {
                             if (!reorderedSpringInfos1[connectedSpringIndex])
                             {
+                                springIndexRemap[connectedSpringIndex] = static_cast<ElementIndex>(springInfos2.size());
                                 springInfos2.push_back(springInfos1[connectedSpringIndex]);
                                 reorderedSpringInfos1[connectedSpringIndex] = true;
                             }
@@ -1861,10 +2099,14 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
     for (size_t s = 0; s < springInfos1.size(); ++s)
     {
         if (!reorderedSpringInfos1[s])
+        {
+            springIndexRemap[s] = static_cast<ElementIndex>(springInfos2.size());
             springInfos2.push_back(springInfos1[s]);
+        }
     }
 
     assert(springInfos2.size() == springInfos1.size());
+    assert(springIndexRemap.size() == springInfos1.size());
 
 
     //
@@ -1874,10 +2116,8 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
     //
 
     std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-
     std::vector<ShipBuildPoint> pointInfos2;
     pointInfos2.reserve(pointInfos1.size());
-
     std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
 
     for (auto const & springInfo : springInfos2)
@@ -1919,7 +2159,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
     // 4. Return results
     //
 
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2);
+    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
 }
 
 std::vector<ShipBuilder::ShipBuildSpring> ShipBuilder::ReorderSpringsOptimally_TomForsyth(
