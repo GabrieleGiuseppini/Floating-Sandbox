@@ -26,8 +26,7 @@ Frontiers::Frontiers(
 void Frontiers::AddFrontier(
     FrontierType type,
     std::vector<ElementIndex> edgeIndices,
-    Springs const & springs,
-    Triangles const & triangles)
+    Springs const & springs)
 {
     assert(edgeIndices.size() > 0);
 
@@ -80,14 +79,6 @@ void Frontiers::AddFrontier(
 
     // Concatenate last
     mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
-
-#ifdef _DEBUG
-    VerifyInvariants(
-        springs,
-        triangles);
-#else
-    void(Triangles);
-#endif
 }
 
 void Frontiers::Upload(
@@ -145,6 +136,7 @@ void Frontiers::Upload(
 
         renderContext.UploadShipElementFrontierEdgesEnd(shipId);
 
+        // We are not dirty anymore
         mIsDirtyForRendering = false;
     }
 }
@@ -188,7 +180,9 @@ void Frontiers::RegeneratePointColors() const
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
 
-            positionalProgress += std::min(positionalProgressDx, 1.0f);
+            positionalProgress = std::min(
+                positionalProgress + positionalProgressDx,
+                1.0f);
 
             // Advance
             edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;

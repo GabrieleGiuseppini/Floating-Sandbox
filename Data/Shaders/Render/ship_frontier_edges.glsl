@@ -39,7 +39,7 @@ uniform float paramTime;
 
 void main()
 {
-    float progress = 1. + sin(2. * 3.1415 * vertexPositionalProgress - paramTime) / 2.;
+    float progress = 1. + sin(2. * 3.1415 * (vertexPositionalProgress - paramTime) * 20.) / 2.;
 
     gl_FragColor = vec4(vertexFrontierBaseColor * progress,1.0);
 } 

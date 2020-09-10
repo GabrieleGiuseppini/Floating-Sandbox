@@ -1566,8 +1566,7 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
         frontiers.AddFrontier(
             sbf.Type,
             sbf.EdgeIndices,
-            springs,
-            triangles);
+            springs);
     }
 
     return frontiers;

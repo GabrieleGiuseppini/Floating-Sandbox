@@ -540,6 +540,9 @@ Render:
 
 - Marketing:
 	- www.floatingsandbox.com:
+		- Issues: game doesn't start
+			- No GameJolt
+			- Run repair
 		- Embed GameJolt Widget
 
 - Suggestions to spec:
@@ -1232,10 +1235,10 @@ Render:
 		= Plan:
 			+ Data structures
 			= Initial frontiers at ShipBuilder
-			- Render frontiers: 
+			+ Render frontiers: 
 				+ New render setting
-				- New ship upload 
-				- New shader
+				+ New ship upload 
+				+ New shader
 			- Maintain at destroy
 			- Maintain at repair
 		= Impl:
@@ -1261,10 +1264,10 @@ Render:
 					+ AddFrontier()
 						+ Invoked by ShipBuilder
 			= ShipBuilder: jumpstart algo:
-				-	5	6	7
+				+	5	6	7
 					4	*	0
 					3	2	1
-				= For each scan line:
+				+ For each scan line:
 					+ For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
 						- fId = new frontier ID
 						- p = p0; k = 4|0 (depending on flip type)
@@ -1283,7 +1286,7 @@ Render:
 					- Scan line ends on a triangle vertex followed by a chain point
 				- Cleanup
 					- Remove unused args
-			= Rendering:
+			+ Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
 					+ Expose via GameController
@@ -1291,14 +1294,23 @@ Render:
 				+ ShipRenderContext:
 					+ At Prepare() (or wherever we do others), set progress parameter
 				+ Shader
-				- Adjust color shift speed w/release build
+				+ Adjust color shift speed w/release build
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
+				- Spec: 
+					- Marks mIsDirtyForRendering
+					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 				- TODO
 			- Maintenance at repair:
 				- Ship's triangle restore handler invokes new Frontier::<OnTriangleRestore or whatever naming convention we use>
+				- Spec: 
+					- Marks mIsDirtyForRendering
+					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 				- TODO
-		- Cleanups:
+		- Optimizations:
+			- Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
+				- Clear frontiers' dirtyForRendering flags afterwards
+		- Cleanup:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
 			  now use edges
 				- If so, we could now only upload springs that have 0 or 1 edges

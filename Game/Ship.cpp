@@ -500,6 +500,10 @@ void Ship::RenderUpload(
     //
     // Run connectivity visit, if there have been any deletions
     //
+    // Note: we have to do this here, at render time rathern than
+    // at update time, because the structure might have been dirtied
+    // by an interactive tool while the game is paused
+    //
 
     if (mIsStructureDirty)
     {
@@ -3000,6 +3004,15 @@ void Ship::VerifyInvariants()
             Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
         }
     }
+
+
+    //
+    // Frontiers
+    //
+
+    mFrontiers.VerifyInvariants(
+        mSprings,
+        mTriangles);
 }
 #endif
 }
