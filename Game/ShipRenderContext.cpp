@@ -1061,6 +1061,13 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         }
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        //
+        // Set progress
+        //
+
+        mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().NowAsFloat() * 0.05f);
     }
 
     //
@@ -1321,6 +1328,8 @@ void ShipRenderContext::RenderDraw(
         {
             mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
 
+            glLineWidth(0.3f * 2.0f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
+
             // Bind frontier edge element VBO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);
 
@@ -1522,6 +1531,56 @@ void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParam
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+
+    //
+    // Set flame speed parameter, if needed
+    //
+
+    if (mFlameBackgroundCount > 0 || mFlameForegroundCount > 0)
+    {
+        float const flameSpeed = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
+
+        switch (renderParameters.ShipFlameRenderMode)
+        {
+            case ShipFlameRenderModeType::Mode1:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::Mode2:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::Mode3:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
+                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+                break;
+            }
+
+            case ShipFlameRenderModeType::NoDraw:
+            {
+                break;
+            }
+        }
+    }
 }
 
 template<ProgramType ShaderProgram>
@@ -1538,10 +1597,6 @@ void ShipRenderContext::RenderDrawFlames(
         glBindVertexArray(*mFlameVAO);
 
         mShaderManager.ActivateProgram<ShaderProgram>();
-
-        // Set flame speed parameter
-        mShaderManager.SetProgramParameter<ShaderProgram, ProgramParameterType::FlameSpeed>(
-            GameWallClock::GetInstance().NowAsFloat() * 0.345f);
 
         // Render
         if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)

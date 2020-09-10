@@ -34,8 +34,12 @@ void main()
 in vec3 vertexFrontierBaseColor;
 in float vertexPositionalProgress;
 
+// Params
+uniform float paramTime;
+
 void main()
 {
-    // TODO
-    gl_FragColor = vec4(vertexFrontierBaseColor, 1.0);
+    float progress = fract(vertexPositionalProgress - paramTime);
+
+    gl_FragColor = vec4(vertexFrontierBaseColor * progress,1.0);
 } 

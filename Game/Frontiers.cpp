@@ -71,7 +71,8 @@ void Frontiers::AddFrontier(
 
         // Advance
         previousEdgeIndex = edgeIndex;
-        point1Index = springs.GetOtherEndpointIndex(edgeIndex, point1Index);
+        point1Index = springs.GetOtherEndpointIndex(edgeIndex, point1Index); // The point that will be in common between this edge and the next
+                                                                             // is the one that is not in common now with the previous edge
     }
 
     // Concatenate last

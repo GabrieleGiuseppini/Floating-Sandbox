@@ -1265,7 +1265,7 @@ Render:
 					4	*	0
 					3	2	1
 				= For each scan line:
-					- For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
+					+ For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
 						- fId = new frontier ID
 						- p = p0; k = 4|0 (depending on flip type)
 						- do:
@@ -1277,19 +1277,20 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
+				- Fix bug
 				- Tests:
 					- Scan line finds first a chain point, then a triangle
 					- Scan line ends on a triangle vertex followed by a chain point
 				- Cleanup
 					- Remove unused args
-			- Rendering:
+			= Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
 					+ Expose via GameController
 				+ Frontiers::Upload
-				- ShipRenderContext:
-					- At Prepare() (or wherever we do others), set progress parameter
-				- Shader
+				+ ShipRenderContext:
+					+ At Prepare() (or wherever we do others), set progress parameter
+				+ Shader
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- TODO
