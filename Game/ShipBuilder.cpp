@@ -1455,11 +1455,13 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
             {
                 ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
 
-                // A point may only be a frontier if it's on a triangle
-                // (and in this case, it would be on a border edge)
+                // A point may only be a frontier if it's on a border edge of a triangle
                 if (!points.GetConnectedTriangles(pointIndexRemap2[pointIndex1]).ConnectedTriangles.empty())
                 {
+                    //
                     // Entered the region of frontierable points
+                    //
+
                     isInFrontierablePointsRegion = true;
 
                     // Check if point is already a frontier
@@ -1485,37 +1487,71 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
                     }
                 }
             }
-            else if (isInFrontierablePointsRegion &&
-                (!pointIndexMatrix[x][y].has_value() || points.GetConnectedTriangles(pointIndexRemap2 [*pointIndexMatrix[x][y]]).ConnectedTriangles.empty()))
+            else if (isInFrontierablePointsRegion)
             {
-                // Left the region of frontierable points
-                isInFrontierablePointsRegion = false;
+                // Check if we are leaving the region of frontierable points.
+                //
+                // We are leaving the region of frontierable points iff:
+                //  - There's no point here, or
+                //  - There's a point, but no spring along <previous_point>-<point>, or
+                //  - There's a spring along <previous_point>-<point>, but no triangles along it
 
                 assert(pointIndexMatrix[x][y - 1].has_value()); // We come from a frontierable region
                 ElementIndex const previousPointIndex1 = *pointIndexMatrix[x][y - 1];
 
-                assert(!points.GetConnectedTriangles(pointIndexRemap2[previousPointIndex1]).ConnectedTriangles.empty()); // We come from a frontierable region
-
-                // Check if point is already a frontier
-                if (auto [_, isInserted] = frontierPoints.insert(previousPointIndex1);
-                    isInserted)
+                if (!pointIndexMatrix[x][y].has_value())
                 {
-                    // Create new internal frontier
-                    shipBuildFrontiers.emplace_back(
-                        FrontierType::Internal,
-                        PropagateFrontier(
-                            previousPointIndex1,
-                            x,
-                            y - 1,
-                            6, // N: the external point is at N of starting point
-                            pointIndexMatrix,
-                            pointIndexRemap2,
-                            points,
-                            frontierPoints,
-                            springs,
-                            pointPairToSpringIndex1Map,
-                            springIndexRemap2,
-                            triangles));
+                    // No point here
+                    isInFrontierablePointsRegion = false;
+                }
+                else
+                {
+                    ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
+
+                    auto const springIndex1It = pointPairToSpringIndex1Map.find({ previousPointIndex1, pointIndex1 });
+                    if (springIndex1It == pointPairToSpringIndex1Map.cend())
+                    {
+                        // No spring along <previous_point>-<point>
+                        isInFrontierablePointsRegion = false;
+                    }
+                    else
+                    {
+                        ElementIndex const springIndex2 = springIndexRemap2[springIndex1It->second];
+                        if (springs.GetSuperTriangles(springIndex2).empty())
+                        {
+                            // No triangles along this spring
+                            isInFrontierablePointsRegion = false;
+                        }
+                    }
+                }
+
+                if (!isInFrontierablePointsRegion)
+                {
+                    //
+                    // Left the region of frontierable points
+                    //
+
+                    // Check if point is already a frontier
+                    if (auto [_, isInserted] = frontierPoints.insert(previousPointIndex1);
+                        isInserted)
+                    {
+                        // Create new internal frontier
+                        shipBuildFrontiers.emplace_back(
+                            FrontierType::Internal,
+                            PropagateFrontier(
+                                previousPointIndex1,
+                                x,
+                                y - 1,
+                                6, // N: the external point is at N of starting point
+                                pointIndexMatrix,
+                                pointIndexRemap2,
+                                points,
+                                frontierPoints,
+                                springs,
+                                pointPairToSpringIndex1Map,
+                                springIndexRemap2,
+                                triangles));
+                    }
                 }
             }
         }
@@ -1571,47 +1607,72 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         // a frontierable point
         //
 
+        ElementIndex nextPointIndex1 = NoneElementIndex;
         int nextPointX;
         int nextPointY;
+        ElementIndex springIndex2 = NoneElementIndex;
+        Octant nextOctant = octant;
         while (true)
         {
             // Advance to next octant
-            octant = (octant + 1) % 8;
+            nextOctant = (nextOctant + 1) % 8;
 
-            // We are guaranteed to find another point, as the starting point is on a triangle
-            assert(octant != startOctant);
+            // We are guaranteed to find another point, as the starting point is on a frontier
+            assert(nextOctant != octant);
+            if (nextOctant == octant) // Just for sanity
+            {
+                throw GameException("Cannot find a frontierable point at any octant");
+            }
 
-            nextPointX = pointX + TessellationCircularOrderDirections[octant][0];
-            nextPointY = pointY + TessellationCircularOrderDirections[octant][1];
+            // Get coords of next point
+            nextPointX = pointX + TessellationCircularOrderDirections[nextOctant][0];
+            nextPointY = pointY + TessellationCircularOrderDirections[nextOctant][1];
 
             // Check whether it's a frontierable point
-            if (pointIndexMatrix[nextPointX][nextPointY].has_value()
-                && !points.GetConnectedTriangles(pointIndexRemap2[*pointIndexMatrix[nextPointX][nextPointY]]).ConnectedTriangles.empty())
+            //
+            // The next point is a frontierable point iff:
+            //  - There's a point here, and
+            //  - There's a spring along <previous_point>-<point>, and
+            //  - There's one and only one triangle along it
+
+            if (!pointIndexMatrix[nextPointX][nextPointY].has_value())
             {
-                // Found it!
-                break;
+                // No point here
+                continue;
             }
+
+            nextPointIndex1 = *pointIndexMatrix[nextPointX][nextPointY];
+
+            auto const springIndex1It = pointPairToSpringIndex1Map.find({ pointIndex1, nextPointIndex1 });
+            if (springIndex1It == pointPairToSpringIndex1Map.cend())
+            {
+                // No spring here
+                continue;
+            }
+
+            springIndex2 = springIndexRemap2[springIndex1It->second];
+            if (springs.GetSuperTriangles(springIndex2).size() != 1)
+            {
+                // No triangles along this spring, or two triangles along it
+                continue;
+            }
+
+            //
+            // Found it!
+            //
+
+            break;
         }
 
-        assert(pointIndexMatrix[nextPointX][nextPointY].has_value());
-        ElementIndex const nextPointIndex1 = *pointIndexMatrix[nextPointX][nextPointY];
+        assert(nextPointIndex1 != NoneElementIndex);
+        assert(springIndex2 != NoneElementIndex);
+        assert(nextOctant != octant);
 
         //
-        // Flag point as frontier
-        //
-
-        assert(frontierPoints.count(nextPointIndex1) == 0);
-        frontierPoints.insert(nextPointIndex1);
-
-        //
-        // Store the index of the spring containing these two points
-        //
-
-        auto const springIndex1It = pointPairToSpringIndex1Map.find({ pointIndex1, nextPointIndex1 });
-        assert(springIndex1It != pointPairToSpringIndex1Map.cend()); // The points lie on a triangle edge
-
         // Store edge
-        edgeIndices.push_back(springIndexRemap2[springIndex1It->second]);
+        //
+
+        edgeIndices.push_back(springIndex2);
 
         //
         // See whether we have closed the loop
@@ -1621,13 +1682,22 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
             break;
 
         //
+        // Flag point as frontier
+        //
+        // Note: the starting point has been flagged already by caller
+        //
+
+        assert(frontierPoints.count(nextPointIndex1) == 0);
+        frontierPoints.insert(nextPointIndex1);
+
+        //
         // Advance
         //
 
         pointIndex1 = nextPointIndex1;
         pointX = nextPointX;
         pointY = nextPointY;
-        octant = (octant + 4) % 8; // Flip 180
+        octant = (nextOctant + 4) % 8; // Flip 180
     }
 
     assert(edgeIndices.size() >= 3);

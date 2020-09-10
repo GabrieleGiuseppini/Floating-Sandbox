@@ -224,6 +224,7 @@ ShipRenderContext::ShipRenderContext(
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointFrontierColor));
+        static_assert(sizeof(FrontierColor) == 4 * sizeof(float));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(FrontierColor), (void *)(0));
         CheckOpenGLError();
 

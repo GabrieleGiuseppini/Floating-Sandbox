@@ -71,6 +71,7 @@ void Frontiers::AddFrontier(
 
         // Advance
         previousEdgeIndex = edgeIndex;
+        point1Index = springs.GetOtherEndpointIndex(edgeIndex, point1Index);
     }
 
     // Concatenate last
