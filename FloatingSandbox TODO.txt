@@ -1291,6 +1291,7 @@ Render:
 				+ ShipRenderContext:
 					+ At Prepare() (or wherever we do others), set progress parameter
 				+ Shader
+				- Adjust color shift speed w/release build
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- TODO
