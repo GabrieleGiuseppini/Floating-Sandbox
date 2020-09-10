@@ -1566,7 +1566,8 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
         frontiers.AddFrontier(
             sbf.Type,
             sbf.EdgeIndices,
-            springs);
+            springs,
+            triangles);
     }
 
     return frontiers;
@@ -1706,7 +1707,6 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
 }
 
 #ifdef _DEBUG
-
 void ShipBuilder::VerifyShipInvariants(
     Physics::Points const & points,
     Physics::Springs const & /*springs*/,
@@ -1725,7 +1725,6 @@ void ShipBuilder::VerifyShipInvariants(
         Verify((pb.x - pa.x) * (pc.y - pa.y) - (pc.x - pa.x) * (pb.y - pa.y) < 0);
     }
 }
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

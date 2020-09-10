@@ -59,7 +59,8 @@ public:
     void AddFrontier(
         FrontierType type,
         std::vector<ElementIndex> edgeIndices,
-        Springs const & springs);
+        Springs const & springs,
+        Triangles const & triangles);
 
     void Upload(
         ShipId shipId,
@@ -75,6 +76,12 @@ public:
 private:
 
     void RegeneratePointColors() const;
+
+#ifdef _DEBUG
+    void VerifyInvariants(
+        Springs const & springs,
+        Triangles const & triangles) const;
+#endif
 
 private:
 

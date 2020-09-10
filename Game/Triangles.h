@@ -152,6 +152,16 @@ public:
         return mEndpointsBuffer[triangleElementIndex].PointCIndex;
     }
 
+    inline bool ArePointsInCwOrder(
+        ElementIndex triangleElementIndex,
+        ElementIndex point1Index,
+        ElementIndex point2Index) const
+    {
+        return (mEndpointsBuffer[triangleElementIndex].PointAIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointBIndex == point2Index)
+            || (mEndpointsBuffer[triangleElementIndex].PointBIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointCIndex == point2Index)
+            || (mEndpointsBuffer[triangleElementIndex].PointCIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointAIndex == point2Index);
+    }
+
     //
     // Sub springs
     //

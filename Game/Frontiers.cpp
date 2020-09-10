@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameDebug.h>
+
 #include <algorithm>
 #include <array>
 
@@ -24,7 +26,8 @@ Frontiers::Frontiers(
 void Frontiers::AddFrontier(
     FrontierType type,
     std::vector<ElementIndex> edgeIndices,
-    Springs const & springs)
+    Springs const & springs,
+    Triangles const & triangles)
 {
     assert(edgeIndices.size() > 0);
 
@@ -77,6 +80,14 @@ void Frontiers::AddFrontier(
 
     // Concatenate last
     mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
+
+#ifdef _DEBUG
+    VerifyInvariants(
+        springs,
+        triangles);
+#else
+    void(Triangles);
+#endif
 }
 
 void Frontiers::Upload(
@@ -185,5 +196,45 @@ void Frontiers::RegeneratePointColors() const
         } while (edgeIndex != startingEdgeIndex);
     }
 }
+
+#ifdef _DEBUG
+void Frontiers::VerifyInvariants(
+
+    Springs const & springs,
+    Triangles const & triangles) const
+{
+    for (auto const & frontier : mFrontiers)
+    {
+        Verify(frontier.Size >= 3);
+
+        size_t frontierLen = 0;
+        for (ElementIndex edgeIndex = frontier.StartingEdgeIndex; ++frontierLen;)
+        {
+            // There is a spring here
+            Verify(!springs.IsDeleted(edgeIndex));
+
+            // This spring has one and only one super triangle
+            Verify(springs.GetSuperTriangles(edgeIndex).size() == 1);
+
+            ElementIndex const triangleIndex = springs.GetSuperTriangles(edgeIndex)[0];
+
+            // This edge is CW in the triangle
+            Verify(triangles.ArePointsInCwOrder(
+                triangleIndex,
+                mFrontierEdges[edgeIndex].PointAIndex,
+                mFrontierEdges[edgeIndex].PointBIndex));
+
+            // Advance
+            edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+            if (edgeIndex == frontier.StartingEdgeIndex)
+                break;
+
+
+        }
+
+        Verify(frontierLen == frontier.Size);
+    }
+}
+#endif
 
 }
