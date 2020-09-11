@@ -1451,45 +1451,9 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
         // From bottom to top, skipping padding columns
         for (int y = 1; y <= structureImageSize.Height; ++y)
         {
-            if (!isInFrontierablePointsRegion && pointIndexMatrix[x][y].has_value())
+            if (isInFrontierablePointsRegion)
             {
-                ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
-
-                // A point may only be a frontier if it's on a border edge of a triangle
-                if (!points.GetConnectedTriangles(pointIndexRemap2[pointIndex1]).ConnectedTriangles.empty())
-                {
-                    //
-                    // Entered the region of frontierable points
-                    //
-
-                    isInFrontierablePointsRegion = true;
-
-                    // See if may create a new external frontier
-                    auto edgeIndices = PropagateFrontier(
-                        pointIndex1,
-                        x,
-                        y,
-                        2, // S: the external point is at S of starting point
-                        pointIndexMatrix,
-                        frontierEdges2,
-                        springs,
-                        pointPairToSpringIndex1Map,
-                        springIndexRemap2);
-
-                    if (!edgeIndices.empty())
-                    {
-                        assert(edgeIndices.size() >= 3);
-
-                        // Create new external frontier
-                        shipBuildFrontiers.emplace_back(
-                            FrontierType::External,
-                            std::move(edgeIndices));
-                    }
-                }
-            }
-            else if (isInFrontierablePointsRegion)
-            {
-                // Check if we are leaving the region of frontierable points.
+                // Check whether we are leaving the region of frontierable points
                 //
                 // We are leaving the region of frontierable points iff:
                 //  - There's no point here, or
@@ -1552,6 +1516,52 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
                             FrontierType::Internal,
                             std::move(edgeIndices));
                     }
+                }
+            }
+
+            if (!isInFrontierablePointsRegion)
+            {
+                // Check whether we are entering the region of frontierable points
+                //
+                // We are entering the region of frontierable points iff:
+                //  - There's a point here, and
+                //  - There's at least one a triangle edge attached to this point
+
+                if (pointIndexMatrix[x][y].has_value())
+                {
+                    ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
+
+                    if (!points.GetConnectedTriangles(pointIndexRemap2[pointIndex1]).ConnectedTriangles.empty())
+                    {
+                        //
+                        // Entered the region of frontierable points
+                        //
+
+                        isInFrontierablePointsRegion = true;
+
+                        // See if may create a new external frontier
+                        auto edgeIndices = PropagateFrontier(
+                            pointIndex1,
+                            x,
+                            y,
+                            2, // S: the external point is at S of starting point
+                            pointIndexMatrix,
+                            frontierEdges2,
+                            springs,
+                            pointPairToSpringIndex1Map,
+                            springIndexRemap2);
+
+                        if (!edgeIndices.empty())
+                        {
+                            assert(edgeIndices.size() >= 3);
+
+                            // Create new external frontier
+                            shipBuildFrontiers.emplace_back(
+                                FrontierType::External,
+                                std::move(edgeIndices));
+                        }
+                    }
+
                 }
             }
         }

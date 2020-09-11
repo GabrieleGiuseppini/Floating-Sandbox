@@ -1286,7 +1286,7 @@ Render:
 					- Scan line ends on a triangle vertex followed by a chain point
 				- Cleanup
 					- Remove unused args
-			+ Rendering:
+			= Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
 					+ Expose via GameController
@@ -1295,6 +1295,9 @@ Render:
 					+ At Prepare() (or wherever we do others), set progress parameter
 				+ Shader
 				+ Adjust color shift speed w/release build
+				- Do color march differently - by playing with local progress:
+					- TODO
+				- Move SettingsDialog checkbox to Debug rendering settings
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- Spec: 
