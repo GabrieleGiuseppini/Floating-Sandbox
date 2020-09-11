@@ -1280,7 +1280,7 @@ Render:
 							- Make edge belong to frontier fId
 							- if p' == p0: break
 						- continue to next flip point on same scan line
-				- Fix bug
+				+ Fix bug
 				- Tests:
 					- Scan line finds first a chain point, then a triangle
 					- Scan line ends on a triangle vertex followed by a chain point

@@ -222,8 +222,6 @@ void Frontiers::VerifyInvariants(
             edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
             if (edgeIndex == frontier.StartingEdgeIndex)
                 break;
-
-
         }
 
         Verify(frontierLen == frontier.Size);

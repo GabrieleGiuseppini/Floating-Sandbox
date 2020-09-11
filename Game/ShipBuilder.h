@@ -276,13 +276,10 @@ private:
         int startPointY,
         Octant startOctant,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        std::vector<ElementIndex> const & pointIndexRemap2,
-        Physics::Points const & points,
-        std::set<ElementIndex> & frontierPoints,
+        std::set<ElementIndex> & frontierEdges2,
         Physics::Springs const & springs,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2,
-        Physics::Triangles const & triangles);
+        std::vector<ElementIndex> const & springIndexRemap2);
 
 #ifdef _DEBUG
     static void VerifyShipInvariants(

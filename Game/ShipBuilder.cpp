@@ -1439,8 +1439,8 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
 
     std::vector<ShipBuildFrontier> shipBuildFrontiers;
 
-    // Set flagging points that have become frontiers
-    std::set<ElementIndex> frontierPoints;
+    // Set that flags edges (2) that have become frontiers
+    std::set<ElementIndex> frontierEdges2;
 
     // From left to right, skipping padding columns
     for (int x = 1; x <= structureImageSize.Width; ++x)
@@ -1464,26 +1464,26 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
 
                     isInFrontierablePointsRegion = true;
 
-                    // Check if point is already a frontier
-                    if (auto [_, isInserted] = frontierPoints.insert(pointIndex1);
-                        isInserted)
+                    // See if may create a new external frontier
+                    auto edgeIndices = PropagateFrontier(
+                        pointIndex1,
+                        x,
+                        y,
+                        2, // S: the external point is at S of starting point
+                        pointIndexMatrix,
+                        frontierEdges2,
+                        springs,
+                        pointPairToSpringIndex1Map,
+                        springIndexRemap2);
+
+                    if (!edgeIndices.empty())
                     {
+                        assert(edgeIndices.size() >= 3);
+
                         // Create new external frontier
                         shipBuildFrontiers.emplace_back(
                             FrontierType::External,
-                            PropagateFrontier(
-                                pointIndex1,
-                                x,
-                                y,
-                                2, // S: the external point is at S of starting point
-                                pointIndexMatrix,
-                                pointIndexRemap2,
-                                points,
-                                frontierPoints,
-                                springs,
-                                pointPairToSpringIndex1Map,
-                                springIndexRemap2,
-                                triangles));
+                            std::move(edgeIndices));
                     }
                 }
             }
@@ -1531,26 +1531,26 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
                     // Left the region of frontierable points
                     //
 
-                    // Check if point is already a frontier
-                    if (auto [_, isInserted] = frontierPoints.insert(previousPointIndex1);
-                        isInserted)
+                    // See if may create a new external frontier
+                    auto edgeIndices = PropagateFrontier(
+                        previousPointIndex1,
+                        x,
+                        y - 1,
+                        6, // N: the external point is at N of starting point
+                        pointIndexMatrix,
+                        frontierEdges2,
+                        springs,
+                        pointPairToSpringIndex1Map,
+                        springIndexRemap2);
+
+                    if (!edgeIndices.empty())
                     {
+                        assert(edgeIndices.size() >= 3);
+
                         // Create new internal frontier
                         shipBuildFrontiers.emplace_back(
                             FrontierType::Internal,
-                            PropagateFrontier(
-                                previousPointIndex1,
-                                x,
-                                y - 1,
-                                6, // N: the external point is at N of starting point
-                                pointIndexMatrix,
-                                pointIndexRemap2,
-                                points,
-                                frontierPoints,
-                                springs,
-                                pointPairToSpringIndex1Map,
-                                springIndexRemap2,
-                                triangles));
+                            std::move(edgeIndices));
                     }
                 }
             }
@@ -1578,20 +1578,23 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     int startPointY,
     Octant startOctant, // Relative to starting point
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    std::vector<ElementIndex> const & pointIndexRemap2,
-    Physics::Points const & points,
-    std::set<ElementIndex> & frontierPoints,
+    std::set<ElementIndex> & frontierEdges2,
     Physics::Springs const & springs,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2,
-    Physics::Triangles const & triangles)
+    std::vector<ElementIndex> const & springIndexRemap2)
 {
-    // TODO: check if all args needed
-
     std::vector<ElementIndex> edgeIndices;
 
+#ifdef _DEBUG
+    std::vector<ElementIndex> frontierPoints1;
+    frontierPoints1.push_back(startPointIndex1);
+#endif
+
     //
-    // March until we get back to the starting point
+    // March until we get back to the starting point; if we realize
+    // that we're following an already-existing frontier (and we're
+    // gonna realize that immediately after finding the first edge),
+    // bail out and return an empty list of edges.
     //
 
     ElementIndex pointIndex1 = startPointIndex1;
@@ -1669,6 +1672,21 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         assert(nextOctant != octant);
 
         //
+        // See whether this edge already belongs to a frontier,
+        // and if not, flag it
+        //
+
+        auto [_, isInserted] = frontierEdges2.insert(springIndex2);
+        if (!isInserted)
+        {
+            // This may only happen at the beginning
+            assert(edgeIndices.empty());
+
+            // No need to propagate along this frontier, it has already been created
+            break;
+        }
+
+        //
         // Store edge
         //
 
@@ -1681,14 +1699,9 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         if (nextPointIndex1 == startPointIndex1)
             break;
 
-        //
-        // Flag point as frontier
-        //
-        // Note: the starting point has been flagged already by caller
-        //
-
-        assert(frontierPoints.count(nextPointIndex1) == 0);
-        frontierPoints.insert(nextPointIndex1);
+#ifdef _DEBUG
+        frontierPoints1.push_back(nextPointIndex1);
+#endif
 
         //
         // Advance
@@ -1699,8 +1712,6 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         pointY = nextPointY;
         octant = (nextOctant + 4) % 8; // Flip 180
     }
-
-    assert(edgeIndices.size() >= 3);
 
     return edgeIndices;
 }
