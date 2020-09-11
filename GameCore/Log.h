@@ -84,11 +84,12 @@ public:
 
 	void UnregisterListener()
 	{
-		assert(!!mCurrentListener);
+        if (!!mCurrentListener)
+        {
+            std::scoped_lock lock(mMutex);
 
-        std::scoped_lock lock(mMutex);
-
-		mCurrentListener = {};
+            mCurrentListener = {};
+        }
 	}
 
 	template<typename...TArgs>
