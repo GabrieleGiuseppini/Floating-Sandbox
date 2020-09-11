@@ -132,6 +132,8 @@ void ShipPreviewWindow::OnClose()
 
 void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath)
 {
+    LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), ")");
+
     // Check if different than current
     if (directoryPath != mCurrentlyCompletedDirectory)
     {
@@ -358,7 +360,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
             {
                 LogMessage("ShipPreviewPanel::Poll: Processing DirScanCompleted...");
 
-                assert(mInfoTiles.empty());
+                mInfoTiles.clear();
                 mInfoTiles.reserve(message->GetScannedShipFilepaths().size());
 
                 for (size_t s = 0; s < message->GetScannedShipFilepaths().size(); ++s)

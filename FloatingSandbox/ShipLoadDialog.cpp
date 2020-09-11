@@ -294,7 +294,6 @@ int ShipLoadDialog::ShowModal()
         auto dir = mRecentDirectoriesComboBox->GetStrings().front();
         mDirCtrl->SetPath(dir);
         mRecentDirectoriesComboBox->SetValue(dir);
-        mShipPreviewWindow->SetDirectory(dir.ToStdString());
     }
 
 
