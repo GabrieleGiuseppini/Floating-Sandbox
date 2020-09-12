@@ -11,6 +11,7 @@
 
 #include <GameCore/Buffer.h>
 
+#include <array>
 #include <optional>
 #include <vector>
 
@@ -70,10 +71,12 @@ public:
 
     void HandleTriangleDestroy(
         ElementIndex triangleElementIndex,
+        Springs const & springs,
         Triangles const & triangles);
 
     void HandleTriangleRestore(ElementIndex
         triangleElementIndex,
+        Springs const & springs,
         Triangles const & triangles);
 
     void Upload(
@@ -101,8 +104,7 @@ private:
         // or NoneFrontierId if the edge does not belong to a frontier.
         FrontierId FrontierIndex;
 
-        Edge(
-            FrontierId frontierIndex)
+        explicit Edge(FrontierId frontierIndex)
             : FrontierIndex(frontierIndex)
         {}
 
@@ -111,7 +113,22 @@ private:
         {}
     };
 
+    struct Triangle
+    {
+        std::array<ElementIndex, 3u> EdgeIndices; // CW order
+
+        Triangle(
+            ElementIndex edgeAIndex,
+            ElementIndex edgeBIndex,
+            ElementIndex edgeCIndex)
+            : EdgeIndices{ edgeAIndex , edgeBIndex , edgeCIndex }
+        {
+        }
+    };
+
 private:
+
+    FrontierId CreateNewFrontier(FrontierType type);
 
     void RegeneratePointColors() const;
 
@@ -128,6 +145,10 @@ private:
     // a frontier have actual significance.
     // Cardinality: edges (==springs)
     Buffer<FrontierEdge> mFrontierEdges;
+
+    // All the triangles in the ship.
+    // Cardinality: triangles
+    Buffer<Triangle> mTriangles;
 
     // The frontiers, indexed by frontier indices.
     // Elements in this vector do not move around.

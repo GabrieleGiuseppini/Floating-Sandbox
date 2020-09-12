@@ -2698,6 +2698,7 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 
     mFrontiers.HandleTriangleDestroy(
         triangleElementIndex,
+        mSprings,
         mTriangles);
 
     //
@@ -2761,6 +2762,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 
     mFrontiers.HandleTriangleRestore(
         triangleElementIndex,
+        mSprings,
         mTriangles);
 
     /////////////////////////////////////////////////////////

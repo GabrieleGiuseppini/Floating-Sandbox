@@ -20,10 +20,50 @@ Frontiers::Frontiers(
     : mEdgeCount(springs.GetElementCount())
     , mEdges(mEdgeCount, 0, Edge())
     , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
+    , mTriangles(triangles.GetElementCount())
     , mFrontiers()
     , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
     , mIsDirtyForRendering(true)
 {
+    //
+    // Populate triangles
+    //
+
+    for (auto triangleIndex : triangles)
+    {
+        // Find subsprings with triangle's edges
+        ElementIndex edgeAIndex = NoneElementIndex;
+        ElementIndex edgeBIndex = NoneElementIndex;
+        ElementIndex edgeCIndex = NoneElementIndex;
+        for (ElementIndex edgeIndex : triangles.GetSubSprings(triangleIndex)) // Also contains ropes
+        {
+            if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex))
+                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex)))
+            {
+                // Edge A
+                assert(edgeAIndex == NoneElementIndex);
+                edgeAIndex = edgeIndex;
+            }
+            else if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex))
+                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex)))
+            {
+                // Edge B
+                assert(edgeBIndex == NoneElementIndex);
+                edgeBIndex = edgeIndex;
+            }
+            else if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex))
+                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex)))
+            {
+                // Edge C
+                assert(edgeCIndex == NoneElementIndex);
+                edgeCIndex = edgeIndex;
+            }
+        }
+
+        assert(edgeAIndex != NoneElementIndex && edgeBIndex != NoneElementIndex && edgeCIndex != NoneElementIndex);
+
+        mTriangles.emplace_back(edgeAIndex, edgeBIndex, edgeCIndex);
+    }
 }
 
 void Frontiers::AddFrontier(
@@ -94,9 +134,92 @@ void Frontiers::AddFrontier(
 
 void Frontiers::HandleTriangleDestroy(
     ElementIndex triangleElementIndex,
+    Springs const & springs,
     Triangles const & triangles)
 {
-    // TODOHERE
+    // Count edges with frontiers
+    size_t edgesWithFrontierCount = 0;
+    for (size_t edgeIndex : mTriangles[triangleElementIndex].EdgeIndices)
+    {
+        if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)
+            ++edgesWithFrontierCount;
+    }
+
+    // Check trivial cases
+    if (edgesWithFrontierCount == 0)
+    {
+        //
+        // Each edge of the triangle is connected to two triangles...
+        //
+
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0]).size() == 2);
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1]).size() == 2);
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2]).size() == 2);
+
+        //
+        // ...so this triangle will generate a new internal frontier: C->B->A
+        //  - The frontier edges will travel counterclockwise, but along triangles'
+        //    edges it'll travel in the triangles' clockwise direction
+        //
+
+        FrontierId const newFrontierId = CreateNewFrontier(FrontierType::Internal);
+
+        //
+        // Concatenate edges
+        //
+
+        auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
+        auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
+        auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
+
+        mFrontiers[newFrontierId]->StartingEdgeIndex = edgeCIndex;
+
+        // C->B
+        mEdges[edgeCIndex].FrontierIndex = newFrontierId;
+        mFrontierEdges[edgeCIndex].PointAIndex = triangles.GetPointAIndex(triangleElementIndex);
+        mFrontierEdges[edgeCIndex].PointBIndex = triangles.GetPointCIndex(triangleElementIndex);
+        mFrontierEdges[edgeCIndex].NextEdgeIndex = edgeBIndex;
+
+        // B->A
+        mEdges[edgeBIndex].FrontierIndex = newFrontierId;
+        mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
+        mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
+        mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeAIndex;
+
+        // A->C
+        mEdges[edgeAIndex].FrontierIndex = newFrontierId;
+        mFrontierEdges[edgeAIndex].PointAIndex = triangles.GetPointBIndex(triangleElementIndex);
+        mFrontierEdges[edgeAIndex].PointBIndex = triangles.GetPointAIndex(triangleElementIndex);
+        mFrontierEdges[edgeAIndex].NextEdgeIndex = edgeCIndex;
+
+        mFrontiers[newFrontierId]->Size = 3;
+    }
+    else if (edgesWithFrontierCount == 3)
+    {
+        //
+        // All edges of this triangle are connected to this triangle only...
+        //
+
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0]).size() == 1
+            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0])[0] == triangleElementIndex);
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1]).size() == 1
+            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1])[0] == triangleElementIndex);
+        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2]).size() == 1
+            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2])[0] == triangleElementIndex);
+
+        //
+        // ...and have a frontier each.
+        // Check if they are connected to each other in a single, 3-edge loop
+        //
+
+        // TODOHERE
+    }
+    else
+    {
+        assert(edgesWithFrontierCount == 1 || edgesWithFrontierCount == 2);
+
+        // TODOHERE
+    }
 
     ////////////////////////////////////////
 
@@ -107,6 +230,7 @@ void Frontiers::HandleTriangleDestroy(
 
 void Frontiers::HandleTriangleRestore(
     ElementIndex triangleElementIndex,
+    Springs const & springs,
     Triangles const & triangles)
 {
     // TODOHERE
@@ -230,6 +354,28 @@ void Frontiers::RegeneratePointColors() const
     }
 }
 
+FrontierId Frontiers::CreateNewFrontier(FrontierType type)
+{
+    // Check if we may find an unused slot
+    FrontierId newFrontierId;
+    for (newFrontierId = 0; newFrontierId < mFrontiers.size() && mFrontiers[newFrontierId].has_value(); ++newFrontierId);
+
+    if (newFrontierId == mFrontiers.size())
+    {
+        // Create new slot
+        mFrontiers.emplace_back();
+    }
+
+    assert(newFrontierId < mFrontiers.size());
+
+    mFrontiers[newFrontierId] = Frontier(
+        type,
+        NoneElementIndex,
+        0);
+
+    return newFrontierId;
+}
+
 #ifdef _DEBUG
 void Frontiers::VerifyInvariants(
     Springs const & springs,
@@ -290,7 +436,47 @@ void Frontiers::VerifyInvariants(
 
     for (ElementIndex edgeIndex = 0; edgeIndex < mEdgeCount; ++edgeIndex)
     {
+        //
+        // Edges without a frontier have no frontier ID
+        //
+
         Verify(edgesWithFrontiers.count(edgeIndex) == 1 || mEdges[edgeIndex].FrontierIndex == NoneFrontierId);
+    }
+
+    //
+    // Triangles
+    //
+
+    for (ElementIndex triangleIndex : triangles)
+    {
+        //
+        // Edges are in CCW order
+        //
+
+        auto const edgeAIndex = mTriangles[triangleIndex].EdgeIndices[0];
+
+        Verify(
+            (triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointAIndex(edgeAIndex)
+                && triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointBIndex(edgeAIndex))
+            || (triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointBIndex(edgeAIndex)
+                && triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointAIndex(edgeAIndex)));
+
+        auto const edgeBIndex = mTriangles[triangleIndex].EdgeIndices[1];
+
+        Verify(
+            (triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointAIndex(edgeBIndex)
+                && triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointBIndex(edgeBIndex))
+            || (triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointBIndex(edgeBIndex)
+                && triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointAIndex(edgeBIndex)));
+
+        auto const edgeCIndex = mTriangles[triangleIndex].EdgeIndices[2];
+
+        Verify(
+            (triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointAIndex(edgeCIndex)
+                && triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointBIndex(edgeCIndex))
+            || (triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointBIndex(edgeCIndex)
+                && triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointAIndex(edgeCIndex)));
+
     }
 }
 #endif
