@@ -1288,8 +1288,8 @@ Render:
 					+ Scan line ends on a triangle vertex followed by a chain point
 				+ Cleanup
 					+ Remove unused args
-				- Remove ContainsEndpoints are replace with edge map earlier on
-					- EdgeMap gets added to each time we add to springInfos1
+				+ Remove ContainsEndpoints are replace with edge map earlier on
+					+ EdgeMap gets added to each time we add to springInfos1
 				- Test perf on Dell
 			+ Rendering:
 				+ Decide whether we want to announce frontier edge size

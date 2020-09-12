@@ -201,29 +201,32 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
             materialDatabase);
     }
 
+
     //
     // Process all identified rope endpoints and:
     // - Fill-in points between the endpoints, creating additional ShipBuildPoint's for them
     // - Fill-in springs between each pair of points in the rope, creating ShipBuildSpring's for them
+    //      - And populating the point pair -> spring index 1 map
     //
+
+    PointPairToIndexMap pointPairToSpringIndex1Map;
 
     AppendRopes(
         ropeSegments,
         shipDefinition.StructuralLayerImage.Size,
         materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
         pointInfos,
-        springInfos);
+        springInfos,
+        pointPairToSpringIndex1Map);
 
 
     //
     // Visit point matrix and:
     //  - Set non-fully-surrounded ShipBuildPoint's as "leaking"
     //  - Detect springs and create ShipBuildSpring's for them (additional to ropes)
+    //      - And populate the point pair -> spring index 1 map
     //  - Do tessellation and create ShipBuildTriangle's
-    //  - Create map from point pairs 1 to spring indices 1
     //
-
-    PointPairToIndexMap pointPairToSpringIndex1Map;
 
     size_t leakingPointsCount;
 
@@ -609,7 +612,8 @@ void ShipBuilder::AppendRopes(
     ImageSize const & structureImageSize,
     StructuralMaterial const & ropeMaterial,
     std::vector<ShipBuildPoint> & pointInfos1,
-    std::vector<ShipBuildSpring> & springInfos1)
+    std::vector<ShipBuildSpring> & springInfos1,
+    PointPairToIndexMap & pointPairToSpringIndex1Map)
 {
     //
     // - Fill-in points between each pair of endpoints, creating additional ShipBuildPoint's for them
@@ -773,6 +777,10 @@ void ShipBuilder::AppendRopes(
                 newPointIndex,
                 factoryDirectionEnd);
 
+            // Add spring to point pair map
+            auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace({ curStartPointIndex , newPointIndex }, springIndex);
+            assert(isInserted);
+
             // Add ShipBuildPoint
             pointInfos1.emplace_back(
                 std::nullopt,
@@ -798,12 +806,17 @@ void ShipBuilder::AppendRopes(
 
         // Add last ShipBuildSpring (no ShipBuildPoint as the endpoint has already a ShipBuildPoint)
         ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos1.size());
-        assert(!ContainsEndpoints(springInfos1, curStartPointIndex, ropeSegment.PointBIndex1));
         springInfos1.emplace_back(
             curStartPointIndex,
             0,  // Arbitrary factory direction (E)
             ropeSegment.PointBIndex1,
             4); // Arbitrary factory direction (W)
+
+        // Add spring to point pair map
+        auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
+            { curStartPointIndex , ropeSegment.PointBIndex1 },
+            lastSpringIndex);
+        assert(isInserted);
 
         // Connect points to spring
         pointInfos1[curStartPointIndex].AddConnectedSpring(lastSpringIndex);
@@ -885,8 +898,8 @@ void ShipBuilder::CreateShipElementInfos(
 
                         ElementIndex const otherEndpointIndex = *pointIndexMatrix[adjx1][adjy1];
 
+                        // Add spring to spring infos
                         ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
-                        assert(!ContainsEndpoints(springInfos1, pointIndex, otherEndpointIndex));
                         springInfos1.emplace_back(
                             pointIndex,
                             i,
@@ -894,10 +907,9 @@ void ShipBuilder::CreateShipElementInfos(
                             (i + 4) % 8);
 
                         // Add spring to point pair map
-                        auto [_, isInserted] = pointPairToSpringIndex1Map.emplace(
-                            std::piecewise_construct,
-                            std::forward_as_tuple(pointIndex, otherEndpointIndex),
-                            std::forward_as_tuple(springIndex));
+                        auto [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
+                            { pointIndex, otherEndpointIndex },
+                            springIndex);
                         assert(isInserted);
 
                         // Add the spring to its endpoints

@@ -156,21 +156,6 @@ private:
 
     using PointPairToIndexMap = std::unordered_map<PointPair, ElementIndex, PointPair::Hasher>;
 
-    static inline bool ContainsEndpoints(
-        std::vector<ShipBuildSpring> const & springInfos1,
-        ElementIndex pointAIndex1,
-        ElementIndex pointBIndex1)
-    {
-        return std::find_if(
-            springInfos1.cbegin(),
-            springInfos1.cend(),
-            [pointAIndex1, pointBIndex1](auto const & s)
-            {
-                return (s.PointAIndex1 == pointAIndex1 || s.PointBIndex1 == pointAIndex1)
-                    && (s.PointAIndex1 == pointBIndex1 || s.PointBIndex1 == pointBIndex1);
-            }) != springInfos1.cend();
-    }
-
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         Physics::Points const & points,
@@ -223,7 +208,8 @@ private:
         ImageSize const & structureImageSize,
         StructuralMaterial const & ropeMaterial,
         std::vector<ShipBuildPoint> & pointInfos1,
-        std::vector<ShipBuildSpring> & springInfos1);
+        std::vector<ShipBuildSpring> & springInfos1,
+        PointPairToIndexMap & pointPairToSpringIndex1Map);
 
     static void CreateShipElementInfos(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
