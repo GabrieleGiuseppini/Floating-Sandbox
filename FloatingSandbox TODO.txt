@@ -1300,7 +1300,6 @@ Render:
 				+ Adjust color shift speed w/release build
 				+ Do color march differently - by playing with local progress:
 				+ Move SettingsDialog checkbox to Debug rendering settings
-				- R.M.S. Princess of Freedom
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- Spec: 

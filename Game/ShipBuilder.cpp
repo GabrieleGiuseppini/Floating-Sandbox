@@ -631,7 +631,19 @@ void ShipBuilder::AppendRopes(
                 + ">");
         }
 
-        // Get endpoint positions
+        // No need to lay a rope if the points are adjacent - as there will be a rope anyway
+        if (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value()
+            && pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates.has_value())
+        {
+            if (abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->X - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->X) <= 1
+                && abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->Y - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->Y) <= 1)
+            {
+                // No need to lay a rope
+                continue;
+            }
+        }
+
+        // Get endpoint (world) positions
         vec2f startPos = pointInfos1[ropeSegment.PointAIndex1].Position;
         vec2f endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
 
@@ -786,6 +798,7 @@ void ShipBuilder::AppendRopes(
 
         // Add last ShipBuildSpring (no ShipBuildPoint as the endpoint has already a ShipBuildPoint)
         ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos1.size());
+        assert(!ContainsEndpoints(springInfos1, curStartPointIndex, ropeSegment.PointBIndex1));
         springInfos1.emplace_back(
             curStartPointIndex,
             0,  // Arbitrary factory direction (E)
@@ -873,7 +886,7 @@ void ShipBuilder::CreateShipElementInfos(
                         ElementIndex const otherEndpointIndex = *pointIndexMatrix[adjx1][adjy1];
 
                         ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
-
+                        assert(!ContainsEndpoints(springInfos1, pointIndex, otherEndpointIndex));
                         springInfos1.emplace_back(
                             pointIndex,
                             i,

@@ -39,7 +39,7 @@ in float vertexPositionalProgress;
 
 void main()
 {
-    float progress = 1. + sin(2. * 3.1415 / 6. * vertexPositionalProgress) / 2.;
+    float progress = 1. + sin(2. * 3.1415 / 4. * vertexPositionalProgress) / 2.;
 
     gl_FragColor = vec4(vertexFrontierBaseColor * progress,1.0);
 } 
