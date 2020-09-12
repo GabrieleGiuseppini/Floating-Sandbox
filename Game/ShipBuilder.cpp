@@ -1377,11 +1377,11 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 
     for (auto electricalElementIndex : electricalElements)
     {
-        auto pointIndex = electricalElements.GetPointIndex(electricalElementIndex);
+        auto const pointIndex = electricalElements.GetPointIndex(electricalElementIndex);
 
         for (auto const & cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
-            auto otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
+            auto const otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
             if (NoneElementIndex != otherEndpointElectricalElementIndex)
             {
                 // Get octant between this element and the other element

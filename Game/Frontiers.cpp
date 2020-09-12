@@ -148,7 +148,7 @@ void Frontiers::RegeneratePointColors() const
         rgbColor(0, 153, 0),
         rgbColor(26, 140, 255),
         rgbColor(26, 255, 83),
-        rgbColor(0, 0, 204)
+        rgbColor(26, 255, 255)
     };
 
     std::array<rgbColor, 4> const InternalColors
