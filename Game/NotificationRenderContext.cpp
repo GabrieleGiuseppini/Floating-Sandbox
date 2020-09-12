@@ -129,13 +129,13 @@ NotificationRenderContext::NotificationRenderContext(
     //
     // Initialize texture notifications
     //
-    
+
     {
         // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
         mShaderManager.SetTextureParameters<ProgramType::TextureNotifications>();
 
-        // Initialize VAO    
+        // Initialize VAO
         glGenVertexArrays(1, &tmpGLuint);
         mTextureNotificationVAO = tmpGLuint;
 
@@ -486,7 +486,7 @@ void NotificationRenderContext::RenderDrawHeatBlasterFlame()
         // Set time parameter
         mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
             *mHeatBlasterFlameShaderToRender,
-            GameWallClock::GetInstance().NowAsFloat());
+            GameWallClock::GetInstance().ContinuousNowAsFloat());
 
         assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
@@ -522,7 +522,7 @@ void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
         // Set time parameter
         mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
             *mFireExtinguisherSprayShaderToRender,
-            GameWallClock::GetInstance().NowAsFloat());
+            GameWallClock::GetInstance().ContinuousNowAsFloat());
 
         // Draw
         assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);

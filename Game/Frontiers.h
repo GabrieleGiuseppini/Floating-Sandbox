@@ -61,6 +61,10 @@ public:
         std::vector<ElementIndex> edgeIndices,
         Springs const & springs);
 
+    void HandleTriangleDestroy(ElementIndex triangleElementIndex);
+
+    void HandleTriangleRestore(ElementIndex triangleElementIndex);
+
     void Upload(
         ShipId shipId,
         Render::RenderContext & renderContext) const;

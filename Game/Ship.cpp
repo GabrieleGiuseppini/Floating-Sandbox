@@ -2693,6 +2693,12 @@ void Ship::HandleSpringRestore(
 void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 {
     //
+    // Maintain frontier
+    //
+
+    mFrontiers.HandleTriangleDestroy(triangleElementIndex);
+
+    //
     // Remove triangle from other elements
     //
 
@@ -2713,6 +2719,7 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 
     mTriangles.ClearSubSprings(triangleElementIndex);
 
+    /////////////////////////////////////////////////////////
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -2730,7 +2737,6 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     // Restore factory subsprings
     mTriangles.RestoreFactorySubSprings(triangleElementIndex);
 
-
     //
     // Add self to others
     //
@@ -2746,6 +2752,14 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     {
         mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
     }
+
+    //
+    // Maintain frontier
+    //
+
+    mFrontiers.HandleTriangleRestore(triangleElementIndex);
+
+    /////////////////////////////////////////////////////////
 
     // Fire event - using point A's properties (quite arbitrarily)
     mGameEventHandler->OnTriangleRepaired(

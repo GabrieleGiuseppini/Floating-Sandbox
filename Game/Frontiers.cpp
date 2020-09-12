@@ -81,6 +81,16 @@ void Frontiers::AddFrontier(
     mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
 }
 
+void Frontiers::HandleTriangleDestroy(ElementIndex triangleElementIndex)
+{
+    // TODOHERE
+}
+
+void Frontiers::HandleTriangleRestore(ElementIndex triangleElementIndex)
+{
+    // TODOHERE
+}
+
 void Frontiers::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
