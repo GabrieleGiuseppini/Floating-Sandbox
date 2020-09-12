@@ -1298,8 +1298,8 @@ Render:
 					+ At Prepare() (or wherever we do others), set progress parameter
 				+ Shader
 				+ Adjust color shift speed w/release build
-				= Do color march differently - by playing with local progress:
-				- Move SettingsDialog checkbox to Debug rendering settings
+				+ Do color march differently - by playing with local progress:
+				+ Move SettingsDialog checkbox to Debug rendering settings
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
 				- Spec: 

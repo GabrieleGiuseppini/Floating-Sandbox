@@ -173,7 +173,6 @@ private:
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxCheckBox* mShowStressCheckBox;
-    wxCheckBox * mShowFrontiersCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
@@ -197,6 +196,7 @@ private:
     SliderControl<float> * mSpringStiffnessSlider;
     SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
+    wxCheckBox * mShowFrontiersCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
 	// Settings Management

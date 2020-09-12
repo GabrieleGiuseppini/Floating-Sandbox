@@ -146,17 +146,18 @@ void Frontiers::RegeneratePointColors() const
     std::array<rgbColor, 4> const ExternalColors
     {
         rgbColor(0, 153, 0),
-        rgbColor(0, 51, 204),
-        rgbColor(51, 153, 51),
+        rgbColor(26, 140, 255),
+        rgbColor(26, 255, 83),
         rgbColor(0, 0, 204)
     };
 
     std::array<rgbColor, 4> const InternalColors
     {
-        rgbColor(204, 51, 0),
-        rgbColor(255, 204, 0),
         rgbColor(255, 0, 0),
-        rgbColor(255, 255, 0)
+        rgbColor(255, 255, 0),
+        rgbColor(153, 0, 0),
+        rgbColor(230, 184, 0)
+
     };
 
     size_t externalUsed = 0;

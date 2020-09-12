@@ -3519,22 +3519,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 shipSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
             }
 
-            // Show Frontiers
-            {
-                mShowFrontiersCheckBox = new wxCheckBox(shipBox, wxID_ANY,
-                    _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
-                mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
-                mShowFrontiersCheckBox->Bind(
-                    wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
-
-                shipSizer->Add(mShowFrontiersCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-            }
-
             shipBoxSizer1->Add(shipSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -3882,6 +3866,43 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
                     checkboxesSizer->Add(
                         mDebugShipRenderModeRadioBox,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
+                }
+
+                {
+                    wxStaticBox * extrasBox = new wxStaticBox(advancedBox, wxID_ANY, _("Ship Extra Draw Options"));
+
+                    wxBoxSizer * extrasBoxSizer = new wxBoxSizer(wxVERTICAL);
+                    extrasBoxSizer->AddSpacer(StaticBoxTopMargin);
+                    extrasBoxSizer->AddSpacer(3);
+
+                    {
+                        wxBoxSizer * extrasSizer = new wxBoxSizer(wxVERTICAL);
+
+                        {
+                            mShowFrontiersCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                                _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
+                            mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
+                            mShowFrontiersCheckBox->Bind(
+                                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                                [this](wxCommandEvent & event)
+                                {
+                                    mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
+                                    OnLiveSettingsChanged();
+                                });
+
+                            extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
+                        }
+
+                        extrasBoxSizer->Add(extrasSizer, 0, wxALL, StaticBoxInsetMargin);
+                    }
+
+                    extrasBox->SetSizerAndFit(extrasBoxSizer);
+
+                    checkboxesSizer->Add(
+                        extrasBox,
                         0,
                         wxEXPAND | wxALL,
                         5);
@@ -4352,8 +4373,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
 
-    mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
-
     auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
     mFlatLampLightColorPicker->SetColour(wxColor(flatLampLightColor.r, flatLampLightColor.g, flatLampLightColor.b));
 
@@ -4465,6 +4484,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
     }
+
+    mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
 
     auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderModeType>(GameSettings::VectorFieldRenderMode);
     switch (vectorFieldRenderMode)
