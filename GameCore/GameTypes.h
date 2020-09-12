@@ -116,8 +116,8 @@ static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceInd
  *
  * Comparable and ordered. Start from 0.
  */
-using FrontierIndexType = std::uint32_t;
-static constexpr FrontierIndexType NoneFrontierIndex = std::numeric_limits<FrontierIndexType>::max();
+using FrontierId = std::uint32_t;
+static constexpr FrontierId NoneFrontierId = std::numeric_limits<FrontierId>::max();
 
 /*
  * Various other identifiers.

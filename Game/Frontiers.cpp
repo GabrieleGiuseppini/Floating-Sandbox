@@ -37,7 +37,7 @@ void Frontiers::AddFrontier(
     // Add frontier head
     //
 
-    FrontierIndexType const frontierIndex = static_cast<FrontierIndexType>(mFrontiers.size());
+    FrontierId const frontierIndex = static_cast<FrontierId>(mFrontiers.size());
 
     mFrontiers.emplace_back(
         Frontier(
@@ -290,7 +290,7 @@ void Frontiers::VerifyInvariants(
 
     for (ElementIndex edgeIndex = 0; edgeIndex < mEdgeCount; ++edgeIndex)
     {
-        Verify(edgesWithFrontiers.count(edgeIndex) == 1 || mEdges[edgeIndex].FrontierIndex == NoneFrontierIndex);
+        Verify(edgesWithFrontiers.count(edgeIndex) == 1 || mEdges[edgeIndex].FrontierIndex == NoneFrontierId);
     }
 }
 #endif

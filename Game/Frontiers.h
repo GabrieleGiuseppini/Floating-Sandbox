@@ -99,15 +99,15 @@ private:
     {
         // The ID that of the frontier that this edge belongs to,
         // or NoneFrontierId if the edge does not belong to a frontier.
-        FrontierIndexType FrontierIndex;
+        FrontierId FrontierIndex;
 
         Edge(
-            FrontierIndexType frontierIndex)
+            FrontierId frontierIndex)
             : FrontierIndex(frontierIndex)
         {}
 
         Edge()
-            : FrontierIndex(NoneFrontierIndex)
+            : FrontierIndex(NoneFrontierId)
         {}
     };
 
