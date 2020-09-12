@@ -2696,7 +2696,9 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     // Maintain frontier
     //
 
-    mFrontiers.HandleTriangleDestroy(triangleElementIndex);
+    mFrontiers.HandleTriangleDestroy(
+        triangleElementIndex,
+        mTriangles);
 
     //
     // Remove triangle from other elements
@@ -2757,7 +2759,9 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     // Maintain frontier
     //
 
-    mFrontiers.HandleTriangleRestore(triangleElementIndex);
+    mFrontiers.HandleTriangleRestore(
+        triangleElementIndex,
+        mTriangles);
 
     /////////////////////////////////////////////////////////
 

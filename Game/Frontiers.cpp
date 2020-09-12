@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <set>
 
 namespace Physics {
 
@@ -16,9 +17,11 @@ Frontiers::Frontiers(
     size_t pointCount,
     Springs const & springs,
     Triangles const & triangles)
-    : mFrontierEdges(springs.GetElementCount())
+    : mEdgeCount(springs.GetElementCount())
+    , mEdges(mEdgeCount, 0, Edge())
+    , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
     , mFrontiers()
-    , mPointColors(pointCount)
+    , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
     , mIsDirtyForRendering(true)
 {
 }
@@ -34,10 +37,13 @@ void Frontiers::AddFrontier(
     // Add frontier head
     //
 
+    FrontierIndexType const frontierIndex = static_cast<FrontierIndexType>(mFrontiers.size());
+
     mFrontiers.emplace_back(
-        type,
-        edgeIndices[0],
-        static_cast<ElementIndex>(edgeIndices.size()));
+        Frontier(
+            type,
+            edgeIndices[0],
+            static_cast<ElementIndex>(edgeIndices.size())));
 
     //
     // Concatenate all edges
@@ -64,6 +70,11 @@ void Frontiers::AddFrontier(
         assert((springs.GetEndpointAIndex(previousEdgeIndex) == point1Index || springs.GetEndpointBIndex(previousEdgeIndex) == point1Index)
             && (springs.GetEndpointAIndex(edgeIndex) == point1Index || springs.GetEndpointBIndex(edgeIndex) == point1Index));
 
+        // Edge
+        mEdges[edgeIndex].FrontierIndex = frontierIndex;
+
+        // FrontierEdge
+
         // Set point indices
         mFrontierEdges[previousEdgeIndex].PointBIndex = point1Index;
         mFrontierEdges[edgeIndex].PointAIndex = point1Index;
@@ -81,14 +92,30 @@ void Frontiers::AddFrontier(
     mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
 }
 
-void Frontiers::HandleTriangleDestroy(ElementIndex triangleElementIndex)
+void Frontiers::HandleTriangleDestroy(
+    ElementIndex triangleElementIndex,
+    Triangles const & triangles)
 {
     // TODOHERE
+
+    ////////////////////////////////////////
+
+    // Remember we are now dirty - frontiers need
+    // to be re-uploaded
+    mIsDirtyForRendering = true;
 }
 
-void Frontiers::HandleTriangleRestore(ElementIndex triangleElementIndex)
+void Frontiers::HandleTriangleRestore(
+    ElementIndex triangleElementIndex,
+    Triangles const & triangles)
 {
     // TODOHERE
+
+    ////////////////////////////////////////
+
+    // Remember we are now dirty - frontiers need
+    // to be re-uploaded
+    mIsDirtyForRendering = true;
 }
 
 void Frontiers::Upload(
@@ -118,30 +145,33 @@ void Frontiers::Upload(
             size_t(0),
             [](size_t total, auto const & f)
             {
-                return total + f.Size;
+                return total + (f.has_value() ? f->Size : 0);
             });
 
         renderContext.UploadShipElementFrontierEdgesStart(shipId, totalSize);
 
         for (auto const & frontier : mFrontiers)
         {
-            assert(frontier.Size > 0);
-
-            ElementIndex const startingEdgeIndex = frontier.StartingEdgeIndex;
-            ElementIndex edgeIndex = startingEdgeIndex;
-
-            do
+            if (frontier.has_value())
             {
-                // Upload
-                renderContext.UploadShipElementFrontierEdge(
-                    shipId,
-                    mFrontierEdges[edgeIndex].PointAIndex,
-                    mFrontierEdges[edgeIndex].PointBIndex);
+                assert(frontier->Size > 0);
 
-                // Advance
-                edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+                ElementIndex const startingEdgeIndex = frontier->StartingEdgeIndex;
+                ElementIndex edgeIndex = startingEdgeIndex;
 
-            } while (edgeIndex != startingEdgeIndex);
+                do
+                {
+                    // Upload
+                    renderContext.UploadShipElementFrontierEdge(
+                        shipId,
+                        mFrontierEdges[edgeIndex].PointAIndex,
+                        mFrontierEdges[edgeIndex].PointBIndex);
+
+                    // Advance
+                    edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+
+                } while (edgeIndex != startingEdgeIndex);
+            }
         }
 
         renderContext.UploadShipElementFrontierEdgesEnd(shipId);
@@ -175,62 +205,92 @@ void Frontiers::RegeneratePointColors() const
 
     for (auto const & frontier : mFrontiers)
     {
-        vec3f const baseColor = (frontier.Type == FrontierType::External)
-            ? ExternalColors[(externalUsed++) % ExternalColors.size()].toVec3f()
-            : InternalColors[(internalUsed++) % InternalColors.size()].toVec3f();
-
-        ElementIndex const startingEdgeIndex = frontier.StartingEdgeIndex;
-        ElementIndex edgeIndex = startingEdgeIndex;
-
-        float positionalProgress = 0.0f;
-
-        do
+        if (frontier.has_value())
         {
-            mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
-            mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
+            vec3f const baseColor = (frontier->Type == FrontierType::External)
+                ? ExternalColors[(externalUsed++) % ExternalColors.size()].toVec3f()
+                : InternalColors[(internalUsed++) % InternalColors.size()].toVec3f();
 
-            // Advance
-            edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
-            positionalProgress += 1.0f;
+            ElementIndex const startingEdgeIndex = frontier->StartingEdgeIndex;
+            ElementIndex edgeIndex = startingEdgeIndex;
 
-        } while (edgeIndex != startingEdgeIndex);
+            float positionalProgress = 0.0f;
+
+            do
+            {
+                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
+                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
+
+                // Advance
+                edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+                positionalProgress += 1.0f;
+
+            } while (edgeIndex != startingEdgeIndex);
+        }
     }
 }
 
 #ifdef _DEBUG
 void Frontiers::VerifyInvariants(
-
     Springs const & springs,
     Triangles const & triangles) const
 {
-    for (auto const & frontier : mFrontiers)
+    std::set<ElementIndex> edgesWithFrontiers;
+
+    //
+    // Frontiers
+    //
+
+    for (size_t frontierIndex = 0; frontierIndex < mFrontiers.size(); ++frontierIndex)
     {
-        Verify(frontier.Size >= 3);
+        auto const & frontier = mFrontiers[frontierIndex];
 
-        size_t frontierLen = 0;
-        for (ElementIndex edgeIndex = frontier.StartingEdgeIndex; ++frontierLen;)
+        if (frontier.has_value())
         {
-            // There is a spring here
-            Verify(!springs.IsDeleted(edgeIndex));
+            Verify(frontier->Size >= 3);
 
-            // This spring has one and only one super triangle
-            Verify(springs.GetSuperTriangles(edgeIndex).size() == 1);
+            size_t frontierLen = 0;
+            for (ElementIndex edgeIndex = frontier->StartingEdgeIndex; ++frontierLen;)
+            {
+                // There is a spring here
+                Verify(!springs.IsDeleted(edgeIndex));
 
-            ElementIndex const triangleIndex = springs.GetSuperTriangles(edgeIndex)[0];
+                // This spring has one and only one super triangle
+                Verify(springs.GetSuperTriangles(edgeIndex).size() == 1);
 
-            // This edge is CW in the triangle
-            Verify(triangles.ArePointsInCwOrder(
-                triangleIndex,
-                mFrontierEdges[edgeIndex].PointAIndex,
-                mFrontierEdges[edgeIndex].PointBIndex));
+                ElementIndex const triangleIndex = springs.GetSuperTriangles(edgeIndex)[0];
 
-            // Advance
-            edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
-            if (edgeIndex == frontier.StartingEdgeIndex)
-                break;
+                // This edge is CW in the triangle
+                Verify(
+                    triangles.ArePointsInCwOrder(
+                        triangleIndex,
+                        mFrontierEdges[edgeIndex].PointAIndex,
+                        mFrontierEdges[edgeIndex].PointBIndex));
+
+                // Edges know about their frontier
+                Verify(mEdges[edgeIndex].FrontierIndex == frontierIndex);
+
+                // This edge only belongs to one frontier
+                auto const [_, isInserted] = edgesWithFrontiers.insert(edgeIndex);
+                Verify(isInserted);
+
+                // Advance
+                edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+                if (edgeIndex == frontier->StartingEdgeIndex)
+                    break;
+            }
+
+            Verify(frontierLen == frontier->Size);
         }
+    }
 
-        Verify(frontierLen == frontier.Size);
+    //
+    // Edges
+    //
+
+    for (ElementIndex edgeIndex = 0; edgeIndex < mEdgeCount; ++edgeIndex)
+    {
+        Verify(edgesWithFrontiers.count(edgeIndex) == 1 || mEdges[edgeIndex].FrontierIndex == NoneFrontierIndex);
     }
 }
 #endif

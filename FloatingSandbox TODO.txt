@@ -1288,6 +1288,8 @@ Render:
 					+ Scan line ends on a triangle vertex followed by a chain point
 				+ Cleanup
 					+ Remove unused args
+				- Remove ContainsEndpoints are replace with edge map earlier on
+					- EdgeMap gets added to each time we add to springInfos1
 				- Test perf on Dell
 			+ Rendering:
 				+ Decide whether we want to announce frontier edge size
@@ -1303,13 +1305,13 @@ Render:
 			= Maintenance at destroy:
 				+ Ship's triangle destroy handler invokes new Frontier::HandleTriangleDestroy
 				- Spec: 
-					- Marks mIsDirtyForRendering
+					+ Marks mIsDirtyForRendering
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 				- TODO
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Spec: 
-					- Marks mIsDirtyForRendering
+					+ Marks mIsDirtyForRendering
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 				- TODO
 		- Optimizations:

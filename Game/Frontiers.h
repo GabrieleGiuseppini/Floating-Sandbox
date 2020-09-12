@@ -11,6 +11,7 @@
 
 #include <GameCore/Buffer.h>
 
+#include <optional>
 #include <vector>
 
 namespace Physics
@@ -30,6 +31,12 @@ public:
         ElementIndex PointBIndex; // In frontier's order
 
         ElementIndex NextEdgeIndex; // Next edge in frontier's order
+
+        FrontierEdge()
+            : PointAIndex(NoneElementIndex)
+            , PointBIndex(NoneElementIndex)
+            , NextEdgeIndex(NoneElementIndex)
+        {}
     };
 
     // Frontier metadata
@@ -61,9 +68,13 @@ public:
         std::vector<ElementIndex> edgeIndices,
         Springs const & springs);
 
-    void HandleTriangleDestroy(ElementIndex triangleElementIndex);
+    void HandleTriangleDestroy(
+        ElementIndex triangleElementIndex,
+        Triangles const & triangles);
 
-    void HandleTriangleRestore(ElementIndex triangleElementIndex);
+    void HandleTriangleRestore(ElementIndex
+        triangleElementIndex,
+        Triangles const & triangles);
 
     void Upload(
         ShipId shipId,
@@ -84,18 +95,44 @@ public:
 
 private:
 
+    struct Edge
+    {
+        // The ID that of the frontier that this edge belongs to,
+        // or NoneFrontierId if the edge does not belong to a frontier.
+        FrontierIndexType FrontierIndex;
+
+        Edge(
+            FrontierIndexType frontierIndex)
+            : FrontierIndex(frontierIndex)
+        {}
+
+        Edge()
+            : FrontierIndex(NoneFrontierIndex)
+        {}
+    };
+
+private:
+
     void RegeneratePointColors() const;
 
 private:
+
+    // The total number of edges (elements, not buffer)
+    size_t const mEdgeCount;
+
+    // All the edges in the ship.
+    // Cardinality: edges (==springs)
+    Buffer<Edge> mEdges;
 
     // All the edges in the ship; only those that belong to
     // a frontier have actual significance.
     // Cardinality: edges (==springs)
     Buffer<FrontierEdge> mFrontierEdges;
 
-    // The frontiers, indexed by frontier ID.
+    // The frontiers, indexed by frontier indices.
+    // Elements in this vector do not move around.
     // Cardinality: any.
-    std::vector<Frontier> mFrontiers;
+    std::vector<std::optional<Frontier>> mFrontiers;
 
     // Frontier coloring info.
     // Cardinality: points
