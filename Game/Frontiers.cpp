@@ -171,21 +171,16 @@ void Frontiers::RegeneratePointColors() const
         ElementIndex const startingEdgeIndex = frontier.StartingEdgeIndex;
         ElementIndex edgeIndex = startingEdgeIndex;
 
-
-        float const positionalProgressDx = 1.0f / static_cast<float>(frontier.Size);
-        float positionalProgress = positionalProgressDx;
+        float positionalProgress = 0.0f;
 
         do
         {
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
             mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
 
-            positionalProgress = std::min(
-                positionalProgress + positionalProgressDx,
-                1.0f);
-
             // Advance
             edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+            positionalProgress += 1.0f;
 
         } while (edgeIndex != startingEdgeIndex);
     }

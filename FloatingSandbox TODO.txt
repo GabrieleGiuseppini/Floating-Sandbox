@@ -288,6 +288,8 @@ Render:
 		- See why log diagnostics is not written
 			- Missing folder?
 
+		- Calibrate flying missing cardboard
+
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
 
@@ -696,15 +698,15 @@ Render:
 
 - Simulation Optimizations:
 
-	- Calibration
+	- Computer calibration
 		- Executed by GameController 
 			- After RenderingContext initialized (for OpenGL capabilities)
 			- OpenGL: based off capabilities
 			- CPU: based off loops
 		- Produces CalibrationScore
-			- GameController::TuneParameters(CalibrationScore const &)
+			- GameController::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
 				- Sets GameParameters and RenderContext's parameters
-				- Happens before SettingsManager samples defaults, so these are the defaults
+				- Happens before SettingsManager samples defaults, so these are the new defaults
 
 	- See if additional springs (e.g. between i and i+2) help
 
@@ -1284,8 +1286,9 @@ Render:
 				- Tests:
 					- Scan line finds first a chain point, then a triangle
 					- Scan line ends on a triangle vertex followed by a chain point
-				- Cleanup
-					- Remove unused args
+				= Cleanup
+					+ Remove unused args
+				- Test perf on Dell
 			= Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
@@ -1295,8 +1298,7 @@ Render:
 					+ At Prepare() (or wherever we do others), set progress parameter
 				+ Shader
 				+ Adjust color shift speed w/release build
-				- Do color march differently - by playing with local progress:
-					- TODO
+				= Do color march differently - by playing with local progress:
 				- Move SettingsDialog checkbox to Debug rendering settings
 			- Maintenance at destroy:
 				- Ship's triangle destroy handler invokes new Frontier::<OnTriangleDestroy or whatever naming convention we use>
