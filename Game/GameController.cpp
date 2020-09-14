@@ -77,8 +77,8 @@ GameController::GameController(
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mNotificationLayer(
-        mGameParameters.IsUltraViolentMode, 
-        false /*loaded value will come later*/, 
+        mGameParameters.IsUltraViolentMode,
+        false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle)
     , mShipTexturizer(resourceLocator)
     , mWorld(new Physics::World(
@@ -1127,6 +1127,12 @@ void GameController::SetEngineControllerState(
         electricalElementId,
         telegraphValue,
         mGameParameters);
+}
+
+void GameController::DestroyTriangle(ElementId triangleId)
+{
+    assert(!!mWorld);
+    mWorld->DestroyTriangle(triangleId);
 }
 
 //

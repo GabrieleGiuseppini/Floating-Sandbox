@@ -648,7 +648,14 @@ bool MainFrame::ProcessKeyUp(
 
 void MainFrame::OnSecretTypingOpenDebugWindow()
 {
-    LogMessage("MainFrame::OnSecretTypingOpenDebugWindow");
+    if (!mDebugDialog)
+    {
+        mDebugDialog = std::make_unique<DebugDialog>(
+            this,
+            mGameController);
+    }
+
+    mDebugDialog->Open();
 }
 
 void MainFrame::OnSecretTypingLoadFallbackShip()

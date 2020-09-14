@@ -13,6 +13,7 @@
 #include <GameCore/FixedSizeVector.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <functional>
 
@@ -28,17 +29,14 @@ private:
     */
     struct Endpoints
     {
-        ElementIndex PointAIndex;
-        ElementIndex PointBIndex;
-        ElementIndex PointCIndex;
+        // A, B, C
+        std::array<ElementIndex, 3u> PointIndices;
 
         Endpoints(
             ElementIndex pointAIndex,
             ElementIndex pointBIndex,
             ElementIndex pointCIndex)
-            : PointAIndex(pointAIndex)
-            , PointBIndex(pointBIndex)
-            , PointCIndex(pointCIndex)
+            : PointIndices({ pointAIndex, pointBIndex, pointCIndex })
         {}
     };
 
@@ -137,19 +135,24 @@ public:
     // Endpoints
     //
 
+    inline auto const & GetPointIndices(ElementIndex triangleElementIndex) const
+    {
+        return mEndpointsBuffer[triangleElementIndex].PointIndices;
+    }
+
     inline ElementIndex GetPointAIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointAIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[0];
     }
 
     inline ElementIndex GetPointBIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointBIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[1];
     }
 
     inline ElementIndex GetPointCIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointCIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[2];
     }
 
     inline bool ArePointsInCwOrder(
@@ -157,9 +160,9 @@ public:
         ElementIndex point1Index,
         ElementIndex point2Index) const
     {
-        return (mEndpointsBuffer[triangleElementIndex].PointAIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointBIndex == point2Index)
-            || (mEndpointsBuffer[triangleElementIndex].PointBIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointCIndex == point2Index)
-            || (mEndpointsBuffer[triangleElementIndex].PointCIndex == point1Index && mEndpointsBuffer[triangleElementIndex].PointAIndex == point2Index);
+        return (GetPointAIndex(triangleElementIndex) == point1Index && GetPointBIndex(triangleElementIndex) == point2Index)
+            || (GetPointBIndex(triangleElementIndex) == point1Index && GetPointCIndex(triangleElementIndex) == point2Index)
+            || (GetPointCIndex(triangleElementIndex) == point1Index && GetPointAIndex(triangleElementIndex) == point2Index);
     }
 
     //

@@ -1498,4 +1498,9 @@ void Ship::SetEngineControllerState(
         gameParameters);
 }
 
+void Ship::DestroyTriangle(ElementIndex triangleIndex)
+{
+    mTriangles.Destroy(triangleIndex);
+}
+
 }

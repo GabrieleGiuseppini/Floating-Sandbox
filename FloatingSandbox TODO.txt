@@ -288,7 +288,9 @@ Render:
 		- See why log diagnostics is not written
 			- Missing folder?
 
-		- Calibrate flying missing cardboard
+		- Lower speed of waves - now that we run faster?
+
+		- Calibrate flying burning cardboard
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -1291,6 +1293,7 @@ Render:
 				+ Remove ContainsEndpoints are replace with edge map earlier on
 					+ EdgeMap gets added to each time we add to springInfos1
 				- Test perf on Dell
+					- Add timings for whole ShipBuilding and for FrontierBuilding alone
 			+ Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag
@@ -1306,6 +1309,13 @@ Render:
 				+ Ship's triangle destroy handler invokes new Frontier::HandleTriangleDestroy
 				- Spec: 
 					+ Marks mIsDirtyForRendering
+					+ Triangles: points A,B,C indices also (mainly) avail as array
+					- FrontierEdge: also PrevEdge
+					+ Debug window
+					- Cases:
+						= 0 frontiers
+						- 1 frontier
+
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 				- TODO
 			- Maintenance at repair:
@@ -1317,6 +1327,7 @@ Render:
 		- Optimizations:
 			- Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				- Clear frontiers' dirtyForRendering flags afterwards
+			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
 			  now use edges

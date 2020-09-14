@@ -227,6 +227,8 @@ public:
         int telegraphValue,
         GameParameters const & gameParameters);
 
+    void DestroyTriangle(ElementIndex triangleIndex);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
