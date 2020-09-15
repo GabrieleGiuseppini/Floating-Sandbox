@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <limits>
 #include <set>
 #include <sstream>
@@ -48,6 +49,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ShipTexturizer const & shipTexturizer,
     GameParameters const & gameParameters)
 {
+    auto const totalStartTime = std::chrono::steady_clock::now();
+
     int const structureWidth = shipDefinition.StructuralLayerImage.Size.Width;
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
     int const structureHeight = shipDefinition.StructuralLayerImage.Size.Height;
@@ -356,6 +359,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     // Create frontiers
     //
 
+    auto const frontiersStartTime = std::chrono::steady_clock::now();
+
     Frontiers frontiers = CreateFrontiers(
         pointIndexMatrix,
         shipDefinition.StructuralLayerImage.Size,
@@ -365,6 +370,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         pointPairToSpringIndex1Map,
         springIndexRemap2,
         triangles);
+
+    auto const frontiersEndTime = std::chrono::steady_clock::now();
 
 
     //
@@ -408,6 +415,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         std::move(triangles),
         std::move(electricalElements),
         std::move(frontiers));
+
+    LogMessage("ShipBuilder::Create() took ",
+        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - totalStartTime).count(),
+        " us (frontiers: ", std::chrono::duration_cast<std::chrono::microseconds>(frontiersEndTime - frontiersStartTime).count(), " us)");
 
     return std::make_tuple(
         std::move(ship),

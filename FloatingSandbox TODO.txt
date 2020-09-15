@@ -543,6 +543,11 @@ Render:
 
 
 - Marketing:
+	- Make new "demo" video
+		- Contents:
+			- 
+	- GameJolt:
+		- Use new video as preview
 	- www.floatingsandbox.com:
 		- Issues: game doesn't start
 			- No GameJolt
@@ -1267,7 +1272,7 @@ Render:
 					+ Cctor takes point_count, Springs, Triangles
 					+ AddFrontier()
 						+ Invoked by ShipBuilder
-			= ShipBuilder: jumpstart algo:
+			+ ShipBuilder: jumpstart algo:
 				+	5	6	7
 					4	*	0
 					3	2	1
@@ -1291,9 +1296,9 @@ Render:
 				+ Cleanup
 					+ Remove unused args
 				+ Remove ContainsEndpoints are replace with edge map earlier on
-					+ EdgeMap gets added to each time we add to springInfos1
-				- Test perf on Dell
-					- Add timings for whole ShipBuilding and for FrontierBuilding alone
+					+ EdgeMap gets added to each time we add to springInfos1				
+				+ Add timings for whole ShipBuilding and for FrontierBuilding alone
+				+ Test perf on Dell
 			+ Rendering:
 				+ Decide whether we want to announce frontier edge size
 				+ SettingsDialog flag

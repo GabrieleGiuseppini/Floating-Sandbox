@@ -121,15 +121,13 @@ void Frontiers::AddFrontier(
 
         // Concatenate edges
         mFrontierEdges[previousEdgeIndex].NextEdgeIndex = edgeIndex;
+        mFrontierEdges[edgeIndex].PrevEdgeIndex = previousEdgeIndex;
 
         // Advance
         previousEdgeIndex = edgeIndex;
         point1Index = springs.GetOtherEndpointIndex(edgeIndex, point1Index); // The point that will be in common between this edge and the next
                                                                              // is the one that is not in common now with the previous edge
     }
-
-    // Concatenate last
-    mFrontierEdges[edgeIndices[edgeIndices.size() - 2]].NextEdgeIndex = edgeIndices[edgeIndices.size() - 1];
 }
 
 void Frontiers::HandleTriangleDestroy(
@@ -165,7 +163,7 @@ void Frontiers::HandleTriangleDestroy(
         FrontierId const newFrontierId = CreateNewFrontier(FrontierType::Internal);
 
         //
-        // Concatenate edges
+        // Concatenate edges: C->B->A->C
         //
 
         auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
@@ -179,18 +177,21 @@ void Frontiers::HandleTriangleDestroy(
         mFrontierEdges[edgeCIndex].PointAIndex = triangles.GetPointAIndex(triangleElementIndex);
         mFrontierEdges[edgeCIndex].PointBIndex = triangles.GetPointCIndex(triangleElementIndex);
         mFrontierEdges[edgeCIndex].NextEdgeIndex = edgeBIndex;
+        mFrontierEdges[edgeCIndex].PrevEdgeIndex = edgeAIndex;
 
         // B->A
         mEdges[edgeBIndex].FrontierIndex = newFrontierId;
         mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
         mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
         mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeAIndex;
+        mFrontierEdges[edgeBIndex].PrevEdgeIndex = edgeCIndex;
 
         // A->C
         mEdges[edgeAIndex].FrontierIndex = newFrontierId;
         mFrontierEdges[edgeAIndex].PointAIndex = triangles.GetPointBIndex(triangleElementIndex);
         mFrontierEdges[edgeAIndex].PointBIndex = triangles.GetPointAIndex(triangleElementIndex);
         mFrontierEdges[edgeAIndex].NextEdgeIndex = edgeCIndex;
+        mFrontierEdges[edgeAIndex].PrevEdgeIndex = edgeBIndex;
 
         mFrontiers[newFrontierId]->Size = 3;
     }
@@ -419,6 +420,10 @@ void Frontiers::VerifyInvariants(
                 // This edge only belongs to one frontier
                 auto const [_, isInserted] = edgesWithFrontiers.insert(edgeIndex);
                 Verify(isInserted);
+
+                // Frontier links are correct
+                Verify(mFrontierEdges[mFrontierEdges[edgeIndex].PrevEdgeIndex].NextEdgeIndex == edgeIndex);
+                Verify(mFrontierEdges[mFrontierEdges[edgeIndex].NextEdgeIndex].PrevEdgeIndex == edgeIndex);
 
                 // Advance
                 edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;

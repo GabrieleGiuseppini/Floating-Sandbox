@@ -32,11 +32,13 @@ public:
         ElementIndex PointBIndex; // In frontier's order
 
         ElementIndex NextEdgeIndex; // Next edge in frontier's order
+        ElementIndex PrevEdgeIndex; // Previous edge in frontier's order
 
         FrontierEdge()
             : PointAIndex(NoneElementIndex)
             , PointBIndex(NoneElementIndex)
             , NextEdgeIndex(NoneElementIndex)
+            , PrevEdgeIndex(NoneElementIndex)
         {}
     };
 
@@ -98,6 +100,7 @@ public:
 
 private:
 
+    // Edge metadata for internal usage only
     struct Edge
     {
         // The ID that of the frontier that this edge belongs to,
