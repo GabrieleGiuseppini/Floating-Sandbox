@@ -131,7 +131,25 @@ private:
 
 private:
 
-    FrontierId CreateNewFrontier(FrontierType type);
+    /*
+    static inline void ConnectEdgeToFrontier(
+        ElementIndex edgeIndexOld, // The one on frontier, consistent
+        ElementIndex edgeIndexNew,
+        ElementIndex edgeSecondPointNew) noexcept
+    {
+        mEdges[edgeBIndex].FrontierIndex = newFrontierId;
+        mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
+        mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
+        mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeAIndex;
+        mFrontierEdges[edgeBIndex].PrevEdgeIndex = edgeCIndex;
+    }
+    */
+
+    FrontierId CreateNewFrontier(
+        FrontierType type,
+        ElementIndex startingEdgeIndex = NoneElementIndex,
+        ElementCount size = 0);
+
 
     void RegeneratePointColors() const;
 

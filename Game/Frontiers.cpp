@@ -137,22 +137,33 @@ void Frontiers::HandleTriangleDestroy(
 {
     // Count edges with frontiers
     size_t edgesWithFrontierCount = 0;
-    for (size_t edgeIndex : mTriangles[triangleElementIndex].EdgeIndices)
+    ElementIndex lastEdgeWithFrontier = NoneElementIndex;
+    int lastEdgeOrdinalWithFrontier = -1; // index (0..2) of the edge in the triangles's array
+    for (int eOrd = 0; eOrd < mTriangles[triangleElementIndex].EdgeIndices.size(); ++eOrd)
     {
+        ElementIndex edgeIndex = mTriangles[triangleElementIndex].EdgeIndices[eOrd];
         if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)
+        {
             ++edgesWithFrontierCount;
+            lastEdgeWithFrontier = edgeIndex;
+            lastEdgeOrdinalWithFrontier = eOrd;
+        }
     }
 
-    // Check trivial cases
+    // Check cases
     if (edgesWithFrontierCount == 0)
     {
+        LogMessage("TODOTEST: CASE 0 (t_idx=", triangleElementIndex, ")");
+
         //
-        // Each edge of the triangle is connected to two triangles...
+        // None of the edges has a frontier...
+        // hence each edge of the triangle is connected to two triangles...
         //
 
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0]).size() == 2);
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1]).size() == 2);
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2]).size() == 2);
+#ifdef _DEBUG
+        for (int e = 0; e < 3; ++e)
+            assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 2);
+#endif
 
         //
         // ...so this triangle will generate a new internal frontier: C->B->A
@@ -160,17 +171,19 @@ void Frontiers::HandleTriangleDestroy(
         //    edges it'll travel in the triangles' clockwise direction
         //
 
-        FrontierId const newFrontierId = CreateNewFrontier(FrontierType::Internal);
-
         //
-        // Concatenate edges: C->B->A->C
+        // Make frontier with edges: C->B->A(->C)
         //
 
         auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
         auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
         auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
 
-        mFrontiers[newFrontierId]->StartingEdgeIndex = edgeCIndex;
+        // Create frontier
+        FrontierId const newFrontierId = CreateNewFrontier(
+            FrontierType::Internal,
+            edgeCIndex,
+            3);
 
         // C->B
         mEdges[edgeCIndex].FrontierIndex = newFrontierId;
@@ -192,34 +205,90 @@ void Frontiers::HandleTriangleDestroy(
         mFrontierEdges[edgeAIndex].PointBIndex = triangles.GetPointAIndex(triangleElementIndex);
         mFrontierEdges[edgeAIndex].NextEdgeIndex = edgeCIndex;
         mFrontierEdges[edgeAIndex].PrevEdgeIndex = edgeBIndex;
-
-        mFrontiers[newFrontierId]->Size = 3;
     }
-    else if (edgesWithFrontierCount == 3)
+    else if (edgesWithFrontierCount == 1)
     {
-        //
-        // All edges of this triangle are connected to this triangle only...
-        //
-
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0]).size() == 1
-            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[0])[0] == triangleElementIndex);
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1]).size() == 1
-            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[1])[0] == triangleElementIndex);
-        assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2]).size() == 1
-            && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[2])[0] == triangleElementIndex);
+        LogMessage("TODOTEST: CASE 1 (t_idx=", triangleElementIndex, ")");
 
         //
-        // ...and have a frontier each.
-        // Check if they are connected to each other in a single, 3-edge loop
+        // Only one edge has a frontier...
+        // ...hence the other two edges are each connected to two triangles...
         //
 
-        // TODOHERE
+        assert(lastEdgeWithFrontier != NoneElementIndex);
+        assert(lastEdgeOrdinalWithFrontier != -1);
+
+#ifdef _DEBUG
+        for (int e = 0; e < 3; ++e)
+            assert(
+                (mTriangles[triangleElementIndex].EdgeIndices[e] == lastEdgeWithFrontier && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 1)
+                || (mTriangles[triangleElementIndex].EdgeIndices[e] != lastEdgeWithFrontier && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 2));
+#endif
+
+        //
+        // ...we then propagate the frontier on the edge to the two other edges
+        //
+
+        //            lastEdgeWithFrontier
+        //                X         Y
+        // frontier: ---------------------->
+        //                 \       /
+        //                  \     /
+        //                   \   /
+        //                    \ /
+        //                     Z
+        //
+
+        FrontierId const frontierId = mEdges[lastEdgeWithFrontier].FrontierIndex;
+
+        int edgeOrdXZ = lastEdgeOrdinalWithFrontier - 1;
+        if (edgeOrdXZ < 0)
+            edgeOrdXZ += 3;
+
+        ElementIndex const edgeXZ = mTriangles[triangleElementIndex].EdgeIndices[edgeOrdXZ];
+
+        int edgeOrdZY = lastEdgeOrdinalWithFrontier + 1;
+        if (edgeOrdZY >= 3)
+            edgeOrdZY -= 3;
+
+        ElementIndex const edgeZY = mTriangles[triangleElementIndex].EdgeIndices[edgeOrdZY];
+
+        // X->Z
+        mEdges[edgeXZ].FrontierIndex = frontierId;
+        assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier] == mFrontierEdges[lastEdgeWithFrontier].PointAIndex); // X
+        mFrontierEdges[edgeXZ].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier]; // X
+        mFrontierEdges[edgeXZ].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdXZ]; // Z
+        mFrontierEdges[edgeXZ].NextEdgeIndex = edgeZY;
+        mFrontierEdges[edgeXZ].PrevEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex;
+        mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex].NextEdgeIndex = edgeXZ;
+
+        // Z->Y
+        mEdges[edgeZY].FrontierIndex = frontierId;
+        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // Y
+        mFrontierEdges[edgeZY].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdXZ]; // Z
+        mFrontierEdges[edgeZY].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY]; // Y
+        mFrontierEdges[edgeZY].NextEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex;
+        mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex].PrevEdgeIndex = edgeZY;
+        mFrontierEdges[edgeZY].PrevEdgeIndex = edgeXZ;
+
+        // Clear X->Y
+        mEdges[lastEdgeWithFrontier].FrontierIndex = NoneFrontierId;
+
+        // Update frontier
+        assert(mFrontiers[frontierId].has_value());
+        mFrontiers[frontierId]->StartingEdgeIndex = edgeXZ; // Just to be safe, as we've nuked XY
+        mFrontiers[frontierId]->Size += 1; // +2 - 1
+        // TODO: mark frontier dirty
     }
     else
     {
-        assert(edgesWithFrontierCount == 1 || edgesWithFrontierCount == 2);
+        assert(edgesWithFrontierCount == 2 || edgesWithFrontierCount == 3);
 
-        // TODOHERE
+        // TODO: visit cusps
+
+        // TODO: ...
+
+        // TODO: if this triangle is left with a frontier all for itself, destroy the frontier
     }
 
     ////////////////////////////////////////
@@ -355,7 +424,10 @@ void Frontiers::RegeneratePointColors() const
     }
 }
 
-FrontierId Frontiers::CreateNewFrontier(FrontierType type)
+FrontierId Frontiers::CreateNewFrontier(
+    FrontierType type,
+    ElementIndex startingEdgeIndex,
+    ElementCount size)
 {
     // Check if we may find an unused slot
     FrontierId newFrontierId;
@@ -369,10 +441,11 @@ FrontierId Frontiers::CreateNewFrontier(FrontierType type)
 
     assert(newFrontierId < mFrontiers.size());
 
-    mFrontiers[newFrontierId] = Frontier(
+    // TODO: mark frontier dirty
+    mFrontiers[newFrontierId].emplace(
         type,
-        NoneElementIndex,
-        0);
+        startingEdgeIndex,
+        size);
 
     return newFrontierId;
 }
