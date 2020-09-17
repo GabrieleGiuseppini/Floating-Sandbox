@@ -154,6 +154,11 @@ private:
         ElementIndex startingEdgeIndex = NoneElementIndex,
         ElementCount size = 0);
 
+    template<int CuspEdge1Ordinal, int CuspEdge2Ordinal>
+    inline void ProcessTriangleCuspDestroy(
+        ElementIndex triangleElementIndex,
+        Springs const & springs,
+        Triangles const & triangles);
 
     void RegeneratePointColors();
 
