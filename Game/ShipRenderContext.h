@@ -1105,6 +1105,7 @@ private:
     size_t mStressedSpringElementVBOAllocatedElementSize;
 
     BoundedVector<LineElement> mFrontierEdgeElementBuffer;
+    bool mIsFrontierEdgeElementBufferDirty;
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 

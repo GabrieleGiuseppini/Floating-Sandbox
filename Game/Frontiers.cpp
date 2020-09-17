@@ -83,7 +83,8 @@ void Frontiers::AddFrontier(
         Frontier(
             type,
             edgeIndices[0],
-            static_cast<ElementIndex>(edgeIndices.size())));
+            static_cast<ElementIndex>(edgeIndices.size()),
+            true)); // IsDirtyForRendering
 
     //
     // Concatenate all edges
@@ -278,10 +279,12 @@ void Frontiers::HandleTriangleDestroy(
         assert(mFrontiers[frontierId].has_value());
         mFrontiers[frontierId]->StartingEdgeIndex = edgeXZ; // Just to be safe, as we've nuked XY
         mFrontiers[frontierId]->Size += 1; // +2 - 1
-        // TODO: mark frontier dirty
+        mFrontiers[frontierId]->IsDirtyForRendering = true;
     }
     else
     {
+        LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, ")");
+
         assert(edgesWithFrontierCount == 2 || edgesWithFrontierCount == 3);
 
         // TODO: visit cusps
@@ -314,7 +317,7 @@ void Frontiers::HandleTriangleRestore(
 
 void Frontiers::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    Render::RenderContext & renderContext)
 {
     if (renderContext.GetShowFrontiers()
         && mIsDirtyForRendering)
@@ -375,7 +378,7 @@ void Frontiers::Upload(
     }
 }
 
-void Frontiers::RegeneratePointColors() const
+void Frontiers::RegeneratePointColors()
 {
     std::array<rgbColor, 4> const ExternalColors
     {
@@ -397,10 +400,15 @@ void Frontiers::RegeneratePointColors() const
     size_t externalUsed = 0;
     size_t internalUsed = 0;
 
-    for (auto const & frontier : mFrontiers)
+    for (auto & frontier : mFrontiers)
     {
-        if (frontier.has_value())
+        if (frontier.has_value()
+            && frontier->IsDirtyForRendering)
         {
+            //
+            // Propagate color and positional progress for this frontier
+            //
+
             vec3f const baseColor = (frontier->Type == FrontierType::External)
                 ? ExternalColors[(externalUsed++) % ExternalColors.size()].toVec3f()
                 : InternalColors[(internalUsed++) % InternalColors.size()].toVec3f();
@@ -420,6 +428,8 @@ void Frontiers::RegeneratePointColors() const
                 positionalProgress += 1.0f;
 
             } while (edgeIndex != startingEdgeIndex);
+
+            frontier->IsDirtyForRendering = false;
         }
     }
 }
@@ -441,11 +451,11 @@ FrontierId Frontiers::CreateNewFrontier(
 
     assert(newFrontierId < mFrontiers.size());
 
-    // TODO: mark frontier dirty
     mFrontiers[newFrontierId].emplace(
         type,
         startingEdgeIndex,
-        size);
+        size,
+        true); // IsDirtyForRendering
 
     return newFrontierId;
 }

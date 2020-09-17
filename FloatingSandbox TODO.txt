@@ -1326,7 +1326,7 @@ Render:
 						- Prepare test ship (5x5)
 							- Make paper with numbers
 						- TODO
-				- Points to remember:
+				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 			- Maintenance at repair:
@@ -1334,12 +1334,12 @@ Render:
 				- Spec: 
 					+ Marks mIsDirtyForRendering
 					- TODO
-				- Points to remember:
+				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 		- Optimizations:
-			- Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
-				- Clear frontiers' dirtyForRendering flags afterwards
+			= Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
+				+ Clear frontiers' dirtyForRendering flags afterwards
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 

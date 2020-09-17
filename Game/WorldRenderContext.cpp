@@ -63,8 +63,8 @@ WorldRenderContext::WorldRenderContext(
     , mCrossOfLightVAO()
     , mRainVAO()
     , mWorldBorderVAO()
-    // Textures    
-    , mCloudTextureAtlasMetadata()    
+    // Textures
+    , mCloudTextureAtlasMetadata()
     , mCloudTextureAtlasOpenGLHandle()
     , mUploadedWorldTextureManager()
     , mOceanTextureFrameSpecifications()
@@ -291,7 +291,7 @@ WorldRenderContext::WorldRenderContext(
     glBindVertexArray(0);
 
 
-    // 
+    //
     // Set generic linear texture in our shaders
     //
 
@@ -431,7 +431,7 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
 
 void WorldRenderContext::UploadStart()
 {
-    // At this moment we know there are no pending draw's, 
+    // At this moment we know there are no pending draw's,
     // so GPU buffers are free to be used
 
     // Reset AM bomb pre-implosions, they are uploaded as needed
@@ -586,9 +586,9 @@ void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderPar
             CheckOpenGLError();
         }
 
-        mIsStarVertexBufferDirty = false;
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsStarVertexBufferDirty = false;
     }
 }
 
@@ -938,9 +938,9 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
     {
         mShaderManager.ActivateProgram<ProgramType::Rain>();
 
-        if (mIsRainDensityDirty) 
+        if (mIsRainDensityDirty)
         {
-            // Set parameter        
+            // Set parameter
             mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
                 mRainDensity);
 

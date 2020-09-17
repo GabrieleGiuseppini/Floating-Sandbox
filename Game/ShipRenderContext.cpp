@@ -45,6 +45,7 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringElementVBOAllocatedElementSize(0u)
     //
     , mFrontierEdgeElementBuffer()
+    , mIsFrontierEdgeElementBufferDirty(true)
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
@@ -751,6 +752,7 @@ void ShipRenderContext::UploadElementFrontierEdgesStart(size_t edgesCount)
 
     // No need to clear, we'll repopulate everything
     mFrontierEdgeElementBuffer.reset(edgesCount);
+    mIsFrontierEdgeElementBufferDirty = true;
 }
 
 void ShipRenderContext::UploadElementFrontierEdgesEnd()
@@ -1036,38 +1038,44 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     // Prepare frontiers
     //
 
-    if (renderParameters.ShowFrontiers
-        && !mFrontierEdgeElementBuffer.empty())
+    if (renderParameters.ShowFrontiers)
     {
         //
         // Upload buffer
         //
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);
-
-        if (mFrontierEdgeElementBuffer.size() > mFrontierEdgeElementVBOAllocatedElementSize)
+        if (mIsFrontierEdgeElementBufferDirty)
         {
-            // Re-allocate VBO buffer and upload
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data(), GL_STATIC_DRAW);
-            CheckOpenGLError();
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);
 
-            mFrontierEdgeElementVBOAllocatedElementSize = mFrontierEdgeElementBuffer.size();
-        }
-        else
-        {
-            // No size change, just upload VBO buffer
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data());
-            CheckOpenGLError();
-        }
+            if (mFrontierEdgeElementBuffer.size() > mFrontierEdgeElementVBOAllocatedElementSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data(), GL_STATIC_DRAW);
+                CheckOpenGLError();
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                mFrontierEdgeElementVBOAllocatedElementSize = mFrontierEdgeElementBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mFrontierEdgeElementBuffer.size() * sizeof(LineElement), mFrontierEdgeElementBuffer.data());
+                CheckOpenGLError();
+            }
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+            mIsFrontierEdgeElementBufferDirty = false;
+        }
 
         //
         // Set progress
         //
 
         mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
+        // TODOTEST
+        //mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
+        mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat() / 2.0f);
     }
 
     //

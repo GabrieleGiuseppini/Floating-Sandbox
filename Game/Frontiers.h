@@ -49,13 +49,17 @@ public:
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
 
+        bool IsDirtyForRendering;
+
         Frontier(
             FrontierType type,
             ElementIndex startingEdgeIndex,
-            ElementCount size)
+            ElementCount size,
+            bool isDirtyForRendering)
             : Type(type)
             , StartingEdgeIndex(startingEdgeIndex)
             , Size(size)
+            , IsDirtyForRendering(isDirtyForRendering)
         {}
     };
 
@@ -83,7 +87,7 @@ public:
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        Render::RenderContext & renderContext);
 
 #ifdef _DEBUG
     void VerifyInvariants(
@@ -151,7 +155,7 @@ private:
         ElementCount size = 0);
 
 
-    void RegeneratePointColors() const;
+    void RegeneratePointColors();
 
 private:
 
@@ -178,9 +182,9 @@ private:
 
     // Frontier coloring info.
     // Cardinality: points
-    Buffer<Render::FrontierColor> mutable mPointColors;
+    Buffer<Render::FrontierColor> mPointColors;
 
-    bool mutable mIsDirtyForRendering; // When true, a change has occurred and thus needs to be re-uploaded
+    bool mIsDirtyForRendering; // When true, a change has occurred and thus needs to be re-uploaded
 };
 
 }
