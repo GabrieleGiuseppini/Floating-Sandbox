@@ -1328,7 +1328,7 @@ void ShipRenderContext::RenderDraw(
         {
             mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
 
-            glLineWidth(0.3f * 2.0f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
+            glLineWidth(4.2f);
 
             // Bind frontier edge element VBO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mFrontierEdgeElementVBO);

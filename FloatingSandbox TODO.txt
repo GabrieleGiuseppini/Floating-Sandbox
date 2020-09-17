@@ -1319,9 +1319,12 @@ Render:
 				- Cases:
 					+ 0 frontiers
 						+ Test in debug
-					+ 1 frontier
-						+ Test in debug
+					= 1 frontier
+						= Test in debug
+							- Also internal frontier
 					- 2, 3 frontiers
+						- Prepare test ship (5x5)
+							- Make paper with numbers
 						- TODO
 				- Points to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
