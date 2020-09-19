@@ -1322,13 +1322,15 @@ Render:
 					= 1 frontier
 						= Test in debug
 							- Also internal frontier
-					- 2, 3 frontiers
+					= 2, 3 frontiers
 						- Prepare test ship (5x5)
 							- Make paper with numbers
 						- TODO
 				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
+				- Tests:
+					- Thanos' Snap
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Spec: 
@@ -1340,8 +1342,10 @@ Render:
 		- Optimizations:
 			= Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				+ Clear frontiers' dirtyForRendering flags afterwards
+			- See if FrontierEdge::PointBIndex is really needed
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
+			- Finalize speed for rendered frontier's march
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
 			  now use edges
 				- If so, we could now only upload springs that have 0 or 1 edges

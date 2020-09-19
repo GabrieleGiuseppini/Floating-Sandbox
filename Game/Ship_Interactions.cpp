@@ -1281,12 +1281,18 @@ bool Ship::QueryNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
+    //
+    // Find point
+    //
+
+    bool pointWasFound = false;
+
     float const squareRadius = radius * radius;
 
     ElementIndex bestPointIndex = NoneElementIndex;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
-    for (auto pointIndex : mPoints)
+    for (auto const pointIndex : mPoints)
     {
         if (mPoints.IsActive(pointIndex))
         {
@@ -1302,10 +1308,37 @@ bool Ship::QueryNearestPointAt(
     if (NoneElementIndex != bestPointIndex)
     {
         mPoints.Query(bestPointIndex);
-        return true;
+        pointWasFound = true;
     }
 
-    return false;
+
+    //
+    // Find triangle enclosing target
+    //
+
+    ElementIndex enclosingTriangleIndex = NoneElementIndex;
+    for (auto const triangleIndex : mTriangles)
+    {
+        if ((mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)))
+            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex))) > 0
+            &&
+            (mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)))
+            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex))) > 0
+            &&
+            (mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)))
+            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex))) > 0)
+        {
+            enclosingTriangleIndex = triangleIndex;
+            break;
+        }
+    }
+
+    if (NoneElementIndex != enclosingTriangleIndex)
+    {
+        LogMessage("TriangleIndex: ", enclosingTriangleIndex);
+    }
+
+    return pointWasFound;
 }
 
 std::optional<vec2f> Ship::FindSuitableLightningTarget() const

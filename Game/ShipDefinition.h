@@ -29,7 +29,7 @@ public:
 
     std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
 
-    ShipMetadata const Metadata;
+    ShipMetadata Metadata;
 
     static ShipDefinition Load(std::filesystem::path const & filepath);
 
@@ -41,7 +41,7 @@ private:
         std::optional<RgbImageData> electricalLayerImage,
         std::optional<RgbaImageData> textureLayerImage,
         std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings,
-        ShipMetadata const metadata)
+        ShipMetadata metadata)
         : StructuralLayerImage(std::move(structuralLayerImage))
         , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))

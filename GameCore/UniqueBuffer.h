@@ -40,7 +40,7 @@ public:
         *this = other;
     }
 
-    unique_buffer(unique_buffer<TValue> && other)
+    unique_buffer(unique_buffer<TValue> && other) noexcept
     {
         mBuffer = std::move(other.mBuffer);
         mSize = other.mSize;
@@ -55,7 +55,7 @@ public:
             mSize = other.mSize;
         }
 
-        std::memcpy(mBuffer.get(), other.mBuffer.get(), other.mSize * sizeof(TValue));        
+        std::memcpy(mBuffer.get(), other.mBuffer.get(), other.mSize * sizeof(TValue));
 
         return *this;
     }
@@ -160,7 +160,7 @@ public:
         auto const newSize = mSize * sizeof(TValue) / sizeof(TValue2);
         unique_buffer<TValue2> newBuffer(newSize);
         std::memcpy(reinterpret_cast<void *>(newBuffer.get()), reinterpret_cast<void *>(mBuffer.get()), newSize * sizeof(TValue2));
-        
+
         return newBuffer;
     }
 
@@ -168,7 +168,7 @@ public:
     unique_buffer<TValue2> convert_move()
     {
         assert((mSize * sizeof(TValue)) % sizeof(TValue2) == 0);
-        
+
         TValue2 * const newPtr = reinterpret_cast<TValue2 *>(mBuffer.get());
         auto const newSize = mSize * sizeof(TValue) / sizeof(TValue2);
 

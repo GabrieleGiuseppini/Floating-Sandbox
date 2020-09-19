@@ -429,12 +429,22 @@ FrontierId Frontiers::CreateNewFrontier(
 }
 
 template<int CuspEdge1Ordinal, int CuspEdge2Ordinal>
-inline void Frontiers::ProcessTriangleCuspDestroy(
+inline bool Frontiers::ProcessTriangleCuspDestroy(
     ElementIndex triangleElementIndex,
     Springs const & springs,
     Triangles const & triangles)
 {
-    // Edges are in order
+    //
+    // Here we pretend to detach the cusp from the (eventual) rest of the ship,
+    // adjusting frontiers in the process.
+    //
+    // On exit, both the traingle's edges entering the cusp and the (eventual)
+    // edges leaving the cusp will be consistent.
+    //
+    // We return true if this was a cusp, false otherwise.
+    //
+
+    // The cusp edges are adjacent
     static_assert(
         (CuspEdge1Ordinal <= 1 && CuspEdge2Ordinal == CuspEdge1Ordinal + 1)
         || (CuspEdge1Ordinal == 2 && CuspEdge2Ordinal == 0));
@@ -446,12 +456,12 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
     ElementIndex const edge1Index = mTriangles[triangleElementIndex].EdgeIndices[CuspEdge1Ordinal];
     FrontierId const frontier1Id = mEdges[edge1Index].FrontierIndex;
     if (frontier1Id == NoneFrontierId)
-        return;
+        return false;
 
     ElementIndex const edge2Index = mTriangles[triangleElementIndex].EdgeIndices[CuspEdge2Ordinal];
     FrontierId const frontier2Id = mEdges[edge2Index].FrontierIndex;
     if (frontier2Id == NoneFrontierId)
-        return;
+        return false;
 
     //
     // - The frontier on edge 1 is entering the cusp
@@ -466,7 +476,7 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
 #endif
 
     //
-    // There are only these cases:
+    // Check the four different cases
     //
 
     assert(mFrontiers[frontier1Id].has_value());
@@ -487,34 +497,51 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
             // Check whether the edges are directly connected
             if (mFrontierEdges[edge1Index].NextEdgeIndex == edge2Index)
             {
+                //
+                // Nothing to do
+                //
+
                 assert(mFrontierEdges[edge2Index].PrevEdgeIndex == edge1Index);
 
                 LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): Connected, NOP");
 
-                // Nothing to do
-                // TODO: what about edges?
-                return;
+                return false;
             }
 
             //
-            // After coming from edge1, the frontier travels around a region before
-            // returning back via edge2
+            // After coming into the cusp from edge1, the external frontier travels around
+            // a region before returning back to the cusp and then away through edge2
             //
             // ...that region's frontier then becomes a new external frontier
             //
 
-             // Create frontier
+            auto const newFrontierEdge1Index = mFrontierEdges[edge1Index].NextEdgeIndex;
+            auto const newFrontierEdge2Index = mFrontierEdges[edge2Index].PrevEdgeIndex;
+
+            // Count edges/points along the soon-to-be-detached region
+            ElementCount const newRegionSize = CountFrontierEdges(newFrontierEdge1Index, newFrontierEdge2Index);
+
+            // Create new external frontier
             FrontierId const newFrontierId = CreateNewFrontier(
                 FrontierType::External,
-                mFrontierEdges[edge1Index].NextEdgeIndex,
-                0);
+                newFrontierEdge1Index,
+                newRegionSize);
 
-            // Propagate along existing frontier
-            // TODO
+            // Connect first and last edge of new frontier
+            mFrontierEdges[newFrontierEdge1Index].PrevEdgeIndex = newFrontierEdge2Index;
+            mFrontierEdges[newFrontierEdge2Index].NextEdgeIndex = newFrontierEdge1Index;
 
-            // TODO: make sure to connect mFrontierEdges[edge1Index].NextEdgeIndex with mFrontierEdges[edge2Index].PrevEdgeIndex
+            // Connect old frontier's edges
+            mFrontierEdges[edge1Index].NextEdgeIndex = edge2Index;
+            mFrontierEdges[edge2Index].PrevEdgeIndex = edge1Index;
 
-            // TODO: update new frontier count
+            // Update old frontier head
+            mFrontiers[frontier1Id]->StartingEdgeIndex = edge1Index;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
+            assert(mFrontiers[frontier1Id]->Size >= newRegionSize);
+            mFrontiers[frontier1Id]->Size -= newRegionSize;
+            mFrontiers[frontier1Id]->IsDirtyForRendering = true;
+
+            return true;
         }
         else
         {
@@ -527,6 +554,7 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
             assert(frontier1Id != frontier2Id);
 
             // TODO
+            return true;
         }
     }
     else if (mFrontiers[frontier2Id]->Type == FrontierType::External)
@@ -540,6 +568,7 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
         assert(frontier1Id != frontier2Id);
 
         // TODO
+        return true;
     }
     else
     {
@@ -558,16 +587,21 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
             // Check whether the edges are directly connected
             if (mFrontierEdges[edge1Index].NextEdgeIndex == edge2Index)
             {
+                //
+                // Nothing to do
+                //
+
                 assert(mFrontierEdges[edge2Index].PrevEdgeIndex == edge1Index);
 
                 LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): Connected, NOP");
 
-                // Nothing to do
-                // TODO: what about edges?
-                return;
+                return false;
             }
 
-            // TODO: copy case of propagation around region
+            // TODO: one of these will become external
+
+            // TODO
+            return true;
         }
         else
         {
@@ -576,6 +610,7 @@ inline void Frontiers::ProcessTriangleCuspDestroy(
             //
 
             // TODO
+            return true;
         }
     }
 }

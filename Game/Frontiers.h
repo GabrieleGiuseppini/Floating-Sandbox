@@ -135,30 +135,28 @@ private:
 
 private:
 
-    /*
-    static inline void ConnectEdgeToFrontier(
-        ElementIndex edgeIndexOld, // The one on frontier, consistent
-        ElementIndex edgeIndexNew,
-        ElementIndex edgeSecondPointNew) noexcept
-    {
-        mEdges[edgeBIndex].FrontierIndex = newFrontierId;
-        mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
-        mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
-        mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeAIndex;
-        mFrontierEdges[edgeBIndex].PrevEdgeIndex = edgeCIndex;
-    }
-    */
-
     FrontierId CreateNewFrontier(
         FrontierType type,
         ElementIndex startingEdgeIndex = NoneElementIndex,
         ElementCount size = 0);
 
     template<int CuspEdge1Ordinal, int CuspEdge2Ordinal>
-    inline void ProcessTriangleCuspDestroy(
+    inline bool ProcessTriangleCuspDestroy(
         ElementIndex triangleElementIndex,
         Springs const & springs,
         Triangles const & triangles);
+
+    inline ElementCount CountFrontierEdges(
+        ElementIndex const startEdgeIndex,
+        ElementIndex const endEdgeIndex) const
+    {
+        ElementCount count = 2;
+        for (ElementIndex edgeIndex = mFrontierEdges[startEdgeIndex].NextEdgeIndex;
+            edgeIndex != endEdgeIndex;
+            ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex);
+
+        return count;
+    }
 
     void RegeneratePointColors();
 

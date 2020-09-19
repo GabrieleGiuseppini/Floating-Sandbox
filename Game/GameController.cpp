@@ -675,8 +675,8 @@ void GameController::PickObjectToMove(
 
     // Apply action
     assert(!!mWorld);
-    auto elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
-    if (!!elementIndex)
+    auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
+    if (elementIndex.has_value())
         shipId = elementIndex->GetShipId();
     else
         shipId = std::nullopt;
