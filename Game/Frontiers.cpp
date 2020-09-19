@@ -136,6 +136,10 @@ void Frontiers::HandleTriangleDestroy(
     Springs const & springs,
     Triangles const & triangles)
 {
+    auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
+    auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
+    auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
+
     // Count edges with frontiers
     size_t edgesWithFrontierCount = 0;
     ElementIndex lastEdgeWithFrontier = NoneElementIndex;
@@ -161,10 +165,9 @@ void Frontiers::HandleTriangleDestroy(
         // hence each edge of the triangle is connected to two triangles...
         //
 
-#ifdef _DEBUG
-        for (int e = 0; e < 3; ++e)
-            assert(springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 2);
-#endif
+        assert(springs.GetSuperTriangles(edgeAIndex).size() == 2);
+        assert(springs.GetSuperTriangles(edgeBIndex).size() == 2);
+        assert(springs.GetSuperTriangles(edgeCIndex).size() == 2);
 
         //
         // ...so this triangle will generate a new internal frontier: C->B->A
@@ -175,10 +178,6 @@ void Frontiers::HandleTriangleDestroy(
         //
         // Make frontier with edges: C->B->A(->C)
         //
-
-        auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
-        auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
-        auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
 
         // Create frontier
         FrontierId const newFrontierId = CreateNewFrontier(
@@ -291,29 +290,77 @@ void Frontiers::HandleTriangleDestroy(
         // Visit all cusps
         //
 
-        ProcessTriangleCuspDestroy<0, 1>(
+        bool const isABCusp = ProcessTriangleCuspDestroy<0, 1>(
+            edgeAIndex,
+            edgeBIndex,
             triangleElementIndex,
             springs,
             triangles);
 
-        ProcessTriangleCuspDestroy<1, 2>(
+        bool const isBCCusp = ProcessTriangleCuspDestroy<1, 2>(
+            edgeBIndex,
+            edgeCIndex,
             triangleElementIndex,
             springs,
             triangles);
 
-        ProcessTriangleCuspDestroy<2, 0>(
+        bool const isCACusp = ProcessTriangleCuspDestroy<2, 0>(
+            edgeCIndex,
+            edgeAIndex,
             triangleElementIndex,
             springs,
             triangles);
 
-        //
-        // Visit all non-frontier edges
-        //
+        int const cuspCount =
+            (isABCusp ? 1 : 0)
+            + (isBCCusp ? 1 : 0)
+            + (isCACusp ? 1 : 0);
 
+        assert(cuspCount == 1 || cuspCount == 3);
 
-        // TODO: ...
+        if (cuspCount == 1)
+        {
+            //
+            // There is one and only one non-frontier edge
+            //
 
-        // TODO: if this triangle is left with a frontier all for itself, destroy the frontier
+            if (isABCusp)
+            {
+                ProcessTriangleOppositeCuspEdgeDestroy(
+                    edgeCIndex,
+                    edgeAIndex,
+                    edgeBIndex);
+            }
+            else if (isBCCusp)
+            {
+                ProcessTriangleOppositeCuspEdgeDestroy(
+                    edgeAIndex,
+                    edgeBIndex,
+                    edgeCIndex);
+            }
+            else
+            {
+                assert(isCACusp);
+
+                ProcessTriangleOppositeCuspEdgeDestroy(
+                    edgeBIndex,
+                    edgeCIndex,
+                    edgeAIndex);
+            }
+        }
+        else
+        {
+            //
+            // There are no non-frontier edges
+            //
+
+            assert(cuspCount == 3);
+
+            // TODOHERE: what is the situation now wrt the triangle's edges?
+        }
+
+        // TODO: make sure we update mEdges.FrontierId for destruction of this triangle
+        // TODO: destroy empty frontiers
     }
 
     ////////////////////////////////////////
@@ -428,8 +475,11 @@ FrontierId Frontiers::CreateNewFrontier(
     return newFrontierId;
 }
 
-template<int CuspEdge1Ordinal, int CuspEdge2Ordinal>
+// TODO: see if ordinals still needed
+template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
+    ElementIndex edgeIn,
+    ElementIndex edgeOut,
     ElementIndex triangleElementIndex,
     Springs const & springs,
     Triangles const & triangles)
@@ -446,162 +496,159 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
     // The cusp edges are adjacent
     static_assert(
-        (CuspEdge1Ordinal <= 1 && CuspEdge2Ordinal == CuspEdge1Ordinal + 1)
-        || (CuspEdge1Ordinal == 2 && CuspEdge2Ordinal == 0));
+        (CuspEdgeInOrdinal <= 1 && CuspEdgeOutOrdinal == CuspEdgeInOrdinal + 1)
+        || (CuspEdgeInOrdinal == 2 && CuspEdgeOutOrdinal == 0));
 
     //
     // We only care about cusps with frontiers on both edges
     //
 
-    ElementIndex const edge1Index = mTriangles[triangleElementIndex].EdgeIndices[CuspEdge1Ordinal];
-    FrontierId const frontier1Id = mEdges[edge1Index].FrontierIndex;
-    if (frontier1Id == NoneFrontierId)
+    FrontierId const frontierInId = mEdges[edgeIn].FrontierIndex;
+    if (frontierInId == NoneFrontierId)
         return false;
 
-    ElementIndex const edge2Index = mTriangles[triangleElementIndex].EdgeIndices[CuspEdge2Ordinal];
-    FrontierId const frontier2Id = mEdges[edge2Index].FrontierIndex;
-    if (frontier2Id == NoneFrontierId)
+    FrontierId const frontierOutId = mEdges[edgeOut].FrontierIndex;
+    if (frontierOutId == NoneFrontierId)
         return false;
 
-    //
-    // - The frontier on edge 1 is entering the cusp
-    // - The frontier on edge 2 is leaving the cusp
-    //
-
-#ifdef  _DEBUG
-    ElementIndex const cuspPointIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdge2Ordinal];
-
-    assert(mFrontierEdges[edge1Index].PointBIndex == cuspPointIndex);
-    assert(mFrontierEdges[edge2Index].PointAIndex == cuspPointIndex);
-#endif
 
     //
     // Check the four different cases
     //
 
-    assert(mFrontiers[frontier1Id].has_value());
-    assert(mFrontiers[frontier2Id].has_value());
+    assert(mFrontiers[frontierInId].has_value());
+    assert(mFrontiers[frontierOutId].has_value());
 
-    if (mFrontiers[frontier1Id]->Type == FrontierType::External)
+    if (mFrontiers[frontierInId]->Type == FrontierType::External)
     {
-        if (mFrontiers[frontier2Id]->Type == FrontierType::External)
+        if (mFrontiers[frontierOutId]->Type == FrontierType::External)
         {
-            // Frontier1 == External
-            // Frontier2 == External
+            // FrontierIn == External
+            // FrontierOut == External
 
-            LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): F1=Ext, F2=Ext");
+            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext");
 
             // It's the same frontier
-            assert(frontier1Id == frontier2Id);
+            assert(frontierInId == frontierOutId);
 
             // Check whether the edges are directly connected
-            if (mFrontierEdges[edge1Index].NextEdgeIndex == edge2Index)
+            if (mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut)
             {
                 //
                 // Nothing to do
                 //
 
-                assert(mFrontierEdges[edge2Index].PrevEdgeIndex == edge1Index);
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): Connected, NOP");
-
-                return false;
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): Connected, NOP");
             }
+            else
+            {
+                //
+                // After coming into the cusp from edge1, the external frontier travels around
+                // a region before returning back to the cusp and then away through edge2
+                //
+                // ...that region's frontier then becomes a new external frontier
+                //
 
-            //
-            // After coming into the cusp from edge1, the external frontier travels around
-            // a region before returning back to the cusp and then away through edge2
-            //
-            // ...that region's frontier then becomes a new external frontier
-            //
+                auto const newFrontierEdgeFirstIndex = mFrontierEdges[edgeIn].NextEdgeIndex;
+                auto const newFrontierEdgeLastIndex = mFrontierEdges[edgeOut].PrevEdgeIndex;
 
-            auto const newFrontierEdge1Index = mFrontierEdges[edge1Index].NextEdgeIndex;
-            auto const newFrontierEdge2Index = mFrontierEdges[edge2Index].PrevEdgeIndex;
+                //
+                // New frontier
+                //
 
-            // Count edges/points along the soon-to-be-detached region
-            ElementCount const newRegionSize = CountFrontierEdges(newFrontierEdge1Index, newFrontierEdge2Index);
+                // Create new external frontier
+                FrontierId const newFrontierId = CreateNewFrontier(
+                    FrontierType::External,
+                    newFrontierEdgeFirstIndex,
+                    0);
 
-            // Create new external frontier
-            FrontierId const newFrontierId = CreateNewFrontier(
-                FrontierType::External,
-                newFrontierEdge1Index,
-                newRegionSize);
+                // Propagate new frontier along the soon-to-be-detached region
+                ElementCount const newFrontierSize = PropagateFrontier(
+                    newFrontierEdgeFirstIndex,
+                    newFrontierEdgeLastIndex,
+                    newFrontierId);
 
-            // Connect first and last edge of new frontier
-            mFrontierEdges[newFrontierEdge1Index].PrevEdgeIndex = newFrontierEdge2Index;
-            mFrontierEdges[newFrontierEdge2Index].NextEdgeIndex = newFrontierEdge1Index;
+                // Connect first and last edges at cusp
+                mFrontierEdges[newFrontierEdgeFirstIndex].PrevEdgeIndex = newFrontierEdgeLastIndex;
+                mFrontierEdges[newFrontierEdgeLastIndex].NextEdgeIndex = newFrontierEdgeFirstIndex;
 
-            // Connect old frontier's edges
-            mFrontierEdges[edge1Index].NextEdgeIndex = edge2Index;
-            mFrontierEdges[edge2Index].PrevEdgeIndex = edge1Index;
+                // Update frontier
+                mFrontiers[newFrontierId]->Size = newFrontierSize;
+                assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
 
-            // Update old frontier head
-            mFrontiers[frontier1Id]->StartingEdgeIndex = edge1Index;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
-            assert(mFrontiers[frontier1Id]->Size >= newRegionSize);
-            mFrontiers[frontier1Id]->Size -= newRegionSize;
-            mFrontiers[frontier1Id]->IsDirtyForRendering = true;
+                //
+                // Old frontier
+                //
 
-            return true;
+                // Connect edges at cusp
+                mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+                mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+                // Update frontier
+                mFrontiers[frontierInId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
+                assert(mFrontiers[frontierInId]->Size >= newFrontierSize);
+                mFrontiers[frontierInId]->Size -= newFrontierSize;
+                mFrontiers[frontierInId]->IsDirtyForRendering = true;
+            }
         }
         else
         {
-            // Frontier1 == External
-            // Frontier2 == Internal
+            // FrontierIn == External
+            // FrontierOut == Internal
 
-            LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): F1=Ext, F2=Int");
+            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Int");
 
             // It's not the same frontier
-            assert(frontier1Id != frontier2Id);
+            assert(frontierInId != frontierOutId);
 
             // TODO
-            return true;
         }
     }
-    else if (mFrontiers[frontier2Id]->Type == FrontierType::External)
+    else if (mFrontiers[frontierOutId]->Type == FrontierType::External)
     {
-        // Frontier1 == Internal
-        // Frontier2 == External
+        // FrontierIn == Internal
+        // FrontierOut == External
 
-        LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): F1=Int, F2=Ext");
+        LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Ext");
 
         // It's not the same frontier
-        assert(frontier1Id != frontier2Id);
+        assert(frontierInId != frontierOutId);
 
         // TODO
-        return true;
     }
     else
     {
-        // Frontier1 == Internal
-        // Frontier2 == Internal
+        // FrontierIn == Internal
+        // FrontierOut == Internal
 
-        LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): F1=Int, F2=Int");
+        LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int");
 
         // Check whether it's the same frontier
-        if (frontier1Id == frontier2Id)
+        if (frontierInId == frontierOutId)
         {
             //
             // Same internal frontier
             //
 
             // Check whether the edges are directly connected
-            if (mFrontierEdges[edge1Index].NextEdgeIndex == edge2Index)
+            if (mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut)
             {
                 //
                 // Nothing to do
                 //
 
-                assert(mFrontierEdges[edge2Index].PrevEdgeIndex == edge1Index);
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdge1Ordinal, ", ", CuspEdge2Ordinal, "): Connected, NOP");
-
-                return false;
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): Connected, NOP");
             }
+            else
+            {
+                // TODO: one of these will become external
 
-            // TODO: one of these will become external
-
-            // TODO
-            return true;
+                // TODO
+            }
         }
         else
         {
@@ -610,9 +657,38 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             //
 
             // TODO
-            return true;
         }
     }
+
+    return true;
+}
+
+inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
+    ElementIndex edge,
+    ElementIndex cuspEdgeIn,
+    ElementIndex cuspEdgeOut)
+{
+    assert(mEdges[edge].FrontierIndex == NoneFrontierId);
+    assert(mFrontierEdges[cuspEdgeIn].NextEdgeIndex == cuspEdgeOut); // In is connected to Out
+    assert(mFrontierEdges[cuspEdgeOut].PrevEdgeIndex == cuspEdgeIn); // In is connected to Out
+
+    // Make this edge a frontier edge, undercutting the two cusp edges
+    mFrontierEdges[edge].PointAIndex = mFrontierEdges[cuspEdgeIn].PointAIndex;
+    mFrontierEdges[edge].PointBIndex = mFrontierEdges[cuspEdgeOut].PointBIndex;
+    mFrontierEdges[edge].PrevEdgeIndex = mFrontierEdges[cuspEdgeIn].PrevEdgeIndex;
+    mFrontierEdges[mFrontierEdges[cuspEdgeIn].PrevEdgeIndex].NextEdgeIndex = edge;
+    mFrontierEdges[edge].NextEdgeIndex = mFrontierEdges[cuspEdgeOut].NextEdgeIndex;
+    mFrontierEdges[mFrontierEdges[cuspEdgeOut].NextEdgeIndex].PrevEdgeIndex = edge;
+
+    assert(mEdges[cuspEdgeIn].FrontierIndex == mEdges[cuspEdgeOut].FrontierIndex); // Cusp edges' frontier is the same, by now
+    auto const frontierId = mEdges[cuspEdgeIn].FrontierIndex;
+    mEdges[edge].FrontierIndex = frontierId;
+
+    // Update frontier
+    mFrontiers[frontierId]->StartingEdgeIndex = edge; // Just to be safe, as we've nuked the cusp edges
+    assert(mFrontiers[frontierId]->Size >= 1);
+    mFrontiers[frontierId]->Size -= 1; // -2 + 1
+    mFrontiers[frontierId]->IsDirtyForRendering = true;
 }
 
 void Frontiers::RegeneratePointColors()

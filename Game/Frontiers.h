@@ -140,12 +140,20 @@ private:
         ElementIndex startingEdgeIndex = NoneElementIndex,
         ElementCount size = 0);
 
-    template<int CuspEdge1Ordinal, int CuspEdge2Ordinal>
+    template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
     inline bool ProcessTriangleCuspDestroy(
+        ElementIndex edgeIn,
+        ElementIndex edgeOut,
         ElementIndex triangleElementIndex,
         Springs const & springs,
         Triangles const & triangles);
 
+    inline void ProcessTriangleOppositeCuspEdgeDestroy(
+        ElementIndex edge,
+        ElementIndex cuspEdgeIn,
+        ElementIndex cuspEdgeOut);
+
+    /* TODO: keep only if needed
     inline ElementCount CountFrontierEdges(
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex) const
@@ -154,6 +162,24 @@ private:
         for (ElementIndex edgeIndex = mFrontierEdges[startEdgeIndex].NextEdgeIndex;
             edgeIndex != endEdgeIndex;
             ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex);
+
+        return count;
+    }
+    */
+
+    inline ElementCount PropagateFrontier(
+        ElementIndex const startEdgeIndex,
+        ElementIndex const endEdgeIndex,
+        FrontierId const frontierId)
+    {
+        ElementCount count = 1;
+        for (ElementIndex edgeIndex = startEdgeIndex; ; ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex)
+        {
+            mEdges[edgeIndex].FrontierIndex = frontierId;
+
+            if (edgeIndex == endEdgeIndex)
+                break;
+        }
 
         return count;
     }

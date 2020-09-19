@@ -1313,20 +1313,20 @@ bool Ship::QueryNearestPointAt(
 
 
     //
-    // Find triangle enclosing target
+    // Find triangle enclosing target - if any
     //
 
     ElementIndex enclosingTriangleIndex = NoneElementIndex;
     for (auto const triangleIndex : mTriangles)
     {
         if ((mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)))
-            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex))) > 0
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex))) < 0
             &&
             (mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)))
-            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex))) > 0
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex))) < 0
             &&
             (mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)))
-            .dot(targetPos - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex))) > 0)
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex))) < 0)
         {
             enclosingTriangleIndex = triangleIndex;
             break;
