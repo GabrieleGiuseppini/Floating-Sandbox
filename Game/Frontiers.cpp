@@ -164,12 +164,6 @@ void Frontiers::HandleTriangleDestroy(
         // None of the edges has a frontier...
         // hence each edge of the triangle is connected to two triangles...
         //
-
-        assert(springs.GetSuperTriangles(edgeAIndex).size() == 2);
-        assert(springs.GetSuperTriangles(edgeBIndex).size() == 2);
-        assert(springs.GetSuperTriangles(edgeCIndex).size() == 2);
-
-        //
         // ...so this triangle will generate a new internal frontier: C->B->A
         //  - The frontier edges will travel counterclockwise, but along triangles'
         //    edges it'll travel in the triangles' clockwise direction
@@ -217,13 +211,6 @@ void Frontiers::HandleTriangleDestroy(
 
         assert(lastEdgeWithFrontier != NoneElementIndex);
         assert(lastEdgeOrdinalWithFrontier != -1);
-
-#ifdef _DEBUG
-        for (int e = 0; e < 3; ++e)
-            assert(
-                (mTriangles[triangleElementIndex].EdgeIndices[e] == lastEdgeWithFrontier && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 1)
-                || (mTriangles[triangleElementIndex].EdgeIndices[e] != lastEdgeWithFrontier && springs.GetSuperTriangles(mTriangles[triangleElementIndex].EdgeIndices[e]).size() == 2));
-#endif
 
         //
         // ...we then propagate the frontier on the edge to the two other edges
@@ -360,9 +347,18 @@ void Frontiers::HandleTriangleDestroy(
 
             assert(cuspCount == 3);
 
-            // TODOHERE: what is the situation now wrt the triangle's edges?
-            // TODO: make sure we update mEdges.FrontierId for destruction of this triangle
-            // TODO: destroy empty frontiers
+            // All the edges of the triangle have a frontier, and it's the same
+            FrontierId const frontierId = mEdges[edgeAIndex].FrontierIndex;
+            assert(frontierId != NoneFrontierId);
+            assert(mEdges[edgeBIndex].FrontierIndex == frontierId);
+            assert(mEdges[edgeCIndex].FrontierIndex == frontierId);
+
+            // Destroy this frontier
+            mEdges[edgeAIndex].FrontierIndex = NoneFrontierId;
+            mEdges[edgeBIndex].FrontierIndex = NoneFrontierId;
+            mEdges[edgeCIndex].FrontierIndex = NoneFrontierId;
+            mFrontiers[frontierId]->Size = 0;
+            DestroyFrontier(frontierId);
         }
     }
 
@@ -482,7 +478,7 @@ void Frontiers::DestroyFrontier(
     FrontierId frontierId)
 {
     assert(mFrontiers[frontierId].has_value());
-    assert(mFrontiers[frontierId]->Size == 0); // TODO: not sure it will always hold
+    assert(mFrontiers[frontierId]->Size == 0);
 
     mFrontiers[frontierId].reset();
 }
@@ -699,7 +695,8 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
-                // TODO
+                LogMessage("TODO: !!!!!!!!!!!!");
+                // TODOHERE
                 // TODO: one of these will become external
             }
         }

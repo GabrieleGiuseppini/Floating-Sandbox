@@ -1344,6 +1344,8 @@ Render:
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 				- Tests:
 					- Thanos' Snap
+					- 3 lobes
+					- 4 lobes
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Spec: 
