@@ -170,22 +170,18 @@ private:
     }
     */
 
+    inline void ReplaceFrontier(
+        ElementIndex const startEdgeIndex,
+        ElementIndex const endEdgeIndex,
+        FrontierId const oldFrontierId,
+        FrontierId const newFrontierId,
+        ElementIndex edgeIn,
+        ElementIndex edgeOut);
+
     inline ElementCount PropagateFrontier(
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex,
-        FrontierId const frontierId)
-    {
-        ElementCount count = 1;
-        for (ElementIndex edgeIndex = startEdgeIndex; ; ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex)
-        {
-            mEdges[edgeIndex].FrontierIndex = frontierId;
-
-            if (edgeIndex == endEdgeIndex)
-                break;
-        }
-
-        return count;
-    }
+        FrontierId const frontierId);
 
     void RegeneratePointColors();
 

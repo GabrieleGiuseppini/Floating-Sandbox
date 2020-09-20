@@ -613,37 +613,15 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             // single *external* frontier
             //
 
-            // It's not the same frontier
-            assert(frontierInId != frontierOutId);
-
-            ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
-            ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
-
-            assert(mEdges[afterEdgeIn].FrontierIndex == frontierInId);
-            assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
-
-            // Propagate external frontier along the internal frontier
-            ElementCount const internalFrontierSize = PropagateFrontier(
-                edgeOut,
-                beforeEdgeOut,
-                frontierInId);
-
-            // Connect edges at triangle's side of cusp
-            mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-            mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
-
-            // Connect edges at opposite side of cusp
-            mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
-            mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
-
-            // Update external frontier
-            mFrontiers[frontierInId]->Size += internalFrontierSize;
-            mFrontiers[frontierInId]->IsDirtyForRendering = true;
-
-            // Destroy internal frontier
-            assert(internalFrontierSize == mFrontiers[frontierOutId]->Size);
-            mFrontiers[frontierOutId]->Size -= internalFrontierSize;
-            DestroyFrontier(frontierOutId);
+            // Replace the internal frontier (frontierOutId, connecting edgeOut to beforeEdgeOut)
+            // with the external forntier (frontierInId)
+            ReplaceFrontier(
+                edgeOut, // Start
+                mFrontierEdges[edgeOut].PrevEdgeIndex, // End
+                frontierOutId, // Old
+                frontierInId, // New
+                edgeIn,
+                edgeOut);
         }
     }
     else if (mFrontiers[frontierOutId]->Type == FrontierType::External)
@@ -658,37 +636,15 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         // single *external* frontier
         //
 
-        // It's not the same frontier
-        assert(frontierInId != frontierOutId);
-
-        ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
-        ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
-
-        assert(mEdges[afterEdgeIn].FrontierIndex == frontierInId);
-        assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
-
-        // Propagate external frontier along the internal frontier
-        ElementCount const internalFrontierSize = PropagateFrontier(
-            afterEdgeIn,
+        // Replace the internal frontier (frontierInId, connecting afterEdgeIn to edgeIn)
+        // with the external forntier (frontierOutId)
+        ReplaceFrontier(
+            mFrontierEdges[edgeIn].NextEdgeIndex, // Start
+            edgeIn, // End
+            frontierInId, // Old
+            frontierOutId, // New
             edgeIn,
-            frontierOutId);
-
-        // Connect edges at triangle's side of cusp
-        mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-        mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
-
-        // Connect edges at opposite side of cusp
-        mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
-        mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
-
-        // Update external frontier
-        mFrontiers[frontierOutId]->Size += internalFrontierSize;
-        mFrontiers[frontierOutId]->IsDirtyForRendering = true;
-
-        // Destroy internal frontier
-        assert(internalFrontierSize == mFrontiers[frontierInId]->Size);
-        mFrontiers[frontierInId]->Size -= internalFrontierSize;
-        DestroyFrontier(frontierInId);
+            edgeOut);
     }
     else
     {
@@ -765,6 +721,65 @@ inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
     assert(mFrontiers[frontierId]->Size >= 1);
     mFrontiers[frontierId]->Size -= 1; // -2 + 1
     mFrontiers[frontierId]->IsDirtyForRendering = true;
+}
+
+void Frontiers::ReplaceFrontier(
+    ElementIndex const startEdgeIndex,
+    ElementIndex const endEdgeIndex,
+    FrontierId const oldFrontierId,
+    FrontierId const newFrontierId,
+    ElementIndex edgeIn,
+    ElementIndex edgeOut)
+{
+    // It's not the same frontier
+    assert(oldFrontierId != newFrontierId);
+
+    // Start and end currently belong to the old frontier
+    assert(mEdges[startEdgeIndex].FrontierIndex == oldFrontierId);
+    assert(mEdges[endEdgeIndex].FrontierIndex == oldFrontierId);
+
+    ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
+    ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
+
+    // Propagate new frontier along the old frontier
+    ElementCount const oldFrontierSize = PropagateFrontier(
+        startEdgeIndex,
+        endEdgeIndex,
+        newFrontierId);
+
+    // Connect edges at triangle's side of cusp
+    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+    // Connect edges at opposite side of cusp
+    mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
+    mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
+
+    // Update new frontier
+    mFrontiers[newFrontierId]->Size += oldFrontierSize;
+    mFrontiers[newFrontierId]->IsDirtyForRendering = true;
+
+    // Destroy old frontier
+    assert(oldFrontierSize == mFrontiers[oldFrontierId]->Size);
+    mFrontiers[oldFrontierId]->Size -= oldFrontierSize;
+    DestroyFrontier(oldFrontierId);
+}
+
+ElementCount Frontiers::PropagateFrontier(
+    ElementIndex const startEdgeIndex,
+    ElementIndex const endEdgeIndex,
+    FrontierId const frontierId)
+{
+    ElementCount count = 1;
+    for (ElementIndex edgeIndex = startEdgeIndex; ; ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex)
+    {
+        mEdges[edgeIndex].FrontierIndex = frontierId;
+
+        if (edgeIndex == endEdgeIndex)
+            break;
+    }
+
+    return count;
 }
 
 void Frontiers::RegeneratePointColors()
