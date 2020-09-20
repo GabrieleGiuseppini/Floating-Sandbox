@@ -357,10 +357,9 @@ void Frontiers::HandleTriangleDestroy(
             assert(cuspCount == 3);
 
             // TODOHERE: what is the situation now wrt the triangle's edges?
+            // TODO: make sure we update mEdges.FrontierId for destruction of this triangle
+            // TODO: destroy empty frontiers
         }
-
-        // TODO: make sure we update mEdges.FrontierId for destruction of this triangle
-        // TODO: destroy empty frontiers
     }
 
     ////////////////////////////////////////
@@ -663,7 +662,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         assert(frontierInId != frontierOutId);
 
         // TODOHERE
-        // TODO
     }
     else
     {
@@ -730,6 +728,10 @@ inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
     assert(mEdges[cuspEdgeIn].FrontierIndex == mEdges[cuspEdgeOut].FrontierIndex); // Cusp edges' frontier is the same, by now
     auto const frontierId = mEdges[cuspEdgeIn].FrontierIndex;
     mEdges[edge].FrontierIndex = frontierId;
+
+    // Clear cusp edges
+    mEdges[cuspEdgeIn].FrontierIndex = NoneFrontierId;
+    mEdges[cuspEdgeOut].FrontierIndex = NoneFrontierId;
 
     // Update frontier
     mFrontiers[frontierId]->StartingEdgeIndex = edge; // Just to be safe, as we've nuked the cusp edges
