@@ -676,12 +676,12 @@ void World::SetSilence(float silenceAmount)
     mWind.SetSilence(silenceAmount);
 }
 
-void World::DestroyTriangle(ElementId triangleId)
+bool World::DestroyTriangle(ElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
-    mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
+    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
 }
 
 

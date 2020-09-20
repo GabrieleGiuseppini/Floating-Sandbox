@@ -1531,9 +1531,18 @@ void Ship::SetEngineControllerState(
         gameParameters);
 }
 
-void Ship::DestroyTriangle(ElementIndex triangleIndex)
+bool Ship::DestroyTriangle(ElementIndex triangleIndex)
 {
-    mTriangles.Destroy(triangleIndex);
+    if (triangleIndex < mTriangles.GetElementCount()
+        && !mTriangles.IsDeleted(triangleIndex))
+    {
+        mTriangles.Destroy(triangleIndex);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 }

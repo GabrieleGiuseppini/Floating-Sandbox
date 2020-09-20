@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "SoundController.h"
+
 #include <Game/IGameController.h>
 
 #include <wx/dialog.h>
@@ -19,7 +21,8 @@ public:
 
     DebugDialog(
         wxWindow * parent,
-        std::shared_ptr<IGameController> gameController);
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController);
 
     void Open();
 
@@ -35,4 +38,5 @@ private:
 
     wxWindow * const mParent;
     std::shared_ptr<IGameController> mGameController;
+    std::shared_ptr<SoundController> mSoundController;
 };

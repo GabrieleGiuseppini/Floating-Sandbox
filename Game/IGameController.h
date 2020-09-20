@@ -126,7 +126,7 @@ struct IGameController
         ElectricalElementId electricalElementId,
         int telegraphValue) = 0;
 
-    virtual void DestroyTriangle(ElementId triangleId) = 0;
+    virtual bool DestroyTriangle(ElementId triangleId) = 0;
 
     //
     // Rendering controls

@@ -277,7 +277,7 @@ public:
 
     void SetSilence(float silenceAmount);
 
-    void DestroyTriangle(ElementId triangleId);
+    bool DestroyTriangle(ElementId triangleId);
 
 public:
 

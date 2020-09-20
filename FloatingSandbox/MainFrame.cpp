@@ -652,7 +652,8 @@ void MainFrame::OnSecretTypingOpenDebugWindow()
     {
         mDebugDialog = std::make_unique<DebugDialog>(
             this,
-            mGameController);
+            mGameController,
+            mSoundController);
     }
 
     mDebugDialog->Open();

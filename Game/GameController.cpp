@@ -1129,10 +1129,10 @@ void GameController::SetEngineControllerState(
         mGameParameters);
 }
 
-void GameController::DestroyTriangle(ElementId triangleId)
+bool GameController::DestroyTriangle(ElementId triangleId)
 {
     assert(!!mWorld);
-    mWorld->DestroyTriangle(triangleId);
+    return mWorld->DestroyTriangle(triangleId);
 }
 
 //

@@ -206,7 +206,7 @@ public:
         ElectricalElementId electricalElementId,
         int telegraphValue) override;
 
-    void DestroyTriangle(ElementId triangleId) override;
+    bool DestroyTriangle(ElementId triangleId) override;
 
     //
     // Render controls

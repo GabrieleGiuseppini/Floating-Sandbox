@@ -17,9 +17,11 @@ static int constexpr StaticBoxTopMargin = 7;
 
 DebugDialog::DebugDialog(
     wxWindow* parent,
-    std::shared_ptr<IGameController> gameController)
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController)
     : mParent(parent)
     , mGameController(std::move(gameController))
+    , mSoundController(std::move(soundController))
 {
     Create(
         mParent,
@@ -109,10 +111,15 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    mGameController->DestroyTriangle(
+                    bool bRes = mGameController->DestroyTriangle(
                         ElementId(
                             0, // TODO: ship ID
                             static_cast<ElementIndex>(mTriangleIndexSpinCtrl->GetValue())));
+
+                    if (!bRes)
+                    {
+                        mSoundController->PlayErrorSound();
+                    }
                 });
 
             destroyBoxSizer->Add(

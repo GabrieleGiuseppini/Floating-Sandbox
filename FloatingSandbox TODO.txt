@@ -285,6 +285,11 @@ Render:
 		
 		= Frontier (*)
 
+		- Frontier-enabled features:
+			- Directional water drag (*)
+			- Pressure implosions / pressure crush (*)
+			- Waves from ship (*)
+
 		- See why log diagnostics is not written
 			- Missing folder?
 
@@ -1104,6 +1109,8 @@ Render:
 		- Increase the amount of drag adjustment users may do
 			- Goal: water should become lava with high drag
 		- See if worth separating into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
+		- Bonus: should also consider normal to surface of ocean, so if two surfaces intersect, we get
+		  momentum from waves to ship
 
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
@@ -1116,6 +1123,9 @@ Render:
 				- massiveness = point's connected component size
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
+
+	- Waves from ship (*): 
+		- Generate wave (change height) when frontier (points) touch water for the first time OR when frontier (points) move, while being above a certain depth
 
 	- Gases: 
 		- Spec:
@@ -1326,9 +1336,9 @@ Render:
 						+ Ext, Ext
 						+ Ext, Int
 						+ Int, Ext
-						- Int, Int
-							- Same frontier ID
-							- Different frontier ID
+						= Int, Int
+							- Same frontier ID, not connected
+							+ Different frontier ID
 				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
@@ -1352,16 +1362,6 @@ Render:
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
 			  now use edges
 				- If so, we could now only upload springs that have 0 or 1 edges
-		- Enabled features:
-			- TODO: Spec these elsewhere
-			- Waves: 
-				- Generate wave (change height) when frontier (points) touch water for the first time
-			- Water drag 
-				- The one already there assumes velocity always normal to surface, but we should consider surface normal instead
-				- Should also consider normal to surface of ocean, so if two surfaces intersect, we get
-				  momentum from waves to ship
-				- The new directional drag should make parts of the ship break off
-			- Pressure implosion (*)
 
 		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
@@ -1389,10 +1389,9 @@ Render:
 			- For each point on frontier (ext and int) that is not leaking:
 				- Calc pressure delta between current water at point and external Y
 				- Do force (inward or outward) proportional to delta
-		- TODO: what was this?
-			- How to deal with counter-pressure from inside though?
-				- One idea: each connected component remembers whether it's leaking, and only CC's without
-				  any leaking would be subject to pressure
+		- How to deal with counter-pressure from inside though?
+			- One idea: each connected component remembers whether it's leaking, and only CC's without
+			  any leaking would be subject to pressure
 
 	- Punch tool: interacts with frontier, just like a punch
 		- Requires frontier work first

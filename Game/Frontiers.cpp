@@ -320,6 +320,8 @@ void Frontiers::HandleTriangleDestroy(
 
         if (cuspCount == 1)
         {
+            LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 1");
+
             //
             // There is one and only one non-frontier edge
             //
@@ -350,6 +352,8 @@ void Frontiers::HandleTriangleDestroy(
         }
         else
         {
+            LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 3");
+
             //
             // There are no non-frontier edges
             //
@@ -534,8 +538,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             // FrontierIn == External
             // FrontierOut == External
 
-            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext");
-
             // It's the same frontier
             assert(frontierInId == frontierOutId);
 
@@ -543,15 +545,27 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             if (mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut)
             {
                 //
-                // Nothing to do
+                // Edges are directly connected
                 //
 
-                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext, Connected");
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): Connected, NOP");
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn); // Connected
+
+                //
+                // Nothing to do
+                //
             }
             else
             {
+                //
+                // Edges are not directly connected
+                //
+
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext, !Connected");
+
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
+
                 //
                 // After coming into the cusp from edge1, the external frontier travels around
                 // a region before returning back to the cusp and then away through edge2
@@ -608,6 +622,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
             LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Int");
 
+            assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
+            assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
+
             //
             // The external and internal frontiers are going to get merged into one,
             // single *external* frontier
@@ -631,6 +648,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
         LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Ext");
 
+        assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
+        assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
+
         //
         // The internal and external frontiers are going to get merged into one,
         // single *external* frontier
@@ -651,8 +671,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         // FrontierIn == Internal
         // FrontierOut == Internal
 
-        LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int");
-
         // Check whether it's the same frontier
         if (frontierInId == frontierOutId)
         {
@@ -664,18 +682,25 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             if (mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut)
             {
                 //
-                // Nothing to do
+                // Directly connected
                 //
 
-                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1==F2, Connected");
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): Connected, NOP");
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn); // Connected
+
+                //
+                // Nothing to do
+                //
             }
             else
             {
-                // TODO: one of these will become external
+                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1==F2, !Connected");
+
+                assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
                 // TODO
+                // TODO: one of these will become external
             }
         }
         else
@@ -684,7 +709,42 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             // Different internal frontiers
             //
 
-            // TODO
+            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1!=F2");
+
+            assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
+            assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
+
+            //
+            // Here we have two lobes inside a ship which will become one single, internal lobe
+            //
+            // It really is arbitrary which of the two frontiers takes over the other, so
+            // for performance we let the longer take over the shorter
+            //
+
+            if (mFrontiers[frontierInId]->Size >= mFrontiers[frontierOutId]->Size)
+            {
+                // FrontierIn takes over FrontierOut
+
+                ReplaceFrontier(
+                    edgeOut, // Start
+                    mFrontierEdges[edgeOut].PrevEdgeIndex, // End
+                    frontierOutId, // Old
+                    frontierInId, // New
+                    edgeIn,
+                    edgeOut);
+            }
+            else
+            {
+                // FrontierOut takes over FrontierIn
+
+                ReplaceFrontier(
+                    mFrontierEdges[edgeIn].NextEdgeIndex, // Start
+                    edgeIn, // End
+                    frontierInId, // Old
+                    frontierOutId, // New
+                    edgeIn,
+                    edgeOut);
+            }
         }
     }
 
