@@ -616,11 +616,11 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             // It's not the same frontier
             assert(frontierInId != frontierOutId);
 
-            ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
             ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
+            ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
 
-            assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
             assert(mEdges[afterEdgeIn].FrontierIndex == frontierInId);
+            assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
 
             // Propagate external frontier along the internal frontier
             ElementCount const internalFrontierSize = PropagateFrontier(
@@ -629,8 +629,8 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 frontierInId);
 
             // Connect edges at triangle's side of cusp
-            mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
             mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+            mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
 
             // Connect edges at opposite side of cusp
             mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
@@ -661,7 +661,34 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         // It's not the same frontier
         assert(frontierInId != frontierOutId);
 
-        // TODOHERE
+        ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
+        ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
+
+        assert(mEdges[afterEdgeIn].FrontierIndex == frontierInId);
+        assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
+
+        // Propagate external frontier along the internal frontier
+        ElementCount const internalFrontierSize = PropagateFrontier(
+            afterEdgeIn,
+            edgeIn,
+            frontierOutId);
+
+        // Connect edges at triangle's side of cusp
+        mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+        mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+        // Connect edges at opposite side of cusp
+        mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
+        mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
+
+        // Update external frontier
+        mFrontiers[frontierOutId]->Size += internalFrontierSize;
+        mFrontiers[frontierOutId]->IsDirtyForRendering = true;
+
+        // Destroy internal frontier
+        assert(internalFrontierSize == mFrontiers[frontierInId]->Size);
+        mFrontiers[frontierInId]->Size -= internalFrontierSize;
+        DestroyFrontier(frontierInId);
     }
     else
     {

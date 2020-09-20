@@ -1325,7 +1325,7 @@ Render:
 					= 2, 3 frontiers
 						+ Ext, Ext
 						+ Ext, Int
-						- Int, Ext
+						+ Int, Ext
 						- Int, Int
 							- Same frontier ID
 							- Different frontier ID
