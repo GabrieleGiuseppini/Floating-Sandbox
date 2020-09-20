@@ -486,9 +486,9 @@ void Frontiers::DestroyFrontier(
 // TODO: see if ordinals still needed
 template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
-    ElementIndex edgeIn,
-    ElementIndex edgeOut,
-    ElementIndex triangleElementIndex,
+    ElementIndex const edgeIn,
+    ElementIndex const edgeOut,
+    ElementIndex const triangleElementIndex,
     Springs const & springs,
     Triangles const & triangles)
 {
@@ -564,51 +564,20 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
                 //
                 // After coming into the cusp from edge1, the external frontier travels around
-                // a region before returning back to the cusp and then away through edge2
+                // a region before returning back to the cusp and then away through edge2...
                 //
-                // ...that region's frontier then becomes a new external frontier
-                //
-
-                auto const newFrontierEdgeFirstIndex = mFrontierEdges[edgeIn].NextEdgeIndex;
-                auto const newFrontierEdgeLastIndex = mFrontierEdges[edgeOut].PrevEdgeIndex;
-
-                //
-                // New frontier
+                // ...quite arbitrarily, we decide that that region's frontier then becomes a
+                // new external frontier (we could have chosen instead that that region's frontier
+                // stays and the other portion becomes the new frontier)
                 //
 
-                // Create new external frontier
-                FrontierId const newFrontierId = CreateNewFrontier(
+                SplitIntoNewFrontier(
+                    mFrontierEdges[edgeIn].NextEdgeIndex,
+                    mFrontierEdges[edgeOut].PrevEdgeIndex,
+                    frontierInId,
                     FrontierType::External,
-                    newFrontierEdgeFirstIndex,
-                    0);
-
-                // Propagate new frontier along the soon-to-be-detached region
-                ElementCount const newFrontierSize = PropagateFrontier(
-                    newFrontierEdgeFirstIndex,
-                    newFrontierEdgeLastIndex,
-                    newFrontierId);
-
-                // Connect first and last edges at cusp
-                mFrontierEdges[newFrontierEdgeFirstIndex].PrevEdgeIndex = newFrontierEdgeLastIndex;
-                mFrontierEdges[newFrontierEdgeLastIndex].NextEdgeIndex = newFrontierEdgeFirstIndex;
-
-                // Update frontier
-                mFrontiers[newFrontierId]->Size = newFrontierSize;
-                assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
-
-                //
-                // Old frontier
-                //
-
-                // Connect edges at cusp
-                mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-                mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
-
-                // Update frontier
-                mFrontiers[frontierInId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
-                assert(mFrontiers[frontierInId]->Size >= newFrontierSize);
-                mFrontiers[frontierInId]->Size -= newFrontierSize;
-                mFrontiers[frontierInId]->IsDirtyForRendering = true;
+                    edgeIn,
+                    edgeOut);
             }
         }
         else
@@ -691,13 +660,47 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             }
             else
             {
+                //
+                // Not connected
+                //
+
                 LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1==F2, !Connected");
 
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
-                LogMessage("TODO: !!!!!!!!!!!!");
-                // TODOHERE
-                // TODO: one of these will become external
+                //
+                // This is a peculiar situation: we are separating two parts of a region,
+                // along an internal frontier. This is the "ball forming in a hole" case.
+                //
+                // When an internal frontier gets split in two by means of a "cut", then
+                // one of the two must become an *external frontier*
+                // (though I don't have a hard proof that this must be the case...)
+                //
+                // Which of the two becomes the external? It's obviously the one surrounding
+                // a region with zero external frontiers, as each region must have one and
+                // only one external frontier.
+                //
+
+                // Start by splitting here, arbitrarily making the other one an internal frontier for the moment
+                FrontierId const newFrontierId = SplitIntoNewFrontier(
+                    mFrontierEdges[edgeIn].NextEdgeIndex,
+                    mFrontierEdges[edgeOut].PrevEdgeIndex,
+                    frontierInId,
+                    FrontierType::Internal,
+                    edgeIn,
+                    edgeOut);
+
+                // Now check whether the other one has an external frontier
+                if (HasRegionExternalFrontier(mFrontiers[newFrontierId]->StartingEdgeIndex))
+                {
+                    // The old frontier becomes the external one
+                    mFrontiers[frontierInId]->Type = FrontierType::External;
+                }
+                else
+                {
+                    // The new frontier becomes the external one
+                    mFrontiers[newFrontierId]->Type = FrontierType::External;
+                }
             }
         }
         else
@@ -749,9 +752,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 }
 
 inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
-    ElementIndex edge,
-    ElementIndex cuspEdgeIn,
-    ElementIndex cuspEdgeOut)
+    ElementIndex const edge,
+    ElementIndex const cuspEdgeIn,
+    ElementIndex const cuspEdgeOut)
 {
     assert(mEdges[edge].FrontierIndex == NoneFrontierId);
     assert(mFrontierEdges[cuspEdgeIn].NextEdgeIndex == cuspEdgeOut); // In is connected to Out
@@ -780,13 +783,66 @@ inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
     mFrontiers[frontierId]->IsDirtyForRendering = true;
 }
 
+FrontierId Frontiers::SplitIntoNewFrontier(
+    ElementIndex const newFrontierStartEdgeIndex,
+    ElementIndex const newFrontierEndEdgeIndex,
+    FrontierId const oldFrontierId,
+    FrontierType const newFrontierType,
+    ElementIndex const edgeIn,
+    ElementIndex const edgeOut)
+{
+    // Start and end currently belong to the old frontier
+    assert(mEdges[newFrontierStartEdgeIndex].FrontierIndex == oldFrontierId);
+    assert(mEdges[newFrontierEndEdgeIndex].FrontierIndex == oldFrontierId);
+
+    //
+    // New frontier
+    //
+
+    // Create new frontier
+    FrontierId const newFrontierId = CreateNewFrontier(
+        newFrontierType,
+        newFrontierStartEdgeIndex,
+        0);
+
+    // Propagate new frontier along the soon-to-be-detached region
+    ElementCount const newFrontierSize = PropagateFrontier(
+        newFrontierStartEdgeIndex,
+        newFrontierEndEdgeIndex,
+        newFrontierId);
+
+    // Connect first and last edges at cusp
+    mFrontierEdges[newFrontierStartEdgeIndex].PrevEdgeIndex = newFrontierEndEdgeIndex;
+    mFrontierEdges[newFrontierEndEdgeIndex].NextEdgeIndex = newFrontierStartEdgeIndex;
+
+    // Update frontier
+    mFrontiers[newFrontierId]->Size = newFrontierSize;
+    assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
+
+    //
+    // Old frontier
+    //
+
+    // Connect edges at cusp
+    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+    // Update frontier
+    mFrontiers[oldFrontierId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
+    assert(mFrontiers[oldFrontierId]->Size >= newFrontierSize);
+    mFrontiers[oldFrontierId]->Size -= newFrontierSize;
+    mFrontiers[oldFrontierId]->IsDirtyForRendering = true;
+
+    return newFrontierId;
+}
+
 void Frontiers::ReplaceFrontier(
     ElementIndex const startEdgeIndex,
     ElementIndex const endEdgeIndex,
     FrontierId const oldFrontierId,
     FrontierId const newFrontierId,
-    ElementIndex edgeIn,
-    ElementIndex edgeOut)
+    ElementIndex const edgeIn,
+    ElementIndex const edgeOut)
 {
     // It's not the same frontier
     assert(oldFrontierId != newFrontierId);
@@ -837,6 +893,12 @@ ElementCount Frontiers::PropagateFrontier(
     }
 
     return count;
+}
+
+bool Frontiers::HasRegionExternalFrontier(ElementIndex startingEdgeIndex) const
+{
+    // TODO
+    return false;
 }
 
 void Frontiers::RegeneratePointColors()

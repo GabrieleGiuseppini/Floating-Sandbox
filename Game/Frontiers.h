@@ -145,43 +145,39 @@ private:
 
     template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
     inline bool ProcessTriangleCuspDestroy(
-        ElementIndex edgeIn,
-        ElementIndex edgeOut,
-        ElementIndex triangleElementIndex,
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut,
+        ElementIndex const triangleElementIndex,
         Springs const & springs,
         Triangles const & triangles);
 
     inline void ProcessTriangleOppositeCuspEdgeDestroy(
-        ElementIndex edge,
-        ElementIndex cuspEdgeIn,
-        ElementIndex cuspEdgeOut);
+        ElementIndex const edge,
+        ElementIndex const cuspEdgeIn,
+        ElementIndex const cuspEdgeOut);
 
-    /* TODO: keep only if needed
-    inline ElementCount CountFrontierEdges(
-        ElementIndex const startEdgeIndex,
-        ElementIndex const endEdgeIndex) const
-    {
-        ElementCount count = 2;
-        for (ElementIndex edgeIndex = mFrontierEdges[startEdgeIndex].NextEdgeIndex;
-            edgeIndex != endEdgeIndex;
-            ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex);
-
-        return count;
-    }
-    */
+    inline FrontierId SplitIntoNewFrontier(
+        ElementIndex const newFrontierStartEdgeIndex,
+        ElementIndex const newFrontierEndEdgeIndex,
+        FrontierId const oldFrontierId,
+        FrontierType const newFrontierType,
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut);
 
     inline void ReplaceFrontier(
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex,
         FrontierId const oldFrontierId,
         FrontierId const newFrontierId,
-        ElementIndex edgeIn,
-        ElementIndex edgeOut);
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut);
 
     inline ElementCount PropagateFrontier(
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex,
         FrontierId const frontierId);
+
+    bool HasRegionExternalFrontier(ElementIndex startingEdgeIndex) const;
 
     void RegeneratePointColors();
 

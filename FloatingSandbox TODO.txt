@@ -1337,7 +1337,8 @@ Render:
 						+ Ext, Int
 						+ Int, Ext
 						= Int, Int
-							- Same frontier ID, not connected
+							= Same frontier ID, not connected
+								- Frontier type (flood) check
 							+ Different frontier ID
 				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
