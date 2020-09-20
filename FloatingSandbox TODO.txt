@@ -1316,16 +1316,19 @@ Render:
 				+ Triangles: points A,B,C indices also (mainly) avail as array
 				+ FrontierEdge: also PrevEdge
 				+ Debug window
-				- Cases:
+				= Cases:
 					+ 0 frontiers
 						+ Test in debug
-					= 1 frontier
-						= Test in debug
-							- Also internal frontier
+					+ 1 frontier
+						+ Test in debug
+							+ Also internal frontier
 					= 2, 3 frontiers
-						- Prepare test ship (5x5)
-							- Make paper with numbers
-						- TODO
+						+ Ext, Ext
+						+ Ext, Int
+						- Int, Ext
+						- Int, Int
+							- Same frontier ID
+							- Different frontier ID
 				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway

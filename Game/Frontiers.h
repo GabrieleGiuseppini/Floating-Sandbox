@@ -140,6 +140,9 @@ private:
         ElementIndex startingEdgeIndex = NoneElementIndex,
         ElementCount size = 0);
 
+    void DestroyFrontier(
+        FrontierId frontierId);
+
     template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
     inline bool ProcessTriangleCuspDestroy(
         ElementIndex edgeIn,

@@ -475,6 +475,15 @@ FrontierId Frontiers::CreateNewFrontier(
     return newFrontierId;
 }
 
+void Frontiers::DestroyFrontier(
+    FrontierId frontierId)
+{
+    assert(mFrontiers[frontierId].has_value());
+    assert(mFrontiers[frontierId]->Size == 0); // TODO: not sure it will always hold
+
+    mFrontiers[frontierId].reset();
+}
+
 // TODO: see if ordinals still needed
 template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
@@ -600,10 +609,42 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
             LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Int");
 
+            //
+            // The external and internal frontiers are going to get merged into one,
+            // single *external* frontier
+            //
+
             // It's not the same frontier
             assert(frontierInId != frontierOutId);
 
-            // TODO
+            ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
+            ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
+
+            assert(mEdges[beforeEdgeOut].FrontierIndex == frontierOutId);
+            assert(mEdges[afterEdgeIn].FrontierIndex == frontierInId);
+
+            // Propagate external frontier along the internal frontier
+            ElementCount const internalFrontierSize = PropagateFrontier(
+                edgeOut,
+                beforeEdgeOut,
+                frontierInId);
+
+            // Connect edges at triangle's side of cusp
+            mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+            mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+
+            // Connect edges at opposite side of cusp
+            mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
+            mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
+
+            // Update external frontier
+            mFrontiers[frontierInId]->Size += internalFrontierSize;
+            mFrontiers[frontierInId]->IsDirtyForRendering = true;
+
+            // Destroy internal frontier
+            assert(internalFrontierSize == mFrontiers[frontierOutId]->Size);
+            mFrontiers[frontierOutId]->Size -= internalFrontierSize;
+            DestroyFrontier(frontierOutId);
         }
     }
     else if (mFrontiers[frontierOutId]->Type == FrontierType::External)
@@ -613,9 +654,15 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
         LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Ext");
 
+        //
+        // The internal and external frontiers are going to get merged into one,
+        // single *external* frontier
+        //
+
         // It's not the same frontier
         assert(frontierInId != frontierOutId);
 
+        // TODOHERE
         // TODO
     }
     else
