@@ -2693,15 +2693,6 @@ void Ship::HandleSpringRestore(
 void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 {
     //
-    // Maintain frontier
-    //
-
-    mFrontiers.HandleTriangleDestroy(
-        triangleElementIndex,
-        mSprings,
-        mTriangles);
-
-    //
     // Remove triangle from other elements
     //
 
@@ -2721,6 +2712,19 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     //
 
     mTriangles.ClearSubSprings(triangleElementIndex);
+
+    //
+    // Maintain frontier
+    //
+    // Must be invoked here, and not earlier, as the springs are expected to be
+    // already consistent with the removal of the triangle.
+    //
+
+    mFrontiers.HandleTriangleDestroy(
+        triangleElementIndex,
+        mPoints,
+        mSprings,
+        mTriangles);
 
     /////////////////////////////////////////////////////////
 

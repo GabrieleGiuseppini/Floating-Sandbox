@@ -241,61 +241,28 @@ Render:
 ====================================================
 
 - Roadmap:
-	= 1.15.3
-		+ Version bump
-		+ Add tester X 2
-		+ Intel HD 2000
-			+ Investigate:
-				- No threading: lags
-				- SwapBuffers log (@MainFrame, 3): lag (not swapbuffers)
-				- SwapBuffers + UploadStart log (4): lag (neither of them)
-				- UploadStart + Draw: 
-				- OnGameTimerTrigger: lag (one timer tick every 5 s) 05:05:43.515398:OnGameTimerTrigger; 05:05:47.873422:OnGameTimerTrigger; 05:05:52.227233:OnGameTimerTrigger
-				- OnGameTimerTrigger (start and GameController::RunGameIteration) + PostGameTimer: lag (RunGameIteration takes 4 secs)
-				- GameController::RunGameIteration::4 steps: lag (Render Draw -> end of function: takes 4 secs)
-				- RenderContext::Draw: glFinish_start/glFinish_end/swapbuffers_end: NO lag
-				- RenderContext::Draw: glFinish_end/swapbuffers_end: lag, none of these
-			+ OpenGL switch
-		+ Melting point adjust
-		+ Run in debug
-		= Release:
-			+ MSI variables
-			= 64-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test
-				= Test on Discord
-			= 32-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Test
-				= Test on Discord
-			
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Package instructions:
-					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu. 
-				- Post
-			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Test w/old FS
-				- Update current version in FAQ	
 
 	= 1.16.0
 		
 		= Frontier (*)
 
+		- ShipRenderContext: see if may turn off Z-depth check @ triangles
+			- Check first on Dell if it changes perf
+
 		- Frontier-enabled features:
 			- Directional water drag (*)
 			- Pressure implosions / pressure crush (*)
 			- Waves from ship (*)
+			- Punch tool (*)
 
 		- See why log diagnostics is not written
 			- Missing folder?
 
-		- Lower speed of waves - now that we run faster?
+		- Lower speed of (sin) waves - now that we run faster?
 
 		- Calibrate flying burning cardboard
+
+		- Night vision (*)
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -894,7 +861,7 @@ Render:
 
 - Gfx optimizations:
 
-	- See timeBeginPeriod() for vSync
+	
 
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering) (*)
 		- If fine:
@@ -918,6 +885,11 @@ Render:
 
 
 - Gfx:
+
+	- Night vision (*): ship is just not affected by ambient light
+		- RenderSettings & SettingsDialog
+		- ShipRenderContext:
+			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
 
 	- Decide whether auto-zoom considering position would be a good idea or not
 
@@ -1326,29 +1298,50 @@ Render:
 				+ Triangles: points A,B,C indices also (mainly) avail as array
 				+ FrontierEdge: also PrevEdge
 				+ Debug window
-				= Cases:
+				+ Cases:
 					+ 0 frontiers
 						+ Test in debug
 					+ 1 frontier
 						+ Test in debug
 							+ Also internal frontier
-					= 2, 3 frontiers
+					+ 2, 3 frontiers
 						+ Ext, Ext
 						+ Ext, Int
 						+ Int, Ext
-						= Int, Int
-							= Same frontier ID, not connected
-								- Frontier type (flood) check
+						+ Int, Int							
+							+ Same frontier ID, not connected
+								+ Frontier type (flood) check
+									+ This is done with visiting points, flagging springs (edges)
+										+ Make sure that by the time Frontiers::HandleTriangleDestroy is invoked, springs
+										  are already consistent with the triangle being gone
+											+ Move MaintainFrontier invocation by Ship::HandleTriangleDestroy after springs have been made consistent
+											! Destroy dynamics:
+												* DestroyPoint 
+													=> DestroySpring 
+														=> DestroyTriangles
+															=> MaintainFrontier
+												* DestroySpring
+													=> DestroyTriangles
+														=> MaintainFrontier
+									+ Test all cases
 							+ Different frontier ID
 				- Things to remember:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 				- Tests:
 					- Thanos' Snap
-					- 3 lobes
-					- 4 lobes
+					- 1 triangle with 3 lobes
+			- See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
+				- If so, do like endpoints (3-array, etc.), respecting CW order
+					- And get rid of Frontiers::Triangles::Edges
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
+				- Preliminary work:
+					- Cusp search needs to be done by searching triangles connected to cusp Point
+						- So ideally triangles at a point should be sorted by octant, CW
+							- Not by owner first => see what we use Owner for and see whether the order is important
+						- ShipBuilder: make sure triangles are sorted by octant
+						- Repair: make sure triangles are restored and put in Points' vector by octant
 				- Spec: 
 					+ Marks mIsDirtyForRendering
 					- TODO
@@ -1396,8 +1389,9 @@ Render:
 			- One idea: each connected component remembers whether it's leaking, and only CC's without
 			  any leaking would be subject to pressure
 
-	- Punch tool: interacts with frontier, just like a punch
+	- Punch tool (*): interacts with frontier, just like a punch
 		- Requires frontier work first
+		- TODO
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
@@ -1448,9 +1442,12 @@ Render:
 	- ShipLoadDialog: display also folders
 
 	- Localization:
+		- Keyboard shortcuts
+			- But also MainFrame needs to know mappings, as it's MainFrame that reacts to key presses
 		- Make NotificationLayer text translatable too
 			- Requires a LocalizedText instance, passed to GameController from MainFrame
 				- At this point, replace "ProgressMessage" enum with simply "Message" enum, and move localization of progress messages from splash screen to LocalizedText
+			- But requires fonts
 		- Ships' electrical panel labels:
 			- First off, verify JSON can contain UTF-8 chars
 			- Then, allow multi-language labels: label value is either string or {Lang, String}
@@ -4423,6 +4420,7 @@ IF WX:
 				+ TaskThread optimization for single-core boxes
 					+ Verify no overhead anymore
 			+ changes.txt
+	X See timeBeginPeriod() for vSync
 
 + Dynamics
 	+ Try half of the relaxation iterations
@@ -10220,6 +10218,35 @@ IF WX:
 				+ FAQ:
 					+ Current version
 					+ 32-bit
-
+	+ 1.15.3
+		+ Version bump
+		+ Add tester X 2
+		+ Intel HD 2000
+			+ Investigate:
+				- No threading: lags
+				- SwapBuffers log (@MainFrame, 3): lag (not swapbuffers)
+				- SwapBuffers + UploadStart log (4): lag (neither of them)
+				- UploadStart + Draw: 
+				- OnGameTimerTrigger: lag (one timer tick every 5 s) 05:05:43.515398:OnGameTimerTrigger; 05:05:47.873422:OnGameTimerTrigger; 05:05:52.227233:OnGameTimerTrigger
+				- OnGameTimerTrigger (start and GameController::RunGameIteration) + PostGameTimer: lag (RunGameIteration takes 4 secs)
+				- GameController::RunGameIteration::4 steps: lag (Render Draw -> end of function: takes 4 secs)
+				- RenderContext::Draw: glFinish_start/glFinish_end/swapbuffers_end: NO lag
+				- RenderContext::Draw: glFinish_end/swapbuffers_end: lag, none of these
+			+ OpenGL switch
+		+ Melting point adjust
+		+ Run in debug
+		+ Release:
+			+ MSI variables
+			+ 64-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test
+				+ Test on Discord
+			+ 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Test
+				+ Test on Discord
+			+ Upload packages to www.floatingsandbox.com
 
 
