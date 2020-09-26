@@ -1354,6 +1354,7 @@ Render:
 			- See if FrontierEdge::PointBIndex is really needed
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
+			- SetEventRecorder dynamics between GameController/World/Ship
 			- Finalize speed for rendered frontier's march
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
 			  now use edges

@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
@@ -45,6 +46,12 @@ public:
         GameParameters const & gameParameters);
 
     void Announce();
+
+    void SetEventRecorder(EventRecorder * eventRecorder);
+
+    void ReplayRecordedEvent(
+        RecordedEvent const & event,
+        GameParameters const & gameParameters);
 
     float GetCurrentSimulationTime() const
     {
@@ -307,6 +314,9 @@ private:
 
     // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+
+    // The current event recorder (if any)
+    EventRecorder * mEventRecorder;
 
     // The task thread pool that we use for concurrency
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;

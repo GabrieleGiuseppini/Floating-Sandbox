@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
@@ -55,7 +56,16 @@ public:
     inline auto const & GetPoints() const { return mPoints; }
     inline auto & GetPoints() { return mPoints; }
 
-    bool IsUnderwater(ElementIndex pointElementIndex) const;
+    bool IsUnderwater(ElementIndex pointElementIndex) const
+    {
+        return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+    }
+
+    void SetEventRecorder(EventRecorder * eventRecorder);
+
+    bool ReplayRecordedEvent(
+        RecordedEvent const & event,
+        GameParameters const & gameParameters);
 
     void Update(
         float currentSimulationTime,
@@ -374,6 +384,21 @@ private:
         return mConnectedComponentSizes[static_cast<size_t>(connCompId)];
     }
 
+    inline void DetachPointForDestroy(
+        ElementIndex pointIndex,
+        vec2f const & detachVelocity,
+        float currentSimulationTime,
+        GameParameters const & gameParameters)
+    {
+        mPoints.Detach(
+            pointIndex,
+            detachVelocity,
+            Points::DetachOptions::GenerateDebris
+            | Points::DetachOptions::FireDestroyEvent,
+            currentSimulationTime,
+            gameParameters);
+    }
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -492,6 +517,7 @@ private:
     MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+    EventRecorder * mEventRecorder;
 
     // The (initial) world size of  the ship
     vec2f const mSize;

@@ -4,6 +4,7 @@
 #
 
 set  (GAME_SOURCES	
+	EventRecorder.h
 	GameController.cpp
 	GameController_StateMachines.cpp
 	GameController.h

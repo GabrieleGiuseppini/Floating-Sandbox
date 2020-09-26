@@ -28,6 +28,7 @@ World::World(
     , mOceanSurface(gameEventDispatcher)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mGameEventHandler(std::move(gameEventDispatcher))
+    , mEventRecorder(nullptr)
     , mTaskThreadPool(std::move(taskThreadPool))
 {
     // Initialize world pieces
@@ -58,6 +59,9 @@ std::tuple<ShipId, RgbaImageData> World::AddShip(
         shipTexturizer,
         gameParameters);
 
+    // Set event recorder in new ship (if any)
+    ship->SetEventRecorder(mEventRecorder);
+
     // Store ship
     mAllShips.push_back(std::move(ship));
 
@@ -71,6 +75,30 @@ void World::Announce()
     for (auto & ship : mAllShips)
     {
         ship->Announce();
+    }
+}
+
+void World::SetEventRecorder(EventRecorder * eventRecorder)
+{
+    mEventRecorder = eventRecorder;
+
+    // Set in all ships
+    for (auto & ship : mAllShips)
+    {
+        ship->SetEventRecorder(eventRecorder);
+    }
+}
+
+void World::ReplayRecordedEvent(
+    RecordedEvent const & event,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        if (ship->ReplayRecordedEvent(event, gameParameters))
+        {
+            break;
+        }
     }
 }
 

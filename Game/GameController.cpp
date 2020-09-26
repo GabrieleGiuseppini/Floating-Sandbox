@@ -580,6 +580,32 @@ void GameController::LowFrequencyUpdate()
     mLastPublishedTotalFrameCount = mTotalFrameCount;
 }
 
+void GameController::StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback)
+{
+    mEventRecorder = std::make_unique<EventRecorder>(onEventCallback);
+
+    mWorld->SetEventRecorder(mEventRecorder.get());
+}
+
+RecordedEvents GameController::StopRecordingEvents()
+{
+    assert(!!mEventRecorder);
+
+    mWorld->SetEventRecorder(nullptr);
+
+    auto recordedEvents = mEventRecorder->StopRecording();
+    mEventRecorder.reset();
+
+    return recordedEvents;
+}
+
+void GameController::ReplayRecordedEvent(RecordedEvent const & event)
+{
+    mWorld->ReplayRecordedEvent(
+        event,
+        mGameParameters); // NOTE: using now's game parameters...but we don't want to capture these in the recorded event (at least at this moment)
+}
+
 /////////////////////////////////////////////////////////////
 // Interactions
 /////////////////////////////////////////////////////////////
@@ -1244,6 +1270,9 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     // Reset world
     assert(!!mWorld);
     mWorld = std::move(newWorld);
+
+    // Set event recorder (if any)
+    mWorld->SetEventRecorder(mEventRecorder.get());
 
     // Reset state machines
     ResetStateMachines();

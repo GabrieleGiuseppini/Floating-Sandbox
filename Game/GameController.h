@@ -132,6 +132,10 @@ public:
         mIsPulseUpdateSet = true;
     }
 
+    void StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback) override;
+    RecordedEvents StopRecordingEvents() override;
+    void ReplayRecordedEvent(RecordedEvent const & event) override;
+
     //
     // Game Control and notifications
     //
@@ -763,6 +767,7 @@ private:
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
     ShipTexturizer mShipTexturizer;
+    std::unique_ptr<EventRecorder> mEventRecorder;
 
 
     //

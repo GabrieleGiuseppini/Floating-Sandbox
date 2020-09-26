@@ -359,13 +359,18 @@ void Ship::DestroyAt(
                         GameParameters::MaxDebrisParticlesVelocity);
 
                     // Detach
-                    mPoints.Detach(
+                    DetachPointForDestroy(
                         pointIndex,
                         detachVelocity,
-                        Points::DetachOptions::GenerateDebris
-                        | Points::DetachOptions::FireDestroyEvent,
                         currentSimulationTime,
                         gameParameters);
+
+                    // Record event, if requested to
+                    if (mEventRecorder != nullptr)
+                        mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
+                            pointIndex,
+                            detachVelocity,
+                            currentSimulationTime);
                 }
             }
             else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
@@ -1233,8 +1238,7 @@ void Ship::ApplyThanosSnap(
             mPoints.Detach(
                 pointIndex,
                 mPoints.GetVelocity(pointIndex) + detachVelocity,
-                Points::DetachOptions::DoNotGenerateDebris
-                | Points::DetachOptions::DoNotFireDestroyEvent,
+                Points::DetachOptions::None,
                 currentSimulationTime,
                 gameParameters);
 

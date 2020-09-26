@@ -9,9 +9,11 @@
 
 #include <Game/IGameController.h>
 
+#include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
 #include <wx/spinctrl.h>
+#include <wx/textctrl.h>
 
 #include <memory>
 
@@ -29,14 +31,30 @@ public:
 private:
 
     void PopulateTrianglesPanel(wxPanel * panel);
+    void PopulateEventRecordingPanel(wxPanel * panel);
+
+    inline void SetRecordedEventText(
+        uint32_t eventIndex,
+        RecordedEvent const & recordedEvent)
+    {
+        mRecordedEventTextCtrl->SetValue(
+            std::to_string(eventIndex)
+            + ": "
+            + recordedEvent.ToString());
+    }
 
 private:
 
     wxSpinCtrl * mTriangleIndexSpinCtrl;
+    wxTextCtrl * mRecordedEventTextCtrl;
+    wxButton * mStepButton;
 
 private:
 
     wxWindow * const mParent;
     std::shared_ptr<IGameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
+
+    std::shared_ptr<RecordedEvents> mRecordedEvents;
+    uint32_t mCurrentRecordedEventIndex;
 };

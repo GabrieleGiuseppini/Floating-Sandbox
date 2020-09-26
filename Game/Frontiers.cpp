@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <set>
+#include <stack>
 
 namespace Physics {
 
@@ -23,6 +24,7 @@ Frontiers::Frontiers(
     , mTriangles(triangles.GetElementCount())
     , mFrontiers()
     , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
+    , mCurrentVisitSequenceNumber()
     , mIsDirtyForRendering(true)
 {
     //
@@ -133,12 +135,22 @@ void Frontiers::AddFrontier(
 
 void Frontiers::HandleTriangleDestroy(
     ElementIndex triangleElementIndex,
+    Points const & points,
     Springs const & springs,
     Triangles const & triangles)
 {
+    // Take edge indices once and for all
     auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
     auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
     auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
+
+    // Springs are already consistent with the removal of this triangle
+    assert(springs.GetSuperTriangles(edgeAIndex).size() == 0
+        || (springs.GetSuperTriangles(edgeAIndex).size() == 1 && springs.GetSuperTriangles(edgeAIndex)[0] != triangleElementIndex));
+    assert(springs.GetSuperTriangles(edgeBIndex).size() == 0
+        || (springs.GetSuperTriangles(edgeBIndex).size() == 1 && springs.GetSuperTriangles(edgeBIndex)[0] != triangleElementIndex));
+    assert(springs.GetSuperTriangles(edgeCIndex).size() == 0
+        || (springs.GetSuperTriangles(edgeCIndex).size() == 1 && springs.GetSuperTriangles(edgeCIndex)[0] != triangleElementIndex));
 
     // Count edges with frontiers
     size_t edgesWithFrontierCount = 0;
@@ -281,6 +293,7 @@ void Frontiers::HandleTriangleDestroy(
             edgeAIndex,
             edgeBIndex,
             triangleElementIndex,
+            points,
             springs,
             triangles);
 
@@ -288,6 +301,7 @@ void Frontiers::HandleTriangleDestroy(
             edgeBIndex,
             edgeCIndex,
             triangleElementIndex,
+            points,
             springs,
             triangles);
 
@@ -295,6 +309,7 @@ void Frontiers::HandleTriangleDestroy(
             edgeCIndex,
             edgeAIndex,
             triangleElementIndex,
+            points,
             springs,
             triangles);
 
@@ -483,18 +498,18 @@ void Frontiers::DestroyFrontier(
     mFrontiers[frontierId].reset();
 }
 
-// TODO: see if ordinals still needed
 template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
     ElementIndex const edgeIn,
     ElementIndex const edgeOut,
     ElementIndex const triangleElementIndex,
+    Points const & points,
     Springs const & springs,
     Triangles const & triangles)
 {
     //
-    // Here we pretend to detach the cusp from the (eventual) rest of the ship,
-    // adjusting frontiers in the process.
+    // Here we pretend to detach the cusp (which we don't know already as being a cusp)
+    // from the (eventual) rest of the ship, adjusting frontiers in the process.
     //
     // On exit, both the traingle's edges entering the cusp and the (eventual)
     // edges leaving the cusp will be consistent.
@@ -508,7 +523,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         || (CuspEdgeInOrdinal == 2 && CuspEdgeOutOrdinal == 0));
 
     //
-    // We only care about cusps with frontiers on both edges
+    // We only care about cusps - i.e. with frontiers on both edges
     //
 
     FrontierId const frontierInId = mEdges[edgeIn].FrontierIndex;
@@ -519,6 +534,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
     if (frontierOutId == NoneFrontierId)
         return false;
 
+    // Springs are consistent
+    assert(springs.GetSuperTriangles(edgeIn).size() == 0); // edgeIn has a frontier made of this triangle, which according to the springs is already gone
+    assert(springs.GetSuperTriangles(edgeOut).size() == 0); // edgeOut has a frontier made of this triangle, which according to the springs is already gone
 
     //
     // Check the four different cases
@@ -544,8 +562,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 // Edges are directly connected
                 //
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext, Connected");
-
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn); // Connected
 
                 //
@@ -557,8 +573,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 //
                 // Edges are not directly connected
                 //
-
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Ext, !Connected");
 
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
@@ -585,8 +599,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             // FrontierIn == External
             // FrontierOut == Internal
 
-            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Ext, F2=Int");
-
             assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
             assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
@@ -610,8 +622,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
     {
         // FrontierIn == Internal
         // FrontierOut == External
-
-        LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Ext");
 
         assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
         assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
@@ -650,8 +660,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 // Directly connected
                 //
 
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1==F2, Connected");
-
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn); // Connected
 
                 //
@@ -663,8 +671,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 //
                 // Not connected
                 //
-
-                LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1==F2, !Connected");
 
                 assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
 
@@ -690,17 +696,41 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                     edgeIn,
                     edgeOut);
 
-                // Now check whether the other one has an external frontier
-                if (HasRegionExternalFrontier(mFrontiers[newFrontierId]->StartingEdgeIndex))
+                // Now check whether the new region has an external frontier
+                ElementIndex const cuspPointIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
+
+                // TODOTEST
+                ElementIndex const otherPointIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
+                bool TODOTEST = HasRegionFrontierOfType(
+                    FrontierType::External,
+                    otherPointIndex,
+                    points,
+                    springs);
+
+                LogMessage("TODOTEST: HasRegionFrontierOfType(Ext, ", otherPointIndex, "): ", TODOTEST);
+
+                if (HasRegionFrontierOfType(
+                    FrontierType::External,
+                    cuspPointIndex, // Cusp point, belongs to new region now
+                    points,
+                    springs))
                 {
+                    LogMessage("TODOTEST: HasRegionFrontierOfType(Ext, ", cuspPointIndex, "): YES");
+
                     // The old frontier becomes the external one
                     mFrontiers[frontierInId]->Type = FrontierType::External;
                 }
                 else
                 {
+                    LogMessage("TODOTEST: HasRegionFrontierOfType(Ext, ", cuspPointIndex, "): NO");
+
                     // The new frontier becomes the external one
                     mFrontiers[newFrontierId]->Type = FrontierType::External;
                 }
+
+                // Guaranteed by SplitIntoNewFrontier
+                assert(mFrontiers[frontierInId]->IsDirtyForRendering);
+                assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
             }
         }
         else
@@ -708,8 +738,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             //
             // Different internal frontiers
             //
-
-            LogMessage("TODOTEST: ProcessCusp(", CuspEdgeInOrdinal, ", ", CuspEdgeOutOrdinal, "): F1=Int, F2=Int, F1!=F2");
 
             assert(mFrontierEdges[edgeIn].NextEdgeIndex != edgeOut); // Not connected
             assert(mFrontierEdges[edgeOut].PrevEdgeIndex != edgeIn); // Not connected
@@ -895,9 +923,68 @@ ElementCount Frontiers::PropagateFrontier(
     return count;
 }
 
-bool Frontiers::HasRegionExternalFrontier(ElementIndex startingEdgeIndex) const
+bool Frontiers::HasRegionFrontierOfType(
+    FrontierType targetFrontierType,
+    ElementIndex startingPointIndex,
+    Points const & points,
+    Springs const & springs)
 {
-    // TODO
+    //
+    // Here we flood the region connected to the specified point,
+    // checking whether the region is connected with at least an
+    // external frontier
+    //
+    // Points and springs are assumed to be already consistent with the removal
+    // of the triangle
+    //
+
+    // Prepare new visit sequence number
+    auto const visitSequenceNumber = ++mCurrentVisitSequenceNumber;
+
+    // The set of points to visit, and from which we still
+    // have to propagate out
+    std::stack<ElementIndex> pointsToVisit;
+
+    pointsToVisit.push(startingPointIndex);
+
+    while (!pointsToVisit.empty())
+    {
+        // Pop point to visit
+        ElementIndex const pointIndex = pointsToVisit.top();
+        pointsToVisit.pop();
+
+        // TODOTEST
+        Points & pt = const_cast<Points &>(points);
+        pt.ColorPoint(pointIndex, rgbaColor(10, 80, 80, 255));
+
+        // Visit all its non-visited, non-chain springs
+        for (auto const & cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
+        {
+            if (mEdges[cs.SpringIndex].LastVisitSequenceNumber != visitSequenceNumber
+                && springs.GetSuperTriangles(cs.SpringIndex).size() > 0)
+            {
+                //
+                // Visit spring
+                //
+
+                // Check if this spring has a frontier of the requested type
+                if (mEdges[cs.SpringIndex].FrontierIndex != NoneFrontierId
+                    && mFrontiers[mEdges[cs.SpringIndex].FrontierIndex]->Type == targetFrontierType)
+                {
+                    // Found it!
+                    return true;
+                }
+
+                // Remember we've visited this spring
+                mEdges[cs.SpringIndex].LastVisitSequenceNumber = visitSequenceNumber;
+
+                // Queue the other endpoint for visiting
+                pointsToVisit.push(cs.OtherEndpointIndex);
+            }
+        }
+    }
+
+    // If we're here it means we haven't found a frontier of the requested type
     return false;
 }
 

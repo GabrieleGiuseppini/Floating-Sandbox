@@ -5,10 +5,11 @@
  ***************************************************************************************/
 #include "DebugDialog.h"
 
-#include <wx/button.h>
 #include <wx/gbsizer.h>
 #include <wx/notebook.h>
 #include <wx/statbox.h>
+
+#include <cassert>
 
 static constexpr int Border = 10;
 static int constexpr CellBorder = 8;
@@ -22,6 +23,8 @@ DebugDialog::DebugDialog(
     : mParent(parent)
     , mGameController(std::move(gameController))
     , mSoundController(std::move(soundController))
+    , mRecordedEvents()
+    , mCurrentRecordedEventIndex(0)
 {
     Create(
         mParent,
@@ -49,7 +52,7 @@ DebugDialog::DebugDialog(
 
 
     //
-    // Triangle
+    // Triangles
     //
 
     {
@@ -60,12 +63,25 @@ DebugDialog::DebugDialog(
         notebook->AddPage(trianglesPanel, _("Triangles"));
     }
 
-    dialogVSizer->Add(notebook, 1, wxEXPAND);
+
+    //
+    // Event Recording
+    //
+
+    {
+        wxPanel * eventRecordingPanel = new wxPanel(notebook);
+
+        PopulateEventRecordingPanel(eventRecordingPanel);
+
+        notebook->AddPage(eventRecordingPanel, _("Event Recording"));
+    }
 
 
     //
     // Finalize dialog
     //
+
+    dialogVSizer->Add(notebook, 1, wxEXPAND);
 
     SetSizer(dialogVSizer);
 
@@ -139,6 +155,123 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
             CellBorder);
     }
 
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Control
+    //
+
+    {
+        wxButton * startButton = new wxButton(panel, wxID_ANY, _T("Start"));
+        startButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                mRecordedEventTextCtrl->Clear();
+                mStepButton->Enable(false);
+
+                mGameController->StartRecordingEvents(
+                    [this](uint32_t eventIndex, RecordedEvent const & recordedEvent)
+                    {
+                        SetRecordedEventText(eventIndex, recordedEvent);
+                    }
+                );
+            });
+
+        gridSizer->Add(
+            startButton,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    {
+        wxButton * stopButton = new wxButton(panel, wxID_ANY, _T("Stop"));
+        stopButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                mRecordedEvents = std::make_shared<RecordedEvents>(
+                    mGameController->StopRecordingEvents());
+
+                mCurrentRecordedEventIndex = 0;
+
+                if (mRecordedEvents->GetSize() > 0)
+                {
+                    mStepButton->Enable(true);
+                    SetRecordedEventText(0, mRecordedEvents->GetEvent(0));
+                }
+                else
+                {
+                    mRecordedEventTextCtrl->Clear();
+                    mStepButton->Enable(false);
+                }
+            });
+
+        gridSizer->Add(
+            stopButton,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
+    // Playback
+    //
+
+    {
+        mRecordedEventTextCtrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, 40),
+            wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
+
+        gridSizer->Add(
+            mRecordedEventTextCtrl,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    {
+        mStepButton = new wxButton(panel, wxID_ANY, _T("Step"));
+
+        mStepButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                assert(!!mRecordedEvents);
+                assert(mCurrentRecordedEventIndex < mRecordedEvents->GetSize());
+
+                mGameController->ReplayRecordedEvent(
+                    mRecordedEvents->GetEvent(mCurrentRecordedEventIndex));
+
+                ++mCurrentRecordedEventIndex;
+                if (mCurrentRecordedEventIndex >= mRecordedEvents->GetSize())
+                {
+                    mStepButton->Enable(false);
+                }
+                else
+                {
+                    SetRecordedEventText(mCurrentRecordedEventIndex, mRecordedEvents->GetEvent(mCurrentRecordedEventIndex));
+                }
+            });
+
+        gridSizer->Add(
+            mStepButton,
+            wxGBPosition(2, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 

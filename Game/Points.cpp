@@ -1508,6 +1508,14 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
+void Points::ColorPoint(
+    ElementIndex pointIndex,
+    rgbaColor const & color)
+{
+    mColorBuffer[pointIndex] = color.toVec4f();
+    mIsWholeColorBufferDirty = true;
+}
+
 void Points::UploadAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const

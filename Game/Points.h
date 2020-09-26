@@ -39,10 +39,8 @@ public:
 
     enum class DetachOptions
     {
-        DoNotGenerateDebris = 0,
+        None = 0,
         GenerateDebris = 1,
-
-        DoNotFireDestroyEvent = 0,
         FireDestroyEvent = 2,
     };
 
@@ -807,6 +805,12 @@ public:
 
     void Query(ElementIndex pointElementIndex) const;
 
+    // For debugging
+    void ColorPoint(
+        ElementIndex pointIndex,
+        rgbaColor const & color);
+
+    // For experiments
     Geometry::AABB GetAABB() const
     {
         Geometry::AABB box;

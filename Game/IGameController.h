@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
 #include "IGameEventHandlers.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
@@ -16,6 +17,7 @@
 #include <GameCore/Vectors.h>
 
 #include <filesystem>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -50,6 +52,10 @@ struct IGameController
     virtual void LowFrequencyUpdate() = 0;
 
     virtual void PulseUpdateAtNextGameIteration() = 0;
+
+    virtual void StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback) = 0;
+    virtual RecordedEvents StopRecordingEvents() = 0;
+    virtual void ReplayRecordedEvent(RecordedEvent const & event) = 0;
 
 
     //

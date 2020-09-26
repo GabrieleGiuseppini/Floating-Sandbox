@@ -75,8 +75,13 @@ public:
         std::vector<ElementIndex> edgeIndices,
         Springs const & springs);
 
+    /*
+     * Maintains the frontiers consistent with the removal of the specified triangle.
+     * springs and points: assumed to be already consistent with the removal of the triangle.
+     */
     void HandleTriangleDestroy(
         ElementIndex triangleElementIndex,
+        Points const & points,
         Springs const & springs,
         Triangles const & triangles);
 
@@ -111,12 +116,17 @@ private:
         // or NoneFrontierId if the edge does not belong to a frontier.
         FrontierId FrontierIndex;
 
+        // The last visit sequence number
+        SequenceNumber LastVisitSequenceNumber;
+
         explicit Edge(FrontierId frontierIndex)
             : FrontierIndex(frontierIndex)
+            , LastVisitSequenceNumber()
         {}
 
         Edge()
             : FrontierIndex(NoneFrontierId)
+            , LastVisitSequenceNumber()
         {}
     };
 
@@ -148,6 +158,7 @@ private:
         ElementIndex const edgeIn,
         ElementIndex const edgeOut,
         ElementIndex const triangleElementIndex,
+        Points const & points,
         Springs const & springs,
         Triangles const & triangles);
 
@@ -177,7 +188,11 @@ private:
         ElementIndex const endEdgeIndex,
         FrontierId const frontierId);
 
-    bool HasRegionExternalFrontier(ElementIndex startingEdgeIndex) const;
+    bool HasRegionFrontierOfType(
+        FrontierType targetFrontierType,
+        ElementIndex startingPointIndex,
+        Points const & points,
+        Springs const & springs);
 
     void RegeneratePointColors();
 
@@ -207,6 +222,10 @@ private:
     // Frontier coloring info.
     // Cardinality: points
     Buffer<Render::FrontierColor> mPointColors;
+
+    // The visit number used to mark edges as visited during the
+    // region/frontier check
+    SequenceNumber mCurrentVisitSequenceNumber;
 
     bool mIsDirtyForRendering; // When true, a change has occurred and thus needs to be re-uploaded
 };

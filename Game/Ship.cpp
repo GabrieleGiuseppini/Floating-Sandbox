@@ -73,6 +73,7 @@ Ship::Ship(
     , mMaterialDatabase(materialDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
+    , mEventRecorder(nullptr)
     , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -125,9 +126,27 @@ void Ship::Announce()
     mElectricalElements.AnnounceInstancedElements();
 }
 
-bool Ship::IsUnderwater(ElementIndex pointElementIndex) const
+void Ship::SetEventRecorder(EventRecorder * eventRecorder)
 {
-    return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+    mEventRecorder = eventRecorder;
+}
+
+bool Ship::ReplayRecordedEvent(
+    RecordedEvent const & event,
+    GameParameters const & gameParameters)
+{
+    if (event.GetType() == RecordedEvent::RecordedEventType::PointDetachForDestroy)
+    {
+        RecordedPointDetachForDestroyEvent const & detachEvent = static_cast<RecordedPointDetachForDestroyEvent const &>(event);
+
+        DetachPointForDestroy(
+            detachEvent.GetPointIndex(),
+            detachEvent.GetDetachVelocity(),
+            detachEvent.GetSimulationTime(),
+            gameParameters);
+    }
+
+    return false;
 }
 
 void Ship::Update(
