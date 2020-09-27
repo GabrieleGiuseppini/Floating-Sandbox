@@ -40,7 +40,7 @@ private:
         {}
     };
 
-    using SubSpringsVector = FixedSizeVector<ElementIndex, 4u>;
+    using SubSpringsVector = FixedSizeVector<ElementIndex, 3u>; // 3 + eventual traverse spring
 
 public:
 

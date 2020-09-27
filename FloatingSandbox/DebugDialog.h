@@ -47,7 +47,10 @@ private:
 
     wxSpinCtrl * mTriangleIndexSpinCtrl;
     wxTextCtrl * mRecordedEventTextCtrl;
-    wxButton * mStepButton;
+    wxButton * mRecordEventPlayButton;
+    wxButton * mRecordEventStopButton;
+    wxButton * mRecordEventStepButton;
+    wxButton * mRecordEventRewindButton;
 
 private:
 

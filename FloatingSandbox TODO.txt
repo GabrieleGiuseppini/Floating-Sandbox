@@ -1325,8 +1325,12 @@ Render:
 														=> MaintainFrontier
 									+ Test all cases
 							+ Different frontier ID
-				- Things to remember:
-					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
+							+ Fix bug wrt "traverse springs"
+								+ See implications of not populating traverse springs; check all uses of:
+									+ Springs::SuperTriangles
+									+ Triangles::SubSprings						
+				= Things to remember:
+					+ Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 				- Tests:
 					- Thanos' Snap
@@ -1354,11 +1358,14 @@ Render:
 			- See if FrontierEdge::PointBIndex is really needed
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
+			- Log lines at Frontiers
 			- SetEventRecorder dynamics between GameController/World/Ship
+				- Also GameController::Reset() should clear all events
 			- Finalize speed for rendered frontier's march
-			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection?), as we might 
+			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection - only?), as we might 
 			  now use edges
-				- If so, we could now only upload springs that have 0 or 1 edges
+				- Unless we now need it in Frontiers' maintenance as well?
+				- If so, we could now only upload springs that have 0 or 1 edges (WHAT?)
 
 		- TODOOLD
 		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)

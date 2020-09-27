@@ -110,7 +110,7 @@ private:
     {
         std::array<ElementIndex, 3> PointIndices1;
 
-        FixedSizeVector<ElementIndex, 4> SubSprings2;
+        FixedSizeVector<ElementIndex, 3> SubSprings2;
 
         ShipBuildTriangle(
             std::array<ElementIndex, 3> const & pointIndices1)

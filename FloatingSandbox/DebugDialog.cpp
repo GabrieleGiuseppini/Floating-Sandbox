@@ -170,13 +170,18 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     //
 
     {
-        wxButton * startButton = new wxButton(panel, wxID_ANY, _T("Start"));
-        startButton->Bind(
+        mRecordEventPlayButton = new wxButton(panel, wxID_ANY, _T("Start"));
+
+        mRecordEventPlayButton->Bind(
             wxEVT_BUTTON,
             [this](wxCommandEvent &)
             {
+                mRecordEventPlayButton->Enable(false);
+                mRecordEventStopButton->Enable(true);
+                mRecordEventStepButton->Enable(false);
+                mRecordEventRewindButton->Enable(false);
+
                 mRecordedEventTextCtrl->Clear();
-                mStepButton->Enable(false);
 
                 mGameController->StartRecordingEvents(
                     [this](uint32_t eventIndex, RecordedEvent const & recordedEvent)
@@ -187,7 +192,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
             });
 
         gridSizer->Add(
-            startButton,
+            mRecordEventPlayButton,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
@@ -195,11 +200,17 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     }
 
     {
-        wxButton * stopButton = new wxButton(panel, wxID_ANY, _T("Stop"));
-        stopButton->Bind(
+        mRecordEventStopButton = new wxButton(panel, wxID_ANY, _T("Stop"));
+
+        mRecordEventStopButton->Enable(false);
+
+        mRecordEventStopButton->Bind(
             wxEVT_BUTTON,
             [this](wxCommandEvent &)
             {
+                mRecordEventPlayButton->Enable(true);
+                mRecordEventStopButton->Enable(false);
+
                 mRecordedEvents = std::make_shared<RecordedEvents>(
                     mGameController->StopRecordingEvents());
 
@@ -207,18 +218,20 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
 
                 if (mRecordedEvents->GetSize() > 0)
                 {
-                    mStepButton->Enable(true);
+                    mRecordEventStepButton->Enable(true);
+                    mRecordEventRewindButton->Enable(true);
                     SetRecordedEventText(0, mRecordedEvents->GetEvent(0));
                 }
                 else
                 {
+                    mRecordEventStepButton->Enable(false);
+                    mRecordEventRewindButton->Enable(false);
                     mRecordedEventTextCtrl->Clear();
-                    mStepButton->Enable(false);
                 }
             });
 
         gridSizer->Add(
-            stopButton,
+            mRecordEventStopButton,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
@@ -242,9 +255,11 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     }
 
     {
-        mStepButton = new wxButton(panel, wxID_ANY, _T("Step"));
+        mRecordEventStepButton = new wxButton(panel, wxID_ANY, _T("Step"));
 
-        mStepButton->Bind(
+        mRecordEventStepButton->Enable(false);
+
+        mRecordEventStepButton->Bind(
             wxEVT_BUTTON,
             [this](wxCommandEvent &)
             {
@@ -257,7 +272,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
                 ++mCurrentRecordedEventIndex;
                 if (mCurrentRecordedEventIndex >= mRecordedEvents->GetSize())
                 {
-                    mStepButton->Enable(false);
+                    mRecordEventStepButton->Enable(false);
                 }
                 else
                 {
@@ -266,9 +281,31 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
             });
 
         gridSizer->Add(
-            mStepButton,
+            mRecordEventStepButton,
             wxGBPosition(2, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    {
+        mRecordEventRewindButton = new wxButton(panel, wxID_ANY, _T("Rewind"));
+
+        mRecordEventRewindButton->Enable(false);
+
+        mRecordEventRewindButton->Bind(
+            wxEVT_BUTTON,
+            [this](wxCommandEvent &)
+            {
+                assert(!!mRecordedEvents);
+                mCurrentRecordedEventIndex = 0;
+                SetRecordedEventText(mCurrentRecordedEventIndex, mRecordedEvents->GetEvent(mCurrentRecordedEventIndex));
+            });
+
+        gridSizer->Add(
+            mRecordEventRewindButton,
+            wxGBPosition(2, 1),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorder);
     }

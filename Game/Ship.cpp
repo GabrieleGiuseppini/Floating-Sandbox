@@ -3040,7 +3040,7 @@ void Ship::VerifyInvariants()
 
     for (auto t : mTriangles)
     {
-        Verify(mTriangles.GetSubSprings(t).size() <= 4);
+        Verify(mTriangles.GetSubSprings(t).size() <= 3);
 
         for (auto subSpring : mTriangles.GetSubSprings(t))
         {

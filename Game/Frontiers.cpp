@@ -281,8 +281,6 @@ void Frontiers::HandleTriangleDestroy(
     }
     else
     {
-        LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, ")");
-
         assert(edgesWithFrontierCount == 2 || edgesWithFrontierCount == 3);
 
         //
@@ -585,13 +583,16 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 // stays and the other portion becomes the new frontier)
                 //
 
-                SplitIntoNewFrontier(
+                FrontierId const newFrontierId = SplitIntoNewFrontier(
                     mFrontierEdges[edgeIn].NextEdgeIndex,
                     mFrontierEdges[edgeOut].PrevEdgeIndex,
                     frontierInId,
                     FrontierType::External,
                     edgeIn,
                     edgeOut);
+
+                // New frontier is dirty (guaranteed by SplitIntoNewFrontier(.))
+                assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
             }
         }
         else
@@ -616,6 +617,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 frontierInId, // New
                 edgeIn,
                 edgeOut);
+
+            // New frontier is dirty (guaranteed by ReplaceFrontier(.))
+            assert(mFrontiers[frontierInId]->IsDirtyForRendering);
         }
     }
     else if (mFrontiers[frontierOutId]->Type == FrontierType::External)
@@ -640,6 +644,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             frontierOutId, // New
             edgeIn,
             edgeOut);
+
+        // New frontier is dirty (guaranteed by ReplaceFrontier(.))
+        assert(mFrontiers[frontierOutId]->IsDirtyForRendering);
     }
     else
     {
@@ -698,17 +705,6 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
 
                 // Now check whether the new region has an external frontier
                 ElementIndex const cuspPointIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
-
-                // TODOTEST
-                ElementIndex const otherPointIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
-                bool TODOTEST = HasRegionFrontierOfType(
-                    FrontierType::External,
-                    otherPointIndex,
-                    points,
-                    springs);
-
-                LogMessage("TODOTEST: HasRegionFrontierOfType(Ext, ", otherPointIndex, "): ", TODOTEST);
-
                 if (HasRegionFrontierOfType(
                     FrontierType::External,
                     cuspPointIndex, // Cusp point, belongs to new region now
@@ -728,7 +724,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                     mFrontiers[newFrontierId]->Type = FrontierType::External;
                 }
 
-                // Guaranteed by SplitIntoNewFrontier
+                // Both frontiers are dirty (guaranteed by SplitIntoNewFrontier(.))
                 assert(mFrontiers[frontierInId]->IsDirtyForRendering);
                 assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
             }
@@ -760,6 +756,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                     frontierInId, // New
                     edgeIn,
                     edgeOut);
+
+                // New frontier is dirty (guaranteed by ReplaceFrontier(.))
+                assert(mFrontiers[frontierInId]->IsDirtyForRendering);
             }
             else
             {
@@ -772,6 +771,9 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                     frontierOutId, // New
                     edgeIn,
                     edgeOut);
+
+                // New frontier is dirty (guaranteed by ReplaceFrontier(.))
+                assert(mFrontiers[frontierOutId]->IsDirtyForRendering);
             }
         }
     }
@@ -953,13 +955,11 @@ bool Frontiers::HasRegionFrontierOfType(
         ElementIndex const pointIndex = pointsToVisit.top();
         pointsToVisit.pop();
 
-        // TODOTEST
-        Points & pt = const_cast<Points &>(points);
-        pt.ColorPoint(pointIndex, rgbaColor(10, 80, 80, 255));
-
         // Visit all its non-visited, non-chain springs
         for (auto const & cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
+            assert(!springs.IsDeleted(cs.SpringIndex));
+
             if (mEdges[cs.SpringIndex].LastVisitSequenceNumber != visitSequenceNumber
                 && springs.GetSuperTriangles(cs.SpringIndex).size() > 0)
             {
