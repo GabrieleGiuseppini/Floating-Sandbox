@@ -458,10 +458,10 @@ struct GameParameters
     static float constexpr MaxWorldWidth = 5000.0f;
     static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
-    static float constexpr MaxWorldHeight = 40000.0f;
+    static float constexpr MaxWorldHeight = 22000.0f;
     static float constexpr HalfMaxWorldHeight = MaxWorldHeight / 2.0f;
 
-    static_assert(HalfMaxWorldHeight >= MaxSeaDepth);
+    static_assert(HalfMaxWorldHeight >= MaxSeaDepth); // Make sure deepest bottom of the ocean is visible
 
 
     static size_t constexpr MaxBombs = 64u;
@@ -472,7 +472,7 @@ struct GameParameters
     static size_t constexpr MaxTrianglesPerPoint = 8u;
 
     static unsigned int constexpr EngineTelegraphDegreesOfFreedom = 11;
-    static_assert((EngineTelegraphDegreesOfFreedom % 2) != 0);
+    static_assert((EngineTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric
 
 private:
 

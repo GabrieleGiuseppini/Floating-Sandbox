@@ -5,16 +5,18 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <algorithm>
+
 namespace Physics {
 
+// TODO: change comment
 //
 // We keep clouds in a virtual 3.0 x 1.0 space, of which only
 // the central [-0.5, 0.5] x [-0.5, 0.5] slice will be visible
 //
 
 float constexpr CloudSpaceWidth = 3.0f;
-float constexpr MaxCloudSpaceX = 1.5f;
-float constexpr MaxCloudSpaceY = 0.5f;
+float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
 void Clouds::Update(
     float currentSimulationTime,
@@ -22,7 +24,7 @@ void Clouds::Update(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
-    float windSign = baseAndStormSpeedMagnitude < 0.0f ? -1.0f : 1.0f;
+    float const windSign = baseAndStormSpeedMagnitude < 0.0f ? -1.0f : 1.0f;
 
     //
     // Update normal cloud count
@@ -40,11 +42,23 @@ void Clouds::Update(
             mClouds.emplace_back(
                 new Cloud(
                     ++mLastCloudId,
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX),
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
-                    GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 1.3f), // Size
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // X
+                    // TODOTEST
+                    //GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(), // Z
+                    0.0f,
+                    GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 1.3f), // Size // TODO
                     1.0f));
         }
+
+        // Sort by Z
+        // TODO: also storm clouds
+        std::sort(
+            mClouds.begin(),
+            mClouds.end(),
+            [](auto const & c1, auto const & c2)
+            {
+                return c1->Z > c2->Z;
+            });
     }
 
 
@@ -63,7 +77,7 @@ void Clouds::Update(
                 new Cloud(
                     ++mLastCloudId,
                     -MaxCloudSpaceX * windSign,
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceY, MaxCloudSpaceY),
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(), // TODO: z=0?
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening));
         }

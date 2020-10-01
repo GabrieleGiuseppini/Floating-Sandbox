@@ -246,6 +246,8 @@ Render:
 		
 		= Frontier (*)
 
+		= Clouds in perspective (*)			
+
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if it changes perf
 
@@ -893,14 +895,20 @@ Render:
 
 	- Decide whether auto-zoom considering position would be a good idea or not
 
-	- Clouds parallax: should relay perspective when moving camera up and down
+	= Clouds in perspective (*): should relay perspective when moving camera up and down
+		- Do strata
+			- 3 strata, from NDCy=0.3 to NDCy=0.9
+		- Nuke cloud ID
+		- Test:
+				+ Mariana's Trench
+		- TODOOLD
 		- Assign Z depths, uniform speed, and uniform scale
 		- Scale exists on a horizontal plane, e.g. y=+500
 		- Clouds' center point only is affected
 			- Scale is affected with ad-hoc formula based exclusively on Z
 		- Do perspective calculation at Clouds::Upload or with ad-hoc orthomatrix
 			- No effect on clouds' X, and on Y uniformly (across all points of a cloud's quad)
-
+		
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
@@ -1329,9 +1337,9 @@ Render:
 								+ See implications of not populating traverse springs; check all uses of:
 									+ Springs::SuperTriangles
 									+ Triangles::SubSprings						
-				= Things to remember:
+				+ Things to remember:
 					+ Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
-					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
+					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 				- Tests:
 					- Thanos' Snap
 					- 1 triangle with 3 lobes

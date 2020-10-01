@@ -169,7 +169,7 @@ public:
     inline void UploadCloud(
         uint32_t cloudId,
         float virtualX,     // [-1.5, +1.5]
-        float virtualY,     // [-0.5, +0.5]
+        float virtualZ,     // [0.0, 1.0]
         float scale,
         float darkening,    // 0.0:dark, 1.0:light
         RenderParameters const & renderParameters)
@@ -178,12 +178,25 @@ public:
         // We use Normalized Device Coordinates here
         //
 
+        float constexpr alpha = 0.3f; // NDC Y coordinate when camY is at max
+        float constexpr zMin = GameParameters::HalfMaxWorldHeight / (1.0f - alpha);
+        float constexpr zMax = 20.0f * zMin; // Magic number: at this (furthest) Z, clouds appear slightly above the horizon
+        float constexpr y0 = zMin; // y coordinate of clouds
+
+        // Calculate Y after perspective transform
+        float const virtualY = (y0 - renderParameters.View.GetCameraWorldPosition().y) / (zMin + virtualZ * (zMax - zMin));
+
+        // Calculate scale after perspective transform
+        scale = scale / (3.0f * virtualZ + 1.0f);
+
         //
         // Map input slice [-0.5, +0.5], [-0.5, +0.5] into NDC [-1.0, +1.0], [-1.0, +1.0]
         //
 
         float const mappedX = virtualX * 2.0f;
-        float const mappedY = virtualY * 2.0f;
+        // TODOTEST
+        //float const mappedY = virtualY * 2.0f;
+        float const mappedY = virtualY;
 
         // TEST CODE: this code fits everything in the visible window
         ////float const mappedX = virtualX / 1.5f;

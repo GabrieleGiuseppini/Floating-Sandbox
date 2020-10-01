@@ -42,7 +42,7 @@ public:
             renderContext.UploadCloud(
                 cloud->Id,
                 cloud->X,
-                cloud->Y,
+                cloud->Z,
                 cloud->Scale,
                 cloud->Darkening);
         }
@@ -52,7 +52,7 @@ public:
             renderContext.UploadCloud(
                 cloud->Id,
                 cloud->X,
-                cloud->Y,
+                cloud->Z,
                 cloud->Scale,
                 cloud->Darkening);
         }
@@ -68,19 +68,19 @@ private:
 
         uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds
         float X;
-        float const Y;
+        float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
 
         Cloud(
             uint32_t id,
             float initialX,
-            float y,
+            float z,
             float scale,
             float darkening)
             : Id(id)
             , X(initialX)
-            , Y(y)
+            , Z(z)
             , Scale(scale)
             , Darkening(darkening)
             , mLinearSpeedX(GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))
