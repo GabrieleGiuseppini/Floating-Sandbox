@@ -179,25 +179,13 @@ public:
         // We use Normalized Device Coordinates here
         //
 
-        float constexpr alpha = 0.5f; // NDC Y coordinate of (virtualY=1.0, virtualZ=0.0) when camY is at max; i.e. topmost closest cloud is at +0.3
-        float constexpr zMin = GameParameters::HalfMaxWorldHeight / (1.0f - alpha); // At this Z, when camY is at max, NDC Y coordinate is at alpha
-        float constexpr zMax = 20.0f * zMin; // Magic number: at this (furthest) Z, clouds appear slightly above the horizon
+        // Calculate NDC x: map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
+        float const ndcX = virtualX * 2.0f;
 
-        // Calculate Y after perspective transform
-        //
-        // From: y' = (y0 - camY) * (1/z')
-        // With:
-        //      y0 = world Y of cloud
-        //      z' = a + b * virtualZ
-        //      y' @ (z' = zMin, camY = 0) = 1 (i.e. we want cloud to be at top when closest and no cam pan)
-        //      y' @ (z' = zMin, camY = HalfMaxWorldHeight) = alpha (i.e. we want cloud to be at alpha when closes and cam pan at max)
-        virtualY *= (zMin - renderParameters.View.GetCameraWorldPosition().y) / (zMin + virtualZ * (zMax - zMin));
-
-        //
-        // Map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
-        //
-
-        float const mappedX = virtualX * 2.0f;
+        // Calculate NDC y: apply perspective transform
+        float constexpr zMin = GameParameters::HalfMaxWorldHeight;
+        float constexpr zMax = 20.0f * zMin; // Magic number: at this (furthest) Z, clouds at virtualY=1.0 appear slightly above the horizon
+        float const ndcY = (virtualY * GameParameters::HalfMaxWorldHeight - renderParameters.View.GetCameraWorldPosition().y) / (zMin + virtualZ * (zMax - zMin));
 
         //
         // Populate quad in buffer
@@ -211,10 +199,10 @@ public:
             CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
-        float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
-        float topY = virtualY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
-        float bottomY = virtualY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
+        float leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
+        float rightX = ndcX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
+        float topY = ndcY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
+        float bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
 
         // top-left
         mCloudVertexBuffer.emplace_back(

@@ -45,27 +45,28 @@ void Clouds::Update(
             // Choose z stratum, between 0.0 and 1.0, starting from middle
             uint32_t constexpr NumZStrata = 5;
             float const z = static_cast<float>((cloudId + NumZStrata / 2) % NumZStrata) * 1.0f / static_cast<float>(NumZStrata - 1);
+            float const z2 = z * z; // Augment density at lower Z values
 
             // Choose y stratum, between 0.3 and 0.9, starting from middle
             uint32_t constexpr NumYStrata = 3;
             float const y = 0.3f + static_cast<float>((cloudId + NumYStrata / 2) % NumYStrata) * 0.6f / static_cast<float>(NumYStrata - 1);
 
-            // Calculate scale == random, obeying perspective
+            // Calculate scale == random, but obeying perspective
             float const scale =
                 GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 1.2f)
-                / (0.66f * z + 1.0f);
+                / (0.66f * z2 + 1.0f);
 
-            // Calculate X speed == random, obeying perspective
+            // Calculate X speed == random, but obeying perspective
             float const linearSpeedX =
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f)
-                / (1.2f * z + 1.0f);
+                / (1.2f * z2 + 1.0f);
 
             mClouds.emplace_back(
                 new Cloud(
                     cloudId,
                     GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // InitialX
                     y,
-                    z,
+                    z2,
                     scale,
                     1.0f, // Darkening
                     linearSpeedX));
