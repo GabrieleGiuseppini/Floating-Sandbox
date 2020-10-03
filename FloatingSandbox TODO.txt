@@ -896,9 +896,10 @@ Render:
 	- Decide whether auto-zoom considering position would be a good idea or not
 
 	= Clouds in perspective (*): should relay perspective when moving camera up and down
-		- Do strata
-			- 3 strata, from NDCy=0.3 to NDCy=0.9
-		- Nuke cloud ID
+		+ Distribute Z layers
+		+ Do Y strata
+			+ 3 strata, from NDCy=0.3 to NDCy=0.9
+		- Storm clouds
 		- Test:
 				+ Mariana's Trench
 		- TODOOLD

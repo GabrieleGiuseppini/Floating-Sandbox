@@ -648,6 +648,7 @@ public:
     inline void UploadCloud(
         uint32_t cloudId,
         float virtualX,     // [-1.5, +1.5]
+        float virtualY,     // [0.0, +1.0]
         float virtualZ,     // [0.0, +1.0]
         float scale,
         float darkening)    // 0.0:dark, 1.0:light
@@ -655,6 +656,7 @@ public:
         mWorldRenderContext->UploadCloud(
             cloudId,
             virtualX,
+            virtualY,
             virtualZ,
             scale,
             darkening,

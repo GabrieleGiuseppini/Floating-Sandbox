@@ -42,6 +42,7 @@ public:
             renderContext.UploadCloud(
                 cloud->Id,
                 cloud->X,
+                cloud->Y,
                 cloud->Z,
                 cloud->Scale,
                 cloud->Darkening);
@@ -52,6 +53,7 @@ public:
             renderContext.UploadCloud(
                 cloud->Id,
                 cloud->X,
+                cloud->Y,
                 cloud->Z,
                 cloud->Scale,
                 cloud->Darkening);
@@ -66,8 +68,9 @@ private:
     {
     public:
 
-        uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds
+        uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds (used as texture frame index)
         float X;
+        float const Y; // 0.0 -> 1.0 (above horizon)
         float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
@@ -75,34 +78,29 @@ private:
         Cloud(
             uint32_t id,
             float initialX,
+            float y,
             float z,
             float scale,
-            float darkening)
+            float darkening,
+            float linearSpeedX)
             : Id(id)
             , X(initialX)
+            , Y(y)
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , mLinearSpeedX(GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))
-            , mPeriodicSpeedXAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f)
-            , mPeriodicSpeedXPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f)
+            , mLinearSpeedX(linearSpeedX)
         {
         }
 
-        inline void Update(
-            float currentSimulationTime,
-            float cloudSpeed)
+        inline void Update(float globalCloudSpeed)
         {
-            float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
-
-            X += (mLinearSpeedX * cloudSpeed * dt) + (mPeriodicSpeedXAmp * sinf(mPeriodicSpeedXPeriod * cloudSpeed * currentSimulationTime));
+            X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
         }
 
     private:
 
         float const mLinearSpeedX;
-        float const mPeriodicSpeedXAmp;
-        float const mPeriodicSpeedXPeriod;
     };
 
     uint32_t mLastCloudId;
