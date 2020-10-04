@@ -206,12 +206,16 @@ public:
         float bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
 
         // TODOTEST
+        /*
         vec2f const textureCoordinatesAlphaMaskBottomLeft = vec2f(
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.x - growthProgress * cloudAtlasFrameMetadata.TextureSpaceWidth / 2.0f,
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.y - growthProgress * cloudAtlasFrameMetadata.TextureSpaceHeight / 2.0f);
         vec2f const textureCoordinatesAlphaMaskTopRight = vec2f(
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.x + growthProgress * cloudAtlasFrameMetadata.TextureSpaceWidth / 2.0f,
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.y + growthProgress * cloudAtlasFrameMetadata.TextureSpaceHeight / 2.0f);
+        */
+
+        // TODO: make vectors args
 
         // top-left
         mCloudVertexBuffer.emplace_back(
@@ -219,9 +223,9 @@ public:
             topY,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            textureCoordinatesAlphaMaskBottomLeft.x,
-            textureCoordinatesAlphaMaskTopRight.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
@@ -229,9 +233,9 @@ public:
             bottomY,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            textureCoordinatesAlphaMaskBottomLeft.x,
-            textureCoordinatesAlphaMaskBottomLeft.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
@@ -239,9 +243,9 @@ public:
             topY,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            textureCoordinatesAlphaMaskTopRight.x,
-            textureCoordinatesAlphaMaskTopRight.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
@@ -249,9 +253,9 @@ public:
             bottomY,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            textureCoordinatesAlphaMaskBottomLeft.x,
-            textureCoordinatesAlphaMaskBottomLeft.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
@@ -259,9 +263,9 @@ public:
             topY,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            textureCoordinatesAlphaMaskTopRight.x,
-            textureCoordinatesAlphaMaskTopRight.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
@@ -269,9 +273,9 @@ public:
             bottomY,
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            textureCoordinatesAlphaMaskTopRight.x,
-            textureCoordinatesAlphaMaskBottomLeft.y,
-            darkening);
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
     }
 
     void UploadCloudsEnd();
@@ -646,27 +650,27 @@ private:
     {
         float ndcX;
         float ndcY;
-        float ndcTextureX;
-        float ndcTextureY;
-        float alphaMaskTextureX;
-        float alphaMaskTextureY;
+        float textureX;
+        float textureY;
+        vec2f textureCenter;
         float darkness;
+        float growthProgress;
 
         CloudVertex(
             float _ndcX,
             float _ndcY,
-            float _ndcTextureX,
-            float _ndcTextureY,
-            float _alphaMaskTextureX,
-            float _alphaMaskTextureY,
-            float _darkness)
+            float _textureX,
+            float _textureY,
+            vec2f _textureCenter,
+            float _darkness,
+            float _growthProgress)
             : ndcX(_ndcX)
             , ndcY(_ndcY)
-            , ndcTextureX(_ndcTextureX)
-            , ndcTextureY(_ndcTextureY)
-            , alphaMaskTextureX(_alphaMaskTextureX)
-            , alphaMaskTextureY(_alphaMaskTextureY)
+            , textureX(_textureX)
+            , textureY(_textureY)
+            , textureCenter(_textureCenter)
             , darkness(_darkness)
+            , growthProgress(_growthProgress)
         {}
     };
 

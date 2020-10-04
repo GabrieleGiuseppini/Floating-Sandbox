@@ -106,6 +106,7 @@ private:
         {
             X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
+            // TODO: slower, at least 30
             GrowthProgress = (1.0f + std::sinf((mGrowthProgressPhase + simulationTime / 20.0f) * Pi<float> * 2.0f)) / 2.0f;
         }
 
