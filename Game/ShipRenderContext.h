@@ -787,10 +787,10 @@ private:
         TextureAtlasFrameMetadata<GenericMipMappedTextureGroups> const & frame =
             mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
-        float const leftX = -frame.FrameMetadata.AnchorWorldX;
-        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
-        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorWorldY;
-        float const bottomY = -frame.FrameMetadata.AnchorWorldY;
+        float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x;
+        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
+        float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
 
         float const lightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;

@@ -899,6 +899,8 @@ Render:
 		+ Distribute Z layers
 		+ Do Y strata
 			+ 3 strata, from NDCy=0.3 to NDCy=0.9
+		= Cloud dynamics
+			- Redo explosion atlas
 		- Storm clouds
 		- Test:
 				+ Mariana's Trench

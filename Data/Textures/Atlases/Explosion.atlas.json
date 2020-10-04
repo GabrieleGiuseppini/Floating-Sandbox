@@ -2,7 +2,11 @@
   "frames": [
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -26,6 +30,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -38,7 +44,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -62,6 +72,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -74,7 +86,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -98,6 +114,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -110,7 +128,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -134,6 +156,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -146,7 +170,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -170,6 +198,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -182,7 +212,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -206,6 +240,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -218,7 +254,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -242,6 +282,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -254,7 +296,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -278,6 +324,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -290,7 +338,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -314,6 +366,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -326,7 +380,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -350,6 +408,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -362,7 +422,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -386,6 +450,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -398,7 +464,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -422,6 +492,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -434,7 +506,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -458,6 +534,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -470,7 +548,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -494,6 +576,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -506,7 +590,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -530,6 +618,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -542,7 +632,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -566,6 +660,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -578,7 +674,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -602,6 +702,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -614,7 +716,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -638,6 +744,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -650,7 +758,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -674,6 +786,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -686,7 +800,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -710,6 +828,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -722,7 +842,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -746,6 +870,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -758,7 +884,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -782,6 +912,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -794,7 +926,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -818,6 +954,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -830,7 +968,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -854,6 +996,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -866,7 +1010,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -890,6 +1038,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -902,7 +1052,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -926,6 +1080,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -938,7 +1094,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -962,6 +1122,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -974,7 +1136,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -998,6 +1164,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1010,7 +1178,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1034,6 +1206,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1046,7 +1220,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1070,6 +1248,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1082,7 +1262,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1106,6 +1290,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1118,7 +1304,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1142,6 +1332,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1154,7 +1346,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1178,6 +1374,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1190,7 +1388,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1214,6 +1416,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1226,7 +1430,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1250,6 +1458,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1262,7 +1472,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1286,6 +1500,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1298,7 +1514,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1322,6 +1542,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1334,7 +1556,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1358,6 +1584,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1370,7 +1598,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1394,6 +1626,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1406,7 +1640,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1430,6 +1668,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1442,7 +1682,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1466,6 +1710,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1478,7 +1724,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1502,6 +1752,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1514,7 +1766,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1538,6 +1794,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1550,7 +1808,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1574,6 +1836,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1586,7 +1850,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1610,6 +1878,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1622,7 +1892,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1646,6 +1920,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1658,7 +1934,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1682,6 +1962,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1694,7 +1976,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1718,6 +2004,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1730,7 +2018,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1754,6 +2046,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1766,7 +2060,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1790,6 +2088,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1802,7 +2102,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1826,6 +2130,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1838,7 +2144,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1862,6 +2172,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1874,7 +2186,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1898,6 +2214,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1910,7 +2228,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1934,6 +2256,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1946,7 +2270,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -1970,6 +2298,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1982,7 +2312,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2006,6 +2340,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -2018,7 +2354,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2042,6 +2382,8 @@
         "left": 0
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.0626220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -2054,7 +2396,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2078,6 +2424,8 @@
         "left": 512
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.1876220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -2090,7 +2438,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2114,6 +2466,8 @@
         "left": 1024
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.3126220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -2126,7 +2480,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2150,6 +2508,8 @@
         "left": 1536
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.4376220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -2162,7 +2522,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2186,6 +2550,8 @@
         "left": 2048
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.5626220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -2198,7 +2564,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2222,6 +2592,8 @@
         "left": 2560
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.6876220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -2234,7 +2606,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2258,6 +2634,8 @@
         "left": 3072
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.8126220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2270,7 +2648,11 @@
     },
     {
       "frame": {
-        "anchor_world": {
+        "anchor_center": {
+          "x": 256,
+          "y": 256
+        },
+        "anchor_center_world": {
           "x": 256,
           "y": 256
         },
@@ -2294,6 +2676,8 @@
         "left": 3584
       },
       "texture_coordinates": {
+        "anchorCenterX": 0.9376220703125,
+        "anchorCenterY": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,

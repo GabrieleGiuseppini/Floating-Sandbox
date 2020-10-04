@@ -8,6 +8,7 @@
 #include "GameParameters.h"
 #include "RenderContext.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 
 #include <memory>
@@ -45,7 +46,8 @@ public:
                 cloud->Y,
                 cloud->Z,
                 cloud->Scale,
-                cloud->Darkening);
+                cloud->Darkening,
+                cloud->GrowthProgress);
         }
 
         for (auto const & cloud : mStormClouds)
@@ -56,7 +58,8 @@ public:
                 cloud->Y,
                 cloud->Z,
                 cloud->Scale,
-                cloud->Darkening);
+                cloud->Darkening,
+                cloud->GrowthProgress);
         }
 
         renderContext.UploadCloudsEnd();
@@ -74,6 +77,7 @@ private:
         float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
+        float GrowthProgress;
 
         Cloud(
             uint32_t id,
@@ -82,25 +86,33 @@ private:
             float z,
             float scale,
             float darkening,
-            float linearSpeedX)
+            float linearSpeedX,
+            float growthProgressPhase)
             : Id(id)
             , X(initialX)
             , Y(y)
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
+            , GrowthProgress(0.0f)
             , mLinearSpeedX(linearSpeedX)
+            , mGrowthProgressPhase(growthProgressPhase)
         {
         }
 
-        inline void Update(float globalCloudSpeed)
+        inline void Update(
+            float simulationTime,
+            float globalCloudSpeed)
         {
             X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
+            GrowthProgress = (1.0f + std::sinf((mGrowthProgressPhase + simulationTime / 20.0f) * Pi<float> * 2.0f)) / 2.0f;
         }
 
     private:
 
         float const mLinearSpeedX;
+        float const mGrowthProgressPhase; // 0.0 -> 1.0
     };
 
     uint32_t mLastCloudId;
