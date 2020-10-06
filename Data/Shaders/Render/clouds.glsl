@@ -10,7 +10,7 @@
 //
 
 // Inputs
-in vec4 inCloud1; // Position (vec2), TextureCoordinates (vec2)
+in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
 in vec4 inCloud2; // TextureCenterCoordinates (vec2), Darkening, GrowthProgress
 
 // Outputs
@@ -49,10 +49,14 @@ uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
+    // Sample texture
+    vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
+
+    // Sample alpha
     vec2 alphaMaskTexturePos = textureCenterPos + (texturePos - textureCenterPos) * growthProgress;
     vec4 alphaMaskSample = texture2D(paramCloudsAtlasTexture, alphaMaskTexturePos);
-    vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, sqrt(textureColor.w * alphaMaskSample.w));
-    //gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, textureColor.w);
-    //gl_FragColor = vec4(alphaMaskSample.xyz * paramEffectiveAmbientLightIntensity * darkness, alphaMaskSample.w);
+       
+    // Combine into final color
+    float alphaMultiplier = sqrt(textureColor.w * alphaMaskSample.w);
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, alphaMultiplier);
 } 

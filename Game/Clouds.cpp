@@ -20,7 +20,7 @@ float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
 void Clouds::Update(
-    float currentSimulationTime,
+    float /*currentSimulationTime*/,
     float baseAndStormSpeedMagnitude,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
@@ -58,19 +58,19 @@ void Clouds::Update(
 
             // Calculate X speed == random, but obeying perspective
             float const linearSpeedX =
-                GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f)
+                GameRandomEngine::GetInstance().GenerateUniformReal(0.004f, 0.007f)
                 / (1.2f * z2 + 1.0f);
 
             mClouds.emplace_back(
                 new Cloud(
                     cloudId,
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // InitialX
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // Initial X
                     y,
                     z2,
                     scale,
                     1.0f, // Darkening
                     linearSpeedX,
-                    0.0f)); // TODO
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
         }
 
         // Sort by Z, so that we upload the furthest clouds first
@@ -99,13 +99,13 @@ void Clouds::Update(
             mStormClouds.emplace_back(
                 new Cloud(
                     mLastCloudId++,
-                    -MaxCloudSpaceX * windSign, // InitialX
+                    -MaxCloudSpaceX * windSign, // Initial X
                     1.0f, // Y, TODO
                     GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(), // TODO: z=0?
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
                     GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f),
-                    0.0f)); // TODO
+                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
         }
     }
 
@@ -125,7 +125,7 @@ void Clouds::Update(
 
     for (auto & cloud : mClouds)
     {
-        cloud->Update(currentSimulationTime, globalCloudSpeed);
+        cloud->Update(globalCloudSpeed);
 
         // Manage clouds leaving space: rollover and update darkening when crossing border
         if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
@@ -142,7 +142,7 @@ void Clouds::Update(
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
-        (*it)->Update(currentSimulationTime, globalCloudSpeed);
+        (*it)->Update(globalCloudSpeed);
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
         if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)

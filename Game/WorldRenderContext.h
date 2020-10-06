@@ -192,87 +192,63 @@ public:
         // Populate quad in buffer
         //
 
-        float const aspectRatio = renderParameters.View.GetAspectRatio();
-
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
         auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x;
-        float rightX = ndcX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x);
-        float topY = ndcY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y) * aspectRatio;
-        float bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
+        float const aspectRatio = renderParameters.View.GetAspectRatio();
 
-        // TODOTEST
-        /*
-        vec2f const textureCoordinatesAlphaMaskBottomLeft = vec2f(
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.x - growthProgress * cloudAtlasFrameMetadata.TextureSpaceWidth / 2.0f,
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.y - growthProgress * cloudAtlasFrameMetadata.TextureSpaceHeight / 2.0f);
-        vec2f const textureCoordinatesAlphaMaskTopRight = vec2f(
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.x + growthProgress * cloudAtlasFrameMetadata.TextureSpaceWidth / 2.0f,
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter.y + growthProgress * cloudAtlasFrameMetadata.TextureSpaceHeight / 2.0f);
-        */
-
-        // TODO: make vectors args
+        float const leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = ndcX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x);
+        float const topY = ndcY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y) * aspectRatio;
+        float const bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
 
         // top-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            vec2f(leftX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            vec2f(leftX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            vec2f(rightX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            vec2f(leftX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
+            vec2f(rightX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+            vec2f(rightX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             darkening,
             growthProgress);
@@ -648,26 +624,20 @@ private:
 
     struct CloudVertex
     {
-        float ndcX;
-        float ndcY;
-        float textureX;
-        float textureY;
+        vec2f ndcPosition;
+        vec2f texturePos;
         vec2f textureCenter;
         float darkness;
         float growthProgress;
 
         CloudVertex(
-            float _ndcX,
-            float _ndcY,
-            float _textureX,
-            float _textureY,
+            vec2f _ndcPosition,
+            vec2f _texturePos,
             vec2f _textureCenter,
             float _darkness,
             float _growthProgress)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-            , textureX(_textureX)
-            , textureY(_textureY)
+            : ndcPosition(_ndcPosition)
+            , texturePos(_texturePos)
             , textureCenter(_textureCenter)
             , darkness(_darkness)
             , growthProgress(_growthProgress)

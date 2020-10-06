@@ -87,7 +87,7 @@ private:
             float scale,
             float darkening,
             float linearSpeedX,
-            float growthProgressPhase)
+            float initialGrowthProgressPhase)
             : Id(id)
             , X(initialX)
             , Y(y)
@@ -96,24 +96,27 @@ private:
             , Darkening(darkening)
             , GrowthProgress(0.0f)
             , mLinearSpeedX(linearSpeedX)
-            , mGrowthProgressPhase(growthProgressPhase)
+            , mGrowthProgressPhase(initialGrowthProgressPhase)
         {
         }
 
-        inline void Update(
-            float simulationTime,
-            float globalCloudSpeed)
+        inline void Update(float globalCloudSpeed)
         {
             X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
-            // TODO: slower, at least 30
-            GrowthProgress = (1.0f + std::sinf((mGrowthProgressPhase + simulationTime / 20.0f) * Pi<float> * 2.0f)) / 2.0f;
+            float const growthProgressSpeed =
+                (1.0f / 45.0f) // Basal velocity
+                + std::fabsf(globalCloudSpeed) / (400.0f);
+
+            mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
+            GrowthProgress = 0.3f + (1.0f + std::sinf(mGrowthProgressPhase * Pi<float> * 2.0f)) * 0.7f / 2.0f;
         }
 
     private:
 
         float const mLinearSpeedX;
-        float const mGrowthProgressPhase; // 0.0 -> 1.0
+        float mGrowthProgressPhase;
     };
 
     uint32_t mLastCloudId;

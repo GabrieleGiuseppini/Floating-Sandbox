@@ -899,18 +899,23 @@ Render:
 		+ Distribute Z layers
 		+ Do Y strata
 			+ 3 strata, from NDCy=0.3 to NDCy=0.9
-		= Cloud dynamics
-			- Redo explosion atlas
 		- Storm clouds
+			- z = 0
+			- random y
+			- test
+		= Cloud dynamics
+			+ Redo explosion atlas
+			+ Assign initial phases
+			+ Growth progress needs to be incremental (or else wind speed changes are visible)
+			+ Adjust velocity (slower) and make it depend on cloud speed
+			- Test using separate texture
+		+ Textures:
+			+ Clouds 2 and 9 are dupes
+			+ Cloud 3 is truncated @ left
+			+ New clouds
 		- Test:
-				+ Mariana's Trench
-		- TODOOLD
-		- Assign Z depths, uniform speed, and uniform scale
-		- Scale exists on a horizontal plane, e.g. y=+500
-		- Clouds' center point only is affected
-			- Scale is affected with ad-hoc formula based exclusively on Z
-		- Do perspective calculation at Clouds::Upload or with ad-hoc orthomatrix
-			- No effect on clouds' X, and on Y uniformly (across all points of a cloud's quad)
+			+ Mariana's Trench
+			- Dell perf
 		
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
