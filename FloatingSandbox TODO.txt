@@ -899,10 +899,10 @@ Render:
 		+ Distribute Z layers
 		+ Do Y strata
 			+ 3 strata, from NDCy=0.3 to NDCy=0.9
-		- Storm clouds
-			- z = 0
-			- random y
-			- test
+		= Storm clouds
+			+ z = 0
+			+ random y
+			= test
 		= Cloud dynamics
 			+ Redo explosion atlas
 			+ Assign initial phases

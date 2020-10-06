@@ -95,16 +95,15 @@ void Clouds::Update(
             || (baseAndStormSpeedMagnitude >= 0.0f && mStormClouds.back()->X >= -MaxCloudSpaceX + CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds))
             || (baseAndStormSpeedMagnitude < 0.0f && mStormClouds.back()->X <= MaxCloudSpaceX - CloudSpaceWidth / static_cast<float>(stormParameters.NumberOfClouds)))
         {
-            // TODOHERE
             mStormClouds.emplace_back(
                 new Cloud(
                     mLastCloudId++,
                     -MaxCloudSpaceX * windSign, // Initial X
-                    1.0f, // Y, TODO
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(), // TODO: z=0?
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f), // Y // TODO: see if 0->1.0 is better
+                    0.0f, // Z
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
-                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f),
+                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f), // Linear speed X
                     GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
         }
     }
