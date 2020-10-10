@@ -99,7 +99,7 @@ void Clouds::Update(
                 new Cloud(
                     mLastCloudId++,
                     -MaxCloudSpaceX * windSign, // Initial X
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f), // Y // TODO: see if 0->1.0 is better
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f), // Y [-1.0 -> 1.0]
                     0.0f, // Z
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
