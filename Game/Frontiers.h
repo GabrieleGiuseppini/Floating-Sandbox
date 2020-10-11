@@ -1,7 +1,7 @@
 /***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2020-09-09
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2020-09-09
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
@@ -20,6 +20,10 @@ namespace Physics
 
 /*
  * The frontiers in a ship.
+ *
+ * This class is initialized with external and internal frontiers detected during the ship
+ * load process. After that, it maintains frontiers each time a triangle is destructed or
+ * restored.
  */
 class Frontiers
 {

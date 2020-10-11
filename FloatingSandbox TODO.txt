@@ -499,6 +499,8 @@ Render:
 		- To test:
 			- An-225_Mria (Roman Kakshin)
 			- Klickitat (Matthew Anderson 707)
+			- Titanic-Izuku_deku_midoriya
+				- Credits for textures: Titanic HG
 
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -899,16 +901,16 @@ Render:
 		+ Distribute Z layers
 		+ Do Y strata
 			+ 3 strata, from NDCy=0.3 to NDCy=0.9
-		= Storm clouds
+		+ Storm clouds
 			+ z = 0
 			+ random y
-			= test
-		= Cloud dynamics
+			+ test
+		+ Cloud dynamics
 			+ Redo explosion atlas
 			+ Assign initial phases
 			+ Growth progress needs to be incremental (or else wind speed changes are visible)
 			+ Adjust velocity (slower) and make it depend on cloud speed
-			- Test using separate texture
+			+ Test using separate texture
 		+ Textures:
 			+ Clouds 2 and 9 are dupes
 			+ Cloud 3 is truncated @ left
@@ -1061,14 +1063,20 @@ Render:
 			- Sound: clock
 
 	- Fireworks
-		- "Bombs" become "Gadgets", as well as "IBomb"
-		- "Firework" is new gadget
-		- Placed by new "Firework" tool, clicking on same rotates through all types + removal
-			- Type enum at GameTypes
-		- State machine:
-			- Ignited by heat
-			- Creates ephemeral particles as needed, and tracks them (remembers their ElementIndex)
-			- Also expires ephemeral particles
+		- Option 1: it's a gadget like bombs
+			- "Bombs" become "Gadgets", as well as "IBomb"
+			- "Firework" is new gadget
+			- Placed by new "Firework" tool, clicking on same rotates through all types + removal
+				- Type enum at GameTypes
+			- State machine:
+				- Ignited by heat (and by water?)
+				- Creates ephemeral particles as needed, and tracks them (remembers their ElementIndex)
+				- Also expires ephemeral particles
+			- Disadvantage: once fired it's gone?
+		- Option 2: it's an electrical material, ignited at 0->1 power transition
+			- State machine is started by ElectricalElements::Update via IShipPhysicsHandler
+			- State machine takes care of flight and explosion, and of spawning ephemeral particles for sprakles/lights
+			- Advantage: same element may keep firing over and over
 
 		- OLD
 		- New emitter material, much like smoke emitter
