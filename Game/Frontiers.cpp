@@ -1,7 +1,7 @@
 ﻿/***************************************************************************************
-* Original Author:		Gabriele Giuseppini
-* Created:				2020-09-09
-* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:      Gabriele Giuseppini
+* Created:              2020-09-09
+* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #include "Physics.h"
 
