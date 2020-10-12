@@ -1063,6 +1063,7 @@ Render:
 			- Sound: clock
 
 	- Fireworks
+		- Both options below
 		- Option 1: it's a gadget like bombs
 			- "Bombs" become "Gadgets", as well as "IBomb"
 			- "Firework" is new gadget
