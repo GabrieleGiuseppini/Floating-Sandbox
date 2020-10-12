@@ -94,9 +94,11 @@ void GameOpenGL::InitOpenGL()
     // Initialize switches
     //
 
-    // Avoid calling glFinish() on Intel HD Graphics (at least 2000 and 4000) cards
+    // Avoid calling glFinish() on Intel HD Graphics (including 2000 and 4000) cards
 
-    if (0 == renderer.find("Intel(R) HD Graphics "))
+    if (renderer == "Intel(R) HD Graphics"
+        || 0 == renderer.find("Intel(R) HD Graphics ")
+        || 0 == renderer.find("Intel HD Graphics "))
     {
         AvoidGlFinish = true;
     }
