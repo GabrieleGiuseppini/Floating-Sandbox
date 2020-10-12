@@ -915,7 +915,7 @@ Render:
 			+ Clouds 2 and 9 are dupes
 			+ Cloud 3 is truncated @ left
 			+ New clouds
-		- Test:
+		= Test:
 			+ Mariana's Trench
 			- Dell perf
 		
@@ -1015,10 +1015,10 @@ Render:
 			- Ship::Render: if flag set: invokes Ship::RenderElectricalElements()				
 				- Do a sort of connectivity visit and upload as you go
 
-	- AmbientLightIntensity:
+	= AmbientLightIntensity:
 		+ Use also in RenderContext::RenderStart() for clear (sky) color
 		+ Phase 1: pgup/down
-		- Phase 2: with clock / time-of-day
+		= Phase 2: with clock / time-of-day
 			- Sky should also have crepuscolar gradient
 	- Magnifying glass
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
@@ -1250,7 +1250,7 @@ Render:
 				- TODO: don't we have this same problem with edge springs? It seems not, why?
 		= Plan:
 			+ Data structures
-			= Initial frontiers at ShipBuilder
+			+ Initial frontiers at ShipBuilder
 			+ Render frontiers: 
 				+ New render setting
 				+ New ship upload 
@@ -1357,17 +1357,17 @@ Render:
 				+ Things to remember:
 					+ Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
-				- Tests:
-					- Thanos' Snap
-					- 1 triangle with 3 lobes
+				+ Tests:
+					+ Thanos' Snap
+					+ 1 triangle with 3 lobes
 			- See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
 				- If so, do like endpoints (3-array, etc.), respecting CW order
 					- And get rid of Frontiers::Triangles::Edges
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Preliminary work:
-					- Cusp search needs to be done by searching triangles connected to cusp Point
-						- So ideally triangles at a point should be sorted by octant, CW
+					- Cusp search needs to be done by searching triangles or edges connected to cusp Point
+						- So ideally triangles or springs at a point should be sorted by octant, CW
 							- Not by owner first => see what we use Owner for and see whether the order is important
 						- ShipBuilder: make sure triangles are sorted by octant
 						- Repair: make sure triangles are restored and put in Points' vector by octant
@@ -1378,7 +1378,7 @@ Render:
 					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 		- Optimizations:
-			= Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
+			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				+ Clear frontiers' dirtyForRendering flags afterwards
 			- See if FrontierEdge::PointBIndex is really needed
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
