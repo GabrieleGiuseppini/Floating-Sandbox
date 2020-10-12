@@ -11,14 +11,15 @@ void Triangles::Add(
     ElementIndex pointAIndex,
     ElementIndex pointBIndex,
     ElementIndex pointCIndex,
-    SubSpringsVector const & subSprings)
+    ElementIndex subSpringAIndex,
+    ElementIndex subSpringBIndex,
+    ElementIndex subSpringCIndex)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex, pointCIndex);
 
-    mSubSpringsBuffer.emplace_back(subSprings);
-    mFactorySubSpringsBuffer.emplace_back(subSprings);
+    mSubSpringsBuffer.emplace_back(subSpringAIndex, subSpringBIndex, subSpringCIndex);
 }
 
 void Triangles::Destroy(ElementIndex triangleElementIndex)

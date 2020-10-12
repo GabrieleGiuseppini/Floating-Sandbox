@@ -27,6 +27,7 @@ Frontiers::Frontiers(
     , mCurrentVisitSequenceNumber()
     , mIsDirtyForRendering(true)
 {
+    // TODO: might nuke
     //
     // Populate triangles
     //
@@ -34,35 +35,9 @@ Frontiers::Frontiers(
     for (auto triangleIndex : triangles)
     {
         // Find subsprings with triangle's edges
-        ElementIndex edgeAIndex = NoneElementIndex;
-        ElementIndex edgeBIndex = NoneElementIndex;
-        ElementIndex edgeCIndex = NoneElementIndex;
-        for (ElementIndex edgeIndex : triangles.GetSubSprings(triangleIndex)) // Also contains ropes
-        {
-            if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex))
-                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex)))
-            {
-                // Edge A
-                assert(edgeAIndex == NoneElementIndex);
-                edgeAIndex = edgeIndex;
-            }
-            else if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex))
-                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointBIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex)))
-            {
-                // Edge B
-                assert(edgeBIndex == NoneElementIndex);
-                edgeBIndex = edgeIndex;
-            }
-            else if ((springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex) && springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex))
-                || (springs.GetEndpointBIndex(edgeIndex) == triangles.GetPointCIndex(triangleIndex) && springs.GetEndpointAIndex(edgeIndex) == triangles.GetPointAIndex(triangleIndex)))
-            {
-                // Edge C
-                assert(edgeCIndex == NoneElementIndex);
-                edgeCIndex = edgeIndex;
-            }
-        }
-
-        assert(edgeAIndex != NoneElementIndex && edgeBIndex != NoneElementIndex && edgeCIndex != NoneElementIndex);
+        ElementIndex edgeAIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[0];
+        ElementIndex edgeBIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[1];
+        ElementIndex edgeCIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[2];
 
         mTriangles.emplace_back(edgeAIndex, edgeBIndex, edgeCIndex);
     }

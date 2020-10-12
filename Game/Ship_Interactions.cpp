@@ -792,8 +792,8 @@ void Ship::RepairAt(
                 {
                     // Check if eligible
                     bool hasDeletedSubsprings = false;
-                    for (auto fss : mTriangles.GetFactorySubSprings(fct))
-                        hasDeletedSubsprings |= mSprings.IsDeleted(fss);
+                    for (auto ss : mTriangles.GetSubSprings(fct).SpringIndices)
+                        hasDeletedSubsprings |= mSprings.IsDeleted(ss);
 
                     if (!hasDeletedSubsprings)
                     {

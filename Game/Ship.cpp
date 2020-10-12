@@ -2541,12 +2541,6 @@ void Ship::HandleSpringDestroy(
     // Remove spring from other elements
     //
 
-    // Remove spring from set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
-    }
-
     // Remove the spring from its endpoints
     mPoints.DisconnectSpring(pointAIndex, springElementIndex, pointBIndex);
     mPoints.DisconnectSpring(pointBIndex, springElementIndex, pointAIndex);
@@ -2556,14 +2550,6 @@ void Ship::HandleSpringDestroy(
         mPoints.OnOrphaned(pointAIndex);
     if (mPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
         mPoints.OnOrphaned(pointBIndex);
-
-
-    //
-    // Remove other elements from self
-    //
-
-    mSprings.ClearSuperTriangles(springElementIndex);
-
 
     /////////////////////////////////////////////////
 
@@ -2656,12 +2642,6 @@ void Ship::HandleSpringRestore(
     mPoints.ConnectSpring(pointAIndex, springElementIndex, pointBIndex);
     mPoints.ConnectSpring(pointBIndex, springElementIndex, pointAIndex);
 
-    // Add spring to set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
-    }
-
     //
     // If both endpoints are electrical elements, and neither is deleted,
     // then connect them - i.e. add them to each other's set of connected electrical elements
@@ -2715,8 +2695,8 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     // Remove triangle from other elements
     //
 
-    // Remove triangle from set of super triangles of its sub springs
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    // Remove triangle from sets of super triangles of its non-deleted sub springs
+    for (ElementIndex const subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
@@ -2725,12 +2705,6 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     mPoints.DisconnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
     mPoints.DisconnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
     mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
-
-    //
-    // Remove other elements from self
-    //
-
-    mTriangles.ClearSubSprings(triangleElementIndex);
 
     //
     // Maintain frontier
@@ -2757,13 +2731,6 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 {
     //
-    // Add others to self
-    //
-
-    // Restore factory subsprings
-    mTriangles.RestoreFactorySubSprings(triangleElementIndex);
-
-    //
     // Add self to others
     //
 
@@ -2773,8 +2740,8 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
     // Add triangle to set of super triangles of its sub springs
-    assert(!mTriangles.GetSubSprings(triangleElementIndex).empty());
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    assert(mTriangles.GetSubSprings(triangleElementIndex).SpringIndices.size() == 3);
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
     }
@@ -3029,7 +2996,10 @@ void Ship::VerifyInvariants()
 
             for (auto superTriangle : mSprings.GetSuperTriangles(s))
             {
-                Verify(mTriangles.GetSubSprings(superTriangle).contains(s));
+                Verify(
+                    mTriangles.GetSubSprings(superTriangle).SpringIndices[0] == s
+                    || mTriangles.GetSubSprings(superTriangle).SpringIndices[1] == s
+                    || mTriangles.GetSubSprings(superTriangle).SpringIndices[2] == s);
             }
         }
         else
@@ -3040,11 +3010,21 @@ void Ship::VerifyInvariants()
 
     for (auto t : mTriangles)
     {
-        Verify(mTriangles.GetSubSprings(t).size() <= 3);
+        Verify(mTriangles.GetSubSprings(t).SpringIndices.size() == 3);
 
-        for (auto subSpring : mTriangles.GetSubSprings(t))
+        if (!mTriangles.IsDeleted(t))
         {
-            Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
+            for (auto subSpring : mTriangles.GetSubSprings(t).SpringIndices)
+            {
+                Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
+            }
+        }
+        else
+        {
+            for (auto subSpring : mTriangles.GetSubSprings(t).SpringIndices)
+            {
+                Verify(!mSprings.GetSuperTriangles(subSpring).contains(t));
+            }
         }
     }
 

@@ -1148,7 +1148,7 @@ void ShipBuilder::ConnectSpringsAndTriangles(
 
             ElementIndex const springIndex = springIt->second;
 
-            // Tell this spring that it has an extra super triangle
+            // Tell this spring that it has this additional super triangle
             springInfos2[springIndex].SuperTriangles2.push_back(t);
             assert(springInfos2[springIndex].SuperTriangles2.size() <= 2);
 
@@ -1293,12 +1293,16 @@ Physics::Triangles ShipBuilder::CreateTriangles(
 
     for (ElementIndex t = 0; t < triangleInfos2.size(); ++t)
     {
+        assert(triangleInfos2[t].SubSprings2.size() == 3);
+
         // Create triangle
         triangles.Add(
             pointIndexRemap[triangleInfos2[t].PointIndices1[0]],
             pointIndexRemap[triangleInfos2[t].PointIndices1[1]],
             pointIndexRemap[triangleInfos2[t].PointIndices1[2]],
-            triangleInfos2[t].SubSprings2);
+            triangleInfos2[t].SubSprings2[0],
+            triangleInfos2[t].SubSprings2[1],
+            triangleInfos2[t].SubSprings2[2]);
 
         // Add triangle to its endpoints
         points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner

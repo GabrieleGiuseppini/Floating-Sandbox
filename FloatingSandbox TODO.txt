@@ -1317,7 +1317,7 @@ Render:
 				+ Adjust color shift speed w/release build
 				+ Do color march differently - by playing with local progress:
 				+ Move SettingsDialog checkbox to Debug rendering settings
-			= Maintenance at destroy:
+			+ Maintenance at destroy:
 				+ Ship's triangle destroy handler invokes new Frontier::HandleTriangleDestroy
 				+ Marks mIsDirtyForRendering
 				+ Triangles: points A,B,C indices also (mainly) avail as array
@@ -1360,9 +1360,12 @@ Render:
 				+ Tests:
 					+ Thanos' Snap
 					+ 1 triangle with 3 lobes
-			- See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
-				- If so, do like endpoints (3-array, etc.), respecting CW order
-					- And get rid of Frontiers::Triangles::Edges
+			= See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
+				+ If so, do like endpoints (3-array, etc.), respecting CW order
+				- Get rid of Frontiers::Triangles::Edges
+				- Test:
+					- Destroy
+					- Repair
 			- Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Preliminary work:
