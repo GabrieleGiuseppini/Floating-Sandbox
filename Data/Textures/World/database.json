@@ -173,6 +173,22 @@
 
 		{	
 			"index": 10,
+			"worldWidth": 32.0,
+			"worldHeight": 32.0,
+			"filename": "ocean_caribbean_4",
+			"name": "Crystalline Cyan"
+		},
+
+		{	
+			"index": 11,
+			"worldWidth": 64.0,
+			"worldHeight": 32.0,
+			"filename": "ocean_caribbean_4",
+			"name": "Cyan Thin"
+		},
+
+		{	
+			"index": 12,
 			"worldWidth": 150.0,
 			"worldHeight": 150.0,
 			"filename": "ocean_lava_0",
@@ -180,7 +196,7 @@
 		},
 
 		{	
-			"index": 11,
+			"index": 13,
 			"worldWidth": 150.0,
 			"worldHeight": 150.0,
 			"filename": "ocean_lava_1",

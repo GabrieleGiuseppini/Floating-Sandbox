@@ -497,6 +497,7 @@ Render:
 		= Fernando:
 			= "An 12", "Boeing DreamLifter": asked for latest files
 		- To test:
+			- HMS_M_33.rar (TopHat lemon)
 			- An-225_Mria (Roman Kakshin)
 			- Klickitat (Matthew Anderson 707)
 			- Titanic-Izuku_deku_midoriya
@@ -863,9 +864,7 @@ Render:
 					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
 
 
-- Gfx optimizations:
-
-	
+- Gfx optimizations:	
 
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering) (*)
 		- If fine:
@@ -889,6 +888,8 @@ Render:
 
 
 - Gfx:
+
+	- In Windows' "high contrast mode", the names of the ships in the Ship Load Dialog disappear
 
 	- Night vision (*): ship is just not affected by ambient light
 		- RenderSettings & SettingsDialog

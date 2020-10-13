@@ -455,7 +455,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
     // Here we pretend to detach the cusp (which we don't know already as being a cusp)
     // from the (eventual) rest of the ship, adjusting frontiers in the process.
     //
-    // On exit, both the traingle's edges entering the cusp and the (eventual)
+    // On exit, both the triangle's edges entering the cusp and the (eventual)
     // edges leaving the cusp will be consistent.
     //
     // We return true if this was a cusp, false otherwise.
