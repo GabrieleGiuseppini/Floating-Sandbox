@@ -14,35 +14,6 @@
 
 namespace Physics {
 
-Frontiers::Frontiers(
-    size_t pointCount,
-    Springs const & springs,
-    Triangles const & triangles)
-    : mEdgeCount(springs.GetElementCount())
-    , mEdges(mEdgeCount, 0, Edge())
-    , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
-    , mTriangles(triangles.GetElementCount())
-    , mFrontiers()
-    , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
-    , mCurrentVisitSequenceNumber()
-    , mIsDirtyForRendering(true)
-{
-    // TODO: might nuke
-    //
-    // Populate triangles
-    //
-
-    for (auto triangleIndex : triangles)
-    {
-        // Find subsprings with triangle's edges
-        ElementIndex edgeAIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[0];
-        ElementIndex edgeBIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[1];
-        ElementIndex edgeCIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[2];
-
-        mTriangles.emplace_back(edgeAIndex, edgeBIndex, edgeCIndex);
-    }
-}
-
 void Frontiers::AddFrontier(
     FrontierType type,
     std::vector<ElementIndex> edgeIndices,
@@ -115,9 +86,9 @@ void Frontiers::HandleTriangleDestroy(
     Triangles const & triangles)
 {
     // Take edge indices once and for all
-    auto const edgeAIndex = mTriangles[triangleElementIndex].EdgeIndices[0];
-    auto const edgeBIndex = mTriangles[triangleElementIndex].EdgeIndices[1];
-    auto const edgeCIndex = mTriangles[triangleElementIndex].EdgeIndices[2];
+    auto const edgeAIndex = triangles.GetSubSpringAIndex(triangleElementIndex);
+    auto const edgeBIndex = triangles.GetSubSpringBIndex(triangleElementIndex);
+    auto const edgeCIndex = triangles.GetSubSpringCIndex(triangleElementIndex);
 
     // Springs are already consistent with the removal of this triangle
     assert(springs.GetSuperTriangles(edgeAIndex).size() == 0
@@ -131,9 +102,9 @@ void Frontiers::HandleTriangleDestroy(
     size_t edgesWithFrontierCount = 0;
     ElementIndex lastEdgeWithFrontier = NoneElementIndex;
     int lastEdgeOrdinalWithFrontier = -1; // index (0..2) of the edge in the triangles's array
-    for (int eOrd = 0; eOrd < mTriangles[triangleElementIndex].EdgeIndices.size(); ++eOrd)
+    for (int eOrd = 0; eOrd < triangles.GetSubSprings(triangleElementIndex).SpringIndices.size(); ++eOrd)
     {
-        ElementIndex edgeIndex = mTriangles[triangleElementIndex].EdgeIndices[eOrd];
+        ElementIndex edgeIndex = triangles.GetSubSprings(triangleElementIndex).SpringIndices[eOrd];
         if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)
         {
             ++edgesWithFrontierCount;
@@ -219,13 +190,13 @@ void Frontiers::HandleTriangleDestroy(
         if (edgeOrdXZ < 0)
             edgeOrdXZ += 3;
 
-        ElementIndex const edgeXZ = mTriangles[triangleElementIndex].EdgeIndices[edgeOrdXZ];
+        ElementIndex const edgeXZ = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdXZ];
 
         int edgeOrdZY = lastEdgeOrdinalWithFrontier + 1;
         if (edgeOrdZY >= 3)
             edgeOrdZY -= 3;
 
-        ElementIndex const edgeZY = mTriangles[triangleElementIndex].EdgeIndices[edgeOrdZY];
+        ElementIndex const edgeZY = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdZY];
 
         // X->Z
         mEdges[edgeXZ].FrontierIndex = frontierId;
@@ -1100,7 +1071,7 @@ void Frontiers::VerifyInvariants(
         // Edges are in CCW order
         //
 
-        auto const edgeAIndex = mTriangles[triangleIndex].EdgeIndices[0];
+        auto const edgeAIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[0];
 
         Verify(
             (triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointAIndex(edgeAIndex)
@@ -1108,7 +1079,7 @@ void Frontiers::VerifyInvariants(
             || (triangles.GetPointAIndex(triangleIndex) == springs.GetEndpointBIndex(edgeAIndex)
                 && triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointAIndex(edgeAIndex)));
 
-        auto const edgeBIndex = mTriangles[triangleIndex].EdgeIndices[1];
+        auto const edgeBIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[1];
 
         Verify(
             (triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointAIndex(edgeBIndex)
@@ -1116,7 +1087,7 @@ void Frontiers::VerifyInvariants(
             || (triangles.GetPointBIndex(triangleIndex) == springs.GetEndpointBIndex(edgeBIndex)
                 && triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointAIndex(edgeBIndex)));
 
-        auto const edgeCIndex = mTriangles[triangleIndex].EdgeIndices[2];
+        auto const edgeCIndex = triangles.GetSubSprings(triangleIndex).SpringIndices[2];
 
         Verify(
             (triangles.GetPointCIndex(triangleIndex) == springs.GetEndpointAIndex(edgeCIndex)

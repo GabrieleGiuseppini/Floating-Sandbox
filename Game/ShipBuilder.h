@@ -268,8 +268,7 @@ private:
         Physics::Points const & points,
         Physics::Springs const & springs,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2,
-        Physics::Triangles const & triangles);
+        std::vector<ElementIndex> const & springIndexRemap2);
 
     static std::vector<ElementIndex> PropagateFrontier(
         ElementIndex startPointIndex1,

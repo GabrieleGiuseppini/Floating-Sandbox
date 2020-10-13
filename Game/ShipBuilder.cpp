@@ -368,8 +368,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         points,
         springs,
         pointPairToSpringIndex1Map,
-        springIndexRemap2,
-        triangles);
+        springIndexRemap2);
 
     auto const frontiersEndTime = std::chrono::steady_clock::now();
 
@@ -1454,8 +1453,7 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
     Physics::Points const & points,
     Physics::Springs const & springs,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2,
-    Physics::Triangles const & triangles)
+    std::vector<ElementIndex> const & springIndexRemap2)
 {
     //
     // Create Frontiers container
@@ -1463,8 +1461,7 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
 
     Frontiers frontiers = Frontiers(
         points.GetElementCount(),
-        springs,
-        triangles);
+        springs);
 
     //
     // Detect and create frontiers

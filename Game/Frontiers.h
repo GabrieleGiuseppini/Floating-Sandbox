@@ -71,8 +71,15 @@ public:
 
     Frontiers(
         size_t pointCount,
-        Springs const & springs,
-        Triangles const & triangles);
+        Springs const & springs)
+        : mEdgeCount(springs.GetElementCount())
+        , mEdges(mEdgeCount, 0, Edge())
+        , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
+        , mFrontiers()
+        , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
+        , mCurrentVisitSequenceNumber()
+        , mIsDirtyForRendering(true)
+    {}
 
     void AddFrontier(
         FrontierType type,
@@ -132,19 +139,6 @@ private:
             : FrontierIndex(NoneFrontierId)
             , LastVisitSequenceNumber()
         {}
-    };
-
-    struct Triangle
-    {
-        std::array<ElementIndex, 3u> EdgeIndices; // CW order
-
-        Triangle(
-            ElementIndex edgeAIndex,
-            ElementIndex edgeBIndex,
-            ElementIndex edgeCIndex)
-            : EdgeIndices{ edgeAIndex , edgeBIndex , edgeCIndex }
-        {
-        }
     };
 
 private:
@@ -213,10 +207,6 @@ private:
     // a frontier have actual significance.
     // Cardinality: edges (==springs)
     Buffer<FrontierEdge> mFrontierEdges;
-
-    // All the triangles in the ship.
-    // Cardinality: triangles
-    Buffer<Triangle> mTriangles;
 
     // The frontiers, indexed by frontier indices.
     // Elements in this vector do not move around.

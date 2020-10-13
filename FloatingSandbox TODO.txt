@@ -1360,13 +1360,13 @@ Render:
 				+ Tests:
 					+ Thanos' Snap
 					+ 1 triangle with 3 lobes
-			= See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
+			+ See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
 				+ If so, do like endpoints (3-array, etc.), respecting CW order
-				- Get rid of Frontiers::Triangles::Edges
-				- Test:
-					- Destroy
-					- Repair
-			- Maintenance at repair:
+				+ Get rid of Frontiers::Triangles::Edges
+				+ Test:
+					+ Destroy
+					+ Repair (without frontier maintenance)
+			= Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				- Preliminary work:
 					- Cusp search needs to be done by searching triangles or edges connected to cusp Point
