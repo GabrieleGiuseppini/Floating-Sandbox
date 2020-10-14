@@ -286,6 +286,8 @@ public:
 
     bool DestroyTriangle(ElementId triangleId);
 
+    bool RestoreTriangle(ElementId triangleId);
+
 public:
 
     void Update(

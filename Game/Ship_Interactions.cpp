@@ -1549,4 +1549,18 @@ bool Ship::DestroyTriangle(ElementIndex triangleIndex)
     }
 }
 
+bool Ship::RestoreTriangle(ElementIndex triangleIndex)
+{
+    if (triangleIndex < mTriangles.GetElementCount()
+        && mTriangles.IsDeleted(triangleIndex))
+    {
+        mTriangles.Restore(triangleIndex);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 }

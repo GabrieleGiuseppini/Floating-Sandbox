@@ -133,6 +133,7 @@ struct IGameController
         int telegraphValue) = 0;
 
     virtual bool DestroyTriangle(ElementId triangleId) = 0;
+    virtual bool RestoreTriangle(ElementId triangleId) = 0;
 
     //
     // Rendering controls

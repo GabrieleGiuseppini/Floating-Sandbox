@@ -109,12 +109,12 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
 
         // Triangle Index
         {
-            mTriangleIndexSpinCtrl = new wxSpinCtrl(destroyBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+            mDestroyTriangleIndexSpinCtrl = new wxSpinCtrl(destroyBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                 wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
-            mTriangleIndexSpinCtrl->SetRange(0, std::numeric_limits<int>::max());
+            mDestroyTriangleIndexSpinCtrl->SetRange(0, std::numeric_limits<int>::max());
 
             destroyBoxSizer->Add(
-                mTriangleIndexSpinCtrl,
+                mDestroyTriangleIndexSpinCtrl,
                 0,
                 wxALIGN_CENTER_HORIZONTAL | wxALL,
                 StaticBoxInsetMargin);
@@ -130,7 +130,7 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                     bool bRes = mGameController->DestroyTriangle(
                         ElementId(
                             0, // TODO: ship ID
-                            static_cast<ElementIndex>(mTriangleIndexSpinCtrl->GetValue())));
+                            static_cast<ElementIndex>(mDestroyTriangleIndexSpinCtrl->GetValue())));
 
                     if (!bRes)
                     {
@@ -155,6 +155,63 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
             CellBorder);
     }
 
+    //
+    // Restore
+    //
+
+    {
+        wxStaticBox * restoreBox = new wxStaticBox(panel, wxID_ANY, _("Restore"));
+
+        wxBoxSizer * restoreBoxSizer = new wxBoxSizer(wxVERTICAL);
+        restoreBoxSizer->AddSpacer(StaticBoxTopMargin + StaticBoxInsetMargin);
+
+        // Triangle Index
+        {
+            mRestoreTriangleIndexSpinCtrl = new wxSpinCtrl(restoreBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+            mRestoreTriangleIndexSpinCtrl->SetRange(0, std::numeric_limits<int>::max());
+
+            restoreBoxSizer->Add(
+                mRestoreTriangleIndexSpinCtrl,
+                0,
+                wxALIGN_CENTER_HORIZONTAL | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        // Button
+        {
+            auto restoreButton = new wxButton(restoreBox, wxID_ANY, _("Restore!"));
+            restoreButton->Bind(
+                wxEVT_BUTTON,
+                [this](wxCommandEvent &)
+                {
+                    bool bRes = mGameController->RestoreTriangle(
+                        ElementId(
+                            0, // TODO: ship ID
+                            static_cast<ElementIndex>(mRestoreTriangleIndexSpinCtrl->GetValue())));
+
+                    if (!bRes)
+                    {
+                        mSoundController->PlayErrorSound();
+                    }
+                });
+
+            restoreBoxSizer->Add(
+                restoreButton,
+                0,
+                wxALIGN_CENTER_HORIZONTAL | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        restoreBox->SetSizerAndFit(restoreBoxSizer);
+
+        gridSizer->Add(
+            restoreBox,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 

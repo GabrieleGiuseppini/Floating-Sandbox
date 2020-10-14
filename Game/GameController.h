@@ -211,6 +211,7 @@ public:
         int telegraphValue) override;
 
     bool DestroyTriangle(ElementId triangleId) override;
+    bool RestoreTriangle(ElementId triangleId) override;
 
     //
     // Render controls

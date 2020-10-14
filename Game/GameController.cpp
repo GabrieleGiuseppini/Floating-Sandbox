@@ -1161,6 +1161,12 @@ bool GameController::DestroyTriangle(ElementId triangleId)
     return mWorld->DestroyTriangle(triangleId);
 }
 
+bool GameController::RestoreTriangle(ElementId triangleId)
+{
+    assert(!!mWorld);
+    return mWorld->RestoreTriangle(triangleId);
+}
+
 //
 // Render controls
 //

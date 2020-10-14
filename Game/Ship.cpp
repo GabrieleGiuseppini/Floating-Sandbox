@@ -2731,6 +2731,15 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 {
     //
+    // Maintain frontier
+    //
+
+    mFrontiers.HandleTriangleRestore(
+        triangleElementIndex,
+        mSprings,
+        mTriangles);
+
+    //
     // Add self to others
     //
 
@@ -2739,21 +2748,12 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
     mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
-    // Add triangle to set of super triangles of its sub springs
+    // Add triangle to set of super triangles of each of its sub springs
     assert(mTriangles.GetSubSprings(triangleElementIndex).SpringIndices.size() == 3);
     for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
     }
-
-    //
-    // Maintain frontier
-    //
-
-    mFrontiers.HandleTriangleRestore(
-        triangleElementIndex,
-        mSprings,
-        mTriangles);
 
     /////////////////////////////////////////////////////////
 

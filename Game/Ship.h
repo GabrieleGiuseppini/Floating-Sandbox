@@ -239,6 +239,8 @@ public:
 
     bool DestroyTriangle(ElementIndex triangleIndex);
 
+    bool RestoreTriangle(ElementIndex triangleIndex);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////

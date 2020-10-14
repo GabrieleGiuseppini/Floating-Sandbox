@@ -712,6 +712,13 @@ bool World::DestroyTriangle(ElementId triangleId)
     return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
 }
 
+bool World::RestoreTriangle(ElementId triangleId)
+{
+    auto const shipId = triangleId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->RestoreTriangle(triangleId.GetLocalObjectId());
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Simulation

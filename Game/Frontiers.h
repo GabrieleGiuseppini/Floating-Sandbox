@@ -88,7 +88,7 @@ public:
 
     /*
      * Maintains the frontiers consistent with the removal of the specified triangle.
-     * springs and points: assumed to be already consistent with the removal of the triangle.
+     * Springs and points: assumed to be already consistent with the removal of the triangle.
      */
     void HandleTriangleDestroy(
         ElementIndex triangleElementIndex,
@@ -96,6 +96,10 @@ public:
         Springs const & springs,
         Triangles const & triangles);
 
+    /*
+     * Maintains the frontiers consistent with the restoration of the specified triangle.
+     * Springs and points: assumed to be not yet consistent with the restoration of the triangle.
+     */
     void HandleTriangleRestore(ElementIndex
         triangleElementIndex,
         Springs const & springs,

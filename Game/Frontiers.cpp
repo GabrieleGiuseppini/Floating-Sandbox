@@ -116,7 +116,7 @@ void Frontiers::HandleTriangleDestroy(
     // Check cases
     if (edgesWithFrontierCount == 0)
     {
-        LogMessage("TODOTEST: CASE 0 (t_idx=", triangleElementIndex, ")");
+        LogMessage("TODOTEST: DESTROY: CASE 0 (t_idx=", triangleElementIndex, ")");
 
         //
         // None of the edges has a frontier...
@@ -160,7 +160,7 @@ void Frontiers::HandleTriangleDestroy(
     }
     else if (edgesWithFrontierCount == 1)
     {
-        LogMessage("TODOTEST: CASE 1 (t_idx=", triangleElementIndex, ")");
+        LogMessage("TODOTEST: DESTROY: CASE 1 (t_idx=", triangleElementIndex, ")");
 
         //
         // Only one edge has a frontier...
@@ -266,7 +266,7 @@ void Frontiers::HandleTriangleDestroy(
 
         if (cuspCount == 1)
         {
-            LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 1");
+            LogMessage("TODOTEST: DESTROY: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 1");
 
             //
             // There is one and only one non-frontier edge
@@ -298,7 +298,7 @@ void Frontiers::HandleTriangleDestroy(
         }
         else
         {
-            LogMessage("TODOTEST: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 3");
+            LogMessage("TODOTEST: DESTROY: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 3");
 
             //
             // There are no non-frontier edges
@@ -333,7 +333,94 @@ void Frontiers::HandleTriangleRestore(
     Springs const & springs,
     Triangles const & triangles)
 {
-    // TODOHERE
+    // Take edge indices once and for all
+    // TODO: see if needed
+    auto const edgeAIndex = triangles.GetSubSpringAIndex(triangleElementIndex);
+    auto const edgeBIndex = triangles.GetSubSpringBIndex(triangleElementIndex);
+    auto const edgeCIndex = triangles.GetSubSpringCIndex(triangleElementIndex);
+
+    // Count edges with frontiers
+    size_t edgesWithFrontierCount = 0;
+    ElementIndex lastEdgeWithFrontier = NoneElementIndex;
+    int lastEdgeOrdinalWithFrontier = -1; // index (0..2) of the edge in the triangles's array
+    ElementIndex lastEdgeWithoutFrontier = NoneElementIndex;
+    int lastEdgeOrdinalWithoutFrontier = -1; // index (0..2) of the edge in the triangles's array
+    for (int eOrd = 0; eOrd < triangles.GetSubSprings(triangleElementIndex).SpringIndices.size(); ++eOrd)
+    {
+        ElementIndex const edgeIndex = triangles.GetSubSprings(triangleElementIndex).SpringIndices[eOrd];
+        if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)
+        {
+            // If there's a frontier here, it's because of another triangle
+            assert(springs.GetSuperTriangles(edgeIndex).size() == 1 && springs.GetSuperTriangles(edgeIndex)[0] != triangleElementIndex);
+
+            ++edgesWithFrontierCount;
+            lastEdgeWithFrontier = edgeIndex;
+            lastEdgeOrdinalWithFrontier = eOrd;
+        }
+        else
+        {
+            // If there's no frontier here, it's because there are no triangles
+            assert(springs.GetSuperTriangles(edgeIndex).size() == 0);
+
+            lastEdgeWithoutFrontier = edgeIndex;
+            lastEdgeOrdinalWithoutFrontier = eOrd;
+        }
+    }
+
+    // Check cases
+    if (edgesWithFrontierCount == 3)
+    {
+        LogMessage("TODOTEST: RESTORE: CASE 3 (t_idx=", triangleElementIndex, ")");
+
+        //
+        // This triangle is going to be restored onto a "hole" whose 3 edges
+        // have frontiers...
+        //
+
+        // ...if there are 3 edges with frontiers, then it's the same frontier
+        FrontierId const frontierId = mEdges[edgeAIndex].FrontierIndex;
+        assert(mEdges[edgeBIndex].FrontierIndex == frontierId);
+        assert(mEdges[edgeCIndex].FrontierIndex == frontierId);
+
+        // ...if there are 3 edges with frontiers, then it's an internal frontier
+        assert(mFrontiers[frontierId].has_value()
+            && mFrontiers[frontierId]->Type == FrontierType::Internal);
+
+        // ...if there are 3 edges with frontiers, then the edges are all connected
+        assert(mFrontierEdges[edgeAIndex].NextEdgeIndex == edgeCIndex
+            && mFrontierEdges[edgeCIndex].NextEdgeIndex == edgeBIndex
+            && mFrontierEdges[edgeBIndex].NextEdgeIndex == edgeAIndex);
+
+        //
+        // ...simply destroy this frontier, then
+        //
+
+        mEdges[edgeAIndex].FrontierIndex = NoneFrontierId;
+        mEdges[edgeBIndex].FrontierIndex = NoneFrontierId;
+        mEdges[edgeCIndex].FrontierIndex = NoneFrontierId;
+        mFrontiers[frontierId]->Size = 0;
+        DestroyFrontier(frontierId);
+    }
+    else if (edgesWithFrontierCount == 2)
+    {
+        LogMessage("TODOTEST: RESTORE: CASE 2 (t_idx=", triangleElementIndex, ")");
+
+        // TODOHERE
+    }
+    else if (edgesWithFrontierCount == 1)
+    {
+        LogMessage("TODOTEST: RESTORE: CASE 1 (t_idx=", triangleElementIndex, ")");
+
+        // TODOHERE
+    }
+    else
+    {
+        assert(edgesWithFrontierCount == 0);
+
+        LogMessage("TODOTEST: RESTORE: CASE 0 (t_idx=", triangleElementIndex, ")");
+
+        // TODOHERE
+    }
 
     ////////////////////////////////////////
 
