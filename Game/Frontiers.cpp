@@ -177,9 +177,9 @@ void Frontiers::HandleTriangleDestroy(
         //            lastEdgeWithFrontier
         //                X         Y
         // frontier: ---------------------->
-        //                 \       /
+        //
         //                  \     /
-        //                   \   /
+        //
         //                    \ /
         //                     Z
         //
@@ -405,7 +405,72 @@ void Frontiers::HandleTriangleRestore(
     {
         LogMessage("TODOTEST: RESTORE: CASE 2 (t_idx=", triangleElementIndex, ")");
 
-        // TODOHERE
+        //
+        // Two edges have a frontier...
+        //
+
+        assert(lastEdgeWithoutFrontier != NoneElementIndex);
+        assert(lastEdgeOrdinalWithoutFrontier != -1);
+
+        // ...hence the other (non-frontier) edge has zero triangles
+        assert(springs.GetSuperTriangles(lastEdgeWithoutFrontier).size() == 0);
+
+        //
+        // ...we then move the frontier on the edges to the one edge without frontiers
+        //
+
+        //           lastEdgeWithoutFrontier
+        //                X         Y
+        // frontier: ------         -------->
+        //                 \       /
+        //                  \     /
+        //                   \   /
+        //                    \ /
+        //                     Z
+        //
+
+        FrontierId const frontierId = mEdges[lastEdgeWithFrontier].FrontierIndex;
+
+        int edgeOrdXZ = lastEdgeOrdinalWithoutFrontier - 1;
+        if (edgeOrdXZ < 0)
+            edgeOrdXZ += 3;
+
+        ElementIndex const edgeXZ = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdXZ];
+
+        int edgeOrdZY = lastEdgeOrdinalWithoutFrontier + 1;
+        if (edgeOrdZY >= 3)
+            edgeOrdZY -= 3;
+
+        ElementIndex const edgeZY = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdZY];
+
+        // XZ and ZY are connected
+        assert(mEdges[edgeXZ].FrontierIndex == frontierId
+            && mFrontierEdges[edgeXZ].NextEdgeIndex == edgeZY);
+        assert(mEdges[edgeZY].FrontierIndex == frontierId
+            && mFrontierEdges[edgeZY].PrevEdgeIndex == edgeXZ);
+
+        // X->Y
+        mEdges[lastEdgeWithoutFrontier].FrontierIndex = frontierId;
+        assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithoutFrontier] == mFrontierEdges[edgeXZ].PointAIndex); // X
+        mFrontierEdges[lastEdgeWithoutFrontier].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithoutFrontier]; // X
+        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[edgeZY].PointBIndex); // Y
+        mFrontierEdges[lastEdgeWithoutFrontier].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY]; // Y
+        mFrontierEdges[lastEdgeWithoutFrontier].NextEdgeIndex = mFrontierEdges[edgeZY].NextEdgeIndex;
+        mFrontierEdges[mFrontierEdges[edgeZY].NextEdgeIndex].PrevEdgeIndex = lastEdgeWithoutFrontier;
+        mFrontierEdges[lastEdgeWithoutFrontier].PrevEdgeIndex = mFrontierEdges[edgeXZ].PrevEdgeIndex;
+        mFrontierEdges[mFrontierEdges[edgeXZ].PrevEdgeIndex].NextEdgeIndex = lastEdgeWithoutFrontier;
+
+        // Clear X->Z
+        mEdges[edgeXZ].FrontierIndex = NoneFrontierId;
+
+        // Clear Z->Y
+        mEdges[edgeZY].FrontierIndex = NoneFrontierId;
+
+        // Update frontier
+        assert(mFrontiers[frontierId].has_value());
+        mFrontiers[frontierId]->StartingEdgeIndex = lastEdgeWithoutFrontier; // Just to be safe, as we've nuked the two
+        mFrontiers[frontierId]->Size -= 1; // -2 + 1
+        mFrontiers[frontierId]->IsDirtyForRendering = true;
     }
     else if (edgesWithFrontierCount == 1)
     {

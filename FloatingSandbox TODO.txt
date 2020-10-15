@@ -1378,7 +1378,7 @@ Render:
 					- Alternatively, might make do with existing structures @ Springs that track octants
 				= Cases: 					
 					+ Case 3 frontiers
-					- Case 2 frontiers
+					+ Case 2 frontiers
 					- Case 1 frontier
 					- Case 0 frontiers
 				- Things to remember:
