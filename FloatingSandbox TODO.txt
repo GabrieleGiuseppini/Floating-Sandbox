@@ -503,7 +503,6 @@ Render:
 			- Titanic-Izuku_deku_midoriya
 				- Credits for textures: Titanic HG
 				- Credits for ship: DennisDanielGrimaldo
-
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Graza's from awesomeyorkie
@@ -1380,11 +1379,12 @@ Render:
 				= Cases: 					
 					+ Case 3 frontiers
 					+ Case 2 frontiers
-					- Case 1 frontier
-					- Case 0 frontiers
+					= Case 0/1 frontiers
+						= Propagate 1 frontier
+						- Process cusps
+						+ Handle pathological isolated triangle case
 				- Things to remember:
 					+ Marks mIsDirtyForRendering
-					- Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
 					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 		- Optimizations:
 			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering

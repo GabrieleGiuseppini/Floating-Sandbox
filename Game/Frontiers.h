@@ -53,17 +53,13 @@ public:
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
 
-        bool IsDirtyForRendering;
-
         Frontier(
             FrontierType type,
             ElementIndex startingEdgeIndex,
-            ElementCount size,
-            bool isDirtyForRendering)
+            ElementCount size)
             : Type(type)
             , StartingEdgeIndex(startingEdgeIndex)
             , Size(size)
-            , IsDirtyForRendering(isDirtyForRendering)
         {}
     };
 
@@ -209,12 +205,21 @@ private:
         ElementIndex const cuspEdgeIn,
         ElementIndex const cuspEdgeOut);
 
-    inline std::optional<std::tuple<ElementIndex, ElementIndex>> FindCuspFutureFrontierEdges(
+    inline std::tuple<ElementIndex, ElementIndex> FindTriangleCuspOppositeFrontierEdges(
         ElementIndex const cuspPointIndex,
         ElementIndex const edgeIn,
         ElementIndex const edgeOut,
         Points const & points,
         Springs const & springs);
+
+    template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
+    inline bool ProcessTriangleCuspRestore(
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut,
+        ElementIndex const triangleElementIndex,
+        Points const & points,
+        Springs const & springs,
+        Triangles const & triangles);
 
     bool HasRegionFrontierOfType(
         FrontierType targetFrontierType,
@@ -251,7 +256,7 @@ private:
     // region/frontier check
     SequenceNumber mCurrentVisitSequenceNumber;
 
-    bool mIsDirtyForRendering; // When true, a change has occurred and thus needs to be re-uploaded
+    bool mIsDirtyForRendering; // When true, a change has occurred and thus all frontiers need to be re-uploaded
 };
 
 }
