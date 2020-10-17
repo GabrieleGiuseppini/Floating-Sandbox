@@ -12,7 +12,7 @@
             Comments="This package installs $(var.FullApplicationName) $(var.Platform) on your computer."
             Description="$(var.FullApplicationName)"
             Platform="$(var.Platform)"
-            InstallerVersion="400"
+            InstallerVersion="500"
             Compressed="yes"
             InstallScope="perUser"
             InstallPrivileges="limited" />
@@ -28,6 +28,7 @@
 
         <Directory Id="TARGETDIR" Name="SourceDir">
 
+            <!-- TODO: see https://docs.microsoft.com/en-us/windows/win32/msi/single-package-authoring: use ProgramFilesFolder? -->
             <Directory Id="LocalAppDataFolder">
 
                 <Directory Id="INSTALLFOLDER" Name="$(var.ShortApplicationName)">
