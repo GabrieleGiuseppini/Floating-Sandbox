@@ -502,6 +502,7 @@ Render:
 			- Klickitat (Matthew Anderson 707)
 			- Titanic-Izuku_deku_midoriya
 				- Credits for textures: Titanic HG
+				- Credits for ship: DennisDanielGrimaldo
 
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt

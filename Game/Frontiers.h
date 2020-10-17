@@ -100,8 +100,9 @@ public:
      * Maintains the frontiers consistent with the restoration of the specified triangle.
      * Springs and points: assumed to be not yet consistent with the restoration of the triangle.
      */
-    void HandleTriangleRestore(ElementIndex
-        triangleElementIndex,
+    void HandleTriangleRestore(
+        ElementIndex triangleElementIndex,
+        Points const & points,
         Springs const & springs,
         Triangles const & triangles);
 
@@ -147,6 +148,24 @@ private:
 
 private:
 
+    static inline int PreviousEdgeOrdinal(int edgeOrdinal)
+    {
+        int edgeOrd = edgeOrdinal - 1;
+        if (edgeOrd < 0)
+            edgeOrd += 3;
+
+        return edgeOrd;
+    }
+
+    static inline int NextEdgeOrdinal(int edgeOrdinal)
+    {
+        int edgeOrd = edgeOrdinal + 1;
+        if (edgeOrd >= 3)
+            edgeOrd -= 3;
+
+        return edgeOrd;
+    }
+
     FrontierId CreateNewFrontier(
         FrontierType type,
         ElementIndex startingEdgeIndex = NoneElementIndex,
@@ -154,20 +173,6 @@ private:
 
     void DestroyFrontier(
         FrontierId frontierId);
-
-    template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
-    inline bool ProcessTriangleCuspDestroy(
-        ElementIndex const edgeIn,
-        ElementIndex const edgeOut,
-        ElementIndex const triangleElementIndex,
-        Points const & points,
-        Springs const & springs,
-        Triangles const & triangles);
-
-    inline void ProcessTriangleOppositeCuspEdgeDestroy(
-        ElementIndex const edge,
-        ElementIndex const cuspEdgeIn,
-        ElementIndex const cuspEdgeOut);
 
     inline FrontierId SplitIntoNewFrontier(
         ElementIndex const newFrontierStartEdgeIndex,
@@ -189,6 +194,27 @@ private:
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex,
         FrontierId const frontierId);
+
+    template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
+    inline bool ProcessTriangleCuspDestroy(
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut,
+        ElementIndex const triangleElementIndex,
+        Points const & points,
+        Springs const & springs,
+        Triangles const & triangles);
+
+    inline void ProcessTriangleOppositeCuspEdgeDestroy(
+        ElementIndex const edge,
+        ElementIndex const cuspEdgeIn,
+        ElementIndex const cuspEdgeOut);
+
+    inline std::optional<std::tuple<ElementIndex, ElementIndex>> FindCuspFutureFrontierEdges(
+        ElementIndex const cuspPointIndex,
+        ElementIndex const edgeIn,
+        ElementIndex const edgeOut,
+        Points const & points,
+        Springs const & springs);
 
     bool HasRegionFrontierOfType(
         FrontierType targetFrontierType,

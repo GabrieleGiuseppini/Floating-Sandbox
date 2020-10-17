@@ -2736,6 +2736,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 
     mFrontiers.HandleTriangleRestore(
         triangleElementIndex,
+        mPoints,
         mSprings,
         mTriangles);
 
@@ -3033,9 +3034,10 @@ void Ship::VerifyInvariants()
     // Frontiers
     //
 
-    mFrontiers.VerifyInvariants(
-        mSprings,
-        mTriangles);
+    // TODOTEST
+    ////mFrontiers.VerifyInvariants(
+    ////    mSprings,
+    ////    mTriangles);
 }
 #endif
 }

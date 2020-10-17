@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <set>
 #include <stack>
+#include <utility>
 
 namespace Physics {
 
@@ -186,16 +188,10 @@ void Frontiers::HandleTriangleDestroy(
 
         FrontierId const frontierId = mEdges[lastEdgeWithFrontier].FrontierIndex;
 
-        int edgeOrdXZ = lastEdgeOrdinalWithFrontier - 1;
-        if (edgeOrdXZ < 0)
-            edgeOrdXZ += 3;
-
+        int const edgeOrdXZ = PreviousEdgeOrdinal(lastEdgeOrdinalWithFrontier);
         ElementIndex const edgeXZ = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdXZ];
 
-        int edgeOrdZY = lastEdgeOrdinalWithFrontier + 1;
-        if (edgeOrdZY >= 3)
-            edgeOrdZY -= 3;
-
+        int const edgeOrdZY = NextEdgeOrdinal(lastEdgeOrdinalWithFrontier);
         ElementIndex const edgeZY = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdZY];
 
         // X->Z
@@ -209,8 +205,8 @@ void Frontiers::HandleTriangleDestroy(
 
         // Z->Y
         mEdges[edgeZY].FrontierIndex = frontierId;
-        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // Y
         mFrontierEdges[edgeZY].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdXZ]; // Z
+        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // Y
         mFrontierEdges[edgeZY].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY]; // Y
         mFrontierEdges[edgeZY].NextEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex;
         mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex].PrevEdgeIndex = edgeZY;
@@ -330,6 +326,7 @@ void Frontiers::HandleTriangleDestroy(
 
 void Frontiers::HandleTriangleRestore(
     ElementIndex triangleElementIndex,
+    Points const & points,
     Springs const & springs,
     Triangles const & triangles)
 {
@@ -406,7 +403,7 @@ void Frontiers::HandleTriangleRestore(
         LogMessage("TODOTEST: RESTORE: CASE 2 (t_idx=", triangleElementIndex, ")");
 
         //
-        // Two edges have a frontier...
+        // Two edges have a frontier and one doesn't...
         //
 
         assert(lastEdgeWithoutFrontier != NoneElementIndex);
@@ -431,16 +428,10 @@ void Frontiers::HandleTriangleRestore(
 
         FrontierId const frontierId = mEdges[lastEdgeWithFrontier].FrontierIndex;
 
-        int edgeOrdXZ = lastEdgeOrdinalWithoutFrontier - 1;
-        if (edgeOrdXZ < 0)
-            edgeOrdXZ += 3;
-
+        int const edgeOrdXZ = PreviousEdgeOrdinal(lastEdgeOrdinalWithoutFrontier);
         ElementIndex const edgeXZ = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdXZ];
 
-        int edgeOrdZY = lastEdgeOrdinalWithoutFrontier + 1;
-        if (edgeOrdZY >= 3)
-            edgeOrdZY -= 3;
-
+        int const edgeOrdZY = NextEdgeOrdinal(lastEdgeOrdinalWithoutFrontier);
         ElementIndex const edgeZY = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdZY];
 
         // XZ and ZY are connected
@@ -475,6 +466,81 @@ void Frontiers::HandleTriangleRestore(
     else if (edgesWithFrontierCount == 1)
     {
         LogMessage("TODOTEST: RESTORE: CASE 1 (t_idx=", triangleElementIndex, ")");
+
+        //
+        // One edge has a frontier and two don't...
+        //
+
+        assert(lastEdgeWithFrontier != NoneElementIndex);
+        assert(lastEdgeOrdinalWithFrontier != -1);
+
+        //            lastEdgeWithFrontier
+        //                X         Y
+        // frontier: <---------------------
+        //
+        //                  \     /
+        //
+        //                    \ /
+        //                     Z
+        //
+
+        // The existing frontier goes from Y->X
+
+        //
+        // 1) Replace Y->X (which runs along another, old triangle) with Y->Z and Z->X (which will run along this new triangle)
+        //
+
+        FrontierId const frontierId = mEdges[lastEdgeWithFrontier].FrontierIndex;
+
+        int const edgeOrdYZ = NextEdgeOrdinal(lastEdgeOrdinalWithFrontier);
+        ElementIndex const edgeYZ = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdYZ];
+
+        int const edgeOrdZX = PreviousEdgeOrdinal(lastEdgeOrdinalWithFrontier);
+        ElementIndex const edgeZX = triangles.GetSubSprings(triangleElementIndex).SpringIndices[edgeOrdZX];
+
+        ElementIndex const pointZIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZX];
+
+        // Y->Z
+        mEdges[edgeYZ].FrontierIndex = frontierId;
+        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdYZ] == mFrontierEdges[lastEdgeWithFrontier].PointAIndex); // Y
+        mFrontierEdges[edgeYZ].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdYZ]; // Y
+        mFrontierEdges[edgeYZ].PointBIndex = pointZIndex; // Z
+        // TODOHERE: this will come later
+        //mFrontierEdges[edgeYZ].NextEdgeIndex = edgeZX;
+        mFrontierEdges[edgeYZ].PrevEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex;
+        mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex].NextEdgeIndex = edgeYZ;
+
+        // Z->Y
+        mEdges[edgeZX].FrontierIndex = frontierId;
+        mFrontierEdges[edgeZX].PointAIndex = pointZIndex; // Z
+        assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // X
+        mFrontierEdges[edgeZX].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier]; // X
+        mFrontierEdges[edgeZX].NextEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex;
+        mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex].PrevEdgeIndex = edgeZX;
+        // TODOHERE: this will come later
+        //mFrontierEdges[edgeZX].PrevEdgeIndex = edgeYZ;
+
+        // Clear Y->X
+        mEdges[lastEdgeWithFrontier].FrontierIndex = NoneFrontierId;
+
+        // Update frontier
+        assert(mFrontiers[frontierId].has_value());
+        mFrontiers[frontierId]->StartingEdgeIndex = edgeYZ; // Just to be safe, as we've nuked YX
+        mFrontiers[frontierId]->Size += 1; // +2 - 1
+        mFrontiers[frontierId]->IsDirtyForRendering = true;
+
+        //
+        // 2) Check if vertex Z is a cusp or not:
+        //  - If it's a cusp, propagate frontiers directly;
+        //  - If not, connect Y->Z with Z->X
+        //
+
+        auto const cuspEdges = FindCuspFutureFrontierEdges(
+            pointZIndex,
+            edgeYZ,
+            edgeZX,
+            points,
+            springs);
 
         // TODOHERE
     }
@@ -592,6 +658,118 @@ void Frontiers::DestroyFrontier(
     assert(mFrontiers[frontierId]->Size == 0);
 
     mFrontiers[frontierId].reset();
+}
+
+FrontierId Frontiers::SplitIntoNewFrontier(
+    ElementIndex const newFrontierStartEdgeIndex,
+    ElementIndex const newFrontierEndEdgeIndex,
+    FrontierId const oldFrontierId,
+    FrontierType const newFrontierType,
+    ElementIndex const edgeIn,
+    ElementIndex const edgeOut)
+{
+    // Start and end currently belong to the old frontier
+    assert(mEdges[newFrontierStartEdgeIndex].FrontierIndex == oldFrontierId);
+    assert(mEdges[newFrontierEndEdgeIndex].FrontierIndex == oldFrontierId);
+
+    //
+    // New frontier
+    //
+
+    // Create new frontier
+    FrontierId const newFrontierId = CreateNewFrontier(
+        newFrontierType,
+        newFrontierStartEdgeIndex,
+        0);
+
+    // Propagate new frontier along the soon-to-be-detached region
+    ElementCount const newFrontierSize = PropagateFrontier(
+        newFrontierStartEdgeIndex,
+        newFrontierEndEdgeIndex,
+        newFrontierId);
+
+    // Connect first and last edges at cusp
+    mFrontierEdges[newFrontierStartEdgeIndex].PrevEdgeIndex = newFrontierEndEdgeIndex;
+    mFrontierEdges[newFrontierEndEdgeIndex].NextEdgeIndex = newFrontierStartEdgeIndex;
+
+    // Update frontier
+    mFrontiers[newFrontierId]->Size = newFrontierSize;
+    assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
+
+    //
+    // Old frontier
+    //
+
+    // Connect edges at cusp
+    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+    // Update frontier
+    mFrontiers[oldFrontierId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
+    assert(mFrontiers[oldFrontierId]->Size >= newFrontierSize);
+    mFrontiers[oldFrontierId]->Size -= newFrontierSize;
+    mFrontiers[oldFrontierId]->IsDirtyForRendering = true;
+
+    return newFrontierId;
+}
+
+void Frontiers::ReplaceFrontier(
+    ElementIndex const startEdgeIndex,
+    ElementIndex const endEdgeIndex,
+    FrontierId const oldFrontierId,
+    FrontierId const newFrontierId,
+    ElementIndex const edgeIn,
+    ElementIndex const edgeOut)
+{
+    // It's not the same frontier
+    assert(oldFrontierId != newFrontierId);
+
+    // Start and end currently belong to the old frontier
+    assert(mEdges[startEdgeIndex].FrontierIndex == oldFrontierId);
+    assert(mEdges[endEdgeIndex].FrontierIndex == oldFrontierId);
+
+    ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
+    ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
+
+    // Propagate new frontier along the old frontier
+    ElementCount const oldFrontierSize = PropagateFrontier(
+        startEdgeIndex,
+        endEdgeIndex,
+        newFrontierId);
+
+    // Connect edges at triangle's side of cusp
+    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
+    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+
+    // Connect edges at opposite side of cusp
+    mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
+    mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
+
+    // Update new frontier
+    mFrontiers[newFrontierId]->Size += oldFrontierSize;
+    mFrontiers[newFrontierId]->IsDirtyForRendering = true;
+
+    // Destroy old frontier
+    assert(oldFrontierSize == mFrontiers[oldFrontierId]->Size);
+    mFrontiers[oldFrontierId]->Size -= oldFrontierSize;
+    DestroyFrontier(oldFrontierId);
+}
+
+ElementCount Frontiers::PropagateFrontier(
+    ElementIndex const startEdgeIndex,
+    ElementIndex const endEdgeIndex,
+    FrontierId const frontierId)
+{
+    ElementCount count = 1;
+    for (ElementIndex edgeIndex = startEdgeIndex; ; ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex)
+    {
+        mEdges[edgeIndex].FrontierIndex = frontierId;
+
+        if (edgeIndex == endEdgeIndex)
+            break;
+    }
+
+    return count;
 }
 
 template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
@@ -911,116 +1089,92 @@ inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
     mFrontiers[frontierId]->IsDirtyForRendering = true;
 }
 
-FrontierId Frontiers::SplitIntoNewFrontier(
-    ElementIndex const newFrontierStartEdgeIndex,
-    ElementIndex const newFrontierEndEdgeIndex,
-    FrontierId const oldFrontierId,
-    FrontierType const newFrontierType,
+inline std::optional<std::tuple<ElementIndex, ElementIndex>> Frontiers::FindCuspFutureFrontierEdges(
+    ElementIndex const cuspPointIndex,
     ElementIndex const edgeIn,
-    ElementIndex const edgeOut)
+    ElementIndex const edgeOut,
+    Points const & points,
+    Springs const & springs)
 {
-    // Start and end currently belong to the old frontier
-    assert(mEdges[newFrontierStartEdgeIndex].FrontierIndex == oldFrontierId);
-    assert(mEdges[newFrontierEndEdgeIndex].FrontierIndex == oldFrontierId);
+    auto const edgeInOctant = springs.GetFactoryEndpointOctant(edgeIn, cuspPointIndex);
+    auto const edgeOutOctant = springs.GetFactoryEndpointOctant(edgeOut, cuspPointIndex);
+
+    LogMessage("TODOTEST: FindCusp: ", edgeIn, " (", edgeInOctant, ") ---> ", cuspPointIndex, " --> ", edgeOut, " (", edgeOutOctant, ")");
 
     //
-    // New frontier
+    // Among all the (frontier) springs connected to the cusp point, find the two closest
+    // to the in and out edges, which are contained in the in^out sector
     //
 
-    // Create new frontier
-    FrontierId const newFrontierId = CreateNewFrontier(
-        newFrontierType,
-        newFrontierStartEdgeIndex,
-        0);
+    // in
+    //  \      /
+    //   \    /
+    //    \  /
+    // cp  >
+    //    /  \
+    //   /    \
+    //  /      \
+    // out
 
-    // Propagate new frontier along the soon-to-be-detached region
-    ElementCount const newFrontierSize = PropagateFrontier(
-        newFrontierStartEdgeIndex,
-        newFrontierEndEdgeIndex,
-        newFrontierId);
+    // a) Find frontier spring connected to cusp point with lowest octant among all those
+    //    with octant greater than edge in's
+    // b) Find frontier spring connected to cusp point with highest octant among all those
+    //    with octant lower than edge out's
 
-    // Connect first and last edges at cusp
-    mFrontierEdges[newFrontierStartEdgeIndex].PrevEdgeIndex = newFrontierEndEdgeIndex;
-    mFrontierEdges[newFrontierEndEdgeIndex].NextEdgeIndex = newFrontierStartEdgeIndex;
+    Octant bestNextInEdgeOctant = std::numeric_limits<Octant>::max();
+    ElementIndex bestNextInEdge = NoneElementIndex;
+    Octant bestNextOutEdgeOctant = std::numeric_limits<Octant>::min();
+    ElementIndex bestNextOutEdge = NoneElementIndex;
 
-    // Update frontier
-    mFrontiers[newFrontierId]->Size = newFrontierSize;
-    assert(mFrontiers[newFrontierId]->IsDirtyForRendering);
+    Octant const octantDelta = (edgeOutOctant < edgeInOctant) ? 8 : 0;
 
-    //
-    // Old frontier
-    //
-
-    // Connect edges at cusp
-    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
-
-    // Update frontier
-    mFrontiers[oldFrontierId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
-    assert(mFrontiers[oldFrontierId]->Size >= newFrontierSize);
-    mFrontiers[oldFrontierId]->Size -= newFrontierSize;
-    mFrontiers[oldFrontierId]->IsDirtyForRendering = true;
-
-    return newFrontierId;
-}
-
-void Frontiers::ReplaceFrontier(
-    ElementIndex const startEdgeIndex,
-    ElementIndex const endEdgeIndex,
-    FrontierId const oldFrontierId,
-    FrontierId const newFrontierId,
-    ElementIndex const edgeIn,
-    ElementIndex const edgeOut)
-{
-    // It's not the same frontier
-    assert(oldFrontierId != newFrontierId);
-
-    // Start and end currently belong to the old frontier
-    assert(mEdges[startEdgeIndex].FrontierIndex == oldFrontierId);
-    assert(mEdges[endEdgeIndex].FrontierIndex == oldFrontierId);
-
-    ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
-    ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
-
-    // Propagate new frontier along the old frontier
-    ElementCount const oldFrontierSize = PropagateFrontier(
-        startEdgeIndex,
-        endEdgeIndex,
-        newFrontierId);
-
-    // Connect edges at triangle's side of cusp
-    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
-
-    // Connect edges at opposite side of cusp
-    mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
-    mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
-
-    // Update new frontier
-    mFrontiers[newFrontierId]->Size += oldFrontierSize;
-    mFrontiers[newFrontierId]->IsDirtyForRendering = true;
-
-    // Destroy old frontier
-    assert(oldFrontierSize == mFrontiers[oldFrontierId]->Size);
-    mFrontiers[oldFrontierId]->Size -= oldFrontierSize;
-    DestroyFrontier(oldFrontierId);
-}
-
-ElementCount Frontiers::PropagateFrontier(
-    ElementIndex const startEdgeIndex,
-    ElementIndex const endEdgeIndex,
-    FrontierId const frontierId)
-{
-    ElementCount count = 1;
-    for (ElementIndex edgeIndex = startEdgeIndex; ; ++count, edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex)
+    for (auto const & cs : points.GetFactoryConnectedSprings(cuspPointIndex).ConnectedSprings)
     {
-        mEdges[edgeIndex].FrontierIndex = frontierId;
+        if (cs.SpringIndex != edgeIn
+            && cs.SpringIndex != edgeOut
+            && mEdges[cs.SpringIndex].FrontierIndex != NoneFrontierId)
+        {
+            Octant octant = springs.GetFactoryEndpointOctant(cs.SpringIndex, cuspPointIndex);
+            if (octant < edgeOutOctant)
+                octant += octantDelta;
 
-        if (edgeIndex == endEdgeIndex)
-            break;
+            if (octant > edgeInOctant && octant < edgeOutOctant + octantDelta)
+            {
+                LogMessage("    TODOTEST: spring: ", cs.SpringIndex, " (", springs.GetFactoryEndpointOctant(cs.SpringIndex, cuspPointIndex),
+                    "==", octant, "): INSIDE SECTOR");
+
+                if (octant < bestNextInEdgeOctant)
+                {
+                    bestNextInEdgeOctant = octant;
+                    bestNextInEdge = cs.SpringIndex;
+                }
+
+                if (octant > bestNextOutEdgeOctant)
+                {
+                    bestNextOutEdgeOctant = octant;
+                    bestNextOutEdge = cs.SpringIndex;
+                }
+            }
+            else
+            {
+                LogMessage("    TODOTEST: spring: ", cs.SpringIndex, " (", springs.GetFactoryEndpointOctant(cs.SpringIndex, cuspPointIndex),
+                    "==", octant, "): OUTSIDE SECTOR");
+            }
+        }
     }
 
-    return count;
+    if (bestNextInEdge != NoneElementIndex)
+    {
+        assert(bestNextOutEdge != NoneElementIndex);
+        assert(bestNextInEdge != bestNextOutEdge);
+
+        return std::make_tuple(bestNextInEdge, bestNextOutEdge);
+    }
+    else
+    {
+        assert(bestNextOutEdge == NoneElementIndex);
+        return std::nullopt;
+    }
 }
 
 bool Frontiers::HasRegionFrontierOfType(
@@ -1250,5 +1404,4 @@ void Frontiers::VerifyInvariants(
     }
 }
 #endif
-
 }
