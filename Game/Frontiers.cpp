@@ -1294,12 +1294,54 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
         // ...propagate opposite frontier to triangle
         //
 
-        LogMessage("TODOTEST: ProcessTriangleCuspRestore: No Triangle Frontier => PROPAGATE OPPOSITE");
+        LogMessage("TODOTEST: ProcessTriangleCuspRestore: No Triangle Frontier => PROPAGATE OPPOSITE FRONTIER");
 
+        int constexpr CuspEdgeMidOrdinal = (CuspEdgeOutOrdinal <= 1)
+            ? CuspEdgeOutOrdinal + 1
+            : 0;
 
-        // TODOHERE
+        ElementIndex const edgeMid = triangles.GetSubSprings(triangleElementIndex).SpringIndices[CuspEdgeMidOrdinal];
+
+        // OutOpposite->Out
+        assert(mFrontierEdges[edgeOutOpposite].NextEdgeIndex == edgeInOpposite);
+        mFrontierEdges[edgeOutOpposite].NextEdgeIndex = edgeOut;
+
+        // Out
+        mEdges[edgeOut].FrontierIndex = oppositeFrontierId;
+        mFrontierEdges[edgeOut].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
+        mFrontierEdges[edgeOut].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeMidOrdinal];
+        mFrontierEdges[edgeOut].NextEdgeIndex = edgeMid;
+        mFrontierEdges[edgeOut].PrevEdgeIndex = edgeOutOpposite;
+
+        // Mid
+        mEdges[edgeMid].FrontierIndex = oppositeFrontierId;
+        mFrontierEdges[edgeMid].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeMidOrdinal];
+        mFrontierEdges[edgeMid].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
+        mFrontierEdges[edgeMid].NextEdgeIndex = edgeIn;
+        mFrontierEdges[edgeMid].PrevEdgeIndex = edgeOut;
+
+        // In
+        mEdges[edgeIn].FrontierIndex = oppositeFrontierId;
+        mFrontierEdges[edgeIn].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
+        mFrontierEdges[edgeIn].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
+        mFrontierEdges[edgeIn].NextEdgeIndex = edgeInOpposite;
+        mFrontierEdges[edgeIn].PrevEdgeIndex = edgeMid;
+
+        // In->InOpposite
+        assert(mFrontierEdges[edgeInOpposite].PrevEdgeIndex == edgeOutOpposite);
+        mFrontierEdges[edgeInOpposite].PrevEdgeIndex = edgeIn;
+
+        // Update frontier
+        assert(mFrontiers[oppositeFrontierId].has_value());
+        mFrontiers[oppositeFrontierId]->Size += 3;
     }
-    // else: TODOHERE
+    else
+    {
+        // TODOHERE
+        LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+
+        // TODO: assert that cuspIn->cuspOut, and same frontier ID
+    }
 
     return true;
 }

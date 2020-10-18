@@ -249,7 +249,7 @@ Render:
 		= Clouds in perspective (*)			
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
-			- Check first on Dell if it changes perf
+			- Check first on Dell if it improves perf
 
 		- Frontier-enabled features:
 			- Directional water drag (*)
@@ -264,10 +264,10 @@ Render:
 
 		- Calibrate flying burning cardboard
 
-		- Night vision (*)
-
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
+
+		- Night vision (*)
 
 		- ARM issues:
 			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
@@ -397,9 +397,9 @@ Render:
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
 				- @ Ship::DestroyHandler's
 
-		- Do shader at Anti-Matter bomb pre-implosion
-			- Shader already started: https://www.shadertoy.com/view/3sVSRc
-			- See if should add some noise
+		= Do shader at Anti-Matter bomb pre-implosion
+			+ Shader already started: https://www.shadertoy.com/view/3sVSRc
+			- See if should add some noise: add some of those playful experiments
 
 		- Underwater currents (*)		
 		
@@ -1046,6 +1046,12 @@ Render:
 			- At points' low-freq combustion update				  
 		- "Lightning rod" material
 			- Has precedence when looking for candidates @ Lightning strike
+
+	- Generalized light emission
+		- Ship::DiffuseLight populates buffers twice, from:
+			- ElectricalElements::Lamps (like now)
+			- Points::LightEmittingParticles
+				- The latter builds vector of indices at its various Update()'s that contribute to lights, e.g. combustion low freq and/or ephemeral update
 
 	- New electrical materials: 
 		- Non-Instanced Water Tight Doors (see if possible)
