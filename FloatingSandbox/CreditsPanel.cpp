@@ -166,7 +166,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         { 1, wxS("Joey de Vries (OpenGL tutorial, http://openil.sourceforge.net/)"), 0 },
         { 1, wxS("Bas van den Berg"), 0 },
         { 1, wxS("Mart Slot"), 0 },
-        { 1, wxS("Mathias Garbe"), 0 }
+        { 1, wxS("Mathias Garbe"), 0 },
+        { 1, wxS("Wyatt Rosenberry"), 0 },
+        { 1, wxS("Daniel Gasperment"), 0 }
     };
 
     //

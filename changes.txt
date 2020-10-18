@@ -1,3 +1,11 @@
+1.15.5.1
+- Fixed crash at startup that was affecting some users on non-English Windows
+	- Merci à Daniel Gasperment pour son aide!
+
+1.15.4.1
+- Fixed slow rendering issue on additional Intel HD Graphics cards
+	- Thanks to Wyatt Rosenberry for his help in debugging the issue!
+
 1.15.3.1
 - Fixed extremely slow rendering with Intel HD Graphics cards
 	- Thanks to Oxurus for his help in debugging the issue!
