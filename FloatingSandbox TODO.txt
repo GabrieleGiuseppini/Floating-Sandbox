@@ -1386,7 +1386,7 @@ Render:
 					+ Case 3 frontiers
 					+ Case 2 frontiers
 					= Case 0/1 frontiers
-						= Propagate 1 frontier
+						+ Propagate 1 frontier
 						- Process cusps
 						+ Handle pathological isolated triangle case
 				- Things to remember:
