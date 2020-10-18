@@ -1375,8 +1375,53 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
         }
         else
         {
-            // TODOHERE
-            LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+            // A triangle along which there's an external frontier may only end up touching
+            // a triangle with an external frontier - either the same external frontier, or
+            // a different one
+            assert(mFrontiers[oppositeFrontierId]->Type == FrontierType::External);
+
+            if (oppositeFrontierId == triangleFrontierId)
+            {
+                //
+                // Same external frontier...
+                //
+
+                // TODOHERE
+                LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+            }
+            else
+            {
+                //
+                // Different external frontiers...
+                //
+
+                //
+                // ...just merge the two external frontiers; we arbitrarily choose
+                // one over the other
+                //
+
+                // Propagate new frontier along the old frontier
+                ElementCount const oldFrontierSize = PropagateFrontier(
+                    edgeInOpposite,
+                    edgeOutOpposite,
+                    triangleFrontierId);
+
+                // Connect EdgeIn->EdgeInOpposite
+                mFrontierEdges[edgeIn].NextEdgeIndex = edgeInOpposite;
+                mFrontierEdges[edgeInOpposite].PrevEdgeIndex = edgeIn;
+
+                // Connect EdgeOutOpposite->EdgeOut
+                mFrontierEdges[edgeOutOpposite].NextEdgeIndex = edgeOut;
+                mFrontierEdges[edgeOut].PrevEdgeIndex = edgeOutOpposite;
+
+                // Update new frontier
+                mFrontiers[triangleFrontierId]->Size += oldFrontierSize;
+
+                // Destroy old frontier
+                assert(oldFrontierSize == mFrontiers[oppositeFrontierId]->Size);
+                mFrontiers[oppositeFrontierId]->Size -= oldFrontierSize;
+                DestroyFrontier(oppositeFrontierId);
+            }
         }
     }
 
