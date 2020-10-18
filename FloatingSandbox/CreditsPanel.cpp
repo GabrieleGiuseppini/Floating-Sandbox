@@ -167,7 +167,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         { 1, wxS("Bas van den Berg"), 0 },
         { 1, wxS("Dario Bazzichetto"), 0 },
         { 1, wxS("Mart Slot"), 0 },
-        { 1, wxS("Mathias Garbe"), 0 }
+        { 1, wxS("Mathias Garbe"), 0 },
+        { 1, wxS("Wyatt Rosenberry"), 0 },
+        { 1, wxS("Daniel Gasperment"), 0 }
     };
 
     //
