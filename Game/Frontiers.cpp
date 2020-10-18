@@ -763,7 +763,7 @@ FrontierId Frontiers::SplitIntoNewFrontier(
     mFrontierEdges[newFrontierStartEdgeIndex].PrevEdgeIndex = newFrontierEndEdgeIndex;
     mFrontierEdges[newFrontierEndEdgeIndex].NextEdgeIndex = newFrontierStartEdgeIndex;
 
-    // Update frontier
+    // Update new frontier
     mFrontiers[newFrontierId]->Size = newFrontierSize;
 
     //
@@ -774,7 +774,7 @@ FrontierId Frontiers::SplitIntoNewFrontier(
     mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
     mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
 
-    // Update frontier
+    // Update old frontier
     mFrontiers[oldFrontierId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
     assert(mFrontiers[oldFrontierId]->Size >= newFrontierSize);
     mFrontiers[oldFrontierId]->Size -= newFrontierSize;
@@ -1337,10 +1337,47 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
     }
     else
     {
-        // TODOHERE
-        LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+        //
+        // Triangle has a frontier (already)...
+        //
 
-        // TODO: assert that cuspIn->cuspOut, and same frontier ID
+        // ...running from edgeIn into edgeOut...
+        assert(mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut && mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
+
+        // ...and obviously the same ID along the edges...
+        assert(mEdges[edgeIn].FrontierIndex == mEdges[edgeOut].FrontierIndex);
+
+        //
+        // ...check all cases
+        //
+
+        if (mFrontiers[triangleFrontierId]->Type == FrontierType::Internal)
+        {
+            // A triangle along which there's an internal frontier may only end up touching
+            // a triangle of the same internal frontier - neither an external frontier, nor
+            // a different internal frontier
+            assert(oppositeFrontierId == triangleFrontierId);
+
+            //
+            // Triangle and cusp belong to same internal frontier...
+            // ...the cusp joining separates that into *two* internal frontiers
+            //
+
+            LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->Internal => Internal1 + Internal2");
+
+            SplitIntoNewFrontier(
+                edgeInOpposite,
+                edgeIn,
+                triangleFrontierId,
+                FrontierType::Internal,
+                edgeOutOpposite,
+                edgeOut);
+        }
+        else
+        {
+            // TODOHERE
+            LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+        }
     }
 
     return true;
