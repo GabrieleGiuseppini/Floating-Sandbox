@@ -1048,10 +1048,35 @@ Render:
 			- Has precedence when looking for candidates @ Lightning strike
 
 	- Generalized light emission
-		- Ship::DiffuseLight populates buffers twice, from:
-			- ElectricalElements::Lamps (like now)
-			- Points::LightEmittingParticles
-				- The latter builds vector of indices at its various Update()'s that contribute to lights, e.g. combustion low freq and/or ephemeral update
+		- Option 1:
+			- Points gets struct with:
+				- Luminiscence (scalar float) (aka Available Light)
+				- Distance coeffs
+			- ElectricalElements writes into Points
+				- Luminiscence (out of lamp state machine update)
+				- Distance coeffs (at game parameter changes)
+					- MaterialLightSpread and MaterialLuminiscence are renamed as "Lamp" properties
+					- Alternatively: reaction to game parameter changes is at Points, which also stores individual (immutable) particle properties (LightSpread and ~Luminiscence) to be able to recalc calculated
+					  values (i.e. distance coeffs) upon param changes, for all particles
+						- ElectricalElements::Add(.) "copies" MaterialLightSpread and MaterialLuminiscence immutable particle properties to Points 
+						- Basically, Points has following:
+							- Immutable particle properties + GameParameters -> Calculated particle properties (distance coeffs)
+				- TODO: there are two Luminiscence here, rename:
+					- Runtime (aka AvailableLight)
+					- Material, immutable
+
+			- Points also has fixed-size vector with indices of light-emitting particles
+				- Zeroed out at beginning of Update()
+				- Added to at each Luminiscence population, i.e. at:
+					- ElectricalElements::Update
+					- Combustion update
+					- Ephemeral update (e.g. of firework sparks)
+			- Ship::DiffuseLight populates algo work buffer from Points' vector of indices
+		- Option 2:
+			- Ship::DiffuseLight populates buffers twice, from:
+				- ElectricalElements::Lamps (like now)
+				- Points::LightEmittingParticles
+					- The latter builds vector of indices at its various Update()'s that contribute to lights, e.g. combustion low freq and/or ephemeral update
 
 	- New electrical materials: 
 		- Non-Instanced Water Tight Doors (see if possible)
@@ -1077,7 +1102,8 @@ Render:
 			- Placed by new "Firework" tool, clicking on same rotates through all types + removal
 				- Type enum at GameTypes
 			- State machine:
-				- Ignited by heat (and by water?)
+				- Ignited by heat (and by water?), and by explicit detonation action
+					- Each detonation action triggers one firework detonation, until no more fireworks exist
 				- Creates ephemeral particles as needed, and tracks them (remembers their ElementIndex)
 				- Also expires ephemeral particles
 			- Disadvantage: once fired it's gone?

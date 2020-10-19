@@ -736,8 +736,8 @@ FrontierId Frontiers::SplitIntoNewFrontier(
     ElementIndex const newFrontierEndEdgeIndex,
     FrontierId const oldFrontierId,
     FrontierType const newFrontierType,
-    ElementIndex const edgeIn,
-    ElementIndex const edgeOut)
+    ElementIndex const cutEdgeIn,
+    ElementIndex const cutEdgeOut)
 {
     // Start and end currently belong to the old frontier
     assert(mEdges[newFrontierStartEdgeIndex].FrontierIndex == oldFrontierId);
@@ -770,25 +770,25 @@ FrontierId Frontiers::SplitIntoNewFrontier(
     // Old frontier
     //
 
-    // Connect edges at cusp
-    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+    // Reconnect edges at cut
+    mFrontierEdges[cutEdgeIn].NextEdgeIndex = cutEdgeOut;
+    mFrontierEdges[cutEdgeOut].PrevEdgeIndex = cutEdgeIn;
 
     // Update old frontier
-    mFrontiers[oldFrontierId]->StartingEdgeIndex = edgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
+    mFrontiers[oldFrontierId]->StartingEdgeIndex = cutEdgeIn;  // Make sure the old frontier's was not starting with an edge that is now in the new frontier
     assert(mFrontiers[oldFrontierId]->Size >= newFrontierSize);
     mFrontiers[oldFrontierId]->Size -= newFrontierSize;
 
     return newFrontierId;
 }
 
-void Frontiers::ReplaceFrontier(
+void Frontiers::ReplaceAndCutFrontier(
     ElementIndex const startEdgeIndex,
     ElementIndex const endEdgeIndex,
     FrontierId const oldFrontierId,
     FrontierId const newFrontierId,
-    ElementIndex const edgeIn,
-    ElementIndex const edgeOut)
+    ElementIndex const cutEdgeIn,
+    ElementIndex const cutEdgeOut)
 {
     // It's not the same frontier
     assert(oldFrontierId != newFrontierId);
@@ -797,8 +797,9 @@ void Frontiers::ReplaceFrontier(
     assert(mEdges[startEdgeIndex].FrontierIndex == oldFrontierId);
     assert(mEdges[endEdgeIndex].FrontierIndex == oldFrontierId);
 
-    ElementIndex const afterEdgeIn = mFrontierEdges[edgeIn].NextEdgeIndex;
-    ElementIndex const beforeEdgeOut = mFrontierEdges[edgeOut].PrevEdgeIndex;
+    // Edges on the opposite (non-triangle) side of cusp
+    ElementIndex const afterEdgeIn = mFrontierEdges[cutEdgeIn].NextEdgeIndex;
+    ElementIndex const beforeEdgeOut = mFrontierEdges[cutEdgeOut].PrevEdgeIndex;
 
     // Propagate new frontier along the old frontier
     ElementCount const oldFrontierSize = PropagateFrontier(
@@ -806,13 +807,55 @@ void Frontiers::ReplaceFrontier(
         endEdgeIndex,
         newFrontierId);
 
-    // Connect edges at triangle's side of cusp
-    mFrontierEdges[edgeIn].NextEdgeIndex = edgeOut;
-    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeIn;
+    // Cut: connect edges at triangle's side of cusp among themselves
+    mFrontierEdges[cutEdgeIn].NextEdgeIndex = cutEdgeOut;
+    mFrontierEdges[cutEdgeOut].PrevEdgeIndex = cutEdgeIn;
 
-    // Connect edges at opposite side of cusp
+    // Cut: connect edges at opposite side of cusp among themselves
     mFrontierEdges[afterEdgeIn].PrevEdgeIndex = beforeEdgeOut;
     mFrontierEdges[beforeEdgeOut].NextEdgeIndex = afterEdgeIn;
+
+    // Update new frontier
+    mFrontiers[newFrontierId]->Size += oldFrontierSize;
+
+    // Destroy old frontier
+    assert(oldFrontierSize == mFrontiers[oldFrontierId]->Size);
+    mFrontiers[oldFrontierId]->Size -= oldFrontierSize;
+    DestroyFrontier(oldFrontierId);
+}
+
+void Frontiers::ReplaceAndJoinFrontier(
+    ElementIndex const edgeIn,
+    ElementIndex const edgeInOpposite,
+    ElementIndex const edgeOutOpposite,
+    ElementIndex const edgeOut,
+    FrontierId const oldFrontierId,
+    FrontierId const newFrontierId)
+{
+    // It's not the same frontier
+    assert(oldFrontierId != newFrontierId);
+
+    // Start and end currently belong to the old frontier
+    assert(mEdges[edgeInOpposite].FrontierIndex == oldFrontierId);
+    assert(mEdges[edgeOutOpposite].FrontierIndex == oldFrontierId);
+
+    // EdgeIn and EdgeOut are currently connected to each other
+    assert(mFrontierEdges[edgeIn].NextEdgeIndex == edgeOut);
+    assert(mFrontierEdges[edgeOut].PrevEdgeIndex == edgeIn);
+
+    // Propagate new frontier along the old frontier
+    ElementCount const oldFrontierSize = PropagateFrontier(
+        edgeInOpposite,
+        edgeOutOpposite,
+        newFrontierId);
+
+    // Connect EdgeIn->EdgeInOpposite
+    mFrontierEdges[edgeIn].NextEdgeIndex = edgeInOpposite;
+    mFrontierEdges[edgeInOpposite].PrevEdgeIndex = edgeIn;
+
+    // Connect EdgeOutOpposite->EdgeOut
+    mFrontierEdges[edgeOutOpposite].NextEdgeIndex = edgeOut;
+    mFrontierEdges[edgeOut].PrevEdgeIndex = edgeOutOpposite;
 
     // Update new frontier
     mFrontiers[newFrontierId]->Size += oldFrontierSize;
@@ -950,8 +993,8 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             //
 
             // Replace the internal frontier (frontierOutId, connecting edgeOut to beforeEdgeOut)
-            // with the external forntier (frontierInId)
-            ReplaceFrontier(
+            // with the external frontier (frontierInId)
+            ReplaceAndCutFrontier(
                 edgeOut, // Start
                 mFrontierEdges[edgeOut].PrevEdgeIndex, // End
                 frontierOutId, // Old
@@ -974,8 +1017,8 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
         //
 
         // Replace the internal frontier (frontierInId, connecting afterEdgeIn to edgeIn)
-        // with the external forntier (frontierOutId)
-        ReplaceFrontier(
+        // with the external frontier (frontierOutId)
+        ReplaceAndCutFrontier(
             mFrontierEdges[edgeIn].NextEdgeIndex, // Start
             edgeIn, // End
             frontierInId, // Old
@@ -1080,7 +1123,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             {
                 // FrontierIn takes over FrontierOut
 
-                ReplaceFrontier(
+                ReplaceAndCutFrontier(
                     edgeOut, // Start
                     mFrontierEdges[edgeOut].PrevEdgeIndex, // End
                     frontierOutId, // Old
@@ -1092,7 +1135,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
             {
                 // FrontierOut takes over FrontierIn
 
-                ReplaceFrontier(
+                ReplaceAndCutFrontier(
                     mFrontierEdges[edgeIn].NextEdgeIndex, // Start
                     edgeIn, // End
                     frontierInId, // Old
@@ -1400,27 +1443,13 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                 // one over the other
                 //
 
-                // Propagate new frontier along the old frontier
-                ElementCount const oldFrontierSize = PropagateFrontier(
+                ReplaceAndJoinFrontier(
+                    edgeIn,
                     edgeInOpposite,
                     edgeOutOpposite,
-                    triangleFrontierId);
-
-                // Connect EdgeIn->EdgeInOpposite
-                mFrontierEdges[edgeIn].NextEdgeIndex = edgeInOpposite;
-                mFrontierEdges[edgeInOpposite].PrevEdgeIndex = edgeIn;
-
-                // Connect EdgeOutOpposite->EdgeOut
-                mFrontierEdges[edgeOutOpposite].NextEdgeIndex = edgeOut;
-                mFrontierEdges[edgeOut].PrevEdgeIndex = edgeOutOpposite;
-
-                // Update new frontier
-                mFrontiers[triangleFrontierId]->Size += oldFrontierSize;
-
-                // Destroy old frontier
-                assert(oldFrontierSize == mFrontiers[oppositeFrontierId]->Size);
-                mFrontiers[oppositeFrontierId]->Size -= oldFrontierSize;
-                DestroyFrontier(oppositeFrontierId);
+                    edgeOut,
+                    oppositeFrontierId, // old frontier
+                    triangleFrontierId); // new frontier
             }
         }
     }

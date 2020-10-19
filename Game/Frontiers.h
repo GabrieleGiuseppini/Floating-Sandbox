@@ -178,13 +178,21 @@ private:
         ElementIndex const edgeIn,
         ElementIndex const edgeOut);
 
-    inline void ReplaceFrontier(
+    inline void ReplaceAndCutFrontier(
         ElementIndex const startEdgeIndex,
         ElementIndex const endEdgeIndex,
         FrontierId const oldFrontierId,
         FrontierId const newFrontierId,
         ElementIndex const edgeIn,
         ElementIndex const edgeOut);
+
+    inline void ReplaceAndJoinFrontier(
+        ElementIndex const edgeIn,
+        ElementIndex const edgeInOpposite,
+        ElementIndex const edgeOutOpposite,
+        ElementIndex const edgeOut,
+        FrontierId const oldFrontierId,
+        FrontierId const newFrontierId);
 
     inline ElementCount PropagateFrontier(
         ElementIndex const startEdgeIndex,
