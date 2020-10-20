@@ -1288,8 +1288,8 @@ Render:
 				+ New render setting
 				+ New ship upload 
 				+ New shader
-			- Maintain at destroy
-			- Maintain at repair
+			+ Maintain at destroy
+			= Maintain at repair
 		= Impl:
 			+ Data structures
 				+ GameTypes:
@@ -1401,19 +1401,17 @@ Render:
 					+ Repair (without frontier maintenance)
 			= Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
-				- Preliminary work:
-					- Cusp search needs to be done by searching triangles or edges connected to cusp Point
-						- So ideally triangles or springs at a point should be sorted by octant, CW
-							- Not by owner first => see what we use Owner for and see whether the order is important
-						- ShipBuilder: make sure triangles are sorted by octant
-						- Repair: make sure triangles are restored and put in Points' vector by octant
-					- Alternatively, might make do with existing structures @ Springs that track octants
+				+ Preliminary work:
+					+ Cusp search needs to be done by searching triangles or edges connected to cusp Point
+						+ Make do with existing structures @ Springs that track octants
 				= Cases: 					
 					+ Case 3 frontiers
 					+ Case 2 frontiers
 					= Case 0/1 frontiers
 						+ Propagate 1 frontier
-						- Process cusps
+						= Process cusps
+							+ Ext1 != Ext2
+							= Ext1 == Ext2
 						+ Handle pathological isolated triangle case
 				- Things to remember:
 					+ Marks mIsDirtyForRendering
@@ -1424,7 +1422,9 @@ Render:
 			- See if FrontierEdge::PointBIndex is really needed
 			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
 		- Cleanup:
-			- Log lines at Frontiers
+			- Nuke HasRegionFrontierOfType and subst with IsFrontierCW
+				- Test
+			- Cleanup log lines at Frontiers
 			- SetEventRecorder dynamics between GameController/World/Ship
 				- Also GameController::Reset() should clear all events
 			- Finalize speed for rendered frontier's march

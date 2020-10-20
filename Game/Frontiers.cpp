@@ -1429,8 +1429,56 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                 // Same external frontier...
                 //
 
-                // TODOHERE
-                LogMessage("TODOTEST: HERE!!! NOT YET DONE!!!");
+                //
+                //     /-------------\
+                //    /               \
+                //   /                 \
+                //  A-------- X --------B
+                //  __      /   \      __
+                //    \    /     \    /
+                //     \  /       \  /
+                //      \/         \/
+                //       C         D
+                //
+                // A->X = edgeIn
+                // X->C = edgeOut
+                //
+                // X->B = edgeInOpposite
+                // D->X = edgeOutOpposite
+                //
+
+                //
+                // ...one of the regions stays, the other one (the one
+                // CCW) becomes a new, internal region
+                //
+
+                if (IsCounterClockwiseFrontier(
+                    edgeInOpposite,
+                    edgeIn,
+                    points))
+                {
+                    // ..., A->X, X->B, ... becomes internal
+
+                    SplitIntoNewFrontier(
+                        edgeInOpposite, // start
+                        edgeIn, // end
+                        triangleFrontierId, // old frontier ID
+                        FrontierType::Internal,
+                        edgeOutOpposite,
+                        edgeOut);
+                }
+                else
+                {
+                    // ..., D->X, X->C, ... becomes internal
+
+                    SplitIntoNewFrontier(
+                        edgeOut, // start
+                        edgeOutOpposite, // end
+                        triangleFrontierId, // old frontier ID
+                        FrontierType::Internal,
+                        edgeIn,
+                        edgeInOpposite);
+                }
             }
             else
             {
@@ -1518,6 +1566,56 @@ bool Frontiers::HasRegionFrontierOfType(
 
     // If we're here it means we haven't found a frontier of the requested type
     return false;
+}
+
+bool Frontiers::IsCounterClockwiseFrontier(
+    ElementIndex startEdgeIndex,
+    ElementIndex endEdgeIndex,
+    Points const & points)
+{
+    // Start and End belong to the same frontier
+    // (but are *not* necessarily connected)
+    assert(mEdges[startEdgeIndex].FrontierIndex != NoneFrontierId
+        && mEdges[endEdgeIndex].FrontierIndex != NoneFrontierId
+        && mEdges[startEdgeIndex].FrontierIndex == mEdges[endEdgeIndex].FrontierIndex);
+
+    //
+    // Sum (x2 − x1) * (y2 + y1) over the edges;
+    //  - If the result is positive the curve is clockwise
+    //  - If it's negative the curve is counter-clockwise
+    //
+
+    LogMessage("TODOHERE: IsCounterClockwiseFrontier(", startEdgeIndex, ",", endEdgeIndex, "):");
+
+    // end->start once, followed by start->...->end
+
+    ElementIndex edgeIndex1 = endEdgeIndex;
+    vec2f pos1 = points.GetPosition(mFrontierEdges[edgeIndex1].PointAIndex);
+    ElementIndex edgeIndex2 = startEdgeIndex;
+    vec2f pos2 = points.GetPosition(mFrontierEdges[edgeIndex2].PointAIndex);
+
+    float totalArea = 0.0f;
+
+    while (true)
+    {
+        totalArea += (pos2.x - pos1.x) * (pos2.y + pos1.y);
+
+        LogMessage("TODOHERE:   e1=", edgeIndex1, " pt1=", mFrontierEdges[edgeIndex1].PointAIndex, " (", pos1.toString(), ")",
+            " e2=", edgeIndex2, " pt2=", mFrontierEdges[edgeIndex2].PointAIndex, " (", pos2.toString(), ") => area=", totalArea);
+
+        if (edgeIndex2 == endEdgeIndex)
+            break;
+
+        // Advance
+        edgeIndex1 = edgeIndex2;
+        pos1 = pos2;
+        edgeIndex2 = mFrontierEdges[edgeIndex2].NextEdgeIndex;
+        pos2 = points.GetPosition(mFrontierEdges[edgeIndex2].PointAIndex);
+    }
+
+    LogMessage("TODOHERE: IsCounterClockwiseFrontier(", startEdgeIndex, ",", endEdgeIndex, "): ", totalArea);
+
+    return totalArea < 0.0f;
 }
 
 void Frontiers::RegeneratePointColors()
@@ -1642,6 +1740,26 @@ void Frontiers::VerifyInvariants(
         //
 
         Verify(edgesWithFrontiers.count(edgeIndex) == 1 || mEdges[edgeIndex].FrontierIndex == NoneFrontierId);
+    }
+
+    //
+    // Springs
+    //
+
+    for (ElementIndex springIndex : springs)
+    {
+        //
+        // Springs have one triangle iff they have a frontier edge
+        //
+
+        if (springs.GetSuperTriangles(springIndex).size() == 1)
+        {
+            Verify(mEdges[springIndex].FrontierIndex != NoneFrontierId);
+        }
+        else
+        {
+            Verify(mEdges[springIndex].FrontierIndex == NoneFrontierId);
+        }
     }
 
     //

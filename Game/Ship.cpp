@@ -3034,10 +3034,9 @@ void Ship::VerifyInvariants()
     // Frontiers
     //
 
-    // TODOTEST
-    ////mFrontiers.VerifyInvariants(
-    ////    mSprings,
-    ////    mTriangles);
+    mFrontiers.VerifyInvariants(
+        mSprings,
+        mTriangles);
 }
 #endif
 }

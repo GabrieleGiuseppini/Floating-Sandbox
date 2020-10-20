@@ -229,6 +229,11 @@ private:
         Springs const & springs,
         Triangles const & triangles);
 
+    bool IsCounterClockwiseFrontier(
+        ElementIndex startEdgeIndex,
+        ElementIndex endEdgeIndex,
+        Points const & points);
+
     bool HasRegionFrontierOfType(
         FrontierType targetFrontierType,
         ElementIndex startingPointIndex,
