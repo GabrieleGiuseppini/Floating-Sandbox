@@ -32,6 +32,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
         try
         {
+            float const basalDepth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "basal_depth");
             float const basalSpeed = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "basal_speed");
             float const tailX = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_x");
 
@@ -39,6 +40,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
             fishSpecies.emplace_back(
                 name,
+                basalDepth,
                 basalSpeed,
                 tailX,
                 textureIndex);

@@ -145,6 +145,17 @@ public:
         return mNormalDistribution(mRandomEngine);
     }
 
+    /*
+     * Generates a random number between -INF and +INF, distributed
+     * according to a Gaussian with mean zero and stdev 1.
+     */
+    inline float GenerateNormalReal(
+        float mean,
+        float stdev)
+    {
+        return mean + mNormalDistribution(mRandomEngine) * stdev;
+    }
+
 private:
 
     GameRandomEngine()

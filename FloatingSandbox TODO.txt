@@ -1033,14 +1033,15 @@ Render:
 			+ Base
 				+ ViewModel: nuke mVisibleXXX and replace with WorldFocus
 				+ WorldRenderContext: param for fish size adjust (much like ship flames)
-			- Basic AI:
-				- Initial placement
-				- Initial state (goal location, state)
-				- Basic state machine 
+			+ Basic AI:
+				+ Initial placement
+				+ Initial state (goal location, state)
+				+ Basic state machine 
 			- Tail rendering
-			- Swarm
 			- AI
 				- AABB around ships' frontiers, so that fish AI's avoid them
+			- Swarming
+				- When adding new fish, distribute remaining counts among species according to swarm sizes			
 		- Cleanup:
 			- GameParameters::NumberOfFishes=64
 		- Misc:

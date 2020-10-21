@@ -6,7 +6,8 @@
 #define out varying
 
 // Inputs
-in vec4 inFish1; // Position, TextureCoordinates
+in vec4 inFish1; // CenterPosition (vec2), VertexOffset (vec2)
+in vec3 inFish2; // TextureCoordinates (vec2), AngleCw (float)
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -17,22 +18,17 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inFish1.zw; 
+    vertexTextureCoordinates = inFish2.xy; 
     
-    /*
-    float angle = inGenericMipMappedTexture3.x;
+    float angleCw = inFish2.z;
 
     mat2 rotationMatrix = mat2(
-        cos(angle), -sin(angle),
-        sin(angle), cos(angle));
+        cos(angleCw), -sin(angleCw),
+        sin(angleCw), cos(angleCw));
 
     vec2 worldPosition = 
-        inGenericMipMappedTexture1.xy 
-        + rotationMatrix * inGenericMipMappedTexture1.zw * scale;
-    */
-
-    vec2 worldPosition = 
-        inFish1.xy;
+        inFish1.xy 
+        + rotationMatrix * inFish1.zw;
 
     gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
 

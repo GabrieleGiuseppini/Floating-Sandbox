@@ -35,25 +35,44 @@ public:
 
 private:
 
+    vec2f ChooseTargetPosition(
+        FishSpecies const & fishSpecies,
+        VisibleWorld const & visibleWorld,
+        float currentY) const;
+
+private:
+
     FishSpeciesDatabase const & mFishSpeciesDatabase;
 
+    enum class StateType
+    {
+        Cruising,
+        Fleeing
+    };
 
     struct Fish
     {
-        vec2f Position;
-
+        FishSpecies const * Species;
         TextureFrameIndex RenderFrameIndex;
+        float PersonalitySeed;
 
-        Fish()
-            : Position()
-            , RenderFrameIndex(0)
-        {}
+        StateType CurrentState;
+        vec2f CurrentPosition;
+        vec2f TargetPosition;
 
         Fish(
-            vec2f const & position,
-            TextureFrameIndex const & renderFrameIndex)
-            : Position(position)
+            FishSpecies const * species,
+            TextureFrameIndex const & renderFrameIndex,
+            float personalitySeed,
+            StateType initialState,
+            vec2f const & initialPosition,
+            vec2f const & targetPosition)
+            : Species(species)
             , RenderFrameIndex(renderFrameIndex)
+            , PersonalitySeed(personalitySeed)
+            , CurrentState(initialState)
+            , CurrentPosition(initialPosition)
+            , TargetPosition(targetPosition)
         {}
     };
 

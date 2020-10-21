@@ -142,6 +142,7 @@ enum class VertexAttributeType : GLuint
     Ocean = 0,
 
     Fish1 = 0,
+    Fish2 = 1,
 
     AMBombPreImplosion1 = 0,
     AMBombPreImplosion2 =1,

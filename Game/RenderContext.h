@@ -709,11 +709,15 @@ public:
 
     inline void UploadFish(
         TextureFrameId<FishTextureGroups> const & textureFrameId,
-        vec2f const & position)
+        vec2f const & position,
+        float angleCw,
+        float horizontalSign)
     {
         mWorldRenderContext->UploadFish(
             textureFrameId,
-            position);
+            position,
+            angleCw,
+            horizontalSign);
     }
 
     inline void UploadFishesEnd()

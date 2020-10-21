@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameRandomEngine.h>
 #include <GameCore/Utils.h>
 
 #include <picojson.h>
@@ -23,23 +24,85 @@ void Fishes::Update(
     VisibleWorld const & visibleWorld)
 {
     //
-    // Update number of fish
+    // 1) Update number of fish
     //
-
-    // TODO: honor fish species' swarm size
 
     if (mFishes.size() > gameParameters.NumberOfFishes)
     {
-        mFishes.resize(gameParameters.NumberOfFishes);
+        // Remove extra fish
+        mFishes.erase(
+            mFishes.begin() + gameParameters.NumberOfFishes,
+            mFishes.end());
     }
     else
     {
+        // Add missing fish
         for (size_t f = mFishes.size(); f < gameParameters.NumberOfFishes; ++f)
         {
-            // TODO
+            // Choose species
+            size_t const speciesIndex = GameRandomEngine::GetInstance().Choose(mFishSpeciesDatabase.GetFishSpecies().size());
+            FishSpecies const & species = mFishSpeciesDatabase.GetFishSpecies()[speciesIndex];
+
+            //
+            // Choose initial and target position
+            //
+
+            vec2f const initialPosition = ChooseTargetPosition(species, visibleWorld, species.BasalDepth);
+            vec2f const targetPosition = ChooseTargetPosition(species, visibleWorld, initialPosition.y);
+
             mFishes.emplace_back(
-                vec2f(0.0f, -40.0f),
-                TextureFrameIndex(0));
+                &species,
+                static_cast<TextureFrameIndex>(speciesIndex),
+                GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
+                StateType::Cruising,
+                initialPosition,
+                targetPosition);
+        }
+    }
+
+    //
+    // 2) Update fish
+    //
+
+    for (auto & fish : mFishes)
+    {
+        switch (fish.CurrentState)
+        {
+            case StateType::Cruising:
+            {
+                // Check whether we should start fleeing
+                // TODO
+
+                // Check whether we should choose a new target position
+                if ((fish.CurrentPosition - fish.TargetPosition).length() < 1.0f)
+                    fish.TargetPosition = ChooseTargetPosition(*fish.Species, visibleWorld, fish.CurrentPosition.y);
+
+                // Update position - basal speed along current->target direction
+                fish.CurrentPosition +=
+                    (fish.TargetPosition - fish.CurrentPosition).normalise()
+                    * fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f);
+
+                break;
+            }
+
+            case StateType::Fleeing:
+            {
+                // Check whether we should start cruising again
+                if ((fish.CurrentPosition - fish.TargetPosition).length() < 1.0f)
+                {
+                    fish.CurrentState = StateType::Cruising;
+                    fish.TargetPosition = ChooseTargetPosition(*fish.Species, visibleWorld, fish.CurrentPosition.y);
+                }
+                else
+                {
+                    // Update position - fleeing speed along current->target direction
+                    fish.CurrentPosition +=
+                        (fish.TargetPosition - fish.CurrentPosition).normalise()
+                        * 4.0f * fish.Species->BasalSpeed;
+                }
+
+                break;
+            }
         }
     }
 }
@@ -52,12 +115,28 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
     {
         renderContext.UploadFish(
             TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, fish.RenderFrameIndex),
-            fish.Position);
+            fish.CurrentPosition,
+            (fish.TargetPosition - fish.CurrentPosition).angleCw(),
+            fish.TargetPosition.x < fish.CurrentPosition.x ? -1.0f : 1.0f);
     }
 
     renderContext.UploadFishesEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+vec2f Fishes::ChooseTargetPosition(
+    FishSpecies const & fishSpecies,
+    VisibleWorld const & visibleWorld,
+    float currentY) const
+{
+    float const x = GameRandomEngine::GetInstance().GenerateNormalReal(visibleWorld.Center.x, visibleWorld.Width);
+
+    float const y =
+        -5.0f // Min depth
+        - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(currentY, 15.0f));
+
+    return vec2f(x, y);
+}
 
 }
