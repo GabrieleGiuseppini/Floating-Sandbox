@@ -163,6 +163,11 @@ struct IGameControllerSettings
     virtual float GetWaterPumpPowerAdjustment() const = 0;
     virtual void SetWaterPumpPowerAdjustment(float value) = 0;
 
+    // Fishes
+
+    virtual unsigned int GetNumberOfFishes() const = 0;
+    virtual void SetNumberOfFishes(unsigned int value) = 0;
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

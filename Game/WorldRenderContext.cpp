@@ -21,7 +21,8 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GlobalRenderContext const & globalRenderContext)
+    GlobalRenderContext const & globalRenderContext,
+    float fishSizeAdjustment)
     // Buffers
     : mStarVertexBuffer()
     , mIsStarVertexBufferDirty(true)
@@ -41,6 +42,9 @@ WorldRenderContext::WorldRenderContext(
     , mOceanSegmentBuffer()
     , mOceanSegmentVBO()
     , mOceanSegmentVBOAllocatedVertexSize(0u)
+    , mFishVertexBuffer()
+    , mFishVBO()
+    , mFishVBOAllocatedVertexSize(0u)
     , mAMBombPreImplosionVertexBuffer()
     , mAMBombPreImplosionVBO()
     , mAMBombPreImplosionVBOAllocatedVertexSize(0u)
@@ -59,6 +63,7 @@ WorldRenderContext::WorldRenderContext(
     , mCloudVAO()
     , mLandVAO()
     , mOceanVAO()
+    , mFishVAO()
     , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
     , mRainVAO()
@@ -71,12 +76,16 @@ WorldRenderContext::WorldRenderContext(
     , mOceanTextureOpenGLHandle()
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
+    , mFishTextureAtlasMetadata()
+    , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     // ShaderManager
     , mShaderManager(shaderManager)
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
+    // Calculated params
+    , mFishQuadRescaleFactor(0.0f) // Recalcd later
 {
     GLuint tmpGLuint;
 
@@ -84,17 +93,18 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[9];
-    glGenBuffers(9, vbos);
+    GLuint vbos[10];
+    glGenBuffers(10, vbos);
     mStarVBO = vbos[0];
     mLightningVBO = vbos[1];
     mCloudVBO = vbos[2];
     mLandSegmentVBO = vbos[3];
     mOceanSegmentVBO = vbos[4];
-    mAMBombPreImplosionVBO = vbos[5];
-    mCrossOfLightVBO = vbos[6];
-    mRainVBO = vbos[7];
-    mWorldBorderVBO = vbos[8];
+    mFishVBO = vbos[5];
+    mAMBombPreImplosionVBO = vbos[6];
+    mCrossOfLightVBO = vbos[7];
+    mRainVBO = vbos[8];
+    mWorldBorderVBO = vbos[9];
 
 
     //
@@ -192,6 +202,26 @@ WorldRenderContext::WorldRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanSegmentVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Ocean));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Ocean), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void *)0);
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize Fish VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mFishVAO = tmpGLuint;
+
+    glBindVertexArray(*mFishVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    static_assert(sizeof(FishVertex) == 4 * sizeof(float));
+    glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish1), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -329,6 +359,14 @@ WorldRenderContext::WorldRenderContext(
 
     mShaderManager.ActivateProgram<ProgramType::Lightning>();
     mShaderManager.SetTextureParameters<ProgramType::Lightning>();
+
+
+    //
+    // Set initial values of non-render parameters from which
+    // other parameters are calculated
+    //
+
+    SetFishSizeAdjustment(fishSizeAdjustment);
 }
 
 WorldRenderContext::~WorldRenderContext()
@@ -428,6 +466,52 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
     }
 }
 
+void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resourceLocator)
+{
+    // Load texture database
+    auto fishTextureDatabase = TextureDatabase<Render::FishTextureDatabaseTraits>::Load(
+        resourceLocator.GetTexturesRootFolderPath());
+
+    // Create atlas
+    auto fishTextureAtlas = TextureAtlasBuilder<FishTextureGroups>::BuildAtlas(
+        fishTextureDatabase,
+        AtlasOptions::None,
+        [](float, ProgressMessageType) {});
+
+    LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size.ToString());
+
+    mShaderManager.ActivateTexture<ProgramParameterType::FishesAtlasTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mFishTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture atlas
+    glBindTexture(GL_TEXTURE_2D, *mFishTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadTexture(std::move(fishTextureAtlas.AtlasData));
+
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Store metadata
+    mFishTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<FishTextureGroups>>(fishTextureAtlas.Metadata);
+
+    // Set texture in shader
+    mShaderManager.ActivateProgram<ProgramType::Fishes>();
+    mShaderManager.SetTextureParameters<ProgramType::Fishes>();
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 
 void WorldRenderContext::UploadStart()
@@ -514,6 +598,20 @@ void WorldRenderContext::UploadOceanStart(size_t slices)
 }
 
 void WorldRenderContext::UploadOceanEnd()
+{
+    // Nop
+}
+
+void WorldRenderContext::UploadFishesStart(size_t fishCount)
+{
+    //
+    // Fishes are not sticky: we upload them at each frame
+    //
+
+    mFishVertexBuffer.reset(6 * fishCount);
+}
+
+void WorldRenderContext::UploadFishesEnd()
 {
     // Nop
 }
@@ -743,6 +841,7 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & /*renderPar
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
 void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters)
 {
     float const transparency = opaquely ? 0.0f : renderParameters.OceanTransparency;
@@ -834,6 +933,43 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(2 * mLandSegmentBuffer.size()));
 
     glBindVertexArray(0);
+}
+
+void WorldRenderContext::RenderPrepareFishes(RenderParameters const & /*renderParameters*/)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
+
+    if (mFishVertexBuffer.size() > mFishVBOAllocatedVertexSize)
+    {
+        // Re-allocate VBO buffer and upload
+        glBufferData(GL_ARRAY_BUFFER, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data(), GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mFishVBOAllocatedVertexSize = mFishVertexBuffer.size();
+    }
+    else
+    {
+        // No size change, just upload VBO buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data());
+        CheckOpenGLError();
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void WorldRenderContext::RenderDrawFishes(RenderParameters const & /*renderParameters*/)
+{
+    if (mFishVertexBuffer.size() > 0)
+    {
+        glBindVertexArray(*mFishVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::Fishes>();
+
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFishVertexBuffer.size()));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
 }
 
 void WorldRenderContext::RenderPrepareAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
@@ -1026,6 +1162,10 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::Fishes>();
+    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
     mShaderManager.ActivateProgram<ProgramType::AMBombPreImplosion>();
     mShaderManager.SetProgramParameter<ProgramType::AMBombPreImplosion, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
@@ -1092,6 +1232,10 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
+    mShaderManager.ActivateProgram<ProgramType::Fishes>();
+    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
     mShaderManager.ActivateProgram<ProgramType::Rain>();
     mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
@@ -1105,17 +1249,23 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
 {
     // Set parameter in all programs
 
+    float const rate = renderParameters.OceanDarkeningRate / 50.0f;
+
     mShaderManager.ActivateProgram<ProgramType::LandTexture>();
     mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OceanDarkeningRate>(
-        renderParameters.OceanDarkeningRate / 50.0f);
+        rate);
 
     mShaderManager.ActivateProgram<ProgramType::OceanDepth>();
     mShaderManager.SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanDarkeningRate>(
-        renderParameters.OceanDarkeningRate / 50.0f);
+        rate);
 
     mShaderManager.ActivateProgram<ProgramType::OceanTexture>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanDarkeningRate>(
-        renderParameters.OceanDarkeningRate / 50.0f);
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::Fishes>();
+    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::OceanDarkeningRate>(
+        rate);
 }
 
 void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
@@ -1301,7 +1451,7 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
     mWorldBorderVertexBuffer.clear();
 
     // Left
-    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= viewModel.GetVisibleWorldTopLeft().x)
+    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= viewModel.GetVisibleWorld().TopLeft.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
@@ -1318,7 +1468,7 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
     }
 
     // Right
-    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth <= viewModel.GetVisibleWorldBottomRight().x)
+    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth <= viewModel.GetVisibleWorld().BottomRight.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
@@ -1335,7 +1485,7 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
     }
 
     // Top
-    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight <= viewModel.GetVisibleWorldTopLeft().y)
+    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight <= viewModel.GetVisibleWorld().TopLeft.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left
@@ -1352,7 +1502,7 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
     }
 
     // Bottom
-    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight >= viewModel.GetVisibleWorldBottomRight().y)
+    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight >= viewModel.GetVisibleWorld().BottomRight.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left

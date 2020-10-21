@@ -17,6 +17,8 @@ namespace Render {
 // Texture databases
 //
 
+// Cloud
+
 enum class CloudTextureGroups : uint16_t
 {
     Cloud = 0,
@@ -38,6 +40,8 @@ struct CloudTextureDatabaseTraits
             throw GameException("Unrecognized Cloud texture group \"" + str + "\"");
     }
 };
+
+// World
 
 enum class WorldTextureGroups : uint16_t
 {
@@ -64,6 +68,8 @@ struct WorldTextureDatabaseTraits
     }
 };
 
+// Noise
+
 enum class NoiseTextureGroups : uint16_t
 {
     Noise = 0,
@@ -85,6 +91,8 @@ struct NoiseTextureDatabaseTraits
             throw GameException("Unrecognized Noise texture group \"" + str + "\"");
     }
 };
+
+// Generic Mip-Mapped
 
 enum class GenericMipMappedTextureGroups : uint16_t
 {
@@ -144,6 +152,8 @@ struct GenericMipMappedTextureTextureDatabaseTraits
     }
 };
 
+// Generic Linear
+
 enum class GenericLinearTextureGroups : uint16_t
 {
     DayLightCycleNotification,
@@ -178,6 +188,8 @@ struct GenericLinearTextureTextureDatabaseTraits
     }
 };
 
+// Explosion
+
 enum class ExplosionTextureGroups : uint16_t
 {
     Explosion = 0,
@@ -197,6 +209,30 @@ struct ExplosionTextureDatabaseTraits
             return TextureGroups::Explosion;
         else
             throw GameException("Unrecognized Explosion texture group \"" + str + "\"");
+    }
+};
+
+// Fish
+
+enum class FishTextureGroups : uint16_t
+{
+    Fish = 0,
+
+    _Last = Fish
+};
+
+struct FishTextureDatabaseTraits
+{
+    static inline std::string DatabaseName = "Fish";
+
+    using TextureGroups = FishTextureGroups;
+
+    static TextureGroups StrToTextureGroup(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Fish"))
+            return TextureGroups::Fish;
+        else
+            throw GameException("Unrecognized Fish texture group \"" + str + "\"");
     }
 };
 

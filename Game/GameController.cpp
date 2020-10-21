@@ -19,6 +19,9 @@ std::unique_ptr<GameController> GameController::Create(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
+    // Load fish species
+    FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
+
     // Load materials
     MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
@@ -49,6 +52,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(gameEventDispatcher),
             std::move(perfStats),
+            std::move(fishSpeciesDatabase),
             std::move(materialDatabase),
             resourceLocator));
 }
@@ -57,7 +61,8 @@ GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
-    MaterialDatabase materialDatabase,
+    FishSpeciesDatabase && fishSpeciesDatabase,
+    MaterialDatabase && materialDatabase,
     ResourceLocator const & resourceLocator)
     // State machines
     : mTsunamiNotificationStateMachine()
@@ -81,12 +86,16 @@ GameController::GameController(
         false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle)
     , mShipTexturizer(resourceLocator)
+    // World
+    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mMaterialDatabase(std::move(materialDatabase))
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters))
-    , mMaterialDatabase(std::move(materialDatabase))
+        mGameParameters,
+        mRenderContext->GetVisibleWorld()))
     // Smoothing
     , mFloatParameterSmoothers()
     , mZoomParameterSmoother()
@@ -263,9 +272,11 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters);
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Add ship to new world
     auto [shipId, textureImage] = newWorld->AddShip(
@@ -368,9 +379,11 @@ void GameController::ReloadLastShip()
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters);
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Load ship into new world
     auto [shipId, textureImage] = newWorld->AddShip(
@@ -460,6 +473,7 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->Update(
             mGameParameters,
+            mRenderContext->GetVisibleWorld(),
             *mRenderContext,
             *mTotalPerfStats);
 

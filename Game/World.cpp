@@ -16,20 +16,25 @@ namespace Physics {
 
 World::World(
     OceanFloorTerrain && oceanFloorTerrain,
+    FishSpeciesDatabase const & fishSpeciesDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::shared_ptr<TaskThreadPool> taskThreadPool,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld)
     : mCurrentSimulationTime(0.0f)
-    , mAllShips()
-    , mStars()
-    , mStorm(*this, gameEventDispatcher)
-    , mWind(gameEventDispatcher)
-    , mClouds()
-    , mOceanSurface(gameEventDispatcher)
-    , mOceanFloor(std::move(oceanFloorTerrain))
+    //
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mEventRecorder(nullptr)
     , mTaskThreadPool(std::move(taskThreadPool))
+    //
+    , mAllShips()
+    , mStars()
+    , mStorm(*this, mGameEventHandler)
+    , mWind(mGameEventHandler)
+    , mClouds()
+    , mOceanSurface(mGameEventHandler)
+    , mOceanFloor(std::move(oceanFloorTerrain))
+    , mFishes(fishSpeciesDatabase)
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
@@ -37,6 +42,7 @@ World::World(
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mFishes.Update(mCurrentSimulationTime, gameParameters, visibleWorld);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -726,6 +732,7 @@ bool World::RestoreTriangle(ElementId triangleId)
 
 void World::Update(
     GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld,
     Render::RenderContext & renderContext,
     PerfStats & /*perfStats*/)
 {
@@ -743,6 +750,8 @@ void World::Update(
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
 
     mOceanFloor.Update(gameParameters);
+
+    mFishes.Update(mCurrentSimulationTime, gameParameters, visibleWorld);
 
     for (auto & ship : mAllShips)
     {
@@ -768,6 +777,8 @@ void World::RenderUpload(
     mOceanFloor.Upload(gameParameters, renderContext);
 
     mOceanSurface.Upload(gameParameters, renderContext);
+
+    mFishes.Upload(renderContext);
 
     // Ships
     {

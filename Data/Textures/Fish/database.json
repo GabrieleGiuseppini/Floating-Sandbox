@@ -1,0 +1,14 @@
+[
+
+{
+	"groupName": "Fish",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldScaling": 0.001136,
+			"filename": "gilthead_bream_\\d+"
+		}
+	]
+}
+
+]

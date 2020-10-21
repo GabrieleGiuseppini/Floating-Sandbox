@@ -41,13 +41,17 @@ public:
 
     WorldRenderContext(
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GlobalRenderContext const & globalRenderContext);
+        GlobalRenderContext const & globalRenderContext,
+        // TODOHERE
+        float fishSizeAdjustment);
 
     ~WorldRenderContext();
 
     void InitializeCloudTextures(ResourceLocator const & resourceLocator);
 
     void InitializeWorldTextures(ResourceLocator const & resourceLocator);
+
+    void InitializeFishTextures(ResourceLocator const & resourceLocator);
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
@@ -67,6 +71,13 @@ public:
     inline float GetRainDensity() const
     {
         return mRainDensity;
+    }
+
+    void SetFishSizeAdjustment(float fishSizeAdjustment)
+    {
+        // Recalculate quad dimensions,
+        // real world coordinates would make fish too small; we amplify sizes by this amount
+        mFishQuadRescaleFactor = 30.0f * fishSizeAdjustment;
     }
 
 public:
@@ -263,7 +274,7 @@ public:
         float yLand,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
         // Store Land element
@@ -292,7 +303,7 @@ public:
         float oceanDepth,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
         // Store ocean element
@@ -343,6 +354,52 @@ public:
     }
 
     void UploadOceanEnd();
+
+    void UploadFishesStart(size_t fishCount);
+
+    inline void UploadFish(
+        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        vec2f const & position)
+    {
+        auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
+
+        float const leftX = position .x - frame.FrameMetadata.AnchorCenterWorld.x * mFishQuadRescaleFactor;
+        float const rightX = leftX + frame.FrameMetadata.WorldWidth * mFishQuadRescaleFactor;
+        float const bottomY = position.y - frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor;
+        float const topY = bottomY + frame.FrameMetadata.WorldHeight * mFishQuadRescaleFactor;
+
+        // top-left
+        mFishVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y));
+
+        // bottom-left
+        mFishVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y));
+
+        // top-right
+        mFishVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y));
+
+        // bottom-left
+        mFishVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y));
+
+        // top-right
+        mFishVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y));
+
+        // bottom-right
+        mFishVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y));
+    }
+
+    void UploadFishesEnd();
 
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
@@ -411,34 +468,34 @@ public:
         // Triangle 1
 
         mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(viewModel.GetVisibleWorldTopLeft().x, viewModel.GetVisibleWorldBottomRight().y), // left, bottom
+            vec2f(viewModel.GetVisibleWorld().TopLeft.x, viewModel.GetVisibleWorld().BottomRight.y), // left, bottom
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldTopLeft(), // left, top
+            viewModel.GetVisibleWorld().TopLeft, // left, top
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldBottomRight(), // right, bottom
+            viewModel.GetVisibleWorld().BottomRight, // right, bottom
             centerPosition,
             progress);
 
         // Triangle 2
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldTopLeft(), // left, top
+            viewModel.GetVisibleWorld().TopLeft, // left, top
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldBottomRight(), // right, bottom
+            viewModel.GetVisibleWorld().BottomRight, // right, bottom
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(viewModel.GetVisibleWorldBottomRight().x, viewModel.GetVisibleWorldTopLeft().y),  // right, top
+            vec2f(viewModel.GetVisibleWorld().BottomRight.x, viewModel.GetVisibleWorld().TopLeft.y),  // right, top
             centerPosition,
             progress);
     }
@@ -459,6 +516,9 @@ public:
 
     void RenderPrepareOceanFloor(RenderParameters const & renderParameters);
     void RenderDrawOceanFloor(RenderParameters const & renderParameters);
+
+    void RenderPrepareFishes(RenderParameters const & renderParameters);
+    void RenderDrawFishes(RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
@@ -665,6 +725,19 @@ private:
         float value2;
     };
 
+    struct FishVertex
+    {
+        vec2f position;
+        vec2f textureCoords;
+
+        FishVertex(
+            vec2f _position,
+            vec2f _textureCoords)
+            : position(_position)
+            , textureCoords(_textureCoords)
+        {}
+    };
+
     struct AMBombPreImplosionVertex
     {
         vec2f vertex;
@@ -761,6 +834,10 @@ private:
     GameOpenGLVBO mOceanSegmentVBO;
     size_t mOceanSegmentVBOAllocatedVertexSize;
 
+    BoundedVector<FishVertex> mFishVertexBuffer;
+    GameOpenGLVBO mFishVBO;
+    size_t mFishVBOAllocatedVertexSize;
+
     std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
     GameOpenGLVBO mAMBombPreImplosionVBO;
     size_t mAMBombPreImplosionVBOAllocatedVertexSize;
@@ -787,6 +864,7 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mRainVAO;
@@ -807,6 +885,9 @@ private:
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
 
+    std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
+    GameOpenGLTexture mFishTextureAtlasOpenGLHandle;
+
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
 
 private:
@@ -817,6 +898,12 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
+    //
+    // Externally-controlled calculated parameters
+    //
+
+    float mFishQuadRescaleFactor;
 };
 
 }

@@ -203,7 +203,7 @@ namespace Utils
         std::string const & memberName)
     {
         return static_cast<int>(
-            Utils::GetMandatoryJsonMember<std::uint64_t>(
+            Utils::GetMandatoryJsonMember<std::int64_t>(
                 obj,
                 memberName));
     }

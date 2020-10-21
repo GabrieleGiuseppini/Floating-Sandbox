@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "IGameController.h"
@@ -446,6 +447,23 @@ public:
     float GetMinElectricalElementHeatProducedAdjustment() const override { return GameParameters::MinElectricalElementHeatProducedAdjustment; }
     float GetMaxElectricalElementHeatProducedAdjustment() const override { return GameParameters::MaxElectricalElementHeatProducedAdjustment; }
 
+    float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
+    void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
+    float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
+    float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
+
+    float GetWaterPumpPowerAdjustment() const override { return mGameParameters.WaterPumpPowerAdjustment; }
+    void SetWaterPumpPowerAdjustment(float value) override { mGameParameters.WaterPumpPowerAdjustment = value; }
+    float GetMinWaterPumpPowerAdjustment() const override { return GameParameters::MinWaterPumpPowerAdjustment; }
+    float GetMaxWaterPumpPowerAdjustment() const override { return GameParameters::MaxWaterPumpPowerAdjustment; }
+
+    // Fishes
+
+    unsigned int GetNumberOfFishes() const override { return mGameParameters.NumberOfFishes; }
+    void SetNumberOfFishes(unsigned int value) override { mGameParameters.NumberOfFishes = value; }
+    unsigned int GetMinNumberOfFishes() const override { return GameParameters::MinNumberOfFishes; }
+    unsigned int GetMaxNumberOfFishes() const override { return GameParameters::MaxNumberOfFishes; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
@@ -574,16 +592,6 @@ public:
     std::chrono::minutes GetMinDayLightCycleDuration() const override { return GameParameters::MinDayLightCycleDuration; }
     std::chrono::minutes GetMaxDayLightCycleDuration() const override { return GameParameters::MaxDayLightCycleDuration; }
 
-    float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
-    void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
-    float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
-    float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
-
-    float GetWaterPumpPowerAdjustment() const override { return mGameParameters.WaterPumpPowerAdjustment; }
-    void SetWaterPumpPowerAdjustment(float value) override { mGameParameters.WaterPumpPowerAdjustment = value; }
-    float GetMinWaterPumpPowerAdjustment() const override { return GameParameters::MinWaterPumpPowerAdjustment; }
-    float GetMaxWaterPumpPowerAdjustment() const override { return GameParameters::MaxWaterPumpPowerAdjustment; }
-
     //
     // Render parameters
     //
@@ -692,7 +700,8 @@ private:
         std::unique_ptr<Render::RenderContext> renderContext,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<PerfStats> perfStats,
-        MaterialDatabase materialDatabase,
+        FishSpeciesDatabase && fishSpeciesDatabase,
+        MaterialDatabase && materialDatabase,
         ResourceLocator const & resourceLocator);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
@@ -775,8 +784,10 @@ private:
     // The world
     //
 
-    std::unique_ptr<Physics::World> mWorld;
+    FishSpeciesDatabase mFishSpeciesDatabase;
     MaterialDatabase mMaterialDatabase;
+
+    std::unique_ptr<Physics::World> mWorld;
 
 
     //

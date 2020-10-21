@@ -109,6 +109,11 @@ public:
         return newCameraWorldPosition;
     }
 
+    VisibleWorld const & GetVisibleWorld() const
+    {
+        return mRenderParameters.View.GetVisibleWorld();
+    }
+
     int GetCanvasWidth() const
     {
         return mRenderParameters.View.GetCanvasWidth();
@@ -136,36 +141,6 @@ public:
     {
         mRenderParameters.View.ResetPixelOffset();
         mRenderParameters.IsViewDirty = true;
-    }
-
-    float GetVisibleWorldWidth() const
-    {
-        return mRenderParameters.View.GetVisibleWorldWidth();
-    }
-
-    float GetVisibleWorldHeight() const
-    {
-        return mRenderParameters.View.GetVisibleWorldHeight();
-    }
-
-    float GetVisibleWorldLeft() const
-    {
-        return mRenderParameters.View.GetVisibleWorldTopLeft().x;
-    }
-
-    float GetVisibleWorldRight() const
-    {
-        return mRenderParameters.View.GetVisibleWorldBottomRight().x;
-    }
-
-    float GetVisibleWorldTop() const
-    {
-        return mRenderParameters.View.GetVisibleWorldTopLeft().y;
-    }
-
-    float GetVisibleWorldBottom() const
-    {
-        return mRenderParameters.View.GetVisibleWorldBottomRight().y;
     }
 
     float CalculateZoomForWorldWidth(float worldWidth) const
@@ -358,6 +333,21 @@ public:
         mRenderParameters.LandTextureIndex = index;
         mRenderParameters.IsLandTextureIndexDirty = true;
     }
+
+    float const & GetFishSizeAdjustment() const
+    {
+        return mFishSizeAdjustment;
+    }
+
+    void SetFishSizeAdjustment(float fishSizeAdjustment)
+    {
+        mFishSizeAdjustment = fishSizeAdjustment;
+
+        mWorldRenderContext->SetFishSizeAdjustment(mFishSizeAdjustment);
+    }
+
+    static constexpr float MinFishSizeAdjustment = 0.5f;
+    static constexpr float MaxFishSizeAdjustment = 20.0f;
 
     //
     // Ship rendering properties
@@ -710,6 +700,25 @@ public:
     inline void UploadOceanEnd()
     {
         mWorldRenderContext->UploadOceanEnd();
+    }
+
+    inline void UploadFishesStart(size_t fishCount)
+    {
+        mWorldRenderContext->UploadFishesStart(fishCount);
+    }
+
+    inline void UploadFish(
+        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        vec2f const & position)
+    {
+        mWorldRenderContext->UploadFish(
+            textureFrameId,
+            position);
+    }
+
+    inline void UploadFishesEnd()
+    {
+        mWorldRenderContext->UploadFishesEnd();
     }
 
     inline void UploadAMBombPreImplosion(
@@ -1374,6 +1383,7 @@ private:
     //
 
     float mAmbientLightIntensity;
+    float mFishSizeAdjustment;
     float mShipFlameSizeAdjustment;
     rgbColor mShipDefaultWaterColor;
     VectorFieldRenderModeType mVectorFieldRenderMode;

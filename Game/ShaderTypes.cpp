@@ -23,6 +23,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::CrossOfLight;
     else if (lstr == "fire_extinguisher_spray")
         return ProgramType::FireExtinguisherSpray;
+    else if (lstr == "fishes")
+        return ProgramType::Fishes;
     else if (lstr == "heat_blaster_flame_cool")
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
@@ -119,6 +121,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "CrossOfLight";
     case ProgramType::FireExtinguisherSpray:
         return "FireExtinguisherSpray";
+    case ProgramType::Fishes:
+        return "Fishes";
     case ProgramType::HeatBlasterFlameCool:
         return "HeatBlasterFlameCool";
     case ProgramType::HeatBlasterFlameHeat:
@@ -266,6 +270,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::CloudsAtlasTexture;
     else if (str == "ExplosionsAtlasTexture")
         return ProgramParameterType::ExplosionsAtlasTexture;
+    else if (str == "FishesAtlasTexture")
+        return ProgramParameterType::FishesAtlasTexture;
     else if (str == "GenericLinearTexturesAtlasTexture")
         return ProgramParameterType::GenericLinearTexturesAtlasTexture;
     else if (str == "GenericMipMappedTexturesAtlasTexture")
@@ -343,6 +349,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "SharedTexture";
     case ProgramParameterType::CloudsAtlasTexture:
         return "CloudsAtlasTexture";
+    case ProgramParameterType::FishesAtlasTexture:
+        return "FishesAtlasTexture";
     case ProgramParameterType::ExplosionsAtlasTexture:
         return "ExplosionsAtlasTexture";
     case ProgramParameterType::GenericLinearTexturesAtlasTexture:
@@ -380,6 +388,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
+        return VertexAttributeType::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
         return VertexAttributeType::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))

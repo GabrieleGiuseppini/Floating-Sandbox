@@ -6,14 +6,17 @@
 #pragma once
 
 #include "EventRecorder.h"
+#include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "ResourceLocator.h"
 #include "ShipDefinition.h"
 #include "ShipTexturizer.h"
+#include "VisibleWorld.h"
 
 #include <GameCore/AABB.h>
 #include <GameCore/GameChronometer.h>
@@ -35,9 +38,11 @@ public:
 
     World(
         OceanFloorTerrain && oceanFloorTerrain,
+        FishSpeciesDatabase const & fishSpeciesDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
 
     std::tuple<ShipId, RgbaImageData> AddShip(
         ShipDefinition && shipDefinition,
@@ -292,6 +297,7 @@ public:
 
     void Update(
         GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld,
         Render::RenderContext & renderContext,
         PerfStats & perfStats);
 
@@ -305,6 +311,15 @@ private:
     // The current simulation time
     float mCurrentSimulationTime;
 
+   // The game event handler
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+
+    // The current event recorder (if any)
+    EventRecorder * mEventRecorder;
+
+    // The task thread pool that we use for concurrency
+    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
@@ -313,15 +328,7 @@ private:
     Clouds mClouds;
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
-
-    // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
-
-    // The current event recorder (if any)
-    EventRecorder * mEventRecorder;
-
-    // The task thread pool that we use for concurrency
-    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+    Fishes mFishes;
 };
 
 }

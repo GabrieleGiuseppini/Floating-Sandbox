@@ -22,6 +22,7 @@ enum class ProgramType
     Clouds,
     CrossOfLight,
     FireExtinguisherSpray,
+    Fishes,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
     LandFlat,
@@ -103,12 +104,13 @@ enum class ProgramParameterType : uint8_t
     SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
     CloudsAtlasTexture,                     // 1
     ExplosionsAtlasTexture,                 // 2
-    GenericLinearTexturesAtlasTexture,      // 3
-    GenericMipMappedTexturesAtlasTexture,   // 4
-    LandTexture,                            // 5
-    NoiseTexture1,                          // 6
-    NoiseTexture2,                          // 7
-    OceanTexture,                           // 8
+    FishesAtlasTexture,                     // 3
+    GenericLinearTexturesAtlasTexture,      // 4
+    GenericMipMappedTexturesAtlasTexture,   // 5
+    LandTexture,                            // 6
+    NoiseTexture1,                          // 7
+    NoiseTexture2,                          // 8
+    OceanTexture,                           // 9
 
     _FirstTexture = SharedTexture,
     _LastTexture = OceanTexture
@@ -138,6 +140,8 @@ enum class VertexAttributeType : GLuint
     Land = 0,
 
     Ocean = 0,
+
+    Fish1 = 0,
 
     AMBombPreImplosion1 = 0,
     AMBombPreImplosion2 =1,

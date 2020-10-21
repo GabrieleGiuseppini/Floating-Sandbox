@@ -5,6 +5,8 @@
 
 set  (GAME_SOURCES	
 	EventRecorder.h
+	FishSpeciesDatabase.cpp
+	FishSpeciesDatabase.h
 	GameController.cpp
 	GameController_StateMachines.cpp
 	GameController.h
@@ -42,7 +44,8 @@ set  (GAME_SOURCES
 	ShipPreviewImageDatabase.cpp
 	ShipPreviewImageDatabase.h
 	ShipTexturizer.cpp
-	ShipTexturizer.h)
+	ShipTexturizer.h
+	VisibleWorld.h)
 
 set  (PHYSICS_SOURCES
 	AntiMatterBomb.h
@@ -54,6 +57,8 @@ set  (PHYSICS_SOURCES
 	Clouds.h
 	ElectricalElements.cpp
 	ElectricalElements.h
+	Fishes.cpp
+	Fishes.h
 	Frontiers.cpp
 	Frontiers.h
 	ImpactBomb.cpp

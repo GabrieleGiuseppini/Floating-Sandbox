@@ -350,6 +350,12 @@ struct GameParameters
     static float constexpr MinWaterPumpPowerAdjustment = 0.1f;
     static float constexpr MaxWaterPumpPowerAdjustment = 20.0f;
 
+    // Fishes
+
+    unsigned int NumberOfFishes;
+    static constexpr unsigned int MinNumberOfFishes = 0;
+    static constexpr unsigned int MaxNumberOfFishes = 4096;
+
     // Misc
 
     float SeaDepth;

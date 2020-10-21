@@ -19,6 +19,7 @@ enum class ProgressMessageType : std::size_t
 	LoadingGenericTextures,			// "Loading generic textures..."
 	LoadingExplosionTextureAtlas,	// "Loading explosion texture atlas..."
 	LoadingCloudTextureAtlas,		// "Loading cloud texture atlas..."
+	LoadingFishTextureAtlas,		// "Loading fish texture atlas..."
 	LoadingWorldTextures,			// "Loading world textures..."
 	InitializingGraphics,			// "Initializing graphics..."
 	LoadingSounds,					// "Loading sounds..."

@@ -117,6 +117,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
         mProgressStrings.Add(_("Loading generic textures..."));
         mProgressStrings.Add(_("Loading explosion texture atlas..."));
         mProgressStrings.Add(_("Loading cloud texture atlas..."));
+        mProgressStrings.Add(_("Loading fish texture atlas..."));
         mProgressStrings.Add(_("Loading world textures..."));
         mProgressStrings.Add(_("Initializing graphics..."));
         mProgressStrings.Add(_("Loading sounds..."));

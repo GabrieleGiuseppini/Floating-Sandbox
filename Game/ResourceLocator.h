@@ -97,6 +97,8 @@ public:
 
     std::filesystem::path GetDefaultOceanFloorTerrainFilePath() const;
 
+    std::filesystem::path GetFishSpeciesDatabaseFilePath() const;
+
 
     //
     // Help

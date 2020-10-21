@@ -246,7 +246,9 @@ Render:
 		
 		= Frontier (*)
 
-		= Clouds in perspective (*)			
+		= Clouds in perspective (*)	
+		
+		= Fishes (*)
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if it improves perf
@@ -544,12 +546,6 @@ Render:
 		- When bombs explode
 	- Wreno's suggestions: https://docs.google.com/document/d/1kOYAgvh2rFYJJBnSp4DCiFm3FdJlfVEiCXQWNzJzO-I/edit
 	- Be able to place nuke and AM bomb anywhere
-	- Fishes
-		- Textures: https://oceana.org/marine-life
-		- Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
-		- AABB around ships' connected components, so that fish AI's avoid them
-			- Need to maintain AABB for each connected component
-				- At connected component detection algorithm
 	- Plants on the bottom - don't have to interact with the ship, just on layer in front of it
 	- Different colored lights
 	- Different maps: maps that might even have islands and grass 
@@ -1028,6 +1024,31 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:
+
+	= Fishes (*)
+		- Spec:
+			- Textures: https://oceana.org/marine-life
+			- Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
+		= Impl:
+			+ Base
+				+ ViewModel: nuke mVisibleXXX and replace with WorldFocus
+				+ WorldRenderContext: param for fish size adjust (much like ship flames)
+			- Basic AI:
+				- Initial placement
+				- Initial state (goal location, state)
+				- Basic state machine 
+			- Tail rendering
+			- Swarm
+			- AI
+				- AABB around ships' frontiers, so that fish AI's avoid them
+		- Cleanup:
+			- GameParameters::NumberOfFishes=64
+		- Misc:
+			- SettingsDialog: 
+				- number of fish
+				- fish render size adjust
+			- Calibration: do fish only on machines that are powerful enough
+				- Unless Dell can make it
 
 	- Ropes 2 layer
 		- json only allows one ropes layer

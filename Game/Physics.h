@@ -10,6 +10,7 @@ namespace Physics
     class Bombs;
     class Clouds;
     class ElectricalElements;
+    class Fishes;
     class Frontiers;
     class OceanFloor;
     class OceanSurface;
@@ -37,6 +38,7 @@ namespace Physics
 #include "Frontiers.h"
 
 #include "Clouds.h"
+#include "Fishes.h"
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"

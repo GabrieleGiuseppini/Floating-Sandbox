@@ -154,6 +154,11 @@ struct IGameControllerSettingsOptions
 	virtual float GetMinWaterPumpPowerAdjustment() const = 0;
 	virtual float GetMaxWaterPumpPowerAdjustment() const = 0;
 
+	// Fishes
+
+	virtual unsigned int GetMinNumberOfFishes() const = 0;
+	virtual unsigned int GetMaxNumberOfFishes() const = 0;
+
 	// Misc
 
 	virtual float GetMinSeaDepth() const = 0;
