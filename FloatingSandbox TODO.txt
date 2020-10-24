@@ -1050,16 +1050,19 @@ Render:
 			= Try with third bream, then decide which of the three to keep
 			- Final state machine:
 				- Fish turning around: simply done with geometry @ Upload
+					- Replace verticalSign with horizontalScale (between -1.0 and 1.0)
+						- Angles and flipping: TODOHERE
 				- Round corners
 					- Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
 					  - Or growth equation to get to target y component, and TODO: decay to flatten it
 
 				- AABB around ships' frontiers, so that fish AI's avoid them
-					- World maintains AllShipAABBs (class containing vector)
+					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
+					- Also take OceanFloor
 			- Clamp Y of spawning band
 			+ Superimpose sin over movement			
 			
