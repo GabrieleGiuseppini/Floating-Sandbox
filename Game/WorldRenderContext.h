@@ -76,7 +76,7 @@ public:
     {
         // Recalculate quad dimensions,
         // real world coordinates would make fish too small; we amplify sizes by this amount
-        mFishQuadRescaleFactor = 15.0f * fishSizeAdjustment;
+        mFishQuadRescaleFactor = 25.0f * fishSizeAdjustment;
     }
 
 public:

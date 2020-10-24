@@ -23,6 +23,7 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexTextureCoordinates = inFish2.xy;
+    worldY = inFish1.y;
     vertexTextureCoordinatesXLimits = inFish2.zw;
     tailX = inFish3.y;
     tailProgress = inFish3.z;
@@ -39,7 +40,7 @@ void main()
 
     gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
 
-    worldY = gl_Position.y;
+    
 }
 
 ###FRAGMENT
@@ -73,7 +74,7 @@ void main()
     // Calculate angle: [-Alpha0 -> Alpha0]
     //
     
-    #define Alpha0 0.4
+    #define Alpha0 0.5
     
     float alpha = Alpha0 * tailProgress;
     

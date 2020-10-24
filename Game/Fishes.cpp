@@ -88,7 +88,7 @@ void Fishes::Update(
                 // Update position: basal speed along current->target direction
                 fish.CurrentPosition +=
                     (fish.TargetPosition - fish.CurrentPosition).normalise()
-                    * (fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f) + (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float>)) / 80.0f);
+                    * (fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f) + (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f);
 
 
                 break;
