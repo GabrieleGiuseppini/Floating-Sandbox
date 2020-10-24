@@ -250,6 +250,8 @@ Render:
 		
 		= Fishes (*)
 
+		- New rain: https://www.shadertoy.com/view/wsKcWw
+
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if it improves perf
 
@@ -1036,14 +1038,34 @@ Render:
 			+ Basic AI:
 				+ Initial placement
 				+ Initial state (goal location, state)
-				+ Basic state machine 
-			- Tail rendering
-			- AI
+				+ Basic state machine
+			+ Tail rendering
+				+ Progress:
+					+ State stores CurrentProgressPhase
+					+ Update adds to CurrentProgressPhase and calcs and stores CurrentProgress
+				+ Upload progress as "tail" progress
+					+ Rename as "TailProgress", also in shader
+				+ Shader
+					+ Also upload texture coords X boundaries for clamping
+			- Clamp Y of spawning band
+			- Superimpose sin over movement
+			- Round corners
+				- Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
+				  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
+				  - Or growth equation to get to target y component, and TODO: decay to flatten it
+			- Final state machine:
+				- Fish turning around: simply done with geometry @ Upload
 				- AABB around ships' frontiers, so that fish AI's avoid them
+					- World maintains AllShipAABBs (class containing vector)
+					- Fishes::Update(.) takes AllShipAABBs
+						- Remove first update of Fishes at World initialization, since we have no ship AABBs
+					- Avoid spawning in AABBs
 			- Swarming
-				- When adding new fish, distribute remaining counts among species according to swarm sizes			
+				- When adding new fish, distribute remaining counts among species according to swarm sizes	
+		- CMake: set LCTG linking and disable incremental in Release
+		- Dealing with fish getting over water level (because of waves, etc.)
 		- Cleanup:
-			- GameParameters::NumberOfFishes=64
+			- GameParameters::NumberOfFishes: TODO
 		- Misc:
 			- SettingsDialog: 
 				- number of fish

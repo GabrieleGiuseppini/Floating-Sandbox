@@ -42,7 +42,6 @@ public:
     WorldRenderContext(
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GlobalRenderContext const & globalRenderContext,
-        // TODOHERE
         float fishSizeAdjustment);
 
     ~WorldRenderContext();
@@ -77,7 +76,7 @@ public:
     {
         // Recalculate quad dimensions,
         // real world coordinates would make fish too small; we amplify sizes by this amount
-        mFishQuadRescaleFactor = 20.0f * fishSizeAdjustment;
+        mFishQuadRescaleFactor = 15.0f * fishSizeAdjustment;
     }
 
 public:
@@ -361,56 +360,78 @@ public:
         TextureFrameId<FishTextureGroups> const & textureFrameId,
         vec2f const & position,
         float angleCw,
-        float horizontalSign)
+        float verticalSign,
+        float tailX,
+        float tailProgress)
     {
         auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
 
         float const offsetLeftX = - frame.FrameMetadata.AnchorCenterWorld.x * mFishQuadRescaleFactor;
         float const offsetRightX = (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * mFishQuadRescaleFactor;
-        float const offsetTopY = horizontalSign * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * mFishQuadRescaleFactor;
-        float const offsetBottomY = horizontalSign * - frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor;
+        float const offsetTopY = verticalSign * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * mFishQuadRescaleFactor;
+        float const offsetBottomY = verticalSign * - frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor;
+
+        vec2f const textureCoordsXLimits = vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.x);
 
         // top-left
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetLeftX, offsetTopY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
 
         // bottom-left
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetLeftX, offsetBottomY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
 
         // top-right
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetRightX, offsetTopY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
 
         // bottom-left
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetLeftX, offsetBottomY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
 
         // top-right
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetRightX, offsetTopY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
 
         // bottom-right
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetRightX, offsetBottomY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
-            angleCw);
+            textureCoordsXLimits,
+            angleCw,
+            tailX,
+            tailProgress);
     }
 
     void UploadFishesEnd();
@@ -744,17 +765,26 @@ private:
         vec2f centerPosition;
         vec2f vertexOffset;
         vec2f textureCoordinate;
+        vec2f textureCoordsXLimits;
         float angleCw;
+        float tailX;
+        float tailProgress;
 
         FishVertex(
             vec2f _centerPosition,
             vec2f _vertexOffset,
             vec2f _textureCoordinate,
-            float _angleCw)
+            vec2f _textureCoordsXLimits,
+            float _angleCw,
+            float _tailX,
+            float _tailProgress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
             , textureCoordinate(_textureCoordinate)
+            , textureCoordsXLimits(_textureCoordsXLimits)
             , angleCw(_angleCw)
+            , tailX(_tailX)
+            , tailProgress(_tailProgress)
         {}
     };
 

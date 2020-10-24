@@ -3,8 +3,8 @@
         "name": "Gilt-head Bream",
 
 	"basal_depth": 30.0,
-	"basal_speed": 0.2,
-	"tail_x": 0.27,
+	"basal_speed": 0.06,
+	"tail_x": 0.6,
 	"texture_index": 0
     }
 

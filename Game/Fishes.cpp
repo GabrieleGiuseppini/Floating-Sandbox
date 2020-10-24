@@ -64,6 +64,10 @@ void Fishes::Update(
     // 2) Update fish
     //
 
+    float constexpr BasalSpeedToProgressPhaseSpeedFactor =
+        40.0f // Magic, from observation
+        * GameParameters::SimulationStepTimeDuration<float>;
+
     for (auto & fish : mFishes)
     {
         switch (fish.CurrentState)
@@ -77,10 +81,13 @@ void Fishes::Update(
                 if ((fish.CurrentPosition - fish.TargetPosition).length() < 1.0f)
                     fish.TargetPosition = ChooseTargetPosition(*fish.Species, visibleWorld, fish.CurrentPosition.y);
 
-                // Update position - basal speed along current->target direction
+                // Update position: basal speed along current->target direction
                 fish.CurrentPosition +=
                     (fish.TargetPosition - fish.CurrentPosition).normalise()
                     * fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f);
+
+                // Update progress phase: basal speed
+                fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
 
                 break;
             }
@@ -95,15 +102,24 @@ void Fishes::Update(
                 }
                 else
                 {
-                    // Update position - fleeing speed along current->target direction
+                    // Update position: fleeing speed along current->target direction
                     fish.CurrentPosition +=
                         (fish.TargetPosition - fish.CurrentPosition).normalise()
                         * 4.0f * fish.Species->BasalSpeed;
+
+                    // Update progress phase: fleeing speed
+                    fish.CurrentProgressPhase += 4.0f * fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
                 }
 
                 break;
             }
         }
+
+        //
+        // Update current progress
+        //
+
+        fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
     }
 }
 
@@ -117,7 +133,9 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
             TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, fish.RenderFrameIndex),
             fish.CurrentPosition,
             (fish.TargetPosition - fish.CurrentPosition).angleCw(),
-            fish.TargetPosition.x < fish.CurrentPosition.x ? -1.0f : 1.0f);
+            fish.TargetPosition.x < fish.CurrentPosition.x ? -1.0f : 1.0f,
+            fish.Species->TailX,
+            fish.CurrentProgress);
     }
 
     renderContext.UploadFishesEnd();

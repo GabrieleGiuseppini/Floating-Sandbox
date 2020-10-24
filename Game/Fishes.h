@@ -59,6 +59,8 @@ private:
         StateType CurrentState;
         vec2f CurrentPosition;
         vec2f TargetPosition;
+        float CurrentProgressPhase;
+        float CurrentProgress; // Calcd off CurrentProgressPhase
 
         Fish(
             FishSpecies const * species,
@@ -73,6 +75,8 @@ private:
             , CurrentState(initialState)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
+            , CurrentProgressPhase(0.0f)
+            , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
         {}
     };
 
