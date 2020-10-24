@@ -1048,7 +1048,7 @@ Render:
 				+ Shader
 					+ Also upload texture coords X boundaries for clamping
 			- Clamp Y of spawning band
-			- Superimpose sin over movement
+			+ Superimpose sin over movement
 			- Round corners
 				- Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 				  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
@@ -1062,7 +1062,6 @@ Render:
 					- Avoid spawning in AABBs
 			- Swarming
 				- When adding new fish, distribute remaining counts among species according to swarm sizes	
-		- CMake: set LCTG linking and disable incremental in Release
 		- Dealing with fish getting over water level (because of waves, etc.)
 		- Cleanup:
 			- GameParameters::NumberOfFishes: TODO

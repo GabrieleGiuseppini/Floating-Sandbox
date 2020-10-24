@@ -496,7 +496,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(fishTextureAtlas.AtlasData));
+    GameOpenGL::UploadMipmappedTexture(std::move(fishTextureAtlas.AtlasData));
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -504,7 +504,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     CheckOpenGLError();
 
     // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 

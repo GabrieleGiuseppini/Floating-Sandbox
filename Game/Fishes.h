@@ -68,14 +68,15 @@ private:
             float personalitySeed,
             StateType initialState,
             vec2f const & initialPosition,
-            vec2f const & targetPosition)
+            vec2f const & targetPosition,
+            float initialProgressPhase)
             : Species(species)
             , RenderFrameIndex(renderFrameIndex)
             , PersonalitySeed(personalitySeed)
             , CurrentState(initialState)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
-            , CurrentProgressPhase(0.0f)
+            , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
         {}
     };

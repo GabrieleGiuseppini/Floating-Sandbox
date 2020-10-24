@@ -56,7 +56,8 @@ void Fishes::Update(
                 GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(),
                 StateType::Cruising,
                 initialPosition,
-                targetPosition);
+                targetPosition,
+                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>));
         }
     }
 
@@ -81,13 +82,14 @@ void Fishes::Update(
                 if ((fish.CurrentPosition - fish.TargetPosition).length() < 1.0f)
                     fish.TargetPosition = ChooseTargetPosition(*fish.Species, visibleWorld, fish.CurrentPosition.y);
 
+                // Update progress phase: basal speed
+                fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+
                 // Update position: basal speed along current->target direction
                 fish.CurrentPosition +=
                     (fish.TargetPosition - fish.CurrentPosition).normalise()
-                    * fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f);
+                    * (fish.Species->BasalSpeed * (0.7f + fish.PersonalitySeed * 0.3f) + (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float>)) / 80.0f);
 
-                // Update progress phase: basal speed
-                fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
 
                 break;
             }
@@ -102,13 +104,15 @@ void Fishes::Update(
                 }
                 else
                 {
+                    // Update progress phase: fleeing speed
+                    fish.CurrentProgressPhase += 4.0f * fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+
                     // Update position: fleeing speed along current->target direction
                     fish.CurrentPosition +=
                         (fish.TargetPosition - fish.CurrentPosition).normalise()
                         * 4.0f * fish.Species->BasalSpeed;
 
-                    // Update progress phase: fleeing speed
-                    fish.CurrentProgressPhase += 4.0f * fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+
                 }
 
                 break;
