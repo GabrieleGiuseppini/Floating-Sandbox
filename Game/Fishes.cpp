@@ -15,7 +15,7 @@
 namespace Physics {
 
 float constexpr TurningThreshold = 7.0f;
-float constexpr SteeringWithTurnDurationSeconds = 1.5f; // TODOTEST
+float constexpr SteeringWithTurnDurationSeconds = 1.5f;
 float constexpr SteeringWithoutTurnDurationSeconds = 1.0f;
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
@@ -190,10 +190,19 @@ void Fishes::Update(
                     }
 
                     // Direction X:
-                    // - smooth towards target during a central interval (actual turning around)
-                    fish.CurrentDirection.x =
-                        fish.StartDirection.x
-                        + (fish.TargetDirection.x - fish.StartDirection.x) * SmoothStep(0.15f, 0.85f, elapsedFraction);
+                    // - smooth towards target during a central interval (actual turning around),
+                    //   without crossing zero
+                    float constexpr TurnLimit = 0.2f;
+                    if (elapsedFraction >= 0.15f && elapsedFraction <= 0.5f)
+                    {
+                        fish.CurrentDirection.x =
+                            fish.StartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedFraction));
+                    }
+                    else if (elapsedFraction > 0.50f && elapsedFraction <= 0.85f)
+                    {
+                        fish.CurrentDirection.x =
+                            fish.TargetDirection.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedFraction));
+                    }
 
                     //
                     // Normal dynamics
