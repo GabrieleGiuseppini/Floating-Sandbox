@@ -62,7 +62,6 @@ void Fishes::Update(
                 initialPosition,
                 targetPosition,
                 CalculateVelocity(initialPosition, targetPosition, species, 1.0f, personalitySeed),
-                targetPosition.x >= initialPosition.x ? 1.0f : -1.0f, // initial horizontal scale
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
         }
     }
@@ -114,7 +113,7 @@ void Fishes::Update(
                 // Check whether we should start turning
                 //
 
-                if (fish.CurrentVelocity.length() < 0.003f)
+                if (std::abs(fish.CurrentDirection.y) < 0.005f)
                 {
                     //
                     // Transition to Turning
@@ -129,30 +128,24 @@ void Fishes::Update(
                     // Calculate new target velocity and direction
                     fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, *(fish.Species), 1.0f, fish.PersonalitySeed);
                     fish.TargetDirection = fish.TargetVelocity.normalise();
-
-                    // Calculate new target horizontal scale
-                    fish.TargetHorizontalScale = (fish.TargetPosition.x >= fish.CurrentPosition.x)
-                        ? 1.0f
-                        : -1.0f;
                 }
                 else
                 {
                     // Update velocity: flatten towards zero
                     fish.CurrentVelocity -=
                         fish.CurrentVelocity
-                        * 0.032f; // Convergence rate
+                        * 0.038f; // Convergence rate
 
                     // Update direction: flatten y towards zero
                     fish.CurrentDirection.y -=
                         fish.CurrentDirection.y
-                        * 0.032f; // Convergence rate
+                        * 0.058f; // Convergence rate
 
                     // TODO: avoid repetition
 
-                    // Update position: add velocity, with superimposed sin component
+                    // Update position: add velocity
                     fish.CurrentPosition +=
-                        fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f;
+                        fish.CurrentVelocity;
 
                     // Update progress phase: add basal speed
                     fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
@@ -167,7 +160,7 @@ void Fishes::Update(
                 // Check whether we should start accelerating
                 //
 
-                if (std::abs(fish.TargetHorizontalScale - fish.CurrentHorizontalScale) < 0.05f)
+                if (std::abs(fish.TargetDirection.x - fish.CurrentDirection.x) < 0.005f)
                 {
                     //
                     // Transition to Accelerating
@@ -175,20 +168,13 @@ void Fishes::Update(
 
                     // Change state
                     fish.CurrentState = StateType::Accelerating;
-
-                    // TODOTEST
-                    fish.CurrentDirection = fish.TargetDirection;
-                    fish.CurrentDirection.y = 0.0f;
-
-                    // Reach target horizontal scale
-                    fish.CurrentHorizontalScale = fish.TargetHorizontalScale;
                 }
                 else
                 {
-                    // Update horizontal scale: smooth towards target
-                    fish.CurrentHorizontalScale +=
-                        (fish.TargetHorizontalScale - fish.CurrentHorizontalScale)
-                        * 0.044f; // Converge rate
+                    // Update direction x: smooth towards target
+                    fish.CurrentDirection.x +=
+                        (fish.TargetDirection.x - fish.CurrentDirection.x)
+                        * 0.058f; // Converge rate
                 }
 
                 break;
@@ -200,7 +186,7 @@ void Fishes::Update(
                 // Check whether we should start cruising
                 //
 
-                if ((fish.TargetVelocity - fish.CurrentVelocity).length() < 0.005f)
+                if (std::abs(fish.TargetDirection.y - fish.CurrentVelocity.y) < 0.005f)
                 {
                     //
                     // Transition to Curising
@@ -216,7 +202,7 @@ void Fishes::Update(
                         (fish.TargetVelocity - fish.CurrentVelocity)
                         * 0.024f; // Convergence rate
 
-                    // Update direction: grow y towards target
+                    // Update direction y: grow towards target
                     fish.CurrentDirection.y +=
                         (fish.TargetDirection.y - fish.CurrentDirection.y)
                         * 0.024f; // Convergence rate
@@ -333,23 +319,26 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
     {
         // TODO: some comments here
         float angleCw = fish.CurrentDirection.angleCw();
+        float horizontalScale = fish.CurrentDirection.length();
 
         if (angleCw < -Pi<float> / 2.0f)
         {
             angleCw = -Pi<float> - angleCw;
             angleCw *= -1.0f;
+            horizontalScale *= -1.0f;
         }
         else if (angleCw > Pi<float> / 2.0f)
         {
             angleCw = Pi<float> - angleCw;
             angleCw *= -1.0f;
+            horizontalScale *= -1.0f;
         }
 
         renderContext.UploadFish(
             TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, fish.RenderFrameIndex),
             fish.CurrentPosition,
             angleCw,
-            fish.CurrentHorizontalScale,
+            horizontalScale,
             fish.Species->TailX,
             fish.CurrentProgress);
     }
