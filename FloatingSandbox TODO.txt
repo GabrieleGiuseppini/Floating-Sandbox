@@ -1047,28 +1047,33 @@ Render:
 					+ Rename as "TailProgress", also in shader
 				+ Shader
 					+ Also upload texture coords X boundaries for clamping
-			= Try with third bream, then decide which of the three to keep
+			= Try with third bream, then decide which between first and third to keep
+			- New target position: 
+				- Restrict y slope: TODO
+				- Ensure X direction change: TODO
 			- Final state machine:
-				- Fish turning around: simply done with geometry @ Upload
-					- Replace verticalSign with horizontalScale (between -1.0 and 1.0)
-						- Angles and flipping: TODOHERE
-				- Round corners
-					- Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
+				+ Fish turning around: simply done with geometry @ Upload
+					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
+						+ Angles and flipping
+				+ Round corners
+					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
-					  - Or growth equation to get to target y component, and TODO: decay to flatten it
-
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
 					- Also take OceanFloor
-			- Clamp Y of spawning band
-			+ Superimpose sin over movement			
-			
+			- Clamp spawning Y
+			- Dealing with fish getting over water level (because of waves, etc.)
+				- When fish is "close" to current water level:
+					- TODO: Move it away, but how - fleeing? or simple velocity change?
+			+ Superimpose sin over movement						
 			- Swarming
 				- When adding new fish, distribute remaining counts among species according to swarm sizes	
-		- Dealing with fish getting over water level (because of waves, etc.)
+			- Should fish follow waves on surface of water?
+			- 
+			
 		- Cleanup:			
 			- GameParameters::NumberOfFishes: TODO
 		- Misc:

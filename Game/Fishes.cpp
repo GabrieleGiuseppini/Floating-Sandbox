@@ -318,7 +318,7 @@ vec2f Fishes::ChooseTargetPosition(
     FishSpecies const & fishSpecies,
     VisibleWorld const & visibleWorld)
 {
-    //static vec2f todo = vec2f(0.0f, 0.0f);
+    /* TODOTEST: romboid around center of screen
     static vec2f todo = vec2f(-20.0f, -20.0f);
 
     if (todo == vec2f(0.0f, 0.0f))
@@ -339,8 +339,8 @@ vec2f Fishes::ChooseTargetPosition(
     }
 
     return todo;
-    // TODOTEST
-    /*
+    */
+
     float const x = GameRandomEngine::GetInstance().GenerateNormalReal(visibleWorld.Center.x, visibleWorld.Width);
 
     float const y =
@@ -348,7 +348,6 @@ vec2f Fishes::ChooseTargetPosition(
         - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(fishSpecies.BasalDepth, 15.0f));
 
     return vec2f(x, y);
-    */
 }
 
 vec2f Fishes::CalculateNewCruisingTargetPosition(
@@ -356,8 +355,8 @@ vec2f Fishes::CalculateNewCruisingTargetPosition(
     FishSpecies const & species,
     VisibleWorld const & visibleWorld)
 {
-    // TODOTEST
-    return ChooseTargetPosition(species, visibleWorld);
+    // TODOTEST: romboid around center of screen
+    //return ChooseTargetPosition(species, visibleWorld);
 
     // TODO: opposite side of screen, at least at minimum distance
 
