@@ -58,8 +58,9 @@ private:
     enum class StateType
     {
         Cruising,
+        Braking,
         Turning,
-        Fleeing
+        Accelerating
     };
 
     struct Fish
@@ -73,6 +74,10 @@ private:
         vec2f TargetPosition;
         vec2f CurrentVelocity;
         vec2f TargetVelocity;
+        vec2f CurrentDirection;
+        vec2f TargetDirection;
+        float CurrentHorizontalScale;
+        float TargetHorizontalScale;
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
 
@@ -84,6 +89,7 @@ private:
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
+            float initialHorizontalScale,
             float initialProgressPhase)
             : Species(species)
             , RenderFrameIndex(renderFrameIndex)
@@ -93,6 +99,10 @@ private:
             , TargetPosition(targetPosition)
             , CurrentVelocity(targetVelocity) // We start with current velocity
             , TargetVelocity(targetVelocity)
+            , CurrentDirection(targetVelocity.normalise())
+            , TargetDirection(CurrentDirection)
+            , CurrentHorizontalScale(initialHorizontalScale) // We start with current H scale
+            , TargetHorizontalScale(initialHorizontalScale) // We start with current H scale
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
         {}
