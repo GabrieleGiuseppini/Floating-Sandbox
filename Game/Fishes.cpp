@@ -166,11 +166,13 @@ void Fishes::Update(
                     // - smooth towards target during second half
                     if (elapsedFraction <= 0.5f)
                     {
-                        fish.CurrentVelocity = fish.StartVelocity * (1.0f - elapsedFraction / 0.5f);
+                        fish.CurrentVelocity =
+                            fish.StartVelocity * (1.0f - SmoothStep(0.0f, 0.5f, elapsedFraction));
                     }
                     else
                     {
-                        fish.CurrentVelocity = fish.TargetVelocity * 1.0f/0.5f * (elapsedFraction - 0.5f);
+                        fish.CurrentVelocity =
+                            fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedFraction);
                     }
 
                     // Direction Y:
@@ -191,7 +193,7 @@ void Fishes::Update(
                     // - smooth towards target during a central interval (actual turning around)
                     fish.CurrentDirection.x =
                         fish.StartDirection.x
-                        + (fish.TargetDirection.x - fish.StartDirection.x) * SmoothStep(0.25f, 0.75f, elapsedFraction);
+                        + (fish.TargetDirection.x - fish.StartDirection.x) * SmoothStep(0.15f, 0.85f, elapsedFraction);
 
                     //
                     // Normal dynamics
