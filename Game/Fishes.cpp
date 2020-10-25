@@ -15,7 +15,8 @@
 namespace Physics {
 
 float constexpr TurningThreshold = 7.0f;
-float constexpr TurningTimeSeconds = 2.5f; // TODOTEST
+float constexpr SteeringWithTurnDurationSeconds = 2.0f; // TODOTEST
+float constexpr SteeringWithoutTurnDurationSeconds = 1.0f;
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
@@ -90,11 +91,8 @@ void Fishes::Update(
                 if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TurningThreshold)
                 {
                     //
-                    // Transition to Turning
+                    // Transition to Steering
                     //
-
-                    // Change state
-                    fish.CurrentState = StateType::Turning;
 
                     // Choose new target position
                     fish.TargetPosition = CalculateNewCruisingTargetPosition(fish.CurrentPosition, *(fish.Species), visibleWorld);
@@ -105,8 +103,14 @@ void Fishes::Update(
                     fish.StartDirection = fish.CurrentDirection;
                     fish.TargetDirection = fish.TargetVelocity.normalise();
 
-                    // Remember turn starting time
-                    fish.TurningSimulationTimeStart = currentSimulationTime;
+                    // Change state, depending on whether we're turning or not
+                    if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
+                        fish.CurrentState = StateType::CruiseSteering_WithTurn;
+                    else
+                        fish.CurrentState = StateType::CruiseSteering_WithoutTurn;
+
+                    // Remember steering starting time
+                    fish.SteeringSimulationTimeStart = currentSimulationTime;
                 }
                 else
                 {
@@ -126,13 +130,13 @@ void Fishes::Update(
                 break;
             }
 
-            case StateType::Turning:
+            case StateType::CruiseSteering_WithTurn:
             {
                 //
-                // Check whether we should stop turning
+                // Check whether we should stop steering
                 //
 
-                if (currentSimulationTime - fish.TurningSimulationTimeStart >= TurningTimeSeconds)
+                if (currentSimulationTime - fish.SteeringSimulationTimeStart >= SteeringWithTurnDurationSeconds)
                 {
                     //
                     // Transition to Cruising
@@ -155,7 +159,7 @@ void Fishes::Update(
                     // |        |            DirX -> Target             |         |
                     //
 
-                    float const elapsedFraction = (currentSimulationTime - fish.TurningSimulationTimeStart) / TurningTimeSeconds;
+                    float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / SteeringWithTurnDurationSeconds;
 
                     // Velocity:
                     // - smooth towards zero during first half
@@ -174,20 +178,20 @@ void Fishes::Update(
                     // - smooth towards target during a second interval
                     if (elapsedFraction <= 0.30f)
                     {
-                        fish.CurrentDirection.y = fish.StartDirection.y * (1.0f - elapsedFraction / 0.30f);
+                        fish.CurrentDirection.y =
+                            fish.StartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedFraction));
                     }
                     else if (elapsedFraction >= 0.70f)
                     {
-                        fish.CurrentDirection.y = fish.TargetDirection.y * 1.0f / 0.30f * (elapsedFraction - 0.70f);
+                        fish.CurrentDirection.y =
+                            fish.TargetDirection.y * SmoothStep(0.70f, 1.0f, elapsedFraction);
                     }
 
                     // Direction X:
-                    // - smooth towards target during a central interval
-                    // - smooth towards target during a second interval
-                    if (elapsedFraction >= 0.15f && elapsedFraction <= 0.85f)
-                    {
-                        fish.CurrentDirection.x = fish.StartDirection.x + (fish.TargetDirection.x - fish.StartDirection.x) / 0.70f * (elapsedFraction - 0.15f);
-                    }
+                    // - smooth towards target during a central interval (actual turning around)
+                    fish.CurrentDirection.x =
+                        fish.StartDirection.x
+                        + (fish.TargetDirection.x - fish.StartDirection.x) * SmoothStep(0.25f, 0.75f, elapsedFraction);
 
                     //
                     // Normal dynamics
@@ -201,7 +205,57 @@ void Fishes::Update(
                 }
 
                 break;
+            }
 
+            case StateType::CruiseSteering_WithoutTurn:
+            {
+                //
+                // Check whether we should stop steering
+                //
+
+                if (currentSimulationTime - fish.SteeringSimulationTimeStart >= SteeringWithoutTurnDurationSeconds)
+                {
+                    //
+                    // Transition to Cruising
+                    //
+
+                    // Change state
+                    fish.CurrentState = StateType::Cruising;
+
+                    // Reach all target quantities
+                    fish.CurrentVelocity = fish.TargetVelocity;
+                    fish.CurrentDirection = fish.TargetDirection;
+                }
+                else
+                {
+                    //
+                    // Turning dynamics
+                    //
+
+                    float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / SteeringWithoutTurnDurationSeconds;
+
+                    // Velocity: smooth towards target
+                    fish.CurrentVelocity =
+                        fish.StartVelocity
+                        + (fish.TargetVelocity - fish.StartVelocity) * SmoothStep(0.0f, 1.0f, elapsedFraction);
+
+                    // Direction: smooth towards target
+                    fish.CurrentDirection =
+                        fish.StartDirection
+                        + (fish.TargetDirection - fish.StartDirection) * SmoothStep(0.0f, 1.0f, elapsedFraction);
+
+                    //
+                    // Normal dynamics
+                    //
+
+                    // Update position: add velocity
+                    fish.CurrentPosition += fish.CurrentVelocity;
+
+                    // Update progress phase: add basal speed
+                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+                }
+
+                break;
             }
         }
 

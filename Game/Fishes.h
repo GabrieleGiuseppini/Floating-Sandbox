@@ -58,7 +58,8 @@ private:
     enum class StateType
     {
         Cruising,
-        Turning
+        CruiseSteering_WithTurn,
+        CruiseSteering_WithoutTurn
     };
 
     struct Fish
@@ -83,7 +84,7 @@ private:
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
 
-        float TurningSimulationTimeStart;
+        float SteeringSimulationTimeStart;
 
         Fish(
             FishSpecies const * species,
@@ -108,7 +109,7 @@ private:
             , TargetDirection(StartDirection)
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
-            , TurningSimulationTimeStart(0.0f) // Arbitrary
+            , SteeringSimulationTimeStart(0.0f) // Arbitrary
         {}
     };
 
