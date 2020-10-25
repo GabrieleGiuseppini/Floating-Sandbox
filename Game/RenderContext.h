@@ -711,7 +711,7 @@ public:
         TextureFrameId<FishTextureGroups> const & textureFrameId,
         vec2f const & position,
         float angleCw,
-        float verticalSign,
+        float horizontalScale,
         float tailX,
         float tailProgress)
     {
@@ -719,7 +719,7 @@ public:
             textureFrameId,
             position,
             angleCw,
-            verticalSign,
+            horizontalScale,
             tailX,
             tailProgress);
     }

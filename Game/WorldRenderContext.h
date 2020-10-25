@@ -360,16 +360,16 @@ public:
         TextureFrameId<FishTextureGroups> const & textureFrameId,
         vec2f const & position,
         float angleCw,
-        float verticalSign,
+        float horizontalScale,
         float tailX,
         float tailProgress)
     {
         auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
 
-        float const offsetLeftX = - frame.FrameMetadata.AnchorCenterWorld.x * mFishQuadRescaleFactor;
-        float const offsetRightX = (frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * mFishQuadRescaleFactor;
-        float const offsetTopY = verticalSign * (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * mFishQuadRescaleFactor;
-        float const offsetBottomY = verticalSign * - frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor;
+        float const offsetLeftX = (-frame.FrameMetadata.AnchorCenterWorld.x * mFishQuadRescaleFactor) * horizontalScale;
+        float const offsetRightX = ((frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * mFishQuadRescaleFactor) * horizontalScale;
+        float const offsetTopY = (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * mFishQuadRescaleFactor;
+        float const offsetBottomY = (-frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor);
 
         vec2f const textureCoordsXLimits = vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.x);
 
