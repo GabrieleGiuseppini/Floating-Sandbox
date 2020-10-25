@@ -160,9 +160,7 @@ if (MSVC)
 	#	string(REGEX REPLACE "/Ob1" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 	#endif(${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "/Ob1")
 	#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Ob2")
-
 	
-
 	# Disable incremental linking
 	foreach(flag_var
 		CMAKE_EXE_LINKER_FLAGS_DEBUG CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO CMAKE_EXE_LINKER_FLAGS_RELEASE)
@@ -173,9 +171,9 @@ if (MSVC)
 		set(${flag_var} "${${flag_var}} /INCREMENTAL:NO")
 	endforeach(flag_var)
 
-	# Enable LTCG:incremental in all but release
+	# Enable LTCG:incremental in RelWithDebInfo
 	foreach(flag_var
-		CMAKE_EXE_LINKER_FLAGS_DEBUG CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
+		CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
 		if(${flag_var} MATCHES "/LTCG")
 			string(REGEX REPLACE "/LTCG:incremental" "" ${flag_var} "${${flag_var}}")
 			string(REGEX REPLACE "/LTCG" "" ${flag_var} "${${flag_var}}")
