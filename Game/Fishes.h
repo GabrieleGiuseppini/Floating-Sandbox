@@ -58,9 +58,7 @@ private:
     enum class StateType
     {
         Cruising,
-        Braking,
-        Turning,
-        Accelerating
+        Turning
     };
 
     struct Fish
@@ -70,14 +68,22 @@ private:
         float PersonalitySeed;
 
         StateType CurrentState;
+
         vec2f CurrentPosition;
         vec2f TargetPosition;
+
+        vec2f StartVelocity;
         vec2f CurrentVelocity;
         vec2f TargetVelocity;
+
+        vec2f StartDirection;
         vec2f CurrentDirection;
         vec2f TargetDirection;
+
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
+
+        float TurningSimulationTimeStart;
 
         Fish(
             FishSpecies const * species,
@@ -94,12 +100,15 @@ private:
             , CurrentState(initialState)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
-            , CurrentVelocity(targetVelocity) // We start with current velocity
+            , StartVelocity(targetVelocity) // We start up with current velocity
+            , CurrentVelocity(targetVelocity)
             , TargetVelocity(targetVelocity)
-            , CurrentDirection(targetVelocity.normalise())
-            , TargetDirection(CurrentDirection)
+            , StartDirection(targetVelocity.normalise())
+            , CurrentDirection(StartDirection)
+            , TargetDirection(StartDirection)
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
+            , TurningSimulationTimeStart(0.0f) // Arbitrary
         {}
     };
 

@@ -10,9 +10,12 @@
 
 #include <picojson.h>
 
+#include <chrono>
+
 namespace Physics {
 
-float constexpr BrakingRadius = 7.0f;
+float constexpr TurningThreshold = 7.0f;
+float constexpr TurningTimeSeconds = 2.5f; // TODOTEST
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
@@ -81,39 +84,10 @@ void Fishes::Update(
             case StateType::Cruising:
             {
                 //
-                // Check whether we should start braking
-                //
-
-                if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < BrakingRadius)
-                {
-                    //
-                    // Transition to Braking
-                    //
-
-                    // Change state
-                    fish.CurrentState = StateType::Braking;
-                }
-                else
-                {
-                    // Update position: add velocity, with superimposed sin component
-                    fish.CurrentPosition +=
-                        fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f;
-
-                    // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
-                }
-
-                break;
-            }
-
-            case StateType::Braking:
-            {
-                //
                 // Check whether we should start turning
                 //
 
-                if (std::abs(fish.CurrentDirection.y) < 0.005f)
+                if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TurningThreshold)
                 {
                     //
                     // Transition to Turning
@@ -126,132 +100,19 @@ void Fishes::Update(
                     fish.TargetPosition = CalculateNewCruisingTargetPosition(fish.CurrentPosition, *(fish.Species), visibleWorld);
 
                     // Calculate new target velocity and direction
+                    fish.StartVelocity = fish.CurrentVelocity;
                     fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, *(fish.Species), 1.0f, fish.PersonalitySeed);
+                    fish.StartDirection = fish.CurrentDirection;
                     fish.TargetDirection = fish.TargetVelocity.normalise();
+
+                    // Remember turn starting time
+                    fish.TurningSimulationTimeStart = currentSimulationTime;
                 }
                 else
                 {
-                    // Update velocity: flatten towards zero
-                    fish.CurrentVelocity -=
-                        fish.CurrentVelocity
-                        * 0.038f; // Convergence rate
-
-                    // Update direction: flatten y towards zero
-                    fish.CurrentDirection.y -=
-                        fish.CurrentDirection.y
-                        * 0.058f; // Convergence rate
-
-                    // TODO: avoid repetition
-
-                    // Update position: add velocity
-                    fish.CurrentPosition +=
-                        fish.CurrentVelocity;
-
-                    // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
-                }
-
-                break;
-            }
-
-            case StateType::Turning:
-            {
-                //
-                // Check whether we should start accelerating
-                //
-
-                if (std::abs(fish.TargetDirection.x - fish.CurrentDirection.x) < 0.005f)
-                {
                     //
-                    // Transition to Accelerating
+                    // Normal dynamics
                     //
-
-                    // Change state
-                    fish.CurrentState = StateType::Accelerating;
-                }
-                else
-                {
-                    // Update direction x: smooth towards target
-                    fish.CurrentDirection.x +=
-                        (fish.TargetDirection.x - fish.CurrentDirection.x)
-                        * 0.058f; // Converge rate
-                }
-
-                break;
-            }
-
-            case StateType::Accelerating:
-            {
-                //
-                // Check whether we should start cruising
-                //
-
-                if (std::abs(fish.TargetDirection.y - fish.CurrentVelocity.y) < 0.005f)
-                {
-                    //
-                    // Transition to Curising
-                    //
-
-                    // Change state
-                    fish.CurrentState = StateType::Cruising;
-                }
-                else
-                {
-                    // Update velocity: grow towards target
-                    fish.CurrentVelocity +=
-                        (fish.TargetVelocity - fish.CurrentVelocity)
-                        * 0.024f; // Convergence rate
-
-                    // Update direction y: grow towards target
-                    fish.CurrentDirection.y +=
-                        (fish.TargetDirection.y - fish.CurrentDirection.y)
-                        * 0.024f; // Convergence rate
-
-                    // TODO: avoid repetition
-                    // Update position: add velocity, with superimposed sin component
-                    fish.CurrentPosition +=
-                        fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f;
-
-                    // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
-                }
-
-                break;
-            }
-
-            // TODOOLD
-            /*
-            case StateType::Cruising:
-            {
-                //
-                // Check whether we should start braking
-                //
-
-                if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < BrakingRadius)
-                {
-                    //
-                    // Transition to Braking
-                    //
-
-                    // Change state
-                    fish.CurrentState = StateType::Braking;
-
-                    //
-
-                    // Choose new target position
-                    fish.TargetPosition = CalculateNewCruisingTargetPosition(fish.CurrentPosition, *(fish.Species), visibleWorld);
-
-                    // Calculate new target velocity
-                    fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, *(fish.Species), 1.0f, fish.PersonalitySeed);
-                }
-                else
-                {
-                    // TODOTEST
-                    // Update velocity: smooth it towards target
-                    fish.CurrentVelocity +=
-                        (fish.TargetVelocity - fish.CurrentVelocity)
-                        * 0.014f; // Converge rate
 
                     // Update position: add velocity, with superimposed sin component
                     fish.CurrentPosition +=
@@ -267,10 +128,11 @@ void Fishes::Update(
 
             case StateType::Turning:
             {
-                // Check whether we should start cruising again
-                // TODOTEST
-                // if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) > TurningRadius)
-                if ((fish.TargetVelocity - fish.CurrentVelocity).length() < .1f)
+                //
+                // Check whether we should stop turning
+                //
+
+                if (currentSimulationTime - fish.TurningSimulationTimeStart >= TurningTimeSeconds)
                 {
                     //
                     // Transition to Cruising
@@ -278,29 +140,69 @@ void Fishes::Update(
 
                     // Change state
                     fish.CurrentState = StateType::Cruising;
+
+                    // Reach all target quantities
+                    fish.CurrentVelocity = fish.TargetVelocity;
+                    fish.CurrentDirection = fish.TargetDirection;
                 }
                 else
                 {
-                    // Update velocity: smooth it towards target
-                    fish.CurrentVelocity +=
-                        (fish.TargetVelocity - fish.CurrentVelocity)
-                        // TODOTEST
-                        //* 0.02f; // Converge rate
-                        * 0.2f;
+                    //
+                    // Turning dynamics
+                    //
+                    // |      Velocity -> 0        |      Velocity -> Target      |
+                    // |  DirY -> 0  |                          |  DirY -> Target |
+                    // |        |            DirX -> Target             |         |
+                    //
 
-                    // TODO: avoid this repetition
-                    // Update position: add velocity, with superimposed sin component
-                    fish.CurrentPosition +=
-                        fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f;
+                    float const elapsedFraction = (currentSimulationTime - fish.TurningSimulationTimeStart) / TurningTimeSeconds;
+
+                    // Velocity:
+                    // - smooth towards zero during first half
+                    // - smooth towards target during second half
+                    if (elapsedFraction <= 0.5f)
+                    {
+                        fish.CurrentVelocity = fish.StartVelocity * (1.0f - elapsedFraction / 0.5f);
+                    }
+                    else
+                    {
+                        fish.CurrentVelocity = fish.TargetVelocity * 1.0f/0.5f * (elapsedFraction - 0.5f);
+                    }
+
+                    // Direction Y:
+                    // - smooth towards zero during an initial interval
+                    // - smooth towards target during a second interval
+                    if (elapsedFraction <= 0.30f)
+                    {
+                        fish.CurrentDirection.y = fish.StartDirection.y * (1.0f - elapsedFraction / 0.30f);
+                    }
+                    else if (elapsedFraction >= 0.70f)
+                    {
+                        fish.CurrentDirection.y = fish.TargetDirection.y * 1.0f / 0.30f * (elapsedFraction - 0.70f);
+                    }
+
+                    // Direction X:
+                    // - smooth towards target during a central interval
+                    // - smooth towards target during a second interval
+                    if (elapsedFraction >= 0.15f && elapsedFraction <= 0.85f)
+                    {
+                        fish.CurrentDirection.x = fish.StartDirection.x + (fish.TargetDirection.x - fish.StartDirection.x) / 0.70f * (elapsedFraction - 0.15f);
+                    }
+
+                    //
+                    // Normal dynamics
+                    //
+
+                    // Update position: add velocity
+                    fish.CurrentPosition += fish.CurrentVelocity;
 
                     // Update progress phase: add basal speed
                     fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
                 }
 
                 break;
+
             }
-            */
         }
 
         //
@@ -317,20 +219,19 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
     for (auto const & fish : mFishes)
     {
-        // TODO: some comments here
         float angleCw = fish.CurrentDirection.angleCw();
         float horizontalScale = fish.CurrentDirection.length();
 
         if (angleCw < -Pi<float> / 2.0f)
         {
-            angleCw = -Pi<float> - angleCw;
-            angleCw *= -1.0f;
+            angleCw = Pi<float> + angleCw;
+            //angleCw *= -1.0f;
             horizontalScale *= -1.0f;
         }
         else if (angleCw > Pi<float> / 2.0f)
         {
-            angleCw = Pi<float> - angleCw;
-            angleCw *= -1.0f;
+            angleCw = -Pi<float> + angleCw;
+            //angleCw *= -1.0f;
             horizontalScale *= -1.0f;
         }
 
