@@ -15,7 +15,7 @@
 namespace Physics {
 
 float constexpr TurningThreshold = 7.0f;
-float constexpr SteeringWithTurnDurationSeconds = 2.0f; // TODOTEST
+float constexpr SteeringWithTurnDurationSeconds = 1.5f; // TODOTEST
 float constexpr SteeringWithoutTurnDurationSeconds = 1.0f;
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
