@@ -35,10 +35,21 @@ public:
 
 private:
 
-    vec2f ChooseTargetPosition(
+    static vec2f ChooseTargetPosition(
         FishSpecies const & fishSpecies,
-        VisibleWorld const & visibleWorld,
-        float currentY) const;
+        VisibleWorld const & visibleWorld);
+
+    inline static vec2f CalculateNewCruisingTargetPosition(
+        vec2f const & currentPosition,
+        FishSpecies const & species,
+        VisibleWorld const & visibleWorld);
+
+    inline static vec2f CalculateVelocity(
+        vec2f const & startPosition,
+        vec2f const & endPosition,
+        FishSpecies const & species,
+        float velocityMultiplier,
+        float personalitySeed);
 
 private:
 
@@ -47,6 +58,7 @@ private:
     enum class StateType
     {
         Cruising,
+        Turning,
         Fleeing
     };
 
@@ -59,16 +71,19 @@ private:
         StateType CurrentState;
         vec2f CurrentPosition;
         vec2f TargetPosition;
+        vec2f CurrentVelocity;
+        vec2f TargetVelocity;
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
 
         Fish(
             FishSpecies const * species,
-            TextureFrameIndex const & renderFrameIndex,
+            TextureFrameIndex renderFrameIndex,
             float personalitySeed,
             StateType initialState,
             vec2f const & initialPosition,
             vec2f const & targetPosition,
+            vec2f const & targetVelocity,
             float initialProgressPhase)
             : Species(species)
             , RenderFrameIndex(renderFrameIndex)
@@ -76,6 +91,8 @@ private:
             , CurrentState(initialState)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
+            , CurrentVelocity(targetVelocity) // We start with current velocity
+            , TargetVelocity(targetVelocity)
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
         {}

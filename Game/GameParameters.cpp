@@ -67,7 +67,7 @@ GameParameters::GameParameters()
     , EngineThrustAdjustment(1.0f)
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
-    , NumberOfFishes(64)
+    , NumberOfFishes(1)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)
