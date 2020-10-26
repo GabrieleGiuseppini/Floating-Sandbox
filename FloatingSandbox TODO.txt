@@ -676,6 +676,8 @@ Render:
 	- See if may upgrade SFML to master (~2.6) with OPUS support
 		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
+	- SetEventRecorder dynamics between GameController/World/Ship
+		- Also GameController::Reset() should clear all events
 
 
 - Simulation Optimizations:
@@ -1470,36 +1472,11 @@ Render:
 				+ Clear frontiers' dirtyForRendering flags afterwards
 			+ See if FrontierEdge::PointBIndex is really needed
 		= Cleanup:
-			= Nuke HasRegionFrontierOfType and subst with IsFrontierCW
+			+ Nuke HasRegionFrontierOfType and subst with IsFrontierCW
 				+ Test
-				- Remove unused args
+				+ Remove unused args
 			- Cleanup log lines at Frontiers
-			- SetEventRecorder dynamics between GameController/World/Ship
-				- Also GameController::Reset() should clear all events
 			+ Finalize speed for rendered frontier's march
-			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection - only?), as we might 
-			  now use edges
-				- Unless we now need it in Frontiers' maintenance as well?
-				- If so, we could now only upload springs that have 0 or 1 edges (WHAT?)
-
-		- TODOOLD
-		- Realize that a node can belong to up to 4 frontiers (center of 4 holes)
-			- And a point deletion might cause a merge of the four
-		- Frontier is set of points, marked as frontier, and connected to each other via 
-		  nextInFrontier * and prevInFrontier * (in CW order) 
-		- Algo:
-			- There are multiple frontiers, 0 is external, N is internal, isolated
-			- Calculate frontier at ship create, based off structural matrix, using geometry
-			- At each point deletion:
-				- 2 cases: OR: only later check if one of the connected points is already a frontier 
-				  (a deleted frontier point is bound to be connected to two other points of the same frontier, for each frontier)
-					- Point deleted is a frontier point:
-						- TODO
-					- Point deleted is NOT a frontier point:
-						- All its connected points become a frontier
-						- If one of the connected points is already a frontier, then the new frontier points
-						  take that frontierId
-						- TODO
 	
 	- Pressure implosions / pressure crush (*)
 		! Requires frontier

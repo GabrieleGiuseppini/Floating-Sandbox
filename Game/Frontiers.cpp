@@ -81,7 +81,6 @@ void Frontiers::AddFrontier(
 void Frontiers::HandleTriangleDestroy(
     ElementIndex triangleElementIndex,
     Points const & points,
-    Springs const & springs,
     Triangles const & triangles)
 {
     // Take edge indices once and for all
@@ -222,26 +221,17 @@ void Frontiers::HandleTriangleDestroy(
         bool const isABCusp = ProcessTriangleCuspDestroy<0, 1>(
             edgeAIndex,
             edgeBIndex,
-            triangleElementIndex,
-            points,
-            springs,
-            triangles);
+            points);
 
         bool const isBCCusp = ProcessTriangleCuspDestroy<1, 2>(
             edgeBIndex,
             edgeCIndex,
-            triangleElementIndex,
-            points,
-            springs,
-            triangles);
+            points);
 
         bool const isCACusp = ProcessTriangleCuspDestroy<2, 0>(
             edgeCIndex,
             edgeAIndex,
-            triangleElementIndex,
-            points,
-            springs,
-            triangles);
+            points);
 
         int const cuspCount =
             (isABCusp ? 1 : 0)
@@ -321,7 +311,6 @@ void Frontiers::HandleTriangleRestore(
     Triangles const & triangles)
 {
     // Take edge indices once and for all
-    // TODO: see if needed
     auto const edgeAIndex = triangles.GetSubSpringAIndex(triangleElementIndex);
     auto const edgeBIndex = triangles.GetSubSpringBIndex(triangleElementIndex);
     auto const edgeCIndex = triangles.GetSubSpringCIndex(triangleElementIndex);
@@ -873,10 +862,7 @@ template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
     ElementIndex const edgeIn,
     ElementIndex const edgeOut,
-    ElementIndex const triangleElementIndex,
-    Points const & points,
-    Springs const & springs,
-    Triangles const & triangles)
+    Points const & points)
 {
     //
     // Here we pretend to detach the cusp (which we don't know already as being a cusp)
@@ -1259,8 +1245,6 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
     Springs const & springs,
     Triangles const & triangles)
 {
-    // TODO: see if all args and template args are needed
-
     // The cusp edges are adjacent
     static_assert(
         (CuspEdgeInOrdinal <= 1 && CuspEdgeOutOrdinal == CuspEdgeInOrdinal + 1)
