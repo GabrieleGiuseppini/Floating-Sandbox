@@ -81,6 +81,7 @@ void Frontiers::AddFrontier(
 void Frontiers::HandleTriangleDestroy(
     ElementIndex triangleElementIndex,
     Points const & points,
+    Springs const & springs,
     Triangles const & triangles)
 {
     // Take edge indices once and for all
@@ -221,17 +222,20 @@ void Frontiers::HandleTriangleDestroy(
         bool const isABCusp = ProcessTriangleCuspDestroy<0, 1>(
             edgeAIndex,
             edgeBIndex,
-            points);
+            points,
+            springs);
 
         bool const isBCCusp = ProcessTriangleCuspDestroy<1, 2>(
             edgeBIndex,
             edgeCIndex,
-            points);
+            points,
+            springs);
 
         bool const isCACusp = ProcessTriangleCuspDestroy<2, 0>(
             edgeCIndex,
             edgeAIndex,
-            points);
+            points,
+            springs);
 
         int const cuspCount =
             (isABCusp ? 1 : 0)
@@ -862,7 +866,8 @@ template<int CuspEdgeInOrdinal, int CuspEdgeOutOrdinal>
 inline bool Frontiers::ProcessTriangleCuspDestroy(
     ElementIndex const edgeIn,
     ElementIndex const edgeOut,
-    Points const & points)
+    Points const & points,
+    Springs const & springs)
 {
     //
     // Here we pretend to detach the cusp (which we don't know already as being a cusp)

@@ -87,6 +87,7 @@ public:
     void HandleTriangleDestroy(
         ElementIndex triangleElementIndex,
         Points const & points,
+        Springs const & springs,
         Triangles const & triangles);
 
     /*
@@ -200,7 +201,8 @@ private:
     inline bool ProcessTriangleCuspDestroy(
         ElementIndex const edgeIn,
         ElementIndex const edgeOut,
-        Points const & points);
+        Points const & points,
+        Springs const & springs);
 
     inline void ProcessTriangleOppositeCuspEdgeDestroy(
         ElementIndex const edge,
