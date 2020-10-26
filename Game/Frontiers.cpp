@@ -1397,107 +1397,150 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
         if (mFrontiers[triangleFrontierId]->Type == FrontierType::Internal)
         {
             // A triangle along which there's an internal frontier may only end up touching
-            // a triangle of the same internal frontier - neither an external frontier, nor
-            // a different internal frontier
-            assert(oppositeFrontierId == triangleFrontierId);
-
-            //
-            // Triangle and cusp belong to same internal frontier...
-            // ...the cusp joining separates that into *two* internal frontiers
-            //
-
-            LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->Internal => Internal1 + Internal2");
-
-            SplitIntoNewFrontier(
-                edgeInOpposite,
-                edgeIn,
-                triangleFrontierId,
-                FrontierType::Internal,
-                edgeOutOpposite,
-                edgeOut);
-        }
-        else
-        {
-            // A triangle along which there's an external frontier may only end up touching
-            // a triangle with an external frontier - either the same external frontier, or
-            // a different one
-            assert(mFrontiers[oppositeFrontierId]->Type == FrontierType::External);
+            // either a triangle of the same internal frontier, or an external frontier
+            // (which would be the "ball-in-a-hole" case)
+            assert(oppositeFrontierId == triangleFrontierId || mFrontiers[oppositeFrontierId]->Type == FrontierType::External);
 
             if (oppositeFrontierId == triangleFrontierId)
             {
                 //
-                // Same external frontier...
+                // Triangle and cusp belong to same internal frontier...
+                // ...the cusp joining separates that into *two* internal frontiers
                 //
 
-                //
-                //     /-------------\
-                //    /               \
-                //   /                 \
-                //  A-------- X --------B
-                //  __      /   \      __
-                //    \    /     \    /
-                //     \  /       \  /
-                //      \/         \/
-                //       C         D
-                //
-                // A->X = edgeIn
-                // X->C = edgeOut
-                //
-                // X->B = edgeInOpposite
-                // D->X = edgeOutOpposite
-                //
+                LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->Internal => Internal1 + Internal2");
 
-                //
-                // ...one of the regions stays, the other one (the one
-                // CCW) becomes a new, internal region
-                //
-
-                if (IsCounterClockwiseFrontier(
+                SplitIntoNewFrontier(
                     edgeInOpposite,
                     edgeIn,
-                    points))
-                {
-                    // ..., A->X, X->B, ... becomes internal
-
-                    SplitIntoNewFrontier(
-                        edgeInOpposite, // start
-                        edgeIn, // end
-                        triangleFrontierId, // old frontier ID
-                        FrontierType::Internal,
-                        edgeOutOpposite,
-                        edgeOut);
-                }
-                else
-                {
-                    // ..., D->X, X->C, ... becomes internal
-
-                    SplitIntoNewFrontier(
-                        edgeOut, // start
-                        edgeOutOpposite, // end
-                        triangleFrontierId, // old frontier ID
-                        FrontierType::Internal,
-                        edgeIn,
-                        edgeInOpposite);
-                }
+                    triangleFrontierId,
+                    FrontierType::Internal,
+                    edgeOutOpposite,
+                    edgeOut);
             }
             else
             {
                 //
-                // Different external frontiers...
+                // Ball-in-a-hole case (internal frontier of a hole getting in touch with external
+                // frontier of a ball in that hole)...
+                // ...the external frontier of the ball gets fagocitated by the internal frontier
                 //
 
-                //
-                // ...just merge the two external frontiers; we arbitrarily choose
-                // one over the other
-                //
+                assert(mFrontiers[oppositeFrontierId]->Type == FrontierType::External);
+
+                LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->External => Internal");
 
                 ReplaceAndJoinFrontier(
                     edgeIn,
                     edgeInOpposite,
                     edgeOutOpposite,
                     edgeOut,
-                    oppositeFrontierId, // old frontier
-                    triangleFrontierId); // new frontier
+                    oppositeFrontierId,
+                    triangleFrontierId);
+            }
+        }
+        else
+        {
+            // A triangle along which there's an external frontier may only end up touching
+            // either a triangle with the same or different external frontier, or an internal frontier
+            // (which would be the "ball-in-a-hole" case)
+
+            if (mFrontiers[oppositeFrontierId]->Type == FrontierType::External)
+            {
+                if (oppositeFrontierId == triangleFrontierId)
+                {
+                    //
+                    // Same external frontier...
+                    //
+
+                    //
+                    //     /-------------\
+                    //    /               \
+                    //   /                 \
+                    //  A-------- X --------B
+                    //  __      /   \      __
+                    //    \    /     \    /
+                    //     \  /       \  /
+                    //      \/         \/
+                    //       C         D
+                    //
+                    // A->X = edgeIn
+                    // X->C = edgeOut
+                    //
+                    // X->B = edgeInOpposite
+                    // D->X = edgeOutOpposite
+                    //
+
+                    //
+                    // ...one of the regions stays, the other one (the one
+                    // CCW) becomes a new, internal region
+                    //
+
+                    if (IsCounterClockwiseFrontier(
+                        edgeInOpposite,
+                        edgeIn,
+                        points))
+                    {
+                        // ..., A->X, X->B, ... becomes internal
+
+                        SplitIntoNewFrontier(
+                            edgeInOpposite, // start
+                            edgeIn, // end
+                            triangleFrontierId, // old frontier ID
+                            FrontierType::Internal,
+                            edgeOutOpposite,
+                            edgeOut);
+                    }
+                    else
+                    {
+                        // ..., D->X, X->C, ... becomes internal
+
+                        SplitIntoNewFrontier(
+                            edgeOut, // start
+                            edgeOutOpposite, // end
+                            triangleFrontierId, // old frontier ID
+                            FrontierType::Internal,
+                            edgeIn,
+                            edgeInOpposite);
+                    }
+                }
+                else
+                {
+                    //
+                    // Different external frontiers...
+                    //
+
+                    //
+                    // ...just merge the two external frontiers; we arbitrarily choose
+                    // one over the other
+                    //
+
+                    ReplaceAndJoinFrontier(
+                        edgeIn,
+                        edgeInOpposite,
+                        edgeOutOpposite,
+                        edgeOut,
+                        oppositeFrontierId, // old frontier
+                        triangleFrontierId); // new frontier
+                }
+            }
+            else
+            {
+                //
+                // Ball-in-a-hole case (internal frontier of a hole getting in touch with external
+                // frontier of a ball in that hole)...
+                // ...the external frontier of the ball gets fagocitated by the internal frontier
+                //
+
+                LogMessage("TODOTEST: ProcessTriangleCuspRestore: External->Internal => Internal");
+
+                ReplaceAndJoinFrontier(
+                    edgeOutOpposite,
+                    edgeOut,
+                    edgeIn,
+                    edgeInOpposite,
+                    triangleFrontierId,
+                    oppositeFrontierId);
             }
         }
     }
