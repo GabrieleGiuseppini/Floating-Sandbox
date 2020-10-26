@@ -1048,8 +1048,10 @@ Render:
 				+ Shader
 					+ Also upload texture coords X boundaries for clamping
 			= Try with third bream, then decide which between first and third to keep
+				- Nuke other psd's, only keep chosen one
+			+ Clamp spawning Y
 			- New target position: 
-				- Restrict y slope: TODO
+				- Restrict y slope (wrt current): TODO
 				- Ensure X direction change: TODO
 			- Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
@@ -1058,21 +1060,25 @@ Render:
 				+ Round corners
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
+				- New algo:
+					- Turning (if isTurning)
+					- Pos update
+						- With X sort maintenance in separate vector
+					- Panic check X 4:
+						- TODOHERE
+						- Dealing with fish getting over water level (because of waves, etc.)
+							- When fish is "close" to current water level:
+								- TODO: Move it away, but how - fleeing? or simple velocity change?
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
-					- Also take OceanFloor
-			- Clamp spawning Y
-			- Dealing with fish getting over water level (because of waves, etc.)
-				- When fish is "close" to current water level:
-					- TODO: Move it away, but how - fleeing? or simple velocity change?
+					- Also take OceanFloor						
 			+ Superimpose sin over movement						
 			- Swarming
 				- When adding new fish, distribute remaining counts among species according to swarm sizes	
 			- Should fish follow waves on surface of water?
-			- 
 			
 		- Cleanup:			
 			- GameParameters::NumberOfFishes: TODO
@@ -1321,21 +1327,10 @@ Render:
 
 	= Frontier (*):
 		! Only for non-rope points - rope points never take part in frontier
-		= Preliminaries:
+		+ Preliminaries:
 			+ Make sure endpoints in triangle are always in CW order
 				+ From ShipBuilder
-			- Problem with rendering frontier in "Render Frontier" mode:
-				- In order to correctly draw dangling (i.e. same connected component) parts on top of all of the connected component's 
-				  frontiers, we'd need to have the dangling parts disconnected from the connected component, which means that we should
-				  not follow ropes _at_all_ (no matter the transition type) during connected component detection, and allow those 
-				  ropes to belong to the next connected component
-					- Still vulnerable to dangling parts not connected via ropes (e.g. masts) though: 
-					  frontier would still be drawn on top of it
-				- Might get away with drawing frontiers - *enlarged* - before (temporally) all of the rest? What is left of the enlarged part 
-				  would be the rendered frontier, as it would be visible only around external frontiers (and through holes)
-				- TODO: isn't this taken care of by Z work?
-				- TODO: don't we have this same problem with edge springs? It seems not, why?
-		= Plan:
+		+ Plan:
 			+ Data structures
 			+ Initial frontiers at ShipBuilder
 			+ Render frontiers: 
@@ -1343,8 +1338,8 @@ Render:
 				+ New ship upload 
 				+ New shader
 			+ Maintain at destroy
-			= Maintain at repair
-		= Impl:
+			+ Maintain at repair
+		+ Impl:
 			+ Data structures
 				+ GameTypes:
 					+ FrontierIndex + None
@@ -1453,23 +1448,23 @@ Render:
 				+ Test:
 					+ Destroy
 					+ Repair (without frontier maintenance)
-			= Maintenance at repair:
+			+ Maintenance at repair:
 				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
 				+ Preliminary work:
 					+ Cusp search needs to be done by searching triangles or edges connected to cusp Point
 						+ Make do with existing structures @ Springs that track octants
-				= Cases: 					
+				+ Cases: 					
 					+ Case 3 frontiers
 					+ Case 2 frontiers
-					= Case 0/1 frontiers
+					+ Case 0/1 frontiers
 						+ Propagate 1 frontier
-						= Process cusps
+						+ Process cusps
 							+ Ext1 != Ext2
-							= Ext1 == Ext2
+							+ Ext1 == Ext2
 						+ Handle pathological isolated triangle case
-				- Things to remember:
+				+ Things to remember:
 					+ Marks mIsDirtyForRendering
-					- Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
+					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
 		- Optimizations:
 			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				+ Clear frontiers' dirtyForRendering flags afterwards
