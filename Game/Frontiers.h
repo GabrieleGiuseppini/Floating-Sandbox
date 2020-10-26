@@ -32,15 +32,13 @@ public:
     // Edge metadata that is only needed for physics
     struct FrontierEdge
     {
-        ElementIndex PointAIndex; // In frontier's order
-        ElementIndex PointBIndex; // In frontier's order
+        ElementIndex PointAIndex; // First of two points in frontier's order
 
         ElementIndex NextEdgeIndex; // Next edge in frontier's order
         ElementIndex PrevEdgeIndex; // Previous edge in frontier's order
 
         FrontierEdge()
             : PointAIndex(NoneElementIndex)
-            , PointBIndex(NoneElementIndex)
             , NextEdgeIndex(NoneElementIndex)
             , PrevEdgeIndex(NoneElementIndex)
         {}

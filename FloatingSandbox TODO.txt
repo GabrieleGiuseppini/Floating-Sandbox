@@ -1465,11 +1465,10 @@ Render:
 				+ Things to remember:
 					+ Marks mIsDirtyForRendering
 					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
-		- Optimizations:
+		= Optimizations:
 			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				+ Clear frontiers' dirtyForRendering flags afterwards
-			- See if FrontierEdge::PointBIndex is really needed
-			- Is it better to store # of frontiers-in-triangle in Frontiers::Triangles, rather than recalculate it each time?
+			= See if FrontierEdge::PointBIndex is really needed
 		- Cleanup:
 			- Nuke HasRegionFrontierOfType and subst with IsFrontierCW
 				- Test

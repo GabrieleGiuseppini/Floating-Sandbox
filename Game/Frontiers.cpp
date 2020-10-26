@@ -65,8 +65,7 @@ void Frontiers::AddFrontier(
 
         // FrontierEdge
 
-        // Set point indices
-        mFrontierEdges[previousEdgeIndex].PointBIndex = point1Index;
+        // Set point index
         mFrontierEdges[edgeIndex].PointAIndex = point1Index;
 
         // Concatenate edges
@@ -141,21 +140,18 @@ void Frontiers::HandleTriangleDestroy(
         // C->B
         mEdges[edgeCIndex].FrontierIndex = newFrontierId;
         mFrontierEdges[edgeCIndex].PointAIndex = triangles.GetPointAIndex(triangleElementIndex);
-        mFrontierEdges[edgeCIndex].PointBIndex = triangles.GetPointCIndex(triangleElementIndex);
         mFrontierEdges[edgeCIndex].NextEdgeIndex = edgeBIndex;
         mFrontierEdges[edgeCIndex].PrevEdgeIndex = edgeAIndex;
 
         // B->A
         mEdges[edgeBIndex].FrontierIndex = newFrontierId;
         mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
-        mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
         mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeAIndex;
         mFrontierEdges[edgeBIndex].PrevEdgeIndex = edgeCIndex;
 
         // A->C
         mEdges[edgeAIndex].FrontierIndex = newFrontierId;
         mFrontierEdges[edgeAIndex].PointAIndex = triangles.GetPointBIndex(triangleElementIndex);
-        mFrontierEdges[edgeAIndex].PointBIndex = triangles.GetPointAIndex(triangleElementIndex);
         mFrontierEdges[edgeAIndex].NextEdgeIndex = edgeCIndex;
         mFrontierEdges[edgeAIndex].PrevEdgeIndex = edgeBIndex;
     }
@@ -197,7 +193,6 @@ void Frontiers::HandleTriangleDestroy(
         mEdges[edgeXZ].FrontierIndex = frontierId;
         assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier] == mFrontierEdges[lastEdgeWithFrontier].PointAIndex); // X
         mFrontierEdges[edgeXZ].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier]; // X
-        mFrontierEdges[edgeXZ].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdXZ]; // Z
         mFrontierEdges[edgeXZ].NextEdgeIndex = edgeZY;
         mFrontierEdges[edgeXZ].PrevEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex;
         mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex].NextEdgeIndex = edgeXZ;
@@ -205,8 +200,6 @@ void Frontiers::HandleTriangleDestroy(
         // Z->Y
         mEdges[edgeZY].FrontierIndex = frontierId;
         mFrontierEdges[edgeZY].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdXZ]; // Z
-        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // Y
-        mFrontierEdges[edgeZY].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY]; // Y
         mFrontierEdges[edgeZY].NextEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex;
         mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex].PrevEdgeIndex = edgeZY;
         mFrontierEdges[edgeZY].PrevEdgeIndex = edgeXZ;
@@ -442,8 +435,6 @@ void Frontiers::HandleTriangleRestore(
         mEdges[lastEdgeWithoutFrontier].FrontierIndex = frontierId;
         assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithoutFrontier] == mFrontierEdges[edgeXZ].PointAIndex); // X
         mFrontierEdges[lastEdgeWithoutFrontier].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithoutFrontier]; // X
-        assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY] == mFrontierEdges[edgeZY].PointBIndex); // Y
-        mFrontierEdges[lastEdgeWithoutFrontier].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdZY]; // Y
         mFrontierEdges[lastEdgeWithoutFrontier].NextEdgeIndex = mFrontierEdges[edgeZY].NextEdgeIndex;
         mFrontierEdges[mFrontierEdges[edgeZY].NextEdgeIndex].PrevEdgeIndex = lastEdgeWithoutFrontier;
         mFrontierEdges[lastEdgeWithoutFrontier].PrevEdgeIndex = mFrontierEdges[edgeXZ].PrevEdgeIndex;
@@ -508,7 +499,6 @@ void Frontiers::HandleTriangleRestore(
             mEdges[edgeYZ].FrontierIndex = frontierId;
             assert(triangles.GetPointIndices(triangleElementIndex)[edgeOrdYZ] == mFrontierEdges[lastEdgeWithFrontier].PointAIndex); // Y
             mFrontierEdges[edgeYZ].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[edgeOrdYZ]; // Y
-            mFrontierEdges[edgeYZ].PointBIndex = pointZIndex; // Z
             mFrontierEdges[edgeYZ].NextEdgeIndex = edgeZX;
             mFrontierEdges[edgeYZ].PrevEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex;
             mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].PrevEdgeIndex].NextEdgeIndex = edgeYZ;
@@ -516,8 +506,6 @@ void Frontiers::HandleTriangleRestore(
             // Z->Y
             mEdges[edgeZX].FrontierIndex = frontierId;
             mFrontierEdges[edgeZX].PointAIndex = pointZIndex; // Z
-            assert(triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier] == mFrontierEdges[lastEdgeWithFrontier].PointBIndex); // X
-            mFrontierEdges[edgeZX].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[lastEdgeOrdinalWithFrontier]; // X
             mFrontierEdges[edgeZX].NextEdgeIndex = mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex;
             mFrontierEdges[mFrontierEdges[lastEdgeWithFrontier].NextEdgeIndex].PrevEdgeIndex = edgeZX;
             mFrontierEdges[edgeZX].PrevEdgeIndex = edgeYZ;
@@ -605,21 +593,18 @@ void Frontiers::HandleTriangleRestore(
             // A->B
             mEdges[edgeAIndex].FrontierIndex = newFrontierId;
             mFrontierEdges[edgeAIndex].PointAIndex = triangles.GetPointAIndex(triangleElementIndex);
-            mFrontierEdges[edgeAIndex].PointBIndex = triangles.GetPointBIndex(triangleElementIndex);
             mFrontierEdges[edgeAIndex].NextEdgeIndex = edgeBIndex;
             mFrontierEdges[edgeAIndex].PrevEdgeIndex = edgeCIndex;
 
             // B->C
             mEdges[edgeBIndex].FrontierIndex = newFrontierId;
             mFrontierEdges[edgeBIndex].PointAIndex = triangles.GetPointBIndex(triangleElementIndex);
-            mFrontierEdges[edgeBIndex].PointBIndex = triangles.GetPointCIndex(triangleElementIndex);
             mFrontierEdges[edgeBIndex].NextEdgeIndex = edgeCIndex;
             mFrontierEdges[edgeBIndex].PrevEdgeIndex = edgeAIndex;
 
             // C->A
             mEdges[edgeCIndex].FrontierIndex = newFrontierId;
             mFrontierEdges[edgeCIndex].PointAIndex = triangles.GetPointCIndex(triangleElementIndex);
-            mFrontierEdges[edgeCIndex].PointBIndex = triangles.GetPointAIndex(triangleElementIndex);
             mFrontierEdges[edgeCIndex].NextEdgeIndex = edgeAIndex;
             mFrontierEdges[edgeCIndex].PrevEdgeIndex = edgeBIndex;
         }
@@ -675,14 +660,16 @@ void Frontiers::Upload(
 
                 do
                 {
+                    auto const nextEdgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+
                     // Upload
                     renderContext.UploadShipElementFrontierEdge(
                         shipId,
                         mFrontierEdges[edgeIndex].PointAIndex,
-                        mFrontierEdges[edgeIndex].PointBIndex);
+                        mFrontierEdges[nextEdgeIndex].PointAIndex);
 
                     // Advance
-                    edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
+                    edgeIndex = nextEdgeIndex;
 
                 } while (edgeIndex != startingEdgeIndex);
             }
@@ -1160,7 +1147,6 @@ inline void Frontiers::ProcessTriangleOppositeCuspEdgeDestroy(
 
     // Make this edge a frontier edge, undercutting the two cusp edges
     mFrontierEdges[edge].PointAIndex = mFrontierEdges[cuspEdgeIn].PointAIndex;
-    mFrontierEdges[edge].PointBIndex = mFrontierEdges[cuspEdgeOut].PointBIndex;
     mFrontierEdges[edge].PrevEdgeIndex = mFrontierEdges[cuspEdgeIn].PrevEdgeIndex;
     mFrontierEdges[mFrontierEdges[cuspEdgeIn].PrevEdgeIndex].NextEdgeIndex = edge;
     mFrontierEdges[edge].NextEdgeIndex = mFrontierEdges[cuspEdgeOut].NextEdgeIndex;
@@ -1352,21 +1338,18 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
         // Out
         mEdges[edgeOut].FrontierIndex = oppositeFrontierId;
         mFrontierEdges[edgeOut].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
-        mFrontierEdges[edgeOut].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeMidOrdinal];
         mFrontierEdges[edgeOut].NextEdgeIndex = edgeMid;
         mFrontierEdges[edgeOut].PrevEdgeIndex = edgeOutOpposite;
 
         // Mid
         mEdges[edgeMid].FrontierIndex = oppositeFrontierId;
         mFrontierEdges[edgeMid].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeMidOrdinal];
-        mFrontierEdges[edgeMid].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
         mFrontierEdges[edgeMid].NextEdgeIndex = edgeIn;
         mFrontierEdges[edgeMid].PrevEdgeIndex = edgeOut;
 
         // In
         mEdges[edgeIn].FrontierIndex = oppositeFrontierId;
         mFrontierEdges[edgeIn].PointAIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeInOrdinal];
-        mFrontierEdges[edgeIn].PointBIndex = triangles.GetPointIndices(triangleElementIndex)[CuspEdgeOutOrdinal];
         mFrontierEdges[edgeIn].NextEdgeIndex = edgeInOpposite;
         mFrontierEdges[edgeIn].PrevEdgeIndex = edgeMid;
 
@@ -1749,7 +1732,7 @@ void Frontiers::VerifyInvariants(
                     triangles.ArePointsInCwOrder(
                         triangleIndex,
                         mFrontierEdges[edgeIndex].PointAIndex,
-                        mFrontierEdges[edgeIndex].PointBIndex));
+                        mFrontierEdges[mFrontierEdges[edgeIndex].NextEdgeIndex].PointAIndex));
 
                 // Edges know about their frontier
                 Verify(mEdges[edgeIndex].FrontierIndex == frontierIndex);
