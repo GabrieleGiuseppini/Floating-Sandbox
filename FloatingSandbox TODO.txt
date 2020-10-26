@@ -1028,9 +1028,9 @@ Render:
 - Dynamics:
 
 	= Fishes (*)
-		- Spec:
-			- Textures: https://oceana.org/marine-life
-			- Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
+		! Spec:
+			! Textures: https://oceana.org/marine-life
+			! Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
 		= Impl:
 			+ Base
 				+ ViewModel: nuke mVisibleXXX and replace with WorldFocus
@@ -1047,8 +1047,8 @@ Render:
 					+ Rename as "TailProgress", also in shader
 				+ Shader
 					+ Also upload texture coords X boundaries for clamping
-			= Try with third bream, then decide which between first and third to keep
-				- Nuke other psd's, only keep chosen one
+			+ Try with third bream, then decide which between first and third to keep
+				+ Nuke other psd's, only keep chosen one
 			+ Clamp spawning Y
 			- New target position: 
 				- Restrict y slope (wrt current): TODO
@@ -1465,17 +1465,18 @@ Render:
 				+ Things to remember:
 					+ Marks mIsDirtyForRendering
 					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
-		= Optimizations:
+		+ Optimizations:
 			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
 				+ Clear frontiers' dirtyForRendering flags afterwards
-			= See if FrontierEdge::PointBIndex is really needed
-		- Cleanup:
-			- Nuke HasRegionFrontierOfType and subst with IsFrontierCW
-				- Test
+			+ See if FrontierEdge::PointBIndex is really needed
+		= Cleanup:
+			= Nuke HasRegionFrontierOfType and subst with IsFrontierCW
+				+ Test
+				- Remove unused args
 			- Cleanup log lines at Frontiers
 			- SetEventRecorder dynamics between GameController/World/Ship
 				- Also GameController::Reset() should clear all events
-			- Finalize speed for rendered frontier's march
+			+ Finalize speed for rendered frontier's march
 			- Revisit need to have SuperTriangles and SubSprings (which are only used for old 'edge' spring detection - only?), as we might 
 			  now use edges
 				- Unless we now need it in Frontiers' maintenance as well?

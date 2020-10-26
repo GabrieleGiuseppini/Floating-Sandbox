@@ -23,7 +23,7 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexFrontierBaseColor = inShipPointFrontierColor.xyz;
-    vertexPositionalProgress = inShipPointFrontierColor.w - paramTime * 8.;
+    vertexPositionalProgress = inShipPointFrontierColor.w - paramTime * 4.;
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
 
@@ -39,7 +39,7 @@ in float vertexPositionalProgress;
 
 void main()
 {
-    float progress = 1. + sin(2. * 3.1415 / 4. * vertexPositionalProgress) / 2.;
+    float progress = 1. + sin(2. * 3.1415 / 1. * vertexPositionalProgress) / 2.;
 
     gl_FragColor = vec4(vertexFrontierBaseColor * progress,1.0);
 } 

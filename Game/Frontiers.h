@@ -232,12 +232,6 @@ private:
         ElementIndex endEdgeIndex,
         Points const & points);
 
-    bool HasRegionFrontierOfType(
-        FrontierType targetFrontierType,
-        ElementIndex startingPointIndex,
-        Points const & points,
-        Springs const & springs);
-
     void RegeneratePointColors();
 
 private:

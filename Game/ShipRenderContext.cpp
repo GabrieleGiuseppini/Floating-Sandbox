@@ -1073,9 +1073,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         //
 
         mShaderManager.ActivateProgram<ProgramType::ShipFrontierEdges>();
-        // TODOTEST
-        //mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
-        mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat() / 2.0f);
+        mShaderManager.SetProgramParameter<ProgramType::ShipFrontierEdges, ProgramParameterType::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 
     //
