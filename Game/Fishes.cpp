@@ -100,18 +100,18 @@ void Fishes::Update(
 
             // Search for the next free shoal
             assert(currentShoalSearchIndex < mFishShoals.size());
-            while (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == mFishShoals[currentShoalSearchIndex].Species->ShoalSize)
+            while (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == mFishShoals[currentShoalSearchIndex].Species.ShoalSize)
             {
                 ++currentShoalSearchIndex;
                 if (currentShoalSearchIndex == mFishShoals.size())
                     currentShoalSearchIndex = shoalSearchStartIndex;
             }
 
-            assert(mFishShoals[currentShoalSearchIndex].CurrentMemberCount < mFishShoals[currentShoalSearchIndex].Species->ShoalSize);
+            assert(mFishShoals[currentShoalSearchIndex].CurrentMemberCount < mFishShoals[currentShoalSearchIndex].Species.ShoalSize);
 
             LogMessage("TODOTEST: creating fish in shoal ", currentShoalSearchIndex);
 
-            FishSpecies const & species = *(mFishShoals[currentShoalSearchIndex].Species);
+            FishSpecies const & species = mFishShoals[currentShoalSearchIndex].Species;
 
             // Initialize shoal, if needed
             if (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == 0)
@@ -183,9 +183,7 @@ void Fishes::Update(
 
     for (auto & fish : mFishes)
     {
-        assert(mFishShoals[fish.ShoalId].Species != nullptr);
-
-        FishSpecies const & species = *(mFishShoals[fish.ShoalId].Species);
+        FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
         // TODOHERE: new algo:
         // 1) Turn (& return)
@@ -238,7 +236,7 @@ void Fishes::Update(
                     // Update position: add velocity, with superimposed sin component
                     fish.CurrentPosition +=
                         fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 120.0f;
+                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 200.0f;
 
                     // Update progress phase: add basal speed
                     fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
@@ -424,11 +422,11 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         }
 
         renderContext.UploadFish(
-            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, mFishShoals[fish.ShoalId].Species->RenderTextureFrameIndex),
+            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, mFishShoals[fish.ShoalId].Species.RenderTextureFrameIndex),
             fish.CurrentPosition,
             angleCw,
             horizontalScale,
-            mFishShoals[fish.ShoalId].Species->TailX,
+            mFishShoals[fish.ShoalId].Species.TailX,
             fish.CurrentProgress);
     }
 
@@ -441,7 +439,7 @@ void Fishes::CreateNewFishShoalBatch()
 {
     for (auto const & species : mFishSpeciesDatabase.GetFishSpecies())
     {
-        mFishShoals.emplace_back(&species);
+        mFishShoals.emplace_back(species);
     }
 }
 
@@ -475,8 +473,15 @@ vec2f Fishes::CalculateNewCruisingTargetPosition(
     vec2f const & newDirection,
     VisibleWorld const & visibleWorld)
 {
+    // If the direction is sending the fish away from the center,
+    // move a little; if the direction is sending the fish towards
+    // the center, move more
+    float const movementMagnitude = (visibleWorld.Center.x - currentPosition.x) * newDirection.x < 0.0f
+        ? visibleWorld.Width / 6.0f
+        : visibleWorld.Width;
+
     return FindPosition(
-        currentPosition + newDirection * visibleWorld.Width,
+        currentPosition + newDirection * movementMagnitude,
         visibleWorld.Width / 4.0f, // x variance
         5.0f); // y variance
 }

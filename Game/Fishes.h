@@ -43,13 +43,13 @@ private:
 
     struct FishShoal
     {
-        FishSpecies const * Species;
+        FishSpecies const & Species;
         size_t CurrentMemberCount;
 
         vec2f InitialPosition;
         vec2f InitialDirection;
 
-        FishShoal(FishSpecies const * species)
+        FishShoal(FishSpecies const & species)
             : Species(species)
             , CurrentMemberCount(0)
             , InitialPosition(vec2f::zero())
