@@ -42,7 +42,7 @@ World::World(
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
-    mFishes.Update(mCurrentSimulationTime, gameParameters, visibleWorld);
+    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
     mOceanFloor.Update(gameParameters);
 }
 
@@ -742,6 +742,10 @@ void World::Update(
     // Update current time
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
+    //
+    // Update all subsystems
+    //
+
     mStars.Update(gameParameters);
 
     mStorm.Update(mCurrentSimulationTime, gameParameters);
@@ -754,7 +758,7 @@ void World::Update(
 
     mOceanFloor.Update(gameParameters);
 
-    mFishes.Update(mCurrentSimulationTime, gameParameters, visibleWorld);
+    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
 
     for (auto & ship : mAllShips)
     {

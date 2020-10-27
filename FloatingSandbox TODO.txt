@@ -1077,9 +1077,10 @@ Render:
 								+ Panic mode slows down and ends when it reaches zero, no target really needed
 								+ Re-disturbing sets it back to one
 								+ Change shape of slow-down:
-						- Water level: dealing with fish getting over water level (because of waves, etc.)
+						= Water level: dealing with fish getting over water level (because of waves, etc.)
 							- Far from surface: normal bounce
-							- Close to surface: panic run (TODO)
+							+ Close to surface: panic run
+							- Out of water: need new regime with fish falling or zipping, TODO
 						- Ocean floor:
 							- TODOHERE
 						- Ships' AABBs:
@@ -1103,12 +1104,14 @@ Render:
 			= Swarming
 				= When adding new fish, distribute remaining counts among species according to swarm sizes
 				- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later
-				- Normal dynamics swarming maintenance
+					- Isn't this taken care of by swarming dynamics automatically?
+				- Normal swarming dynamics
 					- Requires maintenance of sorted Xs in vector
 			- Should fish follow waves on surface of water?
 			
 		- Cleanup:			
 			- GameParameters::NumberOfFishes: TODO
+			- Do we need initial Update() call at World construction?
 		- Misc:
 			- SettingsDialog: 
 				- number of fish

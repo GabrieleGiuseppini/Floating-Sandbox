@@ -34,6 +34,8 @@ public:
 
     void Update(
         float currentSimulationTime,
+        OceanSurface const & oceanSurface,
+        OceanFloor const & oceanFloor,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
@@ -62,8 +64,8 @@ private:
 
     enum class SteeringType
     {
-        CruiseWithTurn,
-        CruiseWithoutTurn
+        WithTurn,
+        WithoutTurn
     };
 
     struct Fish

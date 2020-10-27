@@ -41,6 +41,8 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
 
 void Fishes::Update(
     float currentSimulationTime,
+    OceanSurface const & oceanSurface,
+    OceanFloor const & oceanFloor,
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
@@ -202,7 +204,7 @@ void Fishes::Update(
             {
                 switch (*fish.CurrentSteeringState)
                 {
-                    case SteeringType::CruiseWithoutTurn:
+                    case SteeringType::WithoutTurn:
                     {
                         // Velocity: smooth towards target
                         fish.CurrentVelocity =
@@ -217,7 +219,7 @@ void Fishes::Update(
                         break;
                     }
 
-                    case SteeringType::CruiseWithTurn:
+                    case SteeringType::WithTurn:
                     {
                         //
                         // |      Velocity -> 0        |      Velocity -> Target      |
@@ -328,10 +330,7 @@ void Fishes::Update(
 
             fish.PanicCharge = 1.0f;
 
-            // New target position: irrelevant, as we're entering panic mode and we'll
-            // only exit when panic charge is exhausted
-            // TODOTEST
-            //fish.TargetPosition = vec2f(0.0f, 0.0f);
+            // Don't change target position, we'll return to it when panic is over
 
             // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
             fish.StartVelocity = fish.CurrentVelocity;
@@ -342,7 +341,43 @@ void Fishes::Update(
             // Start steering
             fish.SteeringSimulationTimeStart = currentSimulationTime;
             fish.SteeringSimulationTimeDuration = 0.05f;
-            fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+            fish.CurrentSteeringState = SteeringType::WithoutTurn;
+        }
+        // Check whether we're too close to the water surface
+        else if (float depth = oceanSurface.GetHeightAt(fish.CurrentPosition.x) - fish.CurrentPosition.y;
+            depth < 10.0f)
+        {
+            if (depth > 2.0)
+            {
+                // Normal bounce
+
+                // TODOHERE
+            }
+            else
+            {
+                // Panic mode, bouncing
+
+                fish.PanicCharge = 1.0f;
+
+                // Bounce direction
+                vec2f const bounceDirection = vec2f(fish.CurrentDirection.x, std::min(-0.3f, -fish.CurrentDirection.y)).normalise();
+
+                // Target position - will become relevant only after panic mode has completed
+                fish.TargetPosition = vec2f(
+                    fish.TargetPosition.x, // Same x that we're swimming to
+                    fish.CurrentPosition.y - 7.0f); // A bit lower than current position
+
+                // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
+                fish.StartVelocity = fish.CurrentVelocity;
+                fish.TargetVelocity = CalculateVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
+                fish.StartDirection = fish.CurrentDirection;
+                fish.TargetDirection = fish.TargetVelocity.normalise();
+
+                // Start steering
+                fish.SteeringSimulationTimeStart = currentSimulationTime;
+                fish.SteeringSimulationTimeDuration = 0.05f;
+                fish.CurrentSteeringState = SteeringType::WithoutTurn;
+            }
         }
         // Check whether this fish has reached its target, while not in panic mode
         else if (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
@@ -368,12 +403,12 @@ void Fishes::Update(
             if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
             {
                 fish.SteeringSimulationTimeDuration = 1.5f;
-                fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
+                fish.CurrentSteeringState = SteeringType::WithTurn;
             }
             else
             {
                 fish.SteeringSimulationTimeDuration = 1.0f;
-                fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+                fish.CurrentSteeringState = SteeringType::WithoutTurn;
             }
         }
         // Check whether this fish has reached the end of panic mode
@@ -396,12 +431,12 @@ void Fishes::Update(
             if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
             {
                 fish.SteeringSimulationTimeDuration = 1.5f;
-                fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
+                fish.CurrentSteeringState = SteeringType::WithTurn;
             }
             else
             {
                 fish.SteeringSimulationTimeDuration = 1.0f;
-                fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+                fish.CurrentSteeringState = SteeringType::WithoutTurn;
             }
         }
     }
