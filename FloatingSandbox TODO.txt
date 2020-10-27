@@ -1060,7 +1060,7 @@ Render:
 					+ Ensure X direction change
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
-				- Collision check
+				- Obstacle check
 			= Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
@@ -1072,11 +1072,11 @@ Render:
 					+ Turning (if isTurning)
 					+ Pos update
 					= Panic check X 4
-						= General panic state:
-							= Panic mode needs to slow down
+						+ General panic state:
+							+ Panic mode needs to slow down
 								+ Panic mode slows down and ends when it reaches zero, no target really needed
 								+ Re-disturbing sets it back to one
-								- Change shape of slow-down: TODO
+								+ Change shape of slow-down:
 						- Water level: dealing with fish getting over water level (because of waves, etc.)
 							- Far from surface: normal bounce
 							- Close to surface: panic run (TODO)

@@ -301,22 +301,22 @@ void Fishes::Update(
             // Update current progress
             fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
 
-            // TODO: do X sort maintenance in separate vector
+            // TODO: do X sort maintenance in separate vector, for shoal magic
         }
 
         // Update panic charge
-        fish.PanicCharge *= (1.0f - 0.005f);
+        fish.PanicCharge *= 0.985f;
 
         //
-        // 4) Disturbance check
+        // 4) Disturbances check
         //
 
         // TODO: x5:
+        // + Current disturbance
+        // - AABB
         // - Water level
         // - Ocean floor
-        // - AABB
-        // - Current disturbance
-        // - Reached target
+        // + Reached target
 
         // Check whether the fish has been interactively disturbed
         if (mCurrentInteractiveDisturbance.has_value()
