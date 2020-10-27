@@ -1056,12 +1056,11 @@ Render:
 				+ Nuke other psd's, only keep chosen one
 			+ Clamp spawning Y
 			- New target position: 
-				- X constraints:
-					- Ensure X direction change: TODO
-				- Y constraints:
-					- Restrict y slope (wrt current): TODO
-					- Water level
-					- Ocean depth
+				+ X constraints:
+					+ Ensure X direction change
+				+ Y constraints:
+					+ Not too much y slope (wrt current)
+				- Collision check
 			- Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
@@ -1069,15 +1068,20 @@ Render:
 				+ Round corners
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
-				- New algo:
-					- Turning (if isTurning)
-					- Pos update
+				= New algo:
+					+ Turning (if isTurning)
+					= Pos update
 						- With X sort maintenance in separate vector
-					- Panic check X 4:
-						- TODOHERE
-						- Dealing with fish getting over water level (because of waves, etc.)
-							- When fish is "close" to current water level:
-								- TODO: Move it away, but how - fleeing? or simple velocity change?
+					- Panic check X 4
+						- Water level: dealing with fish getting over water level (because of waves, etc.)
+							- Far from surface: normal bounce
+							- Close to surface: panic run (TODO)
+						- Ocean floor:
+							- TODOHERE
+						- Ships' AABBs:
+							- TODOHERE
+						- Interactive disturbance:
+							- Panic run (TODO)
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs
@@ -1085,8 +1089,11 @@ Render:
 					- Avoid spawning in AABBs
 					- Also take OceanFloor						
 			+ Superimpose sin over movement						
-			- Swarming
-				- When adding new fish, distribute remaining counts among species according to swarm sizes	
+			= Swarming
+				= When adding new fish, distribute remaining counts among species according to swarm sizes
+				- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later
+				- Normal dynamics swarming maintenance
+					- Requires maintenance of sorted Xs in vector
 			- Should fish follow waves on surface of water?
 			
 		- Cleanup:			

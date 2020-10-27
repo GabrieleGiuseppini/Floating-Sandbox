@@ -89,6 +89,7 @@ private:
         // Steering state machine
         std::optional<SteeringType> CurrentSteeringState;
         float SteeringSimulationTimeStart;
+        float SteeringSimulationTimeDuration;
 
         Fish(
             FishShoalId shoalId,
@@ -111,6 +112,7 @@ private:
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
             , CurrentSteeringState()
             , SteeringSimulationTimeStart(0.0f) // Arbitrary
+            , SteeringSimulationTimeDuration(0.0f) // Arbitrary
         {}
     };
 

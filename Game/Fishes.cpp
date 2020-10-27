@@ -109,8 +109,6 @@ void Fishes::Update(
 
             assert(mFishShoals[currentShoalSearchIndex].CurrentMemberCount < mFishShoals[currentShoalSearchIndex].Species.ShoalSize);
 
-            LogMessage("TODOTEST: creating fish in shoal ", currentShoalSearchIndex);
-
             FishSpecies const & species = mFishShoals[currentShoalSearchIndex].Species;
 
             // Initialize shoal, if needed
@@ -190,30 +188,26 @@ void Fishes::Update(
 
         if (fish.CurrentSteeringState.has_value())
         {
-            switch (*fish.CurrentSteeringState)
+            // Check whether we should stop steering
+            if (currentSimulationTime - fish.SteeringSimulationTimeStart >= fish.SteeringSimulationTimeDuration)
             {
-                case SteeringType::CruiseWithoutTurn:
+                // Stop steering
+
+                // Change state
+                fish.CurrentSteeringState.reset();
+
+                // Reach all target quantities
+                fish.CurrentVelocity = fish.TargetVelocity;
+                fish.CurrentDirection = fish.TargetDirection;
+            }
+            else
+            {
+                float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / fish.SteeringSimulationTimeDuration;
+
+                switch (*fish.CurrentSteeringState)
                 {
-                    // TODO: unify check by storing steering duration in state
-
-                    // Check whether we should stop steering
-                    if (currentSimulationTime - fish.SteeringSimulationTimeStart >= SteeringWithoutTurnDurationSeconds)
+                    case SteeringType::CruiseWithoutTurn:
                     {
-                        // Stop steering
-
-                        // Change state
-                        fish.CurrentSteeringState.reset();
-
-                        // Reach all target quantities
-                        fish.CurrentVelocity = fish.TargetVelocity;
-                        fish.CurrentDirection = fish.TargetDirection;
-                    }
-                    else
-                    {
-                        // Continue turning
-
-                        float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / SteeringWithoutTurnDurationSeconds;
-
                         // Velocity: smooth towards target
                         fish.CurrentVelocity =
                             fish.StartVelocity
@@ -223,36 +217,17 @@ void Fishes::Update(
                         fish.CurrentDirection =
                             fish.StartDirection
                             + (fish.TargetDirection - fish.StartDirection) * SmoothStep(0.0f, 1.0f, elapsedFraction);
+
+                        break;
                     }
 
-                    break;
-                }
-
-                case SteeringType::CruiseWithTurn:
-                {
-                    // Check whether we should stop steering
-                    if (currentSimulationTime - fish.SteeringSimulationTimeStart >= SteeringWithTurnDurationSeconds)
+                    case SteeringType::CruiseWithTurn:
                     {
-                        // Stop steering
-
-                        // Change state
-                        fish.CurrentSteeringState.reset();
-
-                        // Reach all target quantities
-                        fish.CurrentVelocity = fish.TargetVelocity;
-                        fish.CurrentDirection = fish.TargetDirection;
-                    }
-                    else
-                    {
-                        // Continue turning
-
                         //
                         // |      Velocity -> 0        |      Velocity -> Target      |
                         // |  DirY -> 0  |                          |  DirY -> Target |
                         // |        |            DirX -> Target             |         |
                         //
-
-                        float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / SteeringWithTurnDurationSeconds;
 
                         // Velocity:
                         // - smooth towards zero during first half
@@ -296,9 +271,9 @@ void Fishes::Update(
                             fish.CurrentDirection.x =
                                 fish.TargetDirection.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedFraction));
                         }
-                    }
 
-                    break;
+                        break;
+                    }
                 }
             }
         }
@@ -362,13 +337,17 @@ void Fishes::Update(
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
             // Change state, depending on whether we're turning or not
-            if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
-                fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
-            else
-                fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
-
-            // Remember steering starting time
             fish.SteeringSimulationTimeStart = currentSimulationTime;
+            if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
+            {
+                fish.SteeringSimulationTimeDuration = SteeringWithTurnDurationSeconds;
+                fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
+            }
+            else
+            {
+                fish.SteeringSimulationTimeDuration = SteeringWithoutTurnDurationSeconds;
+                fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+            }
         }
     }
 
@@ -453,7 +432,8 @@ vec2f Fishes::CalculateNewCruisingTargetPosition(
     vec2f const & newDirection,
     VisibleWorld const & visibleWorld)
 {
-    // If the direction is sending the fish away from the center,
+    // Maximize the presence of fish in the visible world:
+    // if the direction is sending the fish away from the center,
     // move a little; if the direction is sending the fish towards
     // the center, move more
     float const movementMagnitude = (visibleWorld.Center.x - currentPosition.x) * newDirection.x < 0.0f
