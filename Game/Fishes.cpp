@@ -158,7 +158,7 @@ void Fishes::Update(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                CalculateVelocity(initialPosition, targetPosition, species, 1.0f, personalitySeed),
+                CalculateVelocity((targetPosition - initialPosition).normalise(), species, 1.0f, personalitySeed),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
 
             // Update shoal
@@ -184,8 +184,10 @@ void Fishes::Update(
 
         if (fish.CurrentSteeringState.has_value())
         {
+            float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / fish.SteeringSimulationTimeDuration;
+
             // Check whether we should stop steering
-            if (currentSimulationTime - fish.SteeringSimulationTimeStart >= fish.SteeringSimulationTimeDuration)
+            if (elapsedSteeringDurationFraction >= 1.0f)
             {
                 // Stop steering
 
@@ -198,8 +200,6 @@ void Fishes::Update(
             }
             else
             {
-                float const elapsedFraction = (currentSimulationTime - fish.SteeringSimulationTimeStart) / fish.SteeringSimulationTimeDuration;
-
                 switch (*fish.CurrentSteeringState)
                 {
                     case SteeringType::CruiseWithoutTurn:
@@ -207,12 +207,12 @@ void Fishes::Update(
                         // Velocity: smooth towards target
                         fish.CurrentVelocity =
                             fish.StartVelocity
-                            + (fish.TargetVelocity - fish.StartVelocity) * SmoothStep(0.0f, 1.0f, elapsedFraction);
+                            + (fish.TargetVelocity - fish.StartVelocity) * SmoothStep(0.0f, 1.0f, elapsedSteeringDurationFraction);
 
                         // Direction: smooth towards target
                         fish.CurrentDirection =
                             fish.StartDirection
-                            + (fish.TargetDirection - fish.StartDirection) * SmoothStep(0.0f, 1.0f, elapsedFraction);
+                            + (fish.TargetDirection - fish.StartDirection) * SmoothStep(0.0f, 1.0f, elapsedSteeringDurationFraction);
 
                         break;
                     }
@@ -228,44 +228,44 @@ void Fishes::Update(
                         // Velocity:
                         // - smooth towards zero during first half
                         // - smooth towards target during second half
-                        if (elapsedFraction <= 0.5f)
+                        if (elapsedSteeringDurationFraction <= 0.5f)
                         {
                             fish.CurrentVelocity =
-                                fish.StartVelocity * (1.0f - SmoothStep(0.0f, 0.5f, elapsedFraction));
+                                fish.StartVelocity * (1.0f - SmoothStep(0.0f, 0.5f, elapsedSteeringDurationFraction));
                         }
                         else
                         {
                             fish.CurrentVelocity =
-                                fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedFraction);
+                                fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedSteeringDurationFraction);
                         }
 
                         // Direction Y:
                         // - smooth towards zero during an initial interval
                         // - smooth towards target during a second interval
-                        if (elapsedFraction <= 0.30f)
+                        if (elapsedSteeringDurationFraction <= 0.30f)
                         {
                             fish.CurrentDirection.y =
-                                fish.StartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedFraction));
+                                fish.StartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
                         }
-                        else if (elapsedFraction >= 0.70f)
+                        else if (elapsedSteeringDurationFraction >= 0.70f)
                         {
                             fish.CurrentDirection.y =
-                                fish.TargetDirection.y * SmoothStep(0.70f, 1.0f, elapsedFraction);
+                                fish.TargetDirection.y * SmoothStep(0.70f, 1.0f, elapsedSteeringDurationFraction);
                         }
 
                         // Direction X:
                         // - smooth towards target during a central interval (actual turning around),
                         //   without crossing zero
                         float constexpr TurnLimit = 0.2f;
-                        if (elapsedFraction >= 0.15f && elapsedFraction <= 0.5f)
+                        if (elapsedSteeringDurationFraction >= 0.15f && elapsedSteeringDurationFraction <= 0.5f)
                         {
                             fish.CurrentDirection.x =
-                                fish.StartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedFraction));
+                                fish.StartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
                         }
-                        else if (elapsedFraction > 0.50f && elapsedFraction <= 0.85f)
+                        else if (elapsedSteeringDurationFraction > 0.50f && elapsedSteeringDurationFraction <= 0.85f)
                         {
                             fish.CurrentDirection.x =
-                                fish.TargetDirection.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedFraction));
+                                fish.TargetDirection.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
                         }
 
                         break;
@@ -284,10 +284,9 @@ void Fishes::Update(
         // 3) Update dynamics
         //
 
-        // Update position, but only if not steering
-        if (!fish.CurrentSteeringState.has_value())
+        // Update position
         {
-            float const speedMultiplier = fish.PanicCharge * 7.5f + 1.0f;
+            float const speedMultiplier = fish.PanicCharge * 8.5f + 1.0f;
 
             // Update position: add velocity
             fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
@@ -321,7 +320,7 @@ void Fishes::Update(
 
         // Check whether the fish has been interactively disturbed
         if (mCurrentInteractiveDisturbance.has_value()
-            && (fish.CurrentPosition - *mCurrentInteractiveDisturbance).length() < 5.0f)
+            && (fish.CurrentPosition - *mCurrentInteractiveDisturbance).length() < 7.5f) // Within radius
         {
             //
             // Enter panic mode
@@ -329,22 +328,19 @@ void Fishes::Update(
 
             fish.PanicCharge = 1.0f;
 
-            // TODOHERE
-            // Choose new target position
-            fish.TargetPosition = CalculateNewCruisingTargetPosition(
-                fish.CurrentPosition,
-                -fish.CurrentDirection,
-                visibleWorld);
+            // New target position: irrelevant, as we're entering panic mode and we'll
+            // only exit when panic charge is exhausted
+            fish.TargetPosition = vec2f(0.0f, 0.0f);
 
-            // Calculate new target velocity and direction
+            // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
             fish.StartVelocity = fish.CurrentVelocity;
-            fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = CalculateVelocity((fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise(), species, 1.0f, fish.PersonalitySeed);
             fish.StartDirection = fish.CurrentDirection;
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
             // Start steering
             fish.SteeringSimulationTimeStart = currentSimulationTime;
-            fish.SteeringSimulationTimeDuration = 0.1f;
+            fish.SteeringSimulationTimeDuration = 0.05f;
             fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
         }
         // Check whether this fish has reached its target
@@ -366,7 +362,7 @@ void Fishes::Update(
 
             // Calculate new target velocity and direction
             fish.StartVelocity = fish.CurrentVelocity;
-            fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
             fish.StartDirection = fish.CurrentDirection;
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
@@ -481,13 +477,12 @@ vec2f Fishes::CalculateNewCruisingTargetPosition(
 }
 
 vec2f Fishes::CalculateVelocity(
-    vec2f const & startPosition,
-    vec2f const & endPosition,
+    vec2f const & direction,
     FishSpecies const & species,
     float velocityMultiplier,
     float personalitySeed)
 {
-    return (endPosition - startPosition).normalise()
+    return direction
         * (species.BasalSpeed * velocityMultiplier * (0.7f + personalitySeed * 0.3f));
 }
 

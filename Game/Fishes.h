@@ -135,8 +135,7 @@ private:
         VisibleWorld const & visibleWorld);
 
     inline static vec2f CalculateVelocity(
-        vec2f const & startPosition,
-        vec2f const & endPosition,
+        vec2f const & direction,
         FishSpecies const & species,
         float velocityMultiplier,
         float personalitySeed);

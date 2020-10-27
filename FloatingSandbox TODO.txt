@@ -1061,7 +1061,7 @@ Render:
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
 				- Collision check
-			- Final state machine:
+			= Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
 						+ Angles and flipping
@@ -1069,8 +1069,7 @@ Render:
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
 				= New algo:
-					= Turning (if isTurning)
-						- Start moving slightly earlier than turning end: after elapsedFraction < 0.5 (so also when not turning, where elapsedFraction==0.0)
+					+ Turning (if isTurning)
 					+ Pos update
 					= Panic check X 4
 						= General panic state:
@@ -1085,15 +1084,15 @@ Render:
 							- TODOHERE
 						- Ships' AABBs:
 							- TODOHERE
-						= Interactive disturbance:
-							= Panic run:
-								- New target position: any
-								- New target velocity/direction: 
-									- Direction along radius to disturbance point, but opposite direction
-									- Velocity: panic velocity
-										- Need to change CalculateVelocity: takes direction instead of start & end points
+						+ Interactive disturbance:
+							+ Panic run:
+								+ New target position: any
+								+ New target velocity/direction: 
+									+ Direction along radius to disturbance point, but opposite direction
+									+ Velocity: panic velocity
+										+ Need to change CalculateVelocity: takes direction instead of start & end points
 										! Using panic velocity comes for free
-								- Make sure that a second disturbance at the back of the fish just speeds it up
+								+ Make sure that a second disturbance at the back of the fish just speeds it up
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs
