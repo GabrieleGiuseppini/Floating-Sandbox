@@ -330,7 +330,8 @@ void Fishes::Update(
 
             // New target position: irrelevant, as we're entering panic mode and we'll
             // only exit when panic charge is exhausted
-            fish.TargetPosition = vec2f(0.0f, 0.0f);
+            // TODOTEST
+            //fish.TargetPosition = vec2f(0.0f, 0.0f);
 
             // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
             fish.StartVelocity = fish.CurrentVelocity;
@@ -343,22 +344,46 @@ void Fishes::Update(
             fish.SteeringSimulationTimeDuration = 0.05f;
             fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
         }
-        // Check whether this fish has reached its target
-        else if (
-            (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
-            || (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f)) // Reached target when not in panic
+        // Check whether this fish has reached its target, while not in panic mode
+        else if (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
             //
             // Transition to Steering
             //
-
-            fish.PanicCharge = 0.0f;
 
             // Choose new target position
             fish.TargetPosition = CalculateNewCruisingTargetPosition(
                 fish.CurrentPosition,
                 -fish.CurrentDirection,
                 visibleWorld);
+
+            // Calculate new target velocity and direction
+            fish.StartVelocity = fish.CurrentVelocity;
+            fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.StartDirection = fish.CurrentDirection;
+            fish.TargetDirection = fish.TargetVelocity.normalise();
+
+            // Change state, depending on whether we're turning or not
+            fish.SteeringSimulationTimeStart = currentSimulationTime;
+            if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
+            {
+                fish.SteeringSimulationTimeDuration = 1.5f;
+                fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
+            }
+            else
+            {
+                fish.SteeringSimulationTimeDuration = 1.0f;
+                fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+            }
+        }
+        // Check whether this fish has reached the end of panic mode
+        else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
+        {
+            //
+            // Continue to current target
+            //
+
+            fish.PanicCharge = 0.0f;
 
             // Calculate new target velocity and direction
             fish.StartVelocity = fish.CurrentVelocity;
