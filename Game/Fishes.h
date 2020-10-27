@@ -29,7 +29,7 @@ public:
 
     void ApplyDisturbanceAt(vec2f const & worldCoordinates)
     {
-        mCurrentDisturbance = worldCoordinates;
+        mCurrentInteractiveDisturbance = worldCoordinates;
     }
 
     void Update(
@@ -60,11 +60,10 @@ private:
     // Shoal ID is index in Shoals vector
     using FishShoalId = size_t;
 
-    enum class StateType
+    enum class SteeringType
     {
-        Cruising,
-        CruiseSteering_WithTurn,
-        CruiseSteering_WithoutTurn
+        CruiseWithTurn,
+        CruiseWithoutTurn
     };
 
     struct Fish
@@ -72,8 +71,6 @@ private:
         FishShoalId ShoalId;
 
         float PersonalitySeed;
-
-        StateType CurrentState;
 
         vec2f CurrentPosition;
         vec2f TargetPosition;
@@ -89,19 +86,19 @@ private:
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
 
+        // Steering state machine
+        std::optional<SteeringType> CurrentSteeringState;
         float SteeringSimulationTimeStart;
 
         Fish(
             FishShoalId shoalId,
             float personalitySeed,
-            StateType initialState,
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
             float initialProgressPhase)
             : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
-            , CurrentState(initialState)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
             , StartVelocity(targetVelocity) // We start up with current velocity
@@ -112,6 +109,7 @@ private:
             , TargetDirection(StartDirection)
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
+            , CurrentSteeringState()
             , SteeringSimulationTimeStart(0.0f) // Arbitrary
         {}
     };
@@ -149,8 +147,8 @@ private:
 
     std::vector<Fish> mFishes;
 
-    // The world position at which there's been a disturbance, if any
-    std::optional<vec2f> mCurrentDisturbance;
+    // The world position at which there's been an interactive disturbance, if any
+    std::optional<vec2f> mCurrentInteractiveDisturbance;
 };
 
 }
