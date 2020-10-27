@@ -30,10 +30,6 @@ namespace /*anonymous*/ {
     }
 }
 
-float constexpr TurningThreshold = 7.0f;
-float constexpr SteeringWithTurnDurationSeconds = 1.5f;
-float constexpr SteeringWithoutTurnDurationSeconds = 1.0f;
-
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
     , mShoalBatchSize(GetShoalBatchSize(mFishSpeciesDatabase))
@@ -288,20 +284,25 @@ void Fishes::Update(
         // 3) Update dynamics
         //
 
-        // Update position: add velocity
-        fish.CurrentPosition += fish.CurrentVelocity;
-
-        // ...superimpose sin component unless we're steering
         if (!fish.CurrentSteeringState.has_value())
-            fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 200.0f;
+        {
+            float const speedMultiplier = fish.IsInPanicMode ? 6.5f : 1.0f;
 
-        // Update progress phase: add basal speed
-        fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+            // Update position: add velocity
+            fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
 
-        // Update current progress
-        fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
+            // Update progress phase: add basal speed
+            fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
 
-        // TODO: do X sort maintenance in separate vector
+            // ...superimpose sin component unless we're steering
+            if (!fish.CurrentSteeringState.has_value())
+                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 200.0f;
+
+            // Update current progress
+            fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
+
+            // TODO: do X sort maintenance in separate vector
+        }
 
         //
         // 4) Disturbance check
@@ -314,15 +315,42 @@ void Fishes::Update(
         // - Current disturbance
         // - Reached target
 
-        //
-        // Check whether we should start turning
-        //
+        // Check whether the fish has been interactively disturbed
+        if (mCurrentInteractiveDisturbance.has_value()
+            && (fish.CurrentPosition - *mCurrentInteractiveDisturbance).length() < 5.0f)
+        {
+            //
+            // Enter panic mode
+            //
 
-        if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < TurningThreshold)
+            fish.IsInPanicMode = true;
+
+            // TODOHERE
+            // Choose new target position
+            fish.TargetPosition = CalculateNewCruisingTargetPosition(
+                fish.CurrentPosition,
+                -fish.CurrentDirection,
+                visibleWorld);
+
+            // Calculate new target velocity and direction
+            fish.StartVelocity = fish.CurrentVelocity;
+            fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, species, 1.0f, fish.PersonalitySeed);
+            fish.StartDirection = fish.CurrentDirection;
+            fish.TargetDirection = fish.TargetVelocity.normalise();
+
+            // Start steering
+            fish.SteeringSimulationTimeStart = currentSimulationTime;
+            fish.SteeringSimulationTimeDuration = 0.1f;
+            fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
+        }
+        // Check whether this fish has reached its target
+        else if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f)
         {
             //
             // Transition to Steering
             //
+
+            fish.IsInPanicMode = false;
 
             // Choose new target position
             fish.TargetPosition = CalculateNewCruisingTargetPosition(
@@ -340,12 +368,12 @@ void Fishes::Update(
             fish.SteeringSimulationTimeStart = currentSimulationTime;
             if (fish.TargetDirection.x * fish.StartDirection.x <= 0.0f)
             {
-                fish.SteeringSimulationTimeDuration = SteeringWithTurnDurationSeconds;
+                fish.SteeringSimulationTimeDuration = 1.5f;
                 fish.CurrentSteeringState = SteeringType::CruiseWithTurn;
             }
             else
             {
-                fish.SteeringSimulationTimeDuration = SteeringWithoutTurnDurationSeconds;
+                fish.SteeringSimulationTimeDuration = 1.0f;
                 fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
             }
         }

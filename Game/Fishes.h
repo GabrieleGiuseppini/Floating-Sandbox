@@ -86,6 +86,9 @@ private:
         float CurrentProgressPhase;
         float CurrentProgress; // Calcd off CurrentProgressPhase
 
+        // Panic mode state machine
+        bool IsInPanicMode = false;
+
         // Steering state machine
         std::optional<SteeringType> CurrentSteeringState;
         float SteeringSimulationTimeStart;
@@ -110,6 +113,7 @@ private:
             , TargetDirection(StartDirection)
             , CurrentProgressPhase(initialProgressPhase)
             , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
+            , IsInPanicMode(false)
             , CurrentSteeringState()
             , SteeringSimulationTimeStart(0.0f) // Arbitrary
             , SteeringSimulationTimeDuration(0.0f) // Arbitrary
