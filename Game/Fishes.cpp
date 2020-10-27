@@ -284,9 +284,10 @@ void Fishes::Update(
         // 3) Update dynamics
         //
 
+        // Update position, but only if not steering
         if (!fish.CurrentSteeringState.has_value())
         {
-            float const speedMultiplier = fish.IsInPanicMode ? 6.5f : 1.0f;
+            float const speedMultiplier = fish.PanicCharge * 7.5f + 1.0f;
 
             // Update position: add velocity
             fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
@@ -303,6 +304,9 @@ void Fishes::Update(
 
             // TODO: do X sort maintenance in separate vector
         }
+
+        // Update panic charge
+        fish.PanicCharge *= (1.0f - 0.005f);
 
         //
         // 4) Disturbance check
@@ -323,7 +327,7 @@ void Fishes::Update(
             // Enter panic mode
             //
 
-            fish.IsInPanicMode = true;
+            fish.PanicCharge = 1.0f;
 
             // TODOHERE
             // Choose new target position
@@ -344,13 +348,15 @@ void Fishes::Update(
             fish.CurrentSteeringState = SteeringType::CruiseWithoutTurn;
         }
         // Check whether this fish has reached its target
-        else if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f)
+        else if (
+            (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
+            || (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f)) // Reached target when not in panic
         {
             //
             // Transition to Steering
             //
 
-            fish.IsInPanicMode = false;
+            fish.PanicCharge = 0.0f;
 
             // Choose new target position
             fish.TargetPosition = CalculateNewCruisingTargetPosition(
