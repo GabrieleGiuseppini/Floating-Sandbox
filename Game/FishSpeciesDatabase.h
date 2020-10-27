@@ -16,6 +16,7 @@ struct FishSpecies
 {
     std::string Name;
 
+    size_t ShoalSize;
     float BasalDepth;
     float BasalSpeed;
     float TailX; // In texture (normalized) coordinates
@@ -24,11 +25,13 @@ struct FishSpecies
 
     FishSpecies(
         std::string const & name,
+        size_t shoalSize,
         float basalDepth,
         float basalSpeed,
         float tailX,
         TextureFrameIndex renderTextureFrameIndex)
         : Name(name)
+        , ShoalSize(shoalSize)
         , BasalDepth(basalDepth)
         , BasalSpeed(basalSpeed)
         , TailX(tailX)
@@ -52,6 +55,11 @@ public:
     }
 
     static FishSpeciesDatabase Load(std::filesystem::path fishSpeciesDatabaseFilePath);
+
+    size_t GetFishSpeciesCount() const
+    {
+        return mFishSpecies.size();
+    }
 
     std::vector<FishSpecies> const & GetFishSpecies() const
     {

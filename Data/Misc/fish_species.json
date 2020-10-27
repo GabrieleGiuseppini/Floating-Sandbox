@@ -2,10 +2,21 @@
     {
         "name": "Gilt-head Bream",
 
+	"shoal_size": 32,
 	"basal_depth": 30.0,
 	"basal_speed": 0.06,
 	"tail_x": 0.6,
 	"texture_index": 0
+    },
+
+    {
+        "name": "Barracuda",
+
+	"shoal_size": 4,
+	"basal_depth": 50.0,
+	"basal_speed": 0.06,
+	"tail_x": 0.7,
+	"texture_index": 1
     }
 
 ]

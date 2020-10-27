@@ -271,6 +271,9 @@ void World::DestroyAt(
             mCurrentSimulationTime,
             gameParameters);
     }
+
+    // Also tell fishes
+    mFishes.ApplyDisturbanceAt(targetPos);
 }
 
 void World::RepairAt(

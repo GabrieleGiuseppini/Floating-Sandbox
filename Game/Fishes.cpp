@@ -10,9 +10,25 @@
 
 #include <picojson.h>
 
+#include <algorithm>
 #include <chrono>
 
 namespace Physics {
+
+namespace /*anonymous*/ {
+
+    size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
+    {
+        return std::accumulate(
+            fishSpeciesDatabase.GetFishSpecies().cbegin(),
+            fishSpeciesDatabase.GetFishSpecies().cend(),
+            size_t(0),
+            [](size_t const & total, auto const & speciesIt)
+            {
+                return total + speciesIt.ShoalSize;
+            });
+    }
+}
 
 float constexpr TurningThreshold = 7.0f;
 float constexpr SteeringWithTurnDurationSeconds = 1.5f;
@@ -20,7 +36,10 @@ float constexpr SteeringWithoutTurnDurationSeconds = 1.0f;
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
+    , mShoalBatchSize(GetShoalBatchSize(mFishSpeciesDatabase))
+    , mFishShoals()
     , mFishes()
+    , mCurrentDisturbance()
 {
 }
 
@@ -35,43 +54,127 @@ void Fishes::Update(
 
     if (mFishes.size() > gameParameters.NumberOfFishes)
     {
-        // Remove extra fish
+        //
+        // Remove extra fishes
+        //
+
+        for (auto fishIt = mFishes.cbegin() + gameParameters.NumberOfFishes; fishIt != mFishes.cend(); ++fishIt)
+        {
+            assert(mFishShoals[fishIt->ShoalId].CurrentMemberCount > 0);
+            --mFishShoals[fishIt->ShoalId].CurrentMemberCount;
+        }
+
         mFishes.erase(
             mFishes.begin() + gameParameters.NumberOfFishes,
             mFishes.end());
     }
     else
     {
-        // Add missing fish
+        //
+        // Add new fishes
+        //
+
+        // The index in the shoals at which we start searching for free shoals; this
+        // points to the beginning of the latest shoal batch
+        size_t shoalSearchStartIndex = (mFishShoals.size() / mFishSpeciesDatabase.GetFishSpeciesCount()) * mFishSpeciesDatabase.GetFishSpeciesCount();
+        size_t currentShoalSearchIndex = shoalSearchStartIndex;
+
         for (size_t f = mFishes.size(); f < gameParameters.NumberOfFishes; ++f)
         {
-            // Choose species
-            size_t const speciesIndex = GameRandomEngine::GetInstance().Choose(mFishSpeciesDatabase.GetFishSpecies().size());
-            FishSpecies const & species = mFishSpeciesDatabase.GetFishSpecies()[speciesIndex];
-
             //
-            // Choose initial and target position
+            // 1) Find the shoal for this new fish
             //
 
-            vec2f const initialPosition = ChooseTargetPosition(species, visibleWorld);
-            vec2f const targetPosition = CalculateNewCruisingTargetPosition(initialPosition, species, visibleWorld);
+            // Make sure there are indeed free shoals available
+            if ((mFishes.size() % mShoalBatchSize) == 0)
+            {
+                size_t const oldShoalCount = mFishShoals.size();
+
+                // Create new batch
+                CreateNewFishShoalBatch();
+
+                // Start searching from here
+                shoalSearchStartIndex = oldShoalCount;
+                currentShoalSearchIndex = shoalSearchStartIndex;
+            }
+
+            // Search for the next free shoal
+            assert(currentShoalSearchIndex < mFishShoals.size());
+            while (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == mFishShoals[currentShoalSearchIndex].Species->ShoalSize)
+            {
+                ++currentShoalSearchIndex;
+                if (currentShoalSearchIndex == mFishShoals.size())
+                    currentShoalSearchIndex = shoalSearchStartIndex;
+            }
+
+            assert(mFishShoals[currentShoalSearchIndex].CurrentMemberCount < mFishShoals[currentShoalSearchIndex].Species->ShoalSize);
+
+            LogMessage("TODOTEST: creating fish in shoal ", currentShoalSearchIndex);
+
+            FishSpecies const & species = *(mFishShoals[currentShoalSearchIndex].Species);
+
+            // Initialize shoal, if needed
+            if (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == 0)
+            {
+                //
+                // Decide an initial direction
+                //
+
+                if (currentShoalSearchIndex > 0)
+                    mFishShoals[currentShoalSearchIndex].InitialDirection = -mFishShoals[currentShoalSearchIndex - 1].InitialDirection;
+                else
+                    mFishShoals[currentShoalSearchIndex].InitialDirection = vec2f(
+                        GameRandomEngine::GetInstance().Choose(2) == 1 ? -1.0f : 1.0f, // Random left or right
+                        0.0f);
+
+                //
+                // Decide an initial position
+                //
+
+                float const initialX = std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(visibleWorld.Center.x, visibleWorld.Width / 2.5f));
+
+                float const initialY =
+                    -5.0f // Min depth
+                    - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(species.BasalDepth, 15.0f));
+
+                mFishShoals[currentShoalSearchIndex].InitialPosition = vec2f(
+                    mFishShoals[currentShoalSearchIndex].InitialDirection.x < 0.0f ? initialX : -initialX,
+                    initialY);
+
+            }
+
+            //
+            // 2) Create fish in this shoal
+            //
+
+            vec2f const initialPosition = FindPosition(
+                mFishShoals[currentShoalSearchIndex].InitialPosition,
+                10.0f,
+                4.0f);
+
+            vec2f const targetPosition = CalculateNewCruisingTargetPosition(
+                initialPosition,
+                mFishShoals[currentShoalSearchIndex].InitialDirection,
+                visibleWorld);
 
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
             mFishes.emplace_back(
-                &species,
-                static_cast<TextureFrameIndex>(speciesIndex),
+                currentShoalSearchIndex,
                 personalitySeed,
                 StateType::Cruising,
                 initialPosition,
                 targetPosition,
                 CalculateVelocity(initialPosition, targetPosition, species, 1.0f, personalitySeed),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
+
+            // Update shoal
+            ++(mFishShoals[currentShoalSearchIndex].CurrentMemberCount);
         }
     }
 
     //
-    // 2) Update fish
+    // 2) Update fishes
     //
 
     float constexpr BasalSpeedToProgressPhaseSpeedFactor =
@@ -80,6 +183,17 @@ void Fishes::Update(
 
     for (auto & fish : mFishes)
     {
+        assert(mFishShoals[fish.ShoalId].Species != nullptr);
+
+        FishSpecies const & species = *(mFishShoals[fish.ShoalId].Species);
+
+        // TODOHERE: new algo:
+        // 1) Turn (& return)
+        // 2) Shoal magic
+        // 3) Pos update
+        //      - With X sort maintenance in separate vector
+        // 4) Panic check X 5
+
         switch (fish.CurrentState)
         {
             case StateType::Cruising:
@@ -95,11 +209,14 @@ void Fishes::Update(
                     //
 
                     // Choose new target position
-                    fish.TargetPosition = CalculateNewCruisingTargetPosition(fish.CurrentPosition, *(fish.Species), visibleWorld);
+                    fish.TargetPosition = CalculateNewCruisingTargetPosition(
+                        fish.CurrentPosition,
+                        -fish.CurrentDirection,
+                        visibleWorld);
 
                     // Calculate new target velocity and direction
                     fish.StartVelocity = fish.CurrentVelocity;
-                    fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, *(fish.Species), 1.0f, fish.PersonalitySeed);
+                    fish.TargetVelocity = CalculateVelocity(fish.CurrentPosition, fish.TargetPosition, species, 1.0f, fish.PersonalitySeed);
                     fish.StartDirection = fish.CurrentDirection;
                     fish.TargetDirection = fish.TargetVelocity.normalise();
 
@@ -121,10 +238,10 @@ void Fishes::Update(
                     // Update position: add velocity, with superimposed sin component
                     fish.CurrentPosition +=
                         fish.CurrentVelocity
-                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 100.0f;
+                        + fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 120.0f;
 
                     // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+                    fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
                 }
 
                 break;
@@ -212,7 +329,7 @@ void Fishes::Update(
                     fish.CurrentPosition += fish.CurrentVelocity;
 
                     // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+                    fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
                 }
 
                 break;
@@ -263,7 +380,7 @@ void Fishes::Update(
                     fish.CurrentPosition += fish.CurrentVelocity;
 
                     // Update progress phase: add basal speed
-                    fish.CurrentProgressPhase += fish.Species->BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
+                    fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor;
                 }
 
                 break;
@@ -276,6 +393,12 @@ void Fishes::Update(
 
         fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
     }
+
+    //
+    // 3) Nuke disturbance, now that we've consumed it
+    //
+
+    mCurrentDisturbance.reset();
 }
 
 void Fishes::Upload(Render::RenderContext & renderContext) const
@@ -301,11 +424,11 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         }
 
         renderContext.UploadFish(
-            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, fish.RenderFrameIndex),
+            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, mFishShoals[fish.ShoalId].Species->RenderTextureFrameIndex),
             fish.CurrentPosition,
             angleCw,
             horizontalScale,
-            fish.Species->TailX,
+            mFishShoals[fish.ShoalId].Species->TailX,
             fish.CurrentProgress);
     }
 
@@ -314,59 +437,48 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-vec2f Fishes::ChooseTargetPosition(
-    FishSpecies const & fishSpecies,
-    VisibleWorld const & visibleWorld)
+void Fishes::CreateNewFishShoalBatch()
 {
-    /* TODOTEST: romboid around center of screen
-    static vec2f todo = vec2f(-20.0f, -20.0f);
-
-    if (todo == vec2f(0.0f, 0.0f))
+    for (auto const & species : mFishSpeciesDatabase.GetFishSpecies())
     {
-        todo = vec2f(-20.0f, -20.0f);
+        mFishShoals.emplace_back(&species);
     }
-    else if (todo == vec2f(-20.0f, -20.0f))
+}
+
+vec2f Fishes::FindPosition(
+    vec2f const & averagePosition,
+    float xVariance,
+    float yVariance)
+{
+    // Try a few times around the average position, making
+    // sure we don't hit obstacles
+
+    vec2f position;
+
+    for (int attempt = 0; attempt < 10; ++attempt)
     {
-        todo = vec2f(0.0f, -40.0f);
+        position.x = GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.x, xVariance);
+
+        position.y =
+            -5.0f // Min depth
+            - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
+
+        // TODO: obstacle check
+        break;
     }
-    else if (todo == vec2f(0.0f, -40.0f))
-    {
-        todo = vec2f(20.0f, -20.0f);
-    }
-    else if (todo == vec2f(20.0f, -20.0f))
-    {
-        todo = vec2f(0.0f, 0.0f);
-    }
 
-    return todo;
-    */
-
-    float const x = GameRandomEngine::GetInstance().GenerateNormalReal(visibleWorld.Center.x, visibleWorld.Width);
-
-    float const y =
-        -5.0f // Min depth
-        - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(fishSpecies.BasalDepth, 15.0f));
-
-    return vec2f(x, y);
+    return position;
 }
 
 vec2f Fishes::CalculateNewCruisingTargetPosition(
     vec2f const & currentPosition,
-    FishSpecies const & species,
+    vec2f const & newDirection,
     VisibleWorld const & visibleWorld)
 {
-    // TODOTEST: romboid around center of screen
-    //return ChooseTargetPosition(species, visibleWorld);
-
-    // TODO: opposite side of screen, at least at minimum distance
-
-    float const x = GameRandomEngine::GetInstance().GenerateNormalReal(visibleWorld.Center.x, visibleWorld.Width);
-
-    float const y =
-        -5.0f // Min depth
-        - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(species.BasalDepth, 15.0f));
-
-    return vec2f(x, y);
+    return FindPosition(
+        currentPosition + newDirection * visibleWorld.Width,
+        visibleWorld.Width / 4.0f, // x variance
+        5.0f); // y variance
 }
 
 vec2f Fishes::CalculateVelocity(

@@ -122,7 +122,7 @@ public:
         vec2f const & target,
         GameParameters const & gameParameters);
 
-    void DestroyAt(
+    bool DestroyAt(
         vec2f const & targetPos,
         float radiusFraction,
         float currentSimulationTime,

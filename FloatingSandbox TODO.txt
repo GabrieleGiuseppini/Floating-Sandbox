@@ -245,10 +245,13 @@ Render:
 	= 1.16.0
 		
 		= Frontier (*)
+			- Changelist
 
 		= Clouds in perspective (*)	
-		
+			- Changelist
+			
 		= Fishes (*)
+			- Changelist
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -1053,8 +1056,12 @@ Render:
 				+ Nuke other psd's, only keep chosen one
 			+ Clamp spawning Y
 			- New target position: 
-				- Restrict y slope (wrt current): TODO
-				- Ensure X direction change: TODO
+				- X constraints:
+					- Ensure X direction change: TODO
+				- Y constraints:
+					- Restrict y slope (wrt current): TODO
+					- Water level
+					- Ocean depth
 			- Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)

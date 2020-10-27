@@ -308,12 +308,14 @@ void Ship::Pull(
                 highlightStrength)));
 }
 
-void Ship::DestroyAt(
+bool Ship::DestroyAt(
     vec2f const & targetPos,
     float radiusFraction,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    bool hasDestroyed = false;
+
     //
     // Destroy points probabilistically - probability is one at
     // distance = 0 and zero at distance = radius
@@ -371,15 +373,21 @@ void Ship::DestroyAt(
                             pointIndex,
                             detachVelocity,
                             currentSimulationTime);
+
+                    hasDestroyed = true;
                 }
             }
             else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
             {
                 // Destroy
                 mPoints.DestroyEphemeralParticle(pointIndex);
+
+                hasDestroyed = true;
             }
         }
     }
+
+    return hasDestroyed;
 }
 
 void Ship::RepairAt(

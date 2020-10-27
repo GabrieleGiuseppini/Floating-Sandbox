@@ -208,6 +208,17 @@ namespace Utils
                 memberName));
     }
 
+    template<>
+    inline size_t GetMandatoryJsonMember<size_t>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        return static_cast<size_t>(
+            Utils::GetMandatoryJsonMember<std::int64_t>(
+                obj,
+                memberName));
+    }
+
     inline picojson::object GetMandatoryJsonObject(
         picojson::object const & obj,
         std::string const & memberName)

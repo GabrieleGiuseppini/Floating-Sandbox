@@ -14,6 +14,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <optional>
 #include <vector>
 
 namespace Physics
@@ -26,6 +27,11 @@ public:
 
     explicit Fishes(FishSpeciesDatabase const & fishSpeciesDatabase);
 
+    void ApplyDisturbanceAt(vec2f const & worldCoordinates)
+    {
+        mCurrentDisturbance = worldCoordinates;
+    }
+
     void Update(
         float currentSimulationTime,
         GameParameters const & gameParameters,
@@ -35,25 +41,24 @@ public:
 
 private:
 
-    static vec2f ChooseTargetPosition(
-        FishSpecies const & fishSpecies,
-        VisibleWorld const & visibleWorld);
+    struct FishShoal
+    {
+        FishSpecies const * Species;
+        size_t CurrentMemberCount;
 
-    inline static vec2f CalculateNewCruisingTargetPosition(
-        vec2f const & currentPosition,
-        FishSpecies const & species,
-        VisibleWorld const & visibleWorld);
+        vec2f InitialPosition;
+        vec2f InitialDirection;
 
-    inline static vec2f CalculateVelocity(
-        vec2f const & startPosition,
-        vec2f const & endPosition,
-        FishSpecies const & species,
-        float velocityMultiplier,
-        float personalitySeed);
+        FishShoal(FishSpecies const * species)
+            : Species(species)
+            , CurrentMemberCount(0)
+            , InitialPosition(vec2f::zero())
+            , InitialDirection(vec2f::zero())
+        {}
+    };
 
-private:
-
-    FishSpeciesDatabase const & mFishSpeciesDatabase;
+    // Shoal ID is index in Shoals vector
+    using FishShoalId = size_t;
 
     enum class StateType
     {
@@ -64,8 +69,8 @@ private:
 
     struct Fish
     {
-        FishSpecies const * Species;
-        TextureFrameIndex RenderFrameIndex;
+        FishShoalId ShoalId;
+
         float PersonalitySeed;
 
         StateType CurrentState;
@@ -87,16 +92,14 @@ private:
         float SteeringSimulationTimeStart;
 
         Fish(
-            FishSpecies const * species,
-            TextureFrameIndex renderFrameIndex,
+            FishShoalId shoalId,
             float personalitySeed,
             StateType initialState,
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
             float initialProgressPhase)
-            : Species(species)
-            , RenderFrameIndex(renderFrameIndex)
+            : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
             , CurrentState(initialState)
             , CurrentPosition(initialPosition)
@@ -113,7 +116,41 @@ private:
         {}
     };
 
+private:
+
+    void CreateNewFishShoalBatch();
+
+    inline static vec2f FindPosition(
+        vec2f const & averagePosition,
+        float xVariance,
+        float yVariance);
+
+    inline static vec2f CalculateNewCruisingTargetPosition(
+        vec2f const & currentPosition,
+        vec2f const & newDirection,
+        VisibleWorld const & visibleWorld);
+
+    inline static vec2f CalculateVelocity(
+        vec2f const & startPosition,
+        vec2f const & endPosition,
+        FishSpecies const & species,
+        float velocityMultiplier,
+        float personalitySeed);
+
+private:
+
+    FishSpeciesDatabase const & mFishSpeciesDatabase;
+
+    // A shoal batch is a set of shoals, one for each species
+    size_t const mShoalBatchSize;
+
+    // Shoals never move around in the vector
+    std::vector<FishShoal> mFishShoals;
+
     std::vector<Fish> mFishes;
+
+    // The world position at which there's been a disturbance, if any
+    std::optional<vec2f> mCurrentDisturbance;
 };
 
 }
