@@ -289,9 +289,11 @@ void Fishes::Update(
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
-        // Check if the fish is still swimming in water
-        if (fish.CurrentPosition.y < oceanY)
+        // Check if the fish is still swimming in water - with a bit of slack
+        if (fish.CurrentPosition.y < oceanY - 1.2f)
         {
+            LogMessage("TODOHERE: 1: Swimming");
+
             //
             // Swimming
             //
@@ -310,6 +312,8 @@ void Fishes::Update(
         }
         else
         {
+            LogMessage("TODOHERE: 1: Free-falling");
+
             //
             // Free-falling
             //
@@ -375,6 +379,8 @@ void Fishes::Update(
         {
             if (depth > 2.0f)
             {
+                LogMessage("TODOHERE: 2: OceanSurface - LittlePanic");
+
                 // Still far from water surface...
                 // ...just bounce
 
@@ -396,6 +402,8 @@ void Fishes::Update(
             }
             else
             {
+                LogMessage("TODOHERE: 2: OceanSurface - BigPanic");
+
                 // Very close to water surface...
                 // ...enter panic mode, and bounce
 
@@ -424,6 +432,8 @@ void Fishes::Update(
         // Check whether this fish has reached its target, while not in panic mode
         else if (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
+            LogMessage("TODOHERE: 2: TargetReached");
+
             //
             // Transition to Steering
             //
@@ -456,6 +466,8 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
+            LogMessage("TODOHERE: 2: EndOfPanic");
+
             //
             // Continue to current target
             //
