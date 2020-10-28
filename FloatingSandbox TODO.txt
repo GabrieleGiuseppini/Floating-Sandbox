@@ -1070,16 +1070,24 @@ Render:
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
 				= TODOHERE:
 					+ Finish water normal bounce
-					- Get rid of fish.Direction
-						- Calc direction only when needed (at Upload()?)
-							- This is because we need the velocity vector for gravity's acceleration
-						- TODOOLD:
-						- Nuke CalculateVelocity(), VelocityMagnitude is constant and takes personality at spawn
-							- See if may make const, again; if so, also others
-					- See if may make Fish::members const, again
+
+					- Make CruiseSteering an optional<struct> & populate w/emplace
+					- Rename CalculateVelocity as MakeBasalVelocity
+
+					- See if may make auto-smoothing converge rate variable
+						- Just also always auto-smooth towards target?
+
+					- Rename fish.Direction as RenderVector
+
+					- Bug: fish becoming above water while steering - does not free fall
+
+					- Need gravity state machine?
+						- End of fall: recalc target velocity (based on current target pos); auto-smoothing will do the rest
+					
 					- World border:
 						- Clamp at spawn
 						- Collision check w/panic
+						- Check during free falling
 					- Smooth direction and/or velocity vector constantly towards target
 						- When not in any "Steering" state
 						- See it might actually replace the "Steering without turning" state
@@ -1134,6 +1142,10 @@ Render:
 					- Isn't this taken care of by swarming dynamics automatically?
 				- Normal swarming dynamics
 					- Requires maintenance of sorted Xs in vector
+			- Tools:
+				- Food/Scare
+					- Food: set target velocity to direction towards tool; auto-smoothing does the rest
+						- Enter panic mode if really close by
 			- Should fish follow waves on surface of water?
 			
 		- Cleanup:			

@@ -30,6 +30,18 @@ public:
     void ApplyDisturbanceAt(vec2f const & worldCoordinates)
     {
         mCurrentInteractiveDisturbance = worldCoordinates;
+
+        // TODOTEST
+        /*
+        auto & fish = mFishes[0];
+        fish.TargetPosition = worldCoordinates;
+
+        // Calculate new target velocity and direction
+        fish.StartVelocity = fish.CurrentVelocity;
+        fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, 1.0f, fish.PersonalitySeed);
+        fish.StartDirection = fish.CurrentDirection;
+        fish.TargetDirection = fish.TargetVelocity.normalise();
+        */
     }
 
     void Update(
@@ -62,12 +74,6 @@ private:
     // Shoal ID is index in Shoals vector
     using FishShoalId = size_t;
 
-    enum class SteeringType
-    {
-        WithTurn,
-        WithoutTurn
-    };
-
     struct Fish
     {
         FishShoalId ShoalId;
@@ -77,23 +83,25 @@ private:
         vec2f CurrentPosition;
         vec2f TargetPosition;
 
-        vec2f StartVelocity;
         vec2f CurrentVelocity;
         vec2f TargetVelocity;
 
-        vec2f StartDirection;
         vec2f CurrentDirection;
         vec2f TargetDirection;
+
+        float CurrentDirectionSmoothingConvergenceRate; // Rate of converge of velocity and direction
 
         float CurrentTailProgressPhase;
 
         // Panic mode state machine
-        float PanicCharge;
+        float PanicCharge; // When not zero, fish is panic mode; decays towards zero
 
         // Steering state machine
-        std::optional<SteeringType> CurrentSteeringState;
-        float SteeringSimulationTimeStart;
-        float SteeringSimulationTimeDuration;
+        bool IsCruiseSteering; // When true, fish is turning around during cruise
+        vec2f CruiseSteeringStartVelocity;
+        vec2f CruiseSteeringStartDirection;
+        float CruiseSteeringSimulationTimeStart;
+        float CruiseSteeringSimulationTimeDuration;
 
         Fish(
             FishShoalId shoalId,
@@ -106,17 +114,18 @@ private:
             , PersonalitySeed(personalitySeed)
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
-            , StartVelocity(targetVelocity) // We start up with current velocity
             , CurrentVelocity(targetVelocity)
-            , TargetVelocity(targetVelocity)
-            , StartDirection(targetVelocity.normalise())
-            , CurrentDirection(StartDirection)
-            , TargetDirection(StartDirection)
+            , TargetVelocity(CurrentVelocity)
+            , CurrentDirection(targetVelocity.normalise())
+            , TargetDirection(CurrentDirection)
+            , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
-            , CurrentSteeringState()
-            , SteeringSimulationTimeStart(0.0f) // Arbitrary
-            , SteeringSimulationTimeDuration(0.0f) // Arbitrary
+            , IsCruiseSteering(false)
+            , CruiseSteeringStartVelocity(vec2f::zero()) // Arbitrary, will be set as needed
+            , CruiseSteeringStartDirection(vec2f::zero()) // Arbitrary, will be set as needed
+            , CruiseSteeringSimulationTimeStart(0.0f) // Arbitrary, will be set as needed
+            , CruiseSteeringSimulationTimeDuration(0.0f) // Arbitrary, will be set as needed
         {}
     };
 
