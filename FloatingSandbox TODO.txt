@@ -1071,8 +1071,8 @@ Render:
 				= TODOHERE:
 					+ Finish water normal bounce
 
-					- Make CruiseSteering an optional<struct> & populate w/emplace
-					- Rename CalculateVelocity as MakeBasalVelocity
+					+ Make CruiseSteering an optional<struct> & populate w/emplace
+					+ Rename CalculateVelocity as MakeBasalVelocity
 
 					- See if may make auto-smoothing converge rate variable
 						- Just also always auto-smooth towards target?

@@ -160,7 +160,7 @@ void Fishes::Update(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                CalculateVelocity((targetPosition - initialPosition).normalise(), species, 1.0f, personalitySeed),
+                MakeBasalVelocity((targetPosition - initialPosition).normalise(), species, 1.0f, personalitySeed),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
 
             // Update shoal
@@ -184,7 +184,7 @@ void Fishes::Update(
         // 1) If we're turning, continue turning
         //
 
-        if (fish.IsCruiseSteering)
+        if (fish.CruiseSteeringState.has_value())
         {
             //
             // Cruise steering
@@ -192,7 +192,7 @@ void Fishes::Update(
 
             LogMessage("TODOHERE: 1: CruiseSteering");
 
-            float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringSimulationTimeStart) / fish.CruiseSteeringSimulationTimeDuration;
+            float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringState->SimulationTimeStart) / fish.CruiseSteeringState->SimulationTimeDuration;
 
             // Check whether we should stop steering
             if (elapsedSteeringDurationFraction >= 1.0f)
@@ -200,7 +200,7 @@ void Fishes::Update(
                 // Stop steering
 
                 // Change state
-                fish.IsCruiseSteering = false;
+                fish.CruiseSteeringState.reset();
 
                 // Reach all targets
                 fish.CurrentVelocity = fish.TargetVelocity;
@@ -220,7 +220,7 @@ void Fishes::Update(
                 if (elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentVelocity =
-                        fish.CruiseSteeringStartVelocity * (1.0f - SmoothStep(0.0f, 0.5f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartVelocity * (1.0f - SmoothStep(0.0f, 0.5f, elapsedSteeringDurationFraction));
                 }
                 else
                 {
@@ -234,7 +234,7 @@ void Fishes::Update(
                 if (elapsedSteeringDurationFraction <= 0.30f)
                 {
                     fish.CurrentDirection.y =
-                        fish.CruiseSteeringStartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
                 }
                 else if (elapsedSteeringDurationFraction >= 0.70f)
                 {
@@ -249,7 +249,7 @@ void Fishes::Update(
                 if (elapsedSteeringDurationFraction >= 0.15f && elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentDirection.x =
-                        fish.CruiseSteeringStartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
                 }
                 else if (elapsedSteeringDurationFraction > 0.50f && elapsedSteeringDurationFraction <= 0.85f)
                 {
@@ -307,8 +307,8 @@ void Fishes::Update(
             // Update tail progress phase: add basal speed
             fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
 
-            // ...superimpose sin component unless we're steering
-            if (!fish.IsCruiseSteering)
+            // ...superimpose sin component, unless we're steering
+            if (!fish.CruiseSteeringState.has_value())
                 fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase + Pi<float> / 2.0f)) / 200.0f;
         }
         else
@@ -368,7 +368,7 @@ void Fishes::Update(
             // Don't change target position, we'll return to it when panic is over
 
             // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
-            fish.TargetVelocity = CalculateVelocity((fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise(), species, 1.0f, fish.PersonalitySeed);
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
             // Converge directions really fast
@@ -388,7 +388,7 @@ void Fishes::Update(
                     vec2f const bounceDirection = vec2f(fish.TargetDirection.x, -fish.TargetDirection.y).normalise();
 
                     // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
-                    fish.TargetVelocity = CalculateVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
+                    fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
                     fish.TargetDirection = fish.TargetVelocity.normalise();
 
                     // Converge direction change at this rate
@@ -408,7 +408,7 @@ void Fishes::Update(
                 vec2f const bounceDirection = vec2f(fish.CurrentDirection.x, std::min(-0.3f, -fish.CurrentDirection.y)).normalise();
 
                 // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
-                fish.TargetVelocity = CalculateVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
+                fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
                 fish.TargetDirection = fish.TargetVelocity.normalise();
 
                 // Converge direction change at this rate
@@ -431,18 +431,18 @@ void Fishes::Update(
                 visibleWorld);
 
             // Calculate new target velocity and direction
-            fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetDirection.x * fish.CurrentDirection.x <= 0.0f)
             {
                 // Perform a cruise steering
-                fish.IsCruiseSteering = true;
-                fish.CruiseSteeringStartVelocity = fish.CurrentVelocity;
-                fish.CruiseSteeringStartDirection = fish.CurrentDirection;
-                fish.CruiseSteeringSimulationTimeStart = currentSimulationTime;
-                fish.CruiseSteeringSimulationTimeDuration = 1.5f;
+                fish.CruiseSteeringState.emplace(
+                    fish.CurrentVelocity,
+                    fish.CurrentDirection,
+                    currentSimulationTime,
+                    1.5f);
             }
             else
             {    // Converge direction change at this rate
@@ -461,18 +461,18 @@ void Fishes::Update(
             fish.PanicCharge = 0.0f;
 
             // Calculate new target velocity and direction
-            fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
             fish.TargetDirection = fish.TargetVelocity.normalise();
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetDirection.x * fish.CurrentDirection.x <= 0.0f)
             {
                 // Perform a cruise steering
-                fish.IsCruiseSteering = true;
-                fish.CruiseSteeringStartVelocity = fish.CurrentVelocity;
-                fish.CruiseSteeringStartDirection = fish.CurrentDirection;
-                fish.CruiseSteeringSimulationTimeStart = currentSimulationTime;
-                fish.CruiseSteeringSimulationTimeDuration = 1.0f;
+                fish.CruiseSteeringState.emplace(
+                    fish.CurrentVelocity,
+                    fish.CurrentDirection,
+                    currentSimulationTime,
+                    1.0f);
             }
             else
             {    // Converge direction change at this rate
@@ -574,7 +574,7 @@ vec2f Fishes::FindNewCruisingTargetPosition(
         5.0f); // y variance
 }
 
-vec2f Fishes::CalculateVelocity(
+vec2f Fishes::MakeBasalVelocity(
     vec2f const & direction,
     FishSpecies const & species,
     float velocityMultiplier,

@@ -38,7 +38,7 @@ public:
 
         // Calculate new target velocity and direction
         fish.StartVelocity = fish.CurrentVelocity;
-        fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, 1.0f, fish.PersonalitySeed);
+        fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, 1.0f, fish.PersonalitySeed);
         fish.StartDirection = fish.CurrentDirection;
         fish.TargetDirection = fish.TargetVelocity.normalise();
         */
@@ -97,11 +97,26 @@ private:
         float PanicCharge; // When not zero, fish is panic mode; decays towards zero
 
         // Steering state machine
-        bool IsCruiseSteering; // When true, fish is turning around during cruise
-        vec2f CruiseSteeringStartVelocity;
-        vec2f CruiseSteeringStartDirection;
-        float CruiseSteeringSimulationTimeStart;
-        float CruiseSteeringSimulationTimeDuration;
+        struct CruiseSteering
+        {
+            vec2f StartVelocity;
+            vec2f StartDirection;
+            float SimulationTimeStart;
+            float SimulationTimeDuration;
+
+            CruiseSteering(
+                vec2f startVelocity,
+                vec2f startDirection,
+                float simulationTimeStart,
+                float simulationTimeDuration)
+                : StartVelocity(startVelocity)
+                , StartDirection(startDirection)
+                , SimulationTimeStart(simulationTimeStart)
+                , SimulationTimeDuration(simulationTimeDuration)
+            {}
+        };
+
+        std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
 
         Fish(
             FishShoalId shoalId,
@@ -121,11 +136,7 @@ private:
             , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
-            , IsCruiseSteering(false)
-            , CruiseSteeringStartVelocity(vec2f::zero()) // Arbitrary, will be set as needed
-            , CruiseSteeringStartDirection(vec2f::zero()) // Arbitrary, will be set as needed
-            , CruiseSteeringSimulationTimeStart(0.0f) // Arbitrary, will be set as needed
-            , CruiseSteeringSimulationTimeDuration(0.0f) // Arbitrary, will be set as needed
+            , CruiseSteeringState()
         {}
     };
 
@@ -143,7 +154,7 @@ private:
         vec2f const & newDirection,
         VisibleWorld const & visibleWorld);
 
-    inline static vec2f CalculateVelocity(
+    inline static vec2f MakeBasalVelocity(
         vec2f const & direction,
         FishSpecies const & species,
         float velocityMultiplier,
