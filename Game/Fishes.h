@@ -131,7 +131,7 @@ private:
         float xVariance,
         float yVariance);
 
-    inline static vec2f CalculateNewCruisingTargetPosition(
+    inline static vec2f FindNewCruisingTargetPosition(
         vec2f const & currentPosition,
         vec2f const & newDirection,
         VisibleWorld const & visibleWorld);

@@ -1068,6 +1068,19 @@ Render:
 				+ Round corners
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
+				- TODOHERE:
+					- Finish water normal bounce
+					- Replace Fish.Velocity with VelocityMagnitude
+						- Nuke CalculateVelocity(), VelocityMagnitude is constant and takes personality at spawn
+							- See if may make const, again; if so, also others
+						- TODO: actually the opposite, see if may get rid of direction and calc direction only when needed (at Upload()?)
+							- This is because we need the velocity vector for gravity's acceleration
+					- World border:
+						- Clamp at spawn
+						- Collision check w/panic
+					- Smooth direction and/or velocity vector constantly towards target
+						- When not in any "Steering" state
+						- See it might actually replace the "Steering without turning" state
 				= New algo:
 					+ Turning (if isTurning)
 					+ Pos update
@@ -1078,15 +1091,24 @@ Render:
 								+ Re-disturbing sets it back to one
 								+ Change shape of slow-down:
 						= Water level: dealing with fish getting over water level (because of waves, etc.)
-							- Far from surface: normal bounce
+							+ Solve issue of target position Y: we use current pos - something, but current pos might already be too late
+								+ Try clamping it to water level
+							+ Far from surface: normal bounce
 							+ Close to surface: panic run
-							- Out of water: need new regime with fish falling or zipping, TODO
+							- Out of water: need new regime with fish falling:
+								- Different position update when depth < 0:
+									- Gravity
+									- X velocity as now, y clamped to <= 0
+									- Tail progress very fast
+										- Rename as "tail"?
+								- ...and cut short state machine afterwards, as fish can't swim
+								- See if this one suffices without the two explicit "water level" collision checks
 						- Ocean floor:
 							- TODOHERE
 						- Ships' AABBs:
 							- TODOHERE
-						+ Interactive disturbance:
-							+ Panic run:
+						= Interactive disturbance:
+							= Panic run:
 								+ New target position: any
 								+ New target velocity/direction: 
 									+ Direction along radius to disturbance point, but opposite direction
@@ -1094,6 +1116,8 @@ Render:
 										+ Need to change CalculateVelocity: takes direction instead of start & end points
 										! Using panic velocity comes for free
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
+								- Prevent panic direction from being too vertical: TODO
+						- Test with more pronounced superimposed sin during panic run
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 					- Fishes::Update(.) takes AllShipAABBs

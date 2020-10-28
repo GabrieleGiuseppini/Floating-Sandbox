@@ -148,7 +148,7 @@ void Fishes::Update(
                 10.0f,
                 4.0f);
 
-            vec2f const targetPosition = CalculateNewCruisingTargetPosition(
+            vec2f const targetPosition = FindNewCruisingTargetPosition(
                 initialPosition,
                 mFishShoals[currentShoalSearchIndex].InitialDirection,
                 visibleWorld);
@@ -286,6 +286,9 @@ void Fishes::Update(
         // 3) Update dynamics
         //
 
+        // Get water surface level at this fish
+        float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
+
         // Update position
         {
             float const speedMultiplier = fish.PanicCharge * 8.5f + 1.0f;
@@ -344,14 +347,30 @@ void Fishes::Update(
             fish.CurrentSteeringState = SteeringType::WithoutTurn;
         }
         // Check whether we're too close to the water surface
-        else if (float depth = oceanSurface.GetHeightAt(fish.CurrentPosition.x) - fish.CurrentPosition.y;
+        else if (float const depth = oceanY - fish.CurrentPosition.y;
             depth < 10.0f)
         {
-            if (depth > 2.0)
+            // TODO: see if may reduce code duplication here
+
+            if (depth > 2.0f)
             {
                 // Normal bounce
 
-                // TODOHERE
+                // Target position
+                fish.TargetPosition = vec2f(
+                    fish.TargetPosition.x, // Same x that we're swimming to
+                    std::min(oceanY, fish.CurrentPosition.y - 7.0f)); // A bit lower than current position
+
+                // Calculate new target velocity and direction
+                fish.StartVelocity = fish.CurrentVelocity;
+                fish.TargetVelocity = CalculateVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+                fish.StartDirection = fish.CurrentDirection;
+                fish.TargetDirection = fish.TargetVelocity.normalise();
+
+                // Engage steering
+                fish.SteeringSimulationTimeStart = currentSimulationTime;
+                fish.SteeringSimulationTimeDuration = 0.15f;
+                fish.CurrentSteeringState = SteeringType::WithoutTurn;
             }
             else
             {
@@ -365,7 +384,7 @@ void Fishes::Update(
                 // Target position - will become relevant only after panic mode has completed
                 fish.TargetPosition = vec2f(
                     fish.TargetPosition.x, // Same x that we're swimming to
-                    fish.CurrentPosition.y - 7.0f); // A bit lower than current position
+                    std::min(oceanY, fish.CurrentPosition.y - 7.0f)); // A bit lower than current position
 
                 // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
                 fish.StartVelocity = fish.CurrentVelocity;
@@ -387,7 +406,7 @@ void Fishes::Update(
             //
 
             // Choose new target position
-            fish.TargetPosition = CalculateNewCruisingTargetPosition(
+            fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
                 -fish.CurrentDirection,
                 visibleWorld);
@@ -517,7 +536,7 @@ vec2f Fishes::FindPosition(
     return position;
 }
 
-vec2f Fishes::CalculateNewCruisingTargetPosition(
+vec2f Fishes::FindNewCruisingTargetPosition(
     vec2f const & currentPosition,
     vec2f const & newDirection,
     VisibleWorld const & visibleWorld)
