@@ -190,7 +190,7 @@ void Fishes::Update(
             // Cruise steering
             //
 
-            LogMessage("TODOHERE: 1: CruiseSteering");
+            //LogMessage("TODOHERE: 1: CruiseSteering");
 
             float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringState->SimulationTimeStart) / fish.CruiseSteeringState->SimulationTimeDuration;
 
@@ -204,7 +204,7 @@ void Fishes::Update(
 
                 // Reach all targets
                 fish.CurrentVelocity = fish.TargetVelocity;
-                fish.CurrentDirection = fish.TargetDirection;
+                fish.CurrentRenderVector = fish.TargetRenderVector;
             }
             else
             {
@@ -228,33 +228,33 @@ void Fishes::Update(
                         fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
-                // Direction Y:
+                // RenderVector Y:
                 // - smooth towards zero during an initial interval
                 // - smooth towards target during a second interval
                 if (elapsedSteeringDurationFraction <= 0.30f)
                 {
-                    fish.CurrentDirection.y =
-                        fish.CruiseSteeringState->StartDirection.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
+                    fish.CurrentRenderVector.y =
+                        fish.CruiseSteeringState->StartRenderVector.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
                 }
                 else if (elapsedSteeringDurationFraction >= 0.70f)
                 {
-                    fish.CurrentDirection.y =
-                        fish.TargetDirection.y * SmoothStep(0.70f, 1.0f, elapsedSteeringDurationFraction);
+                    fish.CurrentRenderVector.y =
+                        fish.TargetRenderVector.y * SmoothStep(0.70f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
-                // Direction X:
+                // RenderVector X:
                 // - smooth towards target during a central interval (actual turning around),
                 //   without crossing zero
                 float constexpr TurnLimit = 0.2f;
                 if (elapsedSteeringDurationFraction >= 0.15f && elapsedSteeringDurationFraction <= 0.5f)
                 {
-                    fish.CurrentDirection.x =
-                        fish.CruiseSteeringState->StartDirection.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
+                    fish.CurrentRenderVector.x =
+                        fish.CruiseSteeringState->StartRenderVector.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
                 }
                 else if (elapsedSteeringDurationFraction > 0.50f && elapsedSteeringDurationFraction <= 0.85f)
                 {
-                    fish.CurrentDirection.x =
-                        fish.TargetDirection.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
+                    fish.CurrentRenderVector.x =
+                        fish.TargetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
                 }
 
                 break;
@@ -266,15 +266,15 @@ void Fishes::Update(
             // Automated direction smoothing
             //
 
-            LogMessage("TODOHERE: 1: AutoSmoothing");
+            //LogMessage("TODOHERE: 1: AutoSmoothing");
 
             // Smooth velocity towards target
             fish.CurrentVelocity +=
                 (fish.TargetVelocity - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
 
-            // Smooth direction towards target
-            fish.CurrentDirection +=
-                (fish.TargetDirection - fish.CurrentDirection) * fish.CurrentDirectionSmoothingConvergenceRate;
+            // Smooth render vector towards target
+            fish.CurrentRenderVector +=
+                (fish.TargetRenderVector - fish.CurrentRenderVector) * fish.CurrentDirectionSmoothingConvergenceRate;
         }
 
         //
@@ -297,7 +297,7 @@ void Fishes::Update(
             // Swimming
             //
 
-            LogMessage("TODOHERE: 3: Swimming");
+            //LogMessage("TODOHERE: 3: Swimming");
 
             float const speedMultiplier = fish.PanicCharge * 8.5f + 1.0f;
 
@@ -317,7 +317,7 @@ void Fishes::Update(
             // Free-falling
             //
 
-            LogMessage("TODOHERE: 3: Free-falling");
+            //LogMessage("TODOHERE: 3: Free-falling");
 
             // Update velocity with gravity
             fish.TargetVelocity = vec2f(
@@ -325,9 +325,9 @@ void Fishes::Update(
                 std::min(0.0f, fish.CurrentVelocity.y) - GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
 
-            // Update direction to match velocity
-            fish.TargetDirection = fish.TargetVelocity.normalise();
-            fish.CurrentDirection = fish.TargetDirection; // Converge immediately
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+            fish.CurrentRenderVector = fish.TargetRenderVector; // Converge immediately
 
             // Update position: add velocity
             fish.CurrentPosition += fish.CurrentVelocity;
@@ -361,18 +361,36 @@ void Fishes::Update(
             // Interactive disturbance, enter panic mode
             //
 
-            LogMessage("TODOHERE: 4: EnterPanicMode");
+            //LogMessage("TODOHERE: 4: InteractiveDisturbancePanic");
 
             fish.PanicCharge = 1.0f;
 
             // Don't change target position, we'll return to it when panic is over
 
-            // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
-            fish.TargetVelocity = MakeBasalVelocity((fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise(), species, 1.0f, fish.PersonalitySeed);
-            fish.TargetDirection = fish.TargetVelocity.normalise();
+            // Calculate new direction, away from disturbance
+            vec2f panicDirection = (fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise();
+
+            // Make sure direction is not too steep
+            float constexpr MinXComponent = 0.4f;
+            if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
+            {
+                panicDirection.x = MinXComponent;
+                panicDirection = panicDirection.normalise();
+            }
+            else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
+            {
+                panicDirection.x = -MinXComponent;
+                panicDirection = panicDirection.normalise();
+            }
+
+            // Calculate new target velocity - away from disturbance point, and will be panic velocity
+            fish.TargetVelocity = MakeBasalVelocity(panicDirection, species, 1.0f, fish.PersonalitySeed);
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Converge directions really fast
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.5f; // TODO
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
         }
         // Check whether we're too close to the water surface
         else if (float const depth = oceanY - fish.CurrentPosition.y;
@@ -380,16 +398,18 @@ void Fishes::Update(
         {
             if (depth > 3.0f) // Still far away
             {
-                if (fish.TargetDirection.y >= 0.0f) // Bounce away only if we're really going into it
+                if (fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
                 {
-                    LogMessage("TODOHERE: 4: OceanSurface - LittlePanic");
+                    //LogMessage("TODOHERE: 4: OceanSurface - LittlePanic");
 
-                    // Bounce direction
-                    vec2f const bounceDirection = vec2f(fish.TargetDirection.x, -fish.TargetDirection.y).normalise();
+                    // Bounce direction, opposite of target
+                    vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
-                    // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
+                    // Calculate new target velocity - away from disturbance point, and will be panic velocity
                     fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
-                    fish.TargetDirection = fish.TargetVelocity.normalise();
+
+                    // Update render vector to match velocity
+                    fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
                     // Converge direction change at this rate
                     fish.CurrentDirectionSmoothingConvergenceRate = 0.2f;
@@ -397,19 +417,22 @@ void Fishes::Update(
             }
             else
             {
-                LogMessage("TODOHERE: 4: OceanSurface - BigPanic");
+                //LogMessage("TODOHERE: 4: OceanSurface - BigPanic");
 
                 // Very close to water surface...
                 // ...enter panic mode, and bounce
 
                 fish.PanicCharge = 1.0f;
 
-                // Bounce direction
-                vec2f const bounceDirection = vec2f(fish.CurrentDirection.x, std::min(-0.3f, -fish.CurrentDirection.y)).normalise();
+                // Bounce direction, opposite of current velocity
+                vec2f const currentVelocityDirection = fish.CurrentVelocity.normalise();
+                vec2f const bounceDirection = vec2f(currentVelocityDirection.x, std::min(-0.3f, -currentVelocityDirection.y)).normalise();
 
-                // Calculate new target velocity and direction - away from disturbance point, and will be panic velocity
+                // Calculate new target velocity - away from disturbance point, and will be panic velocity
                 fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
-                fish.TargetDirection = fish.TargetVelocity.normalise();
+
+                // Update render vector to match velocity
+                fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
                 // Converge direction change at this rate
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
@@ -418,7 +441,7 @@ void Fishes::Update(
         // Check whether this fish has reached its target, while not in panic mode
         else if (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
-            LogMessage("TODOHERE: 4: TargetReached");
+            //LogMessage("TODOHERE: 4: TargetReached");
 
             //
             // Transition to Steering
@@ -427,20 +450,22 @@ void Fishes::Update(
             // Choose new target position
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
-                -fish.CurrentDirection,
+                -fish.CurrentVelocity.normalise(),
                 visibleWorld);
 
-            // Calculate new target velocity and direction
+            // Calculate new target velocity
             fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
-            fish.TargetDirection = fish.TargetVelocity.normalise();
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetDirection.x * fish.CurrentDirection.x <= 0.0f)
+            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
                     fish.CurrentVelocity,
-                    fish.CurrentDirection,
+                    fish.CurrentRenderVector,
                     currentSimulationTime,
                     1.5f);
             }
@@ -452,7 +477,7 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
-            LogMessage("TODOHERE: 4: EndOfPanic");
+            //LogMessage("TODOHERE: 4: EndOfPanic");
 
             //
             // Continue to current target
@@ -460,17 +485,19 @@ void Fishes::Update(
 
             fish.PanicCharge = 0.0f;
 
-            // Calculate new target velocity and direction
+            // Calculate new target velocity
             fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
-            fish.TargetDirection = fish.TargetVelocity.normalise();
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetDirection.x * fish.CurrentDirection.x <= 0.0f)
+            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
                     fish.CurrentVelocity,
-                    fish.CurrentDirection,
+                    fish.CurrentRenderVector,
                     currentSimulationTime,
                     1.0f);
             }
@@ -494,8 +521,8 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
     for (auto const & fish : mFishes)
     {
-        float angleCw = fish.CurrentDirection.angleCw();
-        float horizontalScale = fish.CurrentDirection.length();
+        float angleCw = fish.CurrentRenderVector.angleCw();
+        float horizontalScale = fish.CurrentRenderVector.length();
 
         if (angleCw < -Pi<float> / 2.0f)
         {

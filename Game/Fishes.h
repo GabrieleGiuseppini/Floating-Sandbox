@@ -86,8 +86,8 @@ private:
         vec2f CurrentVelocity;
         vec2f TargetVelocity;
 
-        vec2f CurrentDirection;
-        vec2f TargetDirection;
+        vec2f CurrentRenderVector;
+        vec2f TargetRenderVector;
 
         float CurrentDirectionSmoothingConvergenceRate; // Rate of converge of velocity and direction
 
@@ -100,17 +100,17 @@ private:
         struct CruiseSteering
         {
             vec2f StartVelocity;
-            vec2f StartDirection;
+            vec2f StartRenderVector;
             float SimulationTimeStart;
             float SimulationTimeDuration;
 
             CruiseSteering(
                 vec2f startVelocity,
-                vec2f startDirection,
+                vec2f startRenderVector,
                 float simulationTimeStart,
                 float simulationTimeDuration)
                 : StartVelocity(startVelocity)
-                , StartDirection(startDirection)
+                , StartRenderVector(startRenderVector)
                 , SimulationTimeStart(simulationTimeStart)
                 , SimulationTimeDuration(simulationTimeDuration)
             {}
@@ -131,8 +131,8 @@ private:
             , TargetPosition(targetPosition)
             , CurrentVelocity(targetVelocity)
             , TargetVelocity(CurrentVelocity)
-            , CurrentDirection(targetVelocity.normalise())
-            , TargetDirection(CurrentDirection)
+            , CurrentRenderVector(targetVelocity.normalise())
+            , TargetRenderVector(CurrentRenderVector)
             , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)

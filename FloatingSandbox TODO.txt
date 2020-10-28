@@ -1073,21 +1073,21 @@ Render:
 
 					+ Make CruiseSteering an optional<struct> & populate w/emplace
 					+ Rename CalculateVelocity as MakeBasalVelocity
+					+ See if may make auto-smoothing converge rate variable
+					+ Rename fish.Direction as RenderVector
 
-					- See if may make auto-smoothing converge rate variable
-						- Just also always auto-smooth towards target?
-
-					- Rename fish.Direction as RenderVector
-
-					- Bug: fish becoming above water while steering - does not free fall
+					- Allow fish in much panic to go out of water
+						- Simply don't consider water surface collision if panic > threshold
 
 					- Need gravity state machine?
 						- End of fall: recalc target velocity (based on current target pos); auto-smoothing will do the rest
+			
+					- Bug: fish becoming above water while steering - does not free fall
 					
 					- World border:
 						- Clamp at spawn
 						- Collision check w/panic
-						- Check during free falling
+						- Check during free falling as well!
 					- Smooth direction and/or velocity vector constantly towards target
 						- When not in any "Steering" state
 						- See it might actually replace the "Steering without turning" state
@@ -1119,7 +1119,7 @@ Render:
 						- Ships' AABBs:
 							- TODOHERE
 						= Interactive disturbance:
-							= Panic run:
+							+ Panic run:
 								+ New target position: any
 								+ New target velocity/direction: 
 									+ Direction along radius to disturbance point, but opposite direction
@@ -1127,7 +1127,7 @@ Render:
 										+ Need to change CalculateVelocity: takes direction instead of start & end points
 										! Using panic velocity comes for free
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
-								- Prevent panic direction from being too vertical: TODO
+								+ Prevent panic direction from being too vertical
 						- Test with more pronounced superimposed sin during panic run
 				- AABB around ships' frontiers, so that fish AI's avoid them
 					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
@@ -1146,6 +1146,8 @@ Render:
 				- Food/Scare
 					- Food: set target velocity to direction towards tool; auto-smoothing does the rest
 						- Enter panic mode if really close by
+					- Scare:
+						- Panic charge should be proportional to tool distance
 			- Should fish follow waves on surface of water?
 			
 		- Cleanup:			
