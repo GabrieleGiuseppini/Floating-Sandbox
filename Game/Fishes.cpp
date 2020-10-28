@@ -256,8 +256,6 @@ void Fishes::Update(
                     fish.CurrentRenderVector.x =
                         fish.TargetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
                 }
-
-                break;
             }
         }
         else
