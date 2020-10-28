@@ -85,8 +85,7 @@ private:
         vec2f CurrentDirection;
         vec2f TargetDirection;
 
-        float CurrentProgressPhase;
-        float CurrentProgress; // Calcd off CurrentProgressPhase
+        float CurrentTailProgressPhase;
 
         // Panic mode state machine
         float PanicCharge;
@@ -102,7 +101,7 @@ private:
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
-            float initialProgressPhase)
+            float initialTailProgressPhase)
             : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
             , CurrentPosition(initialPosition)
@@ -113,8 +112,7 @@ private:
             , StartDirection(targetVelocity.normalise())
             , CurrentDirection(StartDirection)
             , TargetDirection(StartDirection)
-            , CurrentProgressPhase(initialProgressPhase)
-            , CurrentProgress(0.0f) // Assumption: progress==0 @ phase==0
+            , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , CurrentSteeringState()
             , SteeringSimulationTimeStart(0.0f) // Arbitrary

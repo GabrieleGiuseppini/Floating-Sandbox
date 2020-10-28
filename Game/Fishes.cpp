@@ -289,24 +289,47 @@ void Fishes::Update(
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
-        // Update position
+        // Check if the fish is still swimming in water
+        if (fish.CurrentPosition.y < oceanY)
         {
+            //
+            // Swimming
+            //
+
             float const speedMultiplier = fish.PanicCharge * 8.5f + 1.0f;
 
-            // Update position: add velocity
+            // Update position: add current velocity
             fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
 
-            // Update progress phase: add basal speed
-            fish.CurrentProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
+            // Update tail progress phase: add basal speed
+            fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
 
             // ...superimpose sin component unless we're steering
             if (!fish.CurrentSteeringState.has_value())
-                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentProgressPhase + Pi<float> / 2.0f)) / 200.0f;
+                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase + Pi<float> / 2.0f)) / 200.0f;
+        }
+        else
+        {
+            //
+            // Free-falling
+            //
 
-            // Update current progress
-            fish.CurrentProgress = std::sin(fish.CurrentProgressPhase);
+            // Update velocity with gravity
+            fish.CurrentVelocity = vec2f(
+                fish.CurrentVelocity.x,
+                std::min(0.0f, fish.CurrentVelocity.y) - GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
 
-            // TODO: do X sort maintenance in separate vector, for shoal magic
+            // TODOTEST: won't be needed if we get rid of Direction
+            fish.CurrentDirection = fish.CurrentVelocity.normalise();
+
+            // Update position: add velocity
+            fish.CurrentPosition += fish.CurrentVelocity;
+
+            // Update tail progress phase: add extra speed (fish flapping its tail)
+            fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * 20.0f;
+
+            // Cut short state machine now, this fish can't swim
+            continue;
         }
 
         // Update panic charge
@@ -319,7 +342,7 @@ void Fishes::Update(
         // TODO: x5:
         // + Current disturbance
         // - AABB
-        // - Water level
+        // + Water level
         // - Ocean floor
         // + Reached target
 
@@ -350,11 +373,10 @@ void Fishes::Update(
         else if (float const depth = oceanY - fish.CurrentPosition.y;
             depth < 10.0f)
         {
-            // TODO: see if may reduce code duplication here
-
             if (depth > 2.0f)
             {
-                // Normal bounce
+                // Still far from water surface...
+                // ...just bounce
 
                 // Target position
                 fish.TargetPosition = vec2f(
@@ -374,7 +396,8 @@ void Fishes::Update(
             }
             else
             {
-                // Panic mode, bouncing
+                // Very close to water surface...
+                // ...enter panic mode, and bounce
 
                 fish.PanicCharge = 1.0f;
 
@@ -479,13 +502,11 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         if (angleCw < -Pi<float> / 2.0f)
         {
             angleCw = Pi<float> + angleCw;
-            //angleCw *= -1.0f;
             horizontalScale *= -1.0f;
         }
         else if (angleCw > Pi<float> / 2.0f)
         {
             angleCw = -Pi<float> + angleCw;
-            //angleCw *= -1.0f;
             horizontalScale *= -1.0f;
         }
 
@@ -495,7 +516,7 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
             angleCw,
             horizontalScale,
             mFishShoals[fish.ShoalId].Species.TailX,
-            fish.CurrentProgress);
+            std::sin(fish.CurrentTailProgressPhase));
     }
 
     renderContext.UploadFishesEnd();

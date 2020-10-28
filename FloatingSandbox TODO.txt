@@ -1068,19 +1068,22 @@ Render:
 				+ Round corners
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
-				- TODOHERE:
-					- Finish water normal bounce
-					- Replace Fish.Velocity with VelocityMagnitude
+				= TODOHERE:
+					+ Finish water normal bounce
+					- Get rid of fish.Direction
+						- Calc direction only when needed (at Upload()?)
+							- This is because we need the velocity vector for gravity's acceleration
+						- TODOOLD:
 						- Nuke CalculateVelocity(), VelocityMagnitude is constant and takes personality at spawn
 							- See if may make const, again; if so, also others
-						- TODO: actually the opposite, see if may get rid of direction and calc direction only when needed (at Upload()?)
-							- This is because we need the velocity vector for gravity's acceleration
+					- See if may make Fish::members const, again
 					- World border:
 						- Clamp at spawn
 						- Collision check w/panic
 					- Smooth direction and/or velocity vector constantly towards target
 						- When not in any "Steering" state
 						- See it might actually replace the "Steering without turning" state
+					- Position update: incorporate dt, so eventually adjust species' speeds
 				= New algo:
 					+ Turning (if isTurning)
 					+ Pos update
@@ -1090,19 +1093,19 @@ Render:
 								+ Panic mode slows down and ends when it reaches zero, no target really needed
 								+ Re-disturbing sets it back to one
 								+ Change shape of slow-down:
-						= Water level: dealing with fish getting over water level (because of waves, etc.)
+						+ Water level: dealing with fish getting over water level (because of waves, etc.)
 							+ Solve issue of target position Y: we use current pos - something, but current pos might already be too late
 								+ Try clamping it to water level
 							+ Far from surface: normal bounce
 							+ Close to surface: panic run
-							- Out of water: need new regime with fish falling:
-								- Different position update when depth < 0:
-									- Gravity
-									- X velocity as now, y clamped to <= 0
-									- Tail progress very fast
-										- Rename as "tail"?
-								- ...and cut short state machine afterwards, as fish can't swim
-								- See if this one suffices without the two explicit "water level" collision checks
+							+ Out of water: need new regime with fish falling:
+								+ Different position update when depth < 0:
+									+ Gravity
+									+ X velocity as now, y clamped to <= 0
+									+ Tail progress very fast
+										+ Rename as "tail"
+								+ ...and cut short state machine afterwards, as fish can't swim
+								X See if this one suffices without the two explicit "water level" collision checks
 						- Ocean floor:
 							- TODOHERE
 						- Ships' AABBs:
