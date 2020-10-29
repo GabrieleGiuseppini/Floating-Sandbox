@@ -1092,6 +1092,8 @@ Render:
 						+ Need freefall to allow for initial velocity with y > 0
 
 					- See whether we still need 2 water surface regimens
+						! Confirmed: we hit BigPanic upon freefall re-entry
+						- Might get rid of "panic" one, as long as we don't hit the other one upon freefall re-entry
 
 					- Bug: fish becoming above water while steering - does not free fall
 
@@ -1153,7 +1155,8 @@ Render:
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
 					- Also take OceanFloor						
-			+ Superimpose sin over movement						
+			= Superimpose sin over movement						
+				- Recalibrate
 			= Swarming
 				= When adding new fish, distribute remaining counts among species according to swarm sizes
 				- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later

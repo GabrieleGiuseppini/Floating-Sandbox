@@ -333,7 +333,7 @@ void Fishes::Update(
             // Update tail progress phase: add basal speed
             fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
 
-            // ...superimpose a small sin component, unless we're steering
+            // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
                 fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase + Pi<float> / 2.0f)) / 200.0f;
         }
@@ -343,7 +343,7 @@ void Fishes::Update(
             // Free-falling
             //
 
-            //LogMessage("TODOHERE: 3: Free-falling");
+            LogMessage("TODOHERE: 3: Free-falling");
 
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
@@ -431,7 +431,7 @@ void Fishes::Update(
             {
                 if (fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
                 {
-                    //LogMessage("TODOHERE: 4: OceanSurface - LittlePanic");
+                    LogMessage("TODOHERE: 4: OceanSurface - LittlePanic");
 
                     // Bounce direction, opposite of target
                     vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
@@ -448,7 +448,7 @@ void Fishes::Update(
             }
             else
             {
-                //LogMessage("TODOHERE: 4: OceanSurface - BigPanic");
+                LogMessage("TODOHERE: 4: OceanSurface - BigPanic");
 
                 // Very close to water surface...
                 // ...enter panic mode, and bounce
