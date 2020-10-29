@@ -1090,10 +1090,9 @@ Render:
 					+ Allow fish in much panic to go out of water
 						+ Simply don't consider water surface collision if panic > threshold
 						+ Need freefall to allow for initial velocity with y > 0
-
-					- See whether we still need 2 water surface regimens
+					+ See whether we still need 2 water surface regimens
 						! Confirmed: we hit BigPanic upon freefall re-entry
-						- Might get rid of "panic" one, as long as we don't hit the other one upon freefall re-entry
+						+ Might get rid of "panic" one, as long as we don't hit the other one upon freefall re-entry
 
 					- Bug: fish becoming above water while steering - does not free fall
 

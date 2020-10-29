@@ -343,7 +343,7 @@ void Fishes::Update(
             // Free-falling
             //
 
-            LogMessage("TODOHERE: 3: Free-falling");
+            //LogMessage("TODOHERE: 3: Free-falling");
 
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
@@ -424,49 +424,25 @@ void Fishes::Update(
         }
         // Check whether we're too close to the water surface - but only if fish is not in too much panic
         else if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 10.0f
+            depth < 7.0f
             && fish.PanicCharge <= 0.8f)
         {
-            if (depth > 3.0f) // Still far away
+            // Bounce away only if we're really going into it
+            if (fish.TargetVelocity.y >= 0.0f)
             {
-                if (fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
-                {
-                    LogMessage("TODOHERE: 4: OceanSurface - LittlePanic");
+                //LogMessage("TODOHERE: 4: OceanSurface - Bounce");
 
-                    // Bounce direction, opposite of target
-                    vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
+                // Bounce direction, opposite of target
+                vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
-                    // Calculate new target velocity - away from disturbance point, and will be panic velocity
-                    fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
-
-                    // Update render vector to match velocity
-                    fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-                    // Converge direction change at this rate
-                    fish.CurrentDirectionSmoothingConvergenceRate = 0.2f;
-                }
-            }
-            else
-            {
-                LogMessage("TODOHERE: 4: OceanSurface - BigPanic");
-
-                // Very close to water surface...
-                // ...enter panic mode, and bounce
-
-                fish.PanicCharge = 1.0f;
-
-                // Bounce direction, opposite of current velocity
-                vec2f const currentVelocityDirection = fish.CurrentVelocity.normalise();
-                vec2f const bounceDirection = vec2f(currentVelocityDirection.x, std::min(-0.3f, -currentVelocityDirection.y)).normalise();
-
-                // Calculate new target velocity - away from disturbance point, and will be panic velocity
+                // Calculate new target velocity - away from disturbance point
                 fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
 
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
                 // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f * (1.0f + fish.PanicCharge);
             }
         }
         // Check whether this fish has reached its target, while not in panic mode
