@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/Utils.h>
 
@@ -289,23 +290,42 @@ void Fishes::Update(
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
         // Run freefall state machine
-        float constexpr OceanSurfaceOffset = 3.0f;
         if (!fish.IsInFreefall
-            && fish.CurrentPosition.y > oceanY + OceanSurfaceOffset) // High watermark
+            && fish.CurrentPosition.y > oceanY + 4.0f) // Higher watermark, so that jump is more pronounced
         {
             // Enter freefall
             fish.IsInFreefall = true;
         }
         else if (fish.IsInFreefall
-            && fish.CurrentPosition.y < oceanY - OceanSurfaceOffset) // Low watermark
+            && fish.CurrentPosition.y <= oceanY)
         {
             // Leave freefall
             fish.IsInFreefall = false;
 
-            // Enter panic mode - after exhausting this panic charge,
+            // TODOTEST: reduce velocity to max
+            float todo = fish.CurrentVelocity.length();
+            float const velocityMagnitude = fish.CurrentVelocity.length();
+            float constexpr v0 = 0.5f; // 0.45f; // TODO
+            float const newVelocityMagnitude = v0 * SmoothStep(0.0f, v0, velocityMagnitude);
+            fish.CurrentVelocity = fish.CurrentVelocity.normalise() * newVelocityMagnitude;
+            fish.TargetVelocity = fish.CurrentVelocity;
+            LogMessage("TODO: TRUNCATION: ", todo, " -> ", fish.CurrentVelocity.length());
+
+            // TODOSEST: apply water drag to compress high velocities down (v^2)
+            /*
+            float todo = fish.CurrentVelocity.length();
+            float const velocityMagnitude = fish.CurrentVelocity.length();
+            float constexpr v0 = 0.65f; // TODO
+            float const newVelocityMagnitude = v0 * std::sqrt(velocityMagnitude / v0);
+            fish.CurrentVelocity = fish.CurrentVelocity.normalise() * newVelocityMagnitude;
+            fish.TargetVelocity = fish.CurrentVelocity;
+            LogMessage("TODO: TRUNCATION: ", todo, " -> ", fish.CurrentVelocity.length());
+            */
+
+            // Enter "a bit of" panic mode - after exhausting this panic charge,
             // the fish will resume swimming towards it current target
             // position
-            fish.PanicCharge = 1.0f;
+            fish.PanicCharge = 0.25f;
         }
 
         // Dynamics update
@@ -337,11 +357,16 @@ void Fishes::Update(
 
             //LogMessage("TODOHERE: 3: Free-falling");
 
+            float const todo = fish.CurrentVelocity.length();
+
             // Update velocity with gravity
             fish.TargetVelocity = vec2f(
                 fish.CurrentVelocity.x,
-                std::min(0.0f, fish.CurrentVelocity.y) - GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
+                // TODO
+                fish.CurrentVelocity.y - 20.0f * GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
+
+            LogMessage("TODOTEST: ", todo, " -> ", fish.CurrentVelocity.length());
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -410,9 +435,10 @@ void Fishes::Update(
             // Converge directions really fast
             fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
         }
-        // Check whether we're too close to the water surface
+        // Check whether we're too close to the water surface - but only if fish is not in too much panic
         else if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 10.0f)
+            depth < 10.0f
+            && fish.PanicCharge <= 0.8f)
         {
             if (depth > 3.0f) // Still far away
             {
