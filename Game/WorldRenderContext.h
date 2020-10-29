@@ -373,6 +373,9 @@ public:
 
         vec2f const textureCoordsXLimits = vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.x);
 
+        // TailX is in the 0..1 space, transform into texture coords space
+        float const tailXTextureSpace = textureCoordsXLimits.x + (textureCoordsXLimits.y - textureCoordsXLimits.x) * tailX;
+
         // top-left
         mFishVertexBuffer.emplace_back(
             position,
@@ -380,7 +383,7 @@ public:
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
 
         // bottom-left
@@ -390,7 +393,7 @@ public:
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
 
         // top-right
@@ -400,7 +403,7 @@ public:
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
 
         // bottom-left
@@ -410,7 +413,7 @@ public:
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
 
         // top-right
@@ -420,7 +423,7 @@ public:
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
 
         // bottom-right
@@ -430,7 +433,7 @@ public:
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
-            tailX,
+            tailXTextureSpace,
             tailProgress);
     }
 

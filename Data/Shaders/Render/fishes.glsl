@@ -65,7 +65,7 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    //
+//
     // Here we simulate a bar bending around the y axis at x=TailX,
     // and rendered with perspective
     //
@@ -74,7 +74,7 @@ void main()
     // Calculate angle: [-Alpha0 -> Alpha0]
     //
     
-    #define Alpha0 0.5
+    #define Alpha0 1.4
     
     float alpha = Alpha0 * tailProgress;
     
@@ -97,7 +97,7 @@ void main()
     // Z(alpha, @x=0) = tailX * sin(alpha)
     z -= tailX * sin(Alpha0) + .0;
     
-    #define Z0 4.1
+    #define Z0 2.1
     
     //
     // Transform X: perspective + rotation
@@ -110,10 +110,9 @@ void main()
         * smoothstep(-RTailMargin, LTailMargin, tailX - vertexTextureCoordinates.x)); // Only apply to left side of tail, i.e. where x < tailX + RTailMargin; else divisor=1.0
     
     float textureX = clamp(
-        vertexTextureCoordinatesXLimits.x, // L margin
-        vertexTextureCoordinatesXLimits.y, // R margin
-        tailX + Z0 * (vertexTextureCoordinates.x - tailX) / (perspectiveDivisor * rotationDivisor));
-
+        tailX + Z0 * (vertexTextureCoordinates.x - tailX) / (perspectiveDivisor * rotationDivisor),
+        vertexTextureCoordinatesXLimits.x,  // L margin
+        vertexTextureCoordinatesXLimits.y); // R margin
         
    	//
     // Transform Y: perspective

@@ -12,6 +12,11 @@
 			"worldScaling": 0.003125,
 			"filename": "barracuda_\\d+"
 		}
+		,
+		{	
+			"worldScaling": 0.005859375,
+			"filename": "mako_\\d+"
+		}
 	]
 }
 

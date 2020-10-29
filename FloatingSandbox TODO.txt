@@ -253,6 +253,8 @@ Render:
 		= Fishes (*)
 			- Changelist
 
+		- Check "chicken sandbox" settings directory to repro crash
+
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
@@ -1078,26 +1080,36 @@ Render:
 					+ Smooth direction and/or velocity vector constantly towards target
 						+ When not in any "Steering" state
 						+ See it might actually replace the "Steering without turning" state
+					+ Need gravity state machine?
+						+ bool IsInFreeFall
+						+ In fall:							
+							+ Water drag inverse
+							+ Immediate convergence of direction
+						+ High- and Low-watermarks for ocean level, for enter/exit state checks
+						+ End of fall: enter panic mode, keeping current (target) velocity; un-panic will do the rest and re-direct towards previous target position			
+					+ Allow fish in much panic to go out of water
+						+ Simply don't consider water surface collision if panic > threshold
+						+ Need freefall to allow for initial velocity with y > 0
 
-					- Bug with freezing fishes
+					- See whether we still need 2 water surface regimens
 
-					- Need gravity state machine?
-						- Start of fall: initialize velocity with current velocity
-							- Need some slack (here and at ocean surface level check) or else fish starts vertical slowdown right at the sea-air interface and everything slows down
-						- End of fall: recalc target velocity (based on current target pos); auto-smoothing will do the rest
-			
 					- Bug: fish becoming above water while steering - does not free fall
-			
-					- Allow fish in much panic to go out of water
-						- Simply don't consider water surface collision if panic > threshold
-						- Need freefall to allow for initial velocity with y > 0
-					
+
+					- Position update: incorporate dt, so eventually adjust species' speeds
+						- We already had to multiply mako's speed (13) by dt
+													
 					- World border:
 						- Clamp at spawn
 						- Collision check w/panic
-						- Check during free falling as well!
+						- Check during free falling as well!										
 					
-					- Position update: incorporate dt, so eventually adjust species' speeds
+					- Disturbance (& food): incorporate somehow fish quad size
+						- Or just anchor at tip (mouth)? 
+					- Add tail speed & swing width to species
+					- See texture X coords limits issue
+						- See if it's due to not mipmapping upload
+					- See center of disturbance issue w/Mako
+
 				= New algo:
 					+ Turning (if isTurning)
 					+ Pos update

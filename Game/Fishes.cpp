@@ -302,25 +302,13 @@ void Fishes::Update(
             // Leave freefall
             fish.IsInFreefall = false;
 
-            // TODOTEST: reduce velocity to max
-            float todo = fish.CurrentVelocity.length();
-            float const velocityMagnitude = fish.CurrentVelocity.length();
-            float constexpr v0 = 0.5f; // 0.45f; // TODO
-            float const newVelocityMagnitude = v0 * SmoothStep(0.0f, v0, velocityMagnitude);
-            fish.CurrentVelocity = fish.CurrentVelocity.normalise() * newVelocityMagnitude;
-            fish.TargetVelocity = fish.CurrentVelocity;
-            LogMessage("TODO: TRUNCATION: ", todo, " -> ", fish.CurrentVelocity.length());
-
-            // TODOSEST: apply water drag to compress high velocities down (v^2)
-            /*
-            float todo = fish.CurrentVelocity.length();
-            float const velocityMagnitude = fish.CurrentVelocity.length();
-            float constexpr v0 = 0.65f; // TODO
-            float const newVelocityMagnitude = v0 * std::sqrt(velocityMagnitude / v0);
-            fish.CurrentVelocity = fish.CurrentVelocity.normalise() * newVelocityMagnitude;
-            fish.TargetVelocity = fish.CurrentVelocity;
-            LogMessage("TODO: TRUNCATION: ", todo, " -> ", fish.CurrentVelocity.length());
-            */
+            // Drag velocity down
+            float const currentVelocityMagnitude = fish.CurrentVelocity.length();
+            float constexpr MaxVelocityMagnitude = 0.5f;
+            fish.CurrentVelocity =
+                fish.CurrentVelocity.normalise(currentVelocityMagnitude)
+                * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
+            fish.TargetVelocity = fish.CurrentVelocity; // Converge immediately
 
             // Enter "a bit of" panic mode - after exhausting this panic charge,
             // the fish will resume swimming towards it current target
@@ -345,7 +333,7 @@ void Fishes::Update(
             // Update tail progress phase: add basal speed
             fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
 
-            // ...superimpose sin component, unless we're steering
+            // ...superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
                 fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase + Pi<float> / 2.0f)) / 200.0f;
         }
@@ -357,16 +345,15 @@ void Fishes::Update(
 
             //LogMessage("TODOHERE: 3: Free-falling");
 
-            float const todo = fish.CurrentVelocity.length();
-
-            // Update velocity with gravity
+            // Update velocity with gravity, amplified for better scenics
+            float const newVelocityY = fish.CurrentVelocity.y
+                - 20.0f // Amplification factor
+                * GameParameters::GravityMagnitude
+                * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
             fish.TargetVelocity = vec2f(
                 fish.CurrentVelocity.x,
-                // TODO
-                fish.CurrentVelocity.y - 20.0f * GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>);
+                newVelocityY);
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
-
-            LogMessage("TODOTEST: ", todo, " -> ", fish.CurrentVelocity.length());
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();

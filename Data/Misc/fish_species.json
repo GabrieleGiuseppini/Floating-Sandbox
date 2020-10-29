@@ -5,7 +5,7 @@
 	"shoal_size": 32,
 	"basal_depth": 30.0,
 	"basal_speed": 0.06,
-	"tail_x": 0.6,
+	"tail_x": 0.7,
 	"texture_index": 0
     },
 
@@ -17,6 +17,16 @@
 	"basal_speed": 0.06,
 	"tail_x": 0.7,
 	"texture_index": 1
+    },
+
+    {
+        "name": "Mako",
+
+	"shoal_size": 1,
+	"basal_depth": 150.0,
+	"basal_speed": 0.268,
+	"tail_x": 0.77,
+	"texture_index": 2
     }
 
 ]
