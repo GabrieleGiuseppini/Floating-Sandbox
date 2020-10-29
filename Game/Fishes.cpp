@@ -181,7 +181,7 @@ void Fishes::Update(
         FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
         //
-        // 1) If we're turning, continue turning
+        // 1) Steer or auto-smooth direction
         //
 
         if (fish.CruiseSteeringState.has_value())
@@ -288,8 +288,28 @@ void Fishes::Update(
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
-        // Check if the fish is still swimming in water - with a bit of slack
-        if (fish.CurrentPosition.y < oceanY - 1.2f)
+        // Run freefall state machine
+        float constexpr OceanSurfaceOffset = 3.0f;
+        if (!fish.IsInFreefall
+            && fish.CurrentPosition.y > oceanY + OceanSurfaceOffset) // High watermark
+        {
+            // Enter freefall
+            fish.IsInFreefall = true;
+        }
+        else if (fish.IsInFreefall
+            && fish.CurrentPosition.y < oceanY - OceanSurfaceOffset) // Low watermark
+        {
+            // Leave freefall
+            fish.IsInFreefall = false;
+
+            // Enter panic mode - after exhausting this panic charge,
+            // the fish will resume swimming towards it current target
+            // position
+            fish.PanicCharge = 1.0f;
+        }
+
+        // Dynamics update
+        if (!fish.IsInFreefall)
         {
             //
             // Swimming

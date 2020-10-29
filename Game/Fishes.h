@@ -76,6 +76,29 @@ private:
 
     struct Fish
     {
+    public:
+
+        struct CruiseSteering
+        {
+            vec2f StartVelocity;
+            vec2f StartRenderVector;
+            float SimulationTimeStart;
+            float SimulationTimeDuration;
+
+            CruiseSteering(
+                vec2f startVelocity,
+                vec2f startRenderVector,
+                float simulationTimeStart,
+                float simulationTimeDuration)
+                : StartVelocity(startVelocity)
+                , StartRenderVector(startRenderVector)
+                , SimulationTimeStart(simulationTimeStart)
+                , SimulationTimeDuration(simulationTimeDuration)
+            {}
+        };
+
+    public:
+
         FishShoalId ShoalId;
 
         float PersonalitySeed;
@@ -97,26 +120,10 @@ private:
         float PanicCharge; // When not zero, fish is panic mode; decays towards zero
 
         // Steering state machine
-        struct CruiseSteering
-        {
-            vec2f StartVelocity;
-            vec2f StartRenderVector;
-            float SimulationTimeStart;
-            float SimulationTimeDuration;
-
-            CruiseSteering(
-                vec2f startVelocity,
-                vec2f startRenderVector,
-                float simulationTimeStart,
-                float simulationTimeDuration)
-                : StartVelocity(startVelocity)
-                , StartRenderVector(startRenderVector)
-                , SimulationTimeStart(simulationTimeStart)
-                , SimulationTimeDuration(simulationTimeDuration)
-            {}
-        };
-
         std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
+
+        // Freefall state machine
+        bool IsInFreefall;
 
         Fish(
             FishShoalId shoalId,
@@ -137,6 +144,7 @@ private:
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , CruiseSteeringState()
+            , IsInFreefall(false)
         {}
     };
 
