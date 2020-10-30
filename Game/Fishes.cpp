@@ -37,6 +37,7 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     , mFishShoals()
     , mFishes()
     , mCurrentInteractiveDisturbance()
+    , mCurrentInteractiveAttraction()
 {
 }
 
@@ -282,6 +283,8 @@ void Fishes::Update(
         // 3) Update dynamics
         //
 
+        float constexpr OceanSurfaceDisturbance = 1.0f; // Magic number
+
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
@@ -291,6 +294,9 @@ void Fishes::Update(
         {
             // Enter freefall
             fish.IsInFreefall = true;
+
+            // Create a little disturbance in the ocean surface
+            oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
         else if (fish.IsInFreefall
             && fish.CurrentPosition.y <= oceanY)
@@ -314,6 +320,9 @@ void Fishes::Update(
             // the fish will resume swimming towards it current target
             // position
             fish.PanicCharge = 0.03f;
+
+            // Create a little disturbance in the ocean surface
+            oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
 
         // Dynamics update
@@ -377,34 +386,37 @@ void Fishes::Update(
         //
 
         // Calculate (rendered) position of head
-        // TODOHERE
+        vec2f const fishHeadPosition =
+            fish.CurrentPosition
+            + fish.CurrentRenderVector.normalise() * species.HeadOffsetX;
 
-        // TODO: x5:
+        // TODO: x6:
         // + Current disturbance
+        // - Current attraction
         // - AABB
         // + Water level
         // - Ocean floor
         // + Reached target
 
         // Check whether the fish has been interactively disturbed
-        if (float const distance = (fish.CurrentPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
+        if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
             mCurrentInteractiveDisturbance.has_value()
             && distance < 7.5f) // Within radius
         {
+            //LogMessage("TODOHERE: 4: InteractiveDisturbancePanic");
+
             //
             // Interactive disturbance, enter panic mode
             //
-
-            //LogMessage("TODOHERE: 4: InteractiveDisturbancePanic");
 
             fish.PanicCharge = 1.0f;
 
             // Don't change target position, we'll return to it when panic is over
 
             // Calculate new direction, away from disturbance
-            vec2f panicDirection = (fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise();
+            vec2f panicDirection = (fishHeadPosition - *mCurrentInteractiveDisturbance).normalise(distance);
 
-            LogMessage("TODOHERE: Fish @ ", fish.CurrentPosition.toString(), " Dist @ ", mCurrentInteractiveDisturbance->toString(), " Dir=", panicDirection.toString(), " Radius=", distance);
+            LogMessage("TODOHERE: Fish @ ", fish.CurrentPosition.toString(), " Head @ ", fishHeadPosition.toString(), " Dist @ ", mCurrentInteractiveDisturbance->toString(), " Dir=", panicDirection.toString(), " Radius=", distance);
 
             // Make sure direction is not too steep
             float constexpr MinXComponent = 0.4f;
@@ -428,10 +440,10 @@ void Fishes::Update(
             // Converge directions really fast
             fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
         }
-        // Check whether we're too close to the water surface - but only if fish is not in too much panic
+        // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         else if (float const depth = oceanY - fish.CurrentPosition.y;
             depth < 5.0f
-            && fish.PanicCharge <= 0.8f)
+            && fish.PanicCharge <= 0.7f)
         {
             // Bounce away only if we're really going into it
             if (fish.TargetVelocity.y >= 0.0f)
@@ -522,10 +534,11 @@ void Fishes::Update(
     }
 
     //
-    // 3) Nuke disturbance, now that we've consumed it
+    // 3) Nuke disturbances, now that we've consumed it
     //
 
     mCurrentInteractiveDisturbance.reset();
+    mCurrentInteractiveAttraction.reset();
 }
 
 void Fishes::Upload(Render::RenderContext & renderContext) const

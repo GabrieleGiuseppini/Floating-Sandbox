@@ -27,6 +27,17 @@ public:
 
     explicit Fishes(FishSpeciesDatabase const & fishSpeciesDatabase);
 
+    void Update(
+        float currentSimulationTime,
+        OceanSurface & oceanSurface,
+        OceanFloor const & oceanFloor,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
+
+    void Upload(Render::RenderContext & renderContext) const;
+
+public:
+
     void ApplyDisturbanceAt(vec2f const & worldCoordinates)
     {
         mCurrentInteractiveDisturbance = worldCoordinates;
@@ -44,14 +55,10 @@ public:
         */
     }
 
-    void Update(
-        float currentSimulationTime,
-        OceanSurface & oceanSurface,
-        OceanFloor const & oceanFloor,
-        GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
-
-    void Upload(Render::RenderContext & renderContext) const;
+    void ApplyAttractionAt(vec2f const & worldCoordinates)
+    {
+        mCurrentInteractiveAttraction = worldCoordinates;
+    }
 
 private:
 
@@ -180,8 +187,9 @@ private:
 
     std::vector<Fish> mFishes;
 
-    // The world position at which there's been an interactive disturbance, if any
+    // The world position at which there's been an interactive disturbance/attraction, if any
     std::optional<vec2f> mCurrentInteractiveDisturbance;
+    std::optional<vec2f> mCurrentInteractiveAttraction;
 };
 
 }

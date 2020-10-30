@@ -1102,23 +1102,21 @@ Render:
 					+ Higher jump out of water
 						+ Try lowering gravity amplification
 						+ Try higher watermark for going out of water
-						
-					- Disturbance (& food): incorporate somehow fish quad size
-						- Move anchor point to species DB
-					= Add tail speed and swing width to species
+					+ Waves at leave & re-entry
 
+					= Disturbance (& food): incorporate somehow fish quad size
+						+ Move anchor point to species DB
+						- Need to know actual rendered size
+					+ Add tail speed and swing width to species
 					
-
 					- Bug: fish becoming above water while steering - does not free fall
-
-					- Waves at leave & re-entry
-
+					
 					- Position update: incorporate dt, so eventually adjust species' speeds
 						- We already had to multiply mako's speed (13) by dt
 													
 					- World border:
 						- Clamp at spawn
-						- Collision check w/panic
+						- Simple collision check w/immediate bounce, not excluding other collision checks
 						- Check during free falling as well!										
 									
 				= New algo:
@@ -1175,6 +1173,7 @@ Render:
 					- Requires maintenance of sorted Xs in vector
 			- Tools:
 				- Food/Scare
+					- Icon: todo
 					- Food: set target velocity to direction towards tool; auto-smoothing does the rest
 						- Enter panic mode if really close by
 					- Scare:

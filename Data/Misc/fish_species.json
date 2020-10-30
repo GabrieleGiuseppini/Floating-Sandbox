@@ -9,7 +9,6 @@
 	"tail_speed": 0.048,
 	"tail_swing_width": 1.2,
 	"head_offset_x": 0.109,
-	"head_offset_y": -0.004544,
 	"texture_index": 0
     },
 
@@ -23,7 +22,6 @@
 	"tail_speed": 0.048,
 	"tail_swing_width": 1.2,
 	"head_offset_x": 0.29375,
-	"head_offset_y": -0.015625,
 	"texture_index": 1
     },
 
@@ -34,10 +32,9 @@
 	"ocean_depth": 150.0,
 	"basal_speed": 0.268,
 	"tail_x": 0.77,
-	"tail_speed": 0.048,
+	"tail_speed": 0.04,
 	"tail_swing_width": 0.3,
 	"head_offset_x": 1.259765625,
-	"head_offset_y": -0.09375,
 	"texture_index": 2
     }
 

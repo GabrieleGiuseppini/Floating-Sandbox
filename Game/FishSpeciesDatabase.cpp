@@ -40,9 +40,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
             float const tailSpeed = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_speed");
             float const tailSwingWidth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_swing_width");
 
-            vec2f const headOffset = vec2f(
-                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_x"),
-                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_y"));
+            float const headOffsetX = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_x");
 
             auto const textureIndex = static_cast<TextureFrameIndex>(Utils::GetMandatoryJsonMember<int>(fishSpeciesObject, "texture_index"));
 
@@ -54,7 +52,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
                 tailX,
                 tailSpeed,
                 tailSwingWidth,
-                headOffset,
+                headOffsetX,
                 textureIndex);
         }
         catch (GameException const & ex)
