@@ -46,7 +46,7 @@ public:
 
     void Update(
         float currentSimulationTime,
-        OceanSurface const & oceanSurface,
+        OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);

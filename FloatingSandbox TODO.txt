@@ -1105,7 +1105,7 @@ Render:
 						
 					- Disturbance (& food): incorporate somehow fish quad size
 						- Move anchor point to species DB
-					- Add tail speed and swing width to species
+					= Add tail speed and swing width to species
 
 					
 

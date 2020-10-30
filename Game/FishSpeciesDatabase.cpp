@@ -33,18 +33,28 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
         try
         {
             size_t const shoalSize = Utils::GetMandatoryJsonMember<size_t>(fishSpeciesObject, "shoal_size");
-            float const basalDepth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "basal_depth");
+            float const oceanDepth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "ocean_depth");
             float const basalSpeed = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "basal_speed");
+
             float const tailX = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_x");
+            float const tailSpeed = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_speed");
+            float const tailSwingWidth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "tail_swing_width");
+
+            vec2f const headOffset = vec2f(
+                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_x"),
+                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_y"));
 
             auto const textureIndex = static_cast<TextureFrameIndex>(Utils::GetMandatoryJsonMember<int>(fishSpeciesObject, "texture_index"));
 
             fishSpecies.emplace_back(
                 name,
                 shoalSize,
-                basalDepth,
+                oceanDepth,
                 basalSpeed,
                 tailX,
+                tailSpeed,
+                tailSwingWidth,
+                headOffset,
                 textureIndex);
         }
         catch (GameException const & ex)

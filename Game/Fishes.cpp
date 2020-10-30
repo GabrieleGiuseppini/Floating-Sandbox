@@ -42,7 +42,7 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
 
 void Fishes::Update(
     float currentSimulationTime,
-    OceanSurface const & oceanSurface,
+    OceanSurface & oceanSurface,
     OceanFloor const & oceanFloor,
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
@@ -132,7 +132,7 @@ void Fishes::Update(
 
                 float const initialY =
                     -5.0f // Min depth
-                    - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(species.BasalDepth, 15.0f));
+                    - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(species.OceanDepth, 15.0f));
 
                 mFishShoals[currentShoalSearchIndex].InitialPosition = vec2f(
                     mFishShoals[currentShoalSearchIndex].InitialDirection.x < 0.0f ? initialX : -initialX,
@@ -172,10 +172,6 @@ void Fishes::Update(
     //
     // 2) Update fishes
     //
-
-    float constexpr BasalSpeedToProgressPhaseSpeedFactor =
-        40.0f // Magic, from observation
-        * GameParameters::SimulationStepTimeDuration<float>;
 
     for (auto & fish : mFishes)
     {
@@ -335,7 +331,7 @@ void Fishes::Update(
             fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
 
             // Update tail progress phase: add basal speed
-            fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * speedMultiplier;
+            fish.CurrentTailProgressPhase += species.TailSpeed * speedMultiplier;
 
             // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
@@ -367,7 +363,7 @@ void Fishes::Update(
             fish.CurrentPosition += fish.CurrentVelocity;
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
-            fish.CurrentTailProgressPhase += species.BasalSpeed * BasalSpeedToProgressPhaseSpeedFactor * 20.0f;
+            fish.CurrentTailProgressPhase += species.TailSpeed * 20.0f;
 
             // Cut short state machine now, this fish can't swim
             continue;
@@ -379,6 +375,9 @@ void Fishes::Update(
         //
         // 4) Disturbances check
         //
+
+        // Calculate (rendered) position of head
+        // TODOHERE
 
         // TODO: x5:
         // + Current disturbance
@@ -549,12 +548,15 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
             horizontalScale *= -1.0f;
         }
 
+        auto const & species = mFishShoals[fish.ShoalId].Species;
+
         renderContext.UploadFish(
-            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, mFishShoals[fish.ShoalId].Species.RenderTextureFrameIndex),
+            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
             fish.CurrentPosition,
             angleCw,
             horizontalScale,
-            mFishShoals[fish.ShoalId].Species.TailX,
+            species.TailX,
+            species.TailSwingWidth,
             std::sin(fish.CurrentTailProgressPhase));
     }
 

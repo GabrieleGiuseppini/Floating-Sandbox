@@ -713,6 +713,7 @@ public:
         float angleCw,
         float horizontalScale,
         float tailX,
+        float tailSwing,
         float tailProgress)
     {
         mWorldRenderContext->UploadFish(
@@ -721,6 +722,7 @@ public:
             angleCw,
             horizontalScale,
             tailX,
+            tailSwing,
             tailProgress);
     }
 

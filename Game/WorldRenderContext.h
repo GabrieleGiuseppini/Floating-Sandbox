@@ -362,6 +362,7 @@ public:
         float angleCw,
         float horizontalScale,
         float tailX,
+        float tailSwing,
         float tailProgress)
     {
         auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
@@ -384,6 +385,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
 
         // bottom-left
@@ -394,6 +396,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
 
         // top-right
@@ -404,6 +407,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
 
         // bottom-left
@@ -414,6 +418,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
 
         // top-right
@@ -424,6 +429,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
 
         // bottom-right
@@ -434,6 +440,7 @@ public:
             textureCoordsXLimits,
             angleCw,
             tailXTextureSpace,
+            tailSwing,
             tailProgress);
     }
 
@@ -771,6 +778,7 @@ private:
         vec2f textureCoordsXLimits;
         float angleCw;
         float tailX;
+        float tailSwing;
         float tailProgress;
 
         FishVertex(
@@ -780,6 +788,7 @@ private:
             vec2f _textureCoordsXLimits,
             float _angleCw,
             float _tailX,
+            float _tailSwing,
             float _tailProgress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
@@ -787,6 +796,7 @@ private:
             , textureCoordsXLimits(_textureCoordsXLimits)
             , angleCw(_angleCw)
             , tailX(_tailX)
+            , tailSwing(_tailSwing)
             , tailProgress(_tailProgress)
         {}
     };

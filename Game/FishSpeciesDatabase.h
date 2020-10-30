@@ -8,6 +8,7 @@
 #include "ResourceLocator.h"
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/Vectors.h>
 
 #include <string>
 #include <vector>
@@ -17,24 +18,35 @@ struct FishSpecies
     std::string Name;
 
     size_t ShoalSize;
-    float BasalDepth;
+    float OceanDepth;
     float BasalSpeed;
-    float TailX; // In texture (normalized) coordinates
+
+    float TailX; // Normalized coordinates (bottom-left origin)
+    float TailSpeed; // Radians
+    float TailSwingWidth; // Radians
+
+    vec2f HeadOffset; // World coordinates (center origin)
 
     TextureFrameIndex RenderTextureFrameIndex;
 
     FishSpecies(
         std::string const & name,
         size_t shoalSize,
-        float basalDepth,
+        float oceanDepth,
         float basalSpeed,
         float tailX,
+        float tailSpeed,
+        float tailSwingWidth,
+        vec2f headOffset,
         TextureFrameIndex renderTextureFrameIndex)
         : Name(name)
         , ShoalSize(shoalSize)
-        , BasalDepth(basalDepth)
+        , OceanDepth(oceanDepth)
         , BasalSpeed(basalSpeed)
         , TailX(tailX)
+        , TailSpeed(tailSpeed)
+        , TailSwingWidth(tailSwingWidth)
+        , HeadOffset(headOffset)
         , RenderTextureFrameIndex(renderTextureFrameIndex)
     {}
 };

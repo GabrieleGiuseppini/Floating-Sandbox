@@ -6,21 +6,15 @@
 	"frames":[
 		{	
 			"worldScaling": 0.001136,
-			"anchorOffsetX": 96,
-			"anchorOffsetY": -4,
 			"filename": "gilthead_bream_\\d+"
 		},
 		{	
 			"worldScaling": 0.003125,
-			"anchorOffsetX": 94,
-			"anchorOffsetY": -5,
 			"filename": "barracuda_\\d+"
 		}
 		,
 		{	
 			"worldScaling": 0.005859375,
-			"anchorOffsetX": 215,
-			"anchorOffsetY": -16,
 			"filename": "mako_\\d+"
 		}
 	]

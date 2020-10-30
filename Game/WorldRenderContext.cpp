@@ -218,14 +218,14 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    static_assert(sizeof(FishVertex) == 11 * sizeof(float));
+    static_assert(sizeof(FishVertex) == 12 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish1), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish2), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(4 * sizeof(float)));
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish3));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish3), 3, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(8 * sizeof(float)));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish3), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(8 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);

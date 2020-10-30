@@ -8,13 +8,14 @@
 // Inputs
 in vec4 inFish1; // CenterPosition (vec2), VertexOffset (vec2)
 in vec4 inFish2; // TextureCoordinates (vec2), TextureCoordinatesXLimits (vec2)
-in vec3 inFish3; // AngleCw (float), TailX (float), TailProgress (float)
+in vec4 inFish3; // AngleCw (float), TailX (float), TailSwing (float), TailProgress (float)
 
 // Outputs
 out vec2 vertexTextureCoordinates;
 out float worldY;
 out vec2 vertexTextureCoordinatesXLimits;
 out float tailX;
+out float tailSwing;
 out float tailProgress;
 
 // Params
@@ -26,7 +27,8 @@ void main()
     worldY = inFish1.y;
     vertexTextureCoordinatesXLimits = inFish2.zw;
     tailX = inFish3.y;
-    tailProgress = inFish3.z;
+    tailSwing = inFish3.z;
+    tailProgress = inFish3.w;
     
     float angleCw = inFish3.x;
 
@@ -54,6 +56,7 @@ in vec2 vertexTextureCoordinates;
 in float worldY;
 in vec2 vertexTextureCoordinatesXLimits;
 in float tailX;
+in float tailSwing;
 in float tailProgress;
 
 // The texture
@@ -71,17 +74,15 @@ void main()
     //
     
     //
-    // Calculate angle: [-Alpha0 -> Alpha0]
+    // Calculate angle: [-tailSwing -> tailSwing]
     //
     
-    #define Alpha0 1.2
-    
-    float alpha = Alpha0 * tailProgress;
+    float alpha = tailSwing * tailProgress;
     
     //
     // Calculate Z simulating pivoting aroind tailX
     //
-    // Z = Z(alpha, x) : [-Tailx * sin(Alpha0), TailX * sin(Alpha0)]
+    // Z = Z(alpha, x) : [-Tailx * sin(tailSwing), TailX * sin(tailSwing)]
     //
     
     // Smoothstep range around tailX: tailX-LMargin -> tailX+RMargin
@@ -95,7 +96,7 @@ void main()
     // Shift Z so that when Z is closest to viewer, texture is at normal size
     //
     // Z(alpha, @x=0) = tailX * sin(alpha)
-    z -= tailX * sin(Alpha0) - .47;
+    z -= tailX * sin(tailSwing);
     
     #define Z0 2.1
     
