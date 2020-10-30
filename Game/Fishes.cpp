@@ -307,10 +307,10 @@ void Fishes::Update(
             // Drag velocity down
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
             float constexpr MaxVelocityMagnitude = 0.5f;
-            fish.CurrentVelocity =
+            fish.TargetVelocity =
                 fish.CurrentVelocity.normalise(currentVelocityMagnitude)
                 * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
-            fish.TargetVelocity = fish.CurrentVelocity; // Converge immediately
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.15f; // Converge to dragged velocity at this rate
 
             // Note: no need to change render vector, velocity direction has not changed
 
