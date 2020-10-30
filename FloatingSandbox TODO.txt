@@ -1099,17 +1099,15 @@ Render:
 					+ Try with velocity brake @ re-entry being smoothened - with right (high) convergence rate
 					+ At beginning of freefall, render direction change is too abrupt: try with auto-smoothing instead of immediate convergence
 					+ See center of disturbance issue w/Mako
-					
+					+ Higher jump out of water
+						+ Try lowering gravity amplification
+						+ Try higher watermark for going out of water
+						
 					- Disturbance (& food): incorporate somehow fish quad size
 						- Move anchor point to species DB
+					- Add tail speed and swing width to species
 
-					- Higher jump out of water
-						- Try lowering gravity amplification
-						- Try higher watermark for going out of water
-
-					- Adjust tailX's - where needed
-					- Add tail speed 
-					- Add tail swing width to species?
+					
 
 					- Bug: fish becoming above water while steering - does not free fall
 

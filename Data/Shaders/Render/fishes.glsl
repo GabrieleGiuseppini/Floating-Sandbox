@@ -74,7 +74,7 @@ void main()
     // Calculate angle: [-Alpha0 -> Alpha0]
     //
     
-    #define Alpha0 1.4
+    #define Alpha0 1.2
     
     float alpha = Alpha0 * tailProgress;
     
@@ -95,7 +95,7 @@ void main()
     // Shift Z so that when Z is closest to viewer, texture is at normal size
     //
     // Z(alpha, @x=0) = tailX * sin(alpha)
-    z -= tailX * sin(Alpha0) - .6;
+    z -= tailX * sin(Alpha0) - .47;
     
     #define Z0 2.1
     

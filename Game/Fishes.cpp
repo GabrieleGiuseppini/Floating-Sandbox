@@ -291,7 +291,7 @@ void Fishes::Update(
 
         // Run freefall state machine
         if (!fish.IsInFreefall
-            && fish.CurrentPosition.y > oceanY + 2.0f) // Higher watermark, so that jump is more pronounced
+            && fish.CurrentPosition.y > oceanY + 4.0f) // Higher watermark, so that jump is more pronounced
         {
             // Enter freefall
             fish.IsInFreefall = true;
@@ -351,7 +351,7 @@ void Fishes::Update(
 
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
-                - 20.0f // Amplification factor
+                - 10.0f // Amplification factor
                 * GameParameters::GravityMagnitude
                 * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
             fish.TargetVelocity = vec2f(
