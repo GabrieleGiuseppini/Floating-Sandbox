@@ -291,7 +291,7 @@ void Fishes::Update(
 
         // Run freefall state machine
         if (!fish.IsInFreefall
-            && fish.CurrentPosition.y > oceanY + 4.0f) // Higher watermark, so that jump is more pronounced
+            && fish.CurrentPosition.y > oceanY + 2.0f) // Higher watermark, so that jump is more pronounced
         {
             // Enter freefall
             fish.IsInFreefall = true;
@@ -361,7 +361,7 @@ void Fishes::Update(
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
-            fish.CurrentRenderVector = fish.TargetRenderVector; // Converge immediately
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.06f; // Converge at this rate
 
             // Update position: add velocity
             fish.CurrentPosition += fish.CurrentVelocity;

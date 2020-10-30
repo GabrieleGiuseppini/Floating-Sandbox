@@ -1098,7 +1098,11 @@ Render:
 					+ Test freefall after wave
 
 					- Try with velocity brake @ re-entry being smoothened - with right (high) convergence rate
-					- At beginning of freefall, render direction change is too abrupt: try with auto-smoothing instead of immediate convergence
+					+ At beginning of freefall, render direction change is too abrupt: try with auto-smoothing instead of immediate convergence
+
+					- See with panic decay rate being configurable
+						- Set it each time we set panic charge
+						- Freefall re-entry: faster
 
 					- Bug: fish becoming above water while steering - does not free fall
 
