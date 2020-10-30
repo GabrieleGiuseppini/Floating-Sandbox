@@ -388,8 +388,9 @@ void Fishes::Update(
         // + Reached target
 
         // Check whether the fish has been interactively disturbed
-        if (mCurrentInteractiveDisturbance.has_value()
-            && (fish.CurrentPosition - *mCurrentInteractiveDisturbance).length() < 7.5f) // Within radius
+        if (float const distance = (fish.CurrentPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
+            mCurrentInteractiveDisturbance.has_value()
+            && distance < 7.5f) // Within radius
         {
             //
             // Interactive disturbance, enter panic mode
@@ -403,6 +404,8 @@ void Fishes::Update(
 
             // Calculate new direction, away from disturbance
             vec2f panicDirection = (fish.CurrentPosition - *mCurrentInteractiveDisturbance).normalise();
+
+            LogMessage("TODOHERE: Fish @ ", fish.CurrentPosition.toString(), " Dist @ ", mCurrentInteractiveDisturbance->toString(), " Dir=", panicDirection.toString(), " Radius=", distance);
 
             // Make sure direction is not too steep
             float constexpr MinXComponent = 0.4f;
@@ -428,7 +431,7 @@ void Fishes::Update(
         }
         // Check whether we're too close to the water surface - but only if fish is not in too much panic
         else if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 7.0f
+            depth < 5.0f
             && fish.PanicCharge <= 0.8f)
         {
             // Bounce away only if we're really going into it

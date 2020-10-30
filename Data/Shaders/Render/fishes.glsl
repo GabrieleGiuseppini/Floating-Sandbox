@@ -65,7 +65,7 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-//
+    //
     // Here we simulate a bar bending around the y axis at x=TailX,
     // and rendered with perspective
     //
@@ -95,7 +95,7 @@ void main()
     // Shift Z so that when Z is closest to viewer, texture is at normal size
     //
     // Z(alpha, @x=0) = tailX * sin(alpha)
-    z -= tailX * sin(Alpha0) + .0;
+    z -= tailX * sin(Alpha0) - .6;
     
     #define Z0 2.1
     
@@ -120,7 +120,7 @@ void main()
     
     float textureY = 
         .5
-        + Z0 * (vertexTextureCoordinates.y - .5) / (Z0 + z);
+        + Z0 * (vertexTextureCoordinates.y - .5) / perspectiveDivisor;
         
     //
     // Sample texture
