@@ -49,7 +49,7 @@ public:
 
         // Calculate new target velocity and direction
         fish.StartVelocity = fish.CurrentVelocity;
-        fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, 1.0f, fish.PersonalitySeed);
+        fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed);
         fish.StartDirection = fish.CurrentDirection;
         fish.TargetDirection = fish.TargetVelocity.normalise();
         */
@@ -172,7 +172,6 @@ private:
     inline static vec2f MakeBasalVelocity(
         vec2f const & direction,
         FishSpecies const & species,
-        float velocityMultiplier,
         float personalitySeed);
 
 private:

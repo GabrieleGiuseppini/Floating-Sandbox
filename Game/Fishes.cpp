@@ -162,7 +162,7 @@ void Fishes::Update(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                MakeBasalVelocity((targetPosition - initialPosition).normalise(), species, 1.0f, personalitySeed),
+                MakeBasalVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
 
             // Update shoal
@@ -432,7 +432,7 @@ void Fishes::Update(
             }
 
             // Calculate new target velocity - away from disturbance point, and will be panic velocity
-            fish.TargetVelocity = MakeBasalVelocity(panicDirection, species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity(panicDirection, species, fish.PersonalitySeed);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -454,7 +454,7 @@ void Fishes::Update(
                 vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
                 // Calculate new target velocity - away from disturbance point
-                fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, 1.0f, fish.PersonalitySeed);
+                fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, fish.PersonalitySeed);
 
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -479,7 +479,7 @@ void Fishes::Update(
                 visibleWorld);
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -511,7 +511,7 @@ void Fishes::Update(
             fish.PanicCharge = 0.0f;
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, 1.0f, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -633,11 +633,10 @@ vec2f Fishes::FindNewCruisingTargetPosition(
 vec2f Fishes::MakeBasalVelocity(
     vec2f const & direction,
     FishSpecies const & species,
-    float velocityMultiplier,
     float personalitySeed)
 {
     return direction
-        * (species.BasalSpeed * velocityMultiplier * (0.7f + personalitySeed * 0.3f));
+        * (species.BasalSpeed * (0.7f + personalitySeed * 0.3f));
 }
 
 }
