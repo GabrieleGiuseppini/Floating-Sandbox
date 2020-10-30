@@ -229,15 +229,15 @@ void Fishes::Update(
                 // RenderVector Y:
                 // - smooth towards zero during an initial interval
                 // - smooth towards target during a second interval
-                if (elapsedSteeringDurationFraction <= 0.30f)
+                if (elapsedSteeringDurationFraction <= 0.40f)
                 {
                     fish.CurrentRenderVector.y =
-                        fish.CruiseSteeringState->StartRenderVector.y * (1.0f - SmoothStep(0.0f, 0.30f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartRenderVector.y * (1.0f - SmoothStep(0.0f, 0.40f, elapsedSteeringDurationFraction));
                 }
-                else if (elapsedSteeringDurationFraction >= 0.70f)
+                else if (elapsedSteeringDurationFraction >= 0.60f)
                 {
                     fish.CurrentRenderVector.y =
-                        fish.TargetRenderVector.y * SmoothStep(0.70f, 1.0f, elapsedSteeringDurationFraction);
+                        fish.TargetRenderVector.y * SmoothStep(0.60f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
                 // RenderVector X:
@@ -496,7 +496,7 @@ void Fishes::Update(
             }
             else
             {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.2f;
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
             }
         }
         // Check whether this fish has reached the end of panic mode

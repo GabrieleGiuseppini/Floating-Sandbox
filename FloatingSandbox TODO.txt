@@ -1106,13 +1106,14 @@ Render:
 
 					= Disturbance (& food): incorporate somehow fish quad size
 						+ Move anchor point to species DB
-						- Need to know actual rendered size
+						- Need to know actual rendered size (texture world scaling factor * render adjust)
 					+ Add tail speed and swing width to species
 					
 					- Bug: fish becoming above water while steering - does not free fall
 					
 					- Position update: incorporate dt, so eventually adjust species' speeds
 						- We already had to multiply mako's speed (13) by dt
+						- NOTE: needs actual rendered size
 													
 					- World border:
 						- Clamp at spawn
