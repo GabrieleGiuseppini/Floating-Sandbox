@@ -302,6 +302,8 @@ void Fishes::Update(
             // Leave freefall
             fish.IsInFreefall = false;
 
+            LogMessage("TODOHERE: 3: LeavingFreefall");
+
             // Drag velocity down
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
             float constexpr MaxVelocityMagnitude = 0.5f;
@@ -310,10 +312,12 @@ void Fishes::Update(
                 * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
             fish.TargetVelocity = fish.CurrentVelocity; // Converge immediately
 
+            // Note: no need to change render vector, velocity direction has not changed
+
             // Enter "a bit of" panic mode - after exhausting this panic charge,
             // the fish will resume swimming towards it current target
             // position
-            fish.PanicCharge = 0.25f;
+            fish.PanicCharge = 0.03f;
         }
 
         // Dynamics update
@@ -430,7 +434,7 @@ void Fishes::Update(
             // Bounce away only if we're really going into it
             if (fish.TargetVelocity.y >= 0.0f)
             {
-                //LogMessage("TODOHERE: 4: OceanSurface - Bounce");
+                LogMessage("TODOHERE: 4: OceanSurface - Bounce");
 
                 // Bounce direction, opposite of target
                 vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
@@ -484,7 +488,7 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
-            //LogMessage("TODOHERE: 4: EndOfPanic");
+            LogMessage("TODOHERE: 4: EndOfPanic");
 
             //
             // Continue to current target

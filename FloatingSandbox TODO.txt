@@ -1093,8 +1093,16 @@ Render:
 					+ See whether we still need 2 water surface regimens
 						! Confirmed: we hit BigPanic upon freefall re-entry
 						+ Might get rid of "panic" one, as long as we don't hit the other one upon freefall re-entry
+					+ See texture X coords limits issue
+						+ See if it's due to not mipmapping upload
+					+ Test freefall after wave
+
+					- Try with velocity brake @ re-entry being smoothened - with right (high) convergence rate
+					- At beginning of freefall, render direction change is too abrupt: try with auto-smoothing instead of immediate convergence
 
 					- Bug: fish becoming above water while steering - does not free fall
+
+					- Waves at leave & re-entry
 
 					- Position update: incorporate dt, so eventually adjust species' speeds
 						- We already had to multiply mako's speed (13) by dt
@@ -1105,10 +1113,8 @@ Render:
 						- Check during free falling as well!										
 					
 					- Disturbance (& food): incorporate somehow fish quad size
-						- Or just anchor at tip (mouth)? 
+						- Or just anchor (in json) at tip (mouth)? 
 					- Add tail speed & swing width to species
-					- See texture X coords limits issue
-						- See if it's due to not mipmapping upload
 					- See center of disturbance issue w/Mako
 
 				= New algo:
