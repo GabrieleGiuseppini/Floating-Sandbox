@@ -464,8 +464,8 @@ public:
     unsigned int GetMinNumberOfFishes() const override { return GameParameters::MinNumberOfFishes; }
     unsigned int GetMaxNumberOfFishes() const override { return GameParameters::MaxNumberOfFishes; }
 
-    float GetFishSizeAdjustment() const override { return mGameParameters.FishSizeAdjustment; }
-    void SetFishSizeAdjustment(float value) override { mGameParameters.FishSizeAdjustment = value; }
+    float GetFishSizeAdjustment() const override { return mFloatParameterSmoothers[FishSizeAdjustmentParameterSmoother].GetValue(); }
+    void SetFishSizeAdjustment(float value) override { mFloatParameterSmoothers[FishSizeAdjustmentParameterSmoother].SetValue(value); }
     float GetMinFishSizeAdjustment() const override { return GameParameters::MinFishSizeAdjustment; }
     float GetMaxFishSizeAdjustment() const override { return GameParameters::MaxFishSizeAdjustment; }
 
@@ -806,6 +806,7 @@ private:
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
+    static constexpr size_t FishSizeAdjustmentParameterSmoother = 7;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;

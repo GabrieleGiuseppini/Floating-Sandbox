@@ -127,7 +127,7 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
-    // Wind and Waves
+    // Wind, Waves, and Fishes
     SliderControl<float> * mWindSpeedBaseSlider;
     wxCheckBox* mModulateWindCheckBox;
     SliderControl<float> * mWindGustAmplitudeSlider;
@@ -136,6 +136,8 @@ private:
     SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
     SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
     SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
+    SliderControl<unsigned int> * mNumberOfFishesSlider;
+    SliderControl<float> * mFishSizeAdjustmentSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
@@ -229,7 +231,7 @@ private:
     void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
     void PopulateHeatPanel(wxPanel * panel);
     void PopulateOceanSmokeSkyPanel(wxPanel * panel);
-    void PopulateWindAndWavesPanel(wxPanel * panel);
+    void PopulateWindAndWavesAndFishesPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedPanel(wxPanel * panel);

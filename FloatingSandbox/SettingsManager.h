@@ -27,7 +27,7 @@ enum class GameSettings : size_t
     WaterCrazyness,
     WaterDiffusionSpeedAdjustment,
 
-    BasalWaveHeightAdjustment,	// 10
+    BasalWaveHeightAdjustment,
     BasalWaveLengthAdjustment,
     BasalWaveSpeedAdjustment,
     TsunamiRate,
@@ -46,7 +46,7 @@ enum class GameSettings : size_t
     // Heat
     AirTemperature,
     WaterTemperature,
-    MaxBurningParticles, // 20
+    MaxBurningParticles,
     ThermalConductivityAdjustment,
     HeatDissipationAdjustment,
     IgnitionTemperatureAdjustment,
@@ -63,8 +63,12 @@ enum class GameSettings : size_t
     EngineThrustAdjustment,
     WaterPumpPowerAdjustment,
 
+    // Fishes
+    NumberOfFishes,
+    FishSizeAdjustment,
+
     // Misc
-    OceanFloorTerrain, // 30
+    OceanFloorTerrain,
     SeaDepth,
     OceanFloorBumpiness,
     OceanFloorDetailAmplification,

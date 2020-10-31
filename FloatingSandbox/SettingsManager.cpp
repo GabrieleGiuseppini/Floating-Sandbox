@@ -90,6 +90,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, EngineThrustAdjustment);
     ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
 
+    // Fishes
+    ADD_GC_SETTING(unsigned int, NumberOfFishes);
+    ADD_GC_SETTING(float, FishSizeAdjustment);
+
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);

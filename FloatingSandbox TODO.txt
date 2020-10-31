@@ -1105,8 +1105,7 @@ Render:
 						+ Try higher watermark for going out of water
 					+ Waves at leave & re-entry
 					+ Add tail speed and swing width to species
-
-					= Disturbance (& food): incorporate somehow fish quad size
+					+ Disturbance (& food): incorporate somehow fish quad size
 						+ Move anchor point to species DB
 						+ Need to know actual rendered size (texture world scaling factor * render adjust)
 							+ FishSizeAdjust in GameParameters
@@ -1115,18 +1114,22 @@ Render:
 								+ Not in Texture DB
 								+ Also adjust tailX to be over whole length rather than just half
 							+ Fishes passes world size to Render::Upload(.)
-						- FishSizeAdjust:
-							- SettingsDialog
-							- Finalize min & max values
+						+ FishSizeAdjust:
+							+ SettingsDialog
+							+ Finalize min & max values
+							+ Parameter smoother
 
+					- Scale with fish size adjustment:
+						- Radius of interactive disturbance & attraction
+						- Velocity
+
+					- Position update: incorporate dt, so eventually adjust species' speeds
+						- We already had to multiply mako's speed (13) by dt
+						- NOTE: needs velocity scaling with size adjustment
 
 					- Bug: fish becoming above water while steering - does not free fall
 
 					- Try to smoothe out out-of-panic transition when u-turn required
-
-					- Position update: incorporate dt, so eventually adjust species' speeds
-						- We already had to multiply mako's speed (13) by dt
-						- NOTE: needs actual rendered size, as velocity (m/s) must scale with it
 
 					- World border:
 						- Clamp at spawn

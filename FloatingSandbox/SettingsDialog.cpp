@@ -165,11 +165,11 @@ SettingsDialog::SettingsDialog(
     // Wind and Waves
     //
 
-    wxPanel * windAndWavesPanel = new wxPanel(notebook);
+    wxPanel * windAndWavesAndFishesPanel = new wxPanel(notebook);
 
-    PopulateWindAndWavesPanel(windAndWavesPanel);
+    PopulateWindAndWavesAndFishesPanel(windAndWavesAndFishesPanel);
 
-    notebook->AddPage(windAndWavesPanel, _("Wind and Waves"));
+    notebook->AddPage(windAndWavesAndFishesPanel, _("Wind, Waves, and Fishes"));
 
 
     //
@@ -2171,7 +2171,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                 mDayLightCycleDurationSlider = new SliderControl<std::chrono::minutes::rep>(
                     skyBox,
                     SliderWidth,
-                    SliderHeight,
+                    -1,
                     _("Daylight Cycle Duration"),
                     _("The duration of a full daylight cycle (minutes)."),
                     [this](std::chrono::minutes::rep value)
@@ -2209,7 +2209,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
+void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 {
     wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
 
@@ -2410,7 +2410,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             basalWavesBox,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -2491,7 +2491,81 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             CellBorder);
     }
 
+    //
+    // Fishes
+    //
 
+    {
+        wxStaticBox * fishesBox = new wxStaticBox(panel, wxID_ANY, _("Fishes"));
+
+        wxBoxSizer * fishesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        fishesBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * fishesSizer = new wxGridBagSizer(0, 0);
+
+            // Number of Fishes
+            {
+                mNumberOfFishesSlider = new SliderControl<unsigned int>(
+                    fishesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Number of Fishes"),
+                    _("The number of fishes in the ocean."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfFishes, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfFishes(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfFishes()));
+
+                fishesSizer->Add(
+                    mNumberOfFishesSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Fish Size Adjustment
+            {
+                mFishSizeAdjustmentSlider = new SliderControl<float>(
+                    fishesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Fish Size Adjust"),
+                    _("Adjusts the physical size of fishes."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishSizeAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxFishSizeAdjustment()));
+
+                fishesSizer->Add(
+                    mFishSizeAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            fishesBoxSizer->Add(fishesSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        fishesBox->SetSizerAndFit(fishesBoxSizer);
+
+        gridSizer->Add(
+            fishesBox,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -4245,24 +4319,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
-    // Wind and Waves
+    // Wind, Waves, and Fishes
 
     mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
-
     mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
-
     mWindGustAmplitudeSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedMaxFactor));
     mWindGustAmplitudeSlider->Enable(settings.GetValue<bool>(GameSettings::DoModulateWind));
 
     mBasalWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveHeightAdjustment));
-
     mBasalWaveLengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveLengthAdjustment));
-
     mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
-
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
-
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
+
+    mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
+    mFishSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeAdjustment));
 
     // Interactions
 
