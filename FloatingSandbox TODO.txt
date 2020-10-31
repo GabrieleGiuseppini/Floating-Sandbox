@@ -254,6 +254,7 @@ Render:
 			- Changelist
 
 		- Check "chicken sandbox" settings directory to repro crash
+		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -1107,12 +1108,16 @@ Render:
 
 					= Disturbance (& food): incorporate somehow fish quad size
 						+ Move anchor point to species DB
-						- Need to know actual rendered size (texture world scaling factor * render adjust)
-							- FishSizeAdjust in GameParameters
-								- ...and stored by Fishes at Update()
-							- World size in species
-								- Not in Texture DB
-							- Fishes passes world size to Render::Upload(.)
+						+ Need to know actual rendered size (texture world scaling factor * render adjust)
+							+ FishSizeAdjust in GameParameters
+								+ ...and stored by Fishes at Update()
+							+ World size in species
+								+ Not in Texture DB
+								+ Also adjust tailX to be over whole length rather than just half
+							+ Fishes passes world size to Render::Upload(.)
+						- FishSizeAdjust:
+							- SettingsDialog
+							- Finalize min & max values
 
 
 					- Bug: fish becoming above water while steering - does not free fall

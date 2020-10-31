@@ -334,21 +334,6 @@ public:
         mRenderParameters.IsLandTextureIndexDirty = true;
     }
 
-    float const & GetFishSizeAdjustment() const
-    {
-        return mFishSizeAdjustment;
-    }
-
-    void SetFishSizeAdjustment(float fishSizeAdjustment)
-    {
-        mFishSizeAdjustment = fishSizeAdjustment;
-
-        mWorldRenderContext->SetFishSizeAdjustment(mFishSizeAdjustment);
-    }
-
-    static constexpr float MinFishSizeAdjustment = 0.5f;
-    static constexpr float MaxFishSizeAdjustment = 20.0f;
-
     //
     // Ship rendering properties
     //
@@ -710,6 +695,7 @@ public:
     inline void UploadFish(
         TextureFrameId<FishTextureGroups> const & textureFrameId,
         vec2f const & position,
+        vec2f const & worldSize,
         float angleCw,
         float horizontalScale,
         float tailX,
@@ -719,6 +705,7 @@ public:
         mWorldRenderContext->UploadFish(
             textureFrameId,
             position,
+            worldSize,
             angleCw,
             horizontalScale,
             tailX,
@@ -1393,7 +1380,6 @@ private:
     //
 
     float mAmbientLightIntensity;
-    float mFishSizeAdjustment;
     float mShipFlameSizeAdjustment;
     rgbColor mShipDefaultWaterColor;
     VectorFieldRenderModeType mVectorFieldRenderMode;

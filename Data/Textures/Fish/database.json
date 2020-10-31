@@ -3,18 +3,16 @@
 {
 	"groupName": "Fish",
 	"hasOwnAmbientLight": false,
+	"worldScaling": 1.0,
 	"frames":[
-		{	
-			"worldScaling": 0.001136,
+		{				
 			"filename": "gilthead_bream_\\d+"
 		},
 		{	
-			"worldScaling": 0.003125,
 			"filename": "barracuda_\\d+"
 		}
 		,
 		{	
-			"worldScaling": 0.005859375,
 			"filename": "mako_\\d+"
 		}
 	]

@@ -168,6 +168,9 @@ struct IGameControllerSettings
     virtual unsigned int GetNumberOfFishes() const = 0;
     virtual void SetNumberOfFishes(unsigned int value) = 0;
 
+    virtual float GetFishSizeAdjustment() const = 0;
+    virtual void SetFishSizeAdjustment(float value) = 0;
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

@@ -159,6 +159,9 @@ struct IGameControllerSettingsOptions
 	virtual unsigned int GetMinNumberOfFishes() const = 0;
 	virtual unsigned int GetMaxNumberOfFishes() const = 0;
 
+	virtual float GetMinFishSizeAdjustment() const = 0;
+	virtual float GetMaxFishSizeAdjustment() const = 0;
+
 	// Misc
 
 	virtual float GetMinSeaDepth() const = 0;

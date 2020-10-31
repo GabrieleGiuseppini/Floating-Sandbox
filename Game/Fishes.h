@@ -189,6 +189,9 @@ private:
     // The world position at which there's been an interactive disturbance/attraction, if any
     std::optional<vec2f> mCurrentInteractiveDisturbance;
     std::optional<vec2f> mCurrentInteractiveAttraction;
+
+    // Parameters that the calculated values are current with
+    float mCurrentFishSizeAdjustment;
 };
 
 }

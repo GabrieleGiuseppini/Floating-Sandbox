@@ -2,18 +2,24 @@
     {
         "name": "Gilt-head Bream",
 
+	"world_size_x": 0.3,
+	"world_size_y": 0.15,
+
 	"shoal_size": 32,
 	"ocean_depth": 30.0,
 	"basal_speed": 0.06,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
 	"tail_swing_width": 1.2,
-	"head_offset_x": 0.109,
+	"head_offset_x": 0.875,
 	"texture_index": 0
     },
 
     {
         "name": "Barracuda",
+
+	"world_size_x": 0.8,
+	"world_size_y": 0.2,
 
 	"shoal_size": 4,
 	"ocean_depth": 50.0,
@@ -21,12 +27,15 @@
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
 	"tail_swing_width": 1.2,
-	"head_offset_x": 0.29375,
+	"head_offset_x": 0.86328125,
 	"texture_index": 1
     },
 
     {
         "name": "Mako",
+
+	"world_size_x": 3.0,
+	"world_size_y": 1.5,
 
 	"shoal_size": 1,
 	"ocean_depth": 150.0,
@@ -34,7 +43,7 @@
 	"tail_x": 0.77,
 	"tail_speed": 0.04,
 	"tail_swing_width": 0.3,
-	"head_offset_x": 1.259765625,
+	"head_offset_x": 0.921875,
 	"texture_index": 2
     }
 

@@ -33,7 +33,6 @@ RenderContext::RenderContext(
     , mNotificationRenderContext()
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
-    , mFishSizeAdjustment(1.0f)
     , mShipFlameSizeAdjustment(1.0f)
     , mShipDefaultWaterColor(0x00, 0x00, 0xcc)
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
@@ -110,8 +109,7 @@ RenderContext::RenderContext(
         {
             mWorldRenderContext = std::make_unique<WorldRenderContext>(
                 *mShaderManager,
-                *mGlobalRenderContext,
-                mFishSizeAdjustment);
+                *mGlobalRenderContext);
         });
 
     progressCallback(0.45f, ProgressMessageType::LoadingCloudTextureAtlas);

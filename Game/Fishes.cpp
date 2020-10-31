@@ -38,6 +38,7 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     , mFishes()
     , mCurrentInteractiveDisturbance()
     , mCurrentInteractiveAttraction()
+    , mCurrentFishSizeAdjustment(0.0f)
 {
 }
 
@@ -49,7 +50,16 @@ void Fishes::Update(
     VisibleWorld const & visibleWorld)
 {
     //
-    // 1) Update number of fish
+    // 1) Update parameters that changed, if any
+    //
+
+    if (gameParameters.FishSizeAdjustment != mCurrentFishSizeAdjustment)
+    {
+        mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
+    }
+
+    //
+    // 2) Update number of fishes
     //
 
     if (mFishes.size() > gameParameters.NumberOfFishes)
@@ -171,7 +181,7 @@ void Fishes::Update(
     }
 
     //
-    // 2) Update fishes
+    // 3) Update fishes
     //
 
     for (auto & fish : mFishes)
@@ -385,10 +395,10 @@ void Fishes::Update(
         // 4) Disturbances check
         //
 
-        // Calculate (rendered) position of head
+        // Calculate position of head
         vec2f const fishHeadPosition =
             fish.CurrentPosition
-            + fish.CurrentRenderVector.normalise() * species.HeadOffsetX;
+            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeAdjustment * (species.HeadOffsetX - 0.5f);
 
         // TODO: x6:
         // + Current disturbance
@@ -492,7 +502,7 @@ void Fishes::Update(
                     fish.CurrentVelocity,
                     fish.CurrentRenderVector,
                     currentSimulationTime,
-                    1.5f);
+                    1.5f); // Slow turn
             }
             else
             {    // Converge direction change at this rate
@@ -534,7 +544,7 @@ void Fishes::Update(
     }
 
     //
-    // 3) Nuke disturbances, now that we've consumed it
+    // 4) Nuke disturbances, now that we've consumed it
     //
 
     mCurrentInteractiveDisturbance.reset();
@@ -566,6 +576,7 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         renderContext.UploadFish(
             TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
             fish.CurrentPosition,
+            species.WorldSize * mCurrentFishSizeAdjustment,
             angleCw,
             horizontalScale,
             species.TailX,

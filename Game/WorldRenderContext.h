@@ -41,8 +41,7 @@ public:
 
     WorldRenderContext(
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GlobalRenderContext const & globalRenderContext,
-        float fishSizeAdjustment);
+        GlobalRenderContext const & globalRenderContext);
 
     ~WorldRenderContext();
 
@@ -70,13 +69,6 @@ public:
     inline float GetRainDensity() const
     {
         return mRainDensity;
-    }
-
-    void SetFishSizeAdjustment(float fishSizeAdjustment)
-    {
-        // Recalculate quad dimensions,
-        // real world coordinates would make fish too small; we amplify sizes by this amount
-        mFishQuadRescaleFactor = 25.0f * fishSizeAdjustment;
     }
 
 public:
@@ -358,7 +350,8 @@ public:
 
     inline void UploadFish(
         TextureFrameId<FishTextureGroups> const & textureFrameId,
-        vec2f const & position,
+        vec2f const & position, // position of center
+        vec2f const & worldSize,
         float angleCw,
         float horizontalScale,
         float tailX,
@@ -367,10 +360,9 @@ public:
     {
         auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
 
-        float const offsetLeftX = - (frame.FrameMetadata.AnchorCenterWorld.x * mFishQuadRescaleFactor) * horizontalScale;
-        float const offsetRightX = ((frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x) * mFishQuadRescaleFactor) * horizontalScale;
-        float const offsetTopY = (frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y) * mFishQuadRescaleFactor;
-        float const offsetBottomY = - (frame.FrameMetadata.AnchorCenterWorld.y * mFishQuadRescaleFactor);
+        // Calculate bounding box, assuming textures are anchored in the center
+        float const offsetX = worldSize.x / 2.0f * horizontalScale;
+        float const offsetY = worldSize.y / 2.0f;
 
         vec2f const textureCoordsXLimits = vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.x);
 
@@ -380,7 +372,7 @@ public:
         // top-left
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetLeftX, offsetTopY),
+            vec2f(-offsetX, offsetY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
@@ -391,7 +383,7 @@ public:
         // bottom-left
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetLeftX, offsetBottomY),
+            vec2f(-offsetX, -offsetY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
@@ -402,7 +394,7 @@ public:
         // top-right
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetRightX, offsetTopY),
+            vec2f(offsetX, offsetY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
@@ -413,7 +405,7 @@ public:
         // bottom-left
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetLeftX, offsetBottomY),
+            vec2f(-offsetX, -offsetY),
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
@@ -424,7 +416,7 @@ public:
         // top-right
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetRightX, offsetTopY),
+            vec2f(offsetX, offsetY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
             textureCoordsXLimits,
             angleCw,
@@ -435,7 +427,7 @@ public:
         // bottom-right
         mFishVertexBuffer.emplace_back(
             position,
-            vec2f(offsetRightX, offsetBottomY),
+            vec2f(offsetX, -offsetY),
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             textureCoordsXLimits,
             angleCw,
@@ -965,8 +957,6 @@ private:
     //
     // Externally-controlled calculated parameters
     //
-
-    float mFishQuadRescaleFactor;
 };
 
 }

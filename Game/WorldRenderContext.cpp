@@ -21,8 +21,7 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GlobalRenderContext const & globalRenderContext,
-    float fishSizeAdjustment)
+    GlobalRenderContext const & globalRenderContext)
     // Buffers
     : mStarVertexBuffer()
     , mIsStarVertexBufferDirty(true)
@@ -85,7 +84,6 @@ WorldRenderContext::WorldRenderContext(
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
     // Calculated params
-    , mFishQuadRescaleFactor(0.0f) // Recalcd later
 {
     GLuint tmpGLuint;
 
@@ -369,8 +367,6 @@ WorldRenderContext::WorldRenderContext(
     // Set initial values of non-render parameters from which
     // other parameters are calculated
     //
-
-    SetFishSizeAdjustment(fishSizeAdjustment);
 }
 
 WorldRenderContext::~WorldRenderContext()

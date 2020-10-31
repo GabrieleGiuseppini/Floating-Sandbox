@@ -464,6 +464,11 @@ public:
     unsigned int GetMinNumberOfFishes() const override { return GameParameters::MinNumberOfFishes; }
     unsigned int GetMaxNumberOfFishes() const override { return GameParameters::MaxNumberOfFishes; }
 
+    float GetFishSizeAdjustment() const override { return mGameParameters.FishSizeAdjustment; }
+    void SetFishSizeAdjustment(float value) override { mGameParameters.FishSizeAdjustment = value; }
+    float GetMinFishSizeAdjustment() const override { return GameParameters::MinFishSizeAdjustment; }
+    float GetMaxFishSizeAdjustment() const override { return GameParameters::MaxFishSizeAdjustment; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

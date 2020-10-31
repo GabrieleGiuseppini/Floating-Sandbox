@@ -32,6 +32,10 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
         try
         {
+            vec2f const worldSize = vec2f(
+                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_x"),
+                Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_y"));
+
             size_t const shoalSize = Utils::GetMandatoryJsonMember<size_t>(fishSpeciesObject, "shoal_size");
             float const oceanDepth = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "ocean_depth");
             float const basalSpeed = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "basal_speed");
@@ -46,6 +50,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
             fishSpecies.emplace_back(
                 name,
+                worldSize,
                 shoalSize,
                 oceanDepth,
                 basalSpeed,
