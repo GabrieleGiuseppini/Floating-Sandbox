@@ -517,14 +517,14 @@ void Fishes::Update(
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
+            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x < 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
                     fish.CurrentVelocity,
                     fish.CurrentRenderVector,
                     currentSimulationTime,
-                    1.0f);
+                    1.5f); // Slow turn
             }
             else
             {    // Converge direction change at this rate
