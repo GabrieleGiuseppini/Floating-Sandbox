@@ -1120,6 +1120,7 @@ Render:
 							+ Parameter smoother
 					+ Fix bug with fish count increasing
 						+ Also make sure everything's fine after reducing & re-augmenting
+					+ Test rendering ocean transparency, ambient light
 
 					- Scale with fish size adjustment:
 						- Radius of interactive disturbance & attraction

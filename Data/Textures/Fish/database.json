@@ -2,7 +2,6 @@
 
 {
 	"groupName": "Fish",
-	"hasOwnAmbientLight": false,
 	"worldScaling": 1.0,
 	"frames":[
 		{				
