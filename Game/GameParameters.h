@@ -176,12 +176,12 @@ struct GameParameters
     static constexpr float MinSparkleParticlesForCutLifetime = 0.2f;
     static constexpr float MaxSparkleParticlesForCutLifetime = 0.5f;
 
-	static constexpr unsigned int MinSparkleParticlesForLightningEvent = 4;
-	static constexpr unsigned int MaxSparkleParticlesForLightningEvent = 10;
-	static float constexpr MinSparkleParticlesForLightningVelocity = 75.0f;
-	static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
-	static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
-	static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
+    static constexpr unsigned int MinSparkleParticlesForLightningEvent = 4;
+    static constexpr unsigned int MaxSparkleParticlesForLightningEvent = 10;
+    static float constexpr MinSparkleParticlesForLightningVelocity = 75.0f;
+    static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
+    static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
+    static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
 
     bool DoGenerateAirBubbles;
     float CumulatedIntakenWaterThresholdForAirBubbles;
@@ -234,23 +234,23 @@ struct GameParameters
 
     // Storm
 
-	std::chrono::minutes StormRate;
-	static std::chrono::minutes constexpr MinStormRate = std::chrono::minutes(0);
-	static std::chrono::minutes constexpr MaxStormRate = std::chrono::minutes(120);
+    std::chrono::minutes StormRate;
+    static std::chrono::minutes constexpr MinStormRate = std::chrono::minutes(0);
+    static std::chrono::minutes constexpr MaxStormRate = std::chrono::minutes(120);
 
     std::chrono::seconds StormDuration;
-	static std::chrono::seconds constexpr MinStormDuration = std::chrono::seconds(10);
-	static std::chrono::seconds constexpr MaxStormDuration = std::chrono::seconds(60 * 20);
+    static std::chrono::seconds constexpr MinStormDuration = std::chrono::seconds(10);
+    static std::chrono::seconds constexpr MaxStormDuration = std::chrono::seconds(60 * 20);
 
-	float StormStrengthAdjustment;
-	static float constexpr MinStormStrengthAdjustment = 0.1f;
-	static float constexpr MaxStormStrengthAdjustment = 10.0f;
+    float StormStrengthAdjustment;
+    static float constexpr MinStormStrengthAdjustment = 0.1f;
+    static float constexpr MaxStormStrengthAdjustment = 10.0f;
 
-	float LightningBlastRadius;
+    float LightningBlastRadius;
 
-	float LightningBlastHeat; // KJoules/sec
+    float LightningBlastHeat; // KJoules/sec
 
-	bool DoRainWithStorm;
+    bool DoRainWithStorm;
 
     // Conversion between adimensional rain density and m/h:
     // rain quantity (in m/h) at density = 1.0
@@ -354,7 +354,7 @@ struct GameParameters
 
     unsigned int NumberOfFishes;
     static constexpr unsigned int MinNumberOfFishes = 0;
-    static constexpr unsigned int MaxNumberOfFishes = 4096;
+    static constexpr unsigned int MaxNumberOfFishes = 2056;
 
     float FishSizeAdjustment;
     static constexpr float MinFishSizeAdjustment = 1.0f;

@@ -18,17 +18,17 @@ namespace Physics {
 
 namespace /*anonymous*/ {
 
-    size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
-    {
-        return std::accumulate(
-            fishSpeciesDatabase.GetFishSpecies().cbegin(),
-            fishSpeciesDatabase.GetFishSpecies().cend(),
-            size_t(0),
-            [](size_t const & total, auto const & speciesIt)
-            {
-                return total + speciesIt.ShoalSize;
-            });
-    }
+size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
+{
+    return std::accumulate(
+        fishSpeciesDatabase.GetFishSpecies().cbegin(),
+        fishSpeciesDatabase.GetFishSpecies().cend(),
+        size_t(0),
+        [](size_t const & total, auto const & speciesIt)
+        {
+            return total + speciesIt.ShoalSize;
+        });
+}
 }
 
 Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
@@ -78,15 +78,15 @@ void Fishes::Update(
             mFishes.begin() + gameParameters.NumberOfFishes,
             mFishes.end());
     }
-    else
+    else if (mFishes.size() < gameParameters.NumberOfFishes)
     {
         //
         // Add new fishes
         //
 
         // The index in the shoals at which we start searching for free shoals; this
-        // points to the beginning of the latest shoal batch
-        size_t shoalSearchStartIndex = (mFishShoals.size() / mFishSpeciesDatabase.GetFishSpeciesCount()) * mFishSpeciesDatabase.GetFishSpeciesCount();
+        // points to the beginning of the first incomplete shoal batch
+        size_t shoalSearchStartIndex = (mFishes.size() / mShoalBatchSize) * mFishSpeciesDatabase.GetFishSpeciesCount();
         size_t currentShoalSearchIndex = shoalSearchStartIndex;
 
         for (size_t f = mFishes.size(); f < gameParameters.NumberOfFishes; ++f)
@@ -474,7 +474,7 @@ void Fishes::Update(
             }
         }
         // Check whether this fish has reached its target, while not in panic mode
-        else if (fish.PanicCharge == 0.0f &&  std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
+        else if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
             //LogMessage("TODOHERE: 4: TargetReached");
 
@@ -562,12 +562,12 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
         if (angleCw < -Pi<float> / 2.0f)
         {
-            angleCw = Pi<float> + angleCw;
+            angleCw = Pi<float> +angleCw;
             horizontalScale *= -1.0f;
         }
         else if (angleCw > Pi<float> / 2.0f)
         {
-            angleCw = -Pi<float> + angleCw;
+            angleCw = -Pi<float> +angleCw;
             horizontalScale *= -1.0f;
         }
 

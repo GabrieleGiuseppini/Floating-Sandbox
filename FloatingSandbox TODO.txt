@@ -1118,6 +1118,8 @@ Render:
 							+ SettingsDialog
 							+ Finalize min & max values
 							+ Parameter smoother
+					+ Fix bug with fish count increasing
+						+ Also make sure everything's fine after reducing & re-augmenting
 
 					- Scale with fish size adjustment:
 						- Radius of interactive disturbance & attraction

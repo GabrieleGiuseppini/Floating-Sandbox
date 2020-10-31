@@ -144,5 +144,5 @@ void main()
 
     gl_FragColor = vec4(
         textureColor.xyz * paramEffectiveAmbientLightIntensity,
-        textureColor.w);
+        fishSample.w);
 } 
