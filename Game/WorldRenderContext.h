@@ -312,35 +312,35 @@ public:
 
         switch (renderParameters.OceanRenderMode)
         {
-            case OceanRenderModeType::Texture:
-            {
-                // Texture sample Y levels: anchor texture at top of wave,
-                // and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // This is at yOcean
-                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+        case OceanRenderModeType::Texture:
+        {
+            // Texture sample Y levels: anchor texture at top of wave,
+            // and set bottom at total visible height (after all, ocean texture repeats)
+            oceanSegment.value1 = 0.0f; // This is at yOcean
+            oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
-                break;
-            }
+            break;
+        }
 
-            case OceanRenderModeType::Depth:
-            {
-                // Depth: top=0.0, bottom=height as fraction of ocean depth
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = oceanDepth != 0.0f
-                    ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                    : 0.0f;
+        case OceanRenderModeType::Depth:
+        {
+            // Depth: top=0.0, bottom=height as fraction of ocean depth
+            oceanSegment.value1 = 0.0f;
+            oceanSegment.value2 = oceanDepth != 0.0f
+                ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
+                : 0.0f;
 
-                break;
-            }
+            break;
+        }
 
-            case OceanRenderModeType::Flat:
-            {
-                // Nop, but be nice
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = 0.0f;
+        case OceanRenderModeType::Flat:
+        {
+            // Nop, but be nice
+            oceanSegment.value1 = 0.0f;
+            oceanSegment.value2 = 0.0f;
 
-                break;
-            }
+            break;
+        }
         }
     }
 
@@ -364,19 +364,15 @@ public:
         float const offsetX = worldSize.x / 2.0f * horizontalScale;
         float const offsetY = worldSize.y / 2.0f;
 
-        vec2f const textureCoordsXLimits = vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.x);
-
-        // TailX is in the 0..1 space, transform into texture coords space
-        float const tailXTextureSpace = textureCoordsXLimits.x + (textureCoordsXLimits.y - textureCoordsXLimits.x) * tailX;
-
         // top-left
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(-offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
 
@@ -384,10 +380,11 @@ public:
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(-offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
 
@@ -395,10 +392,11 @@ public:
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
 
@@ -406,10 +404,11 @@ public:
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(-offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
 
@@ -417,10 +416,11 @@ public:
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
 
@@ -428,10 +428,11 @@ public:
         mFishVertexBuffer.emplace_back(
             position,
             vec2f(offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
-            textureCoordsXLimits,
             angleCw,
-            tailXTextureSpace,
+            tailX,
             tailSwing,
             tailProgress);
     }
@@ -766,8 +767,9 @@ private:
     {
         vec2f centerPosition;
         vec2f vertexOffset;
+        vec2f textureSpaceLefBottom;
+        vec2f textureSpaceRightTop;
         vec2f textureCoordinate;
-        vec2f textureCoordsXLimits;
         float angleCw;
         float tailX;
         float tailSwing;
@@ -776,16 +778,18 @@ private:
         FishVertex(
             vec2f _centerPosition,
             vec2f _vertexOffset,
+            vec2f _textureSpaceLefBottom,
+            vec2f _textureSpaceRightTop,
             vec2f _textureCoordinate,
-            vec2f _textureCoordsXLimits,
             float _angleCw,
             float _tailX,
             float _tailSwing,
             float _tailProgress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
+            , textureSpaceLefBottom(_textureSpaceLefBottom)
+            , textureSpaceRightTop(_textureSpaceRightTop)
             , textureCoordinate(_textureCoordinate)
-            , textureCoordsXLimits(_textureCoordsXLimits)
             , angleCw(_angleCw)
             , tailX(_tailX)
             , tailSwing(_tailSwing)

@@ -27,11 +27,11 @@ enum class ProgramType
     HeatBlasterFlameHeat,
     LandFlat,
     LandTexture,
-	Lightning,
+    Lightning,
     OceanDepth,
     OceanFlat,
     OceanTexture,
-	Rain,
+    Rain,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
     ShipExplosions,
@@ -89,7 +89,7 @@ enum class ProgramParameterType : uint8_t
     OceanDepthColorEnd,
     OceanFlatColor,
     OrthoMatrix,
-	RainDensity,
+    RainDensity,
     StarTransparency,
     TextLighteningStrength,
     TextureLighteningStrength,
@@ -131,8 +131,8 @@ enum class VertexAttributeType : GLuint
 
     Star = 0,
 
-	Lightning1 = 0,
-	Lightning2 = 1,
+    Lightning1 = 0,
+    Lightning2 = 1,
 
     Cloud1 = 0,
     Cloud2 = 1,
@@ -144,14 +144,15 @@ enum class VertexAttributeType : GLuint
     Fish1 = 0,
     Fish2 = 1,
     Fish3 = 2,
+    Fish4 = 3,
 
     AMBombPreImplosion1 = 0,
-    AMBombPreImplosion2 =1,
+    AMBombPreImplosion2 = 1,
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
 
-	Rain = 0,
+    Rain = 0,
 
     FireExtinguisherSpray = 0,
 

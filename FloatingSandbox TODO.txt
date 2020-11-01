@@ -1122,13 +1122,27 @@ Render:
 						+ Also make sure everything's fine after reducing & re-augmenting
 					+ Test rendering ocean transparency, ambient light
 
-					- Scale with fish size adjustment:
+					= Add one little fish
+						= Fix size and frozen tail
+							+ Redo shader
+								+ Adjust smoothstep
+							- Fix Mako
+						- Darker
+						+ Fix Y overrun: need another clamp
+						+ Fix other disappearing fishes
+
+					= Add fish speed adjustment
+						+ Param
+						- SettingsDialog
+						+ Use @ dynamics
+
+					- Scale the following: with fish size adjustment:						
 						- Radius of interactive disturbance & attraction
 						- Velocity
 
 					- Position update: incorporate dt, so eventually adjust species' speeds
 						- We already had to multiply mako's speed (13) by dt
-						- NOTE: needs velocity scaling with size adjustment
+						- NOTE: needs velocity scaling with size adjustment above
 
 					- Bug: fish becoming above water while steering - does not free fall
 
@@ -1193,11 +1207,16 @@ Render:
 					- Requires maintenance of sorted Xs in vector
 			- Tools:
 				- Food/Scare
-					- Icon: todo
+					- Icons: 
+						- Food: little can, tilted at rest, rotated w/crumbles when used
+						- Scare: megaphone 45 degrees at rest, w/sound waves when used
+
 					- Food: set target velocity to direction towards tool; auto-smoothing does the rest
 						- Enter panic mode if really close by
 					- Scare:
 						- Panic charge should be proportional to tool distance
+				- Disturbances also from bombs, with large ratio
+					- Need array of disturbances (and thus loop structure change), each with ratio
 			- Should fish follow waves on surface of water?
 
 		- Cleanup:

@@ -344,7 +344,9 @@ void Fishes::Update(
 
             //LogMessage("TODOHERE: 3: Swimming");
 
-            float const speedMultiplier = fish.PanicCharge * 8.5f + 1.0f;
+            float const speedMultiplier =
+                (fish.PanicCharge * 8.5f + 1.0f)
+                * gameParameters.FishSpeedAdjustment;
 
             // Update position: add current velocity
             fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;

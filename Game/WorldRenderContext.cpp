@@ -216,7 +216,7 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    static_assert(sizeof(FishVertex) == 12 * sizeof(float));
+    static_assert(sizeof(FishVertex) == 14 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish1), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)0);
@@ -224,6 +224,8 @@ WorldRenderContext::WorldRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish2), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(4 * sizeof(float)));
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish3));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish3), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(8 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Fish4));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish4), 2, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(12 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -852,32 +854,32 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
     switch (renderParameters.OceanRenderMode)
     {
-        case OceanRenderModeType::Depth:
-        {
-            mShaderManager.ActivateProgram<ProgramType::OceanDepth>();
-            mShaderManager.SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanTransparency>(
-                transparency);
+    case OceanRenderModeType::Depth:
+    {
+        mShaderManager.ActivateProgram<ProgramType::OceanDepth>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanDepth, ProgramParameterType::OceanTransparency>(
+            transparency);
 
-            break;
-        }
+        break;
+    }
 
-        case OceanRenderModeType::Flat:
-        {
-            mShaderManager.ActivateProgram<ProgramType::OceanFlat>();
-            mShaderManager.SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::OceanTransparency>(
-                transparency);
+    case OceanRenderModeType::Flat:
+    {
+        mShaderManager.ActivateProgram<ProgramType::OceanFlat>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanFlat, ProgramParameterType::OceanTransparency>(
+            transparency);
 
-            break;
-        }
+        break;
+    }
 
-        case OceanRenderModeType::Texture:
-        {
-            mShaderManager.ActivateProgram<ProgramType::OceanTexture>();
-            mShaderManager.SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
-                transparency);
+    case OceanRenderModeType::Texture:
+    {
+        mShaderManager.ActivateProgram<ProgramType::OceanTexture>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanTexture, ProgramParameterType::OceanTransparency>(
+            transparency);
 
-            break;
-        }
+        break;
+    }
     }
 
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
@@ -916,17 +918,17 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
 
     switch (renderParameters.LandRenderMode)
     {
-        case LandRenderModeType::Flat:
-        {
-            mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-            break;
-        }
+    case LandRenderModeType::Flat:
+    {
+        mShaderManager.ActivateProgram<ProgramType::LandFlat>();
+        break;
+    }
 
-        case LandRenderModeType::Texture:
-        {
-            mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-            break;
-        }
+    case LandRenderModeType::Texture:
+    {
+        mShaderManager.ActivateProgram<ProgramType::LandTexture>();
+        break;
+    }
     }
 
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)

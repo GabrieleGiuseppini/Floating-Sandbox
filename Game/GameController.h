@@ -96,7 +96,7 @@ public:
         mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
     }
 
-    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) override
+    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
@@ -274,7 +274,7 @@ public:
 
     float GetSpringStrengthAdjustment() const override { return mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
     void SetSpringStrengthAdjustment(float value) override { mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
-    float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
+    float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment; }
     float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
     float GetGlobalDampingAdjustment() const override { return mGameParameters.GlobalDampingAdjustment; }
@@ -469,6 +469,11 @@ public:
     float GetMinFishSizeAdjustment() const override { return GameParameters::MinFishSizeAdjustment; }
     float GetMaxFishSizeAdjustment() const override { return GameParameters::MaxFishSizeAdjustment; }
 
+    float GetFishSpeedAdjustment() const override { return mGameParameters.FishSpeedAdjustment; }
+    void SetFishSpeedAdjustment(float value) override { mGameParameters.FishSpeedAdjustment = value; }
+    float GetMinFishSpeedAdjustment() const override { return GameParameters::MinFishSpeedAdjustment; }
+    float GetMaxFishSpeedAdjustment() const override { return GameParameters::MaxFishSpeedAdjustment; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
@@ -571,7 +576,7 @@ public:
     float GetAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
     void SetAirBubblesDensity(float value) override { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - value; }
     float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
-    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
+    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
     bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const override { return mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing; }
     void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) override { mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing = value; }

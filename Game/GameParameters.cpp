@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    // Dynamics
+// Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -40,12 +40,12 @@ GameParameters::GameParameters()
     , TsunamiRate(12)
     , RogueWaveRate(2)
     // Storm
-	, StormRate(60)
+    , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes
-	, StormStrengthAdjustment(1.0f)
-	, LightningBlastRadius(8.0f)
-	, LightningBlastHeat(4000.0f)
-	, DoRainWithStorm(true)
+    , StormStrengthAdjustment(1.0f)
+    , LightningBlastRadius(8.0f)
+    , LightningBlastHeat(4000.0f)
+    , DoRainWithStorm(true)
     , RainFloodAdjustment(10000.0f) // Partially visible after 4 minutes
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
@@ -67,8 +67,9 @@ GameParameters::GameParameters()
     , EngineThrustAdjustment(1.0f)
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
-    , NumberOfFishes(40)
+    , NumberOfFishes(60)
     , FishSizeAdjustment(25.0f)
+    , FishSpeedAdjustment(1.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

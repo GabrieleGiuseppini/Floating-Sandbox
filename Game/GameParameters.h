@@ -360,6 +360,10 @@ struct GameParameters
     static constexpr float MinFishSizeAdjustment = 1.0f;
     static constexpr float MaxFishSizeAdjustment = 100.0f;
 
+    float FishSpeedAdjustment;
+    static constexpr float MinFishSpeedAdjustment = 0.1f;
+    static constexpr float MaxFishSpeedAdjustment = 20.0f;
+
     // Misc
 
     float SeaDepth;

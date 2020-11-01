@@ -6,13 +6,18 @@
 	"frames":[
 		{				
 			"filename": "gilthead_bream_\\d+"
-		},
+		}
+		,
 		{	
 			"filename": "barracuda_\\d+"
 		}
 		,
 		{	
 			"filename": "mako_\\d+"
+		}
+		,
+		{	
+			"filename": "red_snapper_\\d+"
 		}
 	]
 }

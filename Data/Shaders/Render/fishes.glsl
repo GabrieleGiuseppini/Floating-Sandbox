@@ -7,14 +7,15 @@
 
 // Inputs
 in vec4 inFish1; // CenterPosition (vec2), VertexOffset (vec2)
-in vec4 inFish2; // TextureCoordinates (vec2), TextureCoordinatesXLimits (vec2)
-in vec4 inFish3; // AngleCw (float), TailX (float), TailSwing (float), TailProgress (float)
+in vec4 inFish2; // TextureSpace L, B, R, T (vec4)
+in vec4 inFish3; // TextureCoordinates (vec2),AngleCw (float), TailX (float)
+in vec2 inFish4; // TailSwing (float), TailProgress (float)
 
 // Outputs
 out vec2 vertexTextureCoordinates;
 out float worldY;
-out vec2 vertexTextureCoordinatesXLimits;
-out float tailX;
+out vec4 vertexTextureSpace;
+out float tailXNorm;
 out float tailSwing;
 out float tailProgress;
 
@@ -23,14 +24,14 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inFish2.xy;
+    vertexTextureCoordinates = inFish3.xy;
     worldY = inFish1.y;
-    vertexTextureCoordinatesXLimits = inFish2.zw;
-    tailX = inFish3.y;
-    tailSwing = inFish3.z;
-    tailProgress = inFish3.w;
+    vertexTextureSpace = inFish2;
+    tailXNorm = inFish3.w;
+    tailSwing = inFish4.x;
+    tailProgress = inFish4.y;
     
-    float angleCw = inFish3.x;
+    float angleCw = inFish3.z;
 
     mat2 rotationMatrix = mat2(
         cos(angleCw), -sin(angleCw),
@@ -40,9 +41,7 @@ void main()
         inFish1.xy 
         + rotationMatrix * inFish1.zw;
 
-    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
-
-    
+    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);   
 }
 
 ###FRAGMENT
@@ -54,8 +53,8 @@ void main()
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
 in float worldY;
-in vec2 vertexTextureCoordinatesXLimits;
-in float tailX;
+in vec4 vertexTextureSpace;
+in float tailXNorm;
 in float tailSwing;
 in float tailProgress;
 
@@ -68,60 +67,62 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
+    /////////////////////////////////////////////////////////
+    
     //
     // Here we simulate a bar bending around the y axis at x=TailX,
     // and rendered with perspective
     //
     
-    //
-    // Calculate angle: [-tailSwing -> tailSwing]
-    //
+    // In texture space
+    float tailX = vertexTextureSpace.x + (vertexTextureSpace.z - vertexTextureSpace.x) * tailXNorm;
     
-    float alpha = tailSwing * tailProgress;
-    
-    //
-    // Calculate Z simulating pivoting aroind tailX
-    //
-    // Z = Z(alpha, x) : [-Tailx * sin(tailSwing), TailX * sin(tailSwing)]
-    //
-    
-    // Smoothstep range around tailX: tailX-LMargin -> tailX+RMargin
-    #define LTailMargin .6
-    #define RTailMargin .0
-    
-    float z = 
-        (tailX - vertexTextureCoordinates.x) * sin(alpha) 
-        * smoothstep(-RTailMargin, LTailMargin, tailX - vertexTextureCoordinates.x); // Only apply to left side of tail, i.e. where x < tailX + RTailMargin; else z=0.0
-        
-    // Shift Z so that when Z is closest to viewer, texture is at normal size
-    //
-    // Z(alpha, @x=0) = tailX * sin(alpha)
-    z -= tailX * sin(tailSwing);
-    
-    #define Z0 2.1
+    float xL = vertexTextureSpace.x;
+    float yB = vertexTextureSpace.y;
+    float xR = vertexTextureSpace.z;    
+    float yT = vertexTextureSpace.w;
     
     //
-    // Transform X: perspective + rotation
+    // Calculate angle: 
+    //  - At left end: [-tailSwing -> tailSwing]
+    //	- Beyond tailX + epsilon: 0.0
     //
     
-    float perspectiveDivisor = (Z0 + z);
+    float smoothRMargin = tailX + .2 * (xR - tailX);
     
-    float rotationDivisor = cos(
-        alpha 
-        * smoothstep(-RTailMargin, LTailMargin, tailX - vertexTextureCoordinates.x)); // Only apply to left side of tail, i.e. where x < tailX + RTailMargin; else divisor=1.0
+    float alpha = 
+        tailSwing * tailProgress 
+        * (1.0 - smoothstep(xL, smoothRMargin, vertexTextureCoordinates.x));
     
+    //alpha = -0.2; // TODOTEST
+    
+    // The depth at which the fish is at rest
+    #define Z0 1.
+    
+    // Calculate Z: rotation around TailX of a bar of length |tailX - x|
+    float z = Z0 + (vertexTextureCoordinates.x - tailX) * sin(alpha);
+    
+    // Calculate texture X: inverse of rotation around TailX of a bar of length (x - LimitX)
+    float x = (vertexTextureCoordinates.x - tailX) / cos(alpha) + tailX;
+    
+    //
+    // Transform X and Y for perspective
+    //           
+    
+    float midX = (xL + xR) / 2.0;
+
     float textureX = clamp(
-        tailX + Z0 * (vertexTextureCoordinates.x - tailX) / (perspectiveDivisor * rotationDivisor),
-        vertexTextureCoordinatesXLimits.x,  // L margin
-        vertexTextureCoordinatesXLimits.y); // R margin
+        midX + (x - midX) * z,
+        xL,
+        xR);
         
-   	//
-    // Transform Y: perspective
-    //
     
-    float textureY = 
-        .5
-        + Z0 * (vertexTextureCoordinates.y - .5) / perspectiveDivisor;
+    float midY = (yB + yT) / 2.0;
+    
+    float textureY = clamp(
+        midY + (vertexTextureCoordinates.y - midY) * z,
+        yB,
+        yT);    
         
     //
     // Sample texture
@@ -130,8 +131,8 @@ void main()
     vec2 tc2 = vec2(
         textureX,
         textureY);
-
-    /////////////////////////////////////////////////////
+    
+    /////////////////////////////////////////////////////////
 
     vec4 fishSample = texture2D(paramFishesAtlasTexture, tc2);
 

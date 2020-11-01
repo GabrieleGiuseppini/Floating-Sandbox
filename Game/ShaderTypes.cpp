@@ -131,16 +131,16 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
-	case ProgramType::Lightning:
-		return "Lightning";
+    case ProgramType::Lightning:
+        return "Lightning";
     case ProgramType::OceanDepth:
         return "OceanDepth";
     case ProgramType::OceanFlat:
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
-	case ProgramType::Rain:
-		return "Rain";
+    case ProgramType::Rain:
+        return "Rain";
     case ProgramType::ShipCircleHighlights:
         return "ShipCircleHighlights";
     case ProgramType::ShipElectricalElementHighlights:
@@ -243,8 +243,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
-	else if (str == "RainDensity")
-		return ProgramParameterType::RainDensity;
+    else if (str == "RainDensity")
+        return ProgramParameterType::RainDensity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
     else if (str == "TextLighteningStrength")
@@ -324,8 +324,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "OceanFlatColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
-	case ProgramParameterType::RainDensity:
-		return "RainDensity";
+    case ProgramParameterType::RainDensity:
+        return "RainDensity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
     case ProgramParameterType::TextLighteningStrength:
@@ -344,7 +344,7 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
-    // Textures
+        // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
     case ProgramParameterType::CloudsAtlasTexture:
@@ -376,10 +376,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     // World
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
-	else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
-		return VertexAttributeType::Lightning1;
-	else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
-		return VertexAttributeType::Lightning2;
+    else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
+        return VertexAttributeType::Lightning1;
+    else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
+        return VertexAttributeType::Lightning2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
         return VertexAttributeType::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))
@@ -394,6 +394,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Fish2;
     else if (Utils::CaseInsensitiveEquals(str, "Fish3"))
         return VertexAttributeType::Fish3;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish4"))
+        return VertexAttributeType::Fish4;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
         return VertexAttributeType::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
@@ -402,8 +404,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
-	else if (Utils::CaseInsensitiveEquals(str, "Rain"))
-		return VertexAttributeType::Rain;
+    else if (Utils::CaseInsensitiveEquals(str, "Rain"))
+        return VertexAttributeType::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
