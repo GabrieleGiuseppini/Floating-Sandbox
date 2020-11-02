@@ -86,8 +86,9 @@ void main()
     float xR = vertexTextureSpace.z;    
     float yT = vertexTextureSpace.w;
     
-    float midX = (xL + xR) / 2.0;
-    float midY = (yB + yT) / 2.0;
+    vec2 mid = vec2(
+        (xL + xR) / 2.0,
+        (yB + yT) / 2.0);
         
     // Map TailX to texture space
     float tailX = xL + (xR - xL) * tailXNorm;
@@ -114,16 +115,15 @@ void main()
     // Calculate Z: rotation around TailX of a bar of length |tailX - x|
     float z = Z0 - (vertexTextureCoordinates.x - tailX) * sin(alpha); // Right of tail is closer with positive alpha
     
-    // Calculate texture X: inverse of rotation around TailX of a bar of length (x - LimitX)
+    // Calculate rotated X: inverse of rotation around TailX of a bar of length (x - LimitX)
     // x' = (x - tailX) * cos(alpha) + tailX
-    float x = (vertexTextureCoordinates.x - tailX) / cos(alpha) + tailX;        
+    float rotX = (vertexTextureCoordinates.x - tailX) / cos(alpha) + tailX;        
     
     //
     // Transform X and Y for perspective
-    //        
-        
-    float textureX = midX + (x - midX) * z;        
-    float textureY = midY + (vertexTextureCoordinates.y - midY) * z;
+    //
+    
+    vec2 transformedTextureCoords = mid + (vec2(rotX, vertexTextureCoordinates.y) - mid) * z;
         
     // After perspective transformation, X (and Y) coordinates might get out of bounds;
     // where this happens depends on tailX and Z0, and it happens where Z is nearer
@@ -131,49 +131,43 @@ void main()
     // 
     // The maxima of the X transformation above, at X=xL (extreme), after
     // coordinate transformation so that x=0 at tailX, and for Z0=1 is at:
-    //	alpha = arcsin(tailX)
-    // We thus first scale everything down by the max X coordinate that we get at this alpha,
-    // so to ensure that the texture fits its boundaries after the transformation
+    //	    alpha = arcsin(tailX)
+    // We thus scale everything down by the max X coordinate that we get at this alpha,
+    // so to ensure that the texture fits its boundaries after the transformation.
+    // Note: for simplicity, we also scale Y by the X stretch.
     
-    // Calculate angle - that we'll reach - at which the xL extreme is furthest to the left
-    float maxAlpha = max(
-        -asin(tailX - xL), 
-        -tailSwing);
+    // Calculate angle at which the xL extreme is furthest to the left,
+    // clamped to the max tail swing
+    float maxAlpha = -min(
+        asin(tailX - xL), 
+        tailSwing);
     
-    // Calculate texture coordinate of xL at max alpha
+    // Calculate Z and rotated X of xL at max alpha
    	float maxZ = Z0 - (xL - tailX) * sin(maxAlpha);
-    float maxX = (xL - tailX) / cos(maxAlpha) + tailX;        
-    float maxTextureX = midX + (maxX - midX) * maxZ;
+    float maxRotX = (xL - tailX) / cos(maxAlpha) + tailX;    
     
-    // Scale texture by that much
-    float textureXScaling = (midX - xL) / (midX - maxTextureX);
-    textureX = midX + (textureX - midX) * textureXScaling;
-    textureY = midY + (textureY - midY) * textureXScaling; // Note the simplification: we're scaling Y based on the X stretch factor
+    // Scale texture by new texture X exceedance, towards center
+    float textureXScaling = (mid.x - xL) / ((mid.x - maxRotX) * maxZ);
+    transformedTextureCoords = 
+        mid + (transformedTextureCoords - mid) * textureXScaling;
     
     //
     // Clamp texture coords to texture space boundaries
     //
     
-    textureX = clamp(
-        textureX,
+    transformedTextureCoords.x = clamp(
+        transformedTextureCoords.x,
         xL,
         xR);
-	textureY = clamp(
-        textureY,
+    
+	transformedTextureCoords.y = clamp(
+        transformedTextureCoords.y,
         yB,
         yT);
-    
-    //
-    // Sample texture
-    //
-    
-    vec2 tc2 = vec2(
-        textureX,
-        textureY);
-    
+        
     /////////////////////////////////////////////////////////
 
-    vec4 fishSample = texture2D(paramFishesAtlasTexture, tc2);
+    vec4 fishSample = texture2D(paramFishesAtlasTexture, transformedTextureCoords);
 
     float darkMix = 1.0 - exp(min(0.0, worldY) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
 

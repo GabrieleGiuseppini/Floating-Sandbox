@@ -1128,7 +1128,7 @@ Render:
 								+ Adjust smoothstep
 							+ Fix Mako
 								+ With formula
-						- Rearc & optimize shader
+						+ Rearc & optimize shader
 						- Darker
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
