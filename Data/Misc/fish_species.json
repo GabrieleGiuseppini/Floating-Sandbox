@@ -42,7 +42,7 @@
 	"basal_speed": 0.268,
 	"tail_x": 0.77,
 	"tail_speed": 0.04,
-	"tail_swing_width": 0.3,
+	"tail_swing_width": 0.2,
 	"head_offset_x": 0.921875,
 	"texture_index": 2
     },

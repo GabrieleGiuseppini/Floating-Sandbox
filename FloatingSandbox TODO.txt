@@ -1126,9 +1126,9 @@ Render:
 						+ Fix size and frozen tail
 							+ Redo shader
 								+ Adjust smoothstep
-							= Fix Mako
+							+ Fix Mako
 								+ With formula
-								- Too close						
+						- Rearc & optimize shader
 						- Darker
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
