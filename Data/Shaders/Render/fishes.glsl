@@ -73,15 +73,25 @@ void main()
     // Here we simulate a bar bending around the y axis at x=TailX,
     // and rendered with perspective
     //
-    
-    // In texture space
-    float tailX = vertexTextureSpace.x + (vertexTextureSpace.z - vertexTextureSpace.x) * tailXNorm;
+    // The X and Z rotation together with perspective transformation give rise
+    // to the following formulae (inverses of normal transformation, as we're
+    // calculating source texture coords instead of target transformation coords):
+    //	Z = Z0 - X * sin(a) // positive a => closer to viewer
+    //	X' = X / cos(a)
+    //  X" = X / cos(a) * (Z0 - X * sin(a))
+    //
     
     float xL = vertexTextureSpace.x;
     float yB = vertexTextureSpace.y;
     float xR = vertexTextureSpace.z;    
     float yT = vertexTextureSpace.w;
     
+    float midX = (xL + xR) / 2.0;
+    float midY = (yB + yT) / 2.0;
+        
+    // Map TailX to texture space
+    float tailX = xL + (xR - xL) * tailXNorm;
+            
     //
     // Calculate angle: 
     //  - At left end: [-tailSwing -> tailSwing]
@@ -94,36 +104,65 @@ void main()
         tailSwing * tailProgress 
         * (1.0 - smoothstep(xL, smoothRMargin, vertexTextureCoordinates.x));
     
-    //alpha = -0.2; // TODOTEST
-    
+    //
+    // Perspective transformation
+    //
+   
     // The depth at which the fish is at rest
     #define Z0 1.
     
     // Calculate Z: rotation around TailX of a bar of length |tailX - x|
-    float z = Z0 + (vertexTextureCoordinates.x - tailX) * sin(alpha);
+    float z = Z0 - (vertexTextureCoordinates.x - tailX) * sin(alpha); // Right of tail is closer with positive alpha
     
     // Calculate texture X: inverse of rotation around TailX of a bar of length (x - LimitX)
-    float x = (vertexTextureCoordinates.x - tailX) / cos(alpha) + tailX;
+    // x' = (x - tailX) * cos(alpha) + tailX
+    float x = (vertexTextureCoordinates.x - tailX) / cos(alpha) + tailX;        
     
     //
     // Transform X and Y for perspective
-    //           
+    //        
+        
+    float textureX = midX + (x - midX) * z;        
+    float textureY = midY + (vertexTextureCoordinates.y - midY) * z;
+        
+    // After perspective transformation, X (and Y) coordinates might get out of bounds;
+    // where this happens depends on tailX and Z0, and it happens where Z is nearer
+    // to us more than X is away from the limits due to rotation.
+    // 
+    // The maxima of the X transformation above, at X=xL (extreme), after
+    // coordinate transformation so that x=0 at tailX, and for Z0=1 is at:
+    //	alpha = arcsin(tailX)
+    // We thus first scale everything down by the max X coordinate that we get at this alpha,
+    // so to ensure that the texture fits its boundaries after the transformation
     
-    float midX = (xL + xR) / 2.0;
-
-    float textureX = clamp(
-        midX + (x - midX) * z,
+    // Calculate angle - that we'll reach - at which the xL extreme is furthest to the left
+    float maxAlpha = max(
+        -asin(tailX - xL), 
+        -tailSwing);
+    
+    // Calculate texture coordinate of xL at max alpha
+   	float maxZ = Z0 - (xL - tailX) * sin(maxAlpha);
+    float maxX = (xL - tailX) / cos(maxAlpha) + tailX;        
+    float maxTextureX = midX + (maxX - midX) * maxZ;
+    
+    // Scale texture by that much
+    float textureXScaling = (midX - xL) / (midX - maxTextureX);
+    textureX = midX + (textureX - midX) * textureXScaling;
+    textureY = midY + (textureY - midY) * textureXScaling; // Note the simplification: we're scaling Y based on the X stretch factor
+    
+    //
+    // Clamp texture coords to texture space boundaries
+    //
+    
+    textureX = clamp(
+        textureX,
         xL,
         xR);
-        
-    
-    float midY = (yB + yT) / 2.0;
-    
-    float textureY = clamp(
-        midY + (vertexTextureCoordinates.y - midY) * z,
+	textureY = clamp(
+        textureY,
         yB,
-        yT);    
-        
+        yT);
+    
     //
     // Sample texture
     //

@@ -1123,10 +1123,12 @@ Render:
 					+ Test rendering ocean transparency, ambient light
 
 					= Add one little fish
-						= Fix size and frozen tail
+						+ Fix size and frozen tail
 							+ Redo shader
 								+ Adjust smoothstep
-							- Fix Mako
+							= Fix Mako
+								+ With formula
+								- Too close						
 						- Darker
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
