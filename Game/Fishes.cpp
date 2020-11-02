@@ -428,8 +428,6 @@ void Fishes::Update(
             // Calculate new direction, away from disturbance
             vec2f panicDirection = (fishHeadPosition - *mCurrentInteractiveDisturbance).normalise(distance);
 
-            LogMessage("TODOHERE: Fish @ ", fish.CurrentPosition.toString(), " Head @ ", fishHeadPosition.toString(), " Dist @ ", mCurrentInteractiveDisturbance->toString(), " Dir=", panicDirection.toString(), " Radius=", distance);
-
             // Make sure direction is not too steep
             float constexpr MinXComponent = 0.4f;
             if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)

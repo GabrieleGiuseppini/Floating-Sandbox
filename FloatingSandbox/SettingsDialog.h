@@ -33,7 +33,7 @@ public:
     SettingsDialog(
         wxWindow * parent,
         std::shared_ptr<SettingsManager> settingsManager,
-		std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
+        std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
         ResourceLocator const & resourceLocator);
 
     virtual ~SettingsDialog();
@@ -42,7 +42,7 @@ public:
 
 private:
 
-	void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
+    void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
@@ -60,16 +60,16 @@ private:
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
 
-	void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
-	void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
-	void OnApplyPersistedSettingsButton(wxCommandEvent & event);
-	void OnRevertToPersistedSettingsButton(wxCommandEvent & event);
-	void OnReplacePersistedSettingsButton(wxCommandEvent & event);
-	void OnDeletePersistedSettingsButton(wxCommandEvent & event);
-	void OnSaveSettingsTextEdited(wxCommandEvent & event);
-	void OnSaveSettingsButton(wxCommandEvent & event);
+    void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
+    void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
+    void OnApplyPersistedSettingsButton(wxCommandEvent & event);
+    void OnRevertToPersistedSettingsButton(wxCommandEvent & event);
+    void OnReplacePersistedSettingsButton(wxCommandEvent & event);
+    void OnDeletePersistedSettingsButton(wxCommandEvent & event);
+    void OnSaveSettingsTextEdited(wxCommandEvent & event);
+    void OnSaveSettingsButton(wxCommandEvent & event);
 
-	void OnRevertToDefaultsButton(wxCommandEvent& event);
+    void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnUndoButton(wxCommandEvent & event);
@@ -117,11 +117,11 @@ private:
     SliderControl<float> * mOceanFloorFrictionSlider;
     SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
-	SliderControl<float> * mStormStrengthAdjustmentSlider;
-	wxCheckBox* mDoRainWithStormCheckBox;
+    SliderControl<float> * mStormStrengthAdjustmentSlider;
+    wxCheckBox * mDoRainWithStormCheckBox;
     SliderControl<float> * mRainFloodAdjustmentSlider;
-	SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
-	SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
+    SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
+    SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
     SliderControl<unsigned int> * mNumberOfStarsSlider;
     SliderControl<unsigned int> * mNumberOfCloudsSlider;
     wxCheckBox * mDoDayLightCycleCheckBox;
@@ -129,7 +129,7 @@ private:
 
     // Wind, Waves, and Fishes
     SliderControl<float> * mWindSpeedBaseSlider;
-    wxCheckBox* mModulateWindCheckBox;
+    wxCheckBox * mModulateWindCheckBox;
     SliderControl<float> * mWindGustAmplitudeSlider;
     SliderControl<float> * mBasalWaveHeightAdjustmentSlider;
     SliderControl<float> * mBasalWaveLengthAdjustmentSlider;
@@ -138,6 +138,7 @@ private:
     SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
     SliderControl<unsigned int> * mNumberOfFishesSlider;
     SliderControl<float> * mFishSizeAdjustmentSlider;
+    SliderControl<float> * mFishSpeedAdjustmentSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
@@ -174,7 +175,7 @@ private:
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;
-    wxCheckBox* mShowStressCheckBox;
+    wxCheckBox * mShowStressCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
@@ -201,21 +202,21 @@ private:
     wxCheckBox * mShowFrontiersCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
-	// Settings Management
-	wxListCtrl * mPersistedSettingsListCtrl;
-	wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
-	wxButton * mApplyPersistedSettingsButton;
-	wxButton * mRevertToPersistedSettingsButton;
-	wxButton * mReplacePersistedSettingsButton;
-	wxButton * mDeletePersistedSettingsButton;
-	wxTextCtrl * mSaveSettingsNameTextCtrl;
-	wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
-	wxButton * mSaveSettingsButton;
+    // Settings Management
+    wxListCtrl * mPersistedSettingsListCtrl;
+    wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
+    wxButton * mApplyPersistedSettingsButton;
+    wxButton * mRevertToPersistedSettingsButton;
+    wxButton * mReplacePersistedSettingsButton;
+    wxButton * mDeletePersistedSettingsButton;
+    wxTextCtrl * mSaveSettingsNameTextCtrl;
+    wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
+    wxButton * mSaveSettingsButton;
 
     //////////////////////////////////////////////////////
 
     // Buttons
-	wxButton * mRevertToDefaultsButton;
+    wxButton * mRevertToDefaultsButton;
     wxButton * mOkButton;
     wxButton * mCancelButton;
     wxButton * mUndoButton;
@@ -235,7 +236,7 @@ private:
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedPanel(wxPanel * panel);
-	void PopulateSettingsManagementPanel(wxPanel * panel);
+    void PopulateSettingsManagementPanel(wxPanel * panel);
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
 
@@ -245,20 +246,20 @@ private:
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 
-	long GetSelectedPersistedSettingIndexFromCtrl() const;
-	void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
-	void LoadPersistedSettings(size_t index, bool withDefaults);
-	void ReconciliateLoadPersistedSettings();
-	void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
-	void ReconciliateSavePersistedSettings();
+    long GetSelectedPersistedSettingIndexFromCtrl() const;
+    void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
+    void LoadPersistedSettings(size_t index, bool withDefaults);
+    void ReconciliateLoadPersistedSettings();
+    void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
+    void ReconciliateSavePersistedSettings();
 
-	void OnPersistenceError(std::string const & errorMessage) const;
+    void OnPersistenceError(std::string const & errorMessage) const;
 
 private:
 
     wxWindow * const mParent;
     std::shared_ptr<SettingsManager> mSettingsManager;
-	std::shared_ptr<IGameControllerSettingsOptions> mGameControllerSettingsOptions;
+    std::shared_ptr<IGameControllerSettingsOptions> mGameControllerSettingsOptions;
 
     //
     // State
@@ -275,12 +276,12 @@ private:
     // settings have not been modified.
     bool mHasBeenDirtyInCurrentSession;
 
-	// Tracks whether the current settings are (possibly) dirty wrt the defaults.
-	// Best effort, we assume all changes deviate from the default.
-	bool mAreSettingsDirtyWrtDefaults;
+    // Tracks whether the current settings are (possibly) dirty wrt the defaults.
+    // Best effort, we assume all changes deviate from the default.
+    bool mAreSettingsDirtyWrtDefaults;
 
-	// The persisted settings currently displayed in the LoadSettings list;
-	// maintained in-sync with the SettingsManager's official list of
-	// persisted settings, and used to hold metadata for the list.
-	std::vector<PersistedSettingsMetadata> mPersistedSettings;
+    // The persisted settings currently displayed in the LoadSettings list;
+    // maintained in-sync with the SettingsManager's official list of
+    // persisted settings, and used to hold metadata for the list.
+    std::vector<PersistedSettingsMetadata> mPersistedSettings;
 };

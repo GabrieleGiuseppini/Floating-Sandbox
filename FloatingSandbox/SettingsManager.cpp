@@ -93,6 +93,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // Fishes
     ADD_GC_SETTING(unsigned int, NumberOfFishes);
     ADD_GC_SETTING(float, FishSizeAdjustment);
+    ADD_GC_SETTING(float, FishSpeedAdjustment);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);

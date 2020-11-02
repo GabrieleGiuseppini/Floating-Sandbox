@@ -66,6 +66,7 @@ enum class GameSettings : size_t
     // Fishes
     NumberOfFishes,
     FishSizeAdjustment,
+    FishSpeedAdjustment,
 
     // Misc
     OceanFloorTerrain,

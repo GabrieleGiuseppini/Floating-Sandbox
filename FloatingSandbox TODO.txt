@@ -1121,26 +1121,27 @@ Render:
 					+ Fix bug with fish count increasing
 						+ Also make sure everything's fine after reducing & re-augmenting
 					+ Test rendering ocean transparency, ambient light
-
-					= Add one little fish
+					+ Add one little fish
 						+ Fix size and frozen tail
 							+ Redo shader
 								+ Adjust smoothstep
 							+ Fix Mako
 								+ With formula
 						+ Rearc & optimize shader
-						- Darker
+						+ Darker
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
 
-					= Add fish speed adjustment
-						+ Param
-						- SettingsDialog
-						+ Use @ dynamics
-
-					- Scale the following: with fish size adjustment:						
+					- Scale the following with fish size adjustment:						
 						- Radius of interactive disturbance & attraction
 						- Velocity
+
+					= Add fish speed adjustment
+						+ Param
+						+ SettingsDialog
+						+ Use @ dynamics
+						- Adjust min and max
+						- Also speed of panic and convergence rate would need to be adjusted...
 
 					- Position update: incorporate dt, so eventually adjust species' speeds
 						- We already had to multiply mako's speed (13) by dt
