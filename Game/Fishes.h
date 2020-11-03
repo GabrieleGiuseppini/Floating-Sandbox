@@ -172,7 +172,8 @@ private:
     inline static vec2f MakeBasalVelocity(
         vec2f const & direction,
         FishSpecies const & species,
-        float personalitySeed);
+        float personalitySeed,
+        GameParameters const & gameParameters);
 
 private:
 

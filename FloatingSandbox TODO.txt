@@ -1131,26 +1131,23 @@ Render:
 						+ Darker
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
-
-					- TODO:
-						- Gravity free-fall must not take size adjustment nor speed adjustment into account
-						- aka: Speed adjustment and size adjustment only apply to swimming
-							- Just in MakeBasalVelocity then?
-
-					= Position update: incorporate dt, so eventually adjust species' speeds
+					+ Position update: incorporate dt, so eventually adjust species' speeds
 						+ We already had to multiply mako's speed (13) by dt
-						- Verify that speed in json now matches real world
-
-					- Scale the following with fish size adjustment:						
-						- Radius of interactive disturbance & attraction
-						= Velocity
+						+ Verify that speed in json now matches real world
+					+ Scale the following with fish size adjustment:						
+						+ Radius of interactive disturbance & attraction
+						+ Velocity
 
 					= Add fish speed adjustment
 						+ Param
 						+ SettingsDialog
 						+ Use @ dynamics
-						- Adjust min and max
-						- Also speed of panic and convergence rate would need to be adjusted...
+						+ Adjust min and max
+						- Change velocities on the fly
+
+					+ Gravity free-fall must not take size adjustment nor speed adjustment into account
+					+ aka: Speed adjustment and size adjustment only apply to swimming
+						+ Just in MakeBasalVelocity then
 
 					- Bug: fish becoming above water while steering - does not free fall
 

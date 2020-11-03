@@ -53,10 +53,7 @@ void Fishes::Update(
     // 1) Update parameters that changed, if any
     //
 
-    if (gameParameters.FishSizeAdjustment != mCurrentFishSizeAdjustment)
-    {
-        mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
-    }
+    mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
 
     //
     // 2) Update number of fishes
@@ -172,7 +169,7 @@ void Fishes::Update(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                MakeBasalVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed),
+                MakeBasalVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
 
             // Update shoal
@@ -183,6 +180,11 @@ void Fishes::Update(
     //
     // 3) Update fishes
     //
+
+    float const interactiveDisturbanceRadius =
+        0.3f
+        * mCurrentFishSizeAdjustment
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     for (auto & fish : mFishes)
     {
@@ -318,11 +320,11 @@ void Fishes::Update(
 
             // Drag velocity down
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
-            float constexpr MaxVelocityMagnitude = 0.5f * 2.56f; // TODO
+            float constexpr MaxVelocityMagnitude = 1.3f; // Magic number
             fish.TargetVelocity =
                 fish.CurrentVelocity.normalise(currentVelocityMagnitude)
                 * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.15f; // Converge to dragged velocity at this rate
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f; // Converge to dragged velocity at this rate
 
             // Note: no need to change render vector, velocity direction has not changed
 
@@ -344,15 +346,12 @@ void Fishes::Update(
 
             //LogMessage("TODOHERE: 3: Swimming");
 
-            float const speedMultiplier =
-                (fish.PanicCharge * 8.5f + 1.0f)
-                * gameParameters.FishSpeedAdjustment;
+            float const speedMultiplier = (fish.PanicCharge * 8.5f + 1.0f);
 
             // Update position: add current velocity
             fish.CurrentPosition +=
                 fish.CurrentVelocity
                 * GameParameters::SimulationStepTimeDuration<float>
-                * mCurrentFishSizeAdjustment
                 * speedMultiplier;
 
             // Update tail progress phase: add basal speed
@@ -373,7 +372,6 @@ void Fishes::Update(
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
                 - 10.0f // Amplification factor
-                / 25.0f // TODO: size adjust
                 * GameParameters::GravityMagnitude
                 * GameParameters::SimulationStepTimeDuration<float>;
             fish.TargetVelocity = vec2f(
@@ -388,8 +386,7 @@ void Fishes::Update(
             // Update position: add velocity
             fish.CurrentPosition +=
                 fish.CurrentVelocity
-                * GameParameters::SimulationStepTimeDuration<float>
-                * mCurrentFishSizeAdjustment;
+                * GameParameters::SimulationStepTimeDuration<float>;
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
             fish.CurrentTailProgressPhase += species.TailSpeed * 20.0f;
@@ -421,7 +418,7 @@ void Fishes::Update(
         // Check whether the fish has been interactively disturbed
         if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
             mCurrentInteractiveDisturbance.has_value()
-            && distance < 7.5f) // Within radius
+            && distance < interactiveDisturbanceRadius) // Within radius
         {
             //LogMessage("TODOHERE: 4: InteractiveDisturbancePanic");
 
@@ -450,7 +447,7 @@ void Fishes::Update(
             }
 
             // Calculate new target velocity - away from disturbance point, and will be panic velocity
-            fish.TargetVelocity = MakeBasalVelocity(panicDirection, species, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -472,7 +469,7 @@ void Fishes::Update(
                 vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
                 // Calculate new target velocity - away from disturbance point
-                fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, fish.PersonalitySeed);
+                fish.TargetVelocity = MakeBasalVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -497,7 +494,7 @@ void Fishes::Update(
                 visibleWorld);
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -529,7 +526,7 @@ void Fishes::Update(
             fish.PanicCharge = 0.0f;
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed);
+            fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
@@ -652,10 +649,13 @@ vec2f Fishes::FindNewCruisingTargetPosition(
 vec2f Fishes::MakeBasalVelocity(
     vec2f const & direction,
     FishSpecies const & species,
-    float personalitySeed)
+    float personalitySeed,
+    GameParameters const & gameParameters)
 {
     return direction
-        * (species.BasalSpeed * (0.7f + personalitySeed * 0.3f));
+        * (species.BasalSpeed * (0.7f + personalitySeed * 0.3f))
+        * gameParameters.FishSpeedAdjustment
+        * gameParameters.FishSizeAdjustment;
 }
 
 }
