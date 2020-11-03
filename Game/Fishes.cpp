@@ -329,6 +329,9 @@ void Fishes::Update(
             // Enter freefall
             fish.IsInFreefall = true;
 
+            // Stop u-turn, in case we were across it
+            fish.CruiseSteeringState.reset();
+
             // Create a little disturbance in the ocean surface
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }

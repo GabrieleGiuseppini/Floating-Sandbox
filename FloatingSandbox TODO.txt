@@ -1142,12 +1142,10 @@ Render:
 						+ Use @ dynamics
 						+ Adjust min and max
 						+ Change velocities on the fly
-
 					+ Gravity free-fall must not take size adjustment nor speed adjustment into account
 					+ aka: Speed adjustment and size adjustment only apply to swimming
 						+ Just in MakeBasalVelocity then
-
-					- Bug: fish becoming above water while steering - does not free fall
+					+ Bug: fish becoming above water while steering - does not free fall
 
 					- U-turn:
 						- See if better with Smoothstep for turn
