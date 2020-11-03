@@ -278,12 +278,12 @@ void Fishes::Update(
                 // - smooth towards target during a central interval (actual turning around),
                 //   without crossing zero
                 float constexpr TurnLimit = 0.2f;
-                if (elapsedSteeringDurationFraction >= 0.15f && elapsedSteeringDurationFraction <= 0.5f)
+                if (elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentRenderVector.x =
                         fish.CruiseSteeringState->StartRenderVector.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
                 }
-                else if (elapsedSteeringDurationFraction > 0.50f && elapsedSteeringDurationFraction <= 0.85f)
+                else
                 {
                     fish.CurrentRenderVector.x =
                         fish.TargetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
@@ -445,12 +445,11 @@ void Fishes::Update(
             mCurrentInteractiveDisturbance.has_value()
             && distance < interactiveDisturbanceRadius) // Within radius
         {
-            //LogMessage("TODOHERE: 4: InteractiveDisturbancePanic");
-
             //
-            // Interactive disturbance, enter panic mode
+            // Interactive disturbance panic
             //
 
+            // Enter panic mode this long
             fish.PanicCharge = 1.0f;
 
             // Don't change target position, we'll return to it when panic is over
@@ -488,7 +487,9 @@ void Fishes::Update(
             // Bounce away only if we're really going into it
             if (fish.TargetVelocity.y >= 0.0f)
             {
-                LogMessage("TODOHERE: 4: OceanSurface - Bounce");
+                //
+                // OceanSurface Bounce
+                //
 
                 // Bounce direction, opposite of target
                 vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
@@ -506,11 +507,11 @@ void Fishes::Update(
         // Check whether this fish has reached its target, while not in panic mode
         else if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
-            //LogMessage("TODOHERE: 4: TargetReached");
+            //
+            // Target Reached
+            //
 
-            //
             // Transition to Steering
-            //
 
             // Choose new target position
             fish.TargetPosition = FindNewCruisingTargetPosition(
@@ -542,13 +543,13 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
-            LogMessage("TODOHERE: 4: EndOfPanic");
-
             //
-            // Continue to current target
+            // End of Panic
             //
 
             fish.PanicCharge = 0.0f;
+
+            // Continue to current target
 
             // Calculate new target velocity
             fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);

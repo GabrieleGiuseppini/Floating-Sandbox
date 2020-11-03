@@ -1147,11 +1147,6 @@ Render:
 						+ Just in MakeBasalVelocity then
 					+ Bug: fish becoming above water while steering - does not free fall
 
-					- U-turn:
-						- See if better with Smoothstep for turn
-
-					- Try to smoothe out out-of-panic transition when u-turn required
-
 					- World border:
 						- Clamp at spawn
 						- Simple collision check w/immediate bounce, not excluding other collision checks
