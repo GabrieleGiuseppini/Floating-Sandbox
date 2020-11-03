@@ -39,6 +39,7 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     , mCurrentInteractiveDisturbance()
     , mCurrentInteractiveAttraction()
     , mCurrentFishSizeAdjustment(0.0f)
+    , mCurrentFishSpeedAdjustment(0.0f)
 {
 }
 
@@ -53,7 +54,26 @@ void Fishes::Update(
     // 1) Update parameters that changed, if any
     //
 
-    mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
+    if (mCurrentFishSizeAdjustment != gameParameters.FishSizeAdjustment
+        || mCurrentFishSpeedAdjustment != gameParameters.FishSpeedAdjustment)
+    {
+        // Update all velocities
+        if (mCurrentFishSpeedAdjustment != 0.0f && mCurrentFishSizeAdjustment != 0.0f)
+        {
+            float const factor =
+                gameParameters.FishSpeedAdjustment / mCurrentFishSpeedAdjustment
+                * gameParameters.FishSizeAdjustment / mCurrentFishSizeAdjustment;
+
+            for (auto & fish : mFishes)
+            {
+                fish.CurrentVelocity *= factor;
+            }
+        }
+
+        // Update parameters
+        mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
+        mCurrentFishSpeedAdjustment = gameParameters.FishSpeedAdjustment;
+    }
 
     //
     // 2) Update number of fishes

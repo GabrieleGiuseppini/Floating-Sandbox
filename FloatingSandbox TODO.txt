@@ -1137,13 +1137,12 @@ Render:
 					+ Scale the following with fish size adjustment:						
 						+ Radius of interactive disturbance & attraction
 						+ Velocity
-
-					= Add fish speed adjustment
+					+ Add fish speed adjustment
 						+ Param
 						+ SettingsDialog
 						+ Use @ dynamics
 						+ Adjust min and max
-						- Change velocities on the fly
+						+ Change velocities on the fly
 
 					+ Gravity free-fall must not take size adjustment nor speed adjustment into account
 					+ aka: Speed adjustment and size adjustment only apply to swimming
