@@ -1070,9 +1070,7 @@ Render:
 				+ Round corners
 					+ Replace state machine's CurrentPos & TargetPos with CurrentPos & CurrentVelocity (vector),
 					  with velocity vector's y component used to update current pos, flattening depending on distance from StartPos or TargetPos
-				= TODOHERE:
-					+ Finish water normal bounce
-
+				+ Misc:
 					+ Make CruiseSteering an optional<struct> & populate w/emplace
 					+ Rename CalculateVelocity as MakeBasalVelocity
 					+ See if may make auto-smoothing converge rate variable
@@ -1146,11 +1144,10 @@ Render:
 					+ aka: Speed adjustment and size adjustment only apply to swimming
 						+ Just in MakeBasalVelocity then
 					+ Bug: fish becoming above water while steering - does not free fall
-
-					- World border:
-						- Clamp at spawn
-						- Simple collision check w/immediate bounce, not excluding other collision checks
-						- Check during free falling as well!
+					+ World border:
+						+ Clamp at spawn
+						+ Simple collision check w/immediate bounce, not excluding other collision checks
+						+ Check during free falling as well!
 
 				= New algo:
 					+ Turning (if isTurning)
@@ -1176,8 +1173,6 @@ Render:
 								X See if this one suffices without the two explicit "water level" collision checks
 						- Ocean floor:
 							- TODOHERE
-						- Ships' AABBs:
-							- TODOHERE
 						+ Interactive disturbance:
 							+ Panic run:
 								+ New target position: any
@@ -1194,7 +1189,7 @@ Render:
 					- Fishes::Update(.) takes AllShipAABBs
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
-					- Also take OceanFloor
+					+ Also take OceanFloor
 			= Superimpose sin over movement
 				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail

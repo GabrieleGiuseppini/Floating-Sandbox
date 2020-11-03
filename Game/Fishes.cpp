@@ -296,8 +296,6 @@ void Fishes::Update(
             // Automated direction smoothing
             //
 
-            //LogMessage("TODOHERE: 1: AutoSmoothing");
-
             // Smooth velocity towards target
             fish.CurrentVelocity +=
                 (fish.TargetVelocity - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
@@ -369,8 +367,6 @@ void Fishes::Update(
             // Swimming
             //
 
-            //LogMessage("TODOHERE: 3: Swimming");
-
             float const speedMultiplier = (fish.PanicCharge * 8.5f + 1.0f);
 
             // Update position: add current velocity
@@ -391,8 +387,6 @@ void Fishes::Update(
             //
             // Free-falling
             //
-
-            //LogMessage("TODOHERE: 3: Free-falling");
 
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
@@ -415,16 +409,71 @@ void Fishes::Update(
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
             fish.CurrentTailProgressPhase += species.TailSpeed * 20.0f;
-
-            // Cut short state machine now, this fish can't swim
-            continue;
         }
 
         // Decay panic charge
         fish.PanicCharge *= 0.985f;
 
         //
-        // 4) Disturbances check
+        // 4) World boundaries check
+        //
+
+        bool hasBouncedAgainstWorldBoundaries = false;
+
+        if (fish.CurrentPosition.x < -GameParameters::HalfMaxWorldWidth)
+        {
+            // Bounce position
+            fish.CurrentPosition.x = -GameParameters::HalfMaxWorldWidth + (-GameParameters::HalfMaxWorldWidth - fish.CurrentPosition.x);
+
+            // Bounce velocity
+            fish.CurrentVelocity.x = std::abs(fish.CurrentVelocity.x);
+            fish.TargetVelocity.x = std::abs(fish.TargetVelocity.x);
+
+            // Adjust other fish properties
+            hasBouncedAgainstWorldBoundaries = true;
+        }
+        else if (fish.CurrentPosition.x > GameParameters::HalfMaxWorldWidth)
+        {
+            // Bounce position
+            fish.CurrentPosition.x = GameParameters::HalfMaxWorldWidth - (fish.CurrentPosition.x - GameParameters::HalfMaxWorldWidth);
+
+            // Bounce velocity
+            fish.CurrentVelocity.x = -std::abs(fish.CurrentVelocity.x);
+            fish.TargetVelocity.x = -std::abs(fish.TargetVelocity.x);
+
+            // Adjust other fish properties
+            hasBouncedAgainstWorldBoundaries = true;
+        }
+
+        if (hasBouncedAgainstWorldBoundaries)
+        {
+            // Update render vector to match velocity
+            fish.CurrentRenderVector = fish.CurrentRenderVector.normalise();
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+            // Continue converging directions at current rate
+
+            // Find a position away
+            fish.TargetPosition = FindNewCruisingTargetPosition(
+                fish.CurrentPosition,
+                fish.TargetRenderVector,
+                visibleWorld);
+
+            // Stop cruising
+            fish.CruiseSteeringState.reset();
+        }
+
+        assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth
+            && fish.CurrentPosition.x <= GameParameters::HalfMaxWorldWidth);
+
+        if (fish.IsInFreefall)
+        {
+            // Cut short state machine now, this fish can't swim
+            continue;
+        }
+
+        //
+        // 5) Disturbances check
         //
 
         // Calculate position of head
@@ -640,7 +689,10 @@ vec2f Fishes::FindPosition(
 
     for (int attempt = 0; attempt < 10; ++attempt)
     {
-        position.x = GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.x, xVariance);
+        position.x = Clamp(
+            GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.x, xVariance),
+            -GameParameters::HalfMaxWorldWidth,
+            GameParameters::HalfMaxWorldWidth);
 
         position.y =
             -5.0f // Min depth
