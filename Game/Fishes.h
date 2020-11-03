@@ -169,7 +169,7 @@ private:
         vec2f const & newDirection,
         VisibleWorld const & visibleWorld);
 
-    inline static vec2f MakeBasalVelocity(
+    inline static vec2f MakeCuisingVelocity(
         vec2f const & direction,
         FishSpecies const & species,
         float personalitySeed,

@@ -254,7 +254,11 @@ Render:
 			- Changelist
 
 		- Check "chicken sandbox" settings directory to repro crash
+		- Check issue with ship having water material that breaks
 		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
+		- See why log diagnostics is not written
+			- Missing folder?
+		- Calibrate flying burning cardboard
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -267,12 +271,7 @@ Render:
 			- Waves from ship (*)
 			- Punch tool (*)
 
-		- See why log diagnostics is not written
-			- Missing folder?
-
 		- Lower speed of (sin) waves - now that we run faster?
-
-		- Calibrate flying burning cardboard
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -1150,9 +1149,10 @@ Render:
 
 					- Bug: fish becoming above water while steering - does not free fall
 
-					- Try to smoothe out out-of-panic transition when u-turn required
 					- U-turn:
 						- See if better with Smoothstep for turn
+
+					- Try to smoothe out out-of-panic transition when u-turn required
 
 					- World border:
 						- Clamp at spawn
@@ -1216,6 +1216,7 @@ Render:
 				- Normal swarming dynamics
 					- Requires maintenance of sorted Xs in vector
 			- Tools:
+				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 				- Food/Scare
 					- Icons: 
 						- Food: little can, tilted at rest, rotated w/crumbles when used
