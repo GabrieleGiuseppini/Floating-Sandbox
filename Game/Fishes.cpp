@@ -318,7 +318,7 @@ void Fishes::Update(
 
             // Drag velocity down
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
-            float constexpr MaxVelocityMagnitude = 0.5f;
+            float constexpr MaxVelocityMagnitude = 0.5f * 2.56f; // TODO
             fish.TargetVelocity =
                 fish.CurrentVelocity.normalise(currentVelocityMagnitude)
                 * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
@@ -349,7 +349,11 @@ void Fishes::Update(
                 * gameParameters.FishSpeedAdjustment;
 
             // Update position: add current velocity
-            fish.CurrentPosition += fish.CurrentVelocity * speedMultiplier;
+            fish.CurrentPosition +=
+                fish.CurrentVelocity
+                * GameParameters::SimulationStepTimeDuration<float>
+                * mCurrentFishSizeAdjustment
+                * speedMultiplier;
 
             // Update tail progress phase: add basal speed
             fish.CurrentTailProgressPhase += species.TailSpeed * speedMultiplier;
@@ -369,8 +373,9 @@ void Fishes::Update(
             // Update velocity with gravity, amplified for better scenics
             float const newVelocityY = fish.CurrentVelocity.y
                 - 10.0f // Amplification factor
+                / 25.0f // TODO: size adjust
                 * GameParameters::GravityMagnitude
-                * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
+                * GameParameters::SimulationStepTimeDuration<float>;
             fish.TargetVelocity = vec2f(
                 fish.CurrentVelocity.x,
                 newVelocityY);
@@ -381,7 +386,10 @@ void Fishes::Update(
             fish.CurrentDirectionSmoothingConvergenceRate = 0.06f; // Converge at this rate
 
             // Update position: add velocity
-            fish.CurrentPosition += fish.CurrentVelocity;
+            fish.CurrentPosition +=
+                fish.CurrentVelocity
+                * GameParameters::SimulationStepTimeDuration<float>
+                * mCurrentFishSizeAdjustment;
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
             fish.CurrentTailProgressPhase += species.TailSpeed * 20.0f;

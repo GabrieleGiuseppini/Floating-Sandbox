@@ -1132,9 +1132,18 @@ Render:
 						+ Fix Y overrun: need another clamp
 						+ Fix other disappearing fishes
 
+					- TODO:
+						- Gravity free-fall must not take size adjustment nor speed adjustment into account
+						- aka: Speed adjustment and size adjustment only apply to swimming
+							- Just in MakeBasalVelocity then?
+
+					= Position update: incorporate dt, so eventually adjust species' speeds
+						+ We already had to multiply mako's speed (13) by dt
+						- Verify that speed in json now matches real world
+
 					- Scale the following with fish size adjustment:						
 						- Radius of interactive disturbance & attraction
-						- Velocity
+						= Velocity
 
 					= Add fish speed adjustment
 						+ Param
@@ -1143,13 +1152,11 @@ Render:
 						- Adjust min and max
 						- Also speed of panic and convergence rate would need to be adjusted...
 
-					- Position update: incorporate dt, so eventually adjust species' speeds
-						- We already had to multiply mako's speed (13) by dt
-						- NOTE: needs velocity scaling with size adjustment above
-
 					- Bug: fish becoming above water while steering - does not free fall
 
 					- Try to smoothe out out-of-panic transition when u-turn required
+					- U-turn:
+						- See if better with Smoothstep for turn
 
 					- World border:
 						- Clamp at spawn
@@ -1204,6 +1211,10 @@ Render:
 				- Recalibrate sync with tail
 			= Swarming
 				= When adding new fish, distribute remaining counts among species according to swarm sizes
+				- Buffer rearc
+				- Visit for all fishes with x > this.x
+				- 1. Change velocity to go to position resultant of distances
+				- OLD:
 				- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later
 					- Isn't this taken care of by swarming dynamics automatically?
 				- Normal swarming dynamics
@@ -1213,12 +1224,19 @@ Render:
 					- Icons: 
 						- Food: little can, tilted at rest, rotated w/crumbles when used
 						- Scare: megaphone 45 degrees at rest, w/sound waves when used
-
-					- Food: set target velocity to direction towards tool; auto-smoothing does the rest
+					- Sounds:
+						- Food: shaking powder
+						- Scare: compressed air horn
+					- Food: 
+						- Set target velocity to direction towards tool; auto-smoothing does the rest
 						- Enter panic mode if really close by
+						- Ultra-violent mode
+						- Test:
+							- Fish jumps out of water
 					- Scare:
 						- Panic charge should be proportional to tool distance
-				- Disturbances also from bombs, with large ratio
+						- Ultra-violent mode
+				- Disturbances also from bombs, with large radius
 					- Need array of disturbances (and thus loop structure change), each with ratio
 			- Should fish follow waves on surface of water?
 

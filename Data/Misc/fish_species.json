@@ -7,7 +7,7 @@
 
 	"shoal_size": 16,
 	"ocean_depth": 30.0,
-	"basal_speed": 0.06,
+	"basal_speed": 0.1536,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
 	"tail_swing_width": 0.5,
@@ -23,7 +23,7 @@
 
 	"shoal_size": 4,
 	"ocean_depth": 50.0,
-	"basal_speed": 0.06,
+	"basal_speed": 0.1536,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
 	"tail_swing_width": 0.35,
@@ -39,7 +39,7 @@
 
 	"shoal_size": 1,
 	"ocean_depth": 150.0,
-	"basal_speed": 0.268,
+	"basal_speed": 0.68608,
 	"tail_x": 0.77,
 	"tail_speed": 0.04,
 	"tail_swing_width": 0.2,
@@ -55,7 +55,7 @@
 
 	"shoal_size": 32,
 	"ocean_depth": 20.0,
-	"basal_speed": 0.06,
+	"basal_speed": 0.1536,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
 	"tail_swing_width": 0.8,
