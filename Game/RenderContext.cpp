@@ -497,15 +497,15 @@ void RenderContext::Draw()
 
                 glDisable(GL_DEPTH_TEST);
 
+                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
+
                 mWorldRenderContext->RenderDrawFishes(renderParameters);
 
-                // Render ocean transparently, over ship, unless disabled
+                // Render ocean transparently, over the rest of the world, unless disabled
                 if (!renderParameters.ShowShipThroughOcean)
                 {
                     mWorldRenderContext->RenderDrawOcean(false, renderParameters);
                 }
-
-                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
 
                 mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 
