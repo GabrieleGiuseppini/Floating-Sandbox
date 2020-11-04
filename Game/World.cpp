@@ -42,8 +42,8 @@ World::World(
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
-    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
     mOceanFloor.Update(gameParameters);
+    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
 }
 
 std::tuple<ShipId, RgbaImageData> World::AddShip(
@@ -751,7 +751,7 @@ void World::Update(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld,
     Render::RenderContext & renderContext,
-    PerfStats & /*perfStats*/)
+    PerfStats & perfStats)
 {
     // Update current time
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
@@ -772,7 +772,13 @@ void World::Update(
 
     mOceanFloor.Update(gameParameters);
 
-    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
+    {
+        auto const startTime = std::chrono::steady_clock::now();
+
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld);
+
+        perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
+    }
 
     for (auto & ship : mAllShips)
     {

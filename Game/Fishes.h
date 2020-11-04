@@ -44,34 +44,11 @@ public:
 
     void DisturbAt(
         vec2f const & worldCoordinates,
-        float worldRadius)
-    {
-        mCurrentInteractiveDisturbance = worldCoordinates;
-
-        // TODOTEST
-        /*
-        auto & fish = mFishes[0];
-        fish.TargetPosition = worldCoordinates;
-
-        // Calculate new target velocity and direction
-        fish.StartVelocity = fish.CurrentVelocity;
-        fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed);
-        fish.StartDirection = fish.CurrentDirection;
-        fish.TargetDirection = fish.TargetVelocity.normalise();
-        */
-    }
+        float worldRadius);
 
     void AttractAt(
         vec2f const & worldCoordinates,
-        float worldRadius)
-    {
-        // TODO
-    }
-
-    void ApplyAttractionAt(vec2f const & worldCoordinates)
-    {
-        mCurrentInteractiveAttraction = worldCoordinates;
-    }
+        float worldRadius);
 
 private:
 

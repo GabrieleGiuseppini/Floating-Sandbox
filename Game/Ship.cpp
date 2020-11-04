@@ -1114,12 +1114,13 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
             // Calculate sea floor anti-normal
             // (optimized) (positive points down)
+            float constexpr Dx = 0.01f;
             ////////vec2f const seaFloorAntiNormal = -vec2f(
             ////////    floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
             ////////    0.01f).normalise(); // Points below
             vec2f const seaFloorAntiNormal = vec2f(
-                mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f) - floorHeight,
-                -0.01f).normalise(); // Points below
+                mParentWorld.GetOceanFloorHeightAt(clampedX + Dx) - floorHeight,
+                -Dx).normalise(); // Points below
 
             // Calculate the component of the point's velocity along the anti-normal,
             // i.e. towards the interior of the floor...

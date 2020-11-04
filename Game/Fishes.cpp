@@ -154,7 +154,7 @@ void Fishes::Update(
                 //
 
                 if (currentShoalSearchIndex > 0)
-                    mFishShoals[currentShoalSearchIndex].InitialDirection = -mFishShoals[currentShoalSearchIndex - 1].InitialDirection;
+                    mFishShoals[currentShoalSearchIndex].InitialDirection = -mFishShoals[currentShoalSearchIndex - 1].InitialDirection; // Opposite of previous shoal's
                 else
                     mFishShoals[currentShoalSearchIndex].InitialDirection = vec2f(
                         GameRandomEngine::GetInstance().Choose(2) == 1 ? -1.0f : 1.0f, // Random left or right
@@ -495,8 +495,8 @@ void Fishes::Update(
         // - Current attraction
         // - AABB
         // + Water level
-        // - Ocean floor
         // + Reached target
+        // - Ocean floor
 
         // Check whether the fish has been interactively disturbed
         if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
@@ -630,6 +630,59 @@ void Fishes::Update(
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.03f;
             }
         }
+
+        // Check ocean floor collision
+        // TODO: ensure we haven't changed position since the last WorldBoundary check
+        assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth && fish.CurrentPosition.x <= GameParameters::HalfMaxWorldWidth);
+        float const oceanFloorHeight = oceanFloor.GetHeightAt(fish.CurrentPosition.x);
+        if (fish.CurrentPosition.y <= oceanFloorHeight)
+        {
+            //
+            // Ocean floor collision
+            //
+
+            // Calculate sea floor normal (positive points out)
+            float constexpr Dx = 0.01f;
+            vec2f const seaFloorNormal = vec2f(
+                oceanFloorHeight - oceanFloor.GetHeightAt(fish.CurrentPosition.x + 0.01f),
+                Dx).normalise(); // Points below
+
+            // Calculate the component of the fish's target velocity along the normal,
+            // i.e. towards the outside of the floor...
+            float const targetVelocityAlongNormal = fish.TargetVelocity.dot(seaFloorNormal);
+
+            // ...if positive, it will soon be going already outside of the floor, hence we leave it as-is
+            if (targetVelocityAlongNormal <= 0.0f)
+            {
+                // Set target velocity to reflection of fish's target velocity around normal:
+                // R = V − 2(V⋅N^)N^
+                fish.TargetVelocity =
+                    fish.TargetVelocity
+                    - seaFloorNormal * 2.0f * targetVelocityAlongNormal;
+
+                // Update target render vector to match velocity
+                fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+                // Check if it's gonna be a u-tun
+                if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
+                {
+                    // Calculate an altogether new target position in this
+                    // new direction
+                    // TODOHERE
+
+                    // Perform a cruise steering
+                    fish.CruiseSteeringState.emplace(
+                        fish.CurrentVelocity,
+                        fish.CurrentRenderVector,
+                        currentSimulationTime,
+                        0.5f);
+                }
+                else
+                {    // Converge direction change at this rate
+                    fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+                }
+            }
+        }
     }
 
     //
@@ -674,6 +727,32 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
     }
 
     renderContext.UploadFishesEnd();
+}
+
+void Fishes::DisturbAt(
+    vec2f const & worldCoordinates,
+    float worldRadius)
+{
+    mCurrentInteractiveDisturbance = worldCoordinates;
+
+    // TODOTEST
+    /*
+    auto & fish = mFishes[0];
+    fish.TargetPosition = worldCoordinates;
+
+    // Calculate new target velocity and direction
+    fish.StartVelocity = fish.CurrentVelocity;
+    fish.TargetVelocity = MakeBasalVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed);
+    fish.StartDirection = fish.CurrentDirection;
+    fish.TargetDirection = fish.TargetVelocity.normalise();
+    */
+}
+
+void Fishes::AttractAt(
+    vec2f const & worldCoordinates,
+    float worldRadius)
+{
+    // TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1172,8 +1172,11 @@ Render:
 										+ Rename as "tail"
 								+ ...and cut short state machine afterwards, as fish can't swim
 								X See if this one suffices without the two explicit "water level" collision checks
-						- Ocean floor:
-							- TODOHERE
+						= Ocean floor:
+							- Do check with head of fish
+							+ See why speeds up after bounce
+							- See why panic'd fish doesn't care
+							- Test also ship collision with sea floor, for Dx change!
 						+ Interactive disturbance:
 							+ Panic run:
 								+ New target position: any
@@ -1207,10 +1210,10 @@ Render:
 			- Tools:
 				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 					- Need to reset u-turn
-				- Food/Scare
-					= Icons: 
-						= Food: little can, tilted at rest, rotated w/crumbles when used
-						= Scare: megaphone 45 degrees at rest, w/sound waves when used
+				= Food/Scare
+					+ Icons: 
+						+ Food: little can, tilted at rest, rotated w/crumbles when used
+						+ Scare: megaphone 45 degrees at rest, w/sound waves when used
 					- Sounds:
 						- Food: shaking powder
 						- Scare: compressed air horn
@@ -1228,10 +1231,12 @@ Render:
 			- Should fish follow waves on surface of water?
 
 		- Cleanup:
+			- Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
 			- Larger field for spawning and next position?
 				- Unify variances anyway - can we do that?
 			- GameParameters::NumberOfFishes: TODO
-			- Do we need initial Update() call at World construction?
+			+ Do we need initial Update() call at World construction?
+				+ Better to spend time for fish creation there than at first frame
 		- Misc:
 			- SettingsDialog:
 				- number of fish
