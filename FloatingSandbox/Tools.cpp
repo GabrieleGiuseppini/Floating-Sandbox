@@ -255,8 +255,8 @@ void GrabTool::ApplyTool(
     mGameController->DrawTo(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
-            ? -strengthFraction
-            : strengthFraction);
+        ? -strengthFraction
+        : strengthFraction);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -304,8 +304,8 @@ void SwirlTool::ApplyTool(
     mGameController->SwirlAt(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
-            ? -strengthFraction
-            : strengthFraction);
+        ? -strengthFraction
+        : strengthFraction);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -546,5 +546,31 @@ ThanosSnapTool::ThanosSnapTool(
         std::move(soundController))
     , mUpCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_down", 15, 15, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// ScareFish
+////////////////////////////////////////////////////////////////////////
+
+ScareFishTool::ScareFishTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator & resourceLocator)
+    : Tool(
+        ToolType::ScareFish,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mIsEngaged(false)
+    , mCurrentAction(ActionType::Scare)
+    , mScareUpCursorImage(WxHelpers::LoadCursorImage("megaphone_cursor_up", 8, 10, resourceLocator))
+    , mScareDownCursorImage1(WxHelpers::LoadCursorImage("megaphone_cursor_down_1", 8, 21, resourceLocator))
+    , mScareDownCursorImage2(WxHelpers::LoadCursorImage("megaphone_cursor_down_2", 8, 21, resourceLocator))
+    , mAttractUpCursorImage(WxHelpers::LoadCursorImage("food_can_cursor_up", 9, 6, resourceLocator))
+    , mAttractDownCursorImage1(WxHelpers::LoadCursorImage("food_can_cursor_down_1", 8, 21, resourceLocator))
+    , mAttractDownCursorImage2(WxHelpers::LoadCursorImage("food_can_cursor_down_2", 8, 21, resourceLocator))
+    , mDownCursorCounter(0)
 {
 }

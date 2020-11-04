@@ -680,6 +680,32 @@ void GameController::NotifySoundMuted(bool isSoundMuted)
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
 }
 
+void GameController::ScareFish(
+    vec2f const & screenCoordinates,
+    float radius)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        worldCoordinates,
+        radius);
+}
+
+void GameController::AttractFish(
+    vec2f const & screenCoordinates,
+    float radius)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->AttractFish(
+        worldCoordinates,
+        radius);
+}
+
 void GameController::PickObjectToMove(
     vec2f const & screenCoordinates,
     std::optional<ElementId> & elementId)

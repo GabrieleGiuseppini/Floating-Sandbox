@@ -120,6 +120,14 @@ public:
     // Interactions
     //
 
+    void ScareFish(
+        vec2f const & position,
+        float radius);
+
+    void AttractFish(
+        vec2f const & position,
+        float radius);
+
     void PickPointToMove(
         vec2f const & pickPosition,
         std::optional<ElementId> & elementId,
@@ -311,7 +319,7 @@ private:
     // The current simulation time
     float mCurrentSimulationTime;
 
-   // The game event handler
+    // The game event handler
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // The current event recorder (if any)

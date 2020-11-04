@@ -34,7 +34,7 @@ World::World(
     , mClouds()
     , mOceanSurface(mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
-    , mFishes(fishSpeciesDatabase)
+    , mFishes(fishSpeciesDatabase, mGameEventHandler)
 {
     // Initialize world pieces
     mStars.Update(gameParameters);
@@ -138,6 +138,20 @@ bool World::IsUnderwater(ElementId elementId) const
 //////////////////////////////////////////////////////////////////////////////
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
+
+void World::ScareFish(
+    vec2f const & position,
+    float radius)
+{
+    mFishes.DisturbAt(position, radius);
+}
+
+void World::AttractFish(
+    vec2f const & position,
+    float radius)
+{
+    mFishes.AttractAt(position, radius);
+}
 
 void World::PickPointToMove(
     vec2f const & pickPosition,
@@ -273,7 +287,7 @@ void World::DestroyAt(
     }
 
     // Also tell fishes
-    mFishes.ApplyDisturbanceAt(targetPos);
+    mFishes.DisturbAt(targetPos, 0.3f);
 }
 
 void World::RepairAt(

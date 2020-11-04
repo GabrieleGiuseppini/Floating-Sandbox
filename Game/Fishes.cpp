@@ -31,8 +31,11 @@ size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
 }
 }
 
-Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
+Fishes::Fishes(
+    FishSpeciesDatabase const & fishSpeciesDatabase,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mShoalBatchSize(GetShoalBatchSize(mFishSpeciesDatabase))
     , mFishShoals()
     , mFishes()
@@ -96,6 +99,9 @@ void Fishes::Update(
         mFishes.erase(
             mFishes.begin() + gameParameters.NumberOfFishes,
             mFishes.end());
+
+        // Notify new count
+        mGameEventHandler->OnFishCountUpdated(mFishes.size());
     }
     else if (mFishes.size() < gameParameters.NumberOfFishes)
     {
@@ -197,6 +203,9 @@ void Fishes::Update(
             // Update shoal
             ++(mFishShoals[currentShoalSearchIndex].CurrentMemberCount);
         }
+
+        // Notify new count
+        mGameEventHandler->OnFishCountUpdated(mFishes.size());
     }
 
     //

@@ -47,7 +47,8 @@ enum class ToolType
     TerrainAdjust,
     Scrub,
     RepairStructure,
-    ThanosSnap
+    ThanosSnap,
+    ScareFish
 };
 
 struct InputState
@@ -242,7 +243,7 @@ public:
 
     virtual void UpdateSimulation(InputState const & /*inputState*/) override
     {
-        if (!!mCurrentTrajectory)
+        if (mCurrentTrajectory.has_value())
         {
             //
             // We're following a trajectory
@@ -324,11 +325,11 @@ public:
 
     virtual void OnMouseMove(InputState const & inputState) override
     {
-        if (!!mEngagedMovableObjectId)
+        if (mEngagedMovableObjectId.has_value())
         {
             auto const now = std::chrono::steady_clock::now();
 
-            if (!!mCurrentTrajectory)
+            if (mCurrentTrajectory.has_value())
             {
                 //
                 // We already have a trajectory
@@ -421,7 +422,7 @@ private:
         {
             // Left mouse down
 
-            if (!mEngagedMovableObjectId)
+            if (!mEngagedMovableObjectId.has_value())
             {
                 //
                 // We're currently not engaged
@@ -432,7 +433,7 @@ private:
                     inputState.MousePosition,
                     mEngagedMovableObjectId);
 
-                if (!!mEngagedMovableObjectId)
+                if (mEngagedMovableObjectId.has_value())
                 {
                     // Engaged!
 
@@ -445,7 +446,7 @@ private:
         {
             // Left mouse up
 
-            if (!!mEngagedMovableObjectId)
+            if (mEngagedMovableObjectId.has_value())
             {
                 //
                 // We're currently engaged
@@ -457,7 +458,7 @@ private:
                 // Reset rotation
                 mRotationCenter.reset();
 
-                if (!!mCurrentTrajectory)
+                if (mCurrentTrajectory.has_value())
                 {
                     //
                     // We are in the midst of a trajectory
@@ -1156,7 +1157,7 @@ public:
                 // Update cursor
                 SetCurrentCursor();
             }
-       }
+        }
     }
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
@@ -2239,4 +2240,170 @@ private:
 
     wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
+};
+
+class ScareFishTool final : public Tool
+{
+public:
+
+    ScareFishTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        mIsEngaged = inputState.IsLeftMouseDown;
+        mCurrentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
+
+        // Update cursor
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        if (mIsEngaged)
+        {
+            // Stop sound
+            // TODO: depending on mCurrentAction type
+            //mSoundController->StopFloodHoseSound();
+
+            mIsEngaged = false;
+        }
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState) override
+    {
+        float constexpr InteractionRadius = 0.6f;
+
+        bool isEngaged;
+        ActionType currentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
+
+        // Apply action
+        if (inputState.IsLeftMouseDown)
+        {
+            isEngaged = true;
+
+            if (inputState.IsShiftKeyDown)
+            {
+                mGameController->AttractFish(
+                    inputState.MousePosition,
+                    InteractionRadius);
+            }
+            else
+            {
+                mGameController->ScareFish(
+                    inputState.MousePosition,
+                    InteractionRadius);
+            }
+        }
+        else
+        {
+            isEngaged = false;
+        }
+
+        bool doUpdateCursor = (currentAction != mCurrentAction);;
+
+        if (isEngaged)
+        {
+            if (!mIsEngaged)
+            {
+                // State change
+                mIsEngaged = true;
+
+                // Start sound
+                // TODO: depending on currentAction type
+                //mSoundController->PlayFloodHoseSound();
+
+                doUpdateCursor = true;
+            }
+            else
+            {
+                // Update down cursor
+                ++mDownCursorCounter;
+
+                doUpdateCursor = true;
+            }
+        }
+        else
+        {
+            if (mIsEngaged)
+            {
+                // State change
+                mIsEngaged = false;
+
+                // Stop sound
+                // TODO: depending on mCurrentAction type
+                //mSoundController->StopFloodHoseSound();
+
+                doUpdateCursor = true;
+            }
+        }
+
+        mCurrentAction = currentAction;
+
+        if (doUpdateCursor)
+        {
+            // Update cursor
+            SetCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    enum class ActionType
+    {
+        Scare,
+        Attract
+    };
+
+    void SetCurrentCursor()
+    {
+        switch (mCurrentAction)
+        {
+            case ActionType::Attract:
+            {
+                mToolCursorManager.SetToolCursor(
+                    mIsEngaged
+                    ? ((mDownCursorCounter % 2) ? mAttractDownCursorImage2 : mAttractDownCursorImage1)
+                    : mAttractUpCursorImage);
+
+                break;
+            }
+
+            case ActionType::Scare:
+            {
+                mToolCursorManager.SetToolCursor(
+                    mIsEngaged
+                    ? ((mDownCursorCounter % 2) ? mScareDownCursorImage2 : mScareDownCursorImage1)
+                    : mScareUpCursorImage);
+
+                break;
+            }
+        }
+    }
+
+    // Our state
+    bool mIsEngaged;
+    ActionType mCurrentAction;
+
+    // The cursors
+    wxImage const mScareUpCursorImage;
+    wxImage const mScareDownCursorImage1;
+    wxImage const mScareDownCursorImage2;
+    wxImage const mAttractUpCursorImage;
+    wxImage const mAttractDownCursorImage1;
+    wxImage const mAttractDownCursorImage2;
+
+    // The current counter for the down cursors
+    uint8_t mDownCursorCounter;
 };

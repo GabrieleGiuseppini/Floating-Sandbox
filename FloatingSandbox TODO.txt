@@ -1208,9 +1208,9 @@ Render:
 				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 					- Need to reset u-turn
 				- Food/Scare
-					- Icons: 
-						- Food: little can, tilted at rest, rotated w/crumbles when used
-						- Scare: megaphone 45 degrees at rest, w/sound waves when used
+					= Icons: 
+						= Food: little can, tilted at rest, rotated w/crumbles when used
+						= Scare: megaphone 45 degrees at rest, w/sound waves when used
 					- Sounds:
 						- Food: shaking powder
 						- Scare: compressed air horn

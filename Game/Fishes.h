@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FishSpeciesDatabase.h"
+#include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "RenderContext.h"
 #include "RenderTypes.h"
@@ -14,6 +15,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <memory.h>
 #include <optional>
 #include <vector>
 
@@ -25,7 +27,9 @@ class Fishes
 
 public:
 
-    explicit Fishes(FishSpeciesDatabase const & fishSpeciesDatabase);
+    explicit Fishes(
+        FishSpeciesDatabase const & fishSpeciesDatabase,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(
         float currentSimulationTime,
@@ -38,7 +42,9 @@ public:
 
 public:
 
-    void ApplyDisturbanceAt(vec2f const & worldCoordinates)
+    void DisturbAt(
+        vec2f const & worldCoordinates,
+        float worldRadius)
     {
         mCurrentInteractiveDisturbance = worldCoordinates;
 
@@ -53,6 +59,13 @@ public:
         fish.StartDirection = fish.CurrentDirection;
         fish.TargetDirection = fish.TargetVelocity.normalise();
         */
+    }
+
+    void AttractAt(
+        vec2f const & worldCoordinates,
+        float worldRadius)
+    {
+        // TODO
     }
 
     void ApplyAttractionAt(vec2f const & worldCoordinates)
@@ -178,6 +191,7 @@ private:
 private:
 
     FishSpeciesDatabase const & mFishSpeciesDatabase;
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // A shoal batch is a set of shoals, one for each species
     size_t const mShoalBatchSize;

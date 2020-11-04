@@ -35,7 +35,7 @@ struct IGameController
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
     virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
-	virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
+    virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
@@ -64,12 +64,12 @@ struct IGameController
 
     virtual void SetPaused(bool isPaused) = 0;
     virtual void SetMoveToolEngaged(bool isEngaged) = 0;
-	virtual void DisplaySettingsLoadedNotification() = 0;
+    virtual void DisplaySettingsLoadedNotification() = 0;
 
-	virtual bool GetShowStatusText() const = 0;
+    virtual bool GetShowStatusText() const = 0;
     virtual void SetShowStatusText(bool value) = 0;
-	virtual bool GetShowExtendedStatusText() const = 0;
-	virtual void SetShowExtendedStatusText(bool value) = 0;
+    virtual bool GetShowExtendedStatusText() const = 0;
+    virtual void SetShowExtendedStatusText(bool value) = 0;
 
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
 
@@ -85,6 +85,9 @@ struct IGameController
     //
     // Interactions
     //
+
+    virtual void ScareFish(vec2f const & screenCoordinates, float radius) = 0;
+    virtual void AttractFish(vec2f const & screenCoordinates, float radius) = 0;
 
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
@@ -120,7 +123,7 @@ struct IGameController
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;
     virtual void TriggerStorm() = 0;
-	virtual void TriggerLightning() = 0;
+    virtual void TriggerLightning() = 0;
 
     virtual void HighlightElectricalElement(ElectricalElementId electricalElementId) = 0;
 

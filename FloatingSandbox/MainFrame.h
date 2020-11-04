@@ -27,7 +27,7 @@
 #include <Game/ResourceLocator.h>
 
 #include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
-                                // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
+ // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 
 #include <wx/frame.h>
 #include <wx/menu.h>
@@ -92,6 +92,7 @@ private:
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
+    wxMenuItem * mScareFishMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
@@ -189,6 +190,7 @@ private:
     void OnAdjustTerrainMenuItemSelected(wxCommandEvent & event);
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
+    void OnScareFishMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
@@ -287,6 +289,11 @@ private:
             --mCurrentAntiMatterBombCount;
             mAntiMatterBombsDetonateMenuItem->Enable(mCurrentAntiMatterBombCount > 0);
         }
+    }
+
+    virtual void OnFishCountUpdated(size_t count) override
+    {
+        mScareFishMenuItem->Enable(count > 0);
     }
 
 private:
