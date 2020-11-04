@@ -356,9 +356,9 @@ struct GameParameters
     static constexpr unsigned int MinNumberOfFishes = 0;
     static constexpr unsigned int MaxNumberOfFishes = 2056;
 
-    float FishSizeAdjustment;
-    static constexpr float MinFishSizeAdjustment = 1.0f;
-    static constexpr float MaxFishSizeAdjustment = 100.0f;
+    float FishSizeMultiplier;
+    static constexpr float MinFishSizeMultiplier = 1.0f;
+    static constexpr float MaxFishSizeMultiplier = 100.0f;
 
     float FishSpeedAdjustment;
     static constexpr float MinFishSpeedAdjustment = 0.1f;

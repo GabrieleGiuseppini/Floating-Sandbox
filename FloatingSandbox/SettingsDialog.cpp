@@ -2529,25 +2529,25 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Fish Size Adjustment
+            // Fish Size Multiplier
             {
-                mFishSizeAdjustmentSlider = new SliderControl<float>(
+                mFishSizeMultiplierSlider = new SliderControl<float>(
                     fishesBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Fish Size Adjust"),
-                    _("Adjusts the physical size of fishes."),
+                    _("Fish Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of fishes."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FishSizeAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::FishSizeMultiplier, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions->GetMinFishSizeAdjustment(),
-                        mGameControllerSettingsOptions->GetMaxFishSizeAdjustment()));
+                        mGameControllerSettingsOptions->GetMinFishSizeMultiplier(),
+                        mGameControllerSettingsOptions->GetMaxFishSizeMultiplier()));
 
                 fishesSizer->Add(
-                    mFishSizeAdjustmentSlider,
+                    mFishSizeMultiplierSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -4358,7 +4358,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
 
     mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
-    mFishSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeAdjustment));
+    mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
     mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
 
     // Interactions

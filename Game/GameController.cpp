@@ -133,7 +133,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStiffnessAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -145,7 +145,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStrengthAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -157,7 +157,7 @@ GameController::GameController(
         {
             this->mGameParameters.SeaDepth = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -169,7 +169,7 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorBumpiness = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -181,7 +181,7 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorDetailAmplification = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -193,7 +193,7 @@ GameController::GameController(
         {
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     assert(mFloatParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -205,19 +205,19 @@ GameController::GameController(
         {
             this->mGameParameters.BasalWaveHeightAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
-    assert(mFloatParameterSmoothers.size() == FishSizeAdjustmentParameterSmoother);
+    assert(mFloatParameterSmoothers.size() == FishSizeMultiplierParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.FishSizeAdjustment;
+            return this->mGameParameters.FishSizeMultiplier;
         },
         [this](float const & value)
         {
-            this->mGameParameters.FishSizeAdjustment = value;
+            this->mGameParameters.FishSizeMultiplier = value;
         },
-        ParameterSmoothingTrajectoryTime);
+            ParameterSmoothingTrajectoryTime);
 
     // ---------------------------------
 
@@ -232,11 +232,11 @@ GameController::GameController(
         {
             return this->mRenderContext->SetZoom(value);
         },
-        [this](float const & value)
+            [this](float const & value)
         {
             return this->mRenderContext->ClampZoom(value);
         },
-        ControlParameterSmoothingTrajectoryTime);
+            ControlParameterSmoothingTrajectoryTime);
 
     mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
         [this]() -> vec2f const &
@@ -247,11 +247,11 @@ GameController::GameController(
         {
             return this->mRenderContext->SetCameraWorldPosition(value);
         },
-        [this](vec2f const & value)
+            [this](vec2f const & value)
         {
             return this->mRenderContext->ClampCameraWorldPosition(value);
         },
-        ControlParameterSmoothingTrajectoryTime);
+            ControlParameterSmoothingTrajectoryTime);
 }
 
 void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunction)
@@ -1322,9 +1322,9 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 
 void GameController::OnShipAdded(
     ShipId shipId,
-    RgbaImageData&& textureImage,
-    ShipMetadata const& shipMetadata,
-    std::filesystem::path const& shipDefinitionFilepath,
+    RgbaImageData && textureImage,
+    ShipMetadata const & shipMetadata,
+    std::filesystem::path const & shipDefinitionFilepath,
     bool doAutoZoom)
 {
     // Auto-zoom (if requested)

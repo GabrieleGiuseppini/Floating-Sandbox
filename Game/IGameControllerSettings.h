@@ -168,8 +168,8 @@ struct IGameControllerSettings
     virtual unsigned int GetNumberOfFishes() const = 0;
     virtual void SetNumberOfFishes(unsigned int value) = 0;
 
-    virtual float GetFishSizeAdjustment() const = 0;
-    virtual void SetFishSizeAdjustment(float value) = 0;
+    virtual float GetFishSizeMultiplier() const = 0;
+    virtual void SetFishSizeMultiplier(float value) = 0;
 
     virtual float GetFishSpeedAdjustment() const = 0;
     virtual void SetFishSpeedAdjustment(float value) = 0;

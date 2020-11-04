@@ -254,6 +254,7 @@ Render:
 			- Changelist
 
 		- Check "chicken sandbox" settings directory to repro crash
+		- Check "foodbar" settings directory to repro crash
 		- Check issue with ship having water material that breaks
 		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
 		- See why log diagnostics is not written
@@ -1148,7 +1149,7 @@ Render:
 						+ Clamp at spawn
 						+ Simple collision check w/immediate bounce, not excluding other collision checks
 						+ Check during free falling as well!
-
+					+ Rename size adjust
 				= New algo:
 					+ Turning (if isTurning)
 					+ Pos update
@@ -1205,6 +1206,7 @@ Render:
 					- Requires maintenance of sorted Xs in vector
 			- Tools:
 				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
+					- Need to reset u-turn
 				- Food/Scare
 					- Icons: 
 						- Food: little can, tilted at rest, rotated w/crumbles when used
@@ -1226,6 +1228,8 @@ Render:
 			- Should fish follow waves on surface of water?
 
 		- Cleanup:
+			- Larger field for spawning and next position?
+				- Unify variances anyway - can we do that?
 			- GameParameters::NumberOfFishes: TODO
 			- Do we need initial Update() call at World construction?
 		- Misc:

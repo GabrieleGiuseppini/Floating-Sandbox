@@ -137,7 +137,7 @@ private:
     SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
     SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
     SliderControl<unsigned int> * mNumberOfFishesSlider;
-    SliderControl<float> * mFishSizeAdjustmentSlider;
+    SliderControl<float> * mFishSizeMultiplierSlider;
     SliderControl<float> * mFishSpeedAdjustmentSlider;
 
     // Interactions

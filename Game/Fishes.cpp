@@ -38,7 +38,7 @@ Fishes::Fishes(FishSpeciesDatabase const & fishSpeciesDatabase)
     , mFishes()
     , mCurrentInteractiveDisturbance()
     , mCurrentInteractiveAttraction()
-    , mCurrentFishSizeAdjustment(0.0f)
+    , mCurrentFishSizeMultiplier(0.0f)
     , mCurrentFishSpeedAdjustment(0.0f)
 {
 }
@@ -54,15 +54,15 @@ void Fishes::Update(
     // 1) Update parameters that changed, if any
     //
 
-    if (mCurrentFishSizeAdjustment != gameParameters.FishSizeAdjustment
+    if (mCurrentFishSizeMultiplier != gameParameters.FishSizeMultiplier
         || mCurrentFishSpeedAdjustment != gameParameters.FishSpeedAdjustment)
     {
         // Update all velocities
-        if (mCurrentFishSpeedAdjustment != 0.0f && mCurrentFishSizeAdjustment != 0.0f)
+        if (mCurrentFishSpeedAdjustment != 0.0f && mCurrentFishSizeMultiplier != 0.0f)
         {
             float const factor =
                 gameParameters.FishSpeedAdjustment / mCurrentFishSpeedAdjustment
-                * gameParameters.FishSizeAdjustment / mCurrentFishSizeAdjustment;
+                * gameParameters.FishSizeMultiplier / mCurrentFishSizeMultiplier;
 
             for (auto & fish : mFishes)
             {
@@ -73,7 +73,7 @@ void Fishes::Update(
         }
 
         // Update parameters
-        mCurrentFishSizeAdjustment = gameParameters.FishSizeAdjustment;
+        mCurrentFishSizeMultiplier = gameParameters.FishSizeMultiplier;
         mCurrentFishSpeedAdjustment = gameParameters.FishSpeedAdjustment;
     }
 
@@ -205,7 +205,7 @@ void Fishes::Update(
 
     float const interactiveDisturbanceRadius =
         0.3f
-        * mCurrentFishSizeAdjustment
+        * mCurrentFishSizeMultiplier
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     for (auto & fish : mFishes)
@@ -479,7 +479,7 @@ void Fishes::Update(
         // Calculate position of head
         vec2f const fishHeadPosition =
             fish.CurrentPosition
-            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeAdjustment * (species.HeadOffsetX - 0.5f);
+            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
 
         // TODO: x6:
         // + Current disturbance
@@ -656,7 +656,7 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         renderContext.UploadFish(
             TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
             fish.CurrentPosition,
-            species.WorldSize * mCurrentFishSizeAdjustment,
+            species.WorldSize * mCurrentFishSizeMultiplier,
             angleCw,
             horizontalScale,
             species.TailX,
@@ -731,7 +731,7 @@ vec2f Fishes::MakeCuisingVelocity(
     GameParameters const & gameParameters)
 {
     return direction
-        * (species.BasalSpeed * gameParameters.FishSpeedAdjustment * gameParameters.FishSizeAdjustment)
+        * (species.BasalSpeed * gameParameters.FishSpeedAdjustment * gameParameters.FishSizeMultiplier)
         * (0.7f + personalitySeed * 0.3f);
 }
 

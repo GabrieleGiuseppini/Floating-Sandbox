@@ -192,7 +192,7 @@ private:
     std::optional<vec2f> mCurrentInteractiveAttraction;
 
     // Parameters that the calculated values are current with
-    float mCurrentFishSizeAdjustment;
+    float mCurrentFishSizeMultiplier;
     float mCurrentFishSpeedAdjustment;
 };
 
