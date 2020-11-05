@@ -667,8 +667,11 @@ void Fishes::Update(
                 if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
                 {
                     // Calculate an altogether new target position in this
-                    // new direction
-                    // TODOHERE
+                    // new direction - one screen away
+                    fish.TargetPosition = FindPosition(
+                        fish.CurrentPosition + fish.TargetRenderVector * visibleWorld.Width / 2.0f,
+                        visibleWorld.Width / 2.0f,
+                        5.0f);
 
                     // Perform a cruise steering
                     fish.CruiseSteeringState.emplace(
@@ -808,7 +811,7 @@ vec2f Fishes::FindNewCruisingTargetPosition(
 
     return FindPosition(
         currentPosition + newDirection * movementMagnitude,
-        visibleWorld.Width / 4.0f, // x variance
+        visibleWorld.Width / 2.0f, // x variance
         5.0f); // y variance
 }
 

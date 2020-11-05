@@ -1173,10 +1173,12 @@ Render:
 								+ ...and cut short state machine afterwards, as fish can't swim
 								X See if this one suffices without the two explicit "water level" collision checks
 						= Ocean floor:
-							- Do check with head of fish
-							+ See why speeds up after bounce
 							- See why panic'd fish doesn't care
-							- Test also ship collision with sea floor, for Dx change!
+								- Doesn't care when velocity is pointing outside of normal
+							- Do check with head of fish
+								- Watch out: there's no guarantee of world bounds; shall we just clamp?
+							+ See why speeds up after bounce							
+							+ Test also ship collision with sea floor, for Dx change!
 						+ Interactive disturbance:
 							+ Panic run:
 								+ New target position: any
@@ -1194,6 +1196,7 @@ Render:
 						- Remove first update of Fishes at World initialization, since we have no ship AABBs
 					- Avoid spawning in AABBs
 					+ Also take OceanFloor
+				- Obstacles rearc as per Moleskine
 			= Superimpose sin over movement
 				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail
