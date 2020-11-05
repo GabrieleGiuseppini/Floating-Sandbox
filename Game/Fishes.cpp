@@ -632,19 +632,19 @@ void Fishes::Update(
         }
 
         // Check ocean floor collision
-        // TODO: ensure we haven't changed position since the last WorldBoundary check
-        assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth && fish.CurrentPosition.x <= GameParameters::HalfMaxWorldWidth);
-        float const oceanFloorHeight = oceanFloor.GetHeightAt(fish.CurrentPosition.x);
-        if (fish.CurrentPosition.y <= oceanFloorHeight)
+        float const clampedX = Clamp(fishHeadPosition.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
+        float const oceanFloorHeight = oceanFloor.GetHeightAt(clampedX);
+        if (fishHeadPosition.y <= oceanFloorHeight)
         {
             //
             // Ocean floor collision
             //
 
-            // Calculate sea floor normal (positive points out)
+            // Calculate sea floor normal (positive points out), via
+            // the derivative of the ocean floor at this X
             float constexpr Dx = 0.01f;
             vec2f const seaFloorNormal = vec2f(
-                oceanFloorHeight - oceanFloor.GetHeightAt(fish.CurrentPosition.x + 0.01f),
+                oceanFloorHeight - oceanFloor.GetHeightAt(clampedX + 0.01f),
                 Dx).normalise(); // Points below
 
             // Calculate the component of the fish's target velocity along the normal,
@@ -678,7 +678,7 @@ void Fishes::Update(
                         fish.CurrentVelocity,
                         fish.CurrentRenderVector,
                         currentSimulationTime,
-                        0.5f);
+                        0.5f); // Fast u-turn
                 }
                 else
                 {    // Converge direction change at this rate

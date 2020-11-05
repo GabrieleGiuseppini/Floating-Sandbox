@@ -1063,7 +1063,7 @@ Render:
 					+ Ensure X direction change
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
-				- Obstacle check
+				- Obstacle checks at FindPosition()
 			= Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
@@ -1173,10 +1173,11 @@ Render:
 								+ ...and cut short state machine afterwards, as fish can't swim
 								X See if this one suffices without the two explicit "water level" collision checks
 						= Ocean floor:
+							= Do check with head of fish
+								+ Since there's no guarantee of world bounds compliance, clamp X
 							- See why panic'd fish doesn't care
 								- Doesn't care when velocity is pointing outside of normal
-							- Do check with head of fish
-								- Watch out: there's no guarantee of world bounds; shall we just clamp?
+								- Do we keep it?
 							+ See why speeds up after bounce							
 							+ Test also ship collision with sea floor, for Dx change!
 						+ Interactive disturbance:
@@ -1189,19 +1190,20 @@ Render:
 										! Using panic velocity comes for free
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
 								+ Prevent panic direction from being too vertical
-
-				- AABB around ships' frontiers, so that fish AI's avoid them
-					- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
-					- Fishes::Update(.) takes AllShipAABBs
-						- Remove first update of Fishes at World initialization, since we have no ship AABBs
-					- Avoid spawning in AABBs
-					+ Also take OceanFloor
 				- Obstacles rearc as per Moleskine
 			= Superimpose sin over movement
 				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail
-			= Swarming
-				= When adding new fish, distribute remaining counts among species according to swarm sizes
+			- AABB around ships' frontiers, so that fish AI's avoid them
+				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
+				- Fishes::Update(.) takes AllShipAABBs
+					- First update of Fishes at World initialization takes empty AABB
+				- Avoid spawning in AABBs
+				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
+					- If really bad, consider nuking initial Fishes initialization
+				+ Also take OceanFloor
+			= Shoaling
+				+ When adding new fish, distribute remaining counts among species according to swarm sizes
 				- Buffer rearc
 				- Visit for all fishes with x > this.x
 				- 1. Change velocity to go to position resultant of distances
@@ -1235,6 +1237,8 @@ Render:
 
 		- Cleanup:
 			- Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
+				- Goals:
+					- Ensure first cruise of ship is "long enough", i.e. that fish doesn't u-turn right away
 			- Larger field for spawning and next position?
 				- Unify variances anyway - can we do that?
 			- GameParameters::NumberOfFishes: TODO
@@ -1242,8 +1246,10 @@ Render:
 				+ Better to spend time for fish creation there than at first frame
 		- Misc:
 			- SettingsDialog:
-				- number of fish
-				- fish render size adjust
+				+ number of fish
+				+ fish size multiplier
+				- do shoaling flag
+				- shoal spacing
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 
