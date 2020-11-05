@@ -1175,9 +1175,10 @@ Render:
 						= Ocean floor:
 							= Do check with head of fish
 								+ Since there's no guarantee of world bounds compliance, clamp X
-							- See why panic'd fish doesn't care
-								- Doesn't care when velocity is pointing outside of normal
-								- Do we keep it?
+							- Test with small panic
+							+ See why panic'd fish doesn't care
+								+ Doesn't care when velocity is pointing outside of normal
+								+ Do we keep it? Yes
 							+ See why speeds up after bounce							
 							+ Test also ship collision with sea floor, for Dx change!
 						+ Interactive disturbance:
@@ -1234,7 +1235,8 @@ Render:
 				- Disturbances also from bombs, with large radius
 					- Need array of disturbances (and thus loop structure change), each with ratio
 			- Should fish follow waves on surface of water?
-
+		- Test:
+			- 0-depth ocean
 		- Cleanup:
 			- Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
 				- Goals:

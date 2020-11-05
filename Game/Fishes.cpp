@@ -363,7 +363,7 @@ void Fishes::Update(
             // Enter "a bit of" panic mode - after exhausting this panic charge,
             // the fish will resume swimming towards it current target
             // position
-            fish.PanicCharge = 0.03f;
+            fish.PanicCharge = std::max(0.03f, fish.PanicCharge);
 
             // Create a little disturbance in the ocean surface
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
@@ -508,7 +508,7 @@ void Fishes::Update(
             //
 
             // Enter panic mode this long
-            fish.PanicCharge = 1.0f;
+            fish.PanicCharge = std::max(1.0f, fish.PanicCharge);
 
             // Don't change target position, we'll return to it when panic is over
 
