@@ -361,6 +361,7 @@ Render:
 				- Elongated with vertical velocity
 			- Option B) Same as A, but instead of one single texture, a (small) set of frames
 			- Option C) Fully "movie" (not ephemeral particles), just like explosions
+			- Consider using ParentWorld.DisturbOcean with new arg on top of fishes' radius
 
 		- Particle-zation
 			- Just destroy all springs, with no other side-effects
@@ -1213,12 +1214,14 @@ Render:
 					+ Scare:
 						+ Panic charge should be proportional to tool distance
 						+ Ultra-violent mode
-				- Disturbances also from bombs, with large radius
-					- via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
-					- Add TODO item at plan for sprays for bombs to reuse this, with other args
-				- Tsunami: widespread panic
+				+ Disturbances also from bombs, with large radius
+					+ via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
+					+ Add TODO item at plan for sprays for bombs to reuse this, with other args
+				- Tsunami: widespread panic: TODO
 			= Shoaling
-				+ When adding new fish, distribute remaining counts among species according to swarm sizes				
+				+ When adding new fish, distribute remaining counts among species according to swarm sizes
+				- Rearc Update() in three parts
+				- Do shoaling only if GameParameters::DoFishShoaling is set
 				- Visit for all fishes with x > this.x
 				- 1. Change velocity to go to position resultant of distances
 				- OLD:

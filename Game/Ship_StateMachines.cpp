@@ -47,7 +47,7 @@ bool Ship::UpdateExplosionStateMachine(
         // last for less time
         float const blastProgress = explosionStateMachine.CurrentProgress * 3.0f;
 
-        // Blast radius: from 0.0 to BlastRadius, linearly
+        // Blast radius: from 0.0 to BlastRadius, linearly with progress
         float const blastRadius =
             explosionStateMachine.BlastRadius * std::min(1.0f, blastProgress);
 
@@ -99,6 +99,19 @@ bool Ship::UpdateExplosionStateMachine(
                     mPoints.GetTemperature(pointIndex) + deltaT);
             }
         }
+
+        //
+        // Fish scaring
+        //
+
+        mParentWorld.DisturbOceanAt(
+            centerPosition,
+            blastRadius * 5.0f,
+            gameParameters);
+
+        //
+        // Check if blast is over
+        //
 
         if (blastProgress > 1.0f)
         {

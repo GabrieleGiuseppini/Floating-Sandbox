@@ -523,8 +523,6 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
-            LogMessage("TODOTEST: EndOfPanic");
-
             //
             // End of Panic
             //
@@ -551,7 +549,7 @@ void Fishes::Update(
             }
             else
             {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.03f;
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.02f;
             }
         }
 

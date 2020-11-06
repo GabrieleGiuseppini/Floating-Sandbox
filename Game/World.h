@@ -74,19 +74,19 @@ public:
         return mOceanSurface.GetHeightAt(x);
     }
 
-    inline void DisplaceOceanSurfaceAt(
-        float x,
-        float yOffset)
-    {
-        mOceanSurface.DisplaceAt(x, yOffset);
-    }
-
     inline bool IsUnderwater(vec2f const & position) const
     {
         return position.y < GetOceanSurfaceHeightAt(position.x);
     }
 
     bool IsUnderwater(ElementId elementId) const;
+
+    inline void DisplaceOceanSurfaceAt(
+        float x,
+        float yOffset)
+    {
+        mOceanSurface.DisplaceAt(x, yOffset);
+    }
 
     inline float GetOceanFloorHeightAt(float x) const
     {
@@ -98,6 +98,17 @@ public:
         float yOffset)
     {
         mOceanFloor.DisplaceAt(x, yOffset);
+    }
+
+    inline void DisturbOceanAt(
+        vec2f const & position,
+        float fishScareRadius,
+        GameParameters const & gameParameters)
+    {
+        mFishes.DisturbAt(
+            position,
+            fishScareRadius,
+            gameParameters);
     }
 
     inline vec2f const & GetCurrentWindSpeed() const
