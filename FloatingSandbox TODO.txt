@@ -1191,7 +1191,7 @@ Render:
 										! Using panic velocity comes for free
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
 								+ Prevent panic direction from being too vertical
-				- Obstacles rearc as per Moleskine
+				= Obstacles rearc as per Moleskine
 			= Superimpose sin over movement
 				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail

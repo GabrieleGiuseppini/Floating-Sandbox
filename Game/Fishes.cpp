@@ -231,8 +231,6 @@ void Fishes::Update(
             // Cruise steering
             //
 
-            //LogMessage("TODOHERE: 1: CruiseSteering");
-
             float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringState->SimulationTimeStart) / fish.CruiseSteeringState->SimulationTimeDuration;
 
             // Check whether we should stop steering
@@ -345,10 +343,10 @@ void Fishes::Update(
         else if (fish.IsInFreefall
             && fish.CurrentPosition.y <= oceanY)
         {
+            LogMessage("TODOTEST: Leaving Freefall");
+
             // Leave freefall
             fish.IsInFreefall = false;
-
-            LogMessage("TODOHERE: 3: LeavingFreefall");
 
             // Drag velocity down
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
@@ -360,10 +358,10 @@ void Fishes::Update(
 
             // Note: no need to change render vector, velocity direction has not changed
 
-            // Enter "a bit of" panic mode - after exhausting this panic charge,
-            // the fish will resume swimming towards it current target
-            // position
-            fish.PanicCharge = std::max(0.03f, fish.PanicCharge);
+            // Enter "a bit of" panic mode (overriding current panic);
+            // after exhausting this panic charge, the fish will resume
+            // swimming towards it current target position
+            fish.PanicCharge = 0.03f;
 
             // Create a little disturbance in the ocean surface
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
@@ -482,89 +480,14 @@ void Fishes::Update(
         }
 
         //
-        // 5) Disturbances check
+        // 5) Check state machine transitions
         //
 
-        // Calculate position of head
-        vec2f const fishHeadPosition =
-            fish.CurrentPosition
-            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
-
-        // TODO: x6:
-        // + Current disturbance
-        // - Current attraction
-        // - AABB
-        // + Water level
-        // + Reached target
-        // = Ocean floor
-
-        // Check whether the fish has been interactively disturbed
-        if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
-            mCurrentInteractiveDisturbance.has_value()
-            && distance < interactiveDisturbanceRadius) // Within radius
-        {
-            //
-            // Interactive disturbance panic
-            //
-
-            // Enter panic mode this long
-            fish.PanicCharge = std::max(1.0f, fish.PanicCharge);
-
-            // Don't change target position, we'll return to it when panic is over
-
-            // Calculate new direction, away from disturbance
-            vec2f panicDirection = (fishHeadPosition - *mCurrentInteractiveDisturbance).normalise(distance);
-
-            // Make sure direction is not too steep
-            float constexpr MinXComponent = 0.4f;
-            if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
-            {
-                panicDirection.x = MinXComponent;
-                panicDirection = panicDirection.normalise();
-            }
-            else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
-            {
-                panicDirection.x = -MinXComponent;
-                panicDirection = panicDirection.normalise();
-            }
-
-            // Calculate new target velocity - away from disturbance point, and will be panic velocity
-            fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
-
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-            // Converge directions really fast
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
-        }
-        // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
-        else if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 5.0f
-            && fish.PanicCharge <= 0.7f)
-        {
-            // Bounce away only if we're really going into it
-            if (fish.TargetVelocity.y >= 0.0f)
-            {
-                //
-                // OceanSurface Bounce
-                //
-
-                // Bounce direction, opposite of target
-                vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
-
-                // Calculate new target velocity - away from disturbance point
-                fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
-
-                // Update render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-                // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f * (1.0f + fish.PanicCharge);
-            }
-        }
         // Check whether this fish has reached its target, while not in panic mode
-        else if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
+        if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
+            LogMessage("TODOTEST: TargetReached");
+
             //
             // Target Reached
             //
@@ -601,6 +524,8 @@ void Fishes::Update(
         // Check whether this fish has reached the end of panic mode
         else if (fish.PanicCharge != 0.0f && fish.PanicCharge < 0.02f) // Reached end of panic
         {
+            LogMessage("TODOTEST: EndOfPanic");
+
             //
             // End of Panic
             //
@@ -629,6 +554,82 @@ void Fishes::Update(
             {    // Converge direction change at this rate
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.03f;
             }
+        }
+
+        //
+        // 6) Disturbances check
+        //
+
+        // Calculate position of head
+        vec2f const fishHeadPosition =
+            fish.CurrentPosition
+            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+
+        // Check whether the fish has been interactively disturbed
+        if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
+            mCurrentInteractiveDisturbance.has_value()
+            && distance < interactiveDisturbanceRadius) // Within radius
+        {
+            LogMessage("TODOTEST: Interactive Disturbance");
+
+            //
+            // Interactive disturbance panic
+            //
+
+            // Enter panic mode this long
+            fish.PanicCharge = std::max(1.0f, fish.PanicCharge);
+
+            // Don't change target position, we'll return to it when panic is over
+
+            // Calculate new direction, away from disturbance
+            vec2f panicDirection = (fishHeadPosition - *mCurrentInteractiveDisturbance).normalise(distance);
+
+            // Make sure direction is not too steep
+            float constexpr MinXComponent = 0.4f;
+            if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
+            {
+                panicDirection.x = MinXComponent;
+                panicDirection = panicDirection.normalise();
+            }
+            else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
+            {
+                panicDirection.x = -MinXComponent;
+                panicDirection = panicDirection.normalise();
+            }
+
+            // Calculate new target velocity - away from disturbance point, and will be panic velocity
+            fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+            // Converge directions really fast
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
+        }
+
+        // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
+        if (float const depth = oceanY - fish.CurrentPosition.y;
+            depth < 5.0f
+            && fish.PanicCharge <= 0.7f
+            && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
+        {
+            LogMessage("TODOTEST: OceanSurface Bounce");
+
+            //
+            // OceanSurface Bounce
+            //
+
+            // Bounce direction, opposite of target
+            vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
+
+            // Calculate new target velocity - away from disturbance point
+            fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+            // Converge direction change at this rate
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f * (1.0f + fish.PanicCharge);
         }
 
         // Check ocean floor collision
