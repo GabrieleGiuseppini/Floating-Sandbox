@@ -1058,13 +1058,7 @@ Render:
 			+ Try with third bream, then decide which between first and third to keep
 				+ Nuke other psd's, only keep chosen one
 			+ Clamp spawning Y
-			= New target position:
-				+ X constraints:
-					+ Ensure X direction change
-				+ Y constraints:
-					+ Not too much y slope (wrt current)
-				- Obstacle checks at FindPosition()
-			= Final state machine:
+			+ Final state machine:
 				+ Fish turning around: simply done with geometry @ Upload
 					+ Replace verticalSign with horizontalScale (between -1.0 and 1.0)
 						+ Angles and flipping
@@ -1191,7 +1185,16 @@ Render:
 										! Using panic velocity comes for free
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
 								+ Prevent panic direction from being too vertical
-				= Obstacles rearc as per Moleskine
+				+ Obstacles rearc as per Moleskine
+			= Try without u-turn at ocean floor
+			- Lower uturn limit width
+			= New target position:
+				+ X constraints:
+					+ Ensure X direction change
+				+ Y constraints:
+					+ Not too much y slope (wrt current)
+				- Obstacle checks at FindPosition()
+
 			= Superimpose sin over movement
 				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail
@@ -1233,7 +1236,8 @@ Render:
 						- Panic charge should be proportional to tool distance
 						+ Ultra-violent mode
 				- Disturbances also from bombs, with large radius
-					- Need array of disturbances (and thus loop structure change), each with ratio
+					- via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
+				- Tsunami: widespread panic
 			- Should fish follow waves on surface of water?
 		- Test:
 			- 0-depth ocean

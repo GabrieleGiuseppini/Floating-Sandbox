@@ -615,27 +615,8 @@ void Fishes::Update(
                 // Update target render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
-                // Check if it's gonna be a u-tun
-                if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
-                {
-                    // Calculate an altogether new target position in this
-                    // new direction - one screen away
-                    fish.TargetPosition = FindPosition(
-                        fish.CurrentPosition + fish.TargetRenderVector * visibleWorld.Width / 2.0f,
-                        visibleWorld.Width / 2.0f,
-                        5.0f);
-
-                    // Perform a cruise steering
-                    fish.CruiseSteeringState.emplace(
-                        fish.CurrentVelocity,
-                        fish.CurrentRenderVector,
-                        currentSimulationTime,
-                        0.5f); // Fast u-turn
-                }
-                else
-                {    // Converge direction change at this rate
-                    fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
-                }
+                // Converge direction change at this rate
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
             }
         }
     }
