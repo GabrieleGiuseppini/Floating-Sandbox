@@ -1210,6 +1210,7 @@ Render:
 					= Food: 
 						+ Set target velocity to direction towards tool; auto-smoothing does the rest
 						+ Enter panic mode with distance
+						- TODOHERE: see if can randomize trajectories
 						- TODOHERE: See if can make it so that fish jumps out of water
 					+ Scare:
 						+ Panic charge should be proportional to tool distance

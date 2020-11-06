@@ -747,7 +747,7 @@ void Fishes::AttractAt(
                 fish.CurrentPosition
                 + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
 
-            // Calculate distance from disturbance
+            // Calculate distance from attraction
             float const distance = (worldCoordinates - fishHeadPosition).length();
 
             // Check whether the fish has been attracted
@@ -763,14 +763,14 @@ void Fishes::AttractAt(
                 // Calculate new direction, towards food
                 vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
 
-                // Calculate new target velocity - away from disturbance point, and will be panic velocity
+                // Calculate new target velocity - towards food, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
                 // Converge directions at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
