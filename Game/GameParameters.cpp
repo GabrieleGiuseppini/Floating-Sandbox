@@ -70,6 +70,8 @@ GameParameters::GameParameters()
     , NumberOfFishes(60)
     , FishSizeMultiplier(25.0f)
     , FishSpeedAdjustment(1.0f)
+    , DoFishShoaling(true)
+    , FishShoalSpacingAdjustment(1.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

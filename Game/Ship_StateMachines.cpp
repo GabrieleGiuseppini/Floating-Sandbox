@@ -101,7 +101,7 @@ bool Ship::UpdateExplosionStateMachine(
         }
 
         //
-        // Fish scaring
+        // Scare fishes
         //
 
         mParentWorld.DisturbOceanAt(

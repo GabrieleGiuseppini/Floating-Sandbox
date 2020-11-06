@@ -52,7 +52,7 @@ void Fishes::Update(
     VisibleWorld const & visibleWorld)
 {
     //
-    // 1) Update parameters that changed, if any
+    // Update parameters that changed, if any
     //
 
     if (mCurrentFishSizeMultiplier != gameParameters.FishSizeMultiplier
@@ -79,9 +79,203 @@ void Fishes::Update(
     }
 
     //
-    // 2) Update number of fishes
+    // Update number of fishes
     //
 
+    UpdateNumberOfFishes(
+        currentSimulationTime,
+        oceanSurface,
+        oceanFloor,
+        gameParameters,
+        visibleWorld);
+
+    //
+    // Update dynamics
+    //
+
+    UpdateDynamics(
+        currentSimulationTime,
+        oceanSurface,
+        oceanFloor,
+        gameParameters,
+        visibleWorld);
+
+    //
+    // Update shoaling
+    //
+
+    if (gameParameters.DoFishShoaling)
+    {
+        UpdateShoaling(gameParameters);
+    }
+}
+
+void Fishes::Upload(Render::RenderContext & renderContext) const
+{
+    renderContext.UploadFishesStart(mFishes.size());
+
+    for (auto const & fish : mFishes)
+    {
+        float angleCw = fish.CurrentRenderVector.angleCw();
+        float horizontalScale = fish.CurrentRenderVector.length();
+
+        if (angleCw < -Pi<float> / 2.0f)
+        {
+            angleCw = Pi<float> +angleCw;
+            horizontalScale *= -1.0f;
+        }
+        else if (angleCw > Pi<float> / 2.0f)
+        {
+            angleCw = -Pi<float> +angleCw;
+            horizontalScale *= -1.0f;
+        }
+
+        auto const & species = mFishShoals[fish.ShoalId].Species;
+
+        renderContext.UploadFish(
+            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
+            fish.CurrentPosition,
+            species.WorldSize * mCurrentFishSizeMultiplier,
+            angleCw,
+            horizontalScale,
+            species.TailX,
+            species.TailSwingWidth,
+            std::sin(fish.CurrentTailProgressPhase));
+    }
+
+    renderContext.UploadFishesEnd();
+}
+
+void Fishes::DisturbAt(
+    vec2f const & worldCoordinates,
+    float worldRadius,
+    GameParameters const & gameParameters)
+{
+    float const effectiveRadius =
+        worldRadius
+        * gameParameters.FishSizeMultiplier
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    for (auto & fish : mFishes)
+    {
+        if (!fish.IsInFreefall)
+        {
+            FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
+
+            // Calculate position of head
+            vec2f const fishHeadPosition =
+                fish.CurrentPosition
+                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+
+            // Calculate distance from disturbance
+            float const distance = (fishHeadPosition - worldCoordinates).length();
+
+            // Check whether the fish has been disturbed
+            if (distance < effectiveRadius) // Within radius
+            {
+                // Enter panic mode with a charge decreasing with distance
+                float constexpr MinPanic = 0.25f;
+                fish.PanicCharge = std::max(
+                    MinPanic + (1.0f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    fish.PanicCharge);
+
+                // Don't change target position, we'll return to it when panic is over
+
+                // Calculate new direction, away from disturbance
+                vec2f panicDirection = (fishHeadPosition - worldCoordinates).normalise(distance);
+
+                // Make sure direction is not too steep
+                float constexpr MinXComponent = 0.4f;
+                if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
+                {
+                    panicDirection.x = MinXComponent;
+                    panicDirection = panicDirection.normalise();
+                }
+                else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
+                {
+                    panicDirection.x = -MinXComponent;
+                    panicDirection = panicDirection.normalise();
+                }
+
+                // Calculate new target velocity - away from disturbance point, and will be panic velocity
+                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+
+                // Update render vector to match velocity
+                fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+                // Converge directions really fast
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
+
+                // Stop u-turn, if any
+                fish.CruiseSteeringState.reset();
+            }
+        }
+    }
+}
+
+void Fishes::AttractAt(
+    vec2f const & worldCoordinates,
+    float worldRadius,
+    GameParameters const & gameParameters)
+{
+    float const effectiveRadius =
+        worldRadius
+        * gameParameters.FishSizeMultiplier
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    for (auto & fish : mFishes)
+    {
+        if (!fish.IsInFreefall
+            && fish.PanicCharge < 0.45f) // Don't attract fish in much panic
+        {
+            FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
+
+            // Calculate position of head
+            vec2f const fishHeadPosition =
+                fish.CurrentPosition
+                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+
+            // Calculate distance from attraction
+            float const distance = (worldCoordinates - fishHeadPosition).length();
+
+            // Check whether the fish has been attracted
+            if (distance < effectiveRadius) // Within radius
+            {
+                // Enter panic mode with a charge decreasing with distance
+                fish.PanicCharge = std::max(
+                    0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    fish.PanicCharge);
+
+                // Don't change target position, we'll return to it when panic is over
+
+                // Calculate new direction, towards food
+                vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
+
+                // Calculate new target velocity - towards food, and will be panic velocity
+                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+
+                // Update render vector to match velocity
+                fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+                // Converge directions at this quite slow rate
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
+
+                // Stop u-turn, if any
+                fish.CruiseSteeringState.reset();
+            }
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Fishes::UpdateNumberOfFishes(
+    float /*currentSimulationTime*/,
+    OceanSurface & /*oceanSurface*/,
+    OceanFloor const & /*oceanFloor*/,
+    GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld)
+{
     if (mFishes.size() > gameParameters.NumberOfFishes)
     {
         //
@@ -205,11 +399,15 @@ void Fishes::Update(
         // Notify new count
         mGameEventHandler->OnFishCountUpdated(mFishes.size());
     }
+}
 
-    //
-    // 3) Update fishes
-    //
-
+void Fishes::UpdateDynamics(
+    float currentSimulationTime,
+    OceanSurface & oceanSurface,
+    OceanFloor const & oceanFloor,
+    GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld)
+{
     for (auto & fish : mFishes)
     {
         FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
@@ -626,164 +824,10 @@ void Fishes::Update(
     }
 }
 
-void Fishes::Upload(Render::RenderContext & renderContext) const
+void Fishes::UpdateShoaling(GameParameters const & gameParameters)
 {
-    renderContext.UploadFishesStart(mFishes.size());
-
-    for (auto const & fish : mFishes)
-    {
-        float angleCw = fish.CurrentRenderVector.angleCw();
-        float horizontalScale = fish.CurrentRenderVector.length();
-
-        if (angleCw < -Pi<float> / 2.0f)
-        {
-            angleCw = Pi<float> +angleCw;
-            horizontalScale *= -1.0f;
-        }
-        else if (angleCw > Pi<float> / 2.0f)
-        {
-            angleCw = -Pi<float> +angleCw;
-            horizontalScale *= -1.0f;
-        }
-
-        auto const & species = mFishShoals[fish.ShoalId].Species;
-
-        renderContext.UploadFish(
-            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
-            fish.CurrentPosition,
-            species.WorldSize * mCurrentFishSizeMultiplier,
-            angleCw,
-            horizontalScale,
-            species.TailX,
-            species.TailSwingWidth,
-            std::sin(fish.CurrentTailProgressPhase));
-    }
-
-    renderContext.UploadFishesEnd();
+    // TODOHERE
 }
-
-void Fishes::DisturbAt(
-    vec2f const & worldCoordinates,
-    float worldRadius,
-    GameParameters const & gameParameters)
-{
-    float const effectiveRadius =
-        worldRadius
-        * gameParameters.FishSizeMultiplier
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
-
-    for (auto & fish : mFishes)
-    {
-        if (!fish.IsInFreefall)
-        {
-            FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
-
-            // Calculate position of head
-            vec2f const fishHeadPosition =
-                fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
-
-            // Calculate distance from disturbance
-            float const distance = (fishHeadPosition - worldCoordinates).length();
-
-            // Check whether the fish has been disturbed
-            if (distance < effectiveRadius) // Within radius
-            {
-                // Enter panic mode with a charge decreasing with distance
-                float constexpr MinPanic = 0.25f;
-                fish.PanicCharge = std::max(
-                    MinPanic + (1.0f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
-                    fish.PanicCharge);
-
-                // Don't change target position, we'll return to it when panic is over
-
-                // Calculate new direction, away from disturbance
-                vec2f panicDirection = (fishHeadPosition - worldCoordinates).normalise(distance);
-
-                // Make sure direction is not too steep
-                float constexpr MinXComponent = 0.4f;
-                if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
-                {
-                    panicDirection.x = MinXComponent;
-                    panicDirection = panicDirection.normalise();
-                }
-                else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
-                {
-                    panicDirection.x = -MinXComponent;
-                    panicDirection = panicDirection.normalise();
-                }
-
-                // Calculate new target velocity - away from disturbance point, and will be panic velocity
-                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
-
-                // Update render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-                // Converge directions really fast
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
-
-                // Stop u-turn, if any
-                fish.CruiseSteeringState.reset();
-            }
-        }
-    }
-}
-
-void Fishes::AttractAt(
-    vec2f const & worldCoordinates,
-    float worldRadius,
-    GameParameters const & gameParameters)
-{
-    float const effectiveRadius =
-        worldRadius
-        * gameParameters.FishSizeMultiplier
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
-
-    for (auto & fish : mFishes)
-    {
-        if (!fish.IsInFreefall
-            && fish.PanicCharge < 0.5f) // Don't attract fish in much panic
-        {
-            FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
-
-            // Calculate position of head
-            vec2f const fishHeadPosition =
-                fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
-
-            // Calculate distance from attraction
-            float const distance = (worldCoordinates - fishHeadPosition).length();
-
-            // Check whether the fish has been attracted
-            if (distance < effectiveRadius) // Within radius
-            {
-                // Enter panic mode with a charge decreasing with distance
-                fish.PanicCharge = std::max(
-                    0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
-                    fish.PanicCharge);
-
-                // Don't change target position, we'll return to it when panic is over
-
-                // Calculate new direction, towards food
-                vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
-
-                // Calculate new target velocity - towards food, and will be panic velocity
-                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
-
-                // Update render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-                // Converge directions at this quite slow rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
-
-                // Stop u-turn, if any
-                fish.CruiseSteeringState.reset();
-            }
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Fishes::CreateNewFishShoalBatch()
 {

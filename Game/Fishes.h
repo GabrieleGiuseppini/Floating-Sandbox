@@ -149,6 +149,22 @@ private:
 
 private:
 
+    void UpdateNumberOfFishes(
+        float currentSimulationTime,
+        OceanSurface & oceanSurface,
+        OceanFloor const & oceanFloor,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
+
+    void UpdateDynamics(
+        float currentSimulationTime,
+        OceanSurface & oceanSurface,
+        OceanFloor const & oceanFloor,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
+
+    void UpdateShoaling(GameParameters const & gameParameters);
+
     void CreateNewFishShoalBatch();
 
     inline static vec2f ChoosePosition(

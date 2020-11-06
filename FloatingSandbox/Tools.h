@@ -2277,8 +2277,6 @@ public:
 
     virtual void UpdateSimulation(InputState const & inputState) override
     {
-        float constexpr InteractionRadius = 1.0f;
-
         bool isEngaged;
         ActionType currentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
 
@@ -2291,13 +2289,13 @@ public:
             {
                 mGameController->AttractFish(
                     inputState.MousePosition,
-                    InteractionRadius);
+                    1.5f); // Radius
             }
             else
             {
                 mGameController->ScareFish(
                     inputState.MousePosition,
-                    InteractionRadius);
+                    1.0f); // Radius
             }
         }
         else
