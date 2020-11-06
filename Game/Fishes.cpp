@@ -679,12 +679,17 @@ void Fishes::DisturbAt(
                 fish.CurrentPosition
                 + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
 
+            // Calculate distance from disturbance
+            float const distance = (fishHeadPosition - worldCoordinates).length();
+
             // Check whether the fish has been disturbed
-            if (float const distance = (fishHeadPosition - worldCoordinates).length();
-                distance < effectiveRadius) // Within radius
+            if (distance < effectiveRadius) // Within radius
             {
-                // Enter panic mode this long
-                fish.PanicCharge = std::max(1.0f, fish.PanicCharge);
+                // Enter panic mode with a charge decreasing with distance
+                float constexpr MinPanic = 0.25f;
+                fish.PanicCharge = std::max(
+                    MinPanic + (1.0f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    fish.PanicCharge);
 
                 // Don't change target position, we'll return to it when panic is over
 
@@ -712,6 +717,9 @@ void Fishes::DisturbAt(
 
                 // Converge directions really fast
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
+
+                // Stop u-turn, if any
+                fish.CruiseSteeringState.reset();
             }
         }
     }

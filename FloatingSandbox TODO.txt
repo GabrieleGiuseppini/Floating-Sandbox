@@ -1186,7 +1186,7 @@ Render:
 								+ Make sure that a second disturbance at the back of the fish just speeds it up
 								+ Prevent panic direction from being too vertical
 				+ Obstacles rearc as per Moleskine
-			= Try without u-turn at ocean floor
+			+ Try without u-turn at ocean floor
 			- Lower uturn limit width
 			= New target position:
 				+ X constraints:
@@ -1207,8 +1207,7 @@ Render:
 					- If really bad, consider nuking initial Fishes initialization
 				+ Also take OceanFloor
 			= Shoaling
-				+ When adding new fish, distribute remaining counts among species according to swarm sizes
-				- Buffer rearc
+				+ When adding new fish, distribute remaining counts among species according to swarm sizes				
 				- Visit for all fishes with x > this.x
 				- 1. Change velocity to go to position resultant of distances
 				- OLD:
@@ -1216,6 +1215,7 @@ Render:
 					- Isn't this taken care of by swarming dynamics automatically?
 				- Normal swarming dynamics
 					- Requires maintenance of sorted Xs in vector
+				- Buffer rearc?
 			- Tools:
 				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 					- Need to reset u-turn
@@ -1232,11 +1232,12 @@ Render:
 						- Ultra-violent mode
 						- Test:
 							- Fish jumps out of water
-					= Scare:
-						- Panic charge should be proportional to tool distance
+					+ Scare:
+						+ Panic charge should be proportional to tool distance
 						+ Ultra-violent mode
 				- Disturbances also from bombs, with large radius
 					- via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
+					- Add TODO item at plan for sprays for bombs to reuse this, with other args
 				- Tsunami: widespread panic
 			- Should fish follow waves on surface of water?
 		- Test:
