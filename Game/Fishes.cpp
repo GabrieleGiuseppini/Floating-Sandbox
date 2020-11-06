@@ -380,7 +380,13 @@ void Fishes::Update(
 
             // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
-                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase)) / 150.0f;
+            {
+                fish.CurrentPosition +=
+                    fish.CurrentVelocity.normalise()
+                    * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase))
+                    * (1.0f + fish.PanicCharge) // Grow incisiveness with panic
+                    / 150.0f; // Magic number
+            }
         }
         else
         {

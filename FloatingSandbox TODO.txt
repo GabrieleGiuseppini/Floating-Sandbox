@@ -1193,9 +1193,9 @@ Render:
 					+ Ensure X direction change
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
-			= Superimpose sin over movement
+			+ Superimpose sin over movement
 				+ Resynchronize sync with tail
-				- Test with more pronounced superimposed sin during panic run				
+				+ Test with more pronounced superimposed sin during panic run				
 			= Tools:
 				+ Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 					+ Need to reset u-turn
