@@ -1187,7 +1187,7 @@ Render:
 								+ Prevent panic direction from being too vertical
 				+ Obstacles rearc as per Moleskine
 			+ Try without u-turn at ocean floor
-			- Lower uturn limit width
+			+ Lower uturn limit width
 			= New target position:
 				+ X constraints:
 					+ Ensure X direction change
@@ -1210,7 +1210,6 @@ Render:
 					= Food: 
 						+ Set target velocity to direction towards tool; auto-smoothing does the rest
 						+ Enter panic mode with distance
-						- TODOHERE: see if can randomize trajectories
 						- TODOHERE: See if can make it so that fish jumps out of water
 					+ Scare:
 						+ Panic charge should be proportional to tool distance

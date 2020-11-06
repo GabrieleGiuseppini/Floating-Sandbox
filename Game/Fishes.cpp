@@ -277,7 +277,7 @@ void Fishes::Update(
                 // RenderVector X:
                 // - smooth towards target during a central interval (actual turning around),
                 //   without crossing zero
-                float constexpr TurnLimit = 0.2f;
+                float constexpr TurnLimit = 0.15f;
                 if (elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentRenderVector.x =
