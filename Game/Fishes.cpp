@@ -178,7 +178,7 @@ void Fishes::Update(
             // 2) Create fish in this shoal
             //
 
-            vec2f const initialPosition = FindPosition(
+            vec2f const initialPosition = ChoosePosition(
                 mFishShoals[currentShoalSearchIndex].InitialPosition,
                 10.0f,
                 4.0f);
@@ -380,7 +380,7 @@ void Fishes::Update(
 
             // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
-                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase + Pi<float> / 2.0f)) / 200.0f;
+                fish.CurrentPosition += fish.CurrentVelocity.normalise() * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase)) / 150.0f;
         }
         else
         {
@@ -789,32 +789,21 @@ void Fishes::CreateNewFishShoalBatch()
     }
 }
 
-vec2f Fishes::FindPosition(
+vec2f Fishes::ChoosePosition(
     vec2f const & averagePosition,
     float xVariance,
     float yVariance)
 {
-    // Try a few times around the average position, making
-    // sure we don't hit obstacles
+    float const positionX = Clamp(
+        GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.x, xVariance),
+        -GameParameters::HalfMaxWorldWidth,
+        GameParameters::HalfMaxWorldWidth);
 
-    vec2f position;
+    float const positionY =
+        -5.0f // Min depth
+        - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
 
-    for (int attempt = 0; attempt < 10; ++attempt)
-    {
-        position.x = Clamp(
-            GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.x, xVariance),
-            -GameParameters::HalfMaxWorldWidth,
-            GameParameters::HalfMaxWorldWidth);
-
-        position.y =
-            -5.0f // Min depth
-            - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
-
-        // TODO: obstacle check
-        break;
-    }
-
-    return position;
+    return vec2f(positionX, positionY);
 }
 
 vec2f Fishes::FindNewCruisingTargetPosition(
@@ -830,7 +819,7 @@ vec2f Fishes::FindNewCruisingTargetPosition(
         ? visibleWorld.Width / 6.0f
         : visibleWorld.Width;
 
-    return FindPosition(
+    return ChoosePosition(
         currentPosition + newDirection * movementMagnitude,
         visibleWorld.Width / 2.0f, // x variance
         5.0f); // y variance

@@ -1188,14 +1188,13 @@ Render:
 				+ Obstacles rearc as per Moleskine
 			+ Try without u-turn at ocean floor
 			+ Lower uturn limit width
-			= New target position:
+			+ New target position:
 				+ X constraints:
 					+ Ensure X direction change
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
-				- Obstacle checks at FindPosition()
 			= Superimpose sin over movement
-				- Recalibrate sync with tail
+				+ Resynchronize sync with tail
 				- Test with more pronounced superimposed sin during panic run				
 			= Tools:
 				+ Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship

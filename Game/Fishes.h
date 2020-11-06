@@ -151,7 +151,7 @@ private:
 
     void CreateNewFishShoalBatch();
 
-    inline static vec2f FindPosition(
+    inline static vec2f ChoosePosition(
         vec2f const & averagePosition,
         float xVariance,
         float yVariance);
