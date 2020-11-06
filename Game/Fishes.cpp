@@ -763,19 +763,6 @@ void Fishes::AttractAt(
                 // Calculate new direction, towards food
                 vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
 
-                // Make sure direction is not too steep
-                float constexpr MinXComponent = 0.4f;
-                if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
-                {
-                    panicDirection.x = MinXComponent;
-                    panicDirection = panicDirection.normalise();
-                }
-                else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
-                {
-                    panicDirection.x = -MinXComponent;
-                    panicDirection = panicDirection.normalise();
-                }
-
                 // Calculate new target velocity - away from disturbance point, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 

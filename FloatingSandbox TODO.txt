@@ -1194,18 +1194,30 @@ Render:
 				+ Y constraints:
 					+ Not too much y slope (wrt current)
 				- Obstacle checks at FindPosition()
-
 			= Superimpose sin over movement
-				- Test with more pronounced superimposed sin during panic run
 				- Recalibrate sync with tail
-			- AABB around ships' frontiers, so that fish AI's avoid them
-				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
-				- Fishes::Update(.) takes AllShipAABBs
-					- First update of Fishes at World initialization takes empty AABB
-				- Avoid spawning in AABBs
-				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
-					- If really bad, consider nuking initial Fishes initialization
-				+ Also take OceanFloor
+				- Test with more pronounced superimposed sin during panic run				
+			= Tools:
+				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
+					- Need to reset u-turn
+				= Food/Scare
+					+ Icons: 
+						+ Food: little can, tilted at rest, rotated w/crumbles when used
+						+ Scare: megaphone 45 degrees at rest, w/sound waves when used
+					- Sounds:
+						- Food: shaking powder
+						- Scare: compressed air horn
+					= Food: 
+						+ Set target velocity to direction towards tool; auto-smoothing does the rest
+						+ Enter panic mode with distance
+						- TODOHERE: See if can make it so that fish jumps out of water
+					+ Scare:
+						+ Panic charge should be proportional to tool distance
+						+ Ultra-violent mode
+				- Disturbances also from bombs, with large radius
+					- via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
+					- Add TODO item at plan for sprays for bombs to reuse this, with other args
+				- Tsunami: widespread panic
 			= Shoaling
 				+ When adding new fish, distribute remaining counts among species according to swarm sizes				
 				- Visit for all fishes with x > this.x
@@ -1216,29 +1228,14 @@ Render:
 				- Normal swarming dynamics
 					- Requires maintenance of sorted Xs in vector
 				- Buffer rearc?
-			- Tools:
-				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
-					- Need to reset u-turn
-				= Food/Scare
-					+ Icons: 
-						+ Food: little can, tilted at rest, rotated w/crumbles when used
-						+ Scare: megaphone 45 degrees at rest, w/sound waves when used
-					- Sounds:
-						- Food: shaking powder
-						- Scare: compressed air horn
-					- Food: 
-						- Set target velocity to direction towards tool; auto-smoothing does the rest
-						- Enter panic mode if really close by
-						- Ultra-violent mode
-						- Test:
-							- Fish jumps out of water
-					+ Scare:
-						+ Panic charge should be proportional to tool distance
-						+ Ultra-violent mode
-				- Disturbances also from bombs, with large radius
-					- via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
-					- Add TODO item at plan for sprays for bombs to reuse this, with other args
-				- Tsunami: widespread panic
+			- AABB around ships' frontiers, so that fish AI's avoid them
+				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
+				- Fishes::Update(.) takes AllShipAABBs
+					- First update of Fishes at World initialization takes empty AABB
+				- Avoid spawning in AABBs
+				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
+					- If really bad, consider nuking initial Fishes initialization
+				+ Also take OceanFloor
 			- Should fish follow waves on surface of water?
 		- Test:
 			- 0-depth ocean
