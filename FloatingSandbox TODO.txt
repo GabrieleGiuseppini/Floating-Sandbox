@@ -1150,10 +1150,10 @@ Render:
 						+ Simple collision check w/immediate bounce, not excluding other collision checks
 						+ Check during free falling as well!
 					+ Rename size adjust
-				= New algo:
+				+ New algo:
 					+ Turning (if isTurning)
 					+ Pos update
-					= Panic check X 4
+					+ Panic check X 4
 						+ General panic state:
 							+ Panic mode needs to slow down
 								+ Panic mode slows down and ends when it reaches zero, no target really needed
@@ -1172,10 +1172,10 @@ Render:
 										+ Rename as "tail"
 								+ ...and cut short state machine afterwards, as fish can't swim
 								X See if this one suffices without the two explicit "water level" collision checks
-						= Ocean floor:
-							= Do check with head of fish
+						+ Ocean floor:
+							+ Do check with head of fish
 								+ Since there's no guarantee of world bounds compliance, clamp X
-							- Test with small panic
+							x Test with small panic
 							+ See why panic'd fish doesn't care
 								+ Doesn't care when velocity is pointing outside of normal
 								+ Do we keep it? Yes

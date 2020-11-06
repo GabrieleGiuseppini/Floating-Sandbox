@@ -496,7 +496,7 @@ void Fishes::Update(
         // - AABB
         // + Water level
         // + Reached target
-        // - Ocean floor
+        // = Ocean floor
 
         // Check whether the fish has been interactively disturbed
         if (float const distance = (fishHeadPosition - mCurrentInteractiveDisturbance.value_or(vec2f::zero())).length();
