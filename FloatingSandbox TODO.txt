@@ -1198,8 +1198,8 @@ Render:
 				- Recalibrate sync with tail
 				- Test with more pronounced superimposed sin during panic run				
 			= Tools:
-				- Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
-					- Need to reset u-turn
+				+ Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
+					+ Need to reset u-turn
 				= Food/Scare
 					+ Icons: 
 						+ Food: little can, tilted at rest, rotated w/crumbles when used

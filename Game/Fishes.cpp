@@ -769,7 +769,7 @@ void Fishes::AttractAt(
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
-                // Converge directions at this rate
+                // Converge directions at this quite slow rate
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
 
                 // Stop u-turn, if any
