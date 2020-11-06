@@ -690,7 +690,8 @@ void GameController::ScareFish(
     assert(!!mWorld);
     mWorld->ScareFish(
         worldCoordinates,
-        radius);
+        radius,
+        mGameParameters);
 }
 
 void GameController::AttractFish(
@@ -703,7 +704,8 @@ void GameController::AttractFish(
     assert(!!mWorld);
     mWorld->AttractFish(
         worldCoordinates,
-        radius);
+        radius,
+        mGameParameters);
 }
 
 void GameController::PickObjectToMove(

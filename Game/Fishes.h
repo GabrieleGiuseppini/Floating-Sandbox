@@ -44,11 +44,13 @@ public:
 
     void DisturbAt(
         vec2f const & worldCoordinates,
-        float worldRadius);
+        float worldRadius,
+        GameParameters const & gameParameters);
 
     void AttractAt(
         vec2f const & worldCoordinates,
-        float worldRadius);
+        float worldRadius,
+        GameParameters const & gameParameters);
 
 private:
 
@@ -177,10 +179,6 @@ private:
     std::vector<FishShoal> mFishShoals;
 
     std::vector<Fish> mFishes;
-
-    // The world position at which there's been an interactive disturbance/attraction, if any
-    std::optional<vec2f> mCurrentInteractiveDisturbance;
-    std::optional<vec2f> mCurrentInteractiveAttraction;
 
     // Parameters that the calculated values are current with
     float mCurrentFishSizeMultiplier;

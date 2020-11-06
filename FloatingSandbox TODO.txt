@@ -1229,9 +1229,9 @@ Render:
 						- Ultra-violent mode
 						- Test:
 							- Fish jumps out of water
-					- Scare:
+					= Scare:
 						- Panic charge should be proportional to tool distance
-						- Ultra-violent mode
+						+ Ultra-violent mode
 				- Disturbances also from bombs, with large radius
 					- Need array of disturbances (and thus loop structure change), each with ratio
 			- Should fish follow waves on surface of water?

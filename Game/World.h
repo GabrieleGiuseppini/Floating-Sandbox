@@ -122,11 +122,13 @@ public:
 
     void ScareFish(
         vec2f const & position,
-        float radius);
+        float radius,
+        GameParameters const & gameParameters);
 
     void AttractFish(
         vec2f const & position,
-        float radius);
+        float radius,
+        GameParameters const & gameParameters);
 
     void PickPointToMove(
         vec2f const & pickPosition,

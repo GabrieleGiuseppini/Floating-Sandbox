@@ -2277,7 +2277,7 @@ public:
 
     virtual void UpdateSimulation(InputState const & inputState) override
     {
-        float constexpr InteractionRadius = 0.6f;
+        float constexpr InteractionRadius = 1.0f;
 
         bool isEngaged;
         ActionType currentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;

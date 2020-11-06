@@ -141,16 +141,18 @@ bool World::IsUnderwater(ElementId elementId) const
 
 void World::ScareFish(
     vec2f const & position,
-    float radius)
+    float radius,
+    GameParameters const & gameParameters)
 {
-    mFishes.DisturbAt(position, radius);
+    mFishes.DisturbAt(position, radius, gameParameters);
 }
 
 void World::AttractFish(
     vec2f const & position,
-    float radius)
+    float radius,
+    GameParameters const & gameParameters)
 {
-    mFishes.AttractAt(position, radius);
+    mFishes.AttractAt(position, radius, gameParameters);
 }
 
 void World::PickPointToMove(
@@ -286,8 +288,8 @@ void World::DestroyAt(
             gameParameters);
     }
 
-    // Also tell fishes
-    mFishes.DisturbAt(targetPos, 0.3f);
+    // Also scare fishes at bit
+    mFishes.DisturbAt(targetPos, 0.3f, gameParameters);
 }
 
 void World::RepairAt(
