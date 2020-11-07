@@ -251,6 +251,19 @@ void Fishes::AttractAt(
                 // Calculate new direction, towards food
                 vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
 
+                // Make sure direction is not too steep
+                float constexpr MinXComponent = 0.4f;
+                if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
+                {
+                    panicDirection.x = MinXComponent;
+                    panicDirection = panicDirection.normalise();
+                }
+                else if (panicDirection.x < 0.0f && panicDirection.x > -MinXComponent)
+                {
+                    panicDirection.x = -MinXComponent;
+                    panicDirection = panicDirection.normalise();
+                }
+
                 // Calculate new target velocity - towards food, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
@@ -504,13 +517,7 @@ void Fishes::UpdateDynamics(
         }
 
         //
-        // 2) Do shoal magic
-        //
-
-        // TODO
-
-        //
-        // 3) Update dynamics
+        // 2) Update dynamics
         //
 
         float constexpr OceanSurfaceDisturbance = 1.0f; // Magic number
@@ -619,7 +626,7 @@ void Fishes::UpdateDynamics(
         fish.PanicCharge *= 0.985f;
 
         //
-        // 4) World boundaries check
+        // 3) World boundaries check
         //
 
         bool hasBouncedAgainstWorldBoundaries = false;
@@ -677,7 +684,7 @@ void Fishes::UpdateDynamics(
         }
 
         //
-        // 5) Check state machine transitions
+        // 4) Check state machine transitions
         //
 
         // Check whether this fish has reached its target, while not in panic mode
@@ -752,7 +759,7 @@ void Fishes::UpdateDynamics(
         }
 
         //
-        // 6) Check ocean boundaries
+        // 5) Check ocean boundaries
         //
 
         // Calculate position of head
