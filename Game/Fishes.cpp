@@ -250,7 +250,7 @@ void Fishes::AttractAt(
                 vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
 
                 // Make sure direction is not too steep
-                float constexpr MinXComponent = 0.4f;
+                float constexpr MinXComponent = 0.0f;
                 if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
                 {
                     panicDirection.x = MinXComponent;
@@ -270,8 +270,8 @@ void Fishes::AttractAt(
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
-                // Converge directions at this quite slow rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
+                // Converge directions at this quite fast rate
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
@@ -803,7 +803,7 @@ void Fishes::UpdateDynamics(
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (float const depth = oceanY - fish.CurrentPosition.y;
             depth < 5.0f
-            && fish.PanicCharge <= 0.7f
+            && fish.PanicCharge <= 0.3f
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
             LogMessage("TODOTEST: OceanSurface Bounce");
@@ -866,7 +866,67 @@ void Fishes::UpdateDynamics(
 
 void Fishes::UpdateShoaling(GameParameters const & gameParameters)
 {
-    // TODOHERE
+    // TODOTEST
+    return;
+
+    // TODOHERE: completely unoptimized
+
+    float constexpr ShoalRadius = 5.0f; // Invariant with fish size
+
+    float const effectiveShoalSpacing =
+        1.0f * gameParameters.FishShoalSpacingAdjustment;
+
+    for (size_t f = 0; f < mFishes.size(); ++f)
+    {
+        Fish & fish = mFishes[f];
+
+        vec2f targetPosition = fish.TargetPosition;
+        int nNeighbors = 0;
+
+        // Visit all immediate neighbors
+        for (size_t n = 0; n < mFishes.size(); ++n)
+        {
+            vec2f const displacementFromNeighbor = fish.CurrentPosition - mFishes[n].CurrentPosition;
+            float const distance = displacementFromNeighbor.length();
+            if (n != f && distance < ShoalRadius)
+            {
+                //
+                // Calculate new position for this fish so that it's exactly at
+                // its shoal spacing from this neighbor
+                //
+
+                vec2f const directionFromNeighbor = displacementFromNeighbor.normalise(distance);
+
+                targetPosition +=
+                    mFishes[n].CurrentPosition
+                    + directionFromNeighbor * effectiveShoalSpacing;
+
+                ++nNeighbors;
+            }
+        }
+
+        if (nNeighbors != 0)
+        {
+            // Average target position
+            targetPosition /= static_cast<float>(nNeighbors);
+        }
+        else
+        {
+            // TODO: pick lead
+        }
+
+        //
+        // Change targets to get to target position
+        //
+
+        fish.TargetPosition = targetPosition;
+        vec2f const targetDirection = (targetPosition - fish.CurrentPosition).normalise();
+        fish.TargetVelocity = MakeCuisingVelocity(targetDirection, mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
+        fish.TargetRenderVector = targetDirection;
+
+        // TODO: u-turn check
+        // TODO: fast u-turn?
+    }
 }
 
 void Fishes::CreateNewFishShoalBatch()
