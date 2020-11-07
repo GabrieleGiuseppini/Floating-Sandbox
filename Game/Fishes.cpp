@@ -289,24 +289,28 @@ void Fishes::UpdateNumberOfFishes(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
+    bool isDirty = false;
+
     if (mFishes.size() > gameParameters.NumberOfFishes)
     {
         //
         // Remove extra fishes
         //
 
+        // Visit all fishes that will be removed
         for (auto fishIt = mFishes.cbegin() + gameParameters.NumberOfFishes; fishIt != mFishes.cend(); ++fishIt)
         {
+            // Update shoal
             assert(mFishShoals[fishIt->ShoalId].CurrentMemberCount > 0);
             --mFishShoals[fishIt->ShoalId].CurrentMemberCount;
         }
 
+        // Remove fishes
         mFishes.erase(
             mFishes.begin() + gameParameters.NumberOfFishes,
             mFishes.end());
 
-        // Notify new count
-        mGameEventHandler->OnFishCountUpdated(mFishes.size());
+        isDirty = true;
     }
     else if (mFishes.size() < gameParameters.NumberOfFishes)
     {
@@ -409,8 +413,16 @@ void Fishes::UpdateNumberOfFishes(
             ++(mFishShoals[currentShoalSearchIndex].CurrentMemberCount);
         }
 
+        isDirty = true;
+    }
+
+    if (isDirty)
+    {
         // Notify new count
         mGameEventHandler->OnFishCountUpdated(mFishes.size());
+
+        // Re-sort fishes by X
+        mFishesByX = std::move(SortByX(mFishes));
     }
 }
 
@@ -421,8 +433,10 @@ void Fishes::UpdateDynamics(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
-    for (auto & fish : mFishes)
+    for (size_t f = 0; f < mFishes.size(); ++f)
     {
+        Fish & fish = mFishes[f];
+
         FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
         //
@@ -677,6 +691,25 @@ void Fishes::UpdateDynamics(
         assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth
             && fish.CurrentPosition.x <= GameParameters::HalfMaxWorldWidth);
 
+        // We have finished updating this fish's position, keep it
+        // sorted then
+
+        for (ElementIndex fx = fish.FishesByXIndex; fx > 0 && fish.CurrentPosition.x < mFishes[mFishesByX[fx - 1]].CurrentPosition.x; --fx)
+        {
+            // Swap
+            std::swap(mFishes[mFishesByX[fx - 1]].FishesByXIndex, mFishes[mFishesByX[fx]].FishesByXIndex);
+            std::swap(mFishesByX[fx - 1], mFishesByX[fx]);
+        }
+
+        for (ElementIndex fx = fish.FishesByXIndex; fx < mFishes.size() - 1 && fish.CurrentPosition.x > mFishes[mFishesByX[fx + 1]].CurrentPosition.x; ++fx)
+        {
+            // Swap
+            std::swap(mFishes[mFishesByX[fx + 1]].FishesByXIndex, mFishes[mFishesByX[fx]].FishesByXIndex);
+            std::swap(mFishesByX[fx + 1], mFishesByX[fx]);
+        }
+
+        // Stop now if we're free-falling
+
         if (fish.IsInFreefall)
         {
             // Cut short state machine now, this fish can't swim
@@ -889,6 +922,28 @@ vec2f Fishes::MakeCuisingVelocity(
     return direction
         * (species.BasalSpeed * gameParameters.FishSpeedAdjustment * gameParameters.FishSizeMultiplier)
         * (0.7f + personalitySeed * 0.3f);
+}
+
+std::vector<ElementIndex> Fishes::SortByX(std::vector<Fish> & fishes)
+{
+    std::vector<ElementIndex> indices;
+    indices.reserve(fishes.size());
+
+    for (size_t f = 0; f < fishes.size(); ++f)
+        indices.push_back(static_cast<ElementIndex>(f));
+
+    std::sort(
+        indices.begin(),
+        indices.end(),
+        [&fishes](ElementIndex const & f1, ElementIndex const & f2)
+        {
+            return fishes[f1].CurrentPosition.x < fishes[f2].CurrentPosition.x;
+        });
+
+    for (size_t f = 0; f < fishes.size(); ++f)
+        fishes[indices[f]].FishesByXIndex = static_cast<ElementIndex>(f);
+
+    return indices;
 }
 
 }

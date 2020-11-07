@@ -1235,14 +1235,15 @@ Render:
 				+ When adding new fish, distribute remaining counts among species according to swarm sizes
 				+ Rearc Update() in three parts
 				+ Do shoaling only if GameParameters::DoFishShoaling is set
-				- UpdateDynamics(): maintain sorted Xs in vector at position update
+				+ UpdateDynamics(): maintain sorted Xs in vector at position update
 				- Visit for all fishes with x > this.x
-				- 1. Change velocity to go to position resultant of distances
+					- 1. Change velocity to go to position resultant of distances
 				- OLD:
 					- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later
 						- Isn't this taken care of by swarming dynamics automatically?
 					- Normal swarming dynamics						
-				- Buffer rearc?
+				- Cleanup:
+					- Buffer rearc?
 			- AABB around ships' frontiers, so that fish AI's avoid them
 				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 				- Fishes::Update(.) takes AllShipAABBs

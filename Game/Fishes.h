@@ -124,6 +124,9 @@ private:
         // Freefall state machine
         bool IsInFreefall;
 
+        // Index in vector of fish indices sorted by X
+        ElementIndex FishesByXIndex;
+
         Fish(
             FishShoalId shoalId,
             float personalitySeed,
@@ -144,6 +147,7 @@ private:
             , PanicCharge(0.0f)
             , CruiseSteeringState()
             , IsInFreefall(false)
+            , FishesByXIndex(0) // Arbitrary, will be set as needed
         {}
     };
 
@@ -183,6 +187,8 @@ private:
         float personalitySeed,
         GameParameters const & gameParameters);
 
+    static std::vector<ElementIndex> SortByX(std::vector<Fish> & fishes);
+
 private:
 
     FishSpeciesDatabase const & mFishSpeciesDatabase;
@@ -194,7 +200,11 @@ private:
     // Shoals never move around in the vector
     std::vector<FishShoal> mFishShoals;
 
+    // The...fishes
     std::vector<Fish> mFishes;
+
+    // The indices of fishes in their vector, sorted by X
+    std::vector<ElementIndex> mFishesByX;
 
     // Parameters that the calculated values are current with
     float mCurrentFishSizeMultiplier;
