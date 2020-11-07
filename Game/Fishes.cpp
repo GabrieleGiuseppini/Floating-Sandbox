@@ -226,7 +226,7 @@ void Fishes::AttractAt(
     for (auto & fish : mFishes)
     {
         if (!fish.IsInFreefall
-            && fish.PanicCharge < 0.45f) // Don't attract fish in much panic
+            && fish.PanicCharge < 0.65f) // Don't attract fish in much panic
         {
             FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
@@ -243,10 +243,8 @@ void Fishes::AttractAt(
             {
                 // Enter panic mode with a charge decreasing with distance
                 fish.PanicCharge = std::max(
-                    0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
                     fish.PanicCharge);
-
-                // Don't change target position, we'll return to it when panic is over
 
                 // Calculate new direction, towards food
                 vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
@@ -263,6 +261,8 @@ void Fishes::AttractAt(
                     panicDirection.x = -MinXComponent;
                     panicDirection = panicDirection.normalise();
                 }
+
+                // Don't change target position, we'll return to it when panic is over
 
                 // Calculate new target velocity - towards food, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
