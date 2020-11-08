@@ -2338,6 +2338,13 @@ public:
 
                 doUpdateCursor = true;
             }
+            else
+            {
+                if (newAction != mCurrentAction)
+                {
+                    doUpdateCursor = true;
+                }
+            }
         }
 
         mIsEngaged = newIsEngaged;

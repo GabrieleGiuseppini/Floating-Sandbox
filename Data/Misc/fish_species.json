@@ -18,8 +18,8 @@
     {
         "name": "Barracuda",
 
-	"world_size_x": 0.8,
-	"world_size_y": 0.2,
+	"world_size_x": 0.6,
+	"world_size_y": 0.15,
 
 	"shoal_size": 4,
 	"ocean_depth": 50.0,
@@ -34,8 +34,8 @@
     {
         "name": "Mako",
 
-	"world_size_x": 3.0,
-	"world_size_y": 1.5,
+	"world_size_x": 2.0,
+	"world_size_y": 1.0,
 
 	"shoal_size": 1,
 	"ocean_depth": 150.0,
@@ -50,8 +50,8 @@
     {
         "name": "Red Snapper",
 
-	"world_size_x": 0.15,
-	"world_size_y": 0.075,
+	"world_size_x": 0.2,
+	"world_size_y": 0.1,
 
 	"shoal_size": 32,
 	"ocean_depth": 20.0,
