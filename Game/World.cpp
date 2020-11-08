@@ -603,6 +603,17 @@ void World::ApplyThanosSnap(
 
     // Apply to ocean surface
     mOceanSurface.ApplyThanosSnap(leftFrontX, rightFrontX);
+
+    // Apply to fishes
+    float constexpr DisturbanceRadius = 2.0f;
+    mFishes.DisturbAt(
+        vec2f(leftFrontX, 0.0f),
+        DisturbanceRadius,
+        gameParameters);
+    mFishes.DisturbAt(
+        vec2f(rightFrontX, 0.0f),
+        DisturbanceRadius,
+        gameParameters);
 }
 
 std::optional<ElementId> World::GetNearestPointAt(
@@ -666,9 +677,10 @@ void World::ApplyLightning(
     }
 }
 
-void World::TriggerTsunami()
+void World::TriggerTsunami(GameParameters const & gameParameters)
 {
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
+    mFishes.TriggerWidespreadPanic(gameParameters);
 }
 
 void World::TriggerStorm()

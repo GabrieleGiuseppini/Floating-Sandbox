@@ -543,6 +543,7 @@ Render:
 		- Embed GameJolt Widget
 
 - Suggestions to spec:
+	- Drain ocean
 	- Speedometer
 	- Shockwave bomb
 		- When detonated the area destroyed is quite small but it sends out a shock wave with a pretty big radius that can cause things to break or collapse and stuff like that. Also maybe it could be very damaging to rotted materials, causing it to shatter like the thanos snap thing.
@@ -1204,9 +1205,9 @@ Render:
 					+ Icons: 
 						+ Food: little can, tilted at rest, rotated w/crumbles when used
 						+ Scare: megaphone 45 degrees at rest, w/sound waves when used
-					- Sounds:
-						- Food: shaking powder
-						- Scare: compressed air horn
+					= Sounds:
+						+ Food: shaking powder
+						+ Scare: children screaming
 					+ Food: 
 						+ Set target velocity to direction towards tool; auto-smoothing does the rest
 						+ Enter panic mode with distance
@@ -1219,9 +1220,9 @@ Render:
 				+ Disturbances also from bombs, with large radius
 					+ via mParentWorld.DisturbOcean(vec position, float fishScareRadius)
 					+ Add TODO item at plan for sprays for bombs to reuse this, with other args
-				- Tsunami: widespread panic
-					- From World::TriggerTsunami, one-shot
-				- Thanos' snap: panic at interfaces
+				+ Tsunami: widespread panic
+					+ From World::TriggerTsunami, one-shot
+				+ Thanos' snap: panic at interfaces
 			= Shoaling
 				+ When adding new fish, distribute remaining counts among species according to swarm sizes
 				+ Rearc Update() in three parts
@@ -1263,6 +1264,7 @@ Render:
 				- Shoal sspacing adjust
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
+				- See "calibration" work item
 
 	- Ropes 2 layer
 		- json only allows one ropes layer

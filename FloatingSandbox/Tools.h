@@ -2268,8 +2268,7 @@ public:
         if (mIsEngaged)
         {
             // Stop sound
-            // TODO: depending on mCurrentAction type
-            //mSoundController->StopFloodHoseSound();
+            StopSound();
 
             mIsEngaged = false;
         }
@@ -2303,7 +2302,7 @@ public:
             isEngaged = false;
         }
 
-        bool doUpdateCursor = (currentAction != mCurrentAction);;
+        bool doUpdateCursor = (currentAction != mCurrentAction);
 
         if (isEngaged)
         {
@@ -2313,8 +2312,7 @@ public:
                 mIsEngaged = true;
 
                 // Start sound
-                // TODO: depending on currentAction type
-                //mSoundController->PlayFloodHoseSound();
+                StartSound();
 
                 doUpdateCursor = true;
             }
@@ -2334,8 +2332,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                // TODO: depending on mCurrentAction type
-                //mSoundController->StopFloodHoseSound();
+                StopSound();
 
                 doUpdateCursor = true;
             }
@@ -2385,6 +2382,42 @@ private:
                     ? ((mDownCursorCounter % 2) ? mScareDownCursorImage2 : mScareDownCursorImage1)
                     : mScareUpCursorImage);
 
+                break;
+            }
+        }
+    }
+
+    void StartSound()
+    {
+        switch (mCurrentAction)
+        {
+            case ActionType::Attract:
+            {
+                mSoundController->PlayFishFoodSound();
+                break;
+            }
+
+            case ActionType::Scare:
+            {
+                mSoundController->PlayFishScareSound();
+                break;
+            }
+        }
+    }
+
+    void StopSound()
+    {
+        switch (mCurrentAction)
+        {
+            case ActionType::Attract:
+            {
+                mSoundController->StopFishFoodSound();
+                break;
+            }
+
+            case ActionType::Scare:
+            {
+                mSoundController->StopFishScareSound();
                 break;
             }
         }

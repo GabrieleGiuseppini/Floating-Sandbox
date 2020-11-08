@@ -288,6 +288,43 @@ void Fishes::AttractAt(
     }
 }
 
+void Fishes::TriggerWidespreadPanic(GameParameters const & gameParameters)
+{
+    for (auto & fish : mFishes)
+    {
+        if (!fish.IsInFreefall)
+        {
+            FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
+
+            // Enter panic mode
+            fish.PanicCharge = std::max(
+                1.6f,
+                fish.PanicCharge);
+
+            // Calculate new direction - opposite of current
+            float constexpr RandomnessWidth = 5.0f;
+            vec2f const randomDelta(
+                GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth),
+                GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth));
+            vec2f panicDirection = (-fish.CurrentVelocity + randomDelta).normalise();
+
+            // Don't change target position, we'll return to it when panic is over
+
+            // Calculate new target velocity in this direction - and will be panic velocity
+            fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+            // Converge directions at this rate
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+
+            // Stop u-turn, if any
+            fish.CruiseSteeringState.reset();
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Fishes::UpdateNumberOfFishes(

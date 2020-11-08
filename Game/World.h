@@ -288,7 +288,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void TriggerTsunami();
+    void TriggerTsunami(GameParameters const & gameParameters);
 
     void TriggerRogueWave();
 

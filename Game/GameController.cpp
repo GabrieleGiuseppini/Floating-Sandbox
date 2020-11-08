@@ -1160,7 +1160,7 @@ void GameController::QueryNearestPointAt(vec2f const & screenCoordinates) const
 void GameController::TriggerTsunami()
 {
     assert(!!mWorld);
-    mWorld->TriggerTsunami();
+    mWorld->TriggerTsunami(mGameParameters);
 }
 
 void GameController::TriggerRogueWave()

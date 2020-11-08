@@ -52,6 +52,8 @@ public:
         float worldRadius,
         GameParameters const & gameParameters);
 
+    void TriggerWidespreadPanic(GameParameters const & gameParameters);
+
 private:
 
     struct FishShoal

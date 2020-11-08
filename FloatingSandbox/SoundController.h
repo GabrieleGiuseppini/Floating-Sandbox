@@ -148,6 +148,12 @@ public:
 
     void PlayPliersSound(bool isUnderwater);
 
+    void PlayFishScareSound();
+    void StopFishScareSound();
+
+    void PlayFishFoodSound();
+    void StopFishFoodSound();
+
     void PlaySnapshotSound();
 
     void PlayElectricalPanelOpenSound(bool isClose);
@@ -524,6 +530,8 @@ private:
     ContinuousSingleChoiceSound mFloodHoseSound;
     ContinuousSingleChoiceSound mRepairStructureSound;
     ContinuousSingleChoiceSound mWaveMakerSound;
+    ContinuousSingleChoiceSound mFishScareSound;
+    ContinuousSingleChoiceSound mFishFoodSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
