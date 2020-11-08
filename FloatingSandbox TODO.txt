@@ -1257,6 +1257,7 @@ Render:
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
 		- Misc:
+			- More fishes
 			= SettingsDialog:
 				+ Number of fish
 				+ Fish size multiplier
