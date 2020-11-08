@@ -2268,7 +2268,7 @@ public:
         if (mIsEngaged)
         {
             // Stop sound
-            StopSound();
+            StopSound(mCurrentAction);
 
             mIsEngaged = false;
         }
@@ -2276,48 +2276,53 @@ public:
 
     virtual void UpdateSimulation(InputState const & inputState) override
     {
-        bool isEngaged;
-        ActionType currentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
-
-        // Apply action
-        if (inputState.IsLeftMouseDown)
+        // Calculate new state and eventually apply action
+        bool newIsEngaged = inputState.IsLeftMouseDown;
+        ActionType const newAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
+        if (newIsEngaged)
         {
-            isEngaged = true;
+            switch (newAction)
+            {
+                case ActionType::Attract:
+                {
+                    mGameController->AttractFish(
+                        inputState.MousePosition,
+                        1.5f); // Radius
 
-            if (inputState.IsShiftKeyDown)
-            {
-                mGameController->AttractFish(
-                    inputState.MousePosition,
-                    1.5f); // Radius
-            }
-            else
-            {
-                mGameController->ScareFish(
-                    inputState.MousePosition,
-                    1.0f); // Radius
+                    break;
+                }
+
+                case ActionType::Scare:
+                {
+                    mGameController->ScareFish(
+                        inputState.MousePosition,
+                        1.0f); // Radius
+
+                    break;
+                }
             }
         }
-        else
-        {
-            isEngaged = false;
-        }
 
-        bool doUpdateCursor = (currentAction != mCurrentAction);
-
-        if (isEngaged)
+        // Transition state
+        bool doUpdateCursor = false;
+        if (newIsEngaged)
         {
             if (!mIsEngaged)
             {
-                // State change
-                mIsEngaged = true;
-
                 // Start sound
-                StartSound();
+                StartSound(newAction);
 
                 doUpdateCursor = true;
             }
             else
             {
+                if (newAction != mCurrentAction)
+                {
+                    // Change sound
+                    StopSound(mCurrentAction);
+                    StartSound(newAction);
+                }
+
                 // Update down cursor
                 ++mDownCursorCounter;
 
@@ -2328,17 +2333,15 @@ public:
         {
             if (mIsEngaged)
             {
-                // State change
-                mIsEngaged = false;
-
                 // Stop sound
-                StopSound();
+                StopSound(mCurrentAction);
 
                 doUpdateCursor = true;
             }
         }
 
-        mCurrentAction = currentAction;
+        mIsEngaged = newIsEngaged;
+        mCurrentAction = newAction;
 
         if (doUpdateCursor)
         {
@@ -2387,9 +2390,9 @@ private:
         }
     }
 
-    void StartSound()
+    void StartSound(ActionType action)
     {
-        switch (mCurrentAction)
+        switch (action)
         {
             case ActionType::Attract:
             {
@@ -2405,9 +2408,9 @@ private:
         }
     }
 
-    void StopSound()
+    void StopSound(ActionType action)
     {
-        switch (mCurrentAction)
+        switch (action)
         {
             case ActionType::Attract:
             {

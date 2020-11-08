@@ -1198,14 +1198,14 @@ Render:
 			+ Superimpose sin over movement
 				+ Resynchronize sync with tail
 				+ Test with more pronounced superimposed sin during panic run				
-			= Tools:
+			+ Tools:
 				+ Think of rearc: instead of storing disturbances, act on fishes right away - exactly like we do with ship
 					+ Need to reset u-turn
-				= Food/Scare
+				+ Food/Scare
 					+ Icons: 
 						+ Food: little can, tilted at rest, rotated w/crumbles when used
 						+ Scare: megaphone 45 degrees at rest, w/sound waves when used
-					= Sounds:
+					+ Sounds:
 						+ Food: shaking powder
 						+ Scare: children screaming
 					+ Food: 
