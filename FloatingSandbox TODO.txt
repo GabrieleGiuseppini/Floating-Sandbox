@@ -1210,19 +1210,9 @@ Render:
 					= Food: 
 						+ Set target velocity to direction towards tool; auto-smoothing does the rest
 						+ Enter panic mode with distance
-						= See if can make it so that fish jumps out of water - fix issue
+						+ See if can make it so that fish jumps out of water - fix issue
 							! Issue due to panic away from bounce -> panic towards food -> ...
-							- Try 2:
-								- Panic is entered as-is
-								- Set TargetPosition to attraction point
-								- Set TargetVel, TargetRenderVector
-									- But not Current's, let auto-smoothing do that
-								! Eventual new targets set at Update() would be overridden by next tool application
-								! NOT TRUE: After ocean bounce, fish goes along panic for a bit before re-targeting TargetPosition
-							- If boring fish at target:
-								- Set TargetPosition to 2D *gaussian* around attraction point
-									- More pronounced the closer the fish is
-						- See if can do with small, separate panic charges
+						= See if can randomize direction a bit - but not continuously
 					+ Scare:
 						+ Panic charge should be proportional to tool distance
 						+ Ultra-violent mode

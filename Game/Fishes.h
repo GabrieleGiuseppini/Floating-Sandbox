@@ -118,6 +118,9 @@ private:
         // Panic mode state machine
         float PanicCharge; // When not zero, fish is panic mode; decays towards zero
 
+        // Provides a heartbeat for attractions
+        float AttractionDecayTimer;
+
         // Steering state machine
         std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
 
@@ -145,6 +148,7 @@ private:
             , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
+            , AttractionDecayTimer(0.0f)
             , CruiseSteeringState()
             , IsInFreefall(false)
             , FishesByXIndex(0) // Arbitrary, will be set as needed

@@ -226,7 +226,9 @@ void Fishes::AttractAt(
     for (auto & fish : mFishes)
     {
         if (!fish.IsInFreefall
-            && fish.PanicCharge < 0.65f) // Don't attract fish in much panic
+            // TODOTEST
+            //&& fish.PanicCharge < 0.65f) // Don't attract fish in much panic
+            && fish.PanicCharge < 10.0f) // Don't attract fish in much panic
         {
             FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
@@ -239,15 +241,20 @@ void Fishes::AttractAt(
             float const distance = (worldCoordinates - fishHeadPosition).length();
 
             // Check whether the fish has been attracted
-            if (distance < effectiveRadius) // Within radius
+            if (distance < effectiveRadius
+                && fish.AttractionDecayTimer < 0.05f) // Free to begin a new attraction cycle
             {
                 // Enter panic mode with a charge decreasing with distance
                 fish.PanicCharge = std::max(
-                    (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    0.3f + 0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)), // At least 0.3 - immediate panic once in radius
                     fish.PanicCharge);
 
-                // Calculate new direction, towards food
-                vec2f panicDirection = (worldCoordinates - fishHeadPosition).normalise(distance);
+                // Calculate new direction, randomly in the area of food
+                float constexpr RandomnessWidth = 3.0f;
+                vec2f const randomDelta(
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth),
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-RandomnessWidth, RandomnessWidth));
+                vec2f panicDirection = ((worldCoordinates + randomDelta) - fishHeadPosition).normalise();
 
                 // Make sure direction is not too steep
                 float constexpr MinXComponent = 0.0f;
@@ -275,6 +282,9 @@ void Fishes::AttractAt(
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
+
+                // Begin attraction cycle
+                fish.AttractionDecayTimer = 1.0f;
             }
         }
     }
@@ -638,6 +648,9 @@ void Fishes::UpdateDynamics(
 
         // Decay panic charge
         fish.PanicCharge *= 0.985f;
+
+        // Decay attraction timer
+        fish.AttractionDecayTimer *= 0.75f;
 
         //
         // 3) World boundaries check
