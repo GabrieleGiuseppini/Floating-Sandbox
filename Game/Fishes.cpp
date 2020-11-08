@@ -226,9 +226,7 @@ void Fishes::AttractAt(
     for (auto & fish : mFishes)
     {
         if (!fish.IsInFreefall
-            // TODOTEST
-            //&& fish.PanicCharge < 0.65f) // Don't attract fish in much panic
-            && fish.PanicCharge < 10.0f) // Don't attract fish in much panic
+            && fish.PanicCharge < 0.65f) // Don't attract fish in much panic
         {
             FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
@@ -277,8 +275,8 @@ void Fishes::AttractAt(
                 // Update render vector to match velocity
                 fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
-                // Converge directions at this quite fast rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+                // Converge directions at this rate
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
