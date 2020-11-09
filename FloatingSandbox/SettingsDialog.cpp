@@ -2524,7 +2524,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                 fishesSizer->Add(
                     mNumberOfFishesSlider,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -2549,7 +2549,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                 fishesSizer->Add(
                     mFishSizeMultiplierSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
+                    wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
@@ -2574,6 +2574,54 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                 fishesSizer->Add(
                     mFishSpeedAdjustmentSlider,
                     wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Do shoaling
+            {
+                mDoFishShoalingCheckBox = new wxCheckBox(fishesBox, wxID_ANY,
+                    _("Shoaling"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                mDoFishShoalingCheckBox->SetToolTip(_("Enables or disables shoaling behavior in fishes."));
+                mDoFishShoalingCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoFishShoaling, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mFishShoalSpacingAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                fishesSizer->Add(
+                    mDoFishShoalingCheckBox,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Shoal Spacing Adjustment
+            {
+                mFishShoalSpacingAdjustmentSlider = new SliderControl<float>(
+                    fishesBox,
+                    SliderWidth,
+                    -1,
+                    _("Shoal Spacing Adjust"),
+                    _("Adjusts the spacing maintained by fishes in a shoal."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishShoalSpacingAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishShoalSpacingAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxFishShoalSpacingAdjustment()));
+
+                fishesSizer->Add(
+                    mFishShoalSpacingAdjustmentSlider,
+                    wxGBPosition(1, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2587,7 +2635,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
         gridSizer->Add(
             fishesBox,
             wxGBPosition(1, 1),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -4360,6 +4408,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
     mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
     mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
+    mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mFishShoalSpacingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalSpacingAdjustment));
+    mFishShoalSpacingAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
 
     // Interactions
 

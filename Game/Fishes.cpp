@@ -106,7 +106,10 @@ void Fishes::Update(
 
     if (gameParameters.DoFishShoaling)
     {
-        UpdateShoaling(gameParameters);
+        UpdateShoaling(
+            currentSimulationTime,
+            gameParameters,
+            visibleWorld);
     }
 }
 
@@ -380,7 +383,7 @@ void Fishes::UpdateNumberOfFishes(
                 size_t const oldShoalCount = mFishShoals.size();
 
                 // Create new batch
-                CreateNewFishShoalBatch();
+                CreateNewFishShoalBatch(static_cast<ElementIndex>(f));
 
                 // Start searching from here
                 shoalSearchStartIndex = oldShoalCount;
@@ -600,8 +603,6 @@ void Fishes::UpdateDynamics(
         else if (fish.IsInFreefall
             && fish.CurrentPosition.y <= oceanY)
         {
-            LogMessage("TODOTEST: Leaving Freefall");
-
             // Leave freefall
             fish.IsInFreefall = false;
 
@@ -771,8 +772,6 @@ void Fishes::UpdateDynamics(
         // Check whether this fish has reached its target, while not in panic mode
         if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
         {
-            LogMessage("TODOTEST: TargetReached");
-
             //
             // Target Reached
             //
@@ -854,8 +853,6 @@ void Fishes::UpdateDynamics(
             && fish.PanicCharge <= 0.3f
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
-            LogMessage("TODOTEST: OceanSurface Bounce");
-
             //
             // OceanSurface Bounce
             //
@@ -912,76 +909,141 @@ void Fishes::UpdateDynamics(
     }
 }
 
-void Fishes::UpdateShoaling(GameParameters const & gameParameters)
+void Fishes::UpdateShoaling(
+    float currentSimulationTime,
+    GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld)
 {
-    // TODOTEST
-    return;
-
     // TODOHERE: completely unoptimized
 
-    float constexpr ShoalRadius = 5.0f; // Invariant with fish size
+    float const shoalRadius =
+        5.0f * gameParameters.FishSizeMultiplier;
 
     float const effectiveShoalSpacing =
-        1.0f * gameParameters.FishShoalSpacingAdjustment;
+        1.5f // In terms of "fish bodies"
+        * gameParameters.FishShoalSpacingAdjustment
+        * gameParameters.FishSizeMultiplier;
 
     for (size_t f = 0; f < mFishes.size(); ++f)
     {
         Fish & fish = mFishes[f];
 
-        vec2f targetPosition = fish.TargetPosition;
-        int nNeighbors = 0;
-
-        // Visit all immediate neighbors
-        for (size_t n = 0; n < mFishes.size(); ++n)
+        if (mFishShoals[fish.ShoalId].CurrentMemberCount > 1 // A shoal contains at least one fish
+            && fish.ShoalingDecayTimer < 0.05f // Wait for this fish's shoaling cycle
+            && fish.PanicCharge < 0.05f // Skip fishes in too much panic
+            && !fish.CruiseSteeringState.has_value()) // Fish is not u-turning
         {
-            vec2f const displacementFromNeighbor = fish.CurrentPosition - mFishes[n].CurrentPosition;
-            float const distance = displacementFromNeighbor.length();
-            if (n != f && distance < ShoalRadius)
+            // Convert shoal spacing (bodies) into world
+            float const fishShoalSpacing =
+                effectiveShoalSpacing
+                * mFishShoals[fish.ShoalId].MaxWorldDimension;
+            //
+            // Visit all neighbors and calculate position spaced
+            // from each one
+            //
+
+            vec2f targetPosition = vec2f::zero();
+            int nNeighbors = 0;
+
+            for (size_t n = 0; n < mFishes.size(); ++n)
             {
+                if (mFishes[n].ShoalId == fish.ShoalId)
+                {
+                    vec2f const fishToNeighbor = mFishes[n].CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
+                    float const distance = fishToNeighbor.length();
+                    if (n != f && distance < shoalRadius)
+                    {
+                        //
+                        // Calculate new position for this fish so that it's exactly at
+                        // its shoal spacing from this neighbor
+                        //
+
+                        vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
+
+                        targetPosition +=
+                            mFishes[n].CurrentPosition
+                            + fishToNeighborDirection * (distance - fishShoalSpacing);
+
+                        ++nNeighbors;
+                    }
+                }
+            }
+
+            if (nNeighbors != 0)
+            {
+                // Average target position
+                targetPosition /= static_cast<float>(nNeighbors);
+            }
+            else
+            {
+                // Pick lead
+                assert(mFishShoals[fish.ShoalId].CurrentMemberCount >= 2);
+                size_t leadIndex = (mFishShoals[fish.ShoalId].StartFishIndex == f)
+                    ? mFishShoals[fish.ShoalId].StartFishIndex + 1
+                    : mFishShoals[fish.ShoalId].StartFishIndex;
+                vec2f const fishToLead = fish.CurrentPosition - mFishes[leadIndex].CurrentPosition;
+                float const distance = fishToLead.length();
+
                 //
                 // Calculate new position for this fish so that it's exactly at
-                // its shoal spacing from this neighbor
+                // its shoal spacing from the lead
                 //
 
-                vec2f const directionFromNeighbor = displacementFromNeighbor.normalise(distance);
+                vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                targetPosition +=
-                    mFishes[n].CurrentPosition
-                    + directionFromNeighbor * effectiveShoalSpacing;
-
-                ++nNeighbors;
+                targetPosition =
+                    mFishes[leadIndex].CurrentPosition
+                    + fishToLeadDirection * (distance - fishShoalSpacing);
             }
+
+            //
+            // Add to target velocity that velocity that is required to get to target position
+            //
+
+            vec2f const targetDirection = (targetPosition - fish.CurrentPosition).normalise();
+            fish.TargetVelocity += MakeCuisingVelocity(
+                targetDirection.normalise(),
+                mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
+
+            // Update render vector to match velocity
+            fish.TargetRenderVector = fish.TargetVelocity.normalise();
+
+            // Do not override converge rate
+
+            // Check if we need to do a u-turn
+            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
+            {
+                // Perform a cruise steering
+                fish.CruiseSteeringState.emplace(
+                    fish.CurrentVelocity,
+                    fish.CurrentRenderVector,
+                    currentSimulationTime,
+                    0.75f);
+
+                // Find a new target position along the target direction
+                fish.TargetPosition = FindNewCruisingTargetPosition(
+                    fish.CurrentPosition,
+                    fish.TargetRenderVector,
+                    visibleWorld);
+            }
+
+            // Start another shoaling cycle
+            fish.ShoalingDecayTimer = 1.0f;
         }
 
-        if (nNeighbors != 0)
-        {
-            // Average target position
-            targetPosition /= static_cast<float>(nNeighbors);
-        }
-        else
-        {
-            // TODO: pick lead
-        }
-
-        //
-        // Change targets to get to target position
-        //
-
-        fish.TargetPosition = targetPosition;
-        vec2f const targetDirection = (targetPosition - fish.CurrentPosition).normalise();
-        fish.TargetVelocity = MakeCuisingVelocity(targetDirection, mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
-        fish.TargetRenderVector = targetDirection;
-
-        // TODO: u-turn check
-        // TODO: fast u-turn?
+        // Decay shoaling cycle
+        fish.ShoalingDecayTimer *= 0.95f; // TODOHERE
     }
 }
 
-void Fishes::CreateNewFishShoalBatch()
+void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
 {
     for (auto const & species : mFishSpeciesDatabase.GetFishSpecies())
     {
-        mFishShoals.emplace_back(species);
+        mFishShoals.emplace_back(
+            species,
+            startFishIndex,
+            species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y);
     }
 }
 

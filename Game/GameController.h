@@ -477,6 +477,14 @@ public:
     float GetMinFishSpeedAdjustment() const override { return GameParameters::MinFishSpeedAdjustment; }
     float GetMaxFishSpeedAdjustment() const override { return GameParameters::MaxFishSpeedAdjustment; }
 
+    bool GetDoFishShoaling() const override { return mGameParameters.DoFishShoaling; }
+    void SetDoFishShoaling(bool value) override { mGameParameters.DoFishShoaling = value; }
+
+    float GetFishShoalSpacingAdjustment() const override { return mGameParameters.FishShoalSpacingAdjustment; }
+    void SetFishShoalSpacingAdjustment(float value) override { mGameParameters.FishShoalSpacingAdjustment = value; }
+    float GetMinFishShoalSpacingAdjustment() const override { return GameParameters::MinFishShoalSpacingAdjustment; }
+    float GetMaxFishShoalSpacingAdjustment() const override { return GameParameters::MaxFishShoalSpacingAdjustment; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

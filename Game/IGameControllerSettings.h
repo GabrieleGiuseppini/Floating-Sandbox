@@ -174,6 +174,12 @@ struct IGameControllerSettings
     virtual float GetFishSpeedAdjustment() const = 0;
     virtual void SetFishSpeedAdjustment(float value) = 0;
 
+    virtual bool GetDoFishShoaling() const = 0;
+    virtual void SetDoFishShoaling(bool value) = 0;
+
+    virtual float GetFishShoalSpacingAdjustment() const = 0;
+    virtual void SetFishShoalSpacingAdjustment(float value) = 0;
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

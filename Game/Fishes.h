@@ -59,16 +59,25 @@ private:
     struct FishShoal
     {
         FishSpecies const & Species;
+
         size_t CurrentMemberCount;
+        ElementIndex StartFishIndex;
 
         vec2f InitialPosition;
         vec2f InitialDirection;
 
-        FishShoal(FishSpecies const & species)
+        float MaxWorldDimension;
+
+        FishShoal(
+            FishSpecies const & species,
+            ElementIndex startFishIndex,
+            float maxWorldDimension)
             : Species(species)
             , CurrentMemberCount(0)
+            , StartFishIndex(startFishIndex)
             , InitialPosition(vec2f::zero())
             , InitialDirection(vec2f::zero())
+            , MaxWorldDimension(maxWorldDimension)
         {}
     };
 
@@ -123,6 +132,9 @@ private:
         // Provides a heartbeat for attractions
         float AttractionDecayTimer;
 
+        // Provides a heartbeat for shoaling
+        float ShoalingDecayTimer;
+
         // Steering state machine
         std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
 
@@ -151,6 +163,7 @@ private:
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , AttractionDecayTimer(0.0f)
+            , ShoalingDecayTimer(0.0f)
             , CruiseSteeringState()
             , IsInFreefall(false)
             , FishesByXIndex(0) // Arbitrary, will be set as needed
@@ -173,9 +186,12 @@ private:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
-    void UpdateShoaling(GameParameters const & gameParameters);
+    void UpdateShoaling(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
 
-    void CreateNewFishShoalBatch();
+    void CreateNewFishShoalBatch(ElementIndex startFishIndex);
 
     inline static vec2f ChoosePosition(
         vec2f const & averagePosition,

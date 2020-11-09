@@ -139,6 +139,8 @@ private:
     SliderControl<unsigned int> * mNumberOfFishesSlider;
     SliderControl<float> * mFishSizeMultiplierSlider;
     SliderControl<float> * mFishSpeedAdjustmentSlider;
+    wxCheckBox * mDoFishShoalingCheckBox;
+    SliderControl<float> * mFishShoalSpacingAdjustmentSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
