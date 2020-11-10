@@ -203,9 +203,6 @@ void Fishes::DisturbAt(
                 // Calculate new target velocity - away from disturbance point, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
-                // Update render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
                 // Converge directions really fast
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
 
@@ -275,9 +272,6 @@ void Fishes::AttractAt(
                 // Calculate new target velocity - towards food, and will be panic velocity
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
-                // Update render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
                 // Converge directions at this rate
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
 
@@ -315,9 +309,6 @@ void Fishes::TriggerWidespreadPanic(GameParameters const & gameParameters)
 
             // Calculate new target velocity in this direction - and will be panic velocity
             fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
-
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Converge directions at this rate
             fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
@@ -509,7 +500,7 @@ void Fishes::UpdateDynamics(
 
                 // Reach all targets
                 fish.CurrentVelocity = fish.TargetVelocity;
-                fish.CurrentRenderVector = fish.TargetRenderVector;
+                fish.CurrentRenderVector = fish.TargetVelocity.normalise();
             }
             else
             {
@@ -533,6 +524,8 @@ void Fishes::UpdateDynamics(
                         fish.TargetVelocity * SmoothStep(0.5f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
+                vec2f const targetRenderVector = fish.TargetVelocity.normalise();
+
                 // RenderVector Y:
                 // - smooth towards zero during an initial interval
                 // - smooth towards target during a second interval
@@ -543,8 +536,9 @@ void Fishes::UpdateDynamics(
                 }
                 else if (elapsedSteeringDurationFraction >= 0.60f)
                 {
+
                     fish.CurrentRenderVector.y =
-                        fish.TargetRenderVector.y * SmoothStep(0.60f, 1.0f, elapsedSteeringDurationFraction);
+                        targetRenderVector.y * SmoothStep(0.60f, 1.0f, elapsedSteeringDurationFraction);
                 }
 
                 // RenderVector X:
@@ -559,7 +553,7 @@ void Fishes::UpdateDynamics(
                 else
                 {
                     fish.CurrentRenderVector.x =
-                        fish.TargetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
+                        targetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
                 }
             }
         }
@@ -569,13 +563,12 @@ void Fishes::UpdateDynamics(
             // Automated direction smoothing
             //
 
-            // Smooth velocity towards target
+            // Smooth velocity towards target + shoaling
             fish.CurrentVelocity +=
-                (fish.TargetVelocity - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
+                ((fish.TargetVelocity + fish.ShoalingVelocity) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
 
-            // Smooth render vector towards target
-            fish.CurrentRenderVector +=
-                (fish.TargetRenderVector - fish.CurrentRenderVector) * fish.CurrentDirectionSmoothingConvergenceRate;
+            // Make RenderVector match current velocity
+            fish.CurrentRenderVector = fish.CurrentVelocity.normalise();
         }
 
         //
@@ -669,9 +662,8 @@ void Fishes::UpdateDynamics(
                 newVelocityY);
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
 
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.06f; // Converge at this rate
+            // Converge at this rate
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.06f;
 
             // Update position: add velocity
             fish.CurrentPosition +=
@@ -699,7 +691,7 @@ void Fishes::UpdateDynamics(
             // Bounce position
             fish.CurrentPosition.x = -GameParameters::HalfMaxWorldWidth + (-GameParameters::HalfMaxWorldWidth - fish.CurrentPosition.x);
 
-            // Bounce velocity
+            // Bounce both current and target velocity
             fish.CurrentVelocity.x = std::abs(fish.CurrentVelocity.x);
             fish.TargetVelocity.x = std::abs(fish.TargetVelocity.x);
 
@@ -711,7 +703,7 @@ void Fishes::UpdateDynamics(
             // Bounce position
             fish.CurrentPosition.x = GameParameters::HalfMaxWorldWidth - (fish.CurrentPosition.x - GameParameters::HalfMaxWorldWidth);
 
-            // Bounce velocity
+            // Bounce both current and target velocity
             fish.CurrentVelocity.x = -std::abs(fish.CurrentVelocity.x);
             fish.TargetVelocity.x = -std::abs(fish.TargetVelocity.x);
 
@@ -721,16 +713,10 @@ void Fishes::UpdateDynamics(
 
         if (hasBouncedAgainstWorldBoundaries)
         {
-            // Update render vector to match velocity
-            fish.CurrentRenderVector = fish.CurrentRenderVector.normalise();
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
-            // Continue converging directions at current rate
-
             // Find a position away
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
-                fish.TargetRenderVector,
+                fish.TargetVelocity.normalise(),
                 visibleWorld);
 
             // Stop cruising
@@ -787,11 +773,8 @@ void Fishes::UpdateDynamics(
             // Calculate new target velocity
             fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
 
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
+            if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
@@ -819,11 +802,8 @@ void Fishes::UpdateDynamics(
             // Calculate new target velocity
             fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
 
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x < 0.0f)
+            if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
@@ -863,9 +843,6 @@ void Fishes::UpdateDynamics(
             // Calculate new target velocity - away from disturbance point
             fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
 
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
             // Converge direction change at this rate
             fish.CurrentDirectionSmoothingConvergenceRate = 0.05f * (1.0f + fish.PanicCharge);
         }
@@ -899,9 +876,6 @@ void Fishes::UpdateDynamics(
                     fish.TargetVelocity
                     - seaFloorNormal * 2.0f * targetVelocityAlongNormal;
 
-                // Update target render vector to match velocity
-                fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
                 // Converge direction change at this rate
                 fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
             }
@@ -914,6 +888,9 @@ void Fishes::UpdateShoaling(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
+    // TODOTEST
+    return;
+
     // TODOHERE: completely unoptimized
 
     float const shoalRadius =
@@ -1016,9 +993,6 @@ void Fishes::UpdateShoaling(
                 mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters)).normalise()
                 * fish.TargetVelocity.length();
 
-            // Update render vector to match velocity
-            fish.TargetRenderVector = fish.TargetVelocity.normalise();
-
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
@@ -1026,7 +1000,7 @@ void Fishes::UpdateShoaling(
             fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
 
             // Check if we need to do a u-turn
-            if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
+            if (fish.TargetVelocity.x * fish.CurrentVelocity.x <= 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
@@ -1038,7 +1012,7 @@ void Fishes::UpdateShoaling(
                 // Find a new target position along the target direction
                 fish.TargetPosition = FindNewCruisingTargetPosition(
                     fish.CurrentPosition,
-                    fish.TargetRenderVector,
+                    fish.TargetVelocity.normalise(),
                     visibleWorld);
             }
 

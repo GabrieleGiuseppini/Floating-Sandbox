@@ -119,8 +119,9 @@ private:
         vec2f CurrentVelocity;
         vec2f TargetVelocity;
 
+        vec2f ShoalingVelocity;
+
         vec2f CurrentRenderVector;
-        vec2f TargetRenderVector;
 
         float CurrentDirectionSmoothingConvergenceRate; // Rate of converge of velocity and direction
 
@@ -156,9 +157,9 @@ private:
             , CurrentPosition(initialPosition)
             , TargetPosition(targetPosition)
             , CurrentVelocity(targetVelocity)
+            , ShoalingVelocity(vec2f::zero())
             , TargetVelocity(CurrentVelocity)
             , CurrentRenderVector(targetVelocity.normalise())
-            , TargetRenderVector(CurrentRenderVector)
             , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)

@@ -1230,10 +1230,13 @@ Render:
 				+ UpdateDynamics(): maintain sorted Xs in vector at position update
 				+ Apply fish's max dimension to shoal spacing (which is in terms of bodies)
 
-				- Main algo:
-					- Attempts:
-						- Fish.ShoalingVelocity = k*DeltaPos
-							- DeltaPos calc'd using new target pos each time
+				= Main algo:
+					= Attempts:
+						= Fish.ShoalingVelocity = k*DeltaPos
+							+ 1. TargetRenderVector moves to CruiseSteering
+								+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
+							- 2. DeltaPos calc'd using new target pos each time
+							- N. Need to zero out ShoalingVelocity when fish stops shoaling
 
 						- Sum of deltas of shoaling position is normalized and added with weight to target velocity
 

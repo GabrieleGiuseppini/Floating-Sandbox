@@ -67,7 +67,7 @@ GameParameters::GameParameters()
     , EngineThrustAdjustment(1.0f)
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
-    , NumberOfFishes(2) // TODOTEST (60)
+    , NumberOfFishes(60) // TODOTEST 2 TODOTEST (60)
     , FishSizeMultiplier(25.0f)
     , FishSpeedAdjustment(1.0f)
     , DoFishShoaling(true)
