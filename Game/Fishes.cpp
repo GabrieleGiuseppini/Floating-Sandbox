@@ -888,9 +888,6 @@ void Fishes::UpdateShoaling(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
-    // TODOTEST
-    return;
-
     // TODOHERE: completely unoptimized
 
     float const shoalRadius =
@@ -921,14 +918,14 @@ void Fishes::UpdateShoaling(
             // from each one
             //
 
-            vec2f targetPosition = vec2f::zero();
+            vec2f targetPosition = fish.CurrentPosition;
             int nNeighbors = 0;
 
             for (size_t n = 0; n < mFishes.size(); ++n)
             {
                 if (mFishes[n].ShoalId == fish.ShoalId)
                 {
-                    vec2f const fishToNeighbor = mFishes[n].CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
+                    vec2f const fishToNeighbor = mFishes[n].CurrentPosition - targetPosition; // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
                     if (n != f && distance < shoalRadius)
                     {
@@ -939,21 +936,14 @@ void Fishes::UpdateShoaling(
 
                         vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
-                        targetPosition +=
-                            fish.CurrentPosition
-                            + fishToNeighborDirection * (distance - fishShoalSpacing);
+                        targetPosition += fishToNeighborDirection * (distance - fishShoalSpacing);
 
                         ++nNeighbors;
                     }
                 }
             }
 
-            if (nNeighbors != 0)
-            {
-                // Average target position
-                targetPosition /= static_cast<float>(nNeighbors);
-            }
-            else
+            if (nNeighbors == 0)
             {
                 // Pick lead
                 assert(mFishShoals[fish.ShoalId].CurrentMemberCount >= 2);
@@ -970,37 +960,27 @@ void Fishes::UpdateShoaling(
 
                 vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                targetPosition =
-                    mFishes[leadIndex].CurrentPosition
-                    + fishToLeadDirection * (distance - fishShoalSpacing);
+                targetPosition += fishToLeadDirection * (distance - fishShoalSpacing);
             }
 
             //
-            // Add to target velocity that velocity that is required to get to target position
+            // Calculate shoaling velocity as weighted vector to target position
             //
 
-            // TODOHERE: velocity can't be cruising velocity - if we're really close,
-            // crusiing velocity is too much to get where we need to go
-
-            vec2f const targetDirection = (targetPosition - fish.CurrentPosition).normalise();
-            // TODOTEST
-            ////fish.TargetVelocity += MakeCuisingVelocity(
-            ////    targetDirection,
-            ////    mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
-            // TODOTEST: testing rotation of velocity
-            fish.TargetVelocity = (fish.TargetVelocity + MakeCuisingVelocity(
-                targetDirection,
-                mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters)).normalise()
-                * fish.TargetVelocity.length();
+            fish.ShoalingVelocity =
+                (targetPosition - fish.CurrentPosition).normalise()
+                * 0.325f; // TODOHERE
 
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
             // (see plan)
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
 
             // Check if we need to do a u-turn
-            if (fish.TargetVelocity.x * fish.CurrentVelocity.x <= 0.0f)
+            // TODO: we are (correctly) using resultant velocity here for the check, and should do
+            // this everywhere; centralized u-turn check?
+            if ((fish.TargetVelocity.x + fish.ShoalingVelocity.x) * fish.CurrentVelocity.x <= 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(

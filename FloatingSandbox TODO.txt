@@ -1235,8 +1235,11 @@ Render:
 						= Fish.ShoalingVelocity = k*DeltaPos
 							+ 1. TargetRenderVector moves to CruiseSteering
 								+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
-							- 2. DeltaPos calc'd using new target pos each time
-							- N. Need to zero out ShoalingVelocity when fish stops shoaling
+							= 2. DeltaPos calc'd using new target pos each time
+							- 3. U-turn checks should use resultant target velocity to decide whether or not to turn
+								- U-turn should also include shoaling velocity together with target velocity?
+								- TODOHERE
+							- N. Need to zero out ShoalingVelocity when fish stops shoaling (via GameParameters)
 
 						- Sum of deltas of shoaling position is normalized and added with weight to target velocity
 
