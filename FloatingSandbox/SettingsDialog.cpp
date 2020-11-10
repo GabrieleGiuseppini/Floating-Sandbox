@@ -2615,8 +2615,9 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                         this->mLiveSettings.SetValue(GameSettings::FishShoalSpacingAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinFishShoalSpacingAdjustment(),
+                        1.0f,
                         mGameControllerSettingsOptions->GetMaxFishShoalSpacingAdjustment()));
 
                 fishesSizer->Add(

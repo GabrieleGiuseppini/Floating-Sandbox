@@ -917,7 +917,9 @@ void Fishes::UpdateShoaling(
     // TODOHERE: completely unoptimized
 
     float const shoalRadius =
-        5.0f * gameParameters.FishSizeMultiplier;
+        // TODOTEST
+        //5.0f * gameParameters.FishSizeMultiplier;
+        50.0f * gameParameters.FishSizeMultiplier;
 
     float const effectiveShoalSpacing =
         1.5f // In terms of "fish bodies"
@@ -961,7 +963,7 @@ void Fishes::UpdateShoaling(
                         vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
                         targetPosition +=
-                            mFishes[n].CurrentPosition
+                            fish.CurrentPosition
                             + fishToNeighborDirection * (distance - fishShoalSpacing);
 
                         ++nNeighbors;
@@ -1000,15 +1002,28 @@ void Fishes::UpdateShoaling(
             // Add to target velocity that velocity that is required to get to target position
             //
 
+            // TODOHERE: velocity can't be cruising velocity - if we're really close,
+            // crusiing velocity is too much to get where we need to go
+
             vec2f const targetDirection = (targetPosition - fish.CurrentPosition).normalise();
-            fish.TargetVelocity += MakeCuisingVelocity(
-                targetDirection.normalise(),
-                mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
+            // TODOTEST
+            ////fish.TargetVelocity += MakeCuisingVelocity(
+            ////    targetDirection,
+            ////    mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
+            // TODOTEST: testing rotation of velocity
+            fish.TargetVelocity = (fish.TargetVelocity + MakeCuisingVelocity(
+                targetDirection,
+                mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters)).normalise()
+                * fish.TargetVelocity.length();
 
             // Update render vector to match velocity
             fish.TargetRenderVector = fish.TargetVelocity.normalise();
 
             // Do not override converge rate
+            // TODOTEST: temporarily we do; we have to make it so
+            // its "default rate" is the "normal" rate (find it above), which gets converged to
+            // (see plan)
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
 
             // Check if we need to do a u-turn
             if (fish.TargetRenderVector.x * fish.CurrentRenderVector.x <= 0.0f)
@@ -1033,6 +1048,9 @@ void Fishes::UpdateShoaling(
 
         // Decay shoaling cycle
         fish.ShoalingDecayTimer *= 0.95f; // TODOHERE
+
+        // TODOTEST
+        //break;
     }
 }
 

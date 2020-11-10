@@ -1228,16 +1228,28 @@ Render:
 				+ Rearc Update() in three parts
 				+ Do shoaling only if GameParameters::DoFishShoaling is set
 				+ UpdateDynamics(): maintain sorted Xs in vector at position update
-				= Apply fish's max dimension to shoal spacing (which is in terms of bodies)
-				= Sliders
-				- u-turn
+				+ Apply fish's max dimension to shoal spacing (which is in terms of bodies)
 
-				- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
-				- Smooth also panic's to max of neighbors?
-				- OLD:
-					- When one fish turns because of reaching target, other fish in same swarm will also turn, randomly a little bit later
-						- Isn't this taken care of by swarming dynamics automatically?
-					- Normal swarming dynamics						
+				- Main algo:
+					- Attempts:
+						- Fish.ShoalingVelocity = k*DeltaPos
+							- DeltaPos calc'd using new target pos each time
+
+						- Sum of deltas of shoaling position is normalized and added with weight to target velocity
+
+						- Velocity should be proportional to distance
+
+				- Ideas:
+					- Should only consider neighbors that are ahead?
+					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
+					- Smooth also panic's to max of neighbors?
+				= u-turn
+				= Sliders
+					- SettingsDialog: rename "Shoaling"
+
+				- Test:
+					- When one fish turns because of reaching target, other fish in same swarm will also turn
+						- Randomly a little bit later?
 				- Cleanup:
 					- Optimize
 						- Buffer rearc?
