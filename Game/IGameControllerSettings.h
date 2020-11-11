@@ -177,8 +177,14 @@ struct IGameControllerSettings
     virtual bool GetDoFishShoaling() const = 0;
     virtual void SetDoFishShoaling(bool value) = 0;
 
+    virtual float GetFishShoalNeighborhoodAdjustment() const = 0;
+    virtual void SetFishShoalNeighborhoodAdjustment(float value) = 0;
+
     virtual float GetFishShoalSpacingAdjustment() const = 0;
     virtual void SetFishShoalSpacingAdjustment(float value) = 0;
+
+    virtual float GetFishShoalCohesionStrengthAdjustment() const = 0;
+    virtual void SetFishShoalCohesionStrengthAdjustment(float value) = 0;
 
     // Misc
 

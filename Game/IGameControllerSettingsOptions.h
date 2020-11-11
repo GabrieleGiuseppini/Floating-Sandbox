@@ -165,8 +165,14 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFishSpeedAdjustment() const = 0;
     virtual float GetMaxFishSpeedAdjustment() const = 0;
 
+    virtual float GetMinFishShoalNeighborhoodAdjustment() const = 0;
+    virtual float GetMaxFishShoalNeighborhoodAdjustment() const = 0;
+
     virtual float GetMinFishShoalSpacingAdjustment() const = 0;
     virtual float GetMaxFishShoalSpacingAdjustment() const = 0;
+
+    virtual float GetMinFishShoalCohesionStrengthAdjustment() const = 0;
+    virtual float GetMaxFishShoalCohesionStrengthAdjustment() const = 0;
 
     // Misc
 

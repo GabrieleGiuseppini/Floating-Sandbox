@@ -1232,26 +1232,44 @@ Render:
 
 				= Main algo:
 					= Attempts:
-						= Fish.ShoalingVelocity = k*DeltaPos
-							+ 1. TargetRenderVector moves to CruiseSteering
-								+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
-							= 2. DeltaPos calc'd using new target pos each time
-							- 3. U-turn checks should use resultant target velocity to decide whether or not to turn
-								- U-turn should also include shoaling velocity together with target velocity?
-								- TODOHERE
-							- N. Need to zero out ShoalingVelocity when fish stops shoaling (via GameParameters)
+						= A: My own algo:
+							= A1: Fish.ShoalingVelocity = k*DeltaPos
+								+ TargetRenderVector moves to CruiseSteering
+									+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
+								+ Fix bursts
+								- ShoalingVelocity must scale with GameParameters x 2
+									- Also adjust ShoalingVelocity @ GameParameters' changes
+									- Zero out ShoalingVelocity when fish stops shoaling (via GameParameters)
+								+ No U-turn check with ShoalingVelocity
+									+ ShoalingVelocity is not supposed to change direction
+										+ Remove u-turn code
+								= DeltaPos calc'd using new target pos each time
+									- Sum of deltas of shoaling position is normalized and added with weight to target velocity
+								
+								+ Add sliders for Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
+									+ Verify: velocity should be proportional to distance
+								
+							- A2: Direction change based on neighbours
+								- Only changes TargetVelocity, not ShoalingVelocity
 
-						- Sum of deltas of shoaling position is normalized and added with weight to target velocity
-
-						- Velocity should be proportional to distance
+						- B: guy's algo:
+							- Clone UpdateShoaling altogether
+							- B1: Movement vector
+							- B2: Collision vector (closest neighbour closer to fish than spacing)
+							- B3: Cohesion vector (furthest neighbour further to fish than spacing)
+							- The weighted sum of the three + target direction determines new target direction
+								- U-turn check on new target direction
+							- If ok, cleanup:
+								- ShoalingVelocity
 
 				- Ideas:
-					- Should only consider neighbors that are ahead?
+					- Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
 					- Smooth also panic's to max of neighbors?
 				= u-turn
 				= Sliders
 					- SettingsDialog: rename "Shoaling"
+					- See if we still need Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
 
 				- Test:
 					- When one fish turns because of reaching target, other fish in same swarm will also turn

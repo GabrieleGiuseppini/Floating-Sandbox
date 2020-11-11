@@ -366,9 +366,17 @@ struct GameParameters
 
     bool DoFishShoaling;
 
+    float FishShoalNeighborhoodAdjustment;
+    static float constexpr MinFishShoalNeighborhoodAdjustment = 0.1f;
+    static float constexpr MaxFishShoalNeighborhoodAdjustment = 200.0f;
+
     float FishShoalSpacingAdjustment;
     static float constexpr MinFishShoalSpacingAdjustment = 0.1f;
     static float constexpr MaxFishShoalSpacingAdjustment = 50.0f;
+
+    float FishShoalCohesionStrengthAdjustment;
+    static float constexpr MinFishShoalCohesionStrengthAdjustment = 0.1f;
+    static float constexpr MaxFishShoalCohesionStrengthAdjustment = 100.0f;
 
     // Misc
 

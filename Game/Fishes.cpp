@@ -891,12 +891,12 @@ void Fishes::UpdateShoaling(
     // TODOHERE: completely unoptimized
 
     float const shoalRadius =
-        // TODOTEST
-        //5.0f * gameParameters.FishSizeMultiplier;
-        50.0f * gameParameters.FishSizeMultiplier;
+        5.0f
+        * gameParameters.FishShoalNeighborhoodAdjustment
+        * gameParameters.FishSizeMultiplier;
 
     float const effectiveShoalSpacing =
-        1.5f // In terms of "fish bodies"
+        1.0f // In terms of "fish bodies"
         * gameParameters.FishShoalSpacingAdjustment
         * gameParameters.FishSizeMultiplier;
 
@@ -907,7 +907,8 @@ void Fishes::UpdateShoaling(
         if (mFishShoals[fish.ShoalId].CurrentMemberCount > 1 // A shoal contains at least one fish
             && fish.ShoalingDecayTimer < 0.05f // Wait for this fish's shoaling cycle
             && fish.PanicCharge < 0.05f // Skip fishes in too much panic
-            && !fish.CruiseSteeringState.has_value()) // Fish is not u-turning
+            && !fish.CruiseSteeringState.has_value() // Fish is not u-turning
+            && !fish.IsInFreefall) // Fish is swimming
         {
             // Convert shoal spacing (bodies) into world
             float const fishShoalSpacing =
@@ -918,6 +919,7 @@ void Fishes::UpdateShoaling(
             // from each one
             //
 
+            // TODO: consider setting vector to zero, calculating just delta here
             vec2f targetPosition = fish.CurrentPosition;
             int nNeighbors = 0;
 
@@ -927,7 +929,9 @@ void Fishes::UpdateShoaling(
                 {
                     vec2f const fishToNeighbor = mFishes[n].CurrentPosition - targetPosition; // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
-                    if (n != f && distance < shoalRadius)
+                    if (n != f // Not the same fish
+                        && distance < shoalRadius // Fish is in the neighborhood
+                        && fishToNeighbor.dot(fish.CurrentRenderVector) >= 0.0f) // Same direction
                     {
                         //
                         // Calculate new position for this fish so that it's exactly at
@@ -936,8 +940,18 @@ void Fishes::UpdateShoaling(
 
                         vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
+                        // TODOTEST
                         targetPosition += fishToNeighborDirection * (distance - fishShoalSpacing);
-
+                        /*
+                        if (distance >= fishShoalSpacing)
+                            targetPosition +=
+                                fishToNeighborDirection
+                                * SmoothStep(0.2f, 4.0f, (distance - fishShoalSpacing));
+                        else
+                            targetPosition +=
+                                fishToNeighborDirection
+                                * -SmoothStep(0.2f, 4.0f, -(distance - fishShoalSpacing));
+*/
                         ++nNeighbors;
                     }
                 }
@@ -950,17 +964,20 @@ void Fishes::UpdateShoaling(
                 size_t leadIndex = (mFishShoals[fish.ShoalId].StartFishIndex == f)
                     ? mFishShoals[fish.ShoalId].StartFishIndex + 1
                     : mFishShoals[fish.ShoalId].StartFishIndex;
-                vec2f const fishToLead = fish.CurrentPosition - mFishes[leadIndex].CurrentPosition;
-                float const distance = fishToLead.length();
+                vec2f const fishToLead = mFishes[leadIndex].CurrentPosition - fish.CurrentPosition;
+                if (fishToLead.dot(fish.CurrentRenderVector) >= 0.0f) // Same direction
+                {
+                    float const distance = fishToLead.length();
 
-                //
-                // Calculate new position for this fish so that it's exactly at
-                // its shoal spacing from the lead
-                //
+                    //
+                    // Calculate new position for this fish so that it's exactly at
+                    // its shoal spacing from the lead
+                    //
 
-                vec2f const fishToLeadDirection = fishToLead.normalise(distance);
+                    vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                targetPosition += fishToLeadDirection * (distance - fishShoalSpacing);
+                    targetPosition += fishToLeadDirection * (distance - fishShoalSpacing);
+                }
             }
 
             //
@@ -969,18 +986,18 @@ void Fishes::UpdateShoaling(
 
             fish.ShoalingVelocity =
                 (targetPosition - fish.CurrentPosition).normalise()
-                * 0.325f; // TODOHERE
+                * 0.65f // Magic number
+                * gameParameters.FishShoalCohesionStrengthAdjustment;
 
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
             // (see plan)
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.017f;
 
+            /*
             // Check if we need to do a u-turn
-            // TODO: we are (correctly) using resultant velocity here for the check, and should do
-            // this everywhere; centralized u-turn check?
-            if ((fish.TargetVelocity.x + fish.ShoalingVelocity.x) * fish.CurrentVelocity.x <= 0.0f)
+            if (fish.TargetVelocity.x * fish.CurrentVelocity.x <= 0.0f)
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
@@ -995,13 +1012,14 @@ void Fishes::UpdateShoaling(
                     fish.TargetVelocity.normalise(),
                     visibleWorld);
             }
+            */
 
             // Start another shoaling cycle
             fish.ShoalingDecayTimer = 1.0f;
         }
 
         // Decay shoaling cycle
-        fish.ShoalingDecayTimer *= 0.95f; // TODOHERE
+        fish.ShoalingDecayTimer *= 0.9f; // TODOHERE
 
         // TODOTEST
         //break;
