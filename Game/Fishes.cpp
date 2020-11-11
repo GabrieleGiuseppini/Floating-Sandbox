@@ -940,18 +940,8 @@ void Fishes::UpdateShoaling(
 
                         vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
-                        // TODOTEST
                         targetPosition += fishToNeighborDirection * (distance - fishShoalSpacing);
-                        /*
-                        if (distance >= fishShoalSpacing)
-                            targetPosition +=
-                                fishToNeighborDirection
-                                * SmoothStep(0.2f, 4.0f, (distance - fishShoalSpacing));
-                        else
-                            targetPosition +=
-                                fishToNeighborDirection
-                                * -SmoothStep(0.2f, 4.0f, -(distance - fishShoalSpacing));
-*/
+
                         ++nNeighbors;
                     }
                 }
@@ -993,7 +983,7 @@ void Fishes::UpdateShoaling(
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
             // (see plan)
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.017f;
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.016f;
 
             /*
             // Check if we need to do a u-turn

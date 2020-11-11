@@ -1255,8 +1255,8 @@ Render:
 						- B: guy's algo:
 							- Clone UpdateShoaling altogether
 							- B1: Movement vector
-							- B2: Collision vector (closest neighbour closer to fish than spacing)
-							- B3: Cohesion vector (furthest neighbour further to fish than spacing)
+							- B2: Collision vector (closest neighbour among those closer to fish than spacing)
+							- B3: Cohesion vector (furthest neighbour among those further from fish than spacing)
 							- The weighted sum of the three + target direction determines new target direction
 								- U-turn check on new target direction
 							- If ok, cleanup:
