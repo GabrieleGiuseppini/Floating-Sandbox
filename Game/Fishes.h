@@ -165,7 +165,7 @@ private:
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , AttractionDecayTimer(0.0f)
-            , ShoalingDecayTimer(0.0f)
+            , ShoalingDecayTimer(personalitySeed) // Randomize a bit the shoaling cycles
             , CruiseSteeringState()
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)

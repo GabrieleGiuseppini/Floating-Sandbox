@@ -1246,12 +1246,12 @@ Render:
 								+ DeltaPos calc'd using new target pos each time
 									+ Sum of deltas of shoaling position is normalized and added with weight to target velocity								
 								+ Add sliders for Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
-									+ Verify: velocity should be proportional to distance
-																
-							- A2: Direction change based on neighbours
-								- Only changes TargetVelocity, not ShoalingVelocity
-								- If at least one in neighborhood - regardless of being visible or not - has direction opposite
+									+ Verify: velocity should be proportional to distance																
+							= A2: Direction change based on neighbours								
+								+ If at least one in neighborhood - regardless of being visible or not - has direction opposite
 								  to fish's, and its last directionChangeTimestamp (set at UTurnEmplace) is > ours, then we turn
+								+ Only changes TargetVelocity, not ShoalingVelocity
+								+ Also calculate new target position
 
 							- In case of lost fish, velocity to lead should be higher
 								- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
