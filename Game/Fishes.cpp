@@ -799,6 +799,9 @@ void Fishes::UpdateDynamics(
                     fish.CurrentRenderVector,
                     currentSimulationTime,
                     1.5f); // Slow turn
+
+                // Remember the time at which we did the last steering
+                fish.LastSteeringSimulationTime = currentSimulationTime;
             }
             else
             {    // Converge direction change at this rate
@@ -828,6 +831,9 @@ void Fishes::UpdateDynamics(
                     fish.CurrentRenderVector,
                     currentSimulationTime,
                     1.5f); // Slow turn
+
+                // Remember the time at which we did the last steering
+                fish.LastSteeringSimulationTime = currentSimulationTime;
             }
             else
             {    // Converge direction change at this rate
@@ -932,19 +938,18 @@ void Fishes::UpdateShoaling(
                 effectiveShoalSpacing
                 * mFishShoals[fish.ShoalId].MaxWorldDimension;
             //
-            // Visit all neighbors and calculate position spaced
+            // Visit all neighbors and calculate resultant position spaced
             // from each one
             //
 
-            // TODO: consider setting vector to zero, calculating just delta here
-            vec2f targetPosition = fish.CurrentPosition;
+            vec2f targetPositionDelta = vec2f::zero();
             int nNeighbors = 0;
 
             for (size_t n = 0; n < mFishes.size(); ++n)
             {
                 if (mFishes[n].ShoalId == fish.ShoalId)
                 {
-                    vec2f const fishToNeighbor = mFishes[n].CurrentPosition - targetPosition; // Vector from fish to neighbor
+                    vec2f const fishToNeighbor = mFishes[n].CurrentPosition - (targetPositionDelta + fish.CurrentPosition); // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
                     if (n != f // Not the same fish
                         && distance < shoalRadius // Fish is in the neighborhood
@@ -957,7 +962,7 @@ void Fishes::UpdateShoaling(
 
                         vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
-                        targetPosition += fishToNeighborDirection * (distance - fishShoalSpacing);
+                        targetPositionDelta += fishToNeighborDirection * (distance - fishShoalSpacing);
 
                         ++nNeighbors;
                     }
@@ -983,9 +988,7 @@ void Fishes::UpdateShoaling(
 
                     vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                    targetPosition +=
-                        fishToLeadDirection
-                        * (distance - fishShoalSpacing);
+                    targetPositionDelta = fishToLeadDirection * (distance - fishShoalSpacing);
                 }
             }
 
@@ -994,7 +997,7 @@ void Fishes::UpdateShoaling(
             //
 
             fish.ShoalingVelocity =
-                (targetPosition - fish.CurrentPosition).normalise()
+                targetPositionDelta.normalise()
                 * 0.026f // Magic number
                 * gameParameters.FishShoalCohesionStrengthAdjustment
                 * gameParameters.FishSpeedAdjustment
@@ -1016,6 +1019,9 @@ void Fishes::UpdateShoaling(
                     fish.CurrentRenderVector,
                     currentSimulationTime,
                     0.75f);
+
+                // Remember the time at which we did the last steering
+                fish.LastSteeringSimulationTime = currentSimulationTime;
 
                 // Find a new target position along the target direction
                 fish.TargetPosition = FindNewCruisingTargetPosition(

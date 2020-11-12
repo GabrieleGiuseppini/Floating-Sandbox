@@ -138,6 +138,7 @@ private:
 
         // Steering state machine
         std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
+        float LastSteeringSimulationTime;
 
         // Freefall state machine
         bool IsInFreefall;
@@ -166,6 +167,7 @@ private:
             , AttractionDecayTimer(0.0f)
             , ShoalingDecayTimer(0.0f)
             , CruiseSteeringState()
+            , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
             , FishesByXIndex(0) // Arbitrary, will be set as needed
         {}

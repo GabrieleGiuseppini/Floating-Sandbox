@@ -1233,7 +1233,7 @@ Render:
 				= Main algo:
 					= Attempts:
 						= A: My own algo:
-							= A1: Fish.ShoalingVelocity = k*DeltaPos
+							+ A1: Fish.ShoalingVelocity = k*DeltaPos
 								+ TargetRenderVector moves to CruiseSteering
 									+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
 								+ Fix bursts
@@ -1243,12 +1243,11 @@ Render:
 								+ No U-turn check with ShoalingVelocity
 									+ ShoalingVelocity is not supposed to change direction
 										+ Remove u-turn code
-								= DeltaPos calc'd using new target pos each time
-									- Sum of deltas of shoaling position is normalized and added with weight to target velocity								
+								+ DeltaPos calc'd using new target pos each time
+									+ Sum of deltas of shoaling position is normalized and added with weight to target velocity								
 								+ Add sliders for Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
 									+ Verify: velocity should be proportional to distance
-								
-								
+																
 							- A2: Direction change based on neighbours
 								- Only changes TargetVelocity, not ShoalingVelocity
 								- If at least one in neighborhood - regardless of being visible or not - has direction opposite
