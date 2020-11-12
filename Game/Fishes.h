@@ -232,6 +232,7 @@ private:
     // Parameters that the calculated values are current with
     float mCurrentFishSizeMultiplier;
     float mCurrentFishSpeedAdjustment;
+    bool mCurrentDoFishShoaling;
 };
 
 }

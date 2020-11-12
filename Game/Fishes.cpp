@@ -41,6 +41,7 @@ Fishes::Fishes(
     , mFishes()
     , mCurrentFishSizeMultiplier(0.0f)
     , mCurrentFishSpeedAdjustment(0.0f)
+    , mCurrentDoFishShoaling(false)
 {
 }
 
@@ -69,6 +70,7 @@ void Fishes::Update(
             {
                 fish.CurrentVelocity *= factor;
                 fish.TargetVelocity *= factor;
+                fish.ShoalingVelocity *= factor;
                 // No need to change render direction, velocity hasn't changed direction
             }
         }
@@ -76,6 +78,21 @@ void Fishes::Update(
         // Update parameters
         mCurrentFishSizeMultiplier = gameParameters.FishSizeMultiplier;
         mCurrentFishSpeedAdjustment = gameParameters.FishSpeedAdjustment;
+    }
+
+    if (mCurrentDoFishShoaling != gameParameters.DoFishShoaling)
+    {
+        // Update shoaling velocity if we're turning off shoaling
+        if (!gameParameters.DoFishShoaling)
+        {
+            for (auto & fish : mFishes)
+            {
+                fish.ShoalingVelocity = vec2f::zero();
+            }
+        }
+
+        // Update parameters
+        mCurrentDoFishShoaling = gameParameters.DoFishShoaling;
     }
 
     //
@@ -906,7 +923,7 @@ void Fishes::UpdateShoaling(
 
         if (mFishShoals[fish.ShoalId].CurrentMemberCount > 1 // A shoal contains at least one fish
             && fish.ShoalingDecayTimer < 0.05f // Wait for this fish's shoaling cycle
-            && fish.PanicCharge < 0.05f // Skip fishes in too much panic
+            && fish.PanicCharge < 0.05f // Skip fishes even in little panic
             && !fish.CruiseSteeringState.has_value() // Fish is not u-turning
             && !fish.IsInFreefall) // Fish is swimming
         {
@@ -966,7 +983,9 @@ void Fishes::UpdateShoaling(
 
                     vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                    targetPosition += fishToLeadDirection * (distance - fishShoalSpacing);
+                    targetPosition +=
+                        fishToLeadDirection
+                        * (distance - fishShoalSpacing);
                 }
             }
 
@@ -976,8 +995,10 @@ void Fishes::UpdateShoaling(
 
             fish.ShoalingVelocity =
                 (targetPosition - fish.CurrentPosition).normalise()
-                * 0.65f // Magic number
-                * gameParameters.FishShoalCohesionStrengthAdjustment;
+                * 0.026f // Magic number
+                * gameParameters.FishShoalCohesionStrengthAdjustment
+                * gameParameters.FishSpeedAdjustment
+                * gameParameters.FishSizeMultiplier;
 
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so

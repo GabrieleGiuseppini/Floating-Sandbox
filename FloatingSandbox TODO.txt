@@ -1237,21 +1237,25 @@ Render:
 								+ TargetRenderVector moves to CruiseSteering
 									+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
 								+ Fix bursts
-								- ShoalingVelocity must scale with GameParameters x 2
-									- Also adjust ShoalingVelocity @ GameParameters' changes
-									- Zero out ShoalingVelocity when fish stops shoaling (via GameParameters)
+								+ ShoalingVelocity must scale with GameParameters x 2
+									+ Also adjust ShoalingVelocity @ GameParameters' changes
+									+ Zero out ShoalingVelocity when fish stops shoaling (via GameParameters)
 								+ No U-turn check with ShoalingVelocity
 									+ ShoalingVelocity is not supposed to change direction
 										+ Remove u-turn code
 								= DeltaPos calc'd using new target pos each time
-									- Sum of deltas of shoaling position is normalized and added with weight to target velocity
-								
+									- Sum of deltas of shoaling position is normalized and added with weight to target velocity								
 								+ Add sliders for Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
 									+ Verify: velocity should be proportional to distance
 								
+								
 							- A2: Direction change based on neighbours
 								- Only changes TargetVelocity, not ShoalingVelocity
+								- If at least one in neighborhood - regardless of being visible or not - has direction opposite
+								  to fish's, and its last directionChangeTimestamp (set at UTurnEmplace) is > ours, then we turn
 
+							- In case of lost fish, velocity to lead should be higher
+								- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
 						- B: guy's algo:
 							- Clone UpdateShoaling altogether
 							- B1: Movement vector
