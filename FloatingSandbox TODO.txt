@@ -1247,33 +1247,49 @@ Render:
 									+ Sum of deltas of shoaling position is normalized and added with weight to target velocity								
 								+ Add sliders for Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
 									+ Verify: velocity should be proportional to distance																
-							= A2: Direction change based on neighbours								
+							+ A2: Direction change based on neighbours								
 								+ If at least one in neighborhood - regardless of being visible or not - has direction opposite
 								  to fish's, and its last directionChangeTimestamp (set at UTurnEmplace) is > ours, then we turn
 								+ Only changes TargetVelocity, not ShoalingVelocity
 								+ Also calculate new target position
-								= Fix mad-uturning with larger radius
+								+ Fix mad-uturning with larger radius
 									+ Add back age limit on own u-turn
+
+							- TODOHERE: Try ours, with changes we did for guy's algo:
+								- First off, commit
+								- No "direction of vision"
+								- New coeff for shoaling cycle
+								- break after u-turn
 
 							- Try with u-turn being just sharp direction change
 
 							- Smaller shoal neighborhood radius?
-							- In case of lost fish, velocity to lead should be higher
-								- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
-						- B: guy's algo:
-							- Clone UpdateShoaling altogether
-							- B1: Movement vector
-							- B2: Collision vector (closest neighbour among those closer to fish than spacing)
-							- B3: Cohesion vector (furthest neighbour among those further from fish than spacing)
-							- The weighted sum of the three + target direction determines new target direction
-								! No shoaling velocity
-								- U-turn check on new target direction
-							- If ok, cleanup:
-								- ShoalingVelocity
+							
+
+						= B: guy's algo:
+							+ Clone UpdateShoaling altogether
+							+ B1: Movement vector
+							+ B2: Collision vector (closest neighbour among those closer to fish than spacing)
+							+ B3: Cohesion vector (furthest neighbour among those further from fish than spacing)
+							+ The weighted sum of the three + target direction determines ShoalingVelocity
+								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect
+								
+
+						- C: hybrid
+							- B1, B2, B3, u-turn check like now
+								- No "ahead" check
+							- Try:
+								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
+									- So we take "statistical" weight
+							- If there's no furthest, go to lead
+
 
 				- Ideas:
-					- Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
+					- In case of lost fish, velocity to lead should be higher
+						- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
+					= Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
+						- We have to do this anyway, as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 					- Smooth also panic's to max of neighbors?
 				= u-turn
 				= Sliders

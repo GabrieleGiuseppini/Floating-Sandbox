@@ -938,6 +938,9 @@ void Fishes::UpdateShoaling(
             float const fishShoalSpacing =
                 effectiveShoalSpacing
                 * mFishShoals[fish.ShoalId].MaxWorldDimension;
+
+            /* TODOTEST: my algo
+
             //
             // Visit all neighbors and calculate resultant position spaced
             // from each one
@@ -996,6 +999,8 @@ void Fishes::UpdateShoaling(
                                 fish.CurrentPosition,
                                 fish.TargetVelocity.normalise(),
                                 visibleWorld);
+
+                            break;
                         }
                     }
                 }
@@ -1039,6 +1044,106 @@ void Fishes::UpdateShoaling(
                 * gameParameters.FishSpeedAdjustment
                 * gameParameters.FishSizeMultiplier;
 
+            */
+
+            // TODOTEST: guy's algo
+
+            vec2f velocityHomogeneityVector = vec2f::zero();
+
+            ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
+            float closestFishDistance = std::numeric_limits<float>::max();
+            ElementIndex furthestFishIndex = NoneElementIndex; // Furthest neighbour among those that are further from fish than spacing
+            float furthestFishDistance = std::numeric_limits<float>::lowest();
+
+            for (size_t n = 0; n < mFishes.size(); ++n)
+            {
+                if (mFishes[n].ShoalId == fish.ShoalId)
+                {
+                    Fish const & neighbor = mFishes[n];
+
+                    vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
+                    float const distance = fishToNeighbor.length();
+                    if (n != f // Not the same fish
+                        && distance < shoalRadius) // Neighbor is in the neighborhood
+                    {
+                        // Update velocity homogeneity
+                        velocityHomogeneityVector += neighbor.CurrentVelocity;
+
+                        // Update closest and furthest
+                        if (distance < fishShoalSpacing)
+                        {
+                            // Too close wrt spacing
+                            if (distance < closestFishDistance)
+                            {
+                                closestFishIndex = n;
+                                closestFishDistance = distance;
+                            }
+                        }
+                        else
+                        {
+                            // Too far wrt spacing
+                            if (distance > fishShoalSpacing)
+                            {
+                                furthestFishIndex = n;
+                                furthestFishDistance = distance;
+                            }
+                        }
+
+                        // Check if should do a u-turn based on this neighbor
+                        float constexpr UTurnSpeed = 2.5f;
+                        if (neighbor.TargetVelocity.x * fish.TargetVelocity.x < 0.0f // Intents are opposite
+                            && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 2.0f // This fish hasn't u-turned recently
+                            && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
+                        {
+                            // Change target velocity to match neighbor's
+                            fish.TargetVelocity = neighbor.TargetVelocity;
+
+                            // Perform a cruise steering
+                            fish.CruiseSteeringState.emplace(
+                                fish.CurrentVelocity,
+                                fish.CurrentRenderVector,
+                                currentSimulationTime,
+                                UTurnSpeed);
+
+                            // Remember the time at which we did the last steering
+                            fish.LastSteeringSimulationTime = currentSimulationTime;
+
+                            // Find a new target position along the target direction
+                            fish.TargetPosition = FindNewCruisingTargetPosition(
+                                fish.CurrentPosition,
+                                fish.TargetVelocity.normalise(),
+                                visibleWorld);
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // If we've decided we're gonna u-turn, then stop here
+            if (fish.CruiseSteeringState.has_value())
+                continue;
+
+            //
+            // Apply correction vectors
+            //
+
+            vec2f collisionCorrectionVector = (closestFishIndex != NoneElementIndex)
+                ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition) // Go away from neighbor
+                : vec2f::zero();
+
+            vec2f cohesionCorrectionVector = (furthestFishIndex != NoneElementIndex)
+                ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition) // Go towards neighbor
+                : vec2f::zero();
+
+            fish.ShoalingVelocity =
+                velocityHomogeneityVector.normalise() * 0.2f * gameParameters.FishShoalCohesionStrengthAdjustment
+                + collisionCorrectionVector.normalise() * 0.2f * gameParameters.FishShoalCohesionStrengthAdjustment
+                + cohesionCorrectionVector.normalise() * 0.2f * gameParameters.FishShoalCohesionStrengthAdjustment;
+
+            ///////////////////////////////////////////////////////////
+
+
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
@@ -1050,8 +1155,8 @@ void Fishes::UpdateShoaling(
         }
 
         // Decay shoaling cycle
-        //fish.ShoalingDecayTimer *= 0.9f; // TODOHERE
-        fish.ShoalingDecayTimer *= 0.9925f; // TODOHERE
+        //fish.ShoalingDecayTimer *= 0.9925f; // TODO: works with mine
+        fish.ShoalingDecayTimer *= 0.975f; // TODO: works with guy's
     }
 }
 
