@@ -914,6 +914,7 @@ void Fishes::UpdateShoaling(
     // TODOHERE: completely unoptimized
 
     float const shoalRadius =
+        // TODOHERE: 1.0 is too high, causes mad u-turning
         1.0f
         * gameParameters.FishShoalNeighborhoodAdjustment
         * gameParameters.FishSizeMultiplier;
@@ -972,8 +973,10 @@ void Fishes::UpdateShoaling(
                         }
 
                         // Check if should do a u-turn based on this neighbor
+                        float constexpr UTurnSpeed = 2.5f;
                         if (neighbor.TargetVelocity.x * fish.TargetVelocity.x < 0.0f // Intents are opposite
-                            && (currentSimulationTime - fish.LastSteeringSimulationTime) > 5.0f) // This fish hasn't u-turned recently
+                            && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 2.0f // This fish hasn't u-turned recently
+                            && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
                         {
                             // Change target velocity to match neighbor's
                             fish.TargetVelocity = neighbor.TargetVelocity;
@@ -983,9 +986,7 @@ void Fishes::UpdateShoaling(
                                 fish.CurrentVelocity,
                                 fish.CurrentRenderVector,
                                 currentSimulationTime,
-                                // TODOTEST
-                                //0.75f);
-                                0.4f);
+                                UTurnSpeed);
 
                             // Remember the time at which we did the last steering
                             fish.LastSteeringSimulationTime = currentSimulationTime;
@@ -999,6 +1000,10 @@ void Fishes::UpdateShoaling(
                     }
                 }
             }
+
+            // If we've decided we're gonna u-turn, then stop here
+            if (fish.CruiseSteeringState.has_value())
+                continue;
 
             if (nNeighbors == 0)
             {
@@ -1020,19 +1025,8 @@ void Fishes::UpdateShoaling(
                     vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
                     targetPositionDelta = fishToLeadDirection * (distance - fishShoalSpacing);
-
-                    //
-                    // Check if should do a u-turn based on the lead
-                    //
-
-                    // TODOHERE
-                    // TODO: really? if we decide we do not, then move the "skip" to above
                 }
             }
-
-            // If we've decided we're gonna u-turn, then stop here
-            if (fish.CruiseSteeringState.has_value())
-                continue;
 
             //
             // Calculate shoaling velocity as weighted vector to target position
@@ -1058,9 +1052,6 @@ void Fishes::UpdateShoaling(
         // Decay shoaling cycle
         //fish.ShoalingDecayTimer *= 0.9f; // TODOHERE
         fish.ShoalingDecayTimer *= 0.9925f; // TODOHERE
-
-        // TODOTEST
-        //break;
     }
 }
 

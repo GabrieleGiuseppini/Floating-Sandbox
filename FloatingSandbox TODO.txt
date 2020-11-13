@@ -1252,7 +1252,12 @@ Render:
 								  to fish's, and its last directionChangeTimestamp (set at UTurnEmplace) is > ours, then we turn
 								+ Only changes TargetVelocity, not ShoalingVelocity
 								+ Also calculate new target position
+								= Fix mad-uturning with larger radius
+									+ Add back age limit on own u-turn
 
+							- Try with u-turn being just sharp direction change
+
+							- Smaller shoal neighborhood radius?
 							- In case of lost fish, velocity to lead should be higher
 								- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
 						- B: guy's algo:
@@ -1261,6 +1266,7 @@ Render:
 							- B2: Collision vector (closest neighbour among those closer to fish than spacing)
 							- B3: Cohesion vector (furthest neighbour among those further from fish than spacing)
 							- The weighted sum of the three + target direction determines new target direction
+								! No shoaling velocity
 								- U-turn check on new target direction
 							- If ok, cleanup:
 								- ShoalingVelocity
