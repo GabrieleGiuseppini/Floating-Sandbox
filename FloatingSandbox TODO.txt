@@ -1255,15 +1255,14 @@ Render:
 								+ Fix mad-uturning with larger radius
 									+ Add back age limit on own u-turn
 
-							- TODOHERE: Try ours, with changes we did for guy's algo:
-								- First off, commit
-								- No "direction of vision"
-								- New coeff for shoaling cycle
-								- break after u-turn
+							= Try ours, with changes we did for guy's algo:
+								+ First off, commit
+								+ No "direction of vision"								
+								+ break after u-turn
+								- TODOHERE: Find right spacing
+									- See if need to tie neighborhood to spacing now, i.e. should it be changed proportionally? 
+										- Find right neighborhood adjustment
 
-							- Try with u-turn being just sharp direction change
-
-							- Smaller shoal neighborhood radius?
 							
 
 						= B: guy's algo:
@@ -1285,13 +1284,17 @@ Render:
 
 
 				- Ideas:
+					- Try with u-turn being just sharp direction change
+					- Smaller shoal neighborhood radius?
 					- In case of lost fish, velocity to lead should be higher
 						- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
+						- Also do u-turn if direction to lead requires it
+							- Again, resultant? TODO
 					= Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						- We have to do this anyway, as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 					- Smooth also panic's to max of neighbors?
-				= u-turn
+					- Derive neighborhood from spacing
 				= Sliders
 					- SettingsDialog: rename "Shoaling"
 					- See if we still need Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
@@ -1314,6 +1317,7 @@ Render:
 		- Test:
 			- 0-depth ocean
 		- Cleanup:
+			- ShoalSpacing should be from fish species database
 			- Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
 				- Goals:
 					- Ensure first cruise of ship is "long enough", i.e. that fish doesn't u-turn right away

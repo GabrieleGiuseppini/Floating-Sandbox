@@ -920,7 +920,9 @@ void Fishes::UpdateShoaling(
         * gameParameters.FishSizeMultiplier;
 
     float const effectiveShoalSpacing =
-        1.0f // In terms of "fish bodies"
+        // TODOTEST
+        //1.0f // In terms of "fish bodies"
+        2.0f // TODOTEST: works better with hybrid
         * gameParameters.FishShoalSpacingAdjustment
         * gameParameters.FishSizeMultiplier;
 
@@ -939,7 +941,7 @@ void Fishes::UpdateShoaling(
                 effectiveShoalSpacing
                 * mFishShoals[fish.ShoalId].MaxWorldDimension;
 
-            /* TODOTEST: my algo
+            // TODOTEST: my algo
 
             //
             // Visit all neighbors and calculate resultant position spaced
@@ -960,20 +962,16 @@ void Fishes::UpdateShoaling(
                     if (n != f // Not the same fish
                         && distance < shoalRadius) // Neighbor is in the neighborhood
                     {
-                        // Check if neighbor should contribute to shoaling velocity
-                        if (fishToNeighbor.dot(fish.CurrentRenderVector) >= 0.0f) // Same direction
-                        {
-                            //
-                            // Calculate new position for this fish so that it's exactly at
-                            // its shoal spacing from this neighbor
-                            //
+                        //
+                        // Calculate new position for this fish so that it's exactly at
+                        // its shoal spacing from this neighbor
+                        //
 
-                            vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
+                        vec2f const fishToNeighborDirection = fishToNeighbor.normalise(distance);
 
-                            targetPositionDelta += fishToNeighborDirection * (distance - fishShoalSpacing);
+                        targetPositionDelta += fishToNeighborDirection * (distance - fishShoalSpacing);
 
-                            ++nNeighbors;
-                        }
+                        ++nNeighbors;
 
                         // Check if should do a u-turn based on this neighbor
                         float constexpr UTurnSpeed = 2.5f;
@@ -1018,19 +1016,27 @@ void Fishes::UpdateShoaling(
                     ? mFishShoals[fish.ShoalId].StartFishIndex + 1
                     : mFishShoals[fish.ShoalId].StartFishIndex;
                 vec2f const fishToLead = mFishes[leadIndex].CurrentPosition - fish.CurrentPosition;
-                if (fishToLead.dot(fish.CurrentRenderVector) >= 0.0f) // Same direction
-                {
-                    //
-                    // Calculate new position for this fish so that it's exactly at
-                    // its shoal spacing from the lead
-                    //
 
-                    float const distance = fishToLead.length();
+                //
+                // Calculate new position for this fish so that it's exactly at
+                // its shoal spacing from the lead
+                //
 
-                    vec2f const fishToLeadDirection = fishToLead.normalise(distance);
+                float const distance = fishToLead.length();
 
-                    targetPositionDelta = fishToLeadDirection * (distance - fishShoalSpacing);
-                }
+                vec2f const fishToLeadDirection = fishToLead.normalise(distance);
+
+                // TODOHERE: brakes a fish; add again direction of vision check
+                targetPositionDelta =
+                    (fishToLeadDirection * (distance - fishShoalSpacing)).normalise()
+                    * 0.1f; // Magic weight // TODOHERE
+            }
+            else
+            {
+                // Scale and normalise
+                targetPositionDelta =
+                    targetPositionDelta.normalise()
+                    * 0.026f; // Magic weight
             }
 
             //
@@ -1038,16 +1044,22 @@ void Fishes::UpdateShoaling(
             //
 
             fish.ShoalingVelocity =
-                targetPositionDelta.normalise()
-                * 0.026f // Magic number
+                targetPositionDelta
                 * gameParameters.FishShoalCohesionStrengthAdjustment
                 * gameParameters.FishSpeedAdjustment
                 * gameParameters.FishSizeMultiplier;
 
-            */
+            // Do not override converge rate
+            // TODOTEST: temporarily we do; we have to make it so
+            // its "default rate" is the "normal" rate (find it above), which gets converged to
+            // (see plan)
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.016f;
+
+            // Start another shoaling cycle
+            fish.ShoalingDecayTimer = 1.0f;
 
             // TODOTEST: guy's algo
-
+            /*
             vec2f velocityHomogeneityVector = vec2f::zero();
 
             ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
@@ -1141,9 +1153,6 @@ void Fishes::UpdateShoaling(
                 + collisionCorrectionVector.normalise() * 0.2f * gameParameters.FishShoalCohesionStrengthAdjustment
                 + cohesionCorrectionVector.normalise() * 0.2f * gameParameters.FishShoalCohesionStrengthAdjustment;
 
-            ///////////////////////////////////////////////////////////
-
-
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
             // its "default rate" is the "normal" rate (find it above), which gets converged to
@@ -1152,6 +1161,7 @@ void Fishes::UpdateShoaling(
 
             // Start another shoaling cycle
             fish.ShoalingDecayTimer = 1.0f;
+            */
         }
 
         // Decay shoaling cycle
