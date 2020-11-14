@@ -1254,17 +1254,10 @@ Render:
 								+ Also calculate new target position
 								+ Fix mad-uturning with larger radius
 									+ Add back age limit on own u-turn
-
-							= Try ours, with changes we did for guy's algo:
+							+ Try ours, with changes we did for guy's algo:
 								+ First off, commit
 								+ No "direction of vision"								
-								+ break after u-turn
-								- TODOHERE: Find right spacing
-									- See if need to tie neighborhood to spacing now, i.e. should it be changed proportionally? 
-										- Find right neighborhood adjustment
-
-							
-
+								+ break after u-turn							
 						= B: guy's algo:
 							+ Clone UpdateShoaling altogether
 							+ B1: Movement vector
@@ -1273,6 +1266,7 @@ Render:
 							+ The weighted sum of the three + target direction determines ShoalingVelocity
 								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect
 								
+						- TODOHERE: compare A with B
 
 						- C: hybrid
 							- B1, B2, B3, u-turn check like now

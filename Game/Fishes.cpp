@@ -1026,10 +1026,7 @@ void Fishes::UpdateShoaling(
 
                 vec2f const fishToLeadDirection = fishToLead.normalise(distance);
 
-                // TODOHERE: brakes a fish; add again direction of vision check
-                targetPositionDelta =
-                    (fishToLeadDirection * (distance - fishShoalSpacing)).normalise()
-                    * 0.1f; // Magic weight // TODOHERE
+                targetPositionDelta = fishToLeadDirection * (distance - fishShoalSpacing);
             }
             else
             {
@@ -1044,7 +1041,8 @@ void Fishes::UpdateShoaling(
             //
 
             fish.ShoalingVelocity =
-                targetPositionDelta
+                targetPositionDelta.normalise()
+                * 0.026f // Magic weight
                 * gameParameters.FishShoalCohesionStrengthAdjustment
                 * gameParameters.FishSpeedAdjustment
                 * gameParameters.FishSizeMultiplier;
