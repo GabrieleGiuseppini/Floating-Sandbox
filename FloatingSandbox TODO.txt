@@ -1232,7 +1232,7 @@ Render:
 
 				= Main algo:
 					= Attempts:
-						= A: My own algo:
+						+ A: My own algo:
 							+ A1: Fish.ShoalingVelocity = k*DeltaPos
 								+ TargetRenderVector moves to CruiseSteering
 									+ Auto-Smoothing always sets CurrentRenderVector to CurrentVelocity.normalise()
@@ -1258,7 +1258,7 @@ Render:
 								+ First off, commit
 								+ No "direction of vision"								
 								+ break after u-turn							
-						= B: guy's algo:
+						+ B: guy's algo:
 							+ Clone UpdateShoaling altogether
 							+ B1: Movement vector
 							+ B2: Collision vector (closest neighbour among those closer to fish than spacing)
@@ -1266,16 +1266,15 @@ Render:
 							+ The weighted sum of the three + target direction determines ShoalingVelocity
 								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect
 								
-						- TODOHERE: compare A with B
-
-						- C: hybrid
+						= C: hybrid
 							- B1, B2, B3, u-turn check like now
 								- No "ahead" check
 							- Try:
 								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
 									- So we take "statistical" weight
 							- If there's no furthest, go to lead
-
+								- Velocity depending on speed
+								- Also do u-turn if lead's current position is behind our current velocity
 
 				- Ideas:
 					- Try with u-turn being just sharp direction change

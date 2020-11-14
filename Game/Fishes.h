@@ -189,7 +189,17 @@ private:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
-    void UpdateShoaling(
+    void UpdateShoalingA(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
+
+    void UpdateShoalingB(
+        float currentSimulationTime,
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
+
+    void UpdateShoalingC(
         float currentSimulationTime,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
