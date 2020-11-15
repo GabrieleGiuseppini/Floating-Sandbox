@@ -1286,7 +1286,7 @@ void Fishes::UpdateShoalingC(
                             // Too close wrt spacing
                             if (distance < closestFishDistance)
                             {
-                                closestFishIndex = n;
+                                closestFishIndex = static_cast<ElementIndex>(n);
                                 closestFishDistance = distance;
                             }
                         }
@@ -1295,7 +1295,7 @@ void Fishes::UpdateShoalingC(
                             // Too far wrt spacing
                             if (distance > furthestFishDistance)
                             {
-                                furthestFishIndex = n;
+                                furthestFishIndex = static_cast<ElementIndex>(n);
                                 furthestFishDistance = distance;
                             }
                         }
@@ -1306,32 +1306,25 @@ void Fishes::UpdateShoalingC(
                             && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 2.0f // This fish hasn't u-turned recently
                             && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
                         {
-                            /* TODOTEST
-                            // Change target velocity to match neighbor's
-                            fish.TargetVelocity = neighbor.TargetVelocity;
+                            // Calculate new target position:
+                            //  - X: same side as neighbor's (target velocity)
+                            //  - Y: obeying species' band
+                            // TODOHERE: change FindNewCruisingTargetPosition to do the same as this
+                            fish.TargetPosition = ChoosePosition(
+                                fish.CurrentPosition
+                                    + vec2f(
+                                        neighbor.TargetVelocity.normalise().x * visibleWorld.Width,
+                                        -5.0f -std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(mFishShoals[fish.ShoalId].Species.OceanDepth, 15.0f))),
+                                visibleWorld.Width / 4.0f, // x variance
+                                5.0f); // y variance
 
-                            // Perform a cruise steering
-                            fish.CruiseSteeringState.emplace(
-                                fish.CurrentVelocity,
-                                fish.CurrentRenderVector,
-                                currentSimulationTime,
-                                UTurnSpeed);
-
-                            // Remember the time at which we did the last steering
-                            fish.LastSteeringSimulationTime = currentSimulationTime;
-
-                            // Find a new target position along the target direction
-                            fish.TargetPosition = FindNewCruisingTargetPosition(
-                                fish.CurrentPosition,
-                                fish.TargetVelocity.normalise(),
-                                visibleWorld);
-                                */
-
-                                // Find a new target position along the neighbor's direction
+                            /*
+                            // Find a new target position along the neighbor's direction
                             fish.TargetPosition = FindNewCruisingTargetPosition(
                                 fish.CurrentPosition,
                                 neighbor.TargetVelocity.normalise(),
                                 visibleWorld);
+                            */
 
                             // Change target velocity to get to target position
                             fish.TargetVelocity = MakeCuisingVelocity(neighbor.TargetVelocity.normalise(), mFishShoals[fish.ShoalId].Species, fish.PersonalitySeed, gameParameters);
@@ -1420,18 +1413,8 @@ vec2f Fishes::FindNewCruisingTargetPosition(
     vec2f const & newDirection,
     VisibleWorld const & visibleWorld)
 {
-    // Maximize the presence of fish in the visible world:
-    // if the direction is sending the fish away from the center,
-    // move a little; if the direction is sending the fish towards
-    // the center, move more
-    // TODOTEST
-    ////float const movementMagnitude = (visibleWorld.Center.x - currentPosition.x) * newDirection.x < 0.0f
-    ////    ? visibleWorld.Width / 6.0f
-    ////    : visibleWorld.Width;
-    float const movementMagnitude = visibleWorld.Width;
-
     return ChoosePosition(
-        currentPosition + newDirection * movementMagnitude,
+        currentPosition + newDirection * visibleWorld.Width,
         visibleWorld.Width / 4.0f, // x variance
         5.0f); // y variance
 }

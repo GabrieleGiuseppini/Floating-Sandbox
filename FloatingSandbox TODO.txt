@@ -253,8 +253,6 @@ Render:
 		= Fishes (*)
 			- Changelist
 
-		- Check "chicken sandbox" settings directory to repro crash
-		- Check "foodbar" settings directory to repro crash
 		- Check issue with ship having water material that breaks
 		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
 		- See why log diagnostics is not written
@@ -1267,14 +1265,14 @@ Render:
 								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect
 								
 						= C: hybrid
-							- B1, B2, B3, u-turn check like now
-								- No "ahead" check
-							- Try:
-								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
-									- So we take "statistical" weight
+							+ B1, B2, B3, u-turn check like now
+								+ No "ahead" check
 							- If there's no furthest, go to lead
 								- Velocity depending on speed
 								- Also do u-turn if lead's current position is behind our current velocity
+							- Try:
+								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
+									- So we take "statistical" weight
 
 				- Ideas:
 					- Try with u-turn being just sharp direction change
