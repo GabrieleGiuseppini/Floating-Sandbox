@@ -189,17 +189,7 @@ private:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
-    void UpdateShoalingA(
-        float currentSimulationTime,
-        GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
-
-    void UpdateShoalingB(
-        float currentSimulationTime,
-        GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
-
-    void UpdateShoalingC(
+    void UpdateShoaling(
         float currentSimulationTime,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
@@ -214,6 +204,7 @@ private:
     inline static vec2f FindNewCruisingTargetPosition(
         vec2f const & currentPosition,
         vec2f const & newDirection,
+        FishSpecies const & species,
         VisibleWorld const & visibleWorld);
 
     inline static vec2f MakeCuisingVelocity(

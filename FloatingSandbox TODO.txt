@@ -498,6 +498,8 @@ Render:
 			- Test
 			- Meta: <asked>
 	- New ships:
+		- Check out e-mailed ships:
+			- From Kazindel texture designer on Nov 15, to floating.sandbox.g2
 		- Check out Architect Creations from FS server
 		- Ships:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
@@ -1268,24 +1270,21 @@ Render:
 							+ B1, B2, B3, u-turn check like now
 								+ No "ahead" check
 							- If there's no furthest, go to lead
-								- Velocity depending on speed
+								- Velocity depending on distance
+									- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
 								- Also do u-turn if lead's current position is behind our current velocity
 							- Try:
 								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
 									- So we take "statistical" weight
 
 				- Ideas:
+					- Derive neighborhood radius from spacing
 					- Try with u-turn being just sharp direction change
-					- Smaller shoal neighborhood radius?
-					- In case of lost fish, velocity to lead should be higher
-						- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
-						- Also do u-turn if direction to lead requires it
-							- Again, resultant? TODO
+					- Try smaller shoal neighborhood radius
 					= Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						- We have to do this anyway, as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 					- Smooth also panic's to max of neighbors?
-					- Derive neighborhood from spacing
 				= Sliders
 					- SettingsDialog: rename "Shoaling"
 					- See if we still need Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
