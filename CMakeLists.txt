@@ -4,6 +4,18 @@ if (POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
 endif (POLICY CMP0048)
 
+if (POLICY CMP0082)
+	# Run install rules in specified order
+	cmake_policy(SET CMP0082 NEW)
+endif (POLICY CMP0082)
+
+if (POLICY CMP0087)
+	# Allow generator expressions in install
+	cmake_policy(SET CMP0087 NEW)
+endif (POLICY CMP0087)
+
+###################################################
+
 project (FloatingSandbox)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -250,3 +262,7 @@ endif(MSVC)
 ####################################################
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Install" CACHE PATH "..." FORCE)
+
+# User-defined
+DefineUserPostInstall()
+

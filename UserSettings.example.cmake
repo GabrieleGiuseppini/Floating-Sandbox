@@ -12,3 +12,8 @@ set(SFML_DIR "${SDK_ROOT}/SFML")
 set(GTEST_DIR "${REPOS_ROOT}/googletest")
 set(PICOJSON_DIR "${SDK_ROOT}/PicoJSON")
 set(BENCHMARK_ROOT_DIR "${SDK_ROOT}/benchmark")
+
+# Define macro that creates post-install actions
+macro(DefineUserPostInstall)
+  message(STATUS "No user-defined post-install actions")
+endmacro()
