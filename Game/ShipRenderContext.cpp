@@ -816,8 +816,8 @@ void ShipRenderContext::UploadVectors(
     float lengthAdjustment,
     vec4f const & color)
 {
-    static float const CosAlphaLeftRight = cos(-2.f * Pi<float> / 8.f);
-    static float const SinAlphaLeft = sin(-2.f * Pi<float> / 8.f);
+    static float const CosAlphaLeftRight = std::cos(-2.f * Pi<float> / 8.f);
+    static float const SinAlphaLeft = std::sin(-2.f * Pi<float> / 8.f);
     static float const SinAlphaRight = -SinAlphaLeft;
 
     static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
@@ -1828,7 +1828,7 @@ void ShipRenderContext::RenderPrepareHighlights(RenderParameters const & /*rende
                 glBufferData(GL_ARRAY_BUFFER, mHighlightVertexBuffers[i].size() * sizeof(HighlightVertex), mHighlightVertexBuffers[i].data(), GL_DYNAMIC_DRAW);
                 CheckOpenGLError();
 
-                mHighlightVBOAllocatedVertexSize = mVectorArrowVertexBuffer.size();
+                mHighlightVBOAllocatedVertexSize = mHighlightVertexBuffers[i].size();
             }
             else
             {

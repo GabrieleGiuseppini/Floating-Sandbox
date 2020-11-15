@@ -76,13 +76,13 @@ std::optional<std::string> UIPreferencesManager::LoadPreferredLanguage()
     auto const preferencesRootObject = LoadPreferencesRootObject();
     if (preferencesRootObject.has_value())
     {
-        if (auto it = preferencesRootObject->find("language");
+        if (auto const it = preferencesRootObject->find("language");
             it != preferencesRootObject->end() && it->second.is<std::string>())
         {
             return it->second.get<std::string>();
         }
     }
-    
+
     return std::nullopt;
 }
 
@@ -343,7 +343,7 @@ void UIPreferencesManager::LoadPreferences()
             if (auto globalMuteIt = preferencesRootObject->find("global_mute");
                 globalMuteIt != preferencesRootObject->end() && globalMuteIt->second.is<bool>())
             {
-                bool const isSoundMuted = globalMuteIt->second.get<bool>();                
+                bool const isSoundMuted = globalMuteIt->second.get<bool>();
                 AudioController::SetGlobalMute(isSoundMuted);
                 mGameController->NotifySoundMuted(isSoundMuted);
             }
