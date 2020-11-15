@@ -92,7 +92,7 @@ MainApp::MainApp()
 
 bool MainApp::OnInit()
 {
-    if(!wxApp::OnInit())
+    if (!wxApp::OnInit())
         return false;
 
     //
@@ -159,27 +159,40 @@ bool MainApp::OnInit()
 #endif
 
 
-    //
-    // Initialize wxWidgets
-    //
-
-    // Image handlers
-    wxInitAllImageHandlers();
-
-    // Language
-    auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
-    mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage);
-
-
-    //
-    // Create frame
-    //
-
     try
     {
+        //
+        // Initialize wxWidgets
+        //
+
+        // Image handlers
+        wxInitAllImageHandlers();
+
+        // Language
+        auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
+        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage);
+
+        //
+        // Create frame
+        //
+
         mMainFrame = new MainFrame(this, *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
+
+        //
+        // Initialize secret typing mappings
+        //
+
+        mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingOpenDebugWindow, mMainFrame));
+        mSecretTypingMappings.emplace_back("FALLBACK", std::bind(&MainFrame::OnSecretTypingLoadFallbackShip, mMainFrame));
+
+        //
+        // Run
+        //
+
+        return true;
+
     }
     catch (std::exception const & e)
     {
@@ -188,21 +201,6 @@ bool MainApp::OnInit()
         // Abort
         return false;
     }
-
-
-    //
-    // Initialize secret typing mappings
-    //
-
-    mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingOpenDebugWindow, mMainFrame));
-    mSecretTypingMappings.emplace_back("FALLBACK", std::bind(&MainFrame::OnSecretTypingLoadFallbackShip, mMainFrame));
-
-
-    //
-    // Run
-    //
-
-    return true;
 }
 
 int MainApp::FilterEvent(wxEvent & event)

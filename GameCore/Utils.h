@@ -424,7 +424,14 @@ namespace Utils
         std::stringstream ss;
         ss << file.rdbuf();
 
-        return ss.str();
+        std::string content = ss.str();
+
+        // For some reason, the preferences file sometimes is made of all null characters
+        content.erase(
+            std::find(content.begin(), content.end(), '\0'),
+            content.end());
+
+        return content;
     }
 
     inline std::string LoadTextStream(std::istream const & stream)
