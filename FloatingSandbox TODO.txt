@@ -1229,8 +1229,7 @@ Render:
 				+ Do shoaling only if GameParameters::DoFishShoaling is set
 				+ UpdateDynamics(): maintain sorted Xs in vector at position update
 				+ Apply fish's max dimension to shoal spacing (which is in terms of bodies)
-
-				= Main algo:
+				+ Main algo:
 					= Attempts:
 						+ A: My own algo:
 							+ A1: Fish.ShoalingVelocity = k*DeltaPos
@@ -1264,26 +1263,27 @@ Render:
 							+ B2: Collision vector (closest neighbour among those closer to fish than spacing)
 							+ B3: Cohesion vector (furthest neighbour among those further from fish than spacing)
 							+ The weighted sum of the three + target direction determines ShoalingVelocity
-								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect
-								
-						= C: hybrid
+								! We do ShoalingVelocity instead of TargetVelocity to avoid spring effect		
+						+ C: hybrid
 							+ B1, B2, B3, u-turn check like now
 								+ No "ahead" check
-							= If there's no furthest, go to lead
-								= Velocity depending on distance
-								= Also do u-turn if lead's current position is behind our current velocity
+							+ If there's no furthest, go to lead
+								+ Velocity depending on distance
+								+ Also do u-turn if lead's current position is behind our current velocity
 
 				- Ideas:
+					- Try smaller shoaling spacing
 					- Derive neighborhood radius from spacing
 						- Then nuke one of the adjustments
+					- Converge ConvergenceRate to its default at each UpdateDynamics() after using it
+						- We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
+					- Smooth also panic's to max of neighbors?
+
 					- Try with u-turn being just sharp direction change
 					- Try smaller shoal neighborhood radius
-					= Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
-					- If "shoaling heartbeats" generates unpleasant pulsing: converge ConvergenceRate to its default at each UpdateDynamics() after using it
-						- We have to do this anyway, as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
-					- Smooth also panic's to max of neighbors?
+					X Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 				= Sliders
-					- SettingsDialog: rename "Shoaling"
+					- SettingsDialog: rename "Shoaling" to something else
 					- See if we still need Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
 
 				- Test:

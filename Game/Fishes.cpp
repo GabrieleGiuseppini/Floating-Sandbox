@@ -928,7 +928,8 @@ void Fishes::UpdateShoaling(
         * gameParameters.FishShoalSpacingAdjustment
         * gameParameters.FishSizeMultiplier;
 
-    for (size_t f = 0; f < mFishes.size(); ++f)
+    ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
+    for (ElementIndex f = 0; f < fishCount; ++f)
     {
         Fish & fish = mFishes[f];
         FishShoal const & fishShoal = mFishShoals[fish.ShoalId];
@@ -949,7 +950,7 @@ void Fishes::UpdateShoaling(
             ElementIndex furthestFishIndex = NoneElementIndex; // Furthest neighbour among those that are further from fish than spacing
             float furthestFishDistance = std::numeric_limits<float>::lowest();
 
-            for (size_t n = 0; n < mFishes.size(); ++n)
+            for (ElementIndex n = 0; n < fishCount; ++n)
             {
                 if (mFishes[n].ShoalId == fish.ShoalId)
                 {
@@ -966,7 +967,7 @@ void Fishes::UpdateShoaling(
                             // Too close wrt spacing
                             if (distance < closestFishDistance)
                             {
-                                closestFishIndex = static_cast<ElementIndex>(n);
+                                closestFishIndex = n;
                                 closestFishDistance = distance;
                             }
                         }
@@ -975,7 +976,7 @@ void Fishes::UpdateShoaling(
                             // Too far wrt spacing
                             if (distance > furthestFishDistance)
                             {
-                                furthestFishIndex = static_cast<ElementIndex>(n);
+                                furthestFishIndex = n;
                                 furthestFishDistance = distance;
                             }
                         }
@@ -1021,6 +1022,7 @@ void Fishes::UpdateShoaling(
             // Make sure we've found at least one neighbor
             if (furthestFishIndex == NoneElementIndex
                 && closestFishIndex == NoneElementIndex
+                && f != fishShoal.StartFishIndex // This fish is not the lead
                 && !fish.CruiseSteeringState.has_value()) // We haven't decided to u-turn
             {
                 //
@@ -1029,12 +1031,9 @@ void Fishes::UpdateShoaling(
                 //
 
                 // Pick lead
-                assert(fishShoal.CurrentMemberCount >= 2);
-                size_t leadIndex = (fishShoal.StartFishIndex == f)
-                    ? fishShoal.StartFishIndex + 1
-                    : fishShoal.StartFishIndex;
+                Fish const & lead = mFishes[fishShoal.StartFishIndex];
 
-                vec2f const fishToLeadVector = mFishes[leadIndex].CurrentPosition - fish.CurrentPosition;
+                vec2f const fishToLeadVector = lead.CurrentPosition - fish.CurrentPosition;
                 float const distance = fishToLeadVector.length();
                 vec2f const fishToLeadDirection = fishToLeadVector.normalise(distance);
 
@@ -1056,20 +1055,20 @@ void Fishes::UpdateShoaling(
                         fish.CurrentVelocity,
                         fish.CurrentRenderVector,
                         currentSimulationTime,
-                        1.5f);
+                        0.5f);
 
-                    // Remember the time at which we did the last steering
-                    fish.LastSteeringSimulationTime = currentSimulationTime;
+                    // Do not set last steering time, as we want to be able to re-turn when
+                    // we get back into the shoal
                 }
-                else
-                {
-                    // No need to u-turn...
-                    // ...run faster towards lead depending on distance
-                    fish.ShoalingVelocity =
-                        fishToLeadDirection
-                        * (1.8f + 2.0f * SmoothStep(0.0, 30.0, distance))
-                        * gameParameters.FishShoalCohesionStrengthAdjustment;
-                }
+
+                // Set shoaling velocity to match
+                fish.ShoalingVelocity =
+                    fishToLeadDirection
+                    * 1.8f
+                    * gameParameters.FishShoalCohesionStrengthAdjustment;
+
+                // Add some panic, depending on distance
+                fish.PanicCharge = 0.4f * SmoothStep(0.0, 30.0, distance);
             }
             else
             {
@@ -1113,6 +1112,8 @@ void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
             species,
             startFishIndex,
             species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y);
+
+        startFishIndex += static_cast<ElementCount>(species.ShoalSize);
     }
 }
 
