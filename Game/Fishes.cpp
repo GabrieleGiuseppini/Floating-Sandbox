@@ -947,7 +947,8 @@ void Fishes::UpdateShoaling(
                     fishShoal.Species.ShoalRadius
                     * gameParameters.FishShoalRadiusAdjustment
                     * fishShoal.MaxWorldDimension
-                    * gameParameters.FishSizeMultiplier;
+                    * gameParameters.FishSizeMultiplier
+                    + fish.PersonalitySeed; // Add some randomness to prevent regular patterns
 
                 // Calculate shoal spacing as fraction of shoal radius
                 float const fishShoalSpacing = 0.7f * fishShoalRadius;
@@ -970,7 +971,7 @@ void Fishes::UpdateShoaling(
                         vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
                         float const distance = fishToNeighbor.length();
                         if (n != f // Not the same fish
-                            && distance < fishShoalRadius + fish.PersonalitySeed) // Neighbor is in the neighborhood (...hence a neighbor)
+                            && distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
                         {
                             // Update closest and furthest
                             if (distance < fishShoalSpacing)
