@@ -1272,11 +1272,11 @@ Render:
 								+ Also do u-turn if lead's current position is behind our current velocity
 
 				= Ideas:
-					= Derive neighborhood radius from spacing
+					+ Derive neighborhood radius from spacing
 						+ Then nuke one of the adjustments
-						- Merge calculations
-
+						+ Merge calculations
 					- Randomize u-turn a bit more using other fish's personality seed
+
 					- Converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						- We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 					- Smooth also panic's to max of neighbors?
