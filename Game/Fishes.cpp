@@ -197,10 +197,11 @@ void Fishes::DisturbAt(
             // Check whether the fish has been disturbed
             if (distance < effectiveRadius) // Within radius
             {
-                // Enter panic mode with a charge decreasing with distance
+                // Enter panic mode with a charge decreasing with distance, and a
+                // tiny bit being random
                 float constexpr MinPanic = 0.25f;
                 fish.PanicCharge = std::max(
-                    MinPanic + (1.0f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)),
+                    MinPanic + (0.8f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)) + 0.2f * fish.PersonalitySeed,
                     fish.PanicCharge);
 
                 // Don't change target position, we'll return to it when panic is over
@@ -265,7 +266,7 @@ void Fishes::AttractAt(
             {
                 // Enter panic mode with a charge decreasing with distance
                 fish.PanicCharge = std::max(
-                    0.3f + 0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)), // At least 0.3 - immediate panic once in radius
+                    0.3f + 0.7f * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)), // At least 0.3 immediate panic once in radius
                     fish.PanicCharge);
 
                 // Calculate new direction, randomly in the area of food
@@ -934,7 +935,7 @@ void Fishes::UpdateShoaling(
 
         if (fishShoal.CurrentMemberCount > 1 // A shoal contains at least one fish
             && fish.ShoalingDecayTimer < 0.02f // Wait for this fish's shoaling cycle
-            && fish.PanicCharge < 0.05f // Skip fishes even in little panic
+            && fish.PanicCharge < 0.02f // Skip fishes even in little panic
             && !fish.CruiseSteeringState.has_value() // Fish is not u-turning
             && !fish.IsInFreefall) // Fish is swimming
         {
@@ -985,7 +986,7 @@ void Fishes::UpdateShoaling(
                         // Check if should do a u-turn based on this neighbor
                         float constexpr UTurnSpeed = 2.5f;
                         if (neighbor.TargetVelocity.x * fish.TargetVelocity.x < 0.0f // Intents are opposite
-                            && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 2.0f // This fish hasn't u-turned recently
+                            && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 3.0f // This fish hasn't u-turned recently
                             && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
                         {
                             vec2f const neighborDirection = neighbor.TargetVelocity.normalise();

@@ -1275,26 +1275,22 @@ Render:
 					+ Derive neighborhood radius from spacing
 						+ Then nuke one of the adjustments
 						+ Merge calculations
-					- Randomize u-turn a bit more using other fish's personality seed
 
 					- Converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						- We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
+
 					- Smooth also panic's to max of neighbors?
 
-					- Try with u-turn being just sharp direction change
 					- Try smaller shoal neighborhood radius
-					X Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 				= Sliders
 					- SettingsDialog: rename "Shoaling" to something else
 					+ See if we still need Shoal Neighborhood Radius Adjustment
 					- See if we still need FishShoalCohesionStrengthAdjustment
 
-				- Test:
-					- When one fish turns because of reaching target, other fish in same swarm will also turn
-						- Randomly a little bit later?
 				- Cleanup:
 					- Optimize
 						- Buffer rearc?
+
 			- AABB around ships' frontiers, so that fish AI's avoid them
 				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 				- Fishes::Update(.) takes AllShipAABBs
@@ -1303,9 +1299,9 @@ Render:
 				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
 					- If really bad, consider nuking initial Fishes initialization
 				+ Also take OceanFloor
-			- Should fish follow waves on surface of water?
 		- Test:
 			- 0-depth ocean
+			- All sliders
 		- Cleanup:
 			- ShoalSpacing should be from fish species database
 			- Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
@@ -1317,7 +1313,8 @@ Render:
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
 		- Misc:
-			- More fishes
+			- More fish species
+				- Also more textures per species
 			= SettingsDialog:
 				+ Number of fish
 				+ Fish size multiplier
