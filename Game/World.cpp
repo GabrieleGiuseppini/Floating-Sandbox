@@ -32,7 +32,7 @@ World::World(
     , mStorm(*this, mGameEventHandler)
     , mWind(mGameEventHandler)
     , mClouds()
-    , mOceanSurface(mGameEventHandler)
+    , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
 {
@@ -680,7 +680,7 @@ void World::ApplyLightning(
 void World::TriggerTsunami(GameParameters const & gameParameters)
 {
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
-    mFishes.TriggerWidespreadPanic(gameParameters);
+    DisturbOcean(gameParameters);
 }
 
 void World::TriggerStorm()

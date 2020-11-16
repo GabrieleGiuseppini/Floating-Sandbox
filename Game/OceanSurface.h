@@ -22,7 +22,9 @@ class OceanSurface
 {
 public:
 
-    OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+    OceanSurface(
+        World & parentWorld,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
     void Update(
         float currentSimulationTime,
@@ -191,6 +193,7 @@ private:
 
 private:
 
+    World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
     // What we store for each sample

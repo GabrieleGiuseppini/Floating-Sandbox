@@ -111,6 +111,11 @@ public:
             gameParameters);
     }
 
+    inline void DisturbOcean(GameParameters const & gameParameters)
+    {
+        mFishes.TriggerWidespreadPanic(gameParameters);
+    }
+
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();

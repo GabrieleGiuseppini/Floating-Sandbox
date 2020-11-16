@@ -1280,8 +1280,9 @@ Render:
 					+ SettingsDialog: rename "Shoaling" to something else
 					+ See if we still need Shoal Neighborhood Radius Adjustment
 					+ Nuke FishShoalCohesionStrengthAdjustment
+				+ Tsunami: no panic when auto-triggered
 
-				- Tsunami: no panic when auto-triggered
+				- See if can randomize spacing
 
 				- Cleanup:
 					- Optimize
@@ -1299,7 +1300,7 @@ Render:
 			- 0-depth ocean
 			- All sliders
 		- Cleanup:
-			= ShoalSpacing should be from fish species database
+			+ ShoalSpacing should be from fish species database
 			+ Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
 				+ Ensure first cruise of ship is "long enough", i.e. that fish doesn't u-turn right away
 			+ Larger field for spawning and next position?
@@ -1308,8 +1309,8 @@ Render:
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
 		- Misc:
+			- More textures per species
 			- More fish species
-				- Also more textures per species
 			= SettingsDialog:
 				+ Number of fish
 				+ Fish size multiplier
