@@ -954,6 +954,10 @@ void Fishes::UpdateShoaling(
             // Calculate shoal spacing as fraction of shoal radius
             float const fishShoalSpacing = 0.7f * fishShoalRadius;
 
+            //
+            // Visit all fishes in same shoal
+            //
+
             ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
             float closestFishDistance = std::numeric_limits<float>::max();
             ElementIndex furthestFishIndex = NoneElementIndex; // Furthest neighbour among those that are further from fish than spacing
@@ -968,7 +972,7 @@ void Fishes::UpdateShoaling(
                     vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
                     if (n != f // Not the same fish
-                        && distance < fishShoalRadius) // Neighbor is in the neighborhood
+                        && distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
                     {
                         // Update closest and furthest
                         if (distance < fishShoalSpacing)
