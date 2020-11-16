@@ -2287,7 +2287,7 @@ public:
                 {
                     mGameController->AttractFish(
                         inputState.MousePosition,
-                        1.5f); // Radius
+                        2.0f); // Radius
 
                     break;
                 }
@@ -2296,7 +2296,7 @@ public:
                 {
                     mGameController->ScareFish(
                         inputState.MousePosition,
-                        1.0f); // Radius
+                        1.5f); // Radius
 
                     break;
                 }

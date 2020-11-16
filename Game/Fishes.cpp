@@ -201,7 +201,9 @@ void Fishes::DisturbAt(
                 // tiny bit being random
                 float constexpr MinPanic = 0.25f;
                 fish.PanicCharge = std::max(
-                    MinPanic + (0.8f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance)) + 0.2f * fish.PersonalitySeed,
+                    MinPanic
+                    + (0.8f - MinPanic) * (1.0f - SmoothStep(0.0f, effectiveRadius, distance))
+                    + 0.2f * fish.PersonalitySeed,
                     fish.PanicCharge);
 
                 // Don't change target position, we'll return to it when panic is over
@@ -628,12 +630,11 @@ void Fishes::UpdateDynamics(
             fish.IsInFreefall = false;
 
             // Drag velocity down
-            // TODOHERE: only if >
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
             float constexpr MaxVelocityMagnitude = 1.3f; // Magic number
             fish.TargetVelocity =
                 fish.CurrentVelocity.normalise(currentVelocityMagnitude)
-                * MaxVelocityMagnitude * SmoothStep(0.0f, MaxVelocityMagnitude, currentVelocityMagnitude);
+                * Clamp(currentVelocityMagnitude, 0.0f, MaxVelocityMagnitude);
             fish.CurrentDirectionSmoothingConvergenceRate = 0.05f; // Converge to dragged velocity at this rate
 
             // Note: no need to change render vector, velocity direction has not changed
