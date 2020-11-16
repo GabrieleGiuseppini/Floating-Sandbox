@@ -1275,9 +1275,8 @@ Render:
 					+ Derive neighborhood radius from spacing
 						+ Then nuke one of the adjustments
 						+ Merge calculations
-
-					- Converge ConvergenceRate to its default at each UpdateDynamics() after using it
-						- We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
+					+ Converge ConvergenceRate to its default at each UpdateDynamics() after using it
+						+ We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 
 					- Smooth also panic's to max of neighbors?
 

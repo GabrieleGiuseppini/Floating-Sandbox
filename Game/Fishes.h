@@ -124,6 +124,7 @@ private:
         vec2f CurrentRenderVector;
 
         float CurrentDirectionSmoothingConvergenceRate; // Rate of converge of velocity and direction
+        static float constexpr IdealDirectionSmoothingConvergenceRate = 0.016f;
 
         float CurrentTailProgressPhase;
 
@@ -161,7 +162,7 @@ private:
             , ShoalingVelocity(vec2f::zero())
             , TargetVelocity(CurrentVelocity)
             , CurrentRenderVector(targetVelocity.normalise())
-            , CurrentDirectionSmoothingConvergenceRate(0.0f) // Arbitrary, will be set as needed
+            , CurrentDirectionSmoothingConvergenceRate(IdealDirectionSmoothingConvergenceRate)
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , AttractionDecayTimer(0.0f)

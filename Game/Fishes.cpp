@@ -592,6 +592,11 @@ void Fishes::UpdateDynamics(
 
             // Make RenderVector match current velocity
             fish.CurrentRenderVector = fish.CurrentVelocity.normalise();
+
+            // Converge smoothing convergence rate to its ideal value
+            fish.CurrentDirectionSmoothingConvergenceRate =
+                Fish::IdealDirectionSmoothingConvergenceRate
+                + (fish.CurrentDirectionSmoothingConvergenceRate - Fish::IdealDirectionSmoothingConvergenceRate) * 0.98f;
         }
 
         //
@@ -846,7 +851,7 @@ void Fishes::UpdateDynamics(
             }
             else
             {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.02f;
+                fish.CurrentDirectionSmoothingConvergenceRate = 0.08f;
             }
         }
 
@@ -1091,12 +1096,6 @@ void Fishes::UpdateShoaling(
                     collisionCorrectionVector.normalise() * 1.2f * gameParameters.FishShoalCohesionStrengthAdjustment
                     + cohesionCorrectionVector.normalise() * 1.8f * gameParameters.FishShoalCohesionStrengthAdjustment;
             }
-
-            // Do not override converge rate
-            // TODOTEST: temporarily we do; we have to make it so
-            // its "default rate" is the "normal" rate (find it above), which gets converged to
-            // (see plan)
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.016f;
 
             // Start another shoaling cycle
             fish.ShoalingDecayTimer = 1.0f;
