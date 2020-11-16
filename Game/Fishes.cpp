@@ -1076,8 +1076,7 @@ void Fishes::UpdateShoaling(
                 // Set shoaling velocity to match
                 fish.ShoalingVelocity =
                     fishToLeadDirection
-                    * 1.8f
-                    * gameParameters.FishShoalCohesionStrengthAdjustment;
+                    * 1.8f; // Magic number
 
                 // Add some panic, depending on distance
                 fish.PanicCharge = std::max(
@@ -1099,8 +1098,8 @@ void Fishes::UpdateShoaling(
                     : vec2f::zero();
 
                 fish.ShoalingVelocity =
-                    collisionCorrectionVector.normalise() * 1.2f * gameParameters.FishShoalCohesionStrengthAdjustment
-                    + cohesionCorrectionVector.normalise() * 1.8f * gameParameters.FishShoalCohesionStrengthAdjustment;
+                    collisionCorrectionVector.normalise() * 1.2f
+                    + cohesionCorrectionVector.normalise() * 1.8f;
             }
 
             // Start another shoaling cycle

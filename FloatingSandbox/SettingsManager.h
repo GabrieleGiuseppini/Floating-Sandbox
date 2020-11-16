@@ -69,7 +69,6 @@ enum class GameSettings : size_t
     FishSpeedAdjustment,
     DoFishShoaling,
     FishShoalRadiusAdjustment,
-    FishShoalCohesionStrengthAdjustment,
 
     // Misc
     OceanFloorTerrain,

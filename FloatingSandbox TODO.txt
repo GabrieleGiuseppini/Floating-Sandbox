@@ -1270,18 +1270,16 @@ Render:
 							+ If there's no furthest, go to lead
 								+ Velocity depending on distance
 								+ Also do u-turn if lead's current position is behind our current velocity
-				= Ideas:
+				+ Ideas:
 					+ Derive neighborhood radius from spacing
 						+ Then nuke one of the adjustments
 						+ Merge calculations
 					+ Converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						+ We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
-					- Try smaller shoal neighborhood radius
-
-				= Sliders
-					- SettingsDialog: rename "Shoaling" to something else
+				+ Sliders
+					+ SettingsDialog: rename "Shoaling" to something else
 					+ See if we still need Shoal Neighborhood Radius Adjustment
-					- See if we still need FishShoalCohesionStrengthAdjustment
+					+ Nuke FishShoalCohesionStrengthAdjustment
 
 				- Cleanup:
 					- Optimize

@@ -141,7 +141,6 @@ private:
     SliderControl<float> * mFishSpeedAdjustmentSlider;
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
-    SliderControl<float> * mFishShoalCohesionStrengthAdjustmentSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;

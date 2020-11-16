@@ -485,11 +485,6 @@ public:
     float GetMinFishShoalRadiusAdjustment() const override { return GameParameters::MinFishShoalRadiusAdjustment; }
     float GetMaxFishShoalRadiusAdjustment() const override { return GameParameters::MaxFishShoalRadiusAdjustment; }
 
-    float GetFishShoalCohesionStrengthAdjustment() const override { return mGameParameters.FishShoalCohesionStrengthAdjustment; }
-    void SetFishShoalCohesionStrengthAdjustment(float value) override { mGameParameters.FishShoalCohesionStrengthAdjustment = value; }
-    float GetMinFishShoalCohesionStrengthAdjustment() const override { return GameParameters::MinFishShoalCohesionStrengthAdjustment; }
-    float GetMaxFishShoalCohesionStrengthAdjustment() const override { return GameParameters::MaxFishShoalCohesionStrengthAdjustment; }
-
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

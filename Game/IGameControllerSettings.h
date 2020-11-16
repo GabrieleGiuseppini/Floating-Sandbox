@@ -180,9 +180,6 @@ struct IGameControllerSettings
     virtual float GetFishShoalRadiusAdjustment() const = 0;
     virtual void SetFishShoalRadiusAdjustment(float value) = 0;
 
-    virtual float GetFishShoalCohesionStrengthAdjustment() const = 0;
-    virtual void SetFishShoalCohesionStrengthAdjustment(float value) = 0;
-
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

@@ -72,7 +72,6 @@ GameParameters::GameParameters()
     , FishSpeedAdjustment(1.0f)
     , DoFishShoaling(true)
     , FishShoalRadiusAdjustment(1.0f)
-    , FishShoalCohesionStrengthAdjustment(1.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

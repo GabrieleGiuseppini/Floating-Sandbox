@@ -370,10 +370,6 @@ struct GameParameters
     static float constexpr MinFishShoalRadiusAdjustment = 0.1f;
     static float constexpr MaxFishShoalRadiusAdjustment = 100.0f;
 
-    float FishShoalCohesionStrengthAdjustment;
-    static float constexpr MinFishShoalCohesionStrengthAdjustment = 0.1f;
-    static float constexpr MaxFishShoalCohesionStrengthAdjustment = 100.0f;
-
     // Misc
 
     float SeaDepth;
