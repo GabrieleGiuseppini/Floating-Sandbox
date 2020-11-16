@@ -146,7 +146,7 @@ void Storm::Update(
         float const upProgress = mCurrentStormProgress;
 
         // Wind
-        float const windSmoothProgress = SmoothStep(WindUpStart, WindUpEnd, upProgress);
+		float const windSmoothProgress = LinearStep(WindUpStart, WindUpEnd, upProgress);
         mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
@@ -177,7 +177,7 @@ void Storm::Update(
         float const downProgress = mCurrentStormProgress;
 
         // Wind
-        float const windSmoothProgress = 1.0f - SmoothStep(WindDownStart, WindDownEnd, downProgress);
+        float const windSmoothProgress = 1.0f - LinearStep(WindDownStart, WindDownEnd, downProgress);
         mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
