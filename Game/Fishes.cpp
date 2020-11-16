@@ -277,7 +277,7 @@ void Fishes::AttractAt(
                 vec2f panicDirection = ((worldCoordinates + randomDelta) - fishHeadPosition).normalise();
 
                 // Make sure direction is not too steep
-                float constexpr MinXComponent = 0.0f;
+                float constexpr MinXComponent = 0.3f;
                 if (panicDirection.x >= 0.0f && panicDirection.x < MinXComponent)
                 {
                     panicDirection.x = MinXComponent;
@@ -610,7 +610,7 @@ void Fishes::UpdateDynamics(
 
         // Run freefall state machine
         if (!fish.IsInFreefall
-            && fish.CurrentPosition.y > oceanY + 4.0f) // Higher watermark, so that jump is more pronounced
+            && fish.CurrentPosition.y > oceanY + 2.0f) // Higher watermark, so that jump is more pronounced
         {
             // Enter freefall
             fish.IsInFreefall = true;
@@ -622,12 +622,13 @@ void Fishes::UpdateDynamics(
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
         else if (fish.IsInFreefall
-            && fish.CurrentPosition.y <= oceanY)
+            && fish.CurrentPosition.y <= oceanY - 2.0f)
         {
             // Leave freefall
             fish.IsInFreefall = false;
 
             // Drag velocity down
+            // TODOHERE: only if >
             float const currentVelocityMagnitude = fish.CurrentVelocity.length();
             float constexpr MaxVelocityMagnitude = 1.3f; // Magic number
             fish.TargetVelocity =
@@ -866,7 +867,7 @@ void Fishes::UpdateDynamics(
 
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 5.0f
+            depth < 4.0f
             && fish.PanicCharge <= 0.3f
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
@@ -1099,6 +1100,11 @@ void Fishes::UpdateShoaling(
 
             // Start another shoaling cycle
             fish.ShoalingDecayTimer = 1.0f;
+        }
+        else
+        {
+            // Zero out any residual shoaling
+            fish.ShoalingVelocity = vec2f::zero();
         }
 
         // Decay shoaling cycle

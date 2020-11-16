@@ -2582,7 +2582,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
             // Do shoaling
             {
                 mDoFishShoalingCheckBox = new wxCheckBox(fishesBox, wxID_ANY,
-                    _("Shoaling"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                    _("Enable Shoaling"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                 mDoFishShoalingCheckBox->SetToolTip(_("Enables or disables shoaling behavior in fishes."));
                 mDoFishShoalingCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
