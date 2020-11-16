@@ -1023,8 +1023,7 @@ void Fishes::UpdateShoaling(
             // Make sure we've found at least one neighbor
             if (furthestFishIndex == NoneElementIndex
                 && closestFishIndex == NoneElementIndex
-                && f != fishShoal.StartFishIndex // This fish is not the lead
-                && !fish.CruiseSteeringState.has_value()) // We haven't decided to u-turn
+                && f != fishShoal.StartFishIndex) // This fish is not the lead
             {
                 //
                 // We're too far from anyone else...
