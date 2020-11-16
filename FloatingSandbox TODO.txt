@@ -1269,16 +1269,13 @@ Render:
 						= C: hybrid
 							+ B1, B2, B3, u-turn check like now
 								+ No "ahead" check
-							- If there's no furthest, go to lead
-								- Velocity depending on distance
-									- alpha * Smoothstep(0.0, 30.0, distance from target spacing) // distance < 0 => 0.0
-								- Also do u-turn if lead's current position is behind our current velocity
-							- Try:
-								- U-turn based on comparison of velocityHomogeneityVector with fish.CurrentVelocity
-									- So we take "statistical" weight
+							= If there's no furthest, go to lead
+								= Velocity depending on distance
+								= Also do u-turn if lead's current position is behind our current velocity
 
 				- Ideas:
 					- Derive neighborhood radius from spacing
+						- Then nuke one of the adjustments
 					- Try with u-turn being just sharp direction change
 					- Try smaller shoal neighborhood radius
 					= Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)

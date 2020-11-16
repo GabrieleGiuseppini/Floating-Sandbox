@@ -942,7 +942,7 @@ void Fishes::UpdateShoaling(
             // Convert shoal spacing (bodies) into world
             float const fishShoalSpacing =
                 effectiveShoalSpacing
-                * mFishShoals[fish.ShoalId].MaxWorldDimension;
+                * fishShoal.MaxWorldDimension;
 
             ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
             float closestFishDistance = std::numeric_limits<float>::max();
@@ -986,15 +986,17 @@ void Fishes::UpdateShoaling(
                             && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 2.0f // This fish hasn't u-turned recently
                             && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
                         {
+                            vec2f const neighborDirection = neighbor.TargetVelocity.normalise();
+
                             // Find a new target position along the neighbor's direction
                             fish.TargetPosition = FindNewCruisingTargetPosition(
                                 fish.CurrentPosition,
-                                neighbor.TargetVelocity.normalise(),
+                                neighborDirection,
                                 fishShoal.Species,
                                 visibleWorld);
 
                             // Change target velocity to get to target position
-                            fish.TargetVelocity = MakeCuisingVelocity(neighbor.TargetVelocity.normalise(), fishShoal.Species, fish.PersonalitySeed, gameParameters);
+                            fish.TargetVelocity = MakeCuisingVelocity(neighborDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
 
                             // Perform a cruise steering
                             fish.CruiseSteeringState.emplace(
@@ -1016,21 +1018,77 @@ void Fishes::UpdateShoaling(
             if (fish.CruiseSteeringState.has_value())
                 continue;
 
-            //
-            // Apply correction vectors
-            //
+            // Make sure we've found at least one neighbor
+            if (furthestFishIndex == NoneElementIndex
+                && closestFishIndex == NoneElementIndex
+                && !fish.CruiseSteeringState.has_value()) // We haven't decided to u-turn
+            {
+                //
+                // We're too far from anyone else...
+                // ...go towards lead then!
+                //
 
-            vec2f collisionCorrectionVector = (closestFishIndex != NoneElementIndex)
-                ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition) // Go away from neighbor
-                : vec2f::zero();
+                // Pick lead
+                assert(fishShoal.CurrentMemberCount >= 2);
+                size_t leadIndex = (fishShoal.StartFishIndex == f)
+                    ? fishShoal.StartFishIndex + 1
+                    : fishShoal.StartFishIndex;
 
-            vec2f cohesionCorrectionVector = (furthestFishIndex != NoneElementIndex)
-                ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition) // Go towards neighbor
-                : vec2f::zero();
+                vec2f const fishToLeadVector = mFishes[leadIndex].CurrentPosition - fish.CurrentPosition;
+                float const distance = fishToLeadVector.length();
+                vec2f const fishToLeadDirection = fishToLeadVector.normalise(distance);
 
-            fish.ShoalingVelocity =
-                collisionCorrectionVector.normalise() * 1.2f * gameParameters.FishShoalCohesionStrengthAdjustment
-                + cohesionCorrectionVector.normalise() * 1.8f * gameParameters.FishShoalCohesionStrengthAdjustment;
+                // Check whether we need to turn - we do if lead is currently behind us
+                if (fish.TargetVelocity.x * fishToLeadDirection.x < 0.0f)
+                {
+                    // Find a new target position towards the lead
+                    fish.TargetPosition = FindNewCruisingTargetPosition(
+                        fish.CurrentPosition,
+                        fishToLeadDirection,
+                        fishShoal.Species,
+                        visibleWorld);
+
+                    // Change target velocity to get to target position
+                    fish.TargetVelocity = MakeCuisingVelocity(fishToLeadDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
+
+                    // Perform a cruise steering
+                    fish.CruiseSteeringState.emplace(
+                        fish.CurrentVelocity,
+                        fish.CurrentRenderVector,
+                        currentSimulationTime,
+                        1.5f);
+
+                    // Remember the time at which we did the last steering
+                    fish.LastSteeringSimulationTime = currentSimulationTime;
+                }
+                else
+                {
+                    // No need to u-turn...
+                    // ...run faster towards lead depending on distance
+                    fish.ShoalingVelocity =
+                        fishToLeadDirection
+                        * (1.8f + 2.0f * SmoothStep(0.0, 30.0, distance))
+                        * gameParameters.FishShoalCohesionStrengthAdjustment;
+                }
+            }
+            else
+            {
+                //
+                // Apply correction vectors
+                //
+
+                vec2f collisionCorrectionVector = (closestFishIndex != NoneElementIndex)
+                    ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition) // Go away from neighbor
+                    : vec2f::zero();
+
+                vec2f cohesionCorrectionVector = (furthestFishIndex != NoneElementIndex)
+                    ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition) // Go towards neighbor
+                    : vec2f::zero();
+
+                fish.ShoalingVelocity =
+                    collisionCorrectionVector.normalise() * 1.2f * gameParameters.FishShoalCohesionStrengthAdjustment
+                    + cohesionCorrectionVector.normalise() * 1.8f * gameParameters.FishShoalCohesionStrengthAdjustment;
+            }
 
             // Do not override converge rate
             // TODOTEST: temporarily we do; we have to make it so
