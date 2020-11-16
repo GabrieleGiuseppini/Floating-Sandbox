@@ -1076,7 +1076,8 @@ void Fishes::UpdateShoaling(
                 // Set shoaling velocity to match
                 fish.ShoalingVelocity =
                     fishToLeadDirection
-                    * 1.8f; // Magic number
+                    * 1.8f // Magic number
+                    * gameParameters.FishSpeedAdjustment;
 
                 // Add some panic, depending on distance
                 fish.PanicCharge = std::max(
@@ -1089,17 +1090,17 @@ void Fishes::UpdateShoaling(
                 // Apply correction vectors
                 //
 
-                vec2f collisionCorrectionVector = (closestFishIndex != NoneElementIndex)
-                    ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition) // Go away from neighbor
+                vec2f collisionCorrectionVelocity = (closestFishIndex != NoneElementIndex)
+                    ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.2f // Go away from neighbor
                     : vec2f::zero();
 
-                vec2f cohesionCorrectionVector = (furthestFishIndex != NoneElementIndex)
-                    ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition) // Go towards neighbor
+                vec2f cohesionCorrectionVelocity = (furthestFishIndex != NoneElementIndex)
+                    ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.8f // Go towards neighbor
                     : vec2f::zero();
 
                 fish.ShoalingVelocity =
-                    collisionCorrectionVector.normalise() * 1.2f
-                    + cohesionCorrectionVector.normalise() * 1.8f;
+                    (collisionCorrectionVelocity + cohesionCorrectionVelocity)
+                    * gameParameters.FishSpeedAdjustment;
             }
 
             // Start another shoaling cycle
@@ -1152,14 +1153,20 @@ vec2f Fishes::FindNewCruisingTargetPosition(
     FishSpecies const & species,
     VisibleWorld const & visibleWorld)
 {
-    //  - X: one full screen along direction
-    //  - Y: obeying species' band
-    vec2f const averageTargetPosition = vec2f(
-        currentPosition.x + newDirection.x * visibleWorld.Width,
-        species.OceanDepth);
+    // X:
+    //      - if currentPosition.x with direction.x goes towards center X: go by one full screen
+    //      - else: go by less than a screen
+    // Y:
+    //      - obey species' band
+
+    float const averageTargetPositionX = (visibleWorld.Center.x - currentPosition.x) * newDirection.x >= 0
+        ? currentPosition.x + newDirection.x * visibleWorld.Width
+        : currentPosition.x + newDirection.x * visibleWorld.Width / 4.0f;
 
     return ChoosePosition(
-        averageTargetPosition,
+        vec2f(
+            averageTargetPositionX,
+            species.OceanDepth),
         visibleWorld.Width * PositionXVarianceFactor, // x variance
         PositionYVariance); // y variance
 }
