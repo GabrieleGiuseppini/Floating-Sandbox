@@ -20,6 +20,7 @@ struct FishSpecies
     vec2f WorldSize; // World coordinate units
 
     size_t ShoalSize;
+    float ShoalRadius; // In "bodies"
     float OceanDepth;
     float BasalSpeed;
 
@@ -35,6 +36,7 @@ struct FishSpecies
         std::string const & name,
         vec2f const & worldSize,
         size_t shoalSize,
+        float shoalRadius,
         float oceanDepth,
         float basalSpeed,
         float tailX,
@@ -45,6 +47,7 @@ struct FishSpecies
         : Name(name)
         , WorldSize(worldSize)
         , ShoalSize(shoalSize)
+        , ShoalRadius(shoalRadius)
         , OceanDepth(oceanDepth)
         , BasalSpeed(basalSpeed)
         , TailX(tailX)

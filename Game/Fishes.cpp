@@ -929,11 +929,6 @@ void Fishes::UpdateShoaling(
 {
     // TODOHERE: completely unoptimized
 
-    float const basisShoalRadius =
-        3.5f // In terms of "fish bodies"
-        * gameParameters.FishShoalRadiusAdjustment
-        * gameParameters.FishSizeMultiplier;
-
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
     for (ElementIndex f = 0; f < fishCount; ++f)
     {
@@ -946,10 +941,12 @@ void Fishes::UpdateShoaling(
             && !fish.CruiseSteeringState.has_value() // Fish is not u-turning
             && !fish.IsInFreefall) // Fish is swimming
         {
-            // Convert shoal radius (bodies) into world
+            // Calculate shoal radius in world coordinates
             float const fishShoalRadius =
-                basisShoalRadius
-                * fishShoal.MaxWorldDimension;
+                fishShoal.Species.ShoalRadius
+                * gameParameters.FishShoalRadiusAdjustment
+                * fishShoal.MaxWorldDimension
+                * gameParameters.FishSizeMultiplier;
 
             // Calculate shoal spacing as fraction of shoal radius
             float const fishShoalSpacing = 0.7f * fishShoalRadius;
@@ -972,7 +969,7 @@ void Fishes::UpdateShoaling(
                     vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
                     if (n != f // Not the same fish
-                        && distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
+                        && distance < fishShoalRadius + fish.PersonalitySeed) // Neighbor is in the neighborhood (...hence a neighbor)
                     {
                         // Update closest and furthest
                         if (distance < fishShoalSpacing)

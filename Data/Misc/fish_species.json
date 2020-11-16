@@ -6,6 +6,7 @@
 	"world_size_y": 0.15,
 
 	"shoal_size": 16,
+	"shoal_radius": 3.0,
 	"ocean_depth": 30.0,
 	"basal_speed": 0.1536,
 	"tail_x": 0.7,
@@ -22,6 +23,7 @@
 	"world_size_y": 0.15,
 
 	"shoal_size": 4,
+	"shoal_radius": 3.5,
 	"ocean_depth": 50.0,
 	"basal_speed": 0.1536,
 	"tail_x": 0.7,
@@ -38,6 +40,7 @@
 	"world_size_y": 1.0,
 
 	"shoal_size": 1,
+	"shoal_radius": 7.0,
 	"ocean_depth": 150.0,
 	"basal_speed": 0.68608,
 	"tail_x": 0.77,
@@ -54,6 +57,7 @@
 	"world_size_y": 0.1,
 
 	"shoal_size": 32,
+	"shoal_radius": 3.5,
 	"ocean_depth": 20.0,
 	"basal_speed": 0.1536,
 	"tail_x": 0.7,
