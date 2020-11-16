@@ -480,15 +480,10 @@ public:
     bool GetDoFishShoaling() const override { return mGameParameters.DoFishShoaling; }
     void SetDoFishShoaling(bool value) override { mGameParameters.DoFishShoaling = value; }
 
-    float GetFishShoalNeighborhoodAdjustment() const override { return mGameParameters.FishShoalNeighborhoodAdjustment; }
-    void SetFishShoalNeighborhoodAdjustment(float value) override { mGameParameters.FishShoalNeighborhoodAdjustment = value; }
-    float GetMinFishShoalNeighborhoodAdjustment() const override { return GameParameters::MinFishShoalNeighborhoodAdjustment; }
-    float GetMaxFishShoalNeighborhoodAdjustment() const override { return GameParameters::MaxFishShoalNeighborhoodAdjustment; }
-
-    float GetFishShoalSpacingAdjustment() const override { return mGameParameters.FishShoalSpacingAdjustment; }
-    void SetFishShoalSpacingAdjustment(float value) override { mGameParameters.FishShoalSpacingAdjustment = value; }
-    float GetMinFishShoalSpacingAdjustment() const override { return GameParameters::MinFishShoalSpacingAdjustment; }
-    float GetMaxFishShoalSpacingAdjustment() const override { return GameParameters::MaxFishShoalSpacingAdjustment; }
+    float GetFishShoalRadiusAdjustment() const override { return mGameParameters.FishShoalRadiusAdjustment; }
+    void SetFishShoalRadiusAdjustment(float value) override { mGameParameters.FishShoalRadiusAdjustment = value; }
+    float GetMinFishShoalRadiusAdjustment() const override { return GameParameters::MinFishShoalRadiusAdjustment; }
+    float GetMaxFishShoalRadiusAdjustment() const override { return GameParameters::MaxFishShoalRadiusAdjustment; }
 
     float GetFishShoalCohesionStrengthAdjustment() const override { return mGameParameters.FishShoalCohesionStrengthAdjustment; }
     void SetFishShoalCohesionStrengthAdjustment(float value) override { mGameParameters.FishShoalCohesionStrengthAdjustment = value; }

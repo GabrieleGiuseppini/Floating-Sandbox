@@ -776,14 +776,13 @@ void Fishes::UpdateDynamics(
         // 4) Check state machine transitions
         //
 
-        // Check whether this fish has reached its target, while not in panic mode
-        if (fish.PanicCharge == 0.0f && std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f) // Reached target when not in panic
+        // Check whether this fish has reached its target
+        if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f
+            && fish.PanicCharge == 0.0f) // Not steering already
         {
             //
             // Target Reached
             //
-
-            // Transition to Steering
 
             // Choose new target position
             fish.TargetPosition = FindNewCruisingTargetPosition(
@@ -796,7 +795,8 @@ void Fishes::UpdateDynamics(
             fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
 
             // Setup steering, depending on whether we're turning or not
-            if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f)
+            if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
+                && !fish.CruiseSteeringState.has_value()) // Not steering already
             {
                 // Perform a cruise steering
                 fish.CruiseSteeringState.emplace(
@@ -918,14 +918,14 @@ void Fishes::UpdateShoaling(
 {
     // TODOHERE: completely unoptimized
 
-    float const shoalRadius =
-        1.0f
-        * gameParameters.FishShoalNeighborhoodAdjustment
+    float const basisShoalRadius =
+        3.5f // In terms of "fish bodies"
+        * gameParameters.FishShoalRadiusAdjustment
         * gameParameters.FishSizeMultiplier;
 
-    float const effectiveShoalSpacing =
+    float const basisShoalSpacing =
         2.5f // In terms of "fish bodies"
-        * gameParameters.FishShoalSpacingAdjustment
+        * gameParameters.FishShoalRadiusAdjustment
         * gameParameters.FishSizeMultiplier;
 
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
@@ -940,9 +940,14 @@ void Fishes::UpdateShoaling(
             && !fish.CruiseSteeringState.has_value() // Fish is not u-turning
             && !fish.IsInFreefall) // Fish is swimming
         {
+            // Convert shoal radius (bodies) into world
+            float const fishShoalRadius =
+                basisShoalRadius
+                * fishShoal.MaxWorldDimension;
+
             // Convert shoal spacing (bodies) into world
             float const fishShoalSpacing =
-                effectiveShoalSpacing
+                basisShoalSpacing
                 * fishShoal.MaxWorldDimension;
 
             ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
@@ -959,7 +964,7 @@ void Fishes::UpdateShoaling(
                     vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
                     float const distance = fishToNeighbor.length();
                     if (n != f // Not the same fish
-                        && distance < shoalRadius) // Neighbor is in the neighborhood
+                        && distance < fishShoalRadius) // Neighbor is in the neighborhood
                     {
                         // Update closest and furthest
                         if (distance < fishShoalSpacing)
@@ -1046,9 +1051,13 @@ void Fishes::UpdateShoaling(
                         fishToLeadDirection,
                         fishShoal.Species,
                         visibleWorld);
+                    // TODOTEST
+                    //fish.TargetPosition = lead.TargetPosition;
 
                     // Change target velocity to get to target position
                     fish.TargetVelocity = MakeCuisingVelocity(fishToLeadDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
+                    // TODOTEST
+                    //fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishShoal.Species, fish.PersonalitySeed, gameParameters);
 
                     // Perform a cruise steering
                     fish.CruiseSteeringState.emplace(
@@ -1057,7 +1066,7 @@ void Fishes::UpdateShoaling(
                         currentSimulationTime,
                         0.5f);
 
-                    // Do not set last steering time, as we want to be able to re-turn when
+                    // Do not reset last steering time, as we want to be able to re-turn when
                     // we get back into the shoal
                 }
 
@@ -1068,7 +1077,9 @@ void Fishes::UpdateShoaling(
                     * gameParameters.FishShoalCohesionStrengthAdjustment;
 
                 // Add some panic, depending on distance
-                fish.PanicCharge = 0.4f * SmoothStep(0.0, 30.0, distance);
+                fish.PanicCharge = std::max(
+                    fish.PanicCharge,
+                    0.4f * SmoothStep(0.0f, 30.0f, distance));
             }
             else
             {

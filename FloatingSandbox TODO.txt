@@ -1271,10 +1271,12 @@ Render:
 								+ Velocity depending on distance
 								+ Also do u-turn if lead's current position is behind our current velocity
 
-				- Ideas:
-					- Try smaller shoaling spacing
-					- Derive neighborhood radius from spacing
-						- Then nuke one of the adjustments
+				= Ideas:
+					= Derive neighborhood radius from spacing
+						+ Then nuke one of the adjustments
+						- Merge calculations
+
+					- Randomize u-turn a bit more using other fish's personality seed
 					- Converge ConvergenceRate to its default at each UpdateDynamics() after using it
 						- We have to do this as shoaling works well with ConvergenceRate set to the value we temporarily set it now to
 					- Smooth also panic's to max of neighbors?
@@ -1284,7 +1286,8 @@ Render:
 					X Should only consider neighbors that are ahead? (dot product of CurrentRenderVector is >= 0)
 				= Sliders
 					- SettingsDialog: rename "Shoaling" to something else
-					- See if we still need Shoal Neighborhood Radius Adjustment and Shoal Cohesion Strength Adjustment
+					+ See if we still need Shoal Neighborhood Radius Adjustment
+					- See if we still need FishShoalCohesionStrengthAdjustment
 
 				- Test:
 					- When one fish turns because of reaching target, other fish in same swarm will also turn

@@ -95,8 +95,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, FishSizeMultiplier);
     ADD_GC_SETTING(float, FishSpeedAdjustment);
     ADD_GC_SETTING(bool, DoFishShoaling);
-    ADD_GC_SETTING(float, FishShoalNeighborhoodAdjustment);
-    ADD_GC_SETTING(float, FishShoalSpacingAdjustment);
+    ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
     ADD_GC_SETTING(float, FishShoalCohesionStrengthAdjustment);
 
     // Misc

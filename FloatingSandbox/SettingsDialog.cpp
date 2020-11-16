@@ -2591,8 +2591,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                         mLiveSettings.SetValue<bool>(GameSettings::DoFishShoaling, event.IsChecked());
                         OnLiveSettingsChanged();
 
-                        mFishShoalNeighborhoodAdjustmentSlider->Enable(event.IsChecked());
-                        mFishShoalSpacingAdjustmentSlider->Enable(event.IsChecked());
+                        mFishShoalRadiusAdjustmentSlider->Enable(event.IsChecked());
                         mFishShoalCohesionStrengthAdjustmentSlider->Enable(event.IsChecked());
                     });
 
@@ -2604,53 +2603,27 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Shoal Neighborhood Adjustment
+            // Shoal Radius Adjustment
             {
-                mFishShoalNeighborhoodAdjustmentSlider = new SliderControl<float>(
+                mFishShoalRadiusAdjustmentSlider = new SliderControl<float>(
                     fishesBox,
                     SliderWidth,
                     -1,
-                    _("Shoal Neighborhood Adjust"),
+                    _("Shoal Radius Adjust"),
                     _("Adjusts the radius of the neighborhood tracked by fishes in a shoal."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::FishShoalNeighborhoodAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::FishShoalRadiusAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinFishShoalNeighborhoodAdjustment(),
+                        mGameControllerSettingsOptions->GetMinFishShoalRadiusAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxFishShoalNeighborhoodAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxFishShoalRadiusAdjustment()));
 
                 fishesSizer->Add(
-                    mFishShoalNeighborhoodAdjustmentSlider,
+                    mFishShoalRadiusAdjustmentSlider,
                     wxGBPosition(1, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            // Shoal Spacing Adjustment
-            {
-                mFishShoalSpacingAdjustmentSlider = new SliderControl<float>(
-                    fishesBox,
-                    SliderWidth,
-                    -1,
-                    _("Shoal Spacing Adjust"),
-                    _("Adjusts the spacing maintained by fishes in a shoal."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::FishShoalSpacingAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinFishShoalSpacingAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions->GetMaxFishShoalSpacingAdjustment()));
-
-                fishesSizer->Add(
-                    mFishShoalSpacingAdjustmentSlider,
-                    wxGBPosition(1, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -2676,7 +2649,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 
                 fishesSizer->Add(
                     mFishShoalCohesionStrengthAdjustmentSlider,
-                    wxGBPosition(1, 5),
+                    wxGBPosition(1, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -4464,10 +4437,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
     mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
-    mFishShoalNeighborhoodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalNeighborhoodAdjustment));
-    mFishShoalNeighborhoodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
-    mFishShoalSpacingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalSpacingAdjustment));
-    mFishShoalSpacingAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
+    mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalCohesionStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalCohesionStrengthAdjustment));
     mFishShoalCohesionStrengthAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
 
