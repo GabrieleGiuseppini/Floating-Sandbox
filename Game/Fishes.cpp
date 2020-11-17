@@ -162,7 +162,11 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
         renderContext.UploadFish(
             fish.RenderTextureFrameId,
-            fish.CurrentPosition,
+            // TODOTEST
+            //fish.CurrentPosition,
+            vec2f(
+                fish.CurrentPosition.x,
+                -2.0f - static_cast<float>(fish.FishesByXIndex)),
             species.WorldSize * mCurrentFishSizeMultiplier,
             angleCw,
             horizontalScale,
@@ -776,18 +780,38 @@ void Fishes::UpdateDynamics(
         // We have finished updating this fish's position, keep it
         // sorted then
 
-        for (ElementIndex fx = fish.FishesByXIndex; fx > 0 && fish.CurrentPosition.x < mFishes[mFishesByX[fx - 1]].CurrentPosition.x; --fx)
         {
-            // Swap
-            std::swap(mFishes[mFishesByX[fx - 1]].FishesByXIndex, mFishes[mFishesByX[fx]].FishesByXIndex);
-            std::swap(mFishesByX[fx - 1], mFishesByX[fx]);
-        }
+            auto const fishPositionX = fish.CurrentPosition.x;
 
-        for (ElementIndex fx = fish.FishesByXIndex; fx < mFishes.size() - 1 && fish.CurrentPosition.x > mFishes[mFishesByX[fx + 1]].CurrentPosition.x; ++fx)
-        {
-            // Swap
-            std::swap(mFishes[mFishesByX[fx + 1]].FishesByXIndex, mFishes[mFishesByX[fx]].FishesByXIndex);
-            std::swap(mFishesByX[fx + 1], mFishesByX[fx]);
+            for (ElementIndex fx = fish.FishesByXIndex; fx > 0 && fishPositionX < mFishes[mFishesByX[fx - 1]].CurrentPosition.x; --fx)
+            {
+                // Swap
+
+                assert(mFishes[mFishesByX[fx]].FishesByXIndex == fx);
+                auto & prevFishByXIndex = mFishes[mFishesByX[fx - 1]].FishesByXIndex;
+                mFishes[mFishesByX[fx]].FishesByXIndex = prevFishByXIndex;
+                prevFishByXIndex = fx;
+
+                assert(mFishesByX[fx] == f);
+                auto & prevFishIndex = mFishesByX[fx - 1];
+                mFishesByX[fx] = prevFishIndex;
+                prevFishIndex = f;
+            }
+
+            for (ElementIndex fx = fish.FishesByXIndex; fx < fishCount - 1 && fishPositionX > mFishes[mFishesByX[fx + 1]].CurrentPosition.x; ++fx)
+            {
+                // Swap
+
+                assert(mFishes[mFishesByX[fx]].FishesByXIndex == fx);
+                auto & nextFishByXIndex = mFishes[mFishesByX[fx + 1]].FishesByXIndex;
+                mFishes[mFishesByX[fx]].FishesByXIndex = nextFishByXIndex;
+                nextFishByXIndex = fx;
+
+                assert(mFishesByX[fx] == f);
+                auto & nextFishIndex = mFishesByX[fx + 1];
+                mFishesByX[fx] = nextFishIndex;
+                nextFishIndex = f;
+            }
         }
 
         // Stop now if we're free-falling
