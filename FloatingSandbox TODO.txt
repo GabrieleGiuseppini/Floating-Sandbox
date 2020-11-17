@@ -1281,8 +1281,7 @@ Render:
 					+ See if we still need Shoal Neighborhood Radius Adjustment
 					+ Nuke FishShoalCohesionStrengthAdjustment
 				+ Tsunami: no panic when auto-triggered
-
-				= See if can randomize spacing
+				+ See if can randomize spacing
 
 				- Cleanup:
 					- Optimize

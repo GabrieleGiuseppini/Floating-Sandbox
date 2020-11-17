@@ -147,13 +147,17 @@ private:
         // Index in vector of fish indices sorted by X
         ElementIndex FishesByXIndex;
 
+        // The texture frame for this fish
+        TextureFrameId<Render::FishTextureGroups> RenderTextureFrameId;
+
         Fish(
             FishShoalId shoalId,
             float personalitySeed,
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
-            float initialTailProgressPhase)
+            float initialTailProgressPhase,
+            TextureFrameId<Render::FishTextureGroups> renderTextureFrameId)
             : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
             , CurrentPosition(initialPosition)
@@ -171,6 +175,7 @@ private:
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
             , FishesByXIndex(0) // Arbitrary, will be set as needed
+            , RenderTextureFrameId(renderTextureFrameId)
         {}
     };
 

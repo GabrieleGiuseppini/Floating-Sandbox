@@ -7,6 +7,8 @@
 
 #include <GameCore/Utils.h>
 
+#include <algorithm>
+
 FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesDatabaseFilePath)
 {
     picojson::value const root = Utils::ParseJSONFile(fishSpeciesDatabaseFilePath);
@@ -47,7 +49,19 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
             float const headOffsetX = Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "head_offset_x");
 
-            auto const textureIndex = static_cast<TextureFrameIndex>(Utils::GetMandatoryJsonMember<int>(fishSpeciesObject, "texture_index"));
+            std::vector<TextureFrameIndex> textureFrameIndices;
+            {
+                auto const textureIndicesArray = Utils::GetMandatoryJsonArray(fishSpeciesObject, "texture_indices");
+
+                std::transform(
+                    textureIndicesArray.cbegin(),
+                    textureIndicesArray.cend(),
+                    std::back_inserter(textureFrameIndices),
+                    [](auto const & e) -> TextureFrameIndex
+                    {
+                        return static_cast<TextureFrameIndex>(Utils::GetJsonValueAs<std::int64_t>(e, "texture_indices"));
+                    });
+            }
 
             fishSpecies.emplace_back(
                 name,
@@ -60,7 +74,7 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
                 tailSpeed,
                 tailSwingWidth,
                 headOffsetX,
-                textureIndex);
+                textureFrameIndices);
         }
         catch (GameException const & ex)
         {

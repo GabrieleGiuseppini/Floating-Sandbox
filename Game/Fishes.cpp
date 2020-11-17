@@ -157,7 +157,7 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         auto const & species = mFishShoals[fish.ShoalId].Species;
 
         renderContext.UploadFish(
-            TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndex),
+            fish.RenderTextureFrameId,
             fish.CurrentPosition,
             species.WorldSize * mCurrentFishSizeMultiplier,
             angleCw,
@@ -463,13 +463,17 @@ void Fishes::UpdateNumberOfFishes(
 
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
+            TextureFrameIndex const renderTextureFrameIndex = static_cast<TextureFrameIndex>(
+                GameRandomEngine::GetInstance().Choose(species.RenderTextureFrameIndices.size()));
+
             mFishes.emplace_back(
                 currentShoalSearchIndex,
                 personalitySeed,
                 initialPosition,
                 targetPosition,
                 MakeCuisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
-                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>)); // initial progress phase
+                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
+                TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndices[renderTextureFrameIndex]));
 
             // Update shoal
             ++(mFishShoals[currentShoalSearchIndex].CurrentMemberCount);

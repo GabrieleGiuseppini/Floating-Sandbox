@@ -30,7 +30,7 @@ struct FishSpecies
 
     float HeadOffsetX; // Normalized coordinates (bottom-left origin) - fraction of WorldSize
 
-    TextureFrameIndex RenderTextureFrameIndex;
+    std::vector<TextureFrameIndex> RenderTextureFrameIndices;
 
     FishSpecies(
         std::string const & name,
@@ -43,7 +43,7 @@ struct FishSpecies
         float tailSpeed,
         float tailSwingWidth,
         float headOffsetX,
-        TextureFrameIndex renderTextureFrameIndex)
+        std::vector<TextureFrameIndex> const & renderTextureFrameIndices)
         : Name(name)
         , WorldSize(worldSize)
         , ShoalSize(shoalSize)
@@ -54,7 +54,7 @@ struct FishSpecies
         , TailSpeed(tailSpeed)
         , TailSwingWidth(tailSwingWidth)
         , HeadOffsetX(headOffsetX)
-        , RenderTextureFrameIndex(renderTextureFrameIndex)
+        , RenderTextureFrameIndices(renderTextureFrameIndices)
     {}
 };
 
