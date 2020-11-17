@@ -1295,9 +1295,9 @@ Render:
 				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
 					- If really bad, consider nuking initial Fishes initialization
 				+ Also take OceanFloor
-		- Test:
-			- 0-depth ocean
-			- All sliders
+		+ Test:
+			+ 0-depth ocean
+			+ All sliders
 		+ Cleanup:
 			+ ShoalSpacing should be from fish species database
 			+ Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
