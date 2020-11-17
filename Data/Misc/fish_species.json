@@ -58,7 +58,7 @@
 
 	"shoal_size": 32,
 	"shoal_radius": 3.5,
-	"ocean_depth": 20.0,
+	"ocean_depth": 15.0,
 	"basal_speed": 0.1536,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,
@@ -75,7 +75,7 @@
 
 	"shoal_size": 16,
 	"shoal_radius": 3.5,
-	"ocean_depth": 60.0,
+	"ocean_depth": 65.0,
 	"basal_speed": 0.31,
 	"tail_x": 0.7,
 	"tail_speed": 0.048,

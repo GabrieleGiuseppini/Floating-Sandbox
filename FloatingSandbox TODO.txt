@@ -1298,13 +1298,13 @@ Render:
 		- Test:
 			- 0-depth ocean
 			- All sliders
-		- Cleanup:
+		+ Cleanup:
 			+ ShoalSpacing should be from fish species database
 			+ Fix initial spawn position: center of gaussian should be at the center of the half-screen at start of direction
 				+ Ensure first cruise of ship is "long enough", i.e. that fish doesn't u-turn right away
 			+ Larger field for spawning and next position?
 				+ Unify variances anyway
-			- GameParameters::NumberOfFishes: TODO
+			+ Finalize GameParameters::NumberOfFishes
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
 		= Misc:

@@ -418,7 +418,7 @@ void Fishes::UpdateNumberOfFishes(
 
             FishSpecies const & species = mFishShoals[currentShoalSearchIndex].Species;
 
-            // Initialize shoal, if needed
+            // Initialize shoal, if it's still empty
             if (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == 0)
             {
                 //
@@ -436,9 +436,14 @@ void Fishes::UpdateNumberOfFishes(
                 // Decide an initial position for the shoal
                 //
 
+                // The x variance grows with the number of fishes
+                float const xVariance =
+                    visibleWorld.Width * PositionXVarianceFactor
+                    * 3.0f * static_cast<float>(1 + mFishes.size() / mShoalBatchSize);
+
                 mFishShoals[currentShoalSearchIndex].InitialPosition = ChoosePosition(
                     vec2f(visibleWorld.Center.x, species.OceanDepth),
-                    visibleWorld.Width * PositionXVarianceFactor * 3.0f,
+                    xVariance,
                     PositionYVariance * 0.5f);
 
                 mFishShoals[currentShoalSearchIndex].InitialPosition.x = mFishShoals[currentShoalSearchIndex].InitialDirection.x < 0.0f
@@ -1158,13 +1163,13 @@ vec2f Fishes::FindNewCruisingTargetPosition(
     VisibleWorld const & visibleWorld)
 {
     // X:
-    //      - if currentPosition.x with direction.x goes towards center X: go by one full screen
-    //      - else: go by less than a screen
+    //      - if currentPosition.x with direction.x goes towards center X: go by much
+    //      - else: go by less
     // Y:
     //      - obey species' band
 
     float const averageTargetPositionX = (visibleWorld.Center.x - currentPosition.x) * newDirection.x >= 0
-        ? currentPosition.x + newDirection.x * visibleWorld.Width
+        ? currentPosition.x + newDirection.x * visibleWorld.Width * 1.5f
         : currentPosition.x + newDirection.x * visibleWorld.Width / 4.0f;
 
     return ChoosePosition(
