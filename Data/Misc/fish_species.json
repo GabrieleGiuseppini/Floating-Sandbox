@@ -51,7 +51,7 @@
     },
 
     {
-        "name": "Red Snapper",
+        "name": "Queen Snapper",
 
 	"world_size_x": 0.2,
 	"world_size_y": 0.1,
@@ -64,7 +64,7 @@
 	"tail_speed": 0.048,
 	"tail_swing_width": 0.8,
 	"head_offset_x": 0.8984375,
-	"texture_indices": [4]
+	"texture_indices": [4, 5]
     }
 
 ]

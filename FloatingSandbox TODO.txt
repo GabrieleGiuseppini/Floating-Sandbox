@@ -1308,13 +1308,18 @@ Render:
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
 		- Misc:
+			- See if want to spread initial fish more
 			- More textures per species
+				- Rename RedSnapper to QueenSnapper
+					- Authoring
+					- textures
+					- json DB
 			- More fish species
-			= SettingsDialog:
+			+ SettingsDialog:
 				+ Number of fish
 				+ Fish size multiplier
-				- Do shoaling flag
-				- Shoal sspacing adjust
+				+ Do shoaling flag
+				+ Shoal sspacing adjust
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item
