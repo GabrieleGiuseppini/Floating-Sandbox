@@ -30,7 +30,7 @@
 	"tail_speed": 0.048,
 	"tail_swing_width": 0.35,
 	"head_offset_x": 0.86328125,
-	"texture_indices": [2]
+	"texture_indices": [2, 6]
     },
 
     {
@@ -65,6 +65,23 @@
 	"tail_swing_width": 0.8,
 	"head_offset_x": 0.8984375,
 	"texture_indices": [4, 5]
+    },
+
+    {
+        "name": "Tuna",
+
+	"world_size_x": 0.3,
+	"world_size_y": 0.15,
+
+	"shoal_size": 16,
+	"shoal_radius": 3.5,
+	"ocean_depth": 60.0,
+	"basal_speed": 0.31,
+	"tail_x": 0.7,
+	"tail_speed": 0.048,
+	"tail_swing_width": 0.5,
+	"head_offset_x": 0.8984375,
+	"texture_indices": [7, 8, 9]
     }
 
 ]

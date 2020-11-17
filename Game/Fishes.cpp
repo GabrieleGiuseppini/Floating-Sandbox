@@ -422,7 +422,7 @@ void Fishes::UpdateNumberOfFishes(
             if (mFishShoals[currentShoalSearchIndex].CurrentMemberCount == 0)
             {
                 //
-                // Decide an initial direction
+                // Decide an initial direction for the shoal
                 //
 
                 if (currentShoalSearchIndex > 0)
@@ -433,13 +433,13 @@ void Fishes::UpdateNumberOfFishes(
                         0.0f);
 
                 //
-                // Decide an initial position
+                // Decide an initial position for the shoal
                 //
 
                 mFishShoals[currentShoalSearchIndex].InitialPosition = ChoosePosition(
                     vec2f(visibleWorld.Center.x, species.OceanDepth),
-                    visibleWorld.Width * PositionXVarianceFactor,
-                    PositionYVariance);
+                    visibleWorld.Width * PositionXVarianceFactor * 3.0f,
+                    PositionYVariance * 0.5f);
 
                 mFishShoals[currentShoalSearchIndex].InitialPosition.x = mFishShoals[currentShoalSearchIndex].InitialDirection.x < 0.0f
                     ? std::abs(mFishShoals[currentShoalSearchIndex].InitialPosition.x)

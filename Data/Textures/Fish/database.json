@@ -19,6 +19,10 @@
 		{	
 			"filename": "queen_snapper_\\d+"
 		}
+		,
+		{	
+			"filename": "tuna_\\d+"
+		}
 	]
 }
 

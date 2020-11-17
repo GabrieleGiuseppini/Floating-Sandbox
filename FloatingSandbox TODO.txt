@@ -1307,14 +1307,10 @@ Render:
 			- GameParameters::NumberOfFishes: TODO
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
-		- Misc:
-			- See if want to spread initial fish more
-			- More textures per species
-				- Rename RedSnapper to QueenSnapper
-					- Authoring
-					- textures
-					- json DB
-			- More fish species
+		= Misc:
+			+ See if want to spread initial fish more
+			+ More textures per species
+			+ More fish species
 			+ SettingsDialog:
 				+ Number of fish
 				+ Fish size multiplier
