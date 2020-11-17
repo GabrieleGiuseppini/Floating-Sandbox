@@ -70,8 +70,8 @@
     {
         "name": "Tuna",
 
-	"world_size_x": 0.3,
-	"world_size_y": 0.15,
+	"world_size_x": 0.4,
+	"world_size_y": 0.2,
 
 	"shoal_size": 16,
 	"shoal_radius": 3.5,
