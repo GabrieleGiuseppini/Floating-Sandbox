@@ -162,11 +162,12 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
 
         renderContext.UploadFish(
             fish.RenderTextureFrameId,
-            // TODOTEST
-            //fish.CurrentPosition,
+            fish.CurrentPosition,
+            /* Enable to verify sorted-by-x maintenance
             vec2f(
                 fish.CurrentPosition.x,
                 -2.0f - static_cast<float>(fish.FishesByXIndex)),
+            */
             species.WorldSize * mCurrentFishSizeMultiplier,
             angleCw,
             horizontalScale,
@@ -967,8 +968,6 @@ void Fishes::UpdateShoaling(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
-    // TODOHERE: completely unoptimized
-
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
     for (ElementIndex f = 0; f < fishCount; ++f)
     {
@@ -982,7 +981,7 @@ void Fishes::UpdateShoaling(
             if (!fish.CruiseSteeringState.has_value() // Fish is not u-turning
                 && !fish.IsInFreefall) // Fish is swimming
             {
-                // Calculate shoal radius in world coordinates
+                // Calculate shoal radius for this fish in world coordinates
                 float const fishShoalRadius =
                     fishShoal.Species.ShoalRadius
                     * gameParameters.FishShoalRadiusAdjustment
