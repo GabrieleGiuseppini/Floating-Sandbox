@@ -1285,6 +1285,12 @@ Render:
 
 				- Cleanup:
 					- Optimize
+						+ Begin:
+							+ UpdateDynamics: 8.31% (7.68% self)
+							+ UpdateShoaling: 5.90% (5.90% self)
+						+ See if can avoid normalize() at 682 using CurrentRenderVector
+						- Update fish.IndexInXVector
+						+ Precalc position of head
 						- Buffer rearc?
 
 			- AABB around ships' frontiers, so that fish AI's avoid them

@@ -63,20 +63,24 @@ void Fishes::Update(
     if (mCurrentFishSizeMultiplier != gameParameters.FishSizeMultiplier
         || mCurrentFishSpeedAdjustment != gameParameters.FishSpeedAdjustment)
     {
-        // Update all velocities
-        if (mCurrentFishSpeedAdjustment != 0.0f && mCurrentFishSizeMultiplier != 0.0f)
-        {
-            float const factor =
-                gameParameters.FishSpeedAdjustment / mCurrentFishSpeedAdjustment
-                * gameParameters.FishSizeMultiplier / mCurrentFishSizeMultiplier;
+        // Update fish parameters that depends on these parameters
 
-            for (auto & fish : mFishes)
-            {
-                fish.CurrentVelocity *= factor;
-                fish.TargetVelocity *= factor;
-                fish.ShoalingVelocity *= factor;
-                // No need to change render direction, velocity hasn't changed direction
-            }
+        float const speedFactor = (mCurrentFishSpeedAdjustment != 0.0f)
+            ? gameParameters.FishSpeedAdjustment / mCurrentFishSpeedAdjustment
+            : 1.0f;
+
+        float const sizeFactor = (mCurrentFishSizeMultiplier != 0.0f)
+            ? gameParameters.FishSizeMultiplier / mCurrentFishSizeMultiplier
+            : 1.0f;
+
+        for (auto & fish : mFishes)
+        {
+            fish.CurrentVelocity *= speedFactor * sizeFactor;
+            fish.TargetVelocity *= speedFactor * sizeFactor;
+            fish.ShoalingVelocity *= speedFactor * sizeFactor;
+            // No need to change render direction, velocity hasn't changed direction
+
+            fish.HeadOffset *= sizeFactor;
         }
 
         // Update parameters
@@ -466,6 +470,8 @@ void Fishes::UpdateNumberOfFishes(
                 species,
                 visibleWorld);
 
+            float const headOffset = species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
             TextureFrameIndex const renderTextureFrameIndex = static_cast<TextureFrameIndex>(
@@ -477,6 +483,7 @@ void Fishes::UpdateNumberOfFishes(
                 initialPosition,
                 targetPosition,
                 MakeCuisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
+                headOffset,
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
                 TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndices[renderTextureFrameIndex]));
 
@@ -673,13 +680,13 @@ void Fishes::UpdateDynamics(
                 * speedMultiplier;
 
             // Update tail progress phase: add basal speed
-            fish.CurrentTailProgressPhase += species.TailSpeed * speedMultiplier;
+            fish.CurrentTailProgressPhase += species.TailSpeed * speedMultiplier * gameParameters.FishSpeedAdjustment;
 
             // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
             {
                 fish.CurrentPosition +=
-                    fish.CurrentVelocity.normalise()
+                    fish.CurrentRenderVector
                     * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase))
                     * (1.0f + fish.PanicCharge) // Grow incisiveness with panic
                     / 150.0f; // Magic number
@@ -873,7 +880,7 @@ void Fishes::UpdateDynamics(
         // Calculate position of head
         vec2f const fishHeadPosition =
             fish.CurrentPosition
-            + fish.CurrentRenderVector.normalise() * species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+            + fish.CurrentRenderVector * fish.HeadOffset;
 
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (float const depth = oceanY - fish.CurrentPosition.y;

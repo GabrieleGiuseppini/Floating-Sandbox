@@ -126,6 +126,7 @@ private:
         float CurrentDirectionSmoothingConvergenceRate; // Rate of converge of velocity and direction
         static float constexpr IdealDirectionSmoothingConvergenceRate = 0.016f;
 
+        float HeadOffset; // Offset of head from position along fish direction
         float CurrentTailProgressPhase;
 
         // Panic mode state machine
@@ -156,6 +157,7 @@ private:
             vec2f const & initialPosition,
             vec2f const & targetPosition,
             vec2f const & targetVelocity,
+            float headOffset,
             float initialTailProgressPhase,
             TextureFrameId<Render::FishTextureGroups> renderTextureFrameId)
             : ShoalId(shoalId)
@@ -167,6 +169,7 @@ private:
             , ShoalingVelocity(vec2f::zero())
             , CurrentRenderVector(targetVelocity.normalise())
             , CurrentDirectionSmoothingConvergenceRate(IdealDirectionSmoothingConvergenceRate)
+            , HeadOffset(headOffset)
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , AttractionDecayTimer(0.0f)
