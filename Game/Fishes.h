@@ -136,7 +136,8 @@ private:
         float AttractionDecayTimer;
 
         // Provides a heartbeat for shoaling
-        float ShoalingDecayTimer;
+        float ShoalingTimer;
+        static float constexpr ShoalingTimerCycleDuration = 2.421875f; // Simulation time
 
         // Steering state machine
         std::optional<CruiseSteering> CruiseSteeringState; // When set, fish is turning around during cruise
@@ -144,9 +145,6 @@ private:
 
         // Freefall state machine
         bool IsInFreefall;
-
-        // Index in vector of fish indices sorted by X
-        ElementIndex FishesByXIndex;
 
         // The texture frame for this fish
         TextureFrameId<Render::FishTextureGroups> RenderTextureFrameId;
@@ -173,11 +171,10 @@ private:
             , CurrentTailProgressPhase(initialTailProgressPhase)
             , PanicCharge(0.0f)
             , AttractionDecayTimer(0.0f)
-            , ShoalingDecayTimer(personalitySeed) // Randomize a bit the shoaling cycles
+            , ShoalingTimer(personalitySeed * ShoalingTimerCycleDuration) // Randomize a bit the shoaling cycles
             , CruiseSteeringState()
             , LastSteeringSimulationTime(0.0f)
             , IsInFreefall(false)
-            , FishesByXIndex(0) // Arbitrary, will be set as needed
             , RenderTextureFrameId(renderTextureFrameId)
         {}
     };
@@ -222,8 +219,6 @@ private:
         float personalitySeed,
         GameParameters const & gameParameters);
 
-    static std::vector<ElementIndex> SortByX(std::vector<Fish> & fishes);
-
 private:
 
     FishSpeciesDatabase const & mFishSpeciesDatabase;
@@ -238,9 +233,6 @@ private:
 
     // The...fishes
     std::vector<Fish> mFishes;
-
-    // The indices of fishes in their vector, sorted by X
-    std::vector<ElementIndex> mFishesByX;
 
     // Parameters that the calculated values are current with
     float mCurrentFishSizeMultiplier;

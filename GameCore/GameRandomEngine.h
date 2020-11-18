@@ -102,7 +102,7 @@ public:
         float minValue,
         float maxValue)
     {
-        return minValue + mRandomUniformDistribution(mRandomEngine) * (maxValue - minValue);
+        return minValue + GenerateNormalizedUniformReal() * (maxValue - minValue);
     }
 
     inline vec2f GenerateUniformRadialVector(

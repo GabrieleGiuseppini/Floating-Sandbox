@@ -163,11 +163,6 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
         renderContext.UploadFish(
             fish.RenderTextureFrameId,
             fish.CurrentPosition,
-            /* Enable to verify sorted-by-x maintenance
-            vec2f(
-                fish.CurrentPosition.x,
-                -2.0f - static_cast<float>(fish.FishesByXIndex)),
-            */
             species.WorldSize * mCurrentFishSizeMultiplier,
             angleCw,
             horizontalScale,
@@ -503,9 +498,6 @@ void Fishes::UpdateNumberOfFishes(
     {
         // Notify new count
         mGameEventHandler->OnFishCountUpdated(mFishes.size());
-
-        // Re-sort fishes by X
-        mFishesByX = std::move(SortByX(mFishes));
     }
 }
 
@@ -778,45 +770,7 @@ void Fishes::UpdateDynamics(
         assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth
             && fish.CurrentPosition.x <= GameParameters::HalfMaxWorldWidth);
 
-        // We have finished updating this fish's position, keep it
-        // sorted then
-
-        {
-            auto const fishPositionX = fish.CurrentPosition.x;
-
-            for (ElementIndex fx = fish.FishesByXIndex; fx > 0 && fishPositionX < mFishes[mFishesByX[fx - 1]].CurrentPosition.x; --fx)
-            {
-                // Swap
-
-                assert(mFishes[mFishesByX[fx]].FishesByXIndex == fx);
-                auto & prevFishByXIndex = mFishes[mFishesByX[fx - 1]].FishesByXIndex;
-                mFishes[mFishesByX[fx]].FishesByXIndex = prevFishByXIndex;
-                prevFishByXIndex = fx;
-
-                assert(mFishesByX[fx] == f);
-                auto & prevFishIndex = mFishesByX[fx - 1];
-                mFishesByX[fx] = prevFishIndex;
-                prevFishIndex = f;
-            }
-
-            for (ElementIndex fx = fish.FishesByXIndex; fx < fishCount - 1 && fishPositionX > mFishes[mFishesByX[fx + 1]].CurrentPosition.x; ++fx)
-            {
-                // Swap
-
-                assert(mFishes[mFishesByX[fx]].FishesByXIndex == fx);
-                auto & nextFishByXIndex = mFishes[mFishesByX[fx + 1]].FishesByXIndex;
-                mFishes[mFishesByX[fx]].FishesByXIndex = nextFishByXIndex;
-                nextFishByXIndex = fx;
-
-                assert(mFishesByX[fx] == f);
-                auto & nextFishIndex = mFishesByX[fx + 1];
-                mFishesByX[fx] = nextFishIndex;
-                nextFishIndex = f;
-            }
-        }
-
         // Stop now if we're free-falling
-
         if (fish.IsInFreefall)
         {
             // Cut short state machine now, this fish can't swim
@@ -968,208 +922,6 @@ void Fishes::UpdateShoaling(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
-    assert(mFishesByX.size() == mFishes.size());
-
-    auto const fishCount = mFishes.size();
-
-    for (size_t fx = 0; fx < fishCount; ++fx)
-    {
-        ElementIndex const f = mFishesByX[fx];
-        Fish & fish = mFishes[f];
-        FishShoal const & fishShoal = mFishShoals[fish.ShoalId];
-
-        if (fishShoal.CurrentMemberCount > 1 // A shoal contains at least one fish
-            && fish.ShoalingDecayTimer < 0.02f // Wait for this fish's shoaling cycle
-            && fish.PanicCharge < 0.02f) // Skip fishes even in little panic
-        {
-            if (!fish.CruiseSteeringState.has_value() // Fish is not u-turning
-                && !fish.IsInFreefall) // Fish is swimming
-            {
-                // Calculate shoal radius for this fish in world coordinates
-                float const fishShoalRadius =
-                    fishShoal.Species.ShoalRadius
-                    * gameParameters.FishShoalRadiusAdjustment
-                    * fishShoal.MaxWorldDimension
-                    * gameParameters.FishSizeMultiplier
-                    + fish.PersonalitySeed; // Add some randomness to prevent regular patterns
-
-                // Calculate shoal spacing as fraction of shoal radius
-                float const fishShoalSpacing = 0.7f * fishShoalRadius;
-
-                //
-                // Visit all fishes in same shoal
-                //
-
-                float const minNeighborhoodX = fish.CurrentPosition.x - fishShoalRadius;
-                float const maxNeighborhoodX = fish.CurrentPosition.x + fishShoalRadius;
-
-                ElementIndex closestFishIndex = NoneElementIndex; // Closest neighbour among those that are closer to fish than spacing
-                float closestFishDistance = std::numeric_limits<float>::max();
-                ElementIndex furthestFishIndex = NoneElementIndex; // Furthest neighbour among those that are further from fish than spacing
-                float furthestFishDistance = std::numeric_limits<float>::lowest();
-
-                for (size_t nx = 0; nx < fishCount; ++nx)
-                {
-                    ElementIndex const n = mFishesByX[nx];
-                    Fish const & neighbor = mFishes[n];
-
-                    if (neighbor.CurrentPosition.x >= minNeighborhoodX // Rough radius check - avoids calculating expensive distance
-                        && neighbor.ShoalId == fish.ShoalId // Same shoal
-                        && f != n)  // Different fish
-                    {
-                        if (float const distance = (neighbor.CurrentPosition - fish.CurrentPosition).length();
-                            distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
-                        {
-                            // Update closest and furthest
-                            if (distance < fishShoalSpacing)
-                            {
-                                // Too close wrt spacing
-                                if (distance < closestFishDistance)
-                                {
-                                    closestFishIndex = n;
-                                    closestFishDistance = distance;
-                                }
-                            }
-                            else // distance >= fishShoalSpacing
-                            {
-                                // Too far wrt spacing
-                                if (distance > furthestFishDistance)
-                                {
-                                    furthestFishIndex = n;
-                                    furthestFishDistance = distance;
-                                }
-                            }
-
-                            // Check if should do a u-turn based on this neighbor
-                            float constexpr UTurnSpeed = 2.5f;
-                            if (neighbor.TargetVelocity.x * fish.TargetVelocity.x < 0.0f // Intents are opposite
-                                && (currentSimulationTime - fish.LastSteeringSimulationTime) > UTurnSpeed + 3.0f // This fish hasn't u-turned recently
-                                && fish.LastSteeringSimulationTime < neighbor.LastSteeringSimulationTime) // The neighbor has u-turned more recently
-                            {
-                                vec2f const neighborDirection = neighbor.TargetVelocity.normalise();
-
-                                // Find a new target position along the neighbor's direction
-                                fish.TargetPosition = FindNewCruisingTargetPosition(
-                                    fish.CurrentPosition,
-                                    neighborDirection,
-                                    fishShoal.Species,
-                                    visibleWorld);
-
-                                // Change target velocity to get to target position
-                                fish.TargetVelocity = MakeCuisingVelocity(neighborDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
-
-                                // Perform a cruise steering
-                                fish.CruiseSteeringState.emplace(
-                                    fish.CurrentVelocity,
-                                    fish.CurrentRenderVector,
-                                    currentSimulationTime,
-                                    UTurnSpeed);
-
-                                // Remember the time at which we did the last steering
-                                fish.LastSteeringSimulationTime = currentSimulationTime;
-
-                                // We've started a u-turn, hence no need to continue processing more neighbors
-                                break;
-                            }
-                        }
-                    }
-                    else if (neighbor.CurrentPosition.x > maxNeighborhoodX)
-                    {
-                        // No reason to continue, gone too far to find any other neighbors
-                        break;
-                    }
-                }
-
-                // If we've decided we're gonna u-turn, then stop here
-                if (fish.CruiseSteeringState.has_value())
-                    continue;
-
-                // Make sure we've found at least one neighbor
-                if (furthestFishIndex == NoneElementIndex
-                    && closestFishIndex == NoneElementIndex
-                    && f != fishShoal.StartFishIndex) // This fish is not the lead
-                {
-                    //
-                    // We're too far from anyone else...
-                    // ...go towards lead then!
-                    //
-
-                    // Pick lead
-                    Fish const & lead = mFishes[fishShoal.StartFishIndex];
-
-                    vec2f const fishToLeadVector = lead.CurrentPosition - fish.CurrentPosition;
-                    float const distance = fishToLeadVector.length();
-                    vec2f const fishToLeadDirection = fishToLeadVector.normalise(distance);
-
-                    // Check whether we need to turn - we do if lead is currently behind us
-                    if (fish.TargetVelocity.x * fishToLeadDirection.x < 0.0f)
-                    {
-                        // Find a new target position towards the lead
-                        fish.TargetPosition = FindNewCruisingTargetPosition(
-                            fish.CurrentPosition,
-                            fishToLeadDirection,
-                            fishShoal.Species,
-                            visibleWorld);
-
-                        // Change target velocity to get to target position
-                        fish.TargetVelocity = MakeCuisingVelocity(fishToLeadDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
-
-                        // Perform a cruise steering
-                        fish.CruiseSteeringState.emplace(
-                            fish.CurrentVelocity,
-                            fish.CurrentRenderVector,
-                            currentSimulationTime,
-                            0.5f);
-
-                        // Do not reset last steering time, as we want to be able to re-turn when
-                        // we get back into the shoal
-                    }
-
-                    // Set shoaling velocity to match
-                    fish.ShoalingVelocity =
-                        fishToLeadDirection
-                        * 1.8f // Magic number
-                        * gameParameters.FishSpeedAdjustment;
-
-                    // Add some panic, depending on distance
-                    fish.PanicCharge = std::max(
-                        fish.PanicCharge,
-                        0.4f * SmoothStep(0.0f, 30.0f, distance));
-                }
-                else
-                {
-                    //
-                    // Apply correction vectors
-                    //
-
-                    vec2f collisionCorrectionVelocity = (closestFishIndex != NoneElementIndex)
-                        ? -(mFishes[closestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.2f // Go away from neighbor
-                        : vec2f::zero();
-
-                    vec2f cohesionCorrectionVelocity = (furthestFishIndex != NoneElementIndex)
-                        ? (mFishes[furthestFishIndex].CurrentPosition - fish.CurrentPosition).normalise() * 1.8f // Go towards neighbor
-                        : vec2f::zero();
-
-                    fish.ShoalingVelocity =
-                        (collisionCorrectionVelocity + cohesionCorrectionVelocity)
-                        * gameParameters.FishSpeedAdjustment;
-                }
-
-                // Start another shoaling cycle
-                fish.ShoalingDecayTimer = 1.0f;
-            }
-            else
-            {
-                // Zero out any residual shoaling
-                fish.ShoalingVelocity = vec2f::zero();
-            }
-        }
-
-        // Decay shoaling cycle
-        fish.ShoalingDecayTimer *= 0.975f;
-    }
-
-    /* TODOTEST: OLD
     auto const fishCount = mFishes.size();
 
     for (ElementIndex f = 0; f < fishCount; ++f)
@@ -1178,7 +930,7 @@ void Fishes::UpdateShoaling(
         FishShoal const & fishShoal = mFishShoals[fish.ShoalId];
 
         if (fishShoal.CurrentMemberCount > 1 // A shoal contains at least one fish
-            && fish.ShoalingDecayTimer < 0.02f // Wait for this fish's shoaling cycle
+            && fish.ShoalingTimer <= 0.0f // Wait for this fish's shoaling cycle
             && fish.PanicCharge < 0.02f) // Skip fishes even in little panic
         {
             if (!fish.CruiseSteeringState.has_value() // Fish is not u-turning
@@ -1206,14 +958,13 @@ void Fishes::UpdateShoaling(
 
                 for (ElementIndex n = 0; n < fishCount; ++n)
                 {
-                    if (mFishes[n].ShoalId == fish.ShoalId)
+                    if (mFishes[n].ShoalId == fish.ShoalId // Same shoal
+                        && n != f) // Not same fish
                     {
                         Fish const & neighbor = mFishes[n];
 
-                        vec2f const fishToNeighbor = neighbor.CurrentPosition - fish.CurrentPosition; // Vector from fish to neighbor
-                        float const distance = fishToNeighbor.length();
-                        if (n != f // Not the same fish
-                            && distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
+                        if (float const distance = (neighbor.CurrentPosition - fish.CurrentPosition).length();
+                            distance < fishShoalRadius) // Neighbor is in the neighborhood (...hence a neighbor)
                         {
                             // Update closest and furthest
                             if (distance < fishShoalSpacing)
@@ -1345,7 +1096,7 @@ void Fishes::UpdateShoaling(
                 }
 
                 // Start another shoaling cycle
-                fish.ShoalingDecayTimer = 1.0f;
+                fish.ShoalingTimer = Fish::ShoalingTimerCycleDuration;
             }
             else
             {
@@ -1355,9 +1106,8 @@ void Fishes::UpdateShoaling(
         }
 
         // Decay shoaling cycle
-        fish.ShoalingDecayTimer *= 0.975f;
+        fish.ShoalingTimer -= GameParameters::SimulationStepTimeDuration<float>;
     }
-    */
 }
 
 void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
@@ -1423,28 +1173,6 @@ vec2f Fishes::MakeCuisingVelocity(
     return direction
         * (species.BasalSpeed * gameParameters.FishSpeedAdjustment * gameParameters.FishSizeMultiplier)
         * (0.7f + personalitySeed * 0.3f);
-}
-
-std::vector<ElementIndex> Fishes::SortByX(std::vector<Fish> & fishes)
-{
-    std::vector<ElementIndex> indices;
-    indices.reserve(fishes.size());
-
-    for (size_t f = 0; f < fishes.size(); ++f)
-        indices.push_back(static_cast<ElementIndex>(f));
-
-    std::sort(
-        indices.begin(),
-        indices.end(),
-        [&fishes](ElementIndex const & f1, ElementIndex const & f2)
-        {
-            return fishes[f1].CurrentPosition.x < fishes[f2].CurrentPosition.x;
-        });
-
-    for (size_t f = 0; f < fishes.size(); ++f)
-        fishes[indices[f]].FishesByXIndex = static_cast<ElementIndex>(f);
-
-    return indices;
 }
 
 }

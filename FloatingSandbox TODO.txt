@@ -1223,7 +1223,7 @@ Render:
 				+ Tsunami: widespread panic
 					+ From World::TriggerTsunami, one-shot
 				+ Thanos' snap: panic at interfaces
-			= Shoaling
+			+ Shoaling
 				+ When adding new fish, distribute remaining counts among species according to swarm sizes
 				+ Rearc Update() in three parts
 				+ Do shoaling only if GameParameters::DoFishShoaling is set
@@ -1282,17 +1282,16 @@ Render:
 					+ Nuke FishShoalCohesionStrengthAdjustment
 				+ Tsunami: no panic when auto-triggered
 				+ See if can randomize spacing
-
-				- Cleanup:
-					- Optimize
+				+ Cleanup:
+					+ Optimize
 						+ Begin:
 							+ UpdateDynamics: 8.31% (7.68% self)
 							+ UpdateShoaling: 5.90% (5.90% self)
 						+ See if can avoid normalize() at 682 using CurrentRenderVector
-						- Update fish.IndexInXVector
+						+ Update fish.IndexInXVector
 						+ Precalc position of head
-						- Buffer rearc?
-
+						+ Shoaling
+						+ If not needed, nuke whole sort/sortedbyx/etc
 			- AABB around ships' frontiers, so that fish AI's avoid them
 				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
 				- Fishes::Update(.) takes AllShipAABBs
@@ -1313,7 +1312,7 @@ Render:
 			+ Finalize GameParameters::NumberOfFishes
 			+ Do we need initial Update() call at World construction?
 				+ Better to spend time for fish creation there than at first frame
-		= Misc:
+		= Misc:			
 			+ See if want to spread initial fish more
 			+ More textures per species
 			+ More fish species
