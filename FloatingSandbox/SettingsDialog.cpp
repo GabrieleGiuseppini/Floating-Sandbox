@@ -4044,6 +4044,8 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                             extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
                         }
 
+                        extrasSizer->AddSpacer(3);
+
                         {
                             mShowAABBsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
                                 _("Show AABBs"), wxDefaultPosition, wxDefaultSize);
